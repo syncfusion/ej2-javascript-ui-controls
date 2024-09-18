@@ -200,19 +200,9 @@ $multiselect-dropicon-closer-bigger-width: 34px !default;
     font-size: 12px;
   }
 
-  .e-bigger .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
-  .e-bigger.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
-    font-size: 14px;
-  }
-
   .e-small .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
   .e-small.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
     font-size: 10px;
-  }
-
-  .e-small.e-bigger .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
-  .e-small.e-bigger.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
-    font-size: 12px;
   }
 
   .e-multiselect.e-rtl .e-input-group-icon.e-ddl-icon {
@@ -221,21 +211,8 @@ $multiselect-dropicon-closer-bigger-width: 34px !default;
     border-right-width: 1px;
   }
 
-  .e-bigger .e-multi-select-wrapper .e-chips > .e-chipcontent {
-    font-size: 14px;
-  }
-
-  .e-bigger .e-multi-select-wrapper .e-chips-close {
-    height: $ddl-bigger-chip-close-square;
-    width: $ddl-bigger-chip-close-width;
-  }
-
   .e-popup.e-multi-select-list-wrapper .e-list-item.e-active.e-item-focus.e-hover {
     box-shadow: none;
-  }
-
-  .e-bigger .e-ddl.e-popup .e-filter-parent .e-clear-icon {
-    display: flex;
   }
 
   .e-input-group.e-multiselect .e-spinner-pane .e-spinner-inner .e-spin-bootstrap4 .e-path-circle {
@@ -246,10 +223,6 @@ $multiselect-dropicon-closer-bigger-width: 34px !default;
     margin: 1px 4px 1px 0;
   }
 
-  .e-small.e-bigger .e-multi-select-wrapper .e-chips {
-    margin: 2px 4px 2px 0;
-  }
-
   .e-multiselect.e-float-input input[readonly],
   .e-multiselect.e-float-input.e-control-wrapper input[readonly] {
     background: transparent;
@@ -257,22 +230,5 @@ $multiselect-dropicon-closer-bigger-width: 34px !default;
 
   .e-small .e-multi-select-wrapper .e-close-hooker::before {
     top: $ddl-chip-close-hooker-small-top;
-  }
-
-  .e-bigger .e-multiselect .e-multi-select-wrapper .e-chips-close.e-close-hooker {
-    height: $multiselect-closer-bigger-height;
-    margin-top: $multiselect-closer--bigger-margin-top;
-    right: $multiselect-closer-bigger-width;
-  }
-
-  .e-bigger .e-multiselect .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-bigger.e-multiselect .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-bigger .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
-    right: $multiselect-dropicon-closer-bigger-width;
-  }
-
-  .e-bigger .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper .e-clear-icon {
-    height: $multiselect-closer-bigger-height;
-    margin-top: $ddl-closer-margin-top-bigger;
   }
 }

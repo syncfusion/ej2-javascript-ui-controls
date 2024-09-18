@@ -126,6 +126,9 @@ export class ToolbarStatus {
             if ((index === 0 && formatCollection.bulletFormatList) || !formatCollection.bulletFormatList) {
                 nodeCollection.bulletFormatList = formatCollection.bulletFormatList;
             }
+            if ((index === 0 && formatCollection.inlinecode) || !formatCollection.inlinecode) {
+                nodeCollection.inlinecode = formatCollection.inlinecode;
+            }
             formatCollection = JSON.parse(JSON.stringify(statusCollection));
         }
         return nodeCollection;
@@ -249,6 +252,9 @@ export class ToolbarStatus {
         }
         if (!formatCollection.bulletFormatList && !isComplexListUpdated) {
             formatCollection.bulletFormatList = this.isBulletFormatList(node) as string;
+        }
+        if (!formatCollection.inlinecode) {
+            formatCollection.inlinecode = IsFormatted.isCode(node);
         }
         return formatCollection;
     }

@@ -70,7 +70,7 @@ export class Clipboard implements IAction {
         const grid: IGrid = this.parent;
         const isMacLike: boolean = /(Mac)/i.test(navigator.platform);
         const selectedRowCellIndexes: ISelectedCell[] = this.parent.getSelectedRowCellIndexes();
-        if (e.keyCode === 67 && isMacLike && e.metaKey && !grid.isEdit) {
+        if (!grid.isEdit && e.keyCode === 67 && isMacLike && e.metaKey) {
             this.copy();
         }
         if (selectedRowCellIndexes.length && e.keyCode === 86 && ((!isMacLike && e.ctrlKey) || (isMacLike && e.metaKey)) && !grid.isEdit) {

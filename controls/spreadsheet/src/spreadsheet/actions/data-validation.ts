@@ -1,22 +1,23 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, readonlyAlert, completeAction, createNoteIndicator } from '../index';
 import { isValidation, checkDateFormat, applyCellFormat, activeCellChanged, NumberFormatArgs } from '../../workbook/common/index';
-import { getCell, setCell, getFormattedCellObject, getColorCode, getFormattedBarText, getRow, getRowHeight } from '../../workbook/index';
+import { getCell, setCell, getFormattedCellObject, getFormattedBarText, DateFormatCheckArgs, getRow, getRowHeight } from '../../workbook/index';
 import { CellModel } from '../../workbook/base/cell-model';
 import { FormValidatorModel, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
-import { L10n, EventHandler, remove, closest, isNullOrUndefined, select, Browser, Internationalization } from '@syncfusion/ej2-base';
-import { getNumberDependable, defaultCurrencyCode } from '@syncfusion/ej2-base';
+import { L10n, EventHandler, remove, closest, isNullOrUndefined, select, Browser, getNumericObject } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/dialog';
-import { dialog, locale, initiateDataValidation, invalidData, editOperation, keyUp, focus } from '../common/index';
+import { dialog, locale, initiateDataValidation, invalidData, editOperation, keyUp, focus, removeElements } from '../common/index';
 import { formulaBarOperation, removeDataValidation, CellValidationEventArgs } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { isHiddenRow, setRow, ColumnModel, beginAction, ActionEventArgs, getSwapRange, checkColumnValidation } from '../../workbook/index';
 import { SheetModel } from '../../workbook/base/sheet-model';
-import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, cellValidation, updateCell, isInMultipleRange, isNumber } from '../../workbook/common/index';
+import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, cellValidation, isInMultipleRange } from '../../workbook/common/index';
 import { CellFormatArgs, DefineNameModel, ExtendedRange, getData, isCellReference, parseLocaleNumber } from '../../workbook/index';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { ValidationModel, ValidationType, CellStyleModel, getSheet, getSheetIndex, Workbook, checkIsFormula } from '../../workbook/index';
-import { getColumn, isLocked, isReadOnly, validationHighlight, ValidationOperator, formulaInValidation, InvalidFormula } from '../../workbook/index';
+import { ValidationModel, ValidationType, CellStyleModel, getSheet, getSheetIndex, checkIsFormula, isReadOnly } from '../../workbook/index';
+import { getColumn, isLocked, validationHighlight, ValidationOperator, formulaInValidation, InvalidFormula } from '../../workbook/index';
+import { updateCell, isNumber, LocaleNumericSettings, CheckCellValidArgs, addListValidationDropdown } from '../../workbook/common/index';
+import { parseThousandSeparator } from '../../workbook/common/internalization';
 import { getBorderHeight, rowHeightChanged } from '../../spreadsheet/index';
 
 /**
@@ -24,11 +25,12 @@ import { getBorderHeight, rowHeightChanged } from '../../spreadsheet/index';
  */
 export class DataValidation {
     private parent: Spreadsheet;
-    private data: { [key: string]: Object }[] = [];
     private listObj: DropDownList;
     private dataList: DropDownList;
+    private typeList: DropDownList;
     private typeData: { [key: string]: Object }[];
     private operatorData: { [key: string]: Object }[];
+    private formObj: FormValidator;
 
     /**
      * Constructor for the Spreadsheet Data Validation module.
@@ -47,11 +49,21 @@ export class DataValidation {
      */
     protected destroy(): void {
         this.removeEventListener();
+        let validationArgs: { rowIdx?: number, colIdx?: number, td?: HTMLElement, isRefresh?: boolean } = {};
+        if (!this.parent.isDestroyed && !(this.parent as unknown as { refreshing?: boolean }).refreshing) {
+            const activeCellIndex: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+            const activeCell: HTMLElement = this.parent.getCell(activeCellIndex[0], activeCellIndex[1]);
+            if (activeCell) {
+                validationArgs = { rowIdx: activeCellIndex[0], colIdx: activeCellIndex[1], td: activeCell, isRefresh: true };
+            }
+        }
+        this.removeListDropdownHandler(this.parent.element.querySelector('.e-validation-list'), validationArgs);
         const dataValPopup: HTMLElement = select('#' + this.parent.element.id + '_datavalidation-popup');
         if (dataValPopup) { dataValPopup.remove(); }
-        this.data = [];
         this.typeData = [];
         this.operatorData = [];
+        if (this.dataList) { this.dataList = null; }
+        if (this.formObj) { this.formObj.destroy(); this.formObj = null; }
         this.parent = null;
     }
 
@@ -67,8 +79,9 @@ export class DataValidation {
         this.parent.on(activeCellChanged, this.listHandler, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(removeDataValidation, this.removeValidationHandler, this);
-        this.parent.on(validationHighlight, this.InvalidElementHandler, this);
+        this.parent.on(validationHighlight, this.invalidElementHandler, this);
         this.parent.on(rowHeightChanged, this.listValidationHeightHandler, this);
+        this.parent.on(addListValidationDropdown, this.addListValidationDropdownHandler, this);
     }
 
     private removeEventListener(): void {
@@ -84,15 +97,15 @@ export class DataValidation {
             this.parent.off(activeCellChanged, this.listHandler);
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(removeDataValidation, this.removeValidationHandler);
-            this.parent.off(validationHighlight, this.InvalidElementHandler);
+            this.parent.off(validationHighlight, this.invalidElementHandler);
             this.parent.off(rowHeightChanged, this.listValidationHeightHandler);
+            this.parent.off(addListValidationDropdown, this.addListValidationDropdownHandler);
         }
     }
 
     private removeValidationHandler(eventArgs: { isAction: boolean, range?: string, isCol?: boolean }): void {
         let sheet: SheetModel; let range: string;
         const args: { range?: string, cancel: boolean, isColSelected?: boolean } = { cancel: false, isColSelected: eventArgs.isCol };
-        let actualRange: string = eventArgs.range;
         if (eventArgs.range && eventArgs.range.includes('!')) {
             range = eventArgs.range;
             sheet = getSheet(this.parent, getSheetIndex(this.parent, range.split('!')[0]));
@@ -110,32 +123,12 @@ export class DataValidation {
                 args.isColSelected = rangeArgs.isColSelected;
             }
         }
-        actualRange = sheet.selectedRange;
         args.range = range;
         if (eventArgs.isAction) {
             this.parent.notify(beginAction, { eventArgs: args, action: 'removeValidation' });
         }
         if (!args.cancel) {
-            let isListValidation: boolean; let modelObj: CellModel | ColumnModel;
-            let actCelIdx: number[];
-            if (sheet.name === this.parent.getActiveSheet().name) {
-                actCelIdx = getCellIndexes(sheet.activeCell);
-                const indexes: number[] = getSwapRange(getRangeIndexes(actualRange));
-                if (actCelIdx[0] >= indexes[0] && actCelIdx[1] >= indexes[1] && actCelIdx[0] <= indexes[2] && actCelIdx[1] <= indexes[3]) {
-                    modelObj = args.isColSelected ? getColumn(sheet, actCelIdx[1]) || {} :
-                        getCell(actCelIdx[0], actCelIdx[1], sheet, false, true);
-                    isListValidation = modelObj.validation && modelObj.validation.type === 'List';
-                }
-            }
             this.parent.notify(cellValidation, { range: range, isRemoveValidation: true, viewport: this.parent.viewport });
-            if (isListValidation && !modelObj.validation) {
-                const td: HTMLElement = this.parent.getCell(actCelIdx[0], actCelIdx[1]);
-                if (td && td.getElementsByClassName('e-validation-list')[0]) {
-                    this.listObj.destroy();
-                    td.removeChild(td.getElementsByClassName('e-validation-list')[0]);
-                    this.removeNoteIndicator(td, actCelIdx[0], actCelIdx[1]);
-                }
-            }
             if (eventArgs.isAction) {
                 delete args.cancel;
                 this.parent.notify(completeAction, { eventArgs: args, action: 'removeValidation' });
@@ -143,10 +136,11 @@ export class DataValidation {
         }
     }
 
-    private removeNoteIndicator(td: HTMLElement, rowIndex: number, columnIndex: number): void {
-        if (!isNullOrUndefined(td.children) && td.children.length > 0 && td.children[td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
-            td.removeChild(td.children[td.children.length - 1]);
-            this.parent.notify(createNoteIndicator, {targetElement: td, rowIndex: rowIndex, columnIndex: columnIndex});
+    private updateNoteIndicator(td: HTMLElement, rowIndex: number, columnIndex: number): void {
+        const noteIndicator: HTMLElement = td.querySelector('.e-addNoteIndicator');
+        if (noteIndicator) {
+            remove(noteIndicator);
+            this.parent.notify(createNoteIndicator, { targetElement: td, rowIndex: rowIndex, columnIndex: columnIndex, skipEvent: true });
         }
     }
 
@@ -198,93 +192,114 @@ export class DataValidation {
     }
 
     private listHandler(): void {
-        if (this.parent.allowDataValidation) {
-            const sheet: SheetModel = this.parent.getActiveSheet();
-            const indexes: number[] = getCellIndexes(sheet.activeCell);
-            const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
-            const tdEle: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
-            let isDevice: boolean;
-            let isNoteAvailable: boolean = false;
-            if (!tdEle) { return; }
-            if (document.getElementsByClassName('e-validation-list')[0]) {
-                if (this.listObj) {
-                    this.listObj.destroy();
-                }
-                remove(document.getElementsByClassName('e-validation-list')[0]);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const indexes: number[] = getCellIndexes(sheet.activeCell);
+        const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
+        const tdEle: HTMLTableCellElement = <HTMLTableCellElement>this.parent.getCell(indexes[0], indexes[1]);
+        if (!tdEle) { return; }
+        this.removeListDropdownHandler(<HTMLElement>document.getElementsByClassName('e-validation-list')[0]);
+        const validation: ValidationModel = (cell && cell.validation) || (sheet.columns && sheet.columns[indexes[1]] &&
+            sheet.columns[indexes[1]].validation);
+        if (validation && validation.type === 'List') {
+            if (validation.address && !isInMultipleRange(validation.address, indexes[0], indexes[1])) {
+                return;
+            }
+            this.addListValidationDropdownHandler({ cell, validation, td: tdEle, rowIdx: indexes[0], colIdx: indexes[1] });
+        }
+        if (cell && cell.validation) {
+            cell.validation = validation;
+        }
+    }
+
+    private removeListDropdownHandler(
+        listEle: HTMLElement, validationArgs?: { rowIdx?: number, colIdx?: number, td?: HTMLElement, isRefresh?: boolean }): void {
+        if (listEle) {
+            if (this.listObj) {
+                this.listObj.destroy();
+            }
+            remove(listEle);
+            if (!validationArgs) {
                 if (!isNullOrUndefined(this.parent.selectionModule.previousActiveCell)) {
                     const pervActiveCellIdx: number[] = getCellIndexes(this.parent.selectionModule.previousActiveCell);
                     const pervActiveCellEle: HTMLElement = this.parent.getCell(pervActiveCellIdx[0], pervActiveCellIdx[1]);
-                    if (!isNullOrUndefined(pervActiveCellEle.children) && pervActiveCellEle.children.length > 0 && pervActiveCellEle.children[pervActiveCellEle.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
-                        pervActiveCellEle.removeChild(pervActiveCellEle.children[pervActiveCellEle.children.length - 1]);
-                        this.parent.notify(createNoteIndicator, {targetElement: pervActiveCellEle,
-                            rowIndex: pervActiveCellIdx[0], columnIndex: pervActiveCellIdx[1]});
+                    if (pervActiveCellEle) {
+                        this.updateNoteIndicator(pervActiveCellEle, pervActiveCellIdx[0], pervActiveCellIdx[1]);
                     }
                 }
-                this.data = [];
-            }
-            const validation: ValidationModel = (cell && cell.validation) || (sheet.columns && sheet.columns[indexes[1]] &&
-                sheet.columns[indexes[1]].validation);
-            if (validation && validation.type === 'List') {
-                if (validation.address && !isInMultipleRange(validation.address, indexes[0], indexes[1])) {
-                    return;
-                }
-                validation.ignoreBlank = !isNullOrUndefined(validation.ignoreBlank) ? validation.ignoreBlank : true;
-                validation.inCellDropDown = !isNullOrUndefined(validation.inCellDropDown) ?
-                    validation.inCellDropDown : true;
-                if (validation.inCellDropDown) {
-                    const ddlCont: HTMLElement = this.parent.createElement('div', { className: 'e-validation-list' });
-                    const ddlEle: HTMLElement = this.parent.createElement('input', { id: this.parent.element.id + 'listValid' });
-                    ddlCont.appendChild(ddlEle);
-                    if (!validation.inCellDropDown) {
-                        ddlCont.style.display = 'none';
-                    }
-                    if (!isNullOrUndefined(tdEle.children) && tdEle.children.length > 0 && tdEle.children[tdEle.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
-                        tdEle.removeChild(tdEle.children[tdEle.children.length - 1]);
-                        isNoteAvailable = true;
-                    }
-                    const parent: Element = tdEle.getElementsByClassName('e-wrap-content')[0] || tdEle;
-                    this.listValidationHeightHandler({ ddlCont: ddlCont });
-                    parent.insertBefore(ddlCont, parent.firstChild);
-                    const dataSource: { [key: string]: Object }[] = this.updateDataSource(cell, validation);
-                    this.listObj = new DropDownList({
-                        index: this.setDropDownListIndex(dataSource, cell),
-                        dataSource: dataSource,
-                        fields: { text: 'text', value: 'id' },
-                        width: '0px',
-                        popupHeight: '200px',
-                        change: () => this.listValueChange(this.listObj.text),
-                        beforeOpen: () => {
-                            isDevice = (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice;
-                            if (isDevice) { (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice = false; }
-                        },
-                        open: (args: PopupEventArgs) => {
-                            args.popup.offsetX = - (tdEle.offsetWidth - 20) + 4;
-                            args.popup.offsetY = -((tdEle.querySelector('.e-control-wrapper.e-ddl') as HTMLElement).offsetHeight - 18);
-                            args.popup.element.style.width = tdEle.offsetWidth - 1 + 'px';
-                            if (isDevice) { (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice = true; }
-                        },
-                        close: (args: PopupEventArgs): void => {
-                            if (args.event && ((args.event as KeyboardEvent).keyCode === 13 ||
-                                ((args.event as KeyboardEvent).altKey && (args.event as KeyboardEvent).keyCode === 38))) {
-                                (args.event as KeyboardEvent).preventDefault();
-                                (args.event as KeyboardEvent).stopPropagation();
-                            }
-                            focus(this.parent.element);
-                        }
-                    });
-                    this.listObj.appendTo('#' + this.parent.element.id + 'listValid');
-                    if (isNoteAvailable) {
-                        this.parent.notify(createNoteIndicator, {targetElement: tdEle, rowIndex: indexes[0], columnIndex: indexes[1]});
-                    }
-                }
-            }
-            if (cell && cell.validation) {
-                cell.validation = validation;
+            } else if (validationArgs.isRefresh) {
+                this.updateNoteIndicator(validationArgs.td, validationArgs.rowIdx, validationArgs.colIdx);
             }
         }
     }
 
-    private listValidationHeightHandler(args: { ddlCont?: HTMLElement }): void {
+    private addListValidationDropdownHandler(
+        args: { validation: ValidationModel, rowIdx: number, colIdx: number, cell: CellModel, td?: HTMLElement,
+            isRefresh?: boolean }): void {
+        let inCellDropDown: boolean = args.validation.inCellDropDown;
+        if (args.isRefresh) {
+            if (!args.td) {
+                args.td = <HTMLTableCellElement>this.parent.getCell(args.rowIdx, args.colIdx);
+                if (!args.td) {
+                    return;
+                }
+            }
+            this.removeListDropdownHandler(args.td.querySelector('.e-validation-list'), args);
+            if (args.validation.type !== 'List') {
+                return;
+            }
+            if (isNullOrUndefined(inCellDropDown)) {
+                inCellDropDown = true;
+            }
+        } else {
+            if (isNullOrUndefined(args.validation.ignoreBlank)) {
+                args.validation.ignoreBlank = true;
+            }
+            if (isNullOrUndefined(inCellDropDown)) {
+                inCellDropDown = args.validation.inCellDropDown = true;
+            }
+        }
+        if (inCellDropDown) {
+            const ddlCont: HTMLElement = this.parent.createElement('div', { className: 'e-validation-list' });
+            const ddlEle: HTMLElement = this.parent.createElement('input', { id: this.parent.element.id + 'listValid' });
+            ddlCont.appendChild(ddlEle);
+            let isDevice: boolean;
+            const tdEle: HTMLElement = args.td;
+            const parent: Element = tdEle.getElementsByClassName('e-wrap-content')[0] || tdEle;
+            this.listValidationHeightHandler({ ddlCont: ddlCont });
+            parent.insertBefore(ddlCont, parent.firstChild);
+            const dataSource: { [key: string]: string }[] = this.getListDataSource(args.validation);
+            this.listObj = new DropDownList({
+                index: this.setDropDownListIndex(dataSource, args.cell),
+                dataSource: dataSource,
+                fields: { text: 'text', value: 'id' },
+                width: '0px',
+                popupHeight: '200px',
+                change: () => this.listValueChange(this.listObj.text),
+                beforeOpen: () => {
+                    isDevice = (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice;
+                    if (isDevice) { (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice = false; }
+                },
+                open: (args: PopupEventArgs) => {
+                    args.popup.offsetX = - (tdEle.offsetWidth - 20) + 4;
+                    args.popup.offsetY = -((tdEle.querySelector('.e-control-wrapper.e-ddl') as HTMLElement).offsetHeight - 18);
+                    args.popup.element.style.width = tdEle.offsetWidth - 1 + 'px';
+                    if (isDevice) { (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice = true; }
+                },
+                close: (args: PopupEventArgs): void => {
+                    if (args.event && ((args.event as KeyboardEvent).keyCode === 13 ||
+                        ((args.event as KeyboardEvent).altKey && (args.event as KeyboardEvent).keyCode === 38))) {
+                        (args.event as KeyboardEvent).preventDefault();
+                        (args.event as KeyboardEvent).stopPropagation();
+                    }
+                    focus(this.parent.element);
+                }
+            });
+            this.listObj.appendTo(ddlEle);
+            this.updateNoteIndicator(tdEle, args.rowIdx, args.colIdx);
+        }
+    }
+
+    private listValidationHeightHandler(args: { threshold?: number, ddlCont?: HTMLElement }): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const indexes: number[] = getCellIndexes(sheet.activeCell);
         const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
@@ -308,19 +323,23 @@ export class DataValidation {
         }
     }
 
-    private setDropDownListIndex(dataSource: { [key: string]: Object }[], cell: CellModel): number {
-        if (cell && cell.value) {
-            for (let dataIdx: number = 0, len: number = dataSource.length; dataIdx < len; dataIdx++) {
-                if (dataSource[dataIdx as number].text === cell.value.toString()) {
-                    return dataIdx;
+    private setDropDownListIndex(dataSource: { [key: string]: string }[], cell: CellModel): number {
+        if (cell && !isNullOrUndefined(cell.value)) {
+            const cellVal: string = cell.value.toString();
+            const isNumVal: boolean = isNumber(cellVal);
+            const numObj: LocaleNumericSettings = isNumVal && <LocaleNumericSettings>getNumericObject(this.parent.locale);
+            for (let idx: number = 0, len: number = dataSource.length; idx < len; idx++) {
+                if (dataSource[idx as number].text === cellVal || (isNumVal &&
+                    this.parseValidationValue(dataSource[idx as number].text, numObj).toString() === cellVal)) {
+                    return idx;
                 }
             }
         }
         return null;
     }
 
-    private updateDataSource(cell: CellModel, validation: ValidationModel): { [key: string]: Object }[] {
-        this.data = [];
+    private getListDataSource(validation: ValidationModel): { [key: string]: string }[] {
+        const data: { [key: string]: string }[] = [];
         let count: number = 0;
         const definedNames: DefineNameModel[] = this.parent.definedNames;
         let value: string = validation.value1;
@@ -338,9 +357,18 @@ export class DataValidation {
             }
         }
         if (isRange) {
-            const sheet: SheetModel = value.indexOf('!') > -1 ?
-                getSheet(this.parent as Workbook, getSheetIndex(this.parent as Workbook, value.split('=')[1].split('!')[0])) : this.parent.getActiveSheet();
-            const address: string = value.indexOf('!') > -1 ? value.split('!')[1] : value.split('=')[1];
+            let sheet: SheetModel; let address: string;
+            if (value.indexOf('!') > -1) {
+                const rangeArr: string[] = value.split('=')[1].split('!');
+                if (rangeArr[0].startsWith('\'') && rangeArr[0].endsWith('\'')) {
+                    rangeArr[0] = rangeArr[0].substring(1, rangeArr[0].length - 1);
+                }
+                sheet = getSheet(this.parent, getSheetIndex(this.parent, rangeArr[0]));
+                address = rangeArr[1];
+            } else {
+                sheet = this.parent.getActiveSheet();
+                address = value.substring(1);
+            }
             const activeSheet: SheetModel = this.parent.getActiveSheet();
             if (sheet.name !== activeSheet.name) {
                 let isNotLoaded: boolean; const selectedRange: number[] = getRangeIndexes(activeSheet.selectedRange);
@@ -354,7 +382,10 @@ export class DataValidation {
                         if (activeSheet.name === this.parent.getActiveSheet().name) {
                             const curRange: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                             if (curRange[0] === selectedRange[0] && curRange[1] === selectedRange[1]) {
-                                this.listObj.dataSource = this.updateDataSource(cell, validation); this.listObj.dataBind();
+                                const dataSource: { [key: string]: string }[] = this.getListDataSource(validation);
+                                this.listObj.dataSource = dataSource;
+                                this.listObj.index = this.setDropDownListIndex(dataSource, getCell(curRange[0], curRange[1], activeSheet));
+                                this.listObj.dataBind();
                             }
                         }
                     });
@@ -372,28 +403,28 @@ export class DataValidation {
             } else {
                 indexes = getRangeIndexes(address);
             }
+            let cell: CellModel;
             for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
                 if (!sheet.rows[rowIdx as number]) { setRow(sheet, rowIdx, {}); }
                 for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
                     if (!sheet.rows[rowIdx as number].cells) { setCell(rowIdx, colIdx, sheet, {}); }
                     count += 1;
                     cell = sheet.rows[rowIdx as number].cells[colIdx as number];
-                    const data: string = this.parent.getDisplayText(cell) || '';
-                    this.data.push({ text: data, id: 'list-' + count });
+                    const formattedText: string = this.parent.getDisplayText(cell) || '';
+                    data.push({ text: formattedText, id: 'list-' + count });
                 }
             }
         } else {
-            const listValues: string[] = value.split(',');
+            const listValues: string[] = this.getListOfValues(value);
             for (let idx: number = 0; idx < listValues.length; idx++) {
                 count += 1;
-                this.data.push({ text: listValues[idx as number], id: 'list-' + count });
+                data.push({ text: listValues[idx as number], id: 'list-' + count });
             }
         }
-        return this.data;
+        return data;
     }
 
     private listValueChange(value: string): void {
-        this.parent.notify(formulaBarOperation, { action: 'refreshFormulabar', value: value });
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cellIdx: number[] = getIndexesFromAddress(sheet.activeCell);
         const cellObj: CellModel = Object.assign({}, getCell(cellIdx[0], cellIdx[1], sheet));
@@ -402,16 +433,23 @@ export class DataValidation {
         } else if (isReadOnly(cellObj, getColumn(sheet, cellIdx[1]), getRow(sheet, cellIdx[0]))) {
             this.parent.notify(readonlyAlert, null);
         } else {
-            if (this.parent.isEdit) { this.parent.closeEdit(); }
+            if (this.parent.isEdit) {
+                this.parent.closeEdit();
+            }
             const args: { value: string, oldValue: string, address: string, cancel: boolean } = { value: value, oldValue: cellObj.value, address: sheet.name + '!' + sheet.activeCell, cancel: false };
             this.parent.notify(beginAction, { action: 'cellSave', eventArgs: args });
             if (args.cancel) {
                 return;
             }
-            updateCell(
-                this.parent, sheet, { cell: { value: value }, rowIdx: cellIdx[0], colIdx: cellIdx[1], valChange: true, lastCell: true,
+            const cancelled: boolean = updateCell(
+                this.parent, sheet, { cell: { value: value, formula: '' }, rowIdx: cellIdx[0], colIdx: cellIdx[1], valChange: true, lastCell: true,
                     uiRefresh: true, checkCF: true });
-            this.parent.notify(completeAction, { action: 'cellSave', eventArgs: { value: value, oldValue: cellObj.value, address: sheet.name + '!' + sheet.activeCell } });
+            if (!cancelled) {
+                const cell: CellModel = getCell(cellIdx[0], cellIdx[1], sheet, false, true);
+                delete cell.formula;
+                this.parent.notify(formulaBarOperation, { action: 'refreshFormulabar', cell: cell });
+                this.parent.notify(completeAction, { action: 'cellSave', eventArgs: { value: value, oldValue: cellObj.value, address: sheet.name + '!' + sheet.activeCell } });
+            }
         }
     }
 
@@ -502,6 +540,7 @@ export class DataValidation {
                         dialogInst.dialogInstance.dataBind();
                         focus(this.parent.element);
                     },
+                    beforeClose: this.dialogBeforeClose.bind(this),
                     buttons: [{
                         buttonModel: {
                             content: l10n.getConstant('ClearAll'),
@@ -530,6 +569,13 @@ export class DataValidation {
         }
     }
 
+    private divElements: HTMLElement[] = [];
+    private spanElements: HTMLElement[] = [];
+    private inputElements: HTMLElement[] = [];
+    private checkBoxElements: CheckBox[] = [];
+    private numericTextBoxElements: NumericTextBox[] = [];
+    private dropDownListElements: DropDownList[] = [];
+
     private dataValidationContent(
         isNew: boolean, type: ValidationType, operator: string, val1: string, val2: string, ignoreBlank: boolean,
         inCellDropDown: boolean, range: string): HTMLElement {
@@ -538,18 +584,29 @@ export class DataValidation {
         if (isNew) {
             value1 = value2 = '0';
         } else {
-            if (type === 'Date') {
+            if (type === 'Date' || type === 'Time') {
                 const getFormattedDate: (val: string) => string = (val: string): string => {
                     if (isNumber(val)) {
-                        const args: { cell: CellModel, type: string, value: string } = { cell: { value: val }, type: 'date', value: val };
+                        const args: { cell: CellModel, type: string, value: string } = { cell: { value: val }, type: type.toLowerCase(),
+                            value: val };
                         this.parent.notify(getFormattedBarText, args);
                         return args.value;
                     }
                     return val;
                 };
-                value1 = getFormattedDate(value1); value2 = getFormattedDate(value2);
+                value1 = getFormattedDate(val1); value2 = getFormattedDate(val2);
             } else {
-                value1 = val1; value2 = val2;
+                const getFormattedValue: (val: string) => string = (val: string): string => {
+                    if (isNumber(val)) {
+                        val = val.toString();
+                        const localeObj: LocaleNumericSettings = <LocaleNumericSettings>getNumericObject(this.parent.locale);
+                        if (localeObj.decimal !== '.' && val.includes('.')) {
+                            val = val.replace('.', localeObj.decimal);
+                        }
+                    }
+                    return val;
+                };
+                value1 = getFormattedValue(val1); value2 = getFormattedValue(val2);
             }
         }
         const dlgContent: HTMLElement = this.parent.createElement('div', { className: 'e-validation-dlg' });
@@ -557,6 +614,9 @@ export class DataValidation {
         const allowDataCont: HTMLElement = this.parent.createElement('div', { className: 'e-allowdata' });
         const valuesCont: HTMLElement = this.parent.createElement('div', { className: 'e-values' });
         const ignoreBlankCont: HTMLElement = this.parent.createElement('div', { className: 'e-ignoreblank' });
+        this.divElements.push(dlgContent); this.divElements.push(cellRangeCont);
+        this.divElements.push(allowDataCont); this.divElements.push(valuesCont);
+        this.divElements.push(ignoreBlankCont);
         dlgContent.appendChild(cellRangeCont);
         dlgContent.appendChild(allowDataCont);
         dlgContent.appendChild(valuesCont);
@@ -594,6 +654,9 @@ export class DataValidation {
             { text: l10n.getConstant('LessThanOrEqualTo'), id: 'operator-8' }
         ];
         const allowSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
+        this.spanElements.push(cellRangeText); this.inputElements.push(cellRangeEle);
+        this.divElements.push(allowCont); this.divElements.push(dataCont);
+        this.spanElements.push(allowText); this.inputElements.push(allowSelectEle);
         if (type) {
             type = this.formattedType(type);
         }
@@ -621,29 +684,34 @@ export class DataValidation {
             }
             dataCont.appendChild(dataText);
             dataCont.appendChild(dataSelectEle);
+            this.spanElements.push(dataText); this.inputElements.push(dataSelectEle);
             this.dataList = new DropDownList({
                 dataSource: this.operatorData,
                 index: dataIdx,
                 popupHeight: '200px',
-                change: () => { this.userInput(listObj, this.dataList); }
+                change: this.userInput.bind(this)
             });
+            this.dropDownListElements.push(this.dataList);
             this.dataList.appendTo(dataSelectEle);
         } else {
             const ignoreBlankEle: HTMLElement = this.parent.createElement('input', { className: 'e-checkbox' });
             dataCont.appendChild(ignoreBlankEle);
             const ignoreBlankObj: CheckBox = new CheckBox({ label: l10n.getConstant('InCellDropDown'), checked: inCellDropDown });
+            this.checkBoxElements.push(ignoreBlankObj);
             ignoreBlankObj.appendTo(ignoreBlankEle);
+            this.inputElements.push(ignoreBlankEle);
         }
         allowCont.appendChild(allowText);
         allowCont.appendChild(allowSelectEle);
-        const listObj: DropDownList = new DropDownList({
+        this.typeList = new DropDownList({
             dataSource: this.typeData,
             index: allowIdx,
             popupHeight: '200px',
-            change: () => { this.userInput(listObj, this.dataList); }
+            change: this.userInput.bind(this)
         });
-        listObj.appendTo(allowSelectEle);
-        if (isNew || (listObj.value !== l10n.getConstant('List') && (this.dataList.value === l10n.getConstant('Between') || this.dataList.value === l10n.getConstant('NotBetween')))) {
+        this.dropDownListElements.push(this.typeList);
+        this.typeList.appendTo(allowSelectEle);
+        if (isNew || (this.typeList.value !== l10n.getConstant('List') && (this.dataList.value === l10n.getConstant('Between') || this.dataList.value === l10n.getConstant('NotBetween')))) {
             const minimumCont: HTMLElement = this.parent.createElement('div', { className: 'e-minimum' });
             const maximumCont: HTMLElement = this.parent.createElement('div', { className: 'e-maximum' });
             valuesCont.appendChild(minimumCont);
@@ -664,13 +732,18 @@ export class DataValidation {
             minimumCont.appendChild(minimumInp);
             maximumCont.appendChild(maximumText);
             maximumCont.appendChild(maximumInp);
+            this.divElements.push(minimumCont); this.divElements.push(maximumCont);
+            this.spanElements.push(minimumText); this.spanElements.push(maximumText);
+            this.inputElements.push(minimumInp); this.inputElements.push(maximumInp);
             const numericMin: NumericTextBox = new NumericTextBox({
                 value: 0
             });
+            this.numericTextBoxElements.push(numericMin);
             numericMin.appendTo('#minvalue');
             const numericMax: NumericTextBox = new NumericTextBox({
                 value: 0
             });
+            this.numericTextBoxElements.push(numericMax);
             numericMax.appendTo('#maxvalue');
         } else if (!isNew && type === 'List') {
             const valueText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
@@ -678,19 +751,52 @@ export class DataValidation {
             const valueEle: HTMLElement = this.parent.createElement('input', { className: 'e-input', attrs: { value: value1 } });
             valuesCont.appendChild(valueText);
             valuesCont.appendChild(valueEle);
+            this.spanElements.push(valueText); this.inputElements.push(valueEle);
         } else {
             const valueText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
             valueText.innerText = l10n.getConstant('Value');
             const valueEle: HTMLElement = this.parent.createElement('input', { className: 'e-input', attrs: { value: value1 } });
             valuesCont.appendChild(valueText);
             valuesCont.appendChild(valueEle);
+            this.spanElements.push(valueText); this.inputElements.push(valueEle);
         }
         const isChecked: boolean = ignoreBlank;
         const ignoreBlankEle: HTMLElement = this.parent.createElement('input', { className: 'e-checkbox' });
         ignoreBlankCont.appendChild(ignoreBlankEle);
         const ignoreBlankObj: CheckBox = new CheckBox({ label: l10n.getConstant('IgnoreBlank'), checked: isChecked });
+        this.checkBoxElements.push(ignoreBlankObj);
         ignoreBlankObj.appendTo(ignoreBlankEle);
+        this.inputElements.push(ignoreBlankEle);
         return dlgContent;
+    }
+
+    private dialogBeforeClose(): void {
+        this.checkBoxElements.forEach((checkbox: CheckBox) => {
+            if (checkbox && checkbox.element) {
+                checkbox.destroy();
+                checkbox.element.remove();
+            }
+        });
+        this.checkBoxElements = [];
+
+        this.numericTextBoxElements.forEach((numericTextBox: NumericTextBox) => {
+            if (numericTextBox && numericTextBox.element) {
+                numericTextBox.destroy();
+                numericTextBox.element.remove();
+            }
+        });
+        this.numericTextBoxElements = [];
+
+        this.dropDownListElements.forEach((dropDownList: DropDownList) => {
+            if (dropDownList && dropDownList.element) {
+                dropDownList.destroy();
+                dropDownList.element.remove();
+            }
+        });
+        this.dropDownListElements = [];
+        removeElements(this.spanElements); this.spanElements = [];
+        removeElements(this.inputElements); this.inputElements = [];
+        removeElements(this.divElements); this.divElements = [];
     }
 
     private validateRange(indexes: number[], sheet: SheetModel): { moreValidation: boolean, extendValidation: boolean } {
@@ -876,7 +982,8 @@ export class DataValidation {
         dialogInst.show(dlg);
     }
 
-    private userInput(listObj: DropDownList, listObj1: DropDownList): void {
+    private userInput(): void {
+        const listObj: DropDownList = this.typeList; const listObj1: DropDownList = this.dataList;
         const dlgEle: HTMLElement = this.parent.element.querySelector('.e-datavalidation-dlg');
         const dlgCont: HTMLElement = dlgEle.querySelector('.e-validation-dlg');
         const allowDataCont: HTMLElement = dlgCont.querySelector('.e-allowdata');
@@ -891,8 +998,10 @@ export class DataValidation {
                 dataCont.removeChild(dataCont.lastChild);
             }
             const ignoreBlankEle: HTMLElement = this.parent.createElement('input', { className: 'e-checkbox' });
+            this.inputElements.push(ignoreBlankEle);
             dataCont.appendChild(ignoreBlankEle);
             const ignoreBlankObj: CheckBox = new CheckBox({ label: l10n.getConstant('InCellDropDown'), checked: true });
+            this.checkBoxElements.push(ignoreBlankObj);
             ignoreBlankObj.appendTo(ignoreBlankEle);
         } else {
             if (dataCont.getElementsByClassName('e-checkbox-wrapper')[0]) {
@@ -902,6 +1011,7 @@ export class DataValidation {
                 const dataText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
                 dataText.innerText = l10n.getConstant('Data');
                 const dataSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
+                this.spanElements.push(dataText); this.inputElements.push(dataSelectEle);
                 dataCont.appendChild(dataText);
                 dataCont.appendChild(dataSelectEle);
                 listObj1.appendTo(dataSelectEle);
@@ -910,6 +1020,7 @@ export class DataValidation {
         if (listObj.value !== l10n.getConstant('List') && (listObj1.value === l10n.getConstant('Between') || listObj1.value === l10n.getConstant('NotBetween'))) {
             const minimumCont: HTMLElement = this.parent.createElement('div', { className: 'e-minimum' });
             const maximumCont: HTMLElement = this.parent.createElement('div', { className: 'e-maximum' });
+            this.divElements.push(minimumCont); this.divElements.push(maximumCont);
             valuesCont.appendChild(minimumCont);
             valuesCont.appendChild(maximumCont);
             const minimumText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
@@ -918,13 +1029,17 @@ export class DataValidation {
             maximumText.innerText = l10n.getConstant('Maximum');
             const minimumInp: HTMLElement = this.parent.createElement('input', { id: 'min', className: 'e-input', attrs: { value: '0' } });
             const maximumInp: HTMLElement = this.parent.createElement('input', { id: 'max', className: 'e-input', attrs: { value: '0' } });
+            this.spanElements.push(minimumText); this.spanElements.push(maximumText);
+            this.inputElements.push(minimumInp); this.inputElements.push(maximumInp);
             const numericMin: NumericTextBox = new NumericTextBox({
                 value: 0
             });
+            this.numericTextBoxElements.push(numericMin);
             numericMin.appendTo('min');
             const numericMax: NumericTextBox = new NumericTextBox({
                 value: 0
             });
+            this.numericTextBoxElements.push(numericMax);
             numericMax.appendTo('max');
             minimumCont.appendChild(minimumText);
             minimumCont.appendChild(minimumInp);
@@ -938,6 +1053,7 @@ export class DataValidation {
                 attrs: { placeholder: 'Enter value' }
             }) :
                 this.parent.createElement('input', { className: 'e-input', attrs: { value: '0' } });
+            this.spanElements.push(valueText); this.inputElements.push(valueEle);
             valuesCont.appendChild(valueText);
             valuesCont.appendChild(valueEle);
         }
@@ -951,24 +1067,33 @@ export class DataValidation {
         const dlgContEle: HTMLElement = dlgEle.getElementsByClassName('e-dlg-content')[0].
             getElementsByClassName('e-validation-dlg')[0] as HTMLElement;
         const allowData: HTMLElement = dlgContEle.getElementsByClassName('e-allowdata')[0] as HTMLElement;
-        const allowEle: HTMLElement = allowData.getElementsByClassName('e-allow')[0].getElementsByTagName('input')[0];
+        const allowEle: HTMLInputElement = allowData.getElementsByClassName('e-allow')[0].getElementsByTagName('input')[0];
         const dataEle: HTMLElement = allowData.getElementsByClassName('e-data')[0].getElementsByTagName('input')[0];
         const values: HTMLElement = dlgContEle.getElementsByClassName('e-values')[0] as HTMLElement;
         const valueArr: string[] = [];
         valueArr[0] = values.getElementsByTagName('input')[0].value;
         valueArr[1] = values.getElementsByTagName('input')[1] ? values.getElementsByTagName('input')[1].value : '';
-        parseLocaleNumber(valueArr, this.parent.locale);
+        const type: ValidationType = this.formattedType(allowEle.value);
+        let isValid: boolean = true;
+        const numObj: LocaleNumericSettings = <LocaleNumericSettings>getNumericObject(this.parent.locale);
+        if (type === 'Decimal' && numObj.decimal !== '.') {
+            const isNotCulturedNumber: (val: string) => boolean = (val: string): boolean => isNumber(val) && val.includes('.') &&
+                (numObj.group !== '.' || !parseThousandSeparator(val, this.parent.locale, numObj.group, numObj.decimal));
+            if (isNotCulturedNumber(valueArr[0]) || isNotCulturedNumber(valueArr[1])) {
+                isValid = false;
+                errorMsg = l10n.getConstant('InvalidNumberError');
+            }
+        }
+        parseLocaleNumber(valueArr, this.parent, numObj);
         const ignoreBlank: boolean = (dlgContEle.querySelector('.e-ignoreblank .e-checkbox') as HTMLInputElement).checked;
         const inCellDropDown: boolean = allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper') ?
             allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper').querySelector('.e-check') ? true : false : null;
         const range: string = (dlgContEle.querySelector('.e-cellrange').getElementsByTagName('input')[0] as HTMLInputElement).value;
         let operator: string;
-        const type: ValidationType = this.formattedType((allowEle as HTMLInputElement).value);
         if (dataEle) {
             operator = (dataEle as HTMLInputElement).value;
             operator = this.formattedValue(operator);
         }
-        let rangeAdd: string[] = [];
         const valArr: string[] = [];
         if (valueArr[0] !== '') {
             valArr.push(valueArr[0]);
@@ -976,19 +1101,27 @@ export class DataValidation {
         if (valueArr[1] !== '') {
             valArr.push(valueArr[1]);
         }
-        let isValid: boolean = true;
         if (type === 'List') {
-            if (valueArr[0].indexOf('=') !== -1) {
-                if (valueArr[0].indexOf(':') !== -1) {
-                    const address: string = valueArr[0].indexOf('!') > -1 ? valueArr[0].split('!')[1] : valueArr[0].split('=')[1];
-                    const isSheetNameValid: boolean = valueArr[0].indexOf('!') > -1 ?
-                        getSheetIndex(this.parent as Workbook, valueArr[0].split('=')[1].split('!')[0]) > -1 : true;
-                    rangeAdd = address.split(':');
-                    const isSingleCol: boolean = address.match(/[a-z]/gi) ?
-                        rangeAdd[0].replace(/[0-9]/g, '') === rangeAdd[1].replace(/[0-9]/g, '') : false;
-                    const isSingleRow: boolean = address.match(/\d/g) ?
-                        rangeAdd[0].replace(/\D/g, '') === rangeAdd[1].replace(/\D/g, '') : false;
-                    isValid = isSheetNameValid ? (isSingleCol ? true : isSingleRow ? true : false) : false;
+            if (valueArr[0].startsWith('=')) {
+                let address: string = valueArr[0].substring(1);
+                if (address.includes(':')) {
+                    let isSheetNameValid: boolean;
+                    if (valueArr[0].includes('!')) {
+                        const refArr: string[] = address.split('!');
+                        address = refArr[1];
+                        if (refArr[0].startsWith('\'') && refArr[0].endsWith('\'')) {
+                            refArr[0] = refArr[0].substring(1, refArr[0].length - 1);
+                        }
+                        isSheetNameValid = getSheetIndex(this.parent, refArr[0]) > -1;
+                        valArr[0] = `=${refArr.join('!')}`;
+                    } else {
+                        isSheetNameValid = true;
+                    }
+                    const cellRef: string[] = address.split(':');
+                    const isSingleCol: boolean = address.match(/[a-z]/gi) &&
+                        cellRef[0].replace(/[0-9]/g, '') === cellRef[1].replace(/[0-9]/g, '');
+                    const isSingleRow: boolean = address.match(/\d/g) && cellRef[0].replace(/\D/g, '') === cellRef[1].replace(/\D/g, '');
+                    isValid = isSheetNameValid && (isSingleCol || isSingleRow);
                     if (!isValid) {
                         errorMsg = l10n.getConstant('DialogError');
                     }
@@ -1009,9 +1142,6 @@ export class DataValidation {
             errorMsg = validDlg.errorMsg;
             isValid = validDlg.isValidate;
             if (isValid) {
-                const indexes: number[] = getCellIndexes(sheet.activeCell);
-                let cell: CellModel = getCell(indexes[0], indexes[1], sheet, false, true);
-                const isListValidationApplied: boolean = cell.validation && cell.validation.type === 'List';
                 const args: CellValidationEventArgs = { range: sheet.name + '!' + range, value1: valArr[0], value2: valArr[1] || '',
                     ignoreBlank: ignoreBlank, type: <ValidationType>type, operator: <ValidationOperator>operator, inCellDropDown:
                     inCellDropDown, cancel: false };
@@ -1020,20 +1150,6 @@ export class DataValidation {
                     this.parent.notify(
                         cellValidation, { rules: { type: args.type, operator: args.operator, value1: args.value1, value2: args.value2,
                             ignoreBlank: args.ignoreBlank, inCellDropDown: args.inCellDropDown }, range: args.range });
-                    cell = getCell(indexes[0], indexes[1], sheet, false, true);
-                    if (cell.validation) {
-                        if (isListValidationApplied) {
-                            const tdEle: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
-                            if (tdEle && tdEle.getElementsByClassName('e-validation-list')[0]) {
-                                this.listObj.destroy();
-                                tdEle.removeChild(tdEle.getElementsByClassName('e-validation-list')[0]);
-                                this.removeNoteIndicator(tdEle, indexes[0], indexes[1]);
-                            }
-                        }
-                        if (cell.validation.type === 'List') {
-                            this.listHandler();
-                        }
-                    }
                     delete args.cancel;
                     if (!document.getElementsByClassName('e-validation-error-dlg')[0]) {
                         if (dialogInst.dialogInstance) {
@@ -1134,15 +1250,11 @@ export class DataValidation {
             for (let idx: number = 0; idx < values.length; idx++) {
                 if (checkIsFormula(values[idx as number])) {
                     value = this.parent.computeExpression(values[idx as number]).toString();
+                } else if (type === 'Date' || type === 'Time') {
+                    value = values[idx as number] = this.getDateAsNumber(
+                        { range: [], cell: { value: values[idx as number] } }, values[idx as number]);
                 } else {
-                    if (type === 'Date' || type === 'Time') {
-                        value = this.getDateAsNumber({ range: [], cell: { value: values[idx as number] } }, values[idx as number]);
-                        if (type === 'Date') {
-                            values[idx as number] = value;
-                        }
-                    } else {
-                        value = values[idx as number];
-                    }
+                    value = values[idx as number];
                 }
                 formValidation = this.formatValidation(value, type, true);
                 if (formValidation.isValidate) {
@@ -1152,26 +1264,35 @@ export class DataValidation {
                 }
             }
             formValidation.isValidate = count === values.length ? true : false;
+            return formValidation;
         } else {
-            formValidation = { isValidate: false, errorMsg: l10n.getConstant('EmptyError') };
+            return { isValidate: false, errorMsg: l10n.getConstant('EmptyError') };
         }
-        return { isValidate: formValidation.isValidate, errorMsg: formValidation.errorMsg };
     }
 
-    private getDateAsNumber(args: { range: number[], cell?: CellModel, sheetIdx?: number }, cellValue: string): string {
-        const dateEventArgs: { [key: string]: string | number | CellModel } = { value: cellValue, rowIndex: args.range[0], cell: args.cell,
+    private getDateAsNumber(args: CheckCellValidArgs, cellValue: string): string {
+        const dateEventArgs: DateFormatCheckArgs = { value: cellValue, rowIndex: args.range[0], cell: args.cell,
             colIndex: args.range[1], sheetIndex: args.sheetIdx, updatedVal: '' };
         this.parent.notify(checkDateFormat, dateEventArgs);
-        return <string>dateEventArgs.updatedVal || cellValue;
+        return dateEventArgs.updatedVal || cellValue;
     }
 
-    private isValidationHandler(
-        args: { value: string, range: number[], sheetIdx: number, td?: HTMLElement }): { isValidate: boolean, errorMsg: string } {
+    private getListOfValues(listValue: string): string[] {
+        let listValArr: string[];
+        if (this.parent.listSeparator !== ',' && listValue.includes(this.parent.listSeparator)) {
+            listValArr = listValue.split(this.parent.listSeparator);
+        } else {
+            listValArr = listValue.split(',');
+        }
+        return listValArr;
+    }
+
+    private isValidationHandler(args: CheckCellValidArgs): { isValidate: boolean, errorMsg: string } {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        args.value = args.value ? args.value : '';
+        args.value = isNullOrUndefined(args.value) ? '' : args.value;
         let isValidate: boolean;
         let errorMsg: string;
-        const enterValue: string | number = args.value;
+        const enterValue: string | number = args.value.toString();
         const sheet: SheetModel = this.parent.sheets[args.sheetIdx];
         let validation: ValidationModel;
         const cell: CellModel = getCell(args.range[0], args.range[1], sheet);
@@ -1184,14 +1305,16 @@ export class DataValidation {
         if (validation) {
             let value1: string | number = validation.value1;
             let value2: string | number = validation.value2;
-            if (checkIsFormula(value1) && validation.type !== 'List') {
-                value1 = this.parent.computeExpression(value1).toString();
-            }
-            if (checkIsFormula(value2) && validation.type !== 'List') {
-                value2 = this.parent.computeExpression(value2).toString();
-            }
-            if (checkIsFormula(args.value) && validation.type !== 'List') {
-                args.value = this.parent.computeExpression(args.value).toString();
+            if (validation.type !== 'List') {
+                if (checkIsFormula(value1)) {
+                    value1 = this.parent.computeExpression(value1).toString();
+                }
+                if (checkIsFormula(value2)) {
+                    value2 = this.parent.computeExpression(value2).toString();
+                }
+                if (checkIsFormula(args.value)) {
+                    args.value = this.parent.computeExpression(args.value).toString();
+                }
             }
             let value: string | number = args.value;
             const opt: string = validation.operator || 'Between';
@@ -1201,45 +1324,14 @@ export class DataValidation {
                 isValidate = true;
             } else {
                 const isDateTimeType: boolean = type === 'Date' || type === 'Time';
-                if (args.value && !isNumber(args.value)) {
+                if (args.value) {
                     if (isDateTimeType || validation.type === 'TextLength') {
-                        value = args.value = this.getDateAsNumber(args, args.value);
-                    } else {
-                        let format: string = cell && cell.format; let numVal: string | number;
-                        if (format && type !== 'List') {
-                            if (format !== '@') {
-                                try {
-                                    let colorCode: string = getColorCode(format);
-                                    while (colorCode) {
-                                        format = format.split(`[${colorCode}]`).join('');
-                                        colorCode = getColorCode(format);
-                                    }
-                                    const intl: Internationalization = new Internationalization(this.parent.locale);
-                                    const curSymbol: string = getNumberDependable(locale, defaultCurrencyCode);
-                                    if (curSymbol !== '$' && format.includes('$') && args.value.includes(curSymbol)) {
-                                        format = format.split('$').join(curSymbol);
-                                    }
-                                    if (format.includes('%') && args.value.indexOf('%') > 0) {
-                                        numVal = <number>intl.getNumberParser({ format: 'n' })(args.value);
-                                        const idx: number = format.indexOf('%');
-                                        if (format[idx - 1] !== '"') {
-                                            numVal /= 100;
-                                        }
-                                    } else {
-                                        numVal = intl.getNumberParser({ format: format })(args.value);
-                                    }
-                                } catch (error) {
-                                    numVal = args.value;
-                                }
-                            }
-                        } else {
-                            const formatArgs: NumberFormatArgs = {
-                                formattedText: args.value, value: args.value, format: 'General',
-                                cell: { value: args.value, format: 'General' }
-                            };
-                            this.parent.notify(getFormattedCellObject, formatArgs);
-                            numVal = formatArgs.value;
+                        if (!isNumber(args.value)) {
+                            value = args.value = this.getDateAsNumber(args, args.value);
                         }
+                    } else {
+                        const numObj: LocaleNumericSettings = args.isEdit && <LocaleNumericSettings>getNumericObject(this.parent.locale);
+                        const numVal: string | number = this.parseValidationValue(args.value, numObj);
                         if (numVal !== args.value && isNumber(numVal)) {
                             value = args.value = numVal.toString();
                         }
@@ -1261,37 +1353,31 @@ export class DataValidation {
                         value = args.value.toString().length.toString();
                     }
                     if (type === 'List') {
+                        const val: string = args.value.toString();
+                        const isNumVal: boolean = isNumber(val);
+                        const numObj: LocaleNumericSettings = isNumVal && <LocaleNumericSettings>getNumericObject(this.parent.locale);
                         if (value1.indexOf('=') !== -1) {
-                            this.data = !isNullOrUndefined(this.data) && !this.data.length ?
-                                this.updateDataSource(cell, validation) : this.data;
-                            let value: string;
-                            for (let idx: number = 0; idx < this.data.length; idx++) {
-                                value = (this.data[idx as number].text).toString();
-                                const formatArgs: NumberFormatArgs = {
-                                    formattedText: value, value: value, format: 'General',
-                                    cell: { value: value, format: 'General' }
-                                };
-                                this.parent.notify(getFormattedCellObject, formatArgs);
-                                if (args.value.toString() === formatArgs.value.toString()) {
+                            let listVal: string;
+                            const data: { [key: string]: string }[] = this.getListDataSource(validation);
+                            for (let idx: number = 0; idx < data.length; idx++) {
+                                listVal = data[idx as number].text.toString();
+                                if (enterValue === listVal || val === listVal || (isNumVal &&
+                                    val === this.parseValidationValue(listVal, numObj).toString())) {
                                     isValidate = true;
+                                    break;
                                 }
                             }
                         } else {
-                            const values: string[] = (value1 as string).split(',');
-                            let value: string;
-                            for (let idx: number = 0; idx < values.length; idx++) {
-                                value = values[idx as number];
-                                const formatArgs: NumberFormatArgs = {
-                                    formattedText: value, value: value, format: 'General',
-                                    cell: { value: value, format: 'General' }
-                                };
-                                this.parent.notify(getFormattedCellObject, formatArgs);
-                                if (args.value.toString() === formatArgs.value.toString()) {
+                            const listValues: string[] = this.getListOfValues(value1);
+                            for (let idx: number = 0; idx < listValues.length; idx++) {
+                                if (enterValue === listValues[idx as number] || val === listValues[idx as number] || (isNumVal &&
+                                    val === this.parseValidationValue(listValues[idx as number], numObj).toString())) {
                                     isValidate = true;
+                                    break;
                                 }
                             }
                         }
-                        if (!isValidate && ignoreBlank && args.value.toString() === '') {
+                        if (!isValidate && ignoreBlank && val === '') {
                             isValidate = true;
                         }
                     } else {
@@ -1389,16 +1475,31 @@ export class DataValidation {
             (column && column.validation && column.validation.isHighlighted))) {
             const style: CellStyleModel = this.parent.getCellStyleValue(['backgroundColor', 'color'], [args.range[0], args.range[1]]);
             if (!isHiddenRow(sheet, args.range[0])) {
-                this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                    style: style, rowIdx: args.range[0], colIdx: args.range[1], isHeightCheckNeeded: true, manualUpdate: true,
-                    onActionUpdate: true, td: args.td
-                });
-            }}
+                this.parent.notify(
+                    applyCellFormat, <CellFormatArgs>{ style: style, rowIdx: args.range[0], colIdx: args.range[1],
+                        isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: true, td: args.td });
+            }
+        }
         return { isValidate: isValidate, errorMsg: errorMsg };
     }
 
-    private checkDataValidation(
-        args: { value: string, range: number[], sheetIdx: number, isCell: boolean, td?: HTMLElement, isValid?: boolean }): void {
+    private parseValidationValue(val: string, numObj: LocaleNumericSettings): string | number {
+        if (isNumber(val)) {
+            if (numObj && numObj.group === '.') {
+                val = val.toString();
+                if (val.indexOf('.') && parseThousandSeparator(val, this.parent.locale, numObj.group, numObj.decimal)) {
+                    val = val.split(numObj.group).join('');
+                }
+            }
+            return val;
+        }
+        const formatArgs: NumberFormatArgs = { formattedText: val, value: val, format: 'General', cell: { value: val, format: 'General' },
+            isEdit: !!numObj };
+        this.parent.notify(getFormattedCellObject, formatArgs);
+        return formatArgs.value;
+    }
+
+    private checkDataValidation(args: CheckCellValidArgs): void {
         const cell: CellModel = getCell(args.range[0], args.range[1], this.parent.getActiveSheet());
         args.td = args.td || this.parent.getCell(args.range[0], args.range[1]);
         args.sheetIdx = args.sheetIdx || this.parent.activeSheetIndex;
@@ -1423,7 +1524,7 @@ export class DataValidation {
         }
         if (!formulaArgs.skip) {
             const isValid: { isValidate: boolean, errorMsg: string } = this.isValidationHandler(args);
-            if (!isValid.isValidate && args.isCell) {
+            if (!isValid.isValidate && args.isEdit) {
                 this.validationErrorHandler(isValid.errorMsg);
             }
             args.isValid = isValid.isValidate;
@@ -1493,13 +1594,13 @@ export class DataValidation {
         default:
             break;
         }
-        const formObj: FormValidator = new FormValidator('#formId', options);
-        const isValidate: boolean = formObj.validate();
+        this.formObj = new FormValidator('#formId', options);
+        const isValidate: boolean = this.formObj.validate();
         sheetPanel.removeChild(sheetPanel.getElementsByClassName('form-horizontal')[0]);
         return { isValidate: isValidate, errorMsg: errorMsg };
     }
 
-    private InvalidElementHandler(
+    private invalidElementHandler(
         args: { isRemoveHighlightedData: boolean, rowIdx: number, colIdx: number, td?: HTMLElement }): void {
         const rowIdx: number = args.rowIdx;
         const colIdx: number = args.colIdx;

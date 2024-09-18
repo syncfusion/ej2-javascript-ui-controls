@@ -40,6 +40,9 @@
     .e-altrow {
       background: $altrow-bg-color;
     }
+    .e-grid .e-headercell {
+      background-color: unset;
+    }
     .e-headertext,
     .e-grid th.e-headercell[aria-sort = 'ascending'] .e-headertext,
     .e-grid th.e-headercell[aria-sort = 'descending'] .e-headertext {

@@ -221,7 +221,6 @@ describe('Diagram Control', () => {
 
             ele = createElement('div', { id: 'diagramhittesting' });
             document.body.appendChild(ele);
-            
             let connector2: ConnectorModel = {
                 id: 'connector2',
                 type: 'Straight',
@@ -253,8 +252,6 @@ describe('Diagram Control', () => {
             let conn = diagram.connectors[0];
             var diagramCanvas = document.getElementById(diagram.element.id + 'content');
             mouseEvents.dragAndDropEvent(diagramCanvas, 270, 150, 320, 160);
-            console.log(diagram.connectors[0].sourcePoint.x)
-            console.log(diagram.connectors[0].targetPoint.y)
             expect(diagram.connectors[0].sourcePoint.x == 350 &&
                 diagram.connectors[0].targetPoint.y == 210).toBe(true);
             done();
@@ -281,7 +278,6 @@ describe('Diagram Control', () => {
             diagram.connectors[0].constraints = ConnectorConstraints.Select | ConnectorConstraints.PointerEvents;
             diagram.dataBind();
             let value: HTMLElement = document.getElementById('diagramhittesting_SelectorElement')
-            console.log((value.childNodes[0] as HTMLElement).getAttribute('class'))
             expect((value.childNodes[0] as HTMLElement).getAttribute('class') === 'e-diagram-endpoint-handle e-sourceend e-disabled')
             done();
         });
@@ -2676,7 +2672,6 @@ describe('Diagram Control', () => {
             done();
         }); 
     });
-
     describe('UML classifier connector double click', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -2693,8 +2688,32 @@ describe('Diagram Control', () => {
                     shape: { type: 'UmlClassifier', relationship: 'Composition' }
                 }
             ];
+            let nodes: NodeModel[]=[
+                {
+                    id: 'class',offsetX: 100,
+                    offsetY: 100,
+                    style: {
+                        fill: '#26A0DA',
+                    },
+                    borderColor: 'white',
+                    shape: {
+                        type: 'UmlClassifier',
+                        classShape: {
+                            attributes: [
+                                { name: 'accepted', type: 'Date', style: { color: "red", fontFamily: "Arial", textDecoration: 'Underline', italic: true }, isSeparator: true },
+                                { name: 'sickness', type: 'History' },
+                                { name: 'prescription', type: 'String[*]' },
+                                { name: 'allergies', type: 'String[*]' }
+                            ],
+                            methods: [{ name: 'getHistory', style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History' }],
+                            name: 'Patient'
+                        },
+                        classifier: 'Class'
+                    },
+                } 
+            ];
             diagram = new Diagram({
-                width: '900px', height: '500px', connectors: connectors,
+                width: '900px', height: '500px', connectors: connectors, nodes: nodes
             });
             diagram.appendTo('#diagram');
         });
@@ -2704,12 +2723,19 @@ describe('Diagram Control', () => {
         });
         it('Check UML classifier connector on double click', function (done) {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            expect(document.getElementById('diagram_editBox') === null);
+            expect(document.getElementById('diagram_editBox') === null).toBe(true);
             mouseEvents.clickEvent(diagramCanvas, 409, 159);
             mouseEvents.dblclickEvent(diagramCanvas, 409, 159);
-            expect(document.getElementById('diagram_editBox') !== null);
+            expect(document.getElementById('diagram_editBox') !== null).toBe(true);
             done();
         }); 
+        it('code coverage Check UML classifier node on double click', function (done){
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 93, 45);
+            mouseEvents.dblclickEvent(diagramCanvas, 93, 45);
+            expect(diagram.selectedItems.nodes.length === 1).toBe(true);
+            done();
+        });
     });
     describe('Connector routing is not proper while setting the segment direction as Left', () => {
         let diagram: Diagram;

@@ -39,7 +39,8 @@ export const markdownListsTags: { [key: string]: string } = {
  */
 export const htmlKeyConfig: { [key: string]: string } = {
     'toolbar-focus': 'alt+f10',
-    'escape': '27',
+    'escape': 'escape',
+    'backspace': 'backspace',
     'insert-link': 'ctrl+k',
     'insert-image': 'ctrl+shift+i',
     'insert-audio': 'ctrl+shift+a',
@@ -71,12 +72,13 @@ export const htmlKeyConfig: { [key: string]: string } = {
     'clear-format': 'ctrl+shift+r',
     'ordered-list': 'ctrl+shift+o',
     'unordered-list': 'ctrl+alt+o',
-    'space': '32',
-    'enter': '13',
+    'space': 'space',
+    'enter': 'enter',
     'tab': 'tab',
-    'delete': '46',
+    'delete': 'delete',
     'format-copy': 'alt+shift+c',
-    'format-paste': 'alt+shift+v'
+    'format-paste': 'alt+shift+v',
+    'inlinecode': 'ctrl+`'
 };
 /**
  * Default  markdown key config for adapter
@@ -145,3 +147,17 @@ export const imageResizeFactor: IImageResizeFactor = {
     botRight    : [ 1,  1 ],
     botLeft     : [-1,  1 ]
 };
+
+/**
+ * Mention restrict key configuration.
+ *
+ * @hidden
+ *
+ */
+export const mentionRestrictKeys: string[] = [
+    'ArrowUp',
+    'ArrowDown',
+    'Enter',
+    'Tab',
+    'Escape'
+];

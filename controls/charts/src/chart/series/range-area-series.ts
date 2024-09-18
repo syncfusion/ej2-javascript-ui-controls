@@ -6,7 +6,7 @@ import { AnimationModel } from '../../common/model/base-model';
 import { Axis } from '../axis/axis';
 
 /**
- * `RangeAreaSeries` module is used to render the range area series.
+ * The `RangeAreaSeries` module is used to render the range area series.
  */
 
 export class RangeAreaSeries extends LineBase {
@@ -22,6 +22,7 @@ export class RangeAreaSeries extends LineBase {
      * @param {boolean} pointAnimate - A flag indicating whether the points should be animated.
      * @param {boolean} pointUpdate - A flag indicating whether the points should be updated.
      * @returns {void}
+     * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean, pointAnimate: boolean, pointUpdate?: boolean): void {
         let point: Points;
@@ -146,16 +147,14 @@ export class RangeAreaSeries extends LineBase {
         this.render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, false, true);
         for (let i: number = 0; i < point.length; i++) {
             if (series.marker && series.marker.visible) {
-                series.chart.markerRender.renderMarker(series, series.points[point[i as number]],
-                                                       series.points[point[i as number]].symbolLocations[0], null, true);
+                series.points[point[i as number]].symbolLocations.map(function (location: ChartLocation, index: number): void {
+                    series.chart.markerRender.renderMarker(series, series.points[point[i as number]], location, index, true);
+                });
             }
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -196,6 +195,7 @@ export class RangeAreaSeries extends LineBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         const option: AnimationModel = series.animation;

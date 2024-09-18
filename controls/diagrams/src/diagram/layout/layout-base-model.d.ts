@@ -1,5 +1,40 @@
-import { PointModel } from '../primitives/point-model';import { Rect } from '../primitives/rect';import { MarginModel } from '../core/appearance-model';import { Margin } from '../core/appearance';import { HorizontalAlignment, VerticalAlignment, ConnectionDirection } from '../enum/enum';import { LayoutOrientation, ConnectorSegments, LayoutType, SubTreeOrientation, SubTreeAlignments, Segments } from '../enum/enum';import { ConnectionPointOrigin, ChildArrangement } from '../enum/enum';import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { OrthogonalSegmentModel, BezierSegmentModel, StraightSegmentModel } from '../objects/connector-model';
+import { PointModel } from '../primitives/point-model';import { Rect } from '../primitives/rect';import { MarginModel } from '../core/appearance-model';import { Margin } from '../core/appearance';import { HorizontalAlignment, VerticalAlignment, ConnectionDirection, BranchDirection } from '../enum/enum';import { LayoutOrientation, ConnectorSegments, LayoutType, SubTreeOrientation, SubTreeAlignments, Segments } from '../enum/enum';import { ConnectionPointOrigin, ChildArrangement } from '../enum/enum';import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { OrthogonalSegmentModel, BezierSegmentModel, StraightSegmentModel } from '../objects/connector-model';
 import {TreeInfo} from "./layout-base";
+
+/**
+ * Interface for a class FlowchartLayoutSettings
+ */
+export interface FlowchartLayoutSettingsModel {
+
+    /**
+     * Specifies the Yes branch flow direction (when there are two outputs from the flow shape) in the flowchart layout
+     *
+     * @default 'LeftInFlow'
+     */
+    yesBranchDirection?: BranchDirection;
+
+    /**
+     * Specifies the No branch flow direction (when there are two outputs from the flow shape) in the flowchart layout
+     *
+     * @default 'RightInFlow'
+     */
+    noBranchDirection?: BranchDirection;
+
+    /**
+     * Specifies the set of connector’s label text which should be considered as Yes branch connector in the flowchart layout
+     *
+     * @default ["Yes", "True"]
+     */
+    yesBranchValues?: string[];
+
+    /**
+     * Specifies the set of connector’s label text which should be considered as No branch connector in the flowchart layout
+     *
+     * @default ["No", "False"]
+     */
+    noBranchValues?: string[];
+
+}
 
 /**
  * Interface for a class Layout
@@ -274,5 +309,12 @@ export interface LayoutModel {
      * @default ''
      */
     root?: string;
+
+    /**
+     * Defines the flow chart settings of the layout
+     *
+     * @default {}
+     */
+    flowchartLayoutSettings?: FlowchartLayoutSettingsModel;
 
 }

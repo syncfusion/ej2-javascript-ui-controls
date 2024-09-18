@@ -279,6 +279,7 @@ export class HyperlinkDialog {
             return;
         }
         if (screenTipText !== ''){
+            // eslint-disable-next-line no-useless-escape
             address = address + '\"\\o \"' + screenTipText;
         }
         if (displayText === '' && address !== '') {

@@ -1,6 +1,6 @@
 import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs, refreshFilterRange } from '../index';
-import { applySort, completeAction, focus, FilterInfoArgs, getUpdateUsingRaf, isDiscontinuousRange, isImported } from '../index';
-import { sortComplete, beforeSort, getFormattedCellObject, sortImport, workbookFormulaOperation } from '../../workbook/common/event';
+import { applySort, completeAction, focus, FilterInfoArgs, getUpdateUsingRaf, isDiscontinuousRange } from '../index';
+import { sortComplete, beforeSort, getFormattedCellObject, sortImport, workbookFormulaOperation, isImported } from '../../workbook/index';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange, SortCollectionModel, getSheet, getSheetIndex } from '../../workbook/index';
 import { getColumnHeaderText, CellModel, getRangeAddress, initiateSort, beginAction, NumberFormatArgs } from '../../workbook/index';
 import { SortEventArgs, BeforeSortEventArgs, SortOptions, applyCF, ApplyCFArgs, getRangeIndexes } from '../../workbook/common/index';

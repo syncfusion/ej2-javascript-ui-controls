@@ -13,7 +13,7 @@ import { ChartShape } from '../utils/enum';
 import { VisibleRangeModel } from '../../common/model/interface';
 
 /**
- * `ScatterSeries` module is used to render the scatter series.
+ * The `ScatterSeries` module is used to render the scatter series.
  */
 
 export class ScatterSeries {
@@ -26,6 +26,7 @@ export class ScatterSeries {
      * @param {Axis} yAxis - The y-axis of the chart.
      * @param {boolean} isInverted - Specifies whether the chart is inverted.
      * @returns {void}
+     * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
         // Scatter series DataLabel is not rendered after selecting StackingColumn
@@ -51,7 +52,7 @@ export class ScatterSeries {
             argsData = {
                 cancel: false, name: pointRender, series: series, point: point,
                 fill: series.setPointColor(point, series.interior),
-                border: series.setBorderColor(point, scatterBorder),
+                border: series.setBorderColor(point, { width: scatterBorder.width, color: scatterBorder.color }),
                 height: series.marker.height, width: series.marker.width, shape: series.marker.shape
             };
             series.chart.trigger(pointRender, argsData);
@@ -78,11 +79,8 @@ export class ScatterSeries {
             this.renderPoint(series, series.points[point[i as number]], isInverted, getCoordinate, scatterBorder, visiblePoints);
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -97,6 +95,7 @@ export class ScatterSeries {
      *
      * @param {Series} series - The series for which complex properties need to be enabled.
      * @returns {Points[]} - Returns the updated points array.
+     * @private
      */
     public enableComplexProperty(series: Series): Points[] {
         const tempPoints2: Points[] = [];
@@ -157,6 +156,10 @@ export class ScatterSeries {
         if (chart.redraw && getElement(shapeOption.id)) {
             circlePath = argsData.shape === 'Circle' ? 'c' : '';
             previousPath = getElement(shapeOption.id).getAttribute('d');
+            const scatterElement: Element = getElement(shapeOption.id);
+            startLocation = {
+                x: +scatterElement.getAttribute(circlePath + 'x'), y: +scatterElement.getAttribute(circlePath + 'y')
+            };
         }
         const element: Element = drawSymbol(
             point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height),
@@ -183,6 +186,7 @@ export class ScatterSeries {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         const duration: number = series.animation.duration;
@@ -216,6 +220,7 @@ export class ScatterSeries {
      * To destroy the scatter.
      *
      * @returns {void}
+     * @private
      */
     public destroy(): void {
         /**

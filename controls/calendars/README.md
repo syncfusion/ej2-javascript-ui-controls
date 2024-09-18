@@ -14,7 +14,7 @@ The [JavaScript Calendar](https://www.syncfusion.com/javascript-ui-controls/js-c
 
 <p align="center">
   <a href="https://ej2.syncfusion.com/documentation/calendar/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm">Getting Started</a> .
-  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm#/material/calendar/default.html">Online demos</a> .
+  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm#/fluent2/calendar/default.html">Online demos</a> .
   <a href="https://www.syncfusion.com/javascript-ui-controls/js-calendar?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm">Learn more</a>
 </p>
 
@@ -24,12 +24,12 @@ The [JavaScript Calendar](https://www.syncfusion.com/javascript-ui-controls/js-c
 
 #### Key features
 
-* [Date range](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/material/calendar/date-range.html) - Restricts the range of dates that can be selected by using the `min` and `max` properties.
-* [Customization](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/material/calendar/special-dates.html) - Allows complete control over the appearance of the calendar component.
+* [Date range](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/fluent2/calendar/date-range.html) - Restricts the range of dates that can be selected by using the `min` and `max` properties.
+* [Customization](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/fluent2/calendar/special-dates.html) - Allows complete control over the appearance of the calendar component.
 * [Month or year selection](https://ej2.syncfusion.com/documentation/calendar/calendar-views?lang=typescript#calendar-views) - Provides a flexible option to select only a month or year as the date value.
 * [First day of week](https://ej2.syncfusion.com/documentation/calendar/how-to.html?lang=typescript#change-the-first-day-of-the-week) - Changes the first day of all weeks in every month.
 * [Week number](https://ej2.syncfusion.com/documentation/calendar/how-to/render-the-calendar-with-week-numbers?lang=typescript#render-the-calendar-with-week-numbers) - Displays the week number of the selected date in the calendar by enabling the week number option.
-* [Disabled dates](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/material/calendar/disabled.html) - Disables any date to prevent the user from selecting that date.
+* [Disabled dates](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/fluent2/calendar/disabled.html) - Disables any date to prevent the user from selecting that date.
 * [Start and depth view](https://ej2.syncfusion.com/documentation/calendar/calendar-views?lang=typescript#view-restriction) - Calendar has `month`, `year`, and `decade` views that provide flexibility to select dates.
 * [Highlight weekends](https://ej2.syncfusion.com/documentation/calendar/customization?lang=typescript#highlight-weekends) - The calendar supports to highlighting every weekend in a month.
 * [Globalization](https://ej2.syncfusion.com/documentation/calendar/globalization?lang=typescript#calendar) - Supports globalization (internationalization and localization) to translate the names of months, days, and the today button text to any supported language.
@@ -40,7 +40,7 @@ The [JavaScript DatePicker](https://www.syncfusion.com/javascript-ui-controls/js
 
 <p align="center">
   <a href="https://ej2.syncfusion.com/documentation/datepicker/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm">Getting Started</a> .
-  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm#/material/datepicker/default.html">Online demos</a> .
+  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm#/fluent2/datepicker/default.html">Online demos</a> .
   <a href="https://www.syncfusion.com/javascript-ui-controls/js-datepicker?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm">Learn more</a>
 </p>
 
@@ -51,9 +51,9 @@ The [JavaScript DatePicker](https://www.syncfusion.com/javascript-ui-controls/js
 #### Key features
 
 * [Placeholders](https://ej2.syncfusion.com/documentation/datepicker/how-to/set-the-placeholder/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendars-npm) - Placeholder is a hint text that is displayed in the DatePicker; it is used to indicate the format of the date that the user should enter, such as mm/dd/yyyy or dd/mm/yyyy.
-* [Mask date input](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendars-npm/#/material/datepicker/input-mask.html) - The mask date input restricts the user from typing unwanted characters in the text input, allowing only eligible date format to be typed.
-* [Disabled date](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendars-npm/#/material/datepicker/disabled.html) - To disable a specific date in the picker calendar and restrict it from being set or selected in the DatePicker.
-* [Date format](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=datepicker#/material/datepicker/date-format.html) - The DatePicker control’s input value can be custom formatted apart from the default culture’s specific date format.
+* [Mask date input](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendars-npm/#/fluent2/datepicker/input-mask.html) - The mask date input restricts the user from typing unwanted characters in the text input, allowing only eligible date format to be typed.
+* [Disabled date](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendars-npm/#/fluent2/datepicker/disabled.html) - To disable a specific date in the picker calendar and restrict it from being set or selected in the DatePicker.
+* [Date format](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=datepicker#/fluent2/datepicker/date-format.html) - The DatePicker control’s input value can be custom formatted apart from the default culture’s specific date format.
 * [Incomplete date validation](https://ej2.syncfusion.com/documentation/datepicker/strict-mode?utm_source=npm&utm_campaign=datepicker) - The strictMode is an act that allows entry only of valid dates within the specified min or max range in a text box.
 * [Globalization](https://ej2.syncfusion.com/documentation/calendar/globalization?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendars-npm/#calendar) - Support globalization (also known as internationalization and localization) to allow you to translate the names of months, days, and other text elements in the calendar to any supported language. This can be useful in cases where you want to display the calendar in a language other than the default language.
 
@@ -63,7 +63,7 @@ The [JavaScript TimePicker](https://www.syncfusion.com/javascript-ui-controls/js
 
 <p align="center">
   <a href="https://ej2.syncfusion.com/documentation/timepicker/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm">Getting Started</a> .
-  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm#/material/timepicker/default.html">Online demos</a> .
+  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm#/fluent2/timepicker/default.html">Online demos</a> .
   <a href="https://www.syncfusion.com/javascript-ui-controls/js-timepicker?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm">Learn more</a>
 </p>
 
@@ -73,14 +73,14 @@ The [JavaScript TimePicker](https://www.syncfusion.com/javascript-ui-controls/js
 
 #### Key features
 
-* [Time range](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/material/timepicker/time-range.html) - Restricts the entry or selection of time values within a specific range of time by using `min` and `max` properties.
-* [Time format](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/material/timepicker/time-format.html) - Apart from the default culture specific time format, the time picker control’s input value can also be custom formatted.
+* [Time range](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/fluent2/timepicker/time-range.html) - Restricts the entry or selection of time values within a specific range of time by using `min` and `max` properties.
+* [Time format](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/fluent2/timepicker/time-format.html) - Apart from the default culture specific time format, the time picker control’s input value can also be custom formatted.
 * [Strict mode](https://ej2.syncfusion.com/documentation/timepicker/strict-mode?lang=typescript#timepicker) - The strictMode is an act that allows entry of only valid time values within the specified min and max range in a text box.
-* [Disabled time](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/material/timepicker/list-formatting.html) - Any number of time values can be disabled in the popup list items to prevent selection of those times.
-* [Time intervals](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/material/timepicker/list-formatting.html) - Allows populating the time list with intervals between the times in the popup list to enable selection of proper time value.
+* [Disabled time](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/fluent2/timepicker/list-formatting.html) - Any number of time values can be disabled in the popup list items to prevent selection of those times.
+* [Time intervals](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/fluent2/timepicker/list-formatting.html) - Allows populating the time list with intervals between the times in the popup list to enable selection of proper time value.
 * [Customization](https://ej2.syncfusion.com/documentation/timepicker/how-to/css-customization?lang=typescript#css-customization) - The appearance of the time picker can be customized completely.
-* [Time list with duration](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/material/timepicker/list-formatting.html) - Supports customization of the control’s popup list items with time duration.
-* [Mask time input](https://ej2.syncfusion.com/demos/#/bootstrap5/timepicker/input-mask.html) - The mask time input restricts the user from typing unwanted characters in the text input, allowing only eligible time format to be typed.
+* [Time list with duration](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/fluent2/timepicker/list-formatting.html) - Supports customization of the control’s popup list items with time duration.
+* [Mask time input](https://ej2.syncfusion.com/demos/#/fluent2/timepicker/input-mask.html) - The mask time input restricts the user from typing unwanted characters in the text input, allowing only eligible time format to be typed.
 * [Globalization](https://ej2.syncfusion.com/documentation/timepicker/globalization?lang=typescript#timepicker) - Supports globalization (internationalization and localization) to update time popup list values to match any specified culture.
 
 ### JavaScript DateTimePicker
@@ -89,7 +89,7 @@ The [JavaScript DateTimePicker](https://www.syncfusion.com/javascript-ui-control
 
 <p align="center">
   <a href="https://ej2.syncfusion.com/documentation/datetimepicker/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm">Getting Started</a> .
-  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm#/material/datetimepicker/default.html">Online demos</a> .
+  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm#/fluent2/datetimepicker/default.html">Online demos</a> .
   <a href="https://www.syncfusion.com/javascript-ui-controls/js-datetime-picker?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm">Learn more</a>
 </p>
 
@@ -99,9 +99,9 @@ The [JavaScript DateTimePicker](https://www.syncfusion.com/javascript-ui-control
 
 #### Key features
 
-* [Date time range](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=datetimepicker#/material/datetimepicker/date-time-range.html) - Restricts the entry or selection of values within a specific range of dates and times by using `min` and `max` properties.
-* [Date time format](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=datetimepicker#/material/datetimepicker/date-time-format.html) - The control’s input value can be custom formatted apart from the default culture’s specific date time format.
-* [Mask date time input](https://ej2.syncfusion.com/demos/#/bootstrap5/datetimepicker/input-mask.html) - The mask date time input restricts the user from typing unwanted characters in the text input, allowing only eligible date and time format to be typed.
+* [Date time range](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=datetimepicker#/fluent2/datetimepicker/date-time-range.html) - Restricts the entry or selection of values within a specific range of dates and times by using `min` and `max` properties.
+* [Date time format](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=datetimepicker#/fluent2/datetimepicker/date-time-format.html) - The control’s input value can be custom formatted apart from the default culture’s specific date time format.
+* [Mask date time input](https://ej2.syncfusion.com/demos/#/fluent2/datetimepicker/input-mask.html) - The mask date time input restricts the user from typing unwanted characters in the text input, allowing only eligible date and time format to be typed.
 
 ### JavaScript DateRangePicker
 
@@ -109,7 +109,7 @@ The [JavaScript DateRangePicker](https://www.syncfusion.com/javascript-ui-contro
 
 <p align="center">
   <a href="https://ej2.syncfusion.com/documentation/daterangepicker/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm">Getting Started</a> .
-  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm#/material/daterangepicker/default.html">Online demos</a> .
+  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm#/fluent2/daterangepicker/default.html">Online demos</a> .
   <a href="https://www.syncfusion.com/javascript-ui-controls/js-daterangepicker?utm_source=npm&utm_medium=listing&utm_campaign=javascript-calendar-npm">Learn more</a>
 </p>
 
@@ -119,13 +119,13 @@ The [JavaScript DateRangePicker](https://www.syncfusion.com/javascript-ui-contro
 
 #### Key features
 
-* [Preset ranges](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/material/daterangepicker/presets.html) - Defines the preset ranges to select the frequently used date range by the end users.
-* [Range restriction](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/material/daterangepicker/date-range.html) - This control restricts the entry or selection of values within a specific range of date by defining the min and max properties.
-* [Limit the selection range](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/material/daterangepicker/day-span.html) - Directs the end user to select only the date range with specific minimum and maximum number of days’ count by setting the minDays and maxDays options.
+* [Preset ranges](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/fluent2/daterangepicker/presets.html) - Defines the preset ranges to select the frequently used date range by the end users.
+* [Range restriction](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/fluent2/daterangepicker/date-range.html) - This control restricts the entry or selection of values within a specific range of date by defining the min and max properties.
+* [Limit the selection range](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/fluent2/daterangepicker/day-span.html) - Directs the end user to select only the date range with specific minimum and maximum number of days’ count by setting the minDays and maxDays options.
 * [First day of week](https://ej2.syncfusion.com/documentation/daterangepicker/customization?lang=typescript#first-day-of-week) - Changes the first day of weeks in every month.
 * [Strict mode](https://ej2.syncfusion.com/documentation/daterangepicker/range-restriction?lang=typescript#strict-mode) - The strictMode is an act that allows entry only of a valid date within the specified min and max range in a textbox.
 * [Customization](https://ej2.syncfusion.com/documentation/daterangepicker/customization?lang=typescript#customization) - The appearance of the component can be customized completely.
-* [Format](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/material/daterangepicker/date-format.html) - The control’s input value can be custom formatted apart from the default culture’s specific date range format.
+* [Format](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/fluent2/daterangepicker/date-format.html) - The control’s input value can be custom formatted apart from the default culture’s specific date range format.
 * [Globalization](https://ej2.syncfusion.com/documentation/daterangepicker/globalization?lang=typescript#globalization) - Supports globalization (internationalization and localization) to translate the names of months, days, and button text to any supported language.
 
 <p align="center">
@@ -177,4 +177,4 @@ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-contr
 
 See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license) for more info.
 
-&copy; Copyright 2022 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+&copy; Copyright 2024 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

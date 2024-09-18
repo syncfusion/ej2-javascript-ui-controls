@@ -285,7 +285,14 @@ export class Magnification {
             this.isFitToPageMode = true;
             const pageLeft: number = 10;
             const scaleX: number = ((viewerWidth - this.scrollWidth - pageLeft) / this.pdfViewerBase.highestWidth);
-            let scaleY: number = (viewerHeight / this.pdfViewerBase.highestHeight);
+            let scaleY: number = 0;
+            if (this.pdfViewerBase.pageSize && this.pdfViewerBase.pageSize.length === 1 &&
+                !isNullOrUndefined(this.pdfViewerBase.pageSize[0].top) && !this.isPinchZoomed) {
+                scaleY = (viewerHeight - this.pdfViewerBase.pageSize[0].top) / this.pdfViewerBase.highestHeight;
+            }
+            else {
+                scaleY = (viewerHeight / this.pdfViewerBase.highestHeight);
+            }
             if (scaleY > scaleX) {
                 scaleY = scaleX;
                 this.isFitToPageMode = false;

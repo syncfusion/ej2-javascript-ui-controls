@@ -171,14 +171,20 @@ export class ProgressTooltip {
 
     /**
      * Function to pass arguments into svg tooltip.
+     *
+     * @param {ProgressBar} chart - The progress bar chart for which the tooltip is being created.
+     * @param {boolean} isFirst - A flag indicating whether this is the first tooltip.
+     * @param {ProgressLocation} location - The location where the tooltip should be displayed.
+     * @param {ProgressLocation} bounds - The bounds within which the tooltip should be confined.
+     * @returns {void}
+     * @private
      */
-
-    private createTooltip(
+    public createTooltip(
         chart: ProgressBar, isFirst: boolean, location: ProgressLocation, bounds: ProgressLocation): void {
         if (isFirst) {
             this.svgTooltip = new SVGTooltip(
                 {
-                    opacity: this.control.tooltip.textStyle.opacity ? this.control.tooltip.textStyle.opacity : ((this.control.theme === 'Material3' || this.control.theme === 'Material3Dark') ? 1 : 0.75),
+                    opacity: this.control.tooltip.textStyle.opacity ? this.control.tooltip.textStyle.opacity : ((this.control.theme === 'Material3' || this.control.theme === 'Material3Dark' || this.control.theme.indexOf('Bootstrap5') > -1) ? 1 : 0.75),
                     header: '',
                     content: this.text,
                     fill: this.control.tooltip.fill,

@@ -5,13 +5,26 @@ import { getElement } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { RangeIntervalType } from '../utils/enum';
 import { RangeNavigator, RangeSlider } from '../../range-navigator/index';
-import { PeriodsModel } from '../model/base-model';
-import { ISelectorRenderArgs, IPeriodSelectorControl } from '../../common/model/interface';
-import { IRangeSelectorRenderEventArgs } from '../../chart/model/chart-interface';
+import { PeriodsModel } from '../../common/model/base-model';
+import { IPeriodSelectorControl } from '../../common/model/interface';
+import { IRangeSelectorRenderEventArgs } from '../../range-navigator/model/range-navigator-interface';
 import { StockChart } from '../../stock-chart/stock-chart';
 
+/** @private */
+export interface ISelectorRenderArgs {
+    /** Defines the thumb size of the slider. */
+    thumbSize: number;
+    /** Defines the selector appending element. */
+    element: HTMLElement;
+    /** Defines the selector width. */
+    width: number;
+    /** Defines the selector height. */
+    height: number;
+}
 /**
  * Configures the period selector class.
+ *
+ * @private
  */
 export class PeriodSelector {
 

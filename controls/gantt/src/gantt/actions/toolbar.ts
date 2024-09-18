@@ -429,7 +429,7 @@ export class Toolbar {
         const edit: EditSettingsModel = gObj.editSettings;
         const gID: string = this.id;
         let ind: number = gObj.selectedRowIndex;
-        if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+        if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
             for (let i: number = 0; i < gObj.updatedRecords.length; i++) {
                 if (gObj.updatedRecords[i as number].index === ind) {
                     ind = i;
@@ -443,7 +443,7 @@ export class Toolbar {
             if (gObj.selectionModule.getSelectedRecords().length === 1 || gObj.selectionModule.getSelectedRowCellIndexes().length === 1) {
                 isSelected = true;
             }
-        }      
+        }
         if (gObj.selectionModule && gObj.selectionSettings.type === 'Multiple' && gObj.selectionModule.selectedRowIndexes.length > 1) {
             isSelected = false;
         }
@@ -502,11 +502,11 @@ export class Toolbar {
                 if (isPersist) {
                     isDeleteSelected = false;
                 }
-                let selectedRecords: IGanttData[] = gObj.selectionModule.getSelectedRecords();
+                const selectedRecords: IGanttData[] = gObj.selectionModule.getSelectedRecords();
                 const selectedRecordsCount: number = selectedRecords.length;
                 if (gObj.selectionSettings.persistSelection && selectedRecordsCount > 1) {
-                    for (var i = 0; i < selectedRecordsCount; i++) {
-                        var index = gObj.currentViewData.indexOf(selectedRecords[i as number]);
+                    for (let i: number = 0; i < selectedRecordsCount; i++) {
+                        const index : number = gObj.currentViewData.indexOf(selectedRecords[i as number]);
                         if (index > -1) {
                             isDeleteSelected = true;
                             break;
@@ -516,8 +516,11 @@ export class Toolbar {
                     }
                 }
             }
-            edit.allowDeleting && hasData && isDeleteSelected && !touchEdit ?
-                enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
+            if (edit.allowDeleting && hasData && isDeleteSelected && !touchEdit) {
+                enableItems.push(gID + '_delete');
+            } else {
+                disableItems.push(gID + '_delete');
+            }
             if (gObj.editSettings.mode === 'Auto' && !isNullOrUndefined(gObj.editModule.cellEditModule)
                 && gObj.editModule.cellEditModule.isCellEdit) {
                 // New initialization for enableItems and disableItems during isCellEdit
@@ -600,7 +603,9 @@ export class Toolbar {
      */
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }
-        this.toolbar.off('render-react-toolbar-template', this.addReactToolbarPortals);
+        if (this.toolbar) {
+            this.toolbar.off('render-react-toolbar-template', this.addReactToolbarPortals);
+        }
         this.toolbar.destroy();
         if (this.parent.filterModule) {
             this.unWireEvent();

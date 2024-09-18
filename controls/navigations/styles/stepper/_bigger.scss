@@ -1,0 +1,53 @@
+@mixin stepper-styles($step-width, $icon-size, $text-size, $optional-size) {
+  &.e-step-type-indicator .e-step-container:not(.e-step-item.e-step-label.e-step-text) {
+    .e-icons.e-step-indicator {
+      font-size: $step-width;
+    }
+    &.e-step-notstarted .e-icons.e-step-indicator {
+      width: $step-width;
+      height: $step-width;
+    }
+  }
+
+  .e-step-container {
+    .e-step,
+    .e-indicator {
+      min-width: $step-width;
+      min-height: $step-width;
+    }
+
+    .e-indicator {
+      font-size: $icon-size;
+    }
+
+    .e-step-text-container,
+    .e-step-label-container {
+      font-size: $text-size;
+    }
+
+    .e-step-content {
+      font-size: $icon-size;
+    }
+
+    .e-step-label-optional {
+      font-size: $optional-size;
+    }
+  }
+  &.e-vertical .e-step-label-container.e-label-after .e-step-label-optional {
+    font-size: $optional-size;
+  }
+}
+
+@include export-module('stepper-bigger') {
+  .e-bigger.e-stepper,
+  .e-bigger .e-stepper {
+    @include stepper-styles($stepper-bigger-step-width, $stepper-bigger-icon-size, $stepper-bigger-text-size, $stepper-bigger-optional-size);
+  }
+
+  .e-bigger.e-small.e-stepper,
+  .e-bigger.e-small .e-stepper,
+  .e-bigger .e-small.e-stepper,
+  .e-small .e-bigger.e-stepper {
+    @include stepper-styles($stepper-bigger-small-step-width, $stepper-bigger-small-icon-size, $stepper-bigger-small-text-size, $stepper-bigger-small-optional-size);
+  }
+}

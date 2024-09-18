@@ -19,7 +19,13 @@
     background-color: lighten($treeview-item-active-bg, 5%);
   }
   @else {
-    background-color: $treeview-item-active-hover-bg;
+    @if ($skin-name == 'bootstrap5.3') {
+      background-color: $treeview-item-active-bg;
+    }
+    
+    @else {
+      background-color: $treeview-item-active-hover-bg;
+    }
   }
   border-color: $treeview-item-active-hover-border-color;
   @if $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
@@ -59,38 +65,6 @@
 }
 
 @include export-module('treeview-theme') {
-  .e-bigger .e-treeview,
-  .e-treeview.e-bigger {
-    .e-list-text {
-      font-size: $treeview-big-font-size;
-      @if $skin-name == 'bootstrap4' {
-        color: $treeview-big-text-color;
-      }
-    }
-
-    .e-icon-collapsible,
-    .e-icon-expandable {
-      &::before {
-        font-size: $treeview-big-icon-font-size;
-      }
-    }
-
-    &.e-drag-item {
-      .e-icon-collapsible,
-      .e-icon-expandable {
-        @if $skin-name == 'bootstrap4' {
-          padding: $treeview-big-drag-icon-padding;
-        }
-      }
-
-      .e-list-text {
-        @if $skin-name == 'bootstrap4' {
-          padding: $treeview-big-drag-text-padding;
-        }
-      }
-    }
-  }
-
   .e-treeview {
     -webkit-tap-highlight-color: transparent;
 
@@ -225,7 +199,7 @@
         > .e-text-content,
         > .e-fullrow {
           color: $treeview-text-disable-color;
-          @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
             .e-list-text {
               color: $treeview-text-disable-color;
             }
@@ -253,6 +227,9 @@
         background: $treeview-drag-line-color;
         @if $skin-name == 'bootstrap4' {
           border: 1px;
+        }
+        @if ($skin-name == 'fluent2') {
+          border: 1px solid $treeview-sibling-border-color;
         }
       }
     }

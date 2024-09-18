@@ -758,7 +758,7 @@ describe('Linear gauge control', () => {
         it('Major tick Bootstrap5 theme', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_MajorTicksLine_0');
-                expect(svg.getAttribute('fill')).toBe('#9CA3AF');
+                expect(svg.getAttribute('fill')).toBe('#CED4DA');
             };
             gauge.theme = 'Bootstrap5'
             gauge.refresh();
@@ -771,5 +771,21 @@ describe('Linear gauge control', () => {
             gauge.theme = 'Bootstrap5Dark'
             gauge.refresh();
         }); 
+        it('Major tick Bootstrap5 theme', (): void => {
+            gauge.loaded = (args: ILoadEventArgs): void => {
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#CED4DA');
+            };
+            gauge.theme = 'Bootstrap5';
+            gauge.refresh();
+        });
+        it('Major tick Bootstrap5Dark theme', (): void => {
+            gauge.loaded = (args: ILoadEventArgs): void => {
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#6C757D');
+            };
+            gauge.theme = 'Bootstrap5Dark';
+            gauge.refresh();
+        });
     });
     });

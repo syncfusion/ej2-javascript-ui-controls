@@ -4,7 +4,7 @@ import { Rect } from '@syncfusion/ej2-svg-base';
 import { Series, Points } from '../series/chart-series';
 
 /**
- * To get the data on mouse move.
+ * The `ChartData` class is used to retrieve data on mouse move events in a chart.
  *
  * @private
  */
@@ -215,6 +215,7 @@ export class ChartData {
      * @param {number} value - The value to which the closest data point is sought.
      * @param {number[]} [xvalues] - The x-values of the data points.
      * @returns {number} - The index of the closest data point.
+     * @private
      */
     public getClosest(series: Series, value: number, xvalues?: number[]): number {
         let closest: number; let data: number;
@@ -233,7 +234,7 @@ export class ChartData {
                 if (visibleSeries.xMax <= rightSideNearest && visibleSeries.xMax > series.xMax) {
                     rightSideNearest = visibleSeries.xMax - 0.1;
                 }
-                if (visibleSeries.points.length > 1) {
+                if (visibleSeries.visible && visibleSeries.points.length > 1) {
                     if (visibleSeries.xMax >= leftSideNearest && visibleSeries.xMax < series.xMin) {
                         leftSideNearest = visibleSeries.xMax + 0.1;
                     }
@@ -314,6 +315,7 @@ export class ChartData {
      *
      * @param {Series[]} visibleSeries - The array of visible series.
      * @returns {number[]} - The merged array of x-values.
+     * @private
      */
     public mergeXvalues(visibleSeries: Series[]): number[] {
         if (visibleSeries.length && (!this.commonXvalues.length || (this.commonXvalues.length !== visibleSeries[0].xData.length))) {

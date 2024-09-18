@@ -102,7 +102,7 @@ export class VirtualScroll {
     public setItemSize(): void {
         if (this.isHorizontalScroll) {
             this.itemSize = util.getElementWidthFromClass(this.parent.activeView.element, cls.WORK_CELLS_CLASS,
-                this.parent.uiStateValues.isTransformed) || this.itemSize;
+                                                          this.parent.uiStateValues.isTransformed) || this.itemSize;
         } else {
             this.itemSize = this.parent.getElementHeightFromClass(this.parent.activeView.element, cls.WORK_CELLS_CLASS) || this.itemSize;
         }
@@ -128,6 +128,7 @@ export class VirtualScroll {
             firstTDIndex = (endIndex > this.parent.resourceBase.expandedResources.length) ?
                 (this.parent.resourceBase.expandedResources.length - this.renderedLength) : firstTDIndex;
             firstTDIndex = firstTDIndex < 0 ? 0 : firstTDIndex;
+            this.existingDataCollection = this.parent.resourceBase.renderedResources;
             this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources.slice(firstTDIndex, endIndex);
             if (this.parent.resourceBase.renderedResources.length > 0) {
                 this.updateContent(resWrap, conWrap, eventWrap, this.parent.resourceBase.renderedResources);
@@ -177,6 +178,7 @@ export class VirtualScroll {
             const scrollHeight: number = this.parent.rowAutoHeight ?
                 (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
             let resCollection: TdData[] = [];
+            this.existingDataCollection = this.parent.resourceBase.renderedResources;
             if ((conWrap.scrollTop) - this.translateY < 0) {
                 resCollection = this.upScroll(conWrap, firstTDIndex);
             } else if (conWrap.scrollTop - this.translateY > scrollHeight) {
@@ -386,17 +388,46 @@ export class VirtualScroll {
             this.parent.element.focus();
         }
         for (let i: number = 0; i < renderedLength; i++) {
-            remove(resWrap.querySelector('tbody tr'));
-            remove(conWrap.querySelector('tbody tr'));
             remove(eventWrap.querySelector('div'));
         }
         this.parent.resourceBase.renderedResources = resCollection;
+        const currentGroupIndices: number[] = this.parent.activeView.getGroupIndices(resCollection);
+        const previousGroupIndices: number[] = this.parent.activeView.getGroupIndices(this.existingDataCollection);
+        const newGroupIndices: number[] = currentGroupIndices.filter((index: number) => previousGroupIndices.indexOf(index) < 0);
+        const resWrapRows: HTMLElement[] = Array.from(resWrap.querySelectorAll('tbody tr'));
+        const conWrapRows: HTMLElement[] = Array.from(conWrap.querySelectorAll('tbody tr'));
+        const resWrapBody: HTMLElement = resWrap.querySelector('tbody');
+        const conWrapBody: HTMLElement = conWrap.querySelector('tbody');
+        this.removeObsoleteRows(resWrapRows, currentGroupIndices);
+        this.removeObsoleteRows(conWrapRows, currentGroupIndices);
         const resourceRows: Element[] = this.parent.resourceBase.getContentRows(resCollection, true);
         const contentRows: Element[] = this.parent.activeView.getContentRows();
         const eventRows: Element[] = this.parent.activeView.getEventRows(resCollection.length);
-        append(resourceRows, resWrap.querySelector('tbody'));
-        append(contentRows, conWrap.querySelector('tbody'));
+        for (let i: number = 0; i < newGroupIndices.length; i++) {
+            const index: number = currentGroupIndices.indexOf(newGroupIndices[parseInt(i.toString(), 10)]);
+            if (index === 0) {
+                prepend([resourceRows[parseInt(i.toString(), 10)]], resWrapBody);
+                prepend([contentRows[parseInt(i.toString(), 10)]], conWrapBody);
+            } else if (resWrapBody && conWrapBody && resWrapBody.children[parseInt(index.toString(), 10)] &&
+                conWrapBody.children[parseInt(index.toString(), 10)]) {
+                resWrapBody.insertBefore(resourceRows[parseInt(i.toString(), 10)], resWrapBody.children[parseInt(index.toString(), 10)]);
+                conWrapBody.insertBefore(contentRows[parseInt(i.toString(), 10)], conWrapBody.children[parseInt(index.toString(), 10)]);
+            }
+            else {
+                append([resourceRows[parseInt(i.toString(), 10)]], resWrapBody);
+                append([contentRows[parseInt(i.toString(), 10)]], conWrapBody);
+            }
+        }
         append(eventRows, eventWrap);
+    }
+
+    private removeObsoleteRows(elements: HTMLElement[], currentGroupIndices: number[]): void {
+        elements.forEach((element: HTMLElement) => {
+            const groupIndex: number = parseInt(element.firstElementChild.getAttribute('data-group-index'), 10);
+            if (currentGroupIndices.indexOf(groupIndex) < 0) {
+                remove(element);
+            }
+        });
     }
 
     private updateHorizontalContent(conWrap: HTMLElement, resCollection: TdData[]): void {
@@ -456,7 +487,6 @@ export class VirtualScroll {
         for (let i: number = 0; i < tHead.length; i++) {
             remove(tHead[parseInt(i.toString(), 10)]);
         }
-
         thead.appendChild(this.parent.eventBase.createEventWrapper('', this.startIndex > 0 ? this.startIndex : 0));
         if (this.parent.activeViewOptions.timeScale.enable) {
             thead.appendChild(this.parent.eventBase.createEventWrapper('timeIndicator'));

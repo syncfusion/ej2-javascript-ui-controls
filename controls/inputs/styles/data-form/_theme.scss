@@ -19,8 +19,10 @@
   }
 
   #{&}.e-tooltip-wrap.e-popup.e-error-tooltip {
-    background-color: $form-tooltip-background-color;
-    border: $form-tooltip-background-color;
+    @if $skin-name != 'fluent2' {
+      background-color: $form-tooltip-background-color;
+      border: $form-tooltip-background-color;
+    }
 
     #{if(&, '&', '*')} .e-tip-content .validation-message {
       color: $form-tooltip-color;

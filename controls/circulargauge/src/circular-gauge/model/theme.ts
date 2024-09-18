@@ -7,14 +7,14 @@ import { GaugeTheme } from '../utils/enum';
 export namespace Theme {
     /** @private */
     export const axisLabelFont: IFontMapping = {
-        size: '12px',
+        size: null ,
         fontWeight: null,
         color: null,
         fontStyle: 'Normal',
         fontFamily: null
     };
     export const legendLabelFont: IFontMapping = {
-        size: '12px',
+        size: null,
         fontWeight: null,
         color: null,
         fontStyle: 'Normal',
@@ -36,14 +36,6 @@ export function getRangePalette(theme: string): string[] {
         palette = ['#10B981', '#22D3EE', '#2DD4BF', '#4ADE80', '#8B5CF6',
             '#E879F9', '#F472B6', '#F87171', '#F97316', '#FCD34D'];
         break;
-    case 'bootstrap5':
-        palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
-            '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
-        break;
-    case 'bootstrap5dark':
-        palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
-            '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
-        break;
     case 'fluent':
         palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
             '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
@@ -61,13 +53,18 @@ export function getRangePalette(theme: string): string[] {
             '#FF9E45', '#B3F32F', '#B93CE4', '#FC5664', '#9B55FF'];
         break;
     case 'fluent2':
-        palette = ['#6200EE', '#09AF74', '#0076E5', '#CB3587', '#E7910F', 
+        palette = ['#6200EE', '#09AF74', '#0076E5', '#CB3587', '#E7910F',
             '#0364DE', '#66CD15', '#F3A93C', '#107C10', '#C19C00'];
         break;
     case 'fluent2dark':
     case 'fluent2highcontrast':
-        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6', 
+        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
             '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
+        break;
+    case 'bootstrap5':
+    case 'bootstrap5dark':
+        palette = ['#6610F2', '#6f42C1', '#D63384', '#DC3545',
+            '#FD7E14', '#FFC107', '#198754', '#0DCAF0'];
         break;
     }
     return palette;
@@ -100,7 +97,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             capColor: '#9A9A9A',
             needleColor: '#9A9A9A',
             needleTailColor: '#9A9A9A',
-            fontSize: '15px',
+            fontSize: '12px',
+            titleFontSize: '15px',
             labelFontFamily: 'Segoe UI',
             fontFamily: 'Segoe UI',
             fontWeight: 'Normal',
@@ -123,7 +121,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             capColor: '#FFFFFF',
             needleColor: '#FFFFFF',
             needleTailColor: '#FFFFFF',
-            fontSize: '15px',
+            fontSize: '12px',
+            titleFontSize: '15px',
             labelFontFamily: 'Segoe UI',
             fontFamily: 'Segoe UI',
             fontWeight: 'Normal',
@@ -146,7 +145,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             needleColor: '#6C757D',
             needleTailColor: '#6C757D',
             fontFamily: 'HelveticaNeue-Medium',
-            fontSize: '16px',
+            fontSize: '12px',
+            titleFontSize: '16px',
             labelFontFamily: 'HelveticaNeue',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 0.9,
@@ -170,7 +170,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             needleColor: '#1F2937',
             needleTailColor: '#1F2937',
             fontFamily: 'Inter',
-            fontSize: '14px',
+            fontSize: '12px',
+            titleFontSize: '14px',
             labelFontFamily: 'Inter',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 0.9,
@@ -194,7 +195,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             needleColor: '#9CA3AF',
             needleTailColor: '#9CA3AF',
             fontFamily: 'Inter',
-            fontSize: '14px',
+            fontSize: '12px',
+            titleFontSize: '14px',
             labelFontFamily: 'Inter',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 0.9,
@@ -204,36 +206,37 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
         break;
     case 'bootstrap5':
         style = {
-            backgroundColor: 'rgba(255,255,255, 0.0)',
-            titleFontColor: '#343A40',
-            tooltipFillColor: '#212529',
-            tooltipFontColor: '#F9FAFB',
-            tooltipFontSize: '13px',
-            labelColor: '#495057',
-            lineColor: '#E5E7EB',
-            majorTickColor: '#9CA3AF',
-            minorTickColor: '#9CA3AF',
-            pointerColor: '#1F2937',
-            capColor: '#1F2937',
-            needleColor: '#1F2937',
-            needleTailColor: '#1F2937',
-            fontFamily: 'Helvetica Neue',
-            fontSize: '14px',
-            labelFontFamily: 'Helvetica Neue',
-            tooltipFillOpacity: 1,
-            tooltipTextOpacity: 1,
-            fontWeight: 'Normal',
-            titleFontWeight: '500'
+            backgroundColor: 'transparent',
+            titleFontColor: '#212529',
+            tooltipFillColor: '#000000',
+            tooltipFontColor: '#FFFFFF',
+            fontSize: '10px',
+            tooltipFontSize: '12px',
+            labelColor: '#212529',
+            lineColor: '#E9ECEF',
+            majorTickColor: '#CED4DA',
+            minorTickColor: '#CED4DA',
+            pointerColor: '#343A40',
+            capColor: '#343A40',
+            needleColor: '#343A40',
+            needleTailColor: '#343A40',
+            fontFamily: 'Segoe UI',
+            titleFontSize: '14px',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 0.9,
+            fontWeight: '400',
+            titleFontWeight: '400'
         };
         break;
     case 'bootstrap5dark':
         style = {
-            backgroundColor: 'rgba(255,255,255, 0.0)',
-            titleFontColor: '#E9ECEF',
-            tooltipFillColor: '#E9ECEF',
+            backgroundColor: 'transparent',
+            titleFontColor: '#DEE2E6',
+            tooltipFillColor: '#FFFFFF',
             tooltipFontColor: '#212529',
-            tooltipFontSize: '13px',
-            labelColor: '#CED4DA',
+            fontSize: '10px',
+            tooltipFontSize: '12px',
+            labelColor: '#DEE2E6',
             lineColor: '#343A40',
             majorTickColor: '#6C757D',
             minorTickColor: '#6C757D',
@@ -241,13 +244,12 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             capColor: '#ADB5BD',
             needleColor: '#ADB5BD',
             needleTailColor: '#ADB5BD',
-            fontFamily: 'Helvetica Neue',
-            fontSize: '14px',
-            labelFontFamily: 'Helvetica Neue',
-            tooltipFillOpacity: 1,
-            tooltipTextOpacity: 1,
-            fontWeight: 'Normal',
-            titleFontWeight: '500'
+            fontFamily: 'Segoe UI',
+            titleFontSize: '14px',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 0.9,
+            fontWeight: '400',
+            titleFontWeight: '400'
         };
         break;
     case 'fluent':
@@ -266,7 +268,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             needleColor: '#A19F9D',
             needleTailColor: '#A19F9D',
             fontFamily: 'Segoe UI',
-            fontSize: '14px',
+            fontSize: '12px',
+            titleFontSize: '14px',
             labelFontFamily: 'Segoe UI',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
@@ -290,7 +293,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             needleColor: '#797775',
             needleTailColor: '#797775',
             fontFamily: 'Segoe UI',
-            fontSize: '14px',
+            fontSize: '12px',
+            titleFontSize: '14px',
             labelFontFamily: 'Segoe UI',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
@@ -314,7 +318,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             needleColor: '#49454E',
             needleTailColor: '#49454E',
             fontFamily: 'Roboto',
-            fontSize: '16px',
+            fontSize: '12px',
+            titleFontSize: '16px',
             labelFontFamily: 'Roboto',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
@@ -338,7 +343,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             needleColor: '#CAC4D0',
             needleTailColor: '#CAC4D0',
             fontFamily: 'Roboto',
-            fontSize: '16px',
+            fontSize: '12px',
+            titleFontSize: '16px',
             labelFontFamily: 'Roboto',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
@@ -362,7 +368,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             needleColor: '#A19F9D',
             needleTailColor: '#A19F9D',
             fontFamily: 'Segoe UI',
-            fontSize: '14px',
+            fontSize: '12px',
+            titleFontSize: '14px',
             labelFontFamily: 'Segoe UI',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
@@ -386,7 +393,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             needleColor: '#8A8886',
             needleTailColor: '#8A8886',
             fontFamily: 'Segoe UI',
-            fontSize: '14px',
+            fontSize: '12px',
+            titleFontSize: '14px',
             labelFontFamily: 'Segoe UI',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
@@ -410,7 +418,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             needleColor: '#8A8886',
             needleTailColor: '#8A8886',
             fontFamily: 'Segoe UI',
-            fontSize: '14px',
+            fontSize: '12px',
+            titleFontSize: '14px',
             labelFontFamily: 'Segoe UI',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
@@ -437,7 +446,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             capColor: '#757575',
             needleColor: '#757575',
             needleTailColor: '#757575',
-            fontSize: '15px',
+            fontSize: '12px',
+            titleFontSize: '15px',
             labelFontFamily: 'Segoe UI',
             fontFamily: 'Segoe UI',
             fontWeight: 'Normal',

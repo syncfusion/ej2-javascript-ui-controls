@@ -2,7 +2,7 @@ import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { Spreadsheet } from '../../../src/spreadsheet/index';
 import { L10n } from '@syncfusion/ej2-base';
-import { getCell, ProtectSettingsModel, setRow } from "../../../src/index";
+import { getCell, ProtectSettingsModel, refreshCell, setRow } from "../../../src/index";
 
 describe('Auto fill ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -371,7 +371,7 @@ describe('Auto fill ->', () => {
             expect(helper.invoke('getCell', [4, 1]).textContent).toBe('1/1/1900');
             const spreadsheet: Spreadsheet = helper.getInstance();
             var format=spreadsheet.sheets[0].rows[4].cells[1].format;
-            expect(format).toBe('mm-dd-yyyy');
+            expect(format).toBe('m/d/yyyy');
             format=spreadsheet.sheets[0].rows[4].cells[0].format;
             expect(format).toBe(undefined);
             done();
@@ -1628,8 +1628,56 @@ describe('Auto fill ->', () => {
         });
     });
 
+    describe('Apply Autofill', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply fillseries Date format MMM/yy', function (done) {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const sheet: any = spreadsheet.getActiveSheet();
+            helper.invoke('selectRange', ['B3']);
+            helper.edit('B3', '5/31/2014');
+            helper.invoke('numberFormat', ['mmm-yy', 'B3']);
+            expect(sheet.rows[2].cells[1].format).toBe('mmm-yy');
+            helper.invoke('autoFill', ['C3', 'B3', 'Right', 'FillSeries']);
+            expect(sheet.rows[2].cells[2].format).toBe('mmm-yy');
+            done();
+        });
+        it('Auto fill using update action method', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const args = { action: 'autofill', eventArgs: { undoArgs: {} } };
+            helper.getInstance().updateAction(args);
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(0);
+                done();
+            });
+        });
+        it('Enabled Autofill-option, unprotect sheet when freeze pane is applied', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(8, 2)
+            setTimeout(() => {
+                helper.switchRibbonTab(4);
+                helper.click('#' + helper.id + '_protect');
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                    helper.click('.e-protect-dlg .e-primary');
+                    expect(spreadsheet.sheets[0].isProtected).toBeTruthy();
+                    expect(helper.getElementFromSpreadsheet('.e-autofill').classList.contains('e-hide')).toBeTruthy();
+                    helper.invoke('unprotectSheet', [0]);
+                    setTimeout(() => {
+                        expect(helper.getElementFromSpreadsheet('.e-autofill').classList.contains('e-hide')).toBeFalsy();
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
     describe('CR Issues ->', () => {
-        describe('EJ2-56558, EJ2-60197, EJ2-71594 ->', () => {
+        describe('EJ2-56558, EJ2-60197, EJ2-71594, EJ2-881113 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'E1' }] }, done);
             });
@@ -1889,6 +1937,23 @@ describe('Auto fill ->', () => {
                 helper.click('.e-dialog .e-primary');
                 done();
             });
+        });
+    });
+    describe('Apply Autofill to the ReadOnly cells', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply Autofill to the ReadOnly cells', function (done) {
+            const spreadsheet: Spreadsheet = helper.getInstance();  
+            spreadsheet.setRangeReadOnly(true,'B3:F3',0)
+            helper.invoke('selectRange', ['B3']);
+            helper.invoke('autoFill', ['F3', 'B3', 'Right', 'FillSeries']);
+            spreadsheet.notify(refreshCell, {rowIndex: 2, colIndex: 2})  
+            expect(spreadsheet.activeSheetIndex).toEqual(0);
+            done();
         });
     });
 });

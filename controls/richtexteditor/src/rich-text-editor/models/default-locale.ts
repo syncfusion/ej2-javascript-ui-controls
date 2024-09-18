@@ -3,6 +3,9 @@
  * Export default locale
  */
 
+import { SlashMenuItems } from "../base/enum";
+
+
 export let defaultLocale: { [key: string]: string } = {
     'alignments': 'Alignments',
     'justifyLeft': 'Align Left',
@@ -13,6 +16,9 @@ export let defaultLocale: { [key: string]: string } = {
     'fontSize': 'Font Size',
     'fontColor': 'Font Color',
     'backgroundColor': 'Background Color',
+    'importWord': 'Import from Word',
+    'exportWord': 'Export to Word',
+    'exportPdf': 'Export to PDF',
     'bold': 'Bold',
     'italic': 'Italic',
     'underline': 'Underline',
@@ -169,7 +175,7 @@ export let defaultLocale: { [key: string]: string } = {
     'fileManager': 'File Manager',
     'fileDialogHeader': 'File Browser',
     "formatsDropDownParagraph": 'Paragraph',
-    'formatsDropDownCode': 'Code',
+    'formatsDropDownCode': 'Preformatted',
     'formatsDropDownQuotation': 'Blockquote',
     'formatsDropDownHeading1': 'Heading 1',
     'formatsDropDownHeading2': 'Heading 2',
@@ -204,7 +210,38 @@ export let defaultLocale: { [key: string]: string } = {
     'unsupportedImage': 'Unsupported file format',
     'mergecells': 'Merge cells',
     'verticalsplit': 'Vertical split',
-    'horizontalsplit': 'Horizontal split'
+    'horizontalsplit': 'Horizontal split',
+    'inlinecode': 'Inline Code',
+    'slashMenuItemHeadingOneText': 'Heading 1',
+    'slashMenuItemHeadingOneDescription': 'Use this for a top level heading or title.',
+    'slashMenuItemHeadingTwoText': 'Heading 2',
+    'slashMenuItemHeadingTwoDescription': 'Use this for key sections.',
+    'slashMenuItemHeadingThreeText': 'Heading 3',
+    'slashMenuItemHeadingThreeDescription': 'Use this for sub sections and group headings.',
+    'slashMenuItemHeadingFourText': 'Heading 4',
+    'slashMenuItemHeadingFourDescription': 'Use this for the key points of the sub topics.',
+    'slashMenuItemParagraphText': 'Paragraph',
+    'slashMenuItemParagraphDescription': 'Writing with paragraphs.',
+    'slashMenuItemBlockquoteText': 'Blockquote',
+    'slashMenuItemBlockquoteDescription': 'Create a quote or citation.',
+    'slashMenuItemOrderedListText': 'Ordered List',
+    'slashMenuItemOrderedListDescription': 'Create an ordered list.',
+    'slashMenuItemUnorderedListText': 'Unordered List',
+    'slashMenuItemUnorderedListDescription': 'Create an unordered list.',
+    'slashMenuItemCodeText': 'CodeBlock',
+    'slashMenuItemCodeDescription': 'Create a preformatted code block.',
+    'slashMenuItemTableText': 'Table',
+    'slashMenuItemTableDescription': 'Insert a table.',
+    'slashMenuItemLinkText': 'Link',
+    'slashMenuItemLinkDescription': 'Insert a link.',
+    'slashMenuItemImageText': 'Image',
+    'slashMenuItemImageDescription': 'Insert an image.',
+    'slashMenuItemAudioText': 'Audio',
+    'slashMenuItemAudioDescription': 'Insert an audio.',
+    'slashMenuItemVideoText': 'Video',
+    'slashMenuItemVideoDescription': 'Insert a video.',
+    'slashMenuItemEmojiText': 'Emojipicker',
+    'slashMenuItemEmojiDescription': 'Use emojis to express ideas and emoticons.'
 };
 
 export let toolsLocale: { [key: string]: string } = {
@@ -217,6 +254,9 @@ export let toolsLocale: { [key: string]: string } = {
     'fontsize': 'fontSize',
     'fontcolor': 'fontColor',
     'backgroundcolor': 'backgroundColor',
+    'importword': 'importWord',
+    'exportword': 'exportWord',
+    'exportpdf': 'exportPdf',
     'bold': 'bold',
     'italic': 'italic',
     'underline': 'underline',
@@ -303,6 +343,7 @@ export let toolsLocale: { [key: string]: string } = {
     'emojiPickerNoResultFound': 'No results found',
     'emojiPickerTrySomethingElse': 'Try something else',
     'imageLinkAriaLabel': 'Open in new window',
+    'inlinecode': 'inlinecode'
 };
 
 export let fontNameLocale : { [ket: string]: string }[] = [
@@ -341,3 +382,20 @@ export let bulletFormatListLocale: { [ket: string]: string }[] = [
     { locale: 'bulletFormatListSquare', value: 'square' },
 ]; 
 
+export const slashMenuCommandsKey = new Map<SlashMenuItems, {text: string, description: string}>([
+    ['Heading 1', { text: 'slashMenuItemHeadingOneText', description: 'slashMenuItemHeadingOneDescription' }],
+    ['Heading 2', { text: 'slashMenuItemHeadingTwoText', description: 'slashMenuItemHeadingTwoDescription' }],
+    ['Heading 3', { text: 'slashMenuItemHeadingThreeText', description: 'slashMenuItemHeadingThreeDescription' }],
+    ['Heading 4', { text: 'slashMenuItemHeadingFourText', description: 'slashMenuItemHeadingFourDescription' }],
+    ['Paragraph', { text: 'slashMenuItemParagraphText', description: 'slashMenuItemParagraphDescription' }],
+    ['Blockquote', { text: 'slashMenuItemBlockquoteText', description: 'slashMenuItemBlockquoteDescription' }],
+    ['OrderedList', { text: 'slashMenuItemOrderedListText', description: 'slashMenuItemOrderedListDescription' }],
+    ['UnorderedList', { text: 'slashMenuItemUnorderedListText', description: 'slashMenuItemUnorderedListDescription' }],
+    ['CodeBlock', { text: 'slashMenuItemCodeText', description: 'slashMenuItemCodeDescription' }],
+    ['Table', { text: 'slashMenuItemTableText', description: 'slashMenuItemTableDescription' }],
+    ['Link', { text: 'slashMenuItemLinkText', description: 'slashMenuItemLinkDescription' }],
+    ['Image', { text: 'slashMenuItemImageText', description: 'slashMenuItemImageDescription' }],
+    ['Audio', { text: 'slashMenuItemAudioText', description: 'slashMenuItemAudioDescription' }],
+    ['Video', { text: 'slashMenuItemVideoText', description: 'slashMenuItemVideoDescription' }],
+    ['Emojipicker', { text: 'slashMenuItemEmojiText', description: 'slashMenuItemEmojiDescription' }]
+]);

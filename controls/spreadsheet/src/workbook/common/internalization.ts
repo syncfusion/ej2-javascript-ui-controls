@@ -1,6 +1,6 @@
-import { isNumber } from '../common/math';
+import { isNumber, LocaleNumericSettings } from '../common/index';
 import { CellModel } from '../base/index';
-import { isUndefined } from '@syncfusion/ej2-base';
+import { getNumericObject, isUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Check the value of the cell is number with thousand separator and currency symbol and returns the parsed value.
@@ -9,28 +9,35 @@ import { isUndefined } from '@syncfusion/ej2-base';
  * @param {string} locale - Specifies the locale.
  * @param {string} groupSep - Specifies the group separator.
  * @param {string} decimalSep - Specifies the decimal separator.
- * @param {string} currencySymbol - Specifies the currency Symbol.
+ * @param {string} currencySym - Specifies the currency Symbol.
  * @returns {Object} - returns the parsed value.
  * @hidden
  */
-export function checkIsNumberAndGetNumber(cell: CellModel, locale: string, groupSep: string, decimalSep: string,
-                                          currencySymbol?: string): { isNumber: boolean, value: string } {
+export function checkIsNumberAndGetNumber(
+    cell: CellModel, locale: string, groupSep?: string, decimalSep?: string, currencySym?: string
+): { isNumber: boolean, value: string } {
     let cellValue: string = cell.value;
     if (isNumber(cellValue)) {
         return { isNumber: true, value: cellValue };
     }
-    if (cellValue) {
-        if (currencySymbol && cellValue.includes(currencySymbol) && (cell.format.includes(currencySymbol) || cell.format.includes('$'))) {
-            cellValue = cellValue.replace(currencySymbol, '');
+    if (cellValue && typeof cellValue === 'string') {
+        if (currencySym && cellValue.includes(currencySym) && (cell.format.includes(currencySym) || cell.format.includes('$'))) {
+            cellValue = cellValue.replace(currencySym, '').trim();
         }
-        if (cellValue.includes(groupSep) && parseThousandSeparator(cellValue, locale, groupSep, decimalSep)) {
-            cellValue = cellValue.split(groupSep).join('');
+        if (groupSep && cellValue.includes(groupSep) && parseThousandSeparator(cellValue, locale, groupSep, decimalSep)) {
+            cellValue = cellValue.split(groupSep).join('').trim();
+        }
+        if (!decimalSep) {
+            decimalSep = (getNumericObject(locale) as LocaleNumericSettings).decimal;
         }
         if (decimalSep !== '.' && cellValue.includes(decimalSep)) {
-            cellValue = cellValue.replace(decimalSep, '.');
+            cellValue = cellValue.replace(decimalSep, '.').trim();
+        }
+        if (isNumber(cellValue)) {
+            return { isNumber: true, value: cellValue };
         }
     }
-    return { isNumber: isNumber(cellValue), value: cellValue };
+    return { isNumber: false, value: cellValue };
 }
 
 /**

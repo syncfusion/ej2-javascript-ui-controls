@@ -1,8 +1,8 @@
 @include export-module('diagram-theme') {
 
   .e-diagram {
-    background-color: $diagram-background-color;
     display: block;
+    background-color: $diagram-background-color;
   }
 
   .e-symbolpalette {
@@ -11,6 +11,9 @@
 
   .e-overview {
     display: block;
+  }
+  .overview-resizer{
+    fill: $diagram-overview-resizer-color;
   }
 
   .e-content-placeholder.e-diagram.e-placeholder-diagram {
@@ -51,8 +54,14 @@
   .e-diagram-bezier-handle.e-target.e-disabled {
     opacity: 1 !important;
   }
-
-  .e-diagram-bezier-control-handle,
+  .e-diagram-bezier-control-handle{
+    fill: $diagram-bezier-handle-color;
+    stroke: $diagram-resize-handle-stroke;
+    rx: 0px;
+    ry: 0px;
+  }
+  .e-diagram-ortho-segment-handle,
+  .e-diagram-straight-segment-handle,
   .e-diagram-bezier-segment-handle {
     fill: $diagram-bezier-handle-color;
     stroke: $diagram-resize-handle-stroke;
@@ -71,10 +80,8 @@
   .e-diagram-resize-handle {
     fill: $diagram-resize-handle-color;
     stroke: $diagram-endpoint-handle-color;
-
-    @if ($skin-name =='tailwind' or $skin-name =='tailwind-dark' or $skin-name =='bootstrap5' or $skin-name =='material' or $skin-name =='fabric-dark' or $skin-name =='fabric' or $skin-name =='highcontrast' or $skin-name =='bootstrap' or $skin-name =='bootstrap-dark' or $skin-name =='bootstrap4' or $skin-name =='FluentUI' or $skin-name =='material3') {
-      stroke: $diagram-endpoint-handle-color;
-    }
+    rx: 0;
+    ry: 0;
   }
 
   .e-diagram-helper {

@@ -301,6 +301,7 @@ export class Resize extends ActionBase {
         EventHandler.remove(document, Browser.touchEndEvent, this.resizeStop);
         clearInterval(this.actionObj.scrollInterval);
         this.actionObj.scrollInterval = null;
+        this.actionObj.action = null;
         this.removeCloneElementClasses();
         this.removeCloneElement();
         this.actionClass('removeClass');

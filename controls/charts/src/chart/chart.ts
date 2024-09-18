@@ -8,10 +8,9 @@ import { findClipRect, showTooltip, ImageOption, removeElement, appendChildEleme
 import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement, getTextAnchor } from '../common/utils/helper';
 import { appendClipElement, ChartLocation } from '../common/utils/helper';
 import { ChartModel, CrosshairSettingsModel, ZoomSettingsModel, RangeColorSettingModel } from './chart-model';
-import { MarginModel, BorderModel, ChartAreaModel, TooltipSettingsModel } from '../common/model/base-model';
+import { MarginModel, BorderModel, TooltipSettingsModel, IndexesModel, titleSettingsModel, ChartAreaModel } from '../common/model/base-model';
 import { getSeriesColor, getThemeColor } from '../common/model/theme';
-import { IndexesModel, titleSettingsModel } from '../common/model/base-model';
-import { Margin, Border, ChartArea, Indexes, TooltipSettings, titleSettings } from '../common/model/base';
+import { Margin, Border, TooltipSettings, Indexes, ChartArea, titleSettings } from '../common/model/base';
 import { AxisModel, RowModel, ColumnModel } from './axis/axis-model';
 import { Row, Column, Axis } from './axis/axis';
 import { Highlight } from './user-interaction/high-light';
@@ -113,22 +112,22 @@ import { IAfterExportEventArgs } from '../common/model/interface';
  */
 export class RangeColorSetting extends ChildProperty<RangeColorSetting> {
     /**
-     * Specify the start value of color mapping range.
+     * Specifies the start value of the color mapping range.
      */
     @Property()
     public start: number;
     /**
-     * Specify the end value of color mapping range.
+     * Specifies the end value of the color mapping range.
      */
     @Property()
     public end: number;
     /**
-     * Specify the fill colors of point those lies on the given range, if multiple colors mentioned, then we need to fill gradient.
+     * Specifies the fill colors for points that lie within the given range. If multiple colors are specified, a gradient will be applied.
      */
     @Property([])
     public colors: string[];
     /**
-     * Specify name for the range mapping item.
+     * Specifies the name or label for the range mapping item.
      */
     @Property('')
     public label: string;
@@ -136,11 +135,11 @@ export class RangeColorSetting extends ChildProperty<RangeColorSetting> {
 }
 
 /**
- * Configures the crosshair in the chart.
+ * Options to configure the crosshair on the chart, which displays lines that follow the mouse cursor and show the axis values of the data points.
  */
 export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
     /**
-     * If set to true, crosshair line becomes visible.
+     * If set to true, the crosshair line becomes visible.
      *
      * @default false
      */
@@ -148,7 +147,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
     public enable: boolean;
 
     /**
-     * DashArray for crosshair.
+     * Specifies the pattern of dashes and gaps used to stroke the crosshair line.
      *
      * @default ''
      */
@@ -156,17 +155,18 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
     public dashArray: string;
 
     /**
-     * Options to customize the crosshair line.
+     * The `line` property allows defining the appearance of the crosshair line, including its color and width.
      */
     @Complex<BorderModel>({ color: null, width: 1 }, Border)
     public line: BorderModel;
 
     /**
-     * Specifies the line type. Horizontal mode enables the horizontal line and Vertical mode enables the vertical line. They are,
-     * * None: Hides both vertical and horizontal crosshair lines.
-     * * Both: Shows both vertical and horizontal crosshair lines.
-     * * Vertical: Shows the vertical line.
-     * * Horizontal: Shows the horizontal line.
+     * Specifies the line type for the crosshair.
+     * The available modes are:
+     * * None: Both vertical and horizontal crosshair lines are hidden.
+     * * Both: Displays both the vertical and horizontal crosshair lines.
+     * * Vertical: Shows only the vertical crosshair line.
+     * * Horizontal: Shows only the horizontal crosshair line.
      *
      * @default Both
      */
@@ -174,7 +174,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
     public lineType: LineType;
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * The color of the vertical crosshair line accepts values in hex and rgba as valid CSS color strings.
      *
      * @default ''
      */
@@ -182,7 +182,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
     public verticalLineColor: string;
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * The color of the horizontal crosshair line accepts values in hex and rgba as valid CSS color strings.
      *
      * @default ''
      */
@@ -190,7 +190,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
     public horizontalLineColor: string;
 
     /**
-     * The opacity for background.
+     * Specifies the opacity level for the crosshair, which controls its transparency.
      *
      * @default 1
      */
@@ -203,7 +203,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
 export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
     /**
-     * If set to true, chart can be zoomed by a rectangular selecting region on the plot area.
+     * If set to true, the chart can be zoomed in by selecting a rectangular region on the plot area.
      *
      * @default false
      */
@@ -212,7 +212,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public enableSelectionZooming: boolean;
 
     /**
-     * If to true, chart can be pinched to zoom in / zoom out.
+     * If set to true, the chart can be pinched to zoom in and out.
      *
      * @default false
      */
@@ -221,7 +221,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public enablePinchZooming: boolean;
 
     /**
-     * If set to true, chart can be rendered with toolbar at initial load.
+     * If set to true, the chart is rendered with a toolbar on initial load.
      *
      * @default false
      */
@@ -230,7 +230,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public showToolbar: boolean;
 
     /**
-     * If set to true, chart can be zoomed by using mouse wheel.
+     * If set to true, the chart can be zoomed using the mouse wheel.
      *
      * @default false
      */
@@ -239,7 +239,8 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public enableMouseWheelZooming: boolean;
 
     /**
-     * If set to true, zooming will be performed on mouse up. It requires `enableSelectionZooming` to be true.
+     * If set to true, zooming will be performed on mouse up.
+     > Note that `enableDeferredZooming` requires `enableSelectionZooming` to be true.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -262,11 +263,12 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public enableDeferredZooming: boolean;
 
     /**
-     * Specifies whether to allow zooming vertically or horizontally or in both ways. They are,
-     * * x,y: Chart can be zoomed both vertically and horizontally.
-     * * x: Chart can be zoomed horizontally.
-     * * y: Chart can be zoomed  vertically.
-     *  It requires `enableSelectionZooming` to be true.
+     * Specifies whether to allow zooming vertically, horizontally, or in both ways.
+     * Available options are:
+     * * XY: Chart can be zoomed both vertically and horizontally.
+     * * X: Chart can be zoomed horizontally.
+     * * Y: Chart can be zoomed vertically.
+     > Note that `enableSelectionZooming` must be set to true for this feature to work.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -288,12 +290,12 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public mode: ZoomMode;
 
     /**
-     * Specifies the toolkit options for the zooming as follows:
-     * * Zoom
-     * * ZoomIn
-     * * ZoomOut
-     * * Pan
-     * * Reset
+     * Specifies the toolkit options for zooming as follows:
+     * * Zoom - Enables the zooming tool to select and zoom into a specific region of the chart.
+     * * ZoomIn - Provides a button to zoom in on the chart.
+     * * ZoomOut - Provides a button to zoom out from the chart.
+     * * Pan - Allows panning across the chart to explore different regions.
+     * * Reset - Resets the zoom level to the default view of the chart.
      *
      * @default '["Zoom", "ZoomIn", "ZoomOut", "Pan", "Reset"]'
      */
@@ -302,7 +304,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public toolbarItems: ToolbarItems[];
 
     /**
-     * Specifies whether chart needs to be panned by default.
+     * If set to true, the chart can be panned without requiring toolbar items. If set to false, panning is disabled, and the toolbar options must be used to pan the chart.
      *
      * @default false.
      */
@@ -311,7 +313,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public enablePan: boolean;
 
     /**
-     * Specifies whether axis needs to have scrollbar.
+     * Specifies whether the axis should have a scrollbar.
      *
      * @default false.
      */
@@ -319,7 +321,14 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     @Property(false)
     public enableScrollbar: boolean;
 
+    /**
+     * If set to true, the chart will animate when zooming.
+     *
+     * @default false.
+     */
 
+    @Property(false)
+    public enableAnimation: boolean;
 }
 
 /**
@@ -327,7 +336,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
  * ```html
  * <div id="chart"/>
  * <script>
- *   var chartObj = new Chart({ isResponsive : true });
+ *   var chartObj = new Chart({});
  *   chartObj.appendTo("#chart");
  * </script>
  * ```
@@ -356,11 +365,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public columnSeriesModule: ColumnSeries;
     /**
-     * `ParetoSeriesModule` is used to add pareto series in the chart.
+     * `paretoSeriesModule` is used to add pareto series to the chart.
      */
     public paretoSeriesModule: ParetoSeries;
     /**
-     * `areaSeriesModule` is used to add area series in the chart.
+     * `areaSeriesModule` is used to add area series to the chart.
      */
     public areaSeriesModule: AreaSeries;
     /**
@@ -368,7 +377,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public barSeriesModule: BarSeries;
     /**
-     * `stackingColumnSeriesModule` is used to add stacking column series in the chart.
+     * `stackingColumnSeriesModule` is used to add stacking column series to the chart.
      */
     public stackingColumnSeriesModule: StackingColumnSeries;
     /**
@@ -384,7 +393,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public stackingLineSeriesModule: StackingLineSeries;
     /**
-     * 'CandleSeriesModule' is used to add candle series in the chart.
+     * 'candleSeriesModule' is used to add candle series to the chart.
      */
     public candleSeriesModule: CandleSeries;
     /**
@@ -400,11 +409,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public stepAreaSeriesModule: StepAreaSeries;
     /**
-     * `polarSeriesModule` is used to add polar series in the chart.
+     * `polarSeriesModule` is used to add polar series to the chart.
      */
     public polarSeriesModule: PolarSeries;
     /**
-     *  `radarSeriesModule` is used to add radar series in the chart.
+     * `radarSeriesModule` is used to add radar series to the chart.
      */
     public radarSeriesModule: RadarSeries;
     /**
@@ -420,43 +429,43 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public scatterSeriesModule: ScatterSeries;
     /**
-     * `boxAndWhiskerSeriesModule` is used to add line series to the chart.
+     * `boxAndWhiskerSeriesModule` is used to add box and whisker series to the chart.
      */
     public boxAndWhiskerSeriesModule: BoxAndWhiskerSeries;
     /**
-     * `rangeColumnSeriesModule` is used to add rangeColumn series to the chart.
+     * `rangeColumnSeriesModule` is used to add range column series to the chart.
      */
     public rangeColumnSeriesModule: RangeColumnSeries;
     /**
-     * histogramSeriesModule is used to add histogram series in chart
+     * `histogramSeriesModule` is used to add histogram series to the chart.
      */
     public histogramSeriesModule: HistogramSeries;
     /**
-     * hiloSeriesModule is used to add hilo series in chart
+     * `hiloSeriesModule` is used to add hilo series to the chart.
      */
     public hiloSeriesModule: HiloSeries;
     /**
-     * hiloOpenCloseSeriesModule is used to add hilo series in chart
+     * `hiloOpenCloseSeriesModule` is used to add hilo open close series to the chart.
      */
     public hiloOpenCloseSeriesModule: HiloOpenCloseSeries;
     /**
-     * `waterfallSeries` is used to add waterfall series in chart.
+     * `waterfallSeries` is used to add waterfall series to the chart.
      */
     public waterfallSeriesModule: WaterfallSeries;
     /**
-     * `bubbleSeries` is used to add bubble series in chart.
+     * `bubbleSeries` is used to add bubble series to the chart.
      */
     public bubbleSeriesModule: BubbleSeries;
     /**
-     * `rangeAreaSeriesModule` is used to add rangeArea series in chart.
+     * `rangeAreaSeriesModule` is used to add range area series to the chart.
      */
     public rangeAreaSeriesModule: RangeAreaSeries;
     /**
-     * `rangeStepAreaSeriesModule` is used to add rangeStepArea series in chart.
+     * `rangeStepAreaSeriesModule` is used to add range step area series to the chart.
      */
     public rangeStepAreaSeriesModule: RangeStepAreaSeries;
     /**
-     * `splineRangeAreaSeriesModule` is used to add splineRangeArea series in chart.
+     * `splineRangeAreaSeriesModule` is used to add spline range area series to the chart.
      */
     public splineRangeAreaSeriesModule: SplineRangeAreaSeries;
     /**
@@ -476,7 +485,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public dataLabelModule: DataLabel;
     /**
-     * `datetimeModule` is used to manipulate and add dateTime axis to the chart.
+     * `dateTimeModule` is used to manipulate and add date time axis to the chart.
      */
     public dateTimeModule: DateTime;
     /**
@@ -484,7 +493,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public categoryModule: Category;
     /**
-     * `dateTimeCategoryModule` is used to manipulate date time and category axis
+     * `dateTimeCategoryModule` is used to manipulate date time and category axis to the chart.
      */
     public dateTimeCategoryModule: DateTimeCategory;
     /**
@@ -512,83 +521,83 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public highlightModule: Highlight;
     /**
-     * `annotationModule` is used to manipulate and add annotation in chart.
+     * `annotationModule` is used to manipulate and add annotation to the chart.
      */
     public annotationModule: ChartAnnotation;
     /**
-     * `stripLineModule` is used to manipulate and add stripLine in chart.
+     * `stripLineModule` is used to manipulate and add strip line to the chart.
      */
     public stripLineModule: StripLine;
     /**
-     * `multiLevelLabelModule` is used to manipulate and add multiLevelLabel in chart.
+     * `multiLevelLabelModule` is used to manipulate and add multi-level labels to the chart.
      */
     public multiLevelLabelModule: MultiLevelLabel;
 
     /**
-     * 'TrendlineModule' is used to predict the market trend using trendlines
+     * 'trendlineModule' is used to predict the market trend using trendlines.
      */
     public trendLineModule: Trendlines;
 
     /**
-     * `sMAIndicatorModule` is used to predict the market trend using SMA approach
+     * `sMAIndicatorModule` is used to predict the market trend using SMA approach.
      */
     public sMAIndicatorModule: SmaIndicator;
 
     /**
-     * `eMAIndicatorModule` is used to predict the market trend using EMA approach
+     * `eMAIndicatorModule` is used to predict the market trend using EMA approach.
      */
     public eMAIndicatorModule: EmaIndicator;
 
     /**
-     * `tMAIndicatorModule` is used to predict the market trend using TMA approach
+     * `tMAIndicatorModule` is used to predict the market trend using TMA approach.
      */
     public tMAIndicatorModule: TmaIndicator;
 
     /**
-     * `accumulationDistributionIndicatorModule` is used to predict the market trend using Accumulation Distribution approach
+     * `accumulationDistributionIndicatorModule` is used to predict the market trend using Accumulation Distribution approach.
      */
     public accumulationDistributionIndicatorModule: AccumulationDistributionIndicator;
 
     /**
-     * `atrIndicatorModule` is used to predict the market trend using ATR approach
+     * `atrIndicatorModule` is used to predict the market trend using ATR approach.
      */
     public atrIndicatorModule: AtrIndicator;
 
     /**
-     * `rSIIndicatorModule` is used to predict the market trend using RSI approach
+     * `rSIIndicatorModule` is used to predict the market trend using RSI approach.
      */
     public rsiIndicatorModule: RsiIndicator;
 
     /**
-     * `macdIndicatorModule` is used to predict the market trend using Macd approach
+     * `macdIndicatorModule` is used to predict the market trend using Macd approach.
      */
     public macdIndicatorModule: MacdIndicator;
 
     /**
-     * `stochasticIndicatorModule` is used to predict the market trend using Stochastic approach
+     * `stochasticIndicatorModule` is used to predict the market trend using Stochastic approach.
      */
     public stochasticIndicatorModule: StochasticIndicator;
 
     /**
-     * `momentumIndicatorModule` is used to predict the market trend using Momentum approach
+     * `momentumIndicatorModule` is used to predict the market trend using Momentum approach.
      */
     public momentumIndicatorModule: MomentumIndicator;
 
     /**
-     * `bollingerBandsModule` is used to predict the market trend using Bollinger approach
+     * `bollingerBandsModule` is used to predict the market trend using Bollinger approach.
      */
     public bollingerBandsModule: BollingerBands;
     /**
-     * ScrollBar Module is used to render scrollbar in chart while zooming.
+     * `scrollBarModule` is used to render a scrollbar in the chart while zooming.
      */
     public scrollBarModule: ScrollBar;
     /**
-     * Export Module is used to export chart.
+     * `exportModule` is used to export the chart in `JPEG`, `PNG`, `SVG`, `PDF`, `XLSX`, or `CSV` format.
      */
     public exportModule: Export;
 
     /**
-     * The width of the chart as a string, accepting input as both '100px' or '100%'.
+     * The width of the chart as a string, accepting input such as '100px' or '100%'.
      * If specified as '100%', the chart renders to the full width of its parent element.
      *
      * @default null
@@ -598,7 +607,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public width: string;
 
     /**
-     * The height of the chart as a string, accepting input as both '100px' or '100%'.
+     * The height of the chart as a string, accepting input such as '100px' or '100%'.
      * If specified as '100%', the chart renders to the full height of its parent element.
      *
      * @default null
@@ -608,7 +617,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public height: string;
 
     /**
-     * The title of the chart.
+     * The title is displayed at the top of the chart to provide information about the plotted data.
      *
      * @default ''
      */
@@ -617,21 +626,22 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public title: string;
 
     /**
-     * Specifies the DataSource for the chart. It can be an array of JSON objects or an instance of DataManager.
+     * Specifies the data source for the chart. It can be an array of JSON objects, or an instance of DataManager.
      * ```html
      * <div id='Chart'></div>
      * ```
      * ```typescript
      * let dataManager: DataManager = new DataManager({
-     *         url: 'http://mvc.syncfusion.com/Services/Northwnd.svc/Tasks/'
+     *    url: 'https://services.syncfusion.com/js/production/api/orders'
      * });
-     * let query: Query = new Query().take(50).where('Estimate', 'greaterThan', 0, false);
+     * let query: Query = new Query().take(5);
      * let chart: Chart = new Chart({
      * ...
-     *  dataSource:dataManager,
+     * dataSource: dataManager,
      *   series: [{
-     *        xName: 'Id',
-     *        yName: 'Estimate',
+     *        type: 'Column',
+     *        xName: 'CustomerID',
+     *        yName: 'Freight',
      *        query: query
      *    }],
      * ...
@@ -646,14 +656,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public dataSource: Object | DataManager;
 
     /**
-     * Options for customizing the title of the Chart.
+     * Options for customizing the appearance of the title, which displays information about the plotted data.
+     * Use the `fontFamily`, `size`, `fontStyle`, `fontWeight`, and `color` properties in `titleSettings` to adjust the title's appearance.
      */
 
     @Complex<titleSettingsModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, titleSettings)
     public titleStyle: titleSettingsModel;
 
     /**
-     * The subtitle of the chart
+     * The subtitle is positioned below the main title and provides additional details about the data represented in the chart.
      *
      * @default ''
      */
@@ -662,27 +673,29 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public subTitle: string;
 
     /**
-     * Options for customizing the subtitle of the Chart.
+     * Options for customizing the appearance of the subtitle, which displays information about the plotted data below the main title.
+     * Use the `fontFamily`, `size`, `fontStyle`, `fontWeight`, and `color` properties in `titleSettings` to adjust the subtitle's appearance.
      */
 
     @Complex<titleSettingsModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, titleSettings)
     public subTitleStyle: titleSettingsModel;
     /**
-     * Options to customize the left, right, top, and bottom margins of the chart.
+     * Options to customize the margins around the chart, including the left, right, top, and bottom margins.
+     * These margins refer to the space between the outer edge of the chart and its chart area.
      */
 
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
 
     /**
-     * Options for customizing the color and width of the chart border.
+     * Options for customizing the appearance of the border in the chart by using the `color` and `width` properties in the `border`.
      */
 
     @Complex<BorderModel>({ color: '#DDDDDD', width: 0 }, Border)
     public border: BorderModel;
 
     /**
-     * The background color of the chart that accepts value in hex and rgba as a valid CSS color string.
+     * The background color of the chart accepts values in hex and rgba formats as valid CSS color strings.
      *
      * @default null
      */
@@ -690,21 +703,21 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public background: string;
 
     /**
-     * Options for configuring the border and background of the chart area.
+     * Configuration options for the chart area's border and background.
      */
 
     @Complex<ChartAreaModel>({ border: { color: null, width: 0.5 }, background: 'transparent' }, ChartArea)
     public chartArea: ChartAreaModel;
 
     /**
-     * Configuration options for the horizontal axis.
+     * The `primaryXAxis` property configures the horizontal axis of the chart, including settings for axis labels, tick marks, grid lines, and axis ranges.
      */
 
     @Complex<AxisModel>({ name: 'primaryXAxis' }, Axis)
     public primaryXAxis: AxisModel;
 
     /**
-     * Configuration options for the vertical axis.
+     * The `primaryYAxis` property configures the vertical axis of the chart, including settings for axis labels, tick marks, grid lines, and axis ranges.
      */
 
     @Complex<AxisModel>({ name: 'primaryYAxis' }, Axis)
@@ -712,8 +725,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
 
     /**
-     * Options to split Chart into multiple plotting areas horizontally.
-     * Each object in the collection represents a plotting area in the Chart.
+     * Options to split the chart into multiple plotting areas horizontally.
+     * Each object in the collection represents a separate plotting area (row) in the chart, allowing multiple data series to be displayed in distinct horizontal sections.
      */
 
     @Collection<RowModel>([{}], Row)
@@ -721,15 +734,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
 
     /**
-     * Options to split chart into multiple plotting areas vertically.
-     * Each object in the collection represents a plotting area in the chart.
+     * Options to split the chart into multiple plotting areas vertically.
+     * Each object in the collection represents a separate plotting area (column) in the chart, allowing multiple data series to be displayed in distinct vertical sections.
      */
 
     @Collection<ColumnModel>([{}], Column)
     public columns: ColumnModel[];
 
     /**
-     * Secondary axis collection for the chart.
+     * Configuration options for the secondary axis in the chart.
+     * Each object in the collection represents an additional axis, allowing for the plotting of multiple data series with different scales.
      */
 
     @Collection<AxisModel>([{}], Axis)
@@ -737,20 +751,21 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Configuration options for the chart's series.
+     * Each object in the `series` collection represents a distinct data series displayed in the chart. Customize various aspects of each series such as data, type, and appearance.
      */
 
     @Collection<SeriesModel>([{}], Series)
     public series: SeriesModel[];
 
     /**
-     * The configuration for annotation in chart.
+     * Annotations are used to highlight specific data points or areas in the chart, providing additional context and information.
      */
 
     @Collection<ChartAnnotationSettingsModel>([{}], ChartAnnotationSettings)
     public annotations: ChartAnnotationSettingsModel[];
 
     /**
-     * Palette for the chart series.
+     * The `palettes` array defines a set of colors used for rendering the chart's series. Each color in the array is applied to the series in order.
      *
      * @default []
      */
@@ -758,7 +773,29 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public palettes: string[];
 
     /**
-     * Specifies the theme for the chart.
+     * The theme applied to the chart for visual styling.
+     * Choose from predefined themes to change the overall look and feel of the chart.
+     * The available themes are:
+     * * Fabric
+     * * FabricDark
+     * * Bootstrap4
+     * * Bootstrap
+     * * BootstrapDark
+     * * HighContrastLight
+     * * HighContrast
+     * * Tailwind
+     * * TailwindDark
+     * * Bootstrap5
+     * * Bootstrap5Dark
+     * * Fluent
+     * * FluentDark
+     * * Fluent2
+     * * Fluent2Dark
+     * * Fluent2HighContrast
+     * * Material3
+     * * Material3Dark
+     * * Material
+     * * MaterialDark
      *
      * @default 'Material'
      */
@@ -766,7 +803,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public theme: ChartTheme;
 
     /**
-     * The chart tooltip configuration options.
+     * Configuration options for the chart's tooltip, which displays details about the points when hovering over them.
      */
 
     @Complex<TooltipSettingsModel>({}, TooltipSettings)
@@ -774,31 +811,31 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
 
     /**
-     * Options for customizing the crosshair of the chart.
+     * The crosshair displays lines on the chart that follow the mouse cursor and show the axis values of the data points.
      */
     @Complex<CrosshairSettingsModel>({}, CrosshairSettings)
     public crosshair: CrosshairSettingsModel;
 
     /**
-     * The chart legend configuration options.
+     * The legend provides descriptive information about the data series displayed in the chart, helping to understand what each series represents.
      */
     @Complex<LegendSettingsModel>({}, LegendSettings)
     public legendSettings: LegendSettingsModel;
 
     /**
-     * Options for customizing the points fill color based on condition.
+     * The `rangeColorSettings` property specifies a set of rules for applying different colors to points based on their value ranges.
      */
     @Collection<RangeColorSettingModel>([{}], RangeColorSetting)
     public rangeColorSettings: RangeColorSettingModel[];
 
     /**
-     * Options to enable the zooming feature in the chart.
+     * Options to enable and configure the zooming feature in the chart.
      */
     @Complex<ZoomSettingsModel>({}, ZoomSettings)
     public zoomSettings: ZoomSettingsModel;
 
     /**
-     * Defines the color for the highlighted data point.
+     * Defines the color used to highlight a data point on mouse hover.
      *
      * @default ''
      */
@@ -807,15 +844,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public highlightColor: string;
 
     /**
-     * Specifies whether a series or data point should be highlighted. The options are:
-     * * 'none': Disables the highlight.
-     * * 'series': Highlights a series.
-     * * 'point': Highlights a single data point.
-     * * 'cluster': Highlights a cluster of data points.
-     * * 'dragXY': Selects points by dragging with respect to both horizontal and vertical axes.
-     * * 'dragX': Selects points by dragging with respect to horizontal axis.
-     * * 'dragY': Selects points by dragging with respect to vertical axis.
-     * * 'lasso': Selects points by dragging with respect to free form.
+     * The `selectionMode` property determines how data points or series can be highlighted or selected.
+     * The available options are:
+     * * 'None': Disables any form of highlight or selection.
+     * * 'Series': Highlights or selects an entire series of data points.
+     * * 'Point': Highlights or selects a single data point.
+     * * 'Cluster': Highlights or selects a group of data points that belong to the same cluster.
+     * * 'DragXY': Selects points by dragging with respect to both horizontal and vertical axes.
+     * * 'DragX': Selects points by dragging with respect to horizontal axis.
+     * * 'DragY': Selects points by dragging with respect to vertical axis.
+     * * 'Lasso': Selects points by dragging with respect to free form.
      *
      * @default None
      */
@@ -823,11 +861,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public selectionMode: SelectionMode;
 
     /**
-     * Specifies whether a series or data point should be highlighted. The options are:
-     * * 'none': Disables the highlight
-     * * 'series': Highlights a series
-     * * 'point': Highlights a single data point.
-     * * 'cluster': Highlights a cluster of data points.
+     * The `highlightMode` property determines how a series or individual data points are highlighted in the chart.
+     * The available options are:
+     * * 'None': Disables highlighting.
+     * * 'Series': Highlights an entire series of data points.
+     * * 'Point': Highlights a single data point.
+     * * 'Cluster': Highlights a group of data points that belong to the same cluster.
      *
      * @default None
      */
@@ -835,27 +874,28 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public highlightMode: HighlightMode;
 
     /**
-     * Specifies whether series or data point has to be selected. They are,
-     * * none: sets none as selecting pattern.
-     * * chessboard: sets chess board as selecting pattern.
-     * * dots: sets dots as  selecting pattern.
-     * * diagonalForward: sets diagonal forward as selecting pattern.
-     * * crosshatch: sets crosshatch as selecting pattern.
-     * * pacman: sets pacman selecting pattern.
-     * * diagonalbackward: sets diagonal backward as selecting pattern.
-     * * grid: sets grid as selecting pattern.
-     * * turquoise: sets turquoise as selecting pattern.
-     * * star: sets star as selecting pattern.
-     * * triangle: sets triangle as selecting pattern.
-     * * circle: sets circle as selecting pattern.
-     * * tile: sets tile as selecting pattern.
-     * * horizontaldash: sets horizontal dash as selecting pattern.
-     * * verticaldash: sets vertical dash as selecting pattern.
-     * * rectangle: sets rectangle as selecting pattern.
-     * * box: sets box as selecting pattern.
-     * * verticalstripe: sets vertical stripe as  selecting pattern.
-     * * horizontalstripe: sets horizontal stripe as selecting pattern.
-     * * bubble: sets bubble as selecting pattern.
+     * The `selectionPattern` property determines how the selected data points or series are visually represented.
+     * The available options are:
+     * * 'None': No selection pattern is applied.
+     * * 'Chessboard': Applies a chessboard pattern as the selection effect.
+     * * 'Dots': Applies a dot pattern as the selection effect.
+     * * 'DiagonalForward': Applies a forward diagonal line pattern as the selection effect.
+     * * 'Crosshatch': Applies a crosshatch pattern as the selection effect.
+     * * 'Pacman': Applies a Pacman pattern as the selection effect.
+     * * 'DiagonalBackward': Applies a backward diagonal line pattern as the selection effect.
+     * * 'Grid': Applies a grid pattern as the selection effect.
+     * * 'Turquoise': Applies a turquoise pattern as the selection effect.
+     * * 'Star': Applies a star pattern as the selection effect.
+     * * 'Triangle': Applies a triangle pattern as the selection effect.
+     * * 'Circle': Applies a circle pattern as the selection effect.
+     * * 'Tile': Applies a tile pattern as the selection effect.
+     * * 'HorizontalDash': Applies a horizontal dash pattern as the selection effect.
+     * * 'VerticalDash': Applies a vertical dash pattern as the selection effect.
+     * * 'Rectangle': Applies a rectangle pattern as the selection effect.
+     * * 'Box': Applies a box pattern as the selection effect.
+     * * 'VerticalStripe': Applies a vertical stripe pattern as the selection effect.
+     * * 'HorizontalStripe': Applies a horizontal stripe pattern as the selection effect.
+     * * 'Bubble': Applies a bubble pattern as the selection effect.
      *
      * @default None
      */
@@ -863,27 +903,28 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public selectionPattern: SelectionPattern;
 
     /**
-     * Specifies whether series or data point has to be selected. They are,
-     * * none: sets none as highlighting pattern.
-     * * chessboard: sets chess board as highlighting pattern.
-     * * dots: sets dots as highlighting pattern.
-     * * diagonalForward: sets diagonal forward as highlighting pattern.
-     * * crosshatch: sets crosshatch as highlighting pattern.
-     * * pacman: sets pacman highlighting  pattern.
-     * * diagonalbackward: sets diagonal backward as highlighting pattern.
-     * * grid: sets grid as highlighting pattern.
-     * * turquoise: sets turquoise as highlighting pattern.
-     * * star: sets star as highlighting  pattern.
-     * * triangle: sets triangle as highlighting pattern.
-     * * circle: sets circle as highlighting  pattern.
-     * * tile: sets tile as highlighting pattern.
-     * * horizontaldash: sets horizontal dash as highlighting pattern.
-     * * verticaldash: sets vertical dash as highlighting pattern.
-     * * rectangle: sets rectangle as highlighting  pattern.
-     * * box: sets box as highlighting pattern.
-     * * verticalstripe: sets vertical stripe as highlighting  pattern.
-     * * horizontalstripe: sets horizontal stripe as highlighting  pattern.
-     * * bubble: sets bubble as highlighting  pattern.
+     * The `highlightPattern` property determines how the data points or series are visually highlighted.
+     * The available options are:
+     * * 'None': No highlighting pattern.
+     * * 'Chessboard': Applies a chessboard pattern for highlighting.
+     * * 'Dots': Applies a dot pattern for highlighting.
+     * * 'DiagonalForward': Applies a forward diagonal line pattern for highlighting.
+     * * 'Crosshatch': Applies a crosshatch pattern for highlighting.
+     * * 'Pacman': Applies a Pacman pattern for highlighting.
+     * * 'DiagonalBackward': Applies a backward diagonal line pattern for highlighting.
+     * * 'Grid': Applies a grid pattern for highlighting.
+     * * 'Turquoise': Applies a turquoise pattern for highlighting.
+     * * 'Star': Applies a star pattern for highlighting.
+     * * 'Triangle': Applies a triangle pattern for highlighting.
+     * * 'Circle': Applies a circle pattern for highlighting.
+     * * 'Tile': Applies a tile pattern for highlighting.
+     * * 'HorizontalDash': Applies a horizontal dash pattern for highlighting.
+     * * 'VerticalDash': Applies a vertical dash pattern for highlighting.
+     * * 'Rectangle': Applies a rectangle pattern for highlighting.
+     * * 'Box': Applies a box pattern for highlighting.
+     * * 'VerticalStripe': Applies a vertical stripe pattern for highlighting.
+     * * 'HorizontalStripe': Applies a horizontal stripe pattern for highlighting.
+     * * 'Bubble': Applies a bubble pattern for highlighting.
      *
      * @default None
      */
@@ -891,7 +932,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public highlightPattern: SelectionPattern;
 
     /**
-     * If set to true, enables multi-selection in the chart. It requires the `selectionMode` to be `Point`, `Series`, or `Cluster`.
+     * When set to true, it allows selecting multiple data points, series, or clusters.
+     > Note that the `selectionMode` must be set to `Point`, `Series`, or `Cluster` for multi-selection to be enabled.
      *
      * @default false
      */
@@ -899,7 +941,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public isMultiSelect: boolean;
 
     /**
-     * If set true, enables the multi drag selection in chart. It requires `selectionMode` to be `Dragx` | `DragY` | or `DragXY`.
+     * If set to true, enables multi-drag selection in the chart.
+     * This feature allows selecting multiple data points by dragging a selection box.
+     > Note that the `selectionMode` to be set to `DragX`, `DragY`, or `DragXY` for this feature to work.
      *
      * @default false
      */
@@ -907,7 +951,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public allowMultiSelection: boolean;
 
     /**
-     * To enable export feature in chart.
+     * When set to true, it enables exporting the chart to various formats such as `JPEG`, `PNG`, `SVG`, `PDF`, `XLSX`, or `CSV`.
      *
      * @default true
      */
@@ -923,8 +967,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public allowExport: boolean;
 
     /**
-     * Specifies the point indexes to be selected while loading a chart.
-     * It requires `selectionMode` or `highlightMode` to be `Point` | `Series` | or `Cluster`.
+     * Specifies the point indexes to be selected when a chart is initially loaded.
+     > Note that `selectionMode` or `highlightMode` must be set to `Point`, `Series`, or `Cluster` for this feature to work.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -945,7 +989,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public selectedDataIndexes: IndexesModel[];
 
     /**
-     * Specifies whether a grouping separator should be used for numbers.
+     * When set to true, a grouping separator will be used for numbers to separate groups of thousands in the chart.
      *
      * @default false
      */
@@ -953,7 +997,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public useGroupingSeparator: boolean;
 
     /**
-     * If set to true, both axis interval will be calculated automatically with respect to the zoomed range.
+     * If set to true, the intervals for all the axes will be calculated automatically based on the zoomed range.
      *
      * @default false
      */
@@ -961,7 +1005,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public enableAutoIntervalOnBothAxis: boolean;
 
     /**
-     * It specifies whether the chart should be render in transposed manner or not.
+     * When set to true, the chart will render in a transposed manner, where the X and Y axes are interchanged.
      *
      * @default false
      */
@@ -969,7 +1013,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public isTransposed: boolean;
 
     /**
-     * It specifies whether the chart should be rendered in canvas mode.
+     * When set to true, the chart will render using a canvas.
      *
      * @default false
      */
@@ -977,7 +1021,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public enableCanvas: boolean;
 
     /**
-     * The background image of the chart that accepts value in string as url link or location of an image.
+     * The background image of the chart accepts a string value as a URL link or the location of an image.
      *
      * @default null
      */
@@ -985,13 +1029,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public backgroundImage: string;
 
     /**
-     * Defines the collection of technical indicators, that are used in financial markets.
+     * Technical indicators assist in evaluating market conditions and identifying trends for making trading decisions.
      */
     @Collection<TechnicalIndicatorModel>([], TechnicalIndicator)
     public indicators: TechnicalIndicatorModel[];
 
     /**
-     * If set true, Animation process will be executed.
+     * If set to true, animation effects will be enabled for chart elements such as axis labels, gridlines, series, markers, and data labels when the legend is clicked, or the data source is updated.
      *
      * @default true
      */
@@ -999,7 +1043,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public enableAnimation: boolean;
 
     /**
-     * Description for chart.
+     * A description for the chart that provides additional information about its content for screen readers.
      *
      * @default null
      */
@@ -1007,7 +1051,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public description: string;
 
     /**
-     * TabIndex value for the chart.
+     * The `tabIndex` value determines the order in which the chart container receives focus during keyboard navigation.
      *
      * @default 1
      */
@@ -1015,7 +1059,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public tabIndex: number;
 
     /**
-     * To enable the side by side placing the points for column type series.
+     * This property controls whether columns for different series appear next to each other in a column chart.
      *
      * @default true
      */
@@ -1023,7 +1067,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public enableSideBySidePlacement: boolean;
 
     /**
-     * Triggers after resizing of chart.
+     * Triggers after the chart is resized.
      *
      * @event resized
      * @blazorProperty 'Resized'
@@ -1032,7 +1076,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public resized: EmitType<IResizeEventArgs>;
 
     /**
-     * Triggers before resizing of chart
+     * Triggers before the chart is resized. This event allows for modifications to the chart size before resizing occurs.
      *
      * @event beforeResize
      * @blazorProperty 'BeforeResize'
@@ -1041,7 +1085,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public beforeResize: EmitType<IBeforeResizeEventArgs>;
 
     /**
-     * Triggers before the annotation gets rendered.
+     * Triggers before the annotation gets rendered. This event allows for modifications of the annotation content and its location before it is rendered on the chart.
      *
      * @event annotationRender
      * @deprecated
@@ -1051,7 +1095,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public annotationRender: EmitType<IAnnotationRenderEventArgs>;
 
     /**
-     * Triggers before the prints gets started.
+     * Triggers before the printing process starts. This event allows for the modification of the chart's HTML content before it is sent to the printer.
      *
      * @event beforePrint
      * @blazorProperty 'OnPrint'
@@ -1061,7 +1105,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public beforePrint: EmitType<IPrintEventArgs>;
 
     /**
-     * Triggers after chart load.
+     * Triggers after the chart has fully loaded.
      *
      * @event loaded
      * @blazorProperty 'Loaded'
@@ -1070,7 +1114,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public loaded: EmitType<ILoadedEventArgs>;
 
     /**
-     * Triggers before the export gets started.
+     * Triggers before the export process begins. This event allows for the customization of export settings before the chart is exported.
      *
      * @event beforeExport
      */
@@ -1078,7 +1122,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public beforeExport: EmitType<IExportEventArgs>;
 
     /**
-     * Triggers after the export completed.
+     * Triggers after the export is completed.
      *
      * @event afterExport
      * @blazorProperty 'AfterExport'
@@ -1087,7 +1131,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public afterExport: EmitType<IAfterExportEventArgs>;
 
     /**
-     * Triggers before chart load.
+     * Triggers before the chart loads. This event allows for customization and configuration before the chart is rendered.
      *
      * @event load
      */
@@ -1095,7 +1139,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public load: EmitType<ILoadedEventArgs>;
 
     /**
-     * Triggers after animation is completed for the series.
+     * Triggers after the animation for the series is completed.
      *
      * @event animationComplete
      * @blazorProperty 'OnAnimationComplete'
@@ -1104,7 +1148,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public animationComplete: EmitType<IAnimationCompleteEventArgs>;
 
     /**
-     * Triggers before the legend is rendered.
+     * Triggers before the legend is rendered. This allows the customization of legend before rendering on the chart.
      *
      * @event legendRender
      * @deprecated
@@ -1113,7 +1157,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public legendRender: EmitType<ILegendRenderEventArgs>;
 
     /**
-     * Triggers before the data label for series is rendered.
+     * Triggers before the data label for the series is rendered. This allows customization of data labels before they are rendered on the chart.
      *
      * @event textRender
      * @deprecated
@@ -1123,7 +1167,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public textRender: EmitType<ITextRenderEventArgs>;
 
     /**
-     * Triggers before each points for the series is rendered.
+     * Triggers before each point in the series is rendered. This allows for the customization of each data point before it is rendered on the chart.
      *
      * @event pointRender
      * @deprecated
@@ -1133,7 +1177,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public pointRender: EmitType<IPointRenderEventArgs>;
 
     /**
-     * Triggers before the series is rendered.
+     * Triggers before the series is rendered. This event allows for the customization of series properties before they are rendered on the chart.
      *
      * @event seriesRender
      * @deprecated
@@ -1142,7 +1186,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     @Event()
     public seriesRender: EmitType<ISeriesRenderEventArgs>;
     /**
-     * Triggers before each axis label is rendered.
+     * Triggers before each axis label is rendered. This event allows for the customization of axis label and its font style before rendering on the chart.
      *
      * @event axisLabelRender
      * @deprecated
@@ -1150,7 +1194,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
     /**
-     * Triggers when x axis label clicked.
+     * Triggers when the x-axis label is clicked.
      *
      * @event axisLabelClick
      * @deprecated
@@ -1158,7 +1202,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     @Event()
     public axisLabelClick: EmitType<IAxisLabelClickEventArgs>;
     /**
-     * Triggers before each axis range is rendered.
+     * Triggers before each axis range is rendered. This event allows modification of the axis range and interval that are calculated based on data.
      *
      * @event axisRangeCalculated
      * @deprecated
@@ -1166,7 +1210,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     @Event()
     public axisRangeCalculated: EmitType<IAxisRangeCalculatedEventArgs>;
     /**
-     * Triggers before each axis multi label is rendered.
+     * Triggers before each axis multi-label is rendered. This event allows modification of multi-labels on the axis before they are rendered.
      *
      * @event axisMultiLabelRender
      * @deprecated
@@ -1174,7 +1218,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     @Event()
     public axisMultiLabelRender: EmitType<IAxisMultiLabelRenderEventArgs>;
     /**
-     * Triggers after click on legend.
+     * Triggers after clicking on a legend item.
      *
      * @event legendClick
      */
@@ -1182,14 +1226,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public legendClick: EmitType<ILegendClickEventArgs>;
 
     /**
-     * Triggers after click on multiLevelLabelClick.
+     * Triggers after clicking on a multi-level label.
      *
      * @event multiLevelLabelClick
      */
     @Event()
     public multiLevelLabelClick: EmitType<IMultiLevelLabelClickEventArgs>;
     /**
-     * Triggers before the tooltip for series is rendered.
+     * Triggers before the tooltip for the series is rendered. This event allows customization of the tooltip properties such as text, style, and template before it is rendered on the chart.
      *
      * @event tooltipRender
      */
@@ -1197,7 +1241,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
     /**
-     * Triggers before the shared tooltip for series is rendered.
+     * Triggers before the shared tooltip for the series is rendered. This event allows customization of the shared tooltip properties such as text, style, and template before it is rendered on the chart.
      *
      * @event sharedTooltipRender
      */
@@ -1206,7 +1250,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public sharedTooltipRender: EmitType<ISharedTooltipRenderEventArgs>;
 
     /**
-     * Triggers on hovering the chart.
+     * Triggers on hovering over the chart.
      *
      * @event chartMouseMove
      * @blazorProperty 'OnChartMouseMove'
@@ -1216,7 +1260,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public chartMouseMove: EmitType<IMouseEventArgs>;
 
     /**
-     * Triggers on clicking the chart.
+     * Triggers when clicking on the chart.
      *
      * @event chartMouseClick
      * @blazorProperty 'OnChartMouseClick'
@@ -1226,7 +1270,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public chartMouseClick: EmitType<IMouseEventArgs>;
 
     /**
-     * Triggers on double clicking the chart.
+     * Triggers when double-clicking the chart.
      *
      * @event chartDoubleClick
      * @blazorProperty 'OnChartDoubleClick'
@@ -1246,7 +1290,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public pointClick: EmitType<IPointEventArgs>;
 
     /**
-     * Triggers on point double click.
+     * Triggers on point double-click.
      *
      * @event pointDoubleClick
      * @blazorProperty 'OnPointDoubleClick'
@@ -1256,7 +1300,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public pointDoubleClick: EmitType<IPointEventArgs>;
 
     /**
-     * Triggers on point move.
+     * Triggers when a data point is hovered.
      *
      * @event pointMove
      * @blazorProperty 'PointMoved'
@@ -1267,7 +1311,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
 
     /**
-     * Triggers when cursor leaves the chart.
+     * Triggers when the cursor leaves the chart.
      *
      * @event chartMouseLeave
      * @blazorProperty 'OnChartMouseLeave'
@@ -1327,7 +1371,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public zoomComplete: EmitType<IZoomCompleteEventArgs>;
 
     /**
-     * Triggers after the zoom selection is triggered.
+     * Triggers when the zoom selection started.
      *
      * @event onZooming
      */
@@ -1336,7 +1380,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
 
     /**
-     * Triggers when start the scroll.
+     * Triggers when the scroll action starts.
      *
      * @event scrollStart
      * @blazorProperty 'OnScrollStart'
@@ -1345,7 +1389,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public scrollStart: EmitType<IScrollEventArgs>;
 
     /**
-     * Triggers after the scroll end.
+     * Triggers after the scroll action ends.
      *
      * @event scrollEnd
      * @blazorProperty 'OnScrollEnd'
@@ -1354,7 +1398,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public scrollEnd: EmitType<IScrollEventArgs>;
 
     /**
-     * Triggers when change the scroll.
+     * Triggers when the scroll position changes.
      *
      * @event scrollChanged
      * @blazorProperty 'ScrollChanged'
@@ -1363,7 +1407,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public scrollChanged: EmitType<IScrollEventArgs>;
 
     /**
-     * Triggers when the point drag start.
+     * Triggers when the drag operation for a point starts.
      *
      * @event dragStart
      */
@@ -1371,7 +1415,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public dragStart: EmitType<IDataEditingEventArgs>;
 
     /**
-     * Triggers when the point is dragging.
+     * Triggers when the point is being dragged.
      *
      * @event drag
      */
@@ -1379,7 +1423,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public drag: EmitType<IDataEditingEventArgs>;
 
     /**
-     * Triggers when the point drag end.
+     * Triggers when the point drag operation ends.
      *
      * @event dragEnd
      */
@@ -1387,7 +1431,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public dragEnd: EmitType<IDataEditingEventArgs>;
 
     /**
-     * Defines the currencyCode format of the chart
+     * Specifies the currency code format to use for displaying values in the chart.
      *
      * @private
      * @aspType string
@@ -1586,6 +1630,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public pointsRemoved: boolean = false;
     /** @private */
     public pointsAdded: boolean = false;
+    /** @private */
+    public zoomRedraw: boolean = false;
+
     /**
      * Constructor for the chart component.
      *
@@ -2181,7 +2228,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.chartAreaType === 'PolarRadar') {
             return;
         }
-        if (!this.redraw && this.zoomModule && (!this.zoomSettings.enablePan || this.zoomModule.performedUI ||
+        if ((!this.redraw || this.zoomRedraw) && this.zoomModule && (!this.zoomSettings.enablePan || this.zoomModule.performedUI ||
             this.zoomSettings.showToolbar)) {
             this.zoomModule.applyZoomToolkit(this, this.axisCollections);
         }
@@ -2787,7 +2834,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
 
     public addSeries(seriesCollection: SeriesModel[]): void {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollTop: number = window.pageYOffset || document.documentElement.scrollTop;
         for (let series of seriesCollection) {
             series = new Series(this, 'series', series);
             this.series.push(series);
@@ -2804,7 +2851,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public removeSeries(index: number): void {
         this.redraw = false; //fix for remove svg not working when use animatemethod.
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollTop: number = window.pageYOffset || document.documentElement.scrollTop;
         if (this.visibleSeries[index as number]) {
             this.visibleSeries[index as number].xAxis.orientation = null;
             this.visibleSeries[index as number].yAxis.orientation = null;
@@ -2820,7 +2867,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
-     * To Clear all series for the chart
+     * Clear all series from the chart.
      *
      * @returns {void}.
      */
@@ -2850,10 +2897,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
-     * To remove secondary axis for the chart
+     * To remove secondary axis for the chart.
      *
      * @param {number} index - Defines the axis collection to be removed in chart.
      * @returns {void}
+     * @private
      */
     public removeAxis(index: number): void {
         this.redraw = false;
@@ -2927,6 +2975,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Method to create SVG element.
+     *
+     * @private
      */
 
     public createChartSvg(): void {
@@ -3089,9 +3139,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
-     * Exports the chart.
+     * Exports the chart in the specified format.
      *
-     * @param {ExportType} type - The type of export (PNG, JPEG, PDF, or SVG).
+     * @param {ExportType} type - The file format for the export. Available options are PNG, JPEG, PDF, and SVG.
      * @param {string} fileName - The name of the file to be saved.
      * @returns {void}
      */
@@ -3440,8 +3490,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         return false;
     }
-
-    private setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
+    /**
+     * Sets the tab index for the specified elements.
+     *
+     * @param {HTMLElement} previousElement - The previous element whose tab index needs to be removed.
+     * @param {HTMLElement} currentElement - The current element to which the tab index needs to be set.
+     * @returns {void}
+     * @private
+     */
+    public setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
         if (previousElement) {
             previousElement.removeAttribute('tabindex');
         }
@@ -3482,8 +3539,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
 
-
-    private chartKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {
+    /**
+     * Handles keyboard navigation on the chart.
+     *
+     * @param {KeyboardEvent} e - The keyboard event.
+     * @param {string} targetId - The ID of the target element.
+     * @param {string} actionKey - The key that determines the action to be taken.
+     * @returns {void}
+     * @private
+     */
+    public chartKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {
         this.isLegendClicked = false;
         switch (actionKey) {
         case 'Tab':
@@ -4320,7 +4385,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
-     * Fix for live data update flicker issue.
+     * Refresh the chart for live data updates.
      *
      * @returns {void}
      */
@@ -4454,7 +4519,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let refreshBounds: boolean = false;
         this.animateSeries = false;
         let axis: Axis;
-        if (!this.delayRedraw) {
+        if (!this.delayRedraw && !this.zoomRedraw) {
             for (const prop of Object.keys(newProp)) {
                 switch (prop) {
                 case 'primaryXAxis':
@@ -4665,6 +4730,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.animated = false;
             }
         }
+        this.zoomRedraw = false;
     }
 }
 

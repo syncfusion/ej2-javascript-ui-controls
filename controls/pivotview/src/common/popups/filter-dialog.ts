@@ -4,7 +4,7 @@ import {
 } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
-import { IGroupSettings, PivotEngine } from '../../base/engine';
+import {IGroupSettings, PivotEngine } from '../../base/engine';
 import {
     TreeView, NodeCheckEventArgs, Tab, TabItemModel, NodeClickEventArgs,
     NodeExpandEventArgs, NodeSelectEventArgs,
@@ -104,6 +104,7 @@ export class FilterDialog {
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
+                    isFlat: false,
                     buttonModel: {
                         cssClass: 'e-clear-filter-button' + (this.allowExcelLikeFilter ? '' : ' ' + cls.ICON_DISABLE) + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                         iconCss: 'e-icons e-clear-filter-icon', enableRtl: this.parent.enableRtl,
@@ -111,12 +112,14 @@ export class FilterDialog {
                     }
                 },
                 {
+                    isFlat: false,
                     buttonModel: {
                         cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('ok'), isPrimary: true
                     }
                 },
                 {
                     click: this.closeFilterDialog.bind(this),
+                    isFlat: false,
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
                 }],
             closeOnEscape: this.parent.renderMode === 'Popup' ? false : true,

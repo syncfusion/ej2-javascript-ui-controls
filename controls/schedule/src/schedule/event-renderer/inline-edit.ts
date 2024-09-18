@@ -93,7 +93,15 @@ export class InlineEdit {
                 }
                 subjectWrap.insertBefore(inlineSubject, subjectWrap.firstChild);
             } else {
-                args.element.querySelector('.e-appointment-details').prepend(inlineSubject);
+                const elementSelector: string = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'].indexOf(this.parent.currentView) > -1 ?
+                    '.e-inner-wrap' : '.e-appointment-details';
+                const innerWrapElement: Element = args.element.querySelector(elementSelector);
+                if (isNullOrUndefined(innerWrapElement)) {
+                    args.element.querySelector('.e-appointment-details').prepend(inlineSubject);
+                }
+                else {
+                    innerWrapElement.prepend(inlineSubject);
+                }
             }
             inlineSubject.focus();
         }

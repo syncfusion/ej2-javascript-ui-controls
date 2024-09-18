@@ -222,7 +222,11 @@
       content: '\e82b';
     }
 
-    .e-insert-code::before {
+    .e-inline-code::before {
+      content: '\e831';
+    }
+
+    .e-preformat-code::before {
       content: '\e831';
     }
 

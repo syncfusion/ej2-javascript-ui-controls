@@ -5025,5 +5025,255 @@ describe(' Islamic Calendar', () => {
             expect(document.querySelector('.e-focused-date').textContent).toBe('1450');
         });
     });
+    describe('Null or undefined value testing', () => {
+        let calendarObj : any;
+        beforeEach(()=>{
+            let ele : HTMLElement = createElement('div', { id : 'calendar'});
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            document.body.innerHTML = '';
+        });
+        it('calendarMode', () => {
+            calendarObj = new Calendar({
+                calendarMode: null
+            },'#calendar');
+            expect(calendarObj.calendarMode).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                calendarMode: undefined
+            },'#calendar');
+            expect(calendarObj.calendarMode).toBe('Gregorian');
+            calendarObj.destroy();
+        });
+        it('cssClass', () => {
+            calendarObj = new Calendar({
+                cssClass: null
+            },'#calendar');
+            expect(calendarObj.cssClass).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                cssClass: undefined
+            },'#calendar');
+            expect(calendarObj.cssClass).toBe(null);
+            calendarObj.destroy();
+        });
+        it('dayHeaderFormat', () => {
+            calendarObj = new Calendar({
+                dayHeaderFormat: null
+            },'#calendar');
+            expect(calendarObj.dayHeaderFormat).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                dayHeaderFormat: undefined
+            },'#calendar');
+            expect(calendarObj.dayHeaderFormat).toBe('Short');
+            calendarObj.destroy();
+        });
+        it('depth', () => {
+            calendarObj = new Calendar({
+                depth: null
+            },'#calendar');
+            expect(calendarObj.depth).toBe('Month');
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                depth: undefined
+            },'#calendar');
+            expect(calendarObj.depth).toBe('Month');
+            calendarObj.destroy();
+        });
+        it('enablePersistence', () => {
+            calendarObj = new Calendar({
+                enablePersistence: null
+            },'#calendar');
+            expect(calendarObj.enablePersistence).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                enablePersistence: undefined
+            },'#calendar');
+            expect(calendarObj.enablePersistence).toBe(false);
+            calendarObj.destroy();
+        });
+        it('enableRtl', () => {
+            calendarObj = new Calendar({
+                enableRtl: null
+            },'#calendar');
+            expect(calendarObj.enableRtl).toBe(false);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                enableRtl: undefined
+            },'#calendar');
+            expect(calendarObj.enableRtl).toBe(false);
+            calendarObj.destroy();
+        });
+        it('enabled', () => {
+            calendarObj = new Calendar({
+                enabled: null
+            },'#calendar');
+            expect(calendarObj.enabled).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                enabled: undefined
+            },'#calendar');
+            expect(calendarObj.enabled).toBe(true);
+            calendarObj.destroy();
+        });
+        it('firstDayOfWeek', () => {
+            calendarObj = new Calendar({
+                firstDayOfWeek: null
+            },'#calendar');
+            expect(calendarObj.firstDayOfWeek).toBe(0);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                firstDayOfWeek: undefined
+            },'#calendar');
+            expect(calendarObj.firstDayOfWeek).toBe(0);
+            calendarObj.destroy();
+        });
+        it('isMultiSelection', () => {
+            calendarObj = new Calendar({
+                isMultiSelection: null
+            },'#calendar');
+            expect(calendarObj.isMultiSelection).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                isMultiSelection: undefined
+            },'#calendar');
+            expect(calendarObj.isMultiSelection).toBe(false);
+            calendarObj.destroy();
+        });
+        it('keyConfigs', () => {
+            calendarObj = new Calendar({
+                keyConfigs: null
+            },'#calendar');
+            expect(calendarObj.keyConfigs).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                keyConfigs: undefined
+            },'#calendar');
+            expect(calendarObj.keyConfigs).toBe(null);
+            calendarObj.destroy();
+        });
+        it('locale', () => {
+            calendarObj = new Calendar({
+                locale: null
+            },'#calendar');
+            expect(calendarObj.locale).toBe('en-US');
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                locale: undefined
+            },'#calendar');
+            expect(calendarObj.locale).toBe('en-US');
+            calendarObj.destroy();
+        });
+        it('max', () => {
+            calendarObj = new Calendar({
+                max: null
+            },'#calendar');
+            expect(calendarObj.max.valueOf()).toBe(new Date(2099, 11, 31).valueOf());
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                max: undefined
+            },'#calendar');
+            expect(calendarObj.max.valueOf()).toBe(new Date(2099, 11, 31).valueOf());
+            calendarObj.destroy();
+        });
+        it('min', () => {
+            calendarObj = new Calendar({
+                min: null
+            },'#calendar');
+            expect(calendarObj.min.valueOf()).toBe(new Date(1900, 0, 1).valueOf());
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                min: undefined
+            },'#calendar');
+            expect(calendarObj.min.valueOf()).toBe(new Date(1900, 0, 1).valueOf());
+            calendarObj.destroy();
+        });
+        it('serverTimezoneOffset', () => {
+            calendarObj = new Calendar({
+                serverTimezoneOffset: null
+            },'#calendar');
+            expect(calendarObj.serverTimezoneOffset).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                serverTimezoneOffset: undefined
+            },'#calendar');
+            expect(calendarObj.serverTimezoneOffset).toBe(null);
+            calendarObj.destroy();
+        });
+        it('showTodayButton', () => {
+            calendarObj = new Calendar({
+                showTodayButton: null
+            },'#calendar');
+            expect(calendarObj.showTodayButton).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                showTodayButton: undefined
+            },'#calendar');
+            expect(calendarObj.showTodayButton).toBe(true);
+            calendarObj.destroy();
+        });
+        it('start', () => {
+            calendarObj = new Calendar({
+                start: null
+            },'#calendar');
+            expect(calendarObj.start).toBe('Month');
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                start: undefined
+            },'#calendar');
+            expect(calendarObj.start).toBe('Month');
+            calendarObj.destroy();
+        });
+        it('value', () => {
+            calendarObj = new Calendar({
+                value: null
+            },'#calendar');
+            expect(calendarObj.value).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                value: undefined
+            },'#calendar');
+            expect(calendarObj.value).toBe(null);
+            calendarObj.destroy();
+        });
+        it('values', () => {
+            calendarObj = new Calendar({
+                values: null
+            },'#calendar');
+            expect(calendarObj.values).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                values: undefined
+            },'#calendar');
+            expect(calendarObj.values).toBe(null);
+            calendarObj.destroy();
+        });
+        it('weekNumber', () => {
+            calendarObj = new Calendar({
+                weekNumber: null
+            },'#calendar');
+            expect(calendarObj.weekNumber).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                weekNumber: undefined
+            },'#calendar');
+            expect(calendarObj.weekNumber).toBe(false);
+            calendarObj.destroy();
+        });
+        it('weekRule', () => {
+            calendarObj = new Calendar({
+                weekRule: null
+            },'#calendar');
+            expect(calendarObj.weekRule).toBe(null);
+            calendarObj.destroy();
+            calendarObj = new Calendar({
+                weekRule: undefined
+            },'#calendar');
+            expect(calendarObj.weekRule).toBe('FirstDay');
+            calendarObj.destroy();
+        });
+    });
 });
 

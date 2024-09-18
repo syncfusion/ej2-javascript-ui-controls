@@ -294,7 +294,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                 if (column.isTreeColumn) {
                     leftAdjustment = (row.level) * 10;
                 }
-                const cancelSpans: boolean = ((i > this.cellEndIndex + 1) && (cell.columnSpan > 1));
+                const cancelSpans: boolean = ((cell.columnSpan > 1) && (i > this.cellEndIndex + 1));
                 if (!cancelSpans) {
                     for (let j: number = 1; j < cell.columnSpan; j++) {
                         row.cells.getCell(i + j).isCellMergeContinue = true;

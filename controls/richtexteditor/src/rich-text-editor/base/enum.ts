@@ -82,20 +82,20 @@ export type ToolbarItems = 'alignments' | 'justifyLeft' | 'justifyCenter' | 'jus
 | 'sourceCode' | 'preview' | 'viewSide' | 'insertCode' | 'blockquote' | 'tableHeader'
 | 'tableRemove' | 'tableRows' | 'tableColumns' | 'tableCellBackground'
 | 'tableCellHorizontalAlign' | 'tableCellVerticalAlign' | 'tableEditProperties'
-| 'styles' | 'removeLink'| 'merge';
+| 'styles' | 'removeLink'| 'merge' | 'InlineCode';
 
 /**
  * Defines types to be used to configure the toolbarSettings items.
  */
 export type ToolbarConfigItems = 'Alignments' | 'JustifyLeft'| 'JustifyCenter' | 'JustifyRight'
-| 'JustifyFull' | 'FontName' | 'FontSize' | 'FontColor' | 'BackgroundColor'
+| 'JustifyFull' | 'FontName' | 'FontSize' | 'FontColor' | 'BackgroundColor' | 'ImportWord' | 'ExportWord' | 'ExportPdf'
 | 'Bold' | 'Italic' | 'Underline' | 'StrikeThrough' | 'ClearFormat' | 'ClearAll'
 | 'Cut' | 'Copy' | 'Paste' | 'UnorderedList' | 'OrderedList' | 'Indent'| 'Outdent'
 | 'Undo' | 'Redo' | 'SuperScript' | 'SubScript'
 | 'CreateLink'| 'Image' | 'CreateTable' |'InsertLink' |'FullScreen' | 'LowerCase'
 | 'UpperCase' | 'Print' | 'Formats'|'FormatPainter'|'EmojiPicker'|'UnderLine'|'ZoomOut'|'ZoomIn'
 | 'SourceCode' | 'Preview' | 'ViewSide' | 'InsertCode' | 'Blockquote' |'Audio'|'Video'|'NumberFormatList'
-|'BulletFormatList'|'FileManager'| '|'|'-';
+|'BulletFormatList'|'FileManager'| '|'|'-'| 'InlineCode';
 
 /**
  * Defines types to be used as inserted image.
@@ -108,3 +108,11 @@ export enum ImageInputSource {
     /** Defines ImageInputSource as Pasted */
     Pasted = 'Pasted'
 }
+
+/**
+ * Defines the available items in the slash menu.
+ */
+export type SlashMenuItems = 'Heading 1' | 'Heading 2' | 'Heading 3' | 'Heading 4'
+| 'Paragraph'| 'Blockquote' | 'OrderedList' | 'UnorderedList' | 'Table' | 'Image' |
+'Audio' | 'Video' | 'CodeBlock' | 'Emojipicker' | 'Link';
+

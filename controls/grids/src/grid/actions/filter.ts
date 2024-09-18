@@ -20,7 +20,7 @@ import { CheckBoxFilter } from '../actions/checkbox-filter';
 import { ExcelFilter } from '../actions/excel-filter';
 import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 import * as literals from '../base/string-literals';
-import { Input } from '@syncfusion/ej2-inputs';
+import { Input, InputArgs } from '@syncfusion/ej2-inputs';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import { ExcelFilterBase } from '../common/excel-filter-base';
 
@@ -89,6 +89,8 @@ export class Filter implements IAction {
     public responsiveDialogRenderer: ResponsiveDialogRenderer;
     public menuOperator: { [key: string]: Object }[];
     private docClickHandler: Function;
+    /** @hidden */
+    public inputList: InputArgs[] = [];
 
     /**
      * Constructor for Grid filtering module
@@ -224,17 +226,24 @@ export class Filter implements IAction {
             }
             this.parent.getColumns().map((column: Column) => {
                 if (column.filterBarTemplate && !isNullOrUndefined(column.filterBarTemplate.destroy)) {
-                    let destroyFn: Function | String = column.filterBarTemplate.destroy;
+                    let destroyFn: Function | string = column.filterBarTemplate.destroy;
                     if (typeof destroyFn === 'string') {
                         destroyFn = getValue(destroyFn, window);
                     }
                     (destroyFn as Function)();
                 }
-            })
+            });
         }
         if (this.element) {
             if (this.element.parentElement) {
+                for (let i: number = 0; i < this.inputList.length; i++) {
+                    Input.destroy(this.inputList[parseInt(i.toString(), 10)],
+                                  this.inputList[parseInt(i.toString(), 10)].element.nextElementSibling as HTMLElement);
+                    remove(this.inputList[parseInt(i.toString(), 10)].element);
+                }
+                this.inputList = [];
                 remove(this.element);
+                this.element = null;
             }
             const filterBarElement: Element = this.parent.getHeaderContent().querySelector('.e-filterbar');
             if (filterBarElement) {
@@ -987,9 +996,9 @@ export class Filter implements IAction {
             }
         }
         if (e.action === 'altDownArrow' && this.filterSettings.type !== 'FilterBar' && !parentsUntil(e.target as Element, 'e-toolbar')
-            && isNullOrUndefined(this.parent.element.querySelector('.e-filter-popup'))) {
+            && isNullOrUndefined(this.parent.element.querySelector('.e-filter-popup')) && !this.parent.enableAdaptiveUI) {
             const element: HTMLElement = gObj.focusModule.currentInfo.element;
-            if (element && element.classList.contains('e-headercell')) {
+            if (element && element.classList.contains('e-headercell') && !element.classList.contains('e-stackedheadercell')) {
                 const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('e-mappinguid'));
                 this.openMenuByField(column.field);
                 this.parent.focusModule.clearIndicator();
@@ -1341,8 +1350,9 @@ export class Filter implements IAction {
             const dialog: Element = parentsUntil(this.parent.element, 'e-dialog');
             let hasDialog: boolean = false;
             const popupEle: Element = parentsUntil(target, 'e-popup');
-            const hasDialogClosed: Element = this.parent.element.classList.contains('e-device') ? document.querySelector('.e-filter-popup')
-                : this.parent.element.querySelector('.e-filter-popup');
+            const hasDialogClosed: Element = this.parent.element.classList.contains('e-device') ?
+                document.querySelector('.e-filter-popup') : document.getElementById(this.parent.element.id + '_e-popup') ?
+                    document.getElementById(this.parent.element.id + '_e-popup').querySelector('.e-filter-popup') : this.parent.element.querySelector('.e-filter-popup');
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }

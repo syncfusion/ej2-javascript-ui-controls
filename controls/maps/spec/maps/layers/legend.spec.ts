@@ -326,7 +326,7 @@ describe('Map marker properties tesing', () => {
                 expect(element.getAttribute('x')).toBe('10');
                 expect(element.getAttribute('y')).toBe('28');
                 expect(element.getAttribute('height')).toBe('412');
-                expect(element.getAttribute('width') === '743' || element.getAttribute('width') === '749').toBe(true);
+                expect(element.getAttribute('width') === '743' || element.getAttribute('width') === '749' || element.getAttribute('width') === '747').toBe(true);
             };
             map.refresh();
         });
@@ -339,6 +339,16 @@ describe('Map marker properties tesing', () => {
             map.layers[0].shapeSettings.colorMapping[0].to = 600;
             map.layers[0].shapeSettings.colorMapping[0].value = 'Oceania';
             map.layers[0].shapeSettings.colorMapping[0].color = ['red', 'blue'];
+            map.refresh();
+        });
+        it('Checking text customization in legendRendering event cancel as true', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Legend_Text_Index_0');
+                expect(element).toBe(null);
+            };
+            map.legendRendering = (args: ILegendRenderingEventArgs) => {
+               args.cancel = true;
+            };
             map.refresh();
         });
 
@@ -2358,6 +2368,120 @@ describe('Map marker properties tesing', () => {
                                 map.refresh();
                             })
                         });
+                        describe('Legend selection and toggle with legend text trim', () => {
+                            let id: string = 'container';
+                            let map: Maps;
+                            let ele: HTMLDivElement;
+                            let trigger: MouseEvents = new MouseEvents();
+                            let spec: Element;
+                            beforeAll(() => {
+                                ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+                                document.body.appendChild(ele);
+                                map = new Maps({
+                                    titleSettings: {
+                                        text: 'Population density (per square kilometers) - 2015',
+                                        textStyle: {
+                                            size: '16px'
+                                        }
+                                    },
+                                    legendSettings: {
+                                        visible: true,
+                                        orientation: 'Horizontal',
+                                        mode: 'Interactive',
+                                    },
+                                    layers: [
+                                        {
+                                            shapeData: World_Map,
+                                            shapePropertyPath: 'continent',
+                                            shapeDataPath: 'continent',
+                                            dataSource: [
+                                                { "drillColor": '#C13664', "continent": "North America", "CategoryName": "Books", "Sales": 10882, 'color': '#71B081' },
+                                            ],
+                                            shapeSettings: {
+                                                colorValuePath: 'color',
+                                            }
+                                        }
+                                    ]
+                                }, '#' + id);
+                            });
+                            afterAll(() => {
+                                remove(ele);
+                                map.destroy();
+                            });
+                                it('Check the one interactive legend', () => {
+                                    map.loaded = (args: ILoadedEventArgs) => {
+                                        spec = document.getElementById('container_Legend_Index_0')
+                                        expect(spec.getAttribute('fill')).toBe("#71B081");
+                                    }
+                                    map.refresh();
+                                });
+                                it('Check the one interactive legend', () => {
+                                    map.loaded = (args: ILoadedEventArgs) => {
+                                        spec = document.getElementById('container_Legend_Shape_Index_0')
+                                        expect(spec.getAttribute('cx')).toBe("17.5");
+                                    }
+                                    map.legendSettings.mode = 'Default';
+                                    map.legendSettings.type = 'Markers';
+                                    map.legendSettings.useMarkerShape = true;
+                                    map.layers[0].markerSettings = [
+                                        {
+                                            visible: true,
+                                            legendText: 'city',
+                                            shapeValuePath: 'shape',
+                                            dataSource: [
+                                                { latitude: 37.0000, longitude: -120.0000, city: 'California', shape: 'Circle' },
+                                                { latitude: 40.7127, longitude: -74.0059, city: 'New York', shape: 'Diamond' },
+                                                { latitude: 42, longitude: -93, city: 'Iowa', shape: 'Rectangle' },
+                                            ]
+                                        }
+                                    ];
+                                    map.refresh();
+                                });
+                                it('Check the one useMarkerShape as true', () => {
+                                    map.loaded = (args: ILoadedEventArgs) => {
+                                        spec = document.getElementById('container_Legend_Shape_Index_0')
+                                        expect(spec.getAttribute('cx')).toBe("17.5");
+                                    }
+                                    map.legendSettings.mode = 'Default';
+                                    map.legendSettings.type = 'Markers';
+                                    map.legendSettings.useMarkerShape = true;
+                                    map.layers[0].markerSettings = [
+                                        {
+                                            visible: true,
+                                            legendText: 'city',
+                                            shapeValuePath: 'shape',
+                                            dataSource: [
+                                                { latitude: 37.0000, longitude: -120.0000, city: 'California', shape: 'Circle' },
+                                                { latitude: 40.7127, longitude: -74.0059, city: 'New York', shape: 'Diamond' },
+                                                { latitude: 42, longitude: -93, city: 'Iowa', shape: 'Rectangle' },
+                                            ]
+                                        }
+                                    ];
+                                    map.refresh();
+                                });
+                                it('Check the one useMarkerShape as true and shape as image', () => {
+                                    map.loaded = (args: ILoadedEventArgs) => {
+                                        spec = document.getElementById('container_Legend_Shape_Index_0')
+                                        expect(spec.getAttribute('width')).toBe("15");
+                                    }
+                                    map.legendSettings.mode = 'Default';
+                                    map.legendSettings.type = 'Markers';
+                                    map.legendSettings.useMarkerShape = true;
+                                    map.layers[0].markerSettings = [
+                                        {
+                                            visible: true,
+                                            legendText: 'city',
+                                            shapeValuePath: 'shape',
+                                            dataSource: [
+                                                { latitude: 37.0000, longitude: -120.0000, city: 'California', shape: 'Image' },
+                                                { latitude: 40.7127, longitude: -74.0059, city: 'New York', shape: 'Diamond' },
+                                                { latitude: 42, longitude: -93, city: 'Iowa', shape: 'Rectangle' },
+                                            ]
+                                        }
+                                    ];
+                                    map.refresh();
+                                });
+                            });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

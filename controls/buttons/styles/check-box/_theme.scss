@@ -110,7 +110,7 @@
           }
 
           &.e-stop {
-            @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'Material3' {
+            @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' {
               background-color: $cbox-checkmark-hover-bgcolor;
               border-color: $cbox-checkmark-hover-border-color;
             }
@@ -119,6 +119,9 @@
             }
             @else {
               color: $cbox-indeterminate-hover-color;
+            }
+            @if $skin-name == 'fluent2' {
+              color: $primary-bg-color-hover;
             }
           }
         }
@@ -193,37 +196,6 @@
         }
       }
 
-      .e-bigger .e-checkbox-wrapper,
-      .e-bigger.e-checkbox-wrapper,
-      .e-bigger .e-css.e-checkbox-wrapper,
-      .e-bigger.e-css.e-checkbox-wrapper {
-        &:hover {
-          & .e-frame {
-            @if $skin-name == 'FluentUI' {
-              font-size: $cbox-bigger-check-fontsize;
-
-              &:not(.e-check):not(.e-stop) {
-                color: $cbox-icon-color;
-                @media (max-width: 768px)  {
-                  color: $cbox-bgcolor;
-                }
-              }
-            }
-          }
-        }
-        
-        &.e-checkbox-disabled {
-          & .e-frame {
-            &.e-check,
-            &.e-stop {
-              @if $skin-name == 'Material3' {
-                line-height: 18px;
-              }
-            }
-          }
-        }
-      }
-
       .e-small .e-checkbox-wrapper,
       .e-small.e-checkbox-wrapper,
       .e-small .e-css.e-checkbox-wrapper,
@@ -236,27 +208,6 @@
               &:not(.e-check):not(.e-stop) {
                 color: $cbox-icon-color;
               }
-            }
-          }
-        }
-      }
-
-      .e-bigger.e-small .e-checkbox-wrapper,
-      .e-bigger.e-small.e-checkbox-wrapper,
-      .e-bigger.e-small .e-css.e-checkbox-wrapper,
-      .e-bigger.e-small.e-css.e-checkbox-wrapper {
-        &:hover {
-          & .e-frame {
-            @if $skin-name == 'FluentUI' {
-              font-size: $cbox-bigger-small-check-fontsize;
-
-              &:not(.e-check):not(.e-stop) {
-                color: $cbox-icon-color;
-              }
-            }
-            @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' {
-              background-color: $cbox-checkmark-hover-bgcolor;
-              border-color: $cbox-checkmark-hover-border-color;
             }
           }
         }

@@ -313,7 +313,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.enableQueryString) {
             const pageValue: string = new URL(window.location.href).searchParams.get('page');
             if (!isNullOrUndefined(pageValue) && window.location.href.indexOf('?page=') > 0) {
-                const currentPageValue: number = parseInt(pageValue, 10)
+                const currentPageValue: number = parseInt(pageValue, 10);
                 if (this.hasParent) {
                     (this.parent as { setProperties(prop: Object, muteOnChange: boolean): void })
                         .setProperties({ pageSettings: { currentPage: currentPageValue } }, true);

@@ -761,6 +761,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public checkedNodes: string[];
 
     /**
+     * Determines whether the disabled children will be checked or not if their parent is checked.
+     *
+     * @default true
+     */
+    @Property(true)
+    public checkDisabledChildren: boolean;
+
+    /**
      * Specifies one or more than one CSS classes to be added with root element of the TreeView to help customize the appearance of the component.
      * ```html
      * <div id="tree"></div>
@@ -1525,7 +1533,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         ? resultData[parseInt(i.toString(), 10)][this.fields.id].toString()
                         : null;
                     if (this.checkedNodes.indexOf(resultId) === -1 && !(this.isLoaded)) {
-                        this.checkedNodes.push(resultId);
+                        this.checkDisabledState(resultId, resultData[i as number]);
                     }
 
                     if (resultData[parseInt(i.toString(), 10)][this.fields.hasChildren]) {
@@ -1537,7 +1545,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                                 ? childData[parseInt(child.toString(), 10)][this.fields.id].toString()
                                 : null;
                             if (this.checkedNodes.indexOf(childId) === -1 && this.autoCheck) {
-                                this.checkedNodes.push(childId);
+                                this.checkDisabledState(childId, childData[child as number]);
                             }
                         }
                     }
@@ -1563,7 +1571,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                             ? checkedData[parseInt(index.toString(), 10)][this.fields.id].toString()
                             : null;
                         if (this.checkedNodes.indexOf(checkedId) === -1 && this.autoCheck) {
-                            this.checkedNodes.push(checkedId);
+                            this.checkDisabledState(checkedId, checkedData[index as number]);
                         }
                         if (this.checkedNodes.indexOf(checkedId) > -1 && this.validNodes.indexOf(checkedId) === -1) {
                             this.validNodes.push(checkedId);
@@ -1576,7 +1584,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     const fieldId: string = this.treeData[parseInt(index.toString(), 10)][this.fields.id] ? this.treeData[parseInt(index.toString(), 10)][this.fields.id].toString() : '';
                     if (this.treeData[parseInt(index.toString(), 10)][this.fields.isChecked] &&
                         !(this.isLoaded) && this.checkedNodes.indexOf(fieldId) === -1) {
-                        this.checkedNodes.push(fieldId);
+                        this.checkDisabledState(fieldId, this.treeData[index as number]);
                     }
                     if (this.checkedNodes.indexOf(fieldId) > -1 && this.validNodes.indexOf(fieldId) === -1) {
                         this.validNodes.push(fieldId);
@@ -1620,7 +1628,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     count++;
                 }
                 if (count === childNodes.length && this.checkedNodes.indexOf(id) === -1) {
-                    this.checkedNodes.push(id);
+                    this.checkDisabledState(id);
                 }
             }
             const preElement: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).
@@ -1673,12 +1681,16 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 if (count === childCheckedElement.length) {
                     const nodeCheck: string = node.getAttribute('data-uid');
                     if (this.checkedNodes.indexOf(nodeCheck) === -1) {
-                        this.checkedNodes.push(nodeCheck);
+                        this.checkDisabledState(nodeCheck);
                     }
                     this.changeState(node, 'check', null, true, true);
                 } else if (count === 0 && this.checkedNodes.length === 0) {
                     this.changeState(node, 'uncheck', null, true, true);
                 }
+            }
+            const parentElement: Element = closest(node, '.' + PARENTITEM);
+            if (!isNOU(parentElement)) {
+                this.ensureParentCheckState(closest(parentElement, '.' + LISTITEM));
             }
         }
     }
@@ -1722,10 +1734,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             const checkedChild: string = childItems[parseInt(index.toString(), 10)][this.fields.id] ? childItems[parseInt(index.toString(), 10)][this.fields.id].toString() : '';
             if (childItems[parseInt(index.toString(), 10)][this.fields.isChecked] &&
                 !(this.isLoaded) && this.checkedNodes.indexOf(checkedChild) === -1) {
-                this.checkedNodes.push(checkedChild);
+                this.checkDisabledState(checkedChild, childItems[index as number]);
             }
             if (this.checkedNodes.indexOf(checkedParent) !== -1 && this.checkedNodes.indexOf(checkedChild) === -1 && this.autoCheck) {
-                this.checkedNodes.push(checkedChild);
+                this.checkDisabledState(checkedChild, childItems[index as number]);
             }
             if (this.checkedNodes.indexOf(checkedChild) !== -1 && this.autoCheck) {
                 count++;
@@ -1742,7 +1754,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.updateChildCheckState(subChildItems, childItems[parseInt(index.toString(), 10)]);
             }
             if (count === childItems.length && this.autoCheck && this.checkedNodes.indexOf(checkedParent) === -1) {
-                this.checkedNodes.push(checkedParent);
+                this.checkDisabledState(checkedParent, treeData);
             }
         }
         if (count !== 0 && this.autoCheck) {
@@ -1872,7 +1884,33 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         return list;
     }
 
-    private finalizeNode(element: Element | Document): void {
+    private finalizeNode(element: Element | Document, isFromExpandAll?: boolean, expandChild?: boolean): void {
+        if (!isFromExpandAll) {
+            this.updateAttributes(element);
+        }
+        if (!expandChild) {
+            const eNodes: HTMLElement[] = selectAll('.' + EXPANDED, element);
+            if (!this.loadOnDemand && this.fields.dataSource instanceof DataManager) {
+                this.isInitalExpand = this.treeData.filter((e: { [key: string]: Object }) => e[this.fields.expanded] === true).length > 0
+                    ? true
+                    : this.isInitalExpand;
+            }
+            if (!this.isInitalExpand) {
+                for (let i: number = 0; i < eNodes.length; i++) {
+                    this.renderChildNodes(eNodes[parseInt(i.toString(), 10)]);
+                }
+            }
+            removeClass(eNodes, EXPANDED);
+        }
+        if (!isFromExpandAll) {
+            this.updateList();
+        }
+        if (this.isLoaded) {
+            this.updateCheckedProp();
+        }
+    }
+
+    private updateAttributes(element: Element | Document): void {
         const iNodes: HTMLElement[] = selectAll('.' + IMAGE, element);
         for (let k: number = 0; k < iNodes.length; k++) {
             iNodes[parseInt(k.toString(), 10)].setAttribute('alt', IMAGE);
@@ -1891,22 +1929,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             if (icon && icon.classList.contains(EXPANDABLE)) {
                 this.disableExpandAttr(cNodes[parseInt(j.toString(), 10)]);
             }
-        }
-        const eNodes: HTMLElement[] = selectAll('.' + EXPANDED, element);
-        if (!this.loadOnDemand && this.fields.dataSource instanceof DataManager) {
-            this.isInitalExpand = this.treeData.filter((e: { [key: string]: Object }) => e[this.fields.expanded] === true).length > 0
-                ? true
-                : this.isInitalExpand;
-        }
-        if (!this.isInitalExpand) {
-            for (let i: number = 0; i < eNodes.length; i++) {
-                this.renderChildNodes(eNodes[parseInt(i.toString(), 10)]);
-            }
-        }
-        removeClass(eNodes, EXPANDED);
-        this.updateList();
-        if (this.isLoaded) {
-            this.updateCheckedProp();
         }
     }
 
@@ -1950,7 +1972,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
             const checkedNodes: HTMLElement[] = selectAll('.' + CHECKBOXWRAP + ' .' + CHECK, ulElement);
             const indeterminateNodes: HTMLElement[] = selectAll('.' + INDETERMINATE, ulElement);
-            const nodes: HTMLElement[] = selectAll('.' + LISTITEM, ulElement);
+            const nodes: HTMLElement[] = selectAll(this.checkDisabledChildren ? '.' + LISTITEM : '.' + LISTITEM + ':not(.' + DISABLE + ')', ulElement);
             const checkBoxEle: Element = element.getElementsByClassName(CHECKBOXWRAP)[0];
             let count: number = nodes.length;
             let checkedCount: number = checkedNodes.length;
@@ -1981,7 +2003,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
     }
-    private ensureChildCheckState(element: Element | Document, e?: MouseEvent | KeyboardEventArgs): void {
+    private ensureChildCheckState(element: Element | Document, e?: MouseEvent | KeyboardEventArgs, isFromExpandAll?: boolean): void {
         if (!isNOU(element)) {
             const childElement: Element = select('.' + PARENTITEM, element);
             let checkBoxes: HTMLElement[];
@@ -2030,7 +2052,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     this.changeState(checkBoxes[parseInt(index.toString(), 10)], checkedState, e, true, true);
                 }
             }
-            if (this.autoCheck && this.isLoaded) {
+            if (this.autoCheck && this.isLoaded && !isFromExpandAll) {
                 this.updateParentCheckState();
             }
         }
@@ -2279,7 +2301,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 if (doCheck && count !== 0) {
                     this.changeState(childElement, 'indeterminate', null);
                 } else if (doCheck && count === subChild.length && this.checkedNodes.indexOf(parent) === -1) {
-                    this.checkedNodes.push(parent);
+                    this.checkDisabledState(parent);
                 } else if (!doCheck && count === 0 && this.parentNodeCheck.indexOf(parent) !== -1) {
                     this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(parent));
                 }
@@ -2299,6 +2321,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         doCheck?: boolean): void {
         let eventArgs: NodeCheckEventArgs;
         const currLi: Element = closest(wrapper, '.' + LISTITEM);
+        if (!this.checkDisabledChildren && currLi && (currLi.classList.contains(DISABLE)
+            || (this.disableNode && this.disableNode.indexOf(currLi.getAttribute('data-uid')) !== -1))) {
+            return;
+        }
         if (wrapper === currLi) {
             wrapper = select('.' + CHECKBOXWRAP, currLi);
         }
@@ -2361,7 +2387,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private addCheck(liEle: Element): void {
         const id: string = liEle.getAttribute('data-uid');
         if (!isNOU(id) && this.checkedNodes.indexOf(id) === -1) {
-            this.checkedNodes.push(id);
+            this.checkDisabledState(id);
         }
     }
 
@@ -2626,9 +2652,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 let end: number = 0;
                 const ul: HTMLElement = <HTMLElement>select('.' + PARENTITEM, currLi);
                 const liEle: HTMLElement = <HTMLElement>currLi;
-                this.setHeight(liEle, ul);
-                const activeElement: HTMLElement = <HTMLElement>select('.' + LISTITEM + '.' + ACTIVE, currLi);
                 if (this.isAnimate && !this.isRefreshed) {
+                    this.setHeight(liEle, ul);
+                    const activeElement: HTMLElement = <HTMLElement>select('.' + LISTITEM + '.' + ACTIVE, currLi);
                     this.aniObj.animate(ul, {
                         name: this.animation.expand.effect,
                         duration: (this.animation.expand.duration === 0 && animationMode === 'Enable') ? 400 : this.animation.expand.duration,
@@ -2798,7 +2824,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         args.element.parentElement.style.height = currentHeight + 'px';
     }
 
-    private renderChildNodes(parentLi: Element, expandChild?: boolean, callback?: Function, loaded?: boolean): void {
+    private renderChildNodes(
+        parentLi: Element, expandChild?: boolean, callback?: Function, loaded?: boolean, isFromExpandAll?: boolean): void {
         const eicon: Element = select('div.' + ICON, parentLi);
         if (isNOU(eicon)) {
             return;
@@ -2847,10 +2874,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 parentLi.appendChild(ListBase.createList(this.createElement, this.currentLoadData, this.listBaseOption));
                 this.expandNode(parentLi, eicon, loaded);
                 this.setSelectionForChildNodes(childItems);
-                this.ensureCheckNode(parentLi);
-                this.finalizeNode(parentLi);
+                this.ensureCheckNode(parentLi, isFromExpandAll);
+                this.finalizeNode(parentLi, isFromExpandAll, expandChild);
                 this.disableTreeNodes(childItems);
-                this.renderSubChild(parentLi, expandChild, loaded);
+                this.renderSubChild(parentLi, expandChild, loaded, isFromExpandAll);
             }
         }
     }
@@ -2889,6 +2916,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private disableTreeNodes(childItems: { [key: string]: Object }[]): void {
+        if (isNOU(this.disableNode) || this.disableNode.length === 0) {
+            return;
+        }
         let i: number = 0;
         while (i < childItems.length) {
             const id: string = childItems[parseInt(i.toString(), 10)][this.fields.id]
@@ -2908,6 +2938,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     private setSelectionForChildNodes(nodes: { [key: string]: Object }[]): void {
+        if (isNOU(this.selectedNodes) || this.selectedNodes.length === 0) {
+            return;
+        }
         let i: number;
         for (i = 0; i < nodes.length; i++) {
             const id: string = nodes[parseInt(i.toString(), 10)][this.fields.id]
@@ -2919,12 +2952,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    private ensureCheckNode(element: Element): void {
+    private ensureCheckNode(element: Element, isFromExpandAll?: boolean): void {
         if (this.showCheckBox) {
             this.ele = (this.checkedElement) ? this.checkedElement.indexOf(element.getAttribute('data-uid')) : null;
             if (this.autoCheck) {
-                this.ensureChildCheckState(element);
-                this.ensureParentCheckState(element);
+                this.ensureChildCheckState(element, null, isFromExpandAll);
+                if (isFromExpandAll ? (select('.' + CHECK, this.element) || select('.' + INDETERMINATE, this.element)) : true) {
+                    this.ensureParentCheckState(element);
+                }
             }
         }
         this.currentLoadData = null;
@@ -2955,73 +2990,80 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let childNodes: { [key: string]: Object }[];
         if (isNOU(obj)) {
             return childNodes;
-        } else if (this.dataType === 1) {
+        }
+        if (this.dataType === 1) {
             return this.getChildGroup(this.groupedData, parentId, isRoot);
-        } else {
-            if (typeof this.fields.child === 'string') {
-                const index: number = obj.findIndex((data: { [key: string]: Object }) =>
-                    getValue(this.fields.id, data) &&
-                    getValue(this.fields.id, data).toString() === parentId);
-                if (index !== -1) { return <{ [key: string]: Object }[]>getValue(this.fields.child, obj[parseInt(index.toString(), 10)]); }
-                if (index === -1) {
-                    for (let i: number = 0, objlen: number = obj.length; i < objlen; i++) {
-                        const tempArray: { [key: string]: Object }[] = getValue(this.fields.child, obj[parseInt(i.toString(), 10)]);
-                        const childIndex: number = !isNOU(tempArray)
-                            ? tempArray.findIndex((data: { [key: string]: Object }) =>
-                                getValue(this.fields.id, data) &&
-                                getValue(this.fields.id, data).toString() === parentId)
-                            : -1;
-                        if (childIndex !== -1) {
-                            return <{ [key: string]: Object }[]>getValue(this.fields.child, tempArray[parseInt(childIndex.toString(), 10)]);
-                        }
-                        else if (!isNOU(tempArray)) {
-                            childNodes = this.getChildNodes(tempArray, parentId);
-                            if (childNodes !== undefined) {
-                                break;
-                            }
-                        }
+        }
+        if (typeof this.fields.child === 'string') {
+            return this.findChildNodes(obj, this.fields.id, parentId) || this.findNestedChildNodes(obj, parentId, level) || [];
+        }
+        if (this.isChildObject()) {
+            let tempField: FieldsSettingsModel = !isNOU(level) ? this.fields : this.fields.child;
+            let i: number = 1;
+            while (i < level) {
+                if (!isNOU(tempField.child)) {
+                    tempField = tempField.child as FieldsSettingsModel;
+                } else {
+                    break;
+                }
+                i++;
+            }
+            this.updateListProp(tempField);
+            const index: number = obj.findIndex((data: { [key: string]: Object }) =>
+                getValue(this.fields.id, data) &&
+                getValue(this.fields.id, data).toString() === parentId);
+            if (index !== -1) {
+                return <{ [key: string]: Object }[]>getValue(('child' as string), obj[parseInt(index.toString(), 10)]);
+            }
+            if (index === -1) {
+                for (let i: number = 0, objlen: number = obj.length; i < objlen; i++) {
+                    const tempArray: { [key: string]: Object }[] = getValue('child', obj[parseInt(i.toString(), 10)]);
+                    const childIndex: number = !isNOU(tempArray)
+                        ? tempArray.findIndex((data: { [key: string]: Object }) =>
+                            getValue((this.fields.child as FieldsSettingsModel).id, data) &&
+                            getValue((this.fields.child as FieldsSettingsModel).id, data).toString() === parentId)
+                        : -1;
+                    if (childIndex !== -1) {
+                        return <{ [key: string]: Object }[]>getValue('child', tempArray[parseInt(childIndex.toString(), 10)]);
                     }
-                }
-            } else if (this.isChildObject()) {
-                let tempField: FieldsSettingsModel = !isNOU(level) ? this.fields : this.fields.child;
-                let i: number = 1;
-                while (i < level) {
-                    if (!isNOU(tempField.child)) {
-                        tempField = tempField.child as FieldsSettingsModel;
-                    } else {
-                        break;
-                    }
-                    i++;
-                }
-                this.updateListProp(tempField);
-                const index: number = obj.findIndex((data: { [key: string]: Object }) =>
-                    getValue(this.fields.id, data) &&
-                    getValue(this.fields.id, data).toString() === parentId);
-                if (index !== -1) {
-                    return <{ [key: string]: Object }[]>getValue(('child' as string), obj[parseInt(index.toString(), 10)]);
-                }
-                if (index === -1) {
-                    for (let i: number = 0, objlen: number = obj.length; i < objlen; i++) {
-                        const tempArray: { [key: string]: Object }[] = getValue('child', obj[parseInt(i.toString(), 10)]);
-                        const childIndex: number = !isNOU(tempArray)
-                            ? tempArray.findIndex((data: { [key: string]: Object }) =>
-                                getValue((this.fields.child as FieldsSettingsModel).id, data) &&
-                                getValue((this.fields.child as FieldsSettingsModel).id, data).toString() === parentId)
-                            : -1;
-                        if (childIndex !== -1) {
-                            return <{ [key: string]: Object }[]>getValue('child', tempArray[parseInt(childIndex.toString(), 10)]);
-                        }
-                        else if (!isNOU(tempArray)) {
-                            childNodes = this.getChildNodes(tempArray, parentId, false, level);
-                            if (childNodes !== undefined) {
-                                break;
-                            }
+                    else if (!isNOU(tempArray)) {
+                        childNodes = this.getChildNodes(tempArray, parentId, false, level);
+                        if (childNodes !== undefined) {
+                            break;
                         }
                     }
                 }
             }
         }
         return childNodes;
+    }
+
+    private findChildNodes(items: { [key: string]: Object }[], idField: string, parentId: string): { [key: string]: Object }[] {
+        const index: number = items.findIndex((data: { [key: string]: Object; }) => {
+            const value: string = getValue(idField, data);
+            return value && value.toString() === parentId;
+        });
+        if (index !== -1) {
+            return getValue(this.fields.child as string, items[index as number]) as { [key: string]: Object }[];
+        }
+        return null;
+    }
+
+    private findNestedChildNodes(items: { [key: string]: Object }[], parentId: string, level?: number): { [key: string]: Object }[] {
+        for (const item of items) {
+            const tempArray: { [key: string]: Object }[] = getValue(this.fields.child as string, item) as { [key: string]: Object }[];
+            if (!isNOU(tempArray)) {
+                const childNodes: { [key: string]: Object }[] = this.findChildNodes(tempArray, this.fields.id, parentId);
+                if (childNodes) {
+                    return childNodes;
+                }
+                const nestedChildNodes: { [key: string]: Object }[] = this.getChildNodes(tempArray, parentId, false, level);
+                if (nestedChildNodes && nestedChildNodes.length > 0) {
+                    return nestedChildNodes;
+                }
+            }
+        }
+        return undefined;
     }
 
     private getChildGroup(data: { [key: string]: Object }[][], parentId: string, isRoot: boolean): { [key: string]: Object }[] {
@@ -3044,7 +3086,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         return childNodes;
     }
 
-    private renderSubChild(element: Element, expandChild?: boolean, loaded?: boolean): void {
+    private renderSubChild(element: Element, expandChild?: boolean, loaded?: boolean, isFromExpandAll?: boolean): void {
         if (expandChild) {
             const cIcons: HTMLElement[] = selectAll('.' + EXPANDABLE, element);
             for (let i: number = 0, len: number = cIcons.length; i < len; i++) {
@@ -3055,7 +3097,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     if (loaded !== true) {
                         this.trigger('nodeExpanding', this.expandArgs);
                     }
-                    this.renderChildNodes(curLi, expandChild, null, loaded);
+                    this.renderChildNodes(curLi, expandChild, null, loaded, isFromExpandAll);
                 }
             }
         }
@@ -3207,9 +3249,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private expandHandler(e: TapEventArgs): void {
-        const target: Element = Browser.isDevice && e.originalEvent.changedTouches && !Browser.isIos
-            ? document.elementFromPoint(e.originalEvent.changedTouches[0].clientX, e.originalEvent.changedTouches[0].clientY)
-            : <Element>e.originalEvent.target;
+        const target: Element = <Element>e.originalEvent.target;
         if (!target || target.classList.contains(INPUT) || target.classList.contains(ROOT) ||
             target.classList.contains(PARENTITEM) || target.classList.contains(LISTITEM) ||
             target.classList.contains(ICON) || this.showCheckBox && closest(target, '.' + CHECKBOXWRAP)) {
@@ -3235,7 +3275,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private expandAction(
         currLi: Element, icon: Element, e: MouseEvent | KeyboardEventArgs | TapEventArgs,
-        expandChild?: boolean, callback?: Function): void {
+        expandChild?: boolean, callback?: Function, isFromExpandAll?: boolean): void {
         if (icon.classList.contains(PROCESS)) {
             return;
         } else {
@@ -3249,22 +3289,22 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     removeClass([icon], PROCESS);
                 }
                 else {
-                    this.nodeExpandAction(currLi, icon, expandChild, callback);
+                    this.nodeExpandAction(currLi, icon, expandChild, callback, isFromExpandAll);
                 }
             });
         }
         else {
-            this.nodeExpandAction(currLi, icon, expandChild, callback);
+            this.nodeExpandAction(currLi, icon, expandChild, callback, isFromExpandAll);
         }
     }
 
-    private nodeExpandAction(currLi: Element, icon: Element, expandChild?: boolean, callback?: Function): void {
+    private nodeExpandAction(currLi: Element, icon: Element, expandChild?: boolean, callback?: Function, isFromExpandAll?: boolean): void {
         const ul: Element = select('.' + PARENTITEM, currLi);
         if (ul && ul.nodeName === 'UL') {
             this.expandNode(currLi, icon);
         } else {
             this.isFirstRender = true;
-            this.renderChildNodes(currLi, expandChild, callback);
+            this.renderChildNodes(currLi, expandChild, callback, null, isFromExpandAll);
             const liEles: Element[] = selectAll('.' + LISTITEM, currLi);
             for (let i: number = 0; i < liEles.length; i++) {
                 const id: string = this.getId(liEles[parseInt(i.toString(), 10)]);
@@ -3489,7 +3529,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     ? resultData[parseInt(i.toString(), 10)][this.fields.isChecked].toString()
                     : null;
                 if (this.checkedNodes.indexOf(parentIndex) !== -1 && this.checkedNodes.indexOf(resultId) === -1) {
-                    this.checkedNodes.push(resultId);
+                    this.checkDisabledState(resultId, resultData[i as number]);
                     const childItems: { [key: string]: Object }[] = this.getChildNodes(this.treeData, resultId);
                     this.getChildItems(childItems, doCheck);
                     if (this.parentNodeCheck.indexOf(resultId) !== -1) {
@@ -3535,7 +3575,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         ? this.treeData[parseInt(i.toString(), 10)][this.fields.id].toString()
                         : null;
                     if (this.checkedNodes.indexOf(checkedId) === -1) {
-                        this.checkedNodes.push(checkedId);
+                        this.checkDisabledState(checkedId, this.treeData[i as number]);
                     }
                 }
             }
@@ -3544,6 +3584,27 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             if (childItems) {
                 this.childStateChange(childItems, parentIndex, childElement, doCheck);
             }
+        }
+    }
+    private checkDisabledState(resultId: string, currentItem?: { [key: string]: Object; }): void {
+        let requiresUpdate: boolean = this.checkDisabledChildren;
+        if (!requiresUpdate) {
+            let shouldPreventUpdate: boolean = true;
+            if (this.loadOnDemand && this.fields.htmlAttributes) {
+                currentItem = isNOU(currentItem) ? currentItem : this.getNodeObject(resultId);
+                if (!isNOU(currentItem)) {
+                    const htmlAttributes: { [key: string]: string } = currentItem[this.fields.htmlAttributes] as { [key: string]: string };
+                    if (htmlAttributes && htmlAttributes.class.indexOf(DISABLE) !== -1) {
+                        shouldPreventUpdate = false;
+                    }
+                }
+            }
+            const liElement: Element = select(`[data-uid="${resultId}"]`, this.element);
+            requiresUpdate = liElement ? !liElement.classList.contains(DISABLE)
+                : (this.disableNode.indexOf(resultId) === -1 && shouldPreventUpdate);
+        }
+        if (requiresUpdate) {
+            this.checkedNodes.push(resultId);
         }
     }
     private getChildItems(childItems: { [key: string]: Object }[], doCheck?: boolean): void {
@@ -3558,7 +3619,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.checkedNodes.splice(this.checkedNodes.indexOf(childId), 1);
             }
             if (this.checkedNodes.indexOf(childId) === -1 && doCheck) {
-                this.checkedNodes.push(childId);
+                this.checkDisabledState(childId, childItems[i as number]);
             }
             if (childIsCheck === 'true' && !doCheck) {
                 this.updateField(this.treeData, this.fields, childId, 'isChecked', null);
@@ -3586,7 +3647,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 : null;
             if (this.autoCheck) {
                 if (this.checkedNodes.indexOf(parent) !== -1 && this.checkedNodes.indexOf(checkedChild) === -1) {
-                    this.checkedNodes.push(checkedChild);
+                    this.checkDisabledState(checkedChild, childItems[i as number]);
                     if (this.parentNodeCheck.indexOf(checkedChild) !== -1) {
                         this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(checkedChild), 1);
                     }
@@ -3605,7 +3666,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     this.checkedNodes = [];
                 } else {
                     if (this.checkedNodes.indexOf(checkedChild) === -1) {
-                        this.checkedNodes.push(checkedChild);
+                        this.checkDisabledState(checkedChild, childItems[i as number]);
                     }
                 }
             }
@@ -4014,7 +4075,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (!select('.' + TREEINPUT, this.element)) {
             return;
         }
-        const target: Element = <Element>e.target;
+        let target: Element = <Element>e.target;
         const newText: string = (<HTMLInputElement>target).value;
         const txtEle: HTMLElement = closest(target, '.' + LISTTEXT) as HTMLElement;
         const liEle: Element = closest(target, '.' + LISTITEM);
@@ -4026,6 +4087,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.appendNewText(liEle, txtEle, newText, true);
         }
         EventHandler.remove(target, 'blur', this.inputFocusOut);
+        this.inputObj = null;
+        detach(target);
+        target = null;
     }
 
     private appendNewText(liEle: Element, txtEle: HTMLElement, newText: string, isInput: boolean): void {
@@ -4843,10 +4907,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private expandAllNodes(excludeHiddenNodes: boolean): void {
         const eIcons: Element[] = this.getVisibleNodes(excludeHiddenNodes, selectAll('.' + EXPANDABLE, this.element));
-        for (let i: number = 0, len: number = eIcons.length; i < len; i++) {
-            const icon: Element = eIcons[parseInt(i.toString(), 10)];
+        for (const icon of eIcons) {
             const liEle: Element = closest(icon, '.' + LISTITEM);
-            this.expandAction(liEle, icon, null, true);
+            this.expandAction(liEle, icon, null, true, null, true);
         }
     }
 
@@ -5531,7 +5594,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         }
                     }
                     if (count === childNodes.length && this.checkedNodes.indexOf(parent) === -1 && parent) {
-                        this.checkedNodes.push(parent);
+                        this.checkDisabledState(parent);
                     }
                 }
             }
@@ -5539,7 +5602,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             for (let a: number = 0; a < this.treeData.length; a++) {
                 const index: string = this.treeData[parseInt(a.toString(), 10)][this.fields.id] ? this.treeData[parseInt(a.toString(), 10)][this.fields.id].toString() : '';
                 if (index === node && this.checkedNodes.indexOf(node) === -1) {
-                    this.checkedNodes.push(node);
+                    this.checkDisabledState(node);
                     break;
                 }
                 const childItems: { [key: string]: Object }[] = getValue(
@@ -5574,11 +5637,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     : null;
                 if (treeData && checkedParent && this.autoCheck) {
                     if (this.checkedNodes.indexOf(checkedParent) !== -1 && this.checkedNodes.indexOf(checkNode) === -1) {
-                        this.checkedNodes.push(checkNode);
+                        this.checkDisabledState(checkNode, childItems[index as number]);
                     }
                 }
                 if (checkNode === node && this.checkedNodes.indexOf(node) === -1) {
-                    this.checkedNodes.push(node);
+                    this.checkDisabledState(node);
                 }
                 const subChildItems: { [key: string]: Object }[] = this.getChildNodes(this.treeData, checkNode);
                 if (subChildItems) {
@@ -5593,11 +5656,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 const checkedChild: string = childItems[parseInt(index.toString(), 10)][this.fields.id] ? childItems[parseInt(index.toString(), 10)][this.fields.id].toString() : '';
                 if (treeData && checkedParent && this.autoCheck) {
                     if (this.checkedNodes.indexOf(checkedParent) !== -1 && this.checkedNodes.indexOf(checkedChild) === -1) {
-                        this.checkedNodes.push(checkedChild);
+                        this.checkDisabledState(checkedChild, childItems[index as number]);
                     }
                 }
                 if (checkedChild === node && this.checkedNodes.indexOf(node) === -1) {
-                    this.checkedNodes.push(node);
+                    this.checkDisabledState(node);
                 }
                 const subChildItems: { [key: string]: Object }[] = getValue(
                     this.fields.child.toString(),
@@ -5610,7 +5673,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     count++;
                 }
                 if (count === childItems.length && this.checkedNodes.indexOf(checkedParent) === -1 && this.autoCheck) {
-                    this.checkedNodes.push(checkedParent);
+                    this.checkDisabledState(checkedParent, treeData);
                 }
             }
         }
@@ -5959,6 +6022,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.doSelectionAction();
                 break;
             case 'showCheckBox':
+            case 'checkDisabledChildren':
                 this.reRenderNodes();
                 break;
             case 'sortOrder':
@@ -6172,9 +6236,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {string[] | Element[]} nodes - Specifies the array of TreeView nodes ID/array of TreeView nodes.
      * @param  {number} level - TreeView nodes will expand up to the given level.
      * @param  {boolean} excludeHiddenNodes - Whether or not to exclude hidden nodes when expanding all nodes.
+     * @param  {boolean} preventAnimation - Prevent the expand animation when expanding all nodes.
      * @returns {void}
      */
-    public expandAll(nodes?: string[] | Element[], level?: number, excludeHiddenNodes?: boolean): void {
+    public expandAll(nodes?: string[] | Element[], level?: number, excludeHiddenNodes?: boolean, preventAnimation?: boolean): void {
+        this.isAnimate = !preventAnimation;
         if (!isNOU(nodes)) {
             this.doGivenAction(nodes, EXPANDABLE, true);
         } else {
@@ -6182,8 +6248,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.expandByLevel(select('.' + PARENTITEM, this.element), level, excludeHiddenNodes);
             } else {
                 this.expandAllNodes(excludeHiddenNodes);
+                if (!this.loadOnDemand) {
+                    this.updateAttributes(this.element);
+                    this.updateList();
+                }
             }
         }
+        this.isAnimate = true;
     }
 
     /**

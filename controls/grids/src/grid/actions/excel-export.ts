@@ -23,7 +23,6 @@ import { getPrintGridModel, getUid, isExportColumns, updateColumnTypeForExportCo
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { AutoFilters } from '@syncfusion/ej2-excel-export/src/auto-filters';
-import { GroupLazyLoadRenderer } from '../renderer/group-lazy-load-renderer';
 import { defaultCurrencyCode } from '@syncfusion/ej2-base';
 
 /**
@@ -186,7 +185,8 @@ export class ExcelExport {
                 });
             });
         } else if (!isNullOrUndefined(exportProperties) && exportProperties.exportType === 'CurrentPage' &&
-            !(this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length && !this.parent.getDataModule().isRemote())) {
+            !(this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length
+                && !this.parent.getDataModule().isRemote())) {
             return new Promise((resolve: Function) => {
                 this.init(gObj);
                 this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, this.parent.getCurrentViewRecords());
@@ -194,11 +194,12 @@ export class ExcelExport {
             });
         } else {
             const allPromise: Promise<Object>[] = [];
-            let query: Query = ExportHelper.getQuery(gObj, this.data);
-            if (this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length && !this.parent.getDataModule().isRemote()) {
-                if (isNullOrUndefined(exportProperties)) exportProperties = { hierarchyExportMode: 'All' };
+            const query: Query = ExportHelper.getQuery(gObj, this.data);
+            if (this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length
+                && !this.parent.getDataModule().isRemote()) {
+                if (isNullOrUndefined(exportProperties)) { exportProperties = { hierarchyExportMode: 'All' }; }
                 exportProperties.hierarchyExportMode = exportProperties.hierarchyExportMode === 'None' ? 'None' : 'All';
-                if (exportProperties.hierarchyExportMode === 'All') query.lazyLoad = [];
+                if (exportProperties.hierarchyExportMode === 'All') { query.lazyLoad = []; }
             }
             allPromise.push(this.data.getData({}, query));
             allPromise.push(this.helper.getColumnData(<Grid>gObj));

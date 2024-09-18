@@ -938,7 +938,7 @@ describe('Circular-Gauge Control', () => {
             ele.remove();
         });
        
-        it('Checking range position', (done: Function) => {
+        it('Checking range position position as inside', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Range_0');
                 value = svg.getAttribute('d').split(' ');
@@ -1289,7 +1289,7 @@ describe('Circular-Gauge Control', () => {
             ele.remove();
         });
        
-        it('Checking range position', (done: Function) => {
+        it('Checking range position as inside', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Range_0');
                 value = svg.getAttribute('d').split(' ');
@@ -1345,6 +1345,67 @@ describe('Circular-Gauge Control', () => {
                 expect(svg.getAttribute('stroke-dasharray')).toBe('0');
                 done();
             };
+            gauge.refresh();
+        });
+        it('Checking the Tailwind theme', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe('#0369A1');
+                done();
+            };
+            gauge.theme = 'Tailwind';
+            gauge.axes[0].ranges = [
+                {
+                    start: 0, end: 100,
+                    radius: '100%',
+                    startWidth: 30, endWidth: 30
+                },
+            ];
+            gauge.refresh();
+        });
+        it('Checking the TailwindDark theme', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe('#10B981');
+                done();
+            };
+            gauge.theme = 'TailwindDark';
+            gauge.refresh();
+        });
+        it('Checking the Bootstrap5 theme', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe('#6610F2');
+                done();
+            };
+            gauge.theme = 'Bootstrap5';
+            gauge.refresh();
+        });
+        it('Checking the Bootstrap5Dark theme', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe('#6610F2');
+                done();
+            };
+            gauge.theme = 'Bootstrap5Dark';
+            gauge.refresh();
+        });
+        it('Checking the Fluent theme', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe('#614570');
+                done();
+            };
+            gauge.theme = 'Fluent';
+            gauge.refresh();
+        });
+        it('Checking the FluentDark theme', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe('#8AB113');
+                done();
+            };
+            gauge.theme = 'FluentDark';
             gauge.refresh();
         });
 

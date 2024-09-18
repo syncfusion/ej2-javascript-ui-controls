@@ -1093,6 +1093,11 @@ describe('Grid checkbox selection functionality', () => {
                     ],
                 }, done);
         });
+        // code coverage
+        it('getCheckAllStatus code coverage', function () {
+            selectionModule = gridObj.selectionModule;
+            (selectionModule as any).getCheckAllStatus();
+        });
         it('Selecting first row in first page', function () {
             selectionModule = gridObj.selectionModule;
             rows = gridObj.getRows();

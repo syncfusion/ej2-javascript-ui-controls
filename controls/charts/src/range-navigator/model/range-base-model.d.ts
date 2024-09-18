@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { RangeNavigatorType, ThumbType } from '../utils/enum';import { Border, Animation, Font } from '../../common/model/base';import { BorderModel, AnimationModel, FontModel } from '../../common/model/base-model';import { Axis } from '../../chart/axis/axis';import { TooltipDisplayMode } from  '../utils/enum';import { Rect } from '@syncfusion/ej2-svg-base';import { RangeNavigator, DataPoint } from '../index';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { RangeNavigatorType, ThumbType } from '../utils/enum';import { Border, Animation, Font, Periods } from '../../common/model/base';import { BorderModel, AnimationModel, FontModel } from '../../common/model/base-model';import { Axis } from '../../chart/axis/axis';import { TooltipDisplayMode } from  '../utils/enum';import { Rect } from '@syncfusion/ej2-svg-base';import { RangeNavigator, DataPoint } from '../index';
 
 /**
  * Interface for a class RangeNavigatorSeries

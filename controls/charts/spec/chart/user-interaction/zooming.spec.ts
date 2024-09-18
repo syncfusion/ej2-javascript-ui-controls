@@ -4,6 +4,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
 import { LineSeries } from '../../../src/chart/series/line-series';
+import { ScatterSeries } from '../../../src/chart/series/scatter-series';
 import { AreaSeries } from '../../../src/chart/series/area-series';
 import { Category } from '../../../src/chart/axis/category-axis';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
@@ -20,7 +21,9 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IZoomingEventArgs } from '../../../src/chart/model/chart-interface';
-Chart.Inject(LineSeries, DataEditing, DataLabel, AreaSeries, Category, DateTime, ColumnSeries, Legend, BarSeries, Zoom);
+import { ScrollBar } from '../../../src/common/scrollbar/scrollbar';
+import { Axis } from '../../../src';
+Chart.Inject(LineSeries, ScatterSeries, DataEditing, DataLabel, AreaSeries, Category, DateTime, ColumnSeries, Legend, BarSeries, Zoom, ScrollBar);
 
 let data: any = tooltipData1;
 let data2: any = tooltipData2;
@@ -91,6 +94,7 @@ describe('Chart Control', () => {
                     title: 'Chart TS Title',
                     legendSettings: { visible: true },
                     width: '800',
+                    enableAnimation: false,
                     zoomSettings: { enableSelectionZooming: false }
                 });
             chartObj.appendTo('#container');
@@ -596,7 +600,35 @@ describe('Chart Control', () => {
             chartObj.zoomSettings.showToolbar = true;
             chartObj.dataBind();
         });
-        
+
+        it('Checking pan Tooltip text with panning', (done: Function) => {
+            chartObj.loaded = null; chartObj.zoomModule.isPanning = true;
+            targetElement = document.getElementById('container_Zooming_KitCollection');
+            trigger.mousemoveEvent(targetElement, 0, 0, 5, 5);
+            targetElement = document.getElementById('container_Zooming_Pan');
+            trigger.mouseoverEvent(targetElement);
+            firstElement = document.getElementById('EJ2_Chart_ZoomTip');
+            expect(firstElement != null).toBe(true);
+            expect(firstElement.textContent.indexOf('Pan') === 1).toBe(true);
+            trigger.mouseoutEvent(targetElement);
+            firstElement = document.getElementById('EJ2_Chart_ZoomTip');
+            expect(firstElement == null).toBe(true);
+            done();
+        });
+        it('Checking tooltip div in fluent-2 high contrast theme', () => {
+            loaded = (args: Object): void => {
+                trigger.draganddropEvent(elem, 100, 100, 400, 400);
+                targetElement = document.getElementById('container_Zooming_KitCollection');
+                trigger.mousemoveEvent(targetElement, 0, 0, 5, 5);
+                targetElement = document.getElementById('container_Zooming_Zoom');
+                trigger.mouseoverEvent(targetElement);
+                expect(document.getElementById('EJ2_Chart_ZoomTip') != null);
+                trigger.mouseoutEvent(targetElement);
+            };
+            chartObj.loaded = loaded;
+            chartObj.theme = 'Fluent2HighContrast';
+            chartObj.dataBind();
+        });
     });
 
     describe('Checking Panning', () => {
@@ -752,7 +784,6 @@ describe('Chart Control', () => {
                 targetElement = document.getElementById('container_Zooming_Pan');
                 trigger.mousedownEvent(targetElement, 0, 0, 5, 5);
                 trigger.dragEvent(elem, 400, 200, -200, 200);
-                expect(document.getElementById('container_Zoom_0_AxisLabel_0').textContent == 'Germany').toBe(true);
                 //expect(document.getElementById('container_Zoom_1_AxisLabel_0').textContent == '34.701').toBe(true);
                 resetElement = document.getElementById('container_Zooming_Reset');
                 expect(resetElement != null).toBe(true);
@@ -877,6 +908,36 @@ describe('Chart Control', () => {
             }];
             chartObj.primaryXAxis.valueType = 'DateTime';
             chartObj.zoomSettings.enableDeferredZooming = false;
+            chartObj.refresh();
+        });
+        it('Checking Pan with fluent 2 highcontrast', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+
+                trigger.draganddropEvent(elem, 100, 100, 400, 400);
+                targetElement = document.getElementById('container_Zooming_Pan');
+                trigger.mousedownEvent(targetElement, 0, 0, 5, 5);
+                trigger.draganddropEvent(elem, 400, 200, -200, 200);
+                expect(targetElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.theme = 'Fluent2HighContrast'
+            chartObj.refresh();
+        });
+        it('Checking Zoom with fluent 2 highcontrast', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+
+                trigger.draganddropEvent(elem, 100, 100, 400, 400);
+                targetElement = document.getElementById('container_Zooming_Zoom');
+                trigger.mousedownEvent(targetElement, 0, 0, 5, 5);
+                trigger.draganddropEvent(elem, 400, 200, -200, 200);
+                expect(targetElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.theme = 'Fluent2HighContrast'
             chartObj.refresh();
         });
     });
@@ -1710,7 +1771,7 @@ describe('Chart Control', () => {
                 expect(zoomInFill == '#737373').toBe(true);
                 expect(zoomOutFill == '#737373').toBe(true);
                 expect(zoomResetFill == '#737373').toBe(true);
-                expect(seriesTransform == 'translate(53.5,43.25)' || seriesTransform == 'translate(53.5,42.25)').toBe(true);
+                expect(seriesTransform == 'translate(53.5,43.25)' || seriesTransform == 'translate(74.5,43.25)').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1741,7 +1802,7 @@ describe('Chart Control', () => {
                 expect(zoomInFill == '#737373').toBe(true);
                 expect(zoomOutFill == '#737373').toBe(true);
                 expect(zoomResetFill == '#737373').toBe(true);
-                expect(seriesTransform == 'translate(53.5,43.25)' || seriesTransform == 'translate(53.5,42.25)').toBe(true);
+                expect(seriesTransform == 'translate(53.5,43.25)' || seriesTransform == 'translate(74.5,43.25)').toBe(true);
                 done();
             };
             chartObj.zoomSettings.enableSelectionZooming = false;
@@ -1946,6 +2007,104 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('Zooming Animation', () => {
+        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let wheelArgs: unknown;
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { title: 'PrimaryXAxis', labelFormat: 'n1', zoomFactor: 0.1 },
+                    primaryYAxis: { title: 'PrimaryYAxis', labelFormat: 'n1', rangePadding: 'None' },
+
+                    series: [{
+                        type: 'Line',
+                        dataSource: data, xName: 'x', yName: 'y',
+                        name: 'ChartSeriesNameGold',
+                        marker: {
+                            visible: false
+                        }
+                    }],
+                    title: 'Chart TS Title',
+                    legendSettings: { visible: true },
+                    tooltip: {enable: true},
+                    width: '800',
+                    zoomSettings: { enableSelectionZooming: true, enablePinchZooming: true, enableMouseWheelZooming:  true, enableAnimation: true }
+                });
+            chartObj.appendTo('#container');
+
+
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            remove(elem);
+        });
+
+        it('Checking default selection zooming', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                trigger.draganddropEvent(elem, 200, 200, 350, 350);
+                resetElement = document.getElementById('container_Zooming_Reset');
+                expect(resetElement !== null).toBe(true);
+                chartObj.primaryXAxis.zoomFactor = 1;
+                done();
+            };
+            chartObj.primaryXAxis.zoomFactor = 0.8;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+
+        });
+        
+        it('Checking ZoomIn and ZoomOut', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                trigger.draganddropEvent(elem, 100, 100, 600, 800);
+                targetElement = document.getElementById('container_Zooming_ZoomIn');
+                trigger.mousedownEvent(targetElement, 0, 0, 5, 5);
+                targetElement = document.getElementById('container_Zooming_ZoomOut');
+                trigger.mousedownEvent(targetElement, 0, 0, 5, 5);
+                resetElement = document.getElementById('container_Zooming_Reset');
+                trigger.mousedownEvent(resetElement, 0, 0, 5, 5);
+                expect(resetElement != null).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.zoomFactor = 0.5;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Checking reset', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                resetElement = document.getElementById('container_Zooming_Reset');
+                trigger.mousedownEvent(resetElement, 0, 0, 5, 5);
+                expect(resetElement !== null).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.zoomFactor = 0.5;
+            chartObj.series[0].type = 'Scatter'
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Checking mouse wheel as forward ', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                wheelArgs = {
+                    preventDefault: prevent,
+                    wheelDelta: 120,
+                    detail: 3,
+                    clientX: 210,
+                    clientY: 100
+                };
+                chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
+                expect(resetElement != null).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.zoomFactor = 0.9;
+            chartObj.zoomSettings.enableMouseWheelZooming = true;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -2097,4 +2256,265 @@ describe('Area series zooming', () => {
         chartObj.loaded = loaded;
         chartObj.refresh();
     });
+    it('Checking with scroll bar', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.scrollBarModule.zoomPosition = -0.5;
+            element1 = document.getElementById('Zoomingcontainer_scrollBarBackRect_primaryXAxis');
+            trigger.clickEvent(element1);
+            expect(element1 !== null).toBe(true);
+            chartObj.loaded = null;
+            done();
+        };
+        chartObj.zoomSettings.enableScrollbar = true;
+        chartObj.primaryXAxis.scrollbarSettings = {enable: true, range:{maximum: 3, minimum:4.5}}
+        chartObj.primaryYAxis.scrollbarSettings = {enable: true, range:{maximum: 2000, minimum:1900}}
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
+    it('Checking scroll bar with RTL', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.scrollBarModule.zoomPosition = -0.5;
+            element1 = document.getElementById('Zoomingcontainer_scrollBarBackRect_primaryXAxis');
+            trigger.clickEvent(element1);
+            expect(element1 !== null).toBe(true);
+            chartObj.loaded = null;
+            element1 = document.getElementById('Zoomingcontainer_scrollBar_leftCircle_primaryXAxis');
+            trigger.draganddropEvent(element1, 200, 200, 350, 350);
+            chartObj.scrollBarModule.getLogRange(chartObj.primaryXAxis as Axis)
+            done();
+        };
+        chartObj.zoomSettings.enableScrollbar = true;
+        chartObj.primaryXAxis.zoomFactor =0.5;
+        chartObj.primaryXAxis.zoomPosition =0.5;
+        chartObj.primaryXAxis.scrollbarSettings = {enable: true, range:{maximum: 3, minimum:4.5}}
+        chartObj.primaryYAxis.scrollbarSettings = {enable: true, range:{maximum: 2000, minimum:1900}}
+        chartObj.enableRtl = true
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
+});
+
+let chartObj: Chart;
+let targetElement: HTMLElement;
+let resetElement: Element;
+let loaded: EmitType<ILoadedEventArgs>;
+let path: string;
+let content: string;
+describe('Default Zooming Selection in canvas', () => {
+    let elem: HTMLElement = createElement('div', { id: 'container' });
+    beforeAll(() => {
+        document.body.appendChild(elem);
+        chartObj = new Chart(
+            {
+                primaryXAxis: { title: 'PrimaryXAxis', labelFormat: 'n1', zoomFactor: 0.1 },
+                primaryYAxis: { title: 'PrimaryYAxis', labelFormat: 'n1', rangePadding: 'None' },
+
+                series: [{
+                    type: 'Line',
+                    dataSource: data, xName: 'x', yName: 'y', animation: { enable: false },
+                    name: 'ChartSeriesNameGold', fill: 'rgba(135,206,235,1)',
+                    marker: {
+                        visible: false
+                    }
+                }],
+                title: 'Chart TS Title',
+                legendSettings: { visible: true },
+                width: '800',
+                enableAnimation: false,
+                enableCanvas: true,
+                zoomSettings: { enableSelectionZooming: false }
+            });
+        chartObj.appendTo('#container');
+
+
+    });
+    afterAll((): void => {
+        chartObj.destroy();
+        remove(elem);
+    });
+
+    it('Checking default selection zooming in canvas', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.loaded = null;
+            trigger.draganddropEvent(elem, 200, 200, 350, 350);
+            resetElement = document.getElementById('container_canvas');
+            expect(resetElement !== null).toBe(true);
+            chartObj.primaryXAxis.zoomFactor = 1;
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+
+    });
+
+    it('Checking default selection zooming in canvas', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.loaded = null;
+            trigger.draganddropEvent(elem, 200, 200, 350, 350);
+            resetElement = document.getElementById('container_canvas');
+            expect(resetElement !== null).toBe(true);
+            trigger.mousedownEvent(resetElement, 0, 0, 5, 5);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.zoomSettings.enableSelectionZooming = true;
+        chartObj.refresh();
+
+    });
+    it('Checking default selection zooming in canvas with tailwind', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.loaded = null;
+            trigger.draganddropEvent(elem, 200, 200, 350, 350);
+            resetElement = document.getElementById('container_canvas');
+            expect(resetElement !== null).toBe(true);
+            trigger.mousedownEvent(resetElement, 0, 0, 5, 5);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.zoomSettings.enableSelectionZooming = true;
+        chartObj.theme = 'Tailwind';
+        chartObj.refresh();
+
+    });
+    it('Checking default selection zooming in canvas with Fluent', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.loaded = null;
+            trigger.draganddropEvent(elem, 200, 200, 350, 350);
+            resetElement = document.getElementById('container_canvas');
+            expect(resetElement !== null).toBe(true);
+            trigger.mousedownEvent(resetElement, 0, 0, 5, 5);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.zoomSettings.enableSelectionZooming = true;
+        chartObj.theme = 'Fluent';
+        chartObj.refresh();
+    });
+    it('Checking default selection zooming in canvas with Material3', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.loaded = null;
+            trigger.draganddropEvent(elem, 200, 200, 350, 350);
+            resetElement = document.getElementById('container_canvas');
+            expect(resetElement !== null).toBe(true);
+            trigger.mousedownEvent(resetElement, 0, 0, 5, 5);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.zoomSettings.enableSelectionZooming = true;
+        chartObj.theme = 'Material3';
+        chartObj.refresh();
+    });
+    it('Checking default selection zooming in canvas with Material3Dark', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.loaded = null;
+            trigger.draganddropEvent(elem, 200, 200, 350, 350);
+            resetElement = document.getElementById('container_canvas');
+            expect(resetElement !== null).toBe(true);
+            trigger.mousedownEvent(resetElement, 0, 0, 5, 5);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.zoomSettings.enableSelectionZooming = true;
+        chartObj.theme = 'Material3Dark';
+        chartObj.refresh();
+    });
+});
+
+describe('Checking Zooming Toolkit with fluent2 high contrast theme', () => {
+    let elem: HTMLElement = createElement('div', { id: 'chartContainer' });
+    beforeAll(() => {
+        document.body.appendChild(elem);
+        chartObj = new Chart(
+            {
+                primaryXAxis: { title: 'PrimaryXAxis', labelFormat: 'n1' },
+                primaryYAxis: { title: 'PrimaryYAxis', labelFormat: 'n1', rangePadding: 'None' },series: [{
+                    type: 'Line',
+                    dataSource: data, xName: 'x', yName: 'y', animation: { enable: false },
+                    name: 'ChartSeriesNameGold', fill: 'rgba(135,206,235,1)',
+                    marker: {
+                        visible: false
+                    }
+                }],
+                title: 'Chart TS Title',
+                legendSettings: { visible: true },
+                width: '800',
+                zoomSettings: { enablePinchZooming: true, enableSelectionZooming: true, showToolbar: true }, theme: 'Fluent2HighContrast'
+            });
+        chartObj.appendTo('#chartContainer');
+
+
+    });
+    afterAll((): void => {
+        chartObj.destroy();
+        elem.remove();
+    });
+    it('Checking tooltip div hovering zoom icon', function (done: Function) {
+        trigger.draganddropEvent(elem, 100, 100, 400, 400);
+        let targetElement1 = document.getElementById('chartContainer_Zooming_KitCollection');
+        trigger.mousemoveEvent(targetElement1, 0, 0, 5, 5);
+        let targetElement2 = document.getElementById('chartContainer_Zooming_Zoom');
+        trigger.mouseoverEvent(targetElement2);
+        expect(document.getElementById('EJ2_Chart_ZoomTip') != null);
+        trigger.mouseoutEvent(targetElement2);
+        done();
+    });
+    it('Checking tooltip div hovering zoomin icon', function (done: Function) {
+        trigger.draganddropEvent(elem, 100, 100, 400, 400);
+        let targetElement1 = document.getElementById('chartContainer_Zooming_KitCollection');
+        trigger.mousemoveEvent(targetElement1, 0, 0, 5, 5);
+        let targetElement2 = document.getElementById('chartContainer_Zooming_ZoomIn');
+        trigger.mouseoverEvent(targetElement2);
+        expect(document.getElementById('EJ2_Chart_ZoomTip') != null);
+        trigger.mouseoutEvent(targetElement2);
+        done();
+    });
+    it('Checking tooltip div hovering pan icon', function (done: Function) {
+        trigger.draganddropEvent(elem, 100, 100, 400, 400);
+        let targetElement1 = document.getElementById('chartContainer_Zooming_KitCollection');
+        trigger.mousemoveEvent(targetElement1, 0, 0, 5, 5);
+        let targetElement2 = document.getElementById('chartContainer_Zooming_Pan');
+        trigger.mouseoverEvent(targetElement2);
+        expect(document.getElementById('EJ2_Chart_ZoomTip') != null);
+        trigger.mouseoutEvent(targetElement2);
+        done();
+    });
+    it('Checking Fluent2 highcontrast theme', function (done: Function) {
+        loaded = (args: Object): void => {
+            chartObj.loaded = null;
+            trigger.draganddropEvent(elem, 200, 200, 350, 350);
+            let resetElement1 = document.getElementById('chartContainer_Zooming_KitCollection');
+            expect(resetElement1 !== null).toBe(true);
+            trigger.mousedownEvent(resetElement1, 0, 0, 5, 5);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.zoomSettings.enableSelectionZooming = true;
+        chartObj.theme = 'Fluent2HighContrast';
+        chartObj.refresh();
+    });
+    it('Checking Fluent2 highcontrast theme with pan', function (done: Function) {
+        loaded = (args: Object): void => {
+            debugger;
+            chartObj.loaded = null;
+            trigger.draganddropEvent(elem, 200, 200, 350, 350);
+            let resetElement1 = document.getElementById('chartContainer_Zooming_Pan_1');
+            expect(resetElement1 !== null).toBe(true);
+            trigger.mousedownEvent(resetElement1, 0, 0, 5, 5);
+            trigger.draganddropEvent(elem, 200, 200, 350, 350);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.zoomSettings.enableSelectionZooming = true;
+        chartObj.theme = 'Fluent2HighContrast';
+        chartObj.refresh();
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

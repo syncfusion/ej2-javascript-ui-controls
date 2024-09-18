@@ -386,6 +386,11 @@
   --color-sf-contextual-text: #616161;
   --color-sf-cell-selection-bg-color: #ebf3fc;
   --color-sf-document-editor-border-color: #00000000;
+  --color-sf-holiday-bg-color: #f5f5f5;
+  --color-sf-taskbar-bg: #b4d6fa;
+  --color-sf-taskbar-border: #0f6cbd;
+  --color-sf-taskbar-progress: #0f6cbd;
+  --color-sf-sort-bg-color: #e6e6e6;
 }
 
 $content-bg-color: mapcolorvariable('content-bg-color') !default;
@@ -677,9 +682,9 @@ $msg-danger-color-alt2: mapcolorvariable('msg-danger-color-alt2') !default;
 $msg-danger-bg-color-alt2: mapcolorvariable('msg-danger-bg-color-alt2') !default;
 $msg-danger-border-color-alt2: mapcolorvariable('msg-danger-border-color-alt2') !default;
 
-$msg-danger-icon-color: mapcolorvariable('$msg-danger-icon-color') !default;
-$msg-danger-icon-color-alt1: mapcolorvariable('$msg-danger-icon-color-alt1') !default;
-$msg-danger-icon-color-alt2: mapcolorvariable('$msg-danger-icon-color-alt2') !default;
+$msg-danger-icon-color: mapcolorvariable('msg-danger-icon-color') !default;
+$msg-danger-icon-color-alt1: mapcolorvariable('msg-danger-icon-color-alt1') !default;
+$msg-danger-icon-color-alt2: mapcolorvariable('msg-danger-icon-color-alt2') !default;
 
 $msg-danger-close-icon-color: mapcolorvariable('msg-danger-close-icon-color') !default;
 $msg-danger-close-icon-color-alt1: mapcolorvariable('msg-danger-close-icon-color-alt1') !default;
@@ -719,7 +724,7 @@ $msg-warning-icon-color-alt2: mapcolorvariable('msg-warning-icon-color-alt2') !d
 
 $msg-warning-close-icon-color: mapcolorvariable('msg-warning-close-icon-color') !default;
 $msg-warning-close-icon-color-alt1: mapcolorvariable('msg-warning-close-icon-color-alt1') !default;
-$msg-warning-close-icon-color-alt2: mapcolorvariable('$msg-warning-close-icon-color-alt2') !default;
+$msg-warning-close-icon-color-alt2: mapcolorvariable('msg-warning-close-icon-color-alt2') !default;
 
 $utility-primary-lighter: mapcolorvariable('utility-primary-lighter');
 $utility-success-lighter: mapcolorvariable('utility-success-lighter');
@@ -778,6 +783,11 @@ $toolbar-icon-color: mapcolorvariable('toolbar-icon-color') !default;
 $contextual-text: mapcolorvariable('contextual-text') !default;
 $cell-selection-bg-color: mapcolorvariable('cell-selection-bg-color') !default;
 $document-editor-border-color: mapcolorvariable('document-editor-border-color') !default;
+$holiday-bg-color: mapcolorvariable('holiday-bg-color') !default;
+$taskbar-bg: mapcolorvariable('taskbar-bg') !default;
+$taskbar-border: mapcolorvariable('taskbar-border') !default;
+$taskbar-progress: mapcolorvariable('taskbar-progress') !default;
+$sort-bg-color: mapcolorvariable('sort-bg-color') !default;
 
 $black:#000 !default;
 $white:#fff !default;
@@ -1049,6 +1059,7 @@ $border-error: $border-error !default;
 $border-success: $border-success !default;
 $border-info: $border-info !default;
 $spreadsheet-gridline: $spreadsheet-gridline !default;
+$spreadsheet-indicator: 'data:image/gif;base64,R0lGODlhBgAEAJECAP///zF6uf///wAAACH/C05FVFNDQVBFMi4wAwEAAAAh/wtYTVAgRGF0YVhNUDw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQ1IDc5LjE2MzQ5OSwgMjAxOC8wOC8xMy0xNjo0MDoyMiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTkgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjlFMTA1Q0MyRDA5RTExRTlBRTg3ODJBNDEwNzEwQzM3IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjlFMTA1Q0MzRDA5RTExRTlBRTg3ODJBNDEwNzEwQzM3Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6OUUxMDVDQzBEMDlFMTFFOUFFODc4MkE0MTA3MTBDMzciIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6OUUxMDVDQzFEMDlFMTFFOUFFODc4MkE0MTA3MTBDMzciLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4B//79/Pv6+fj39vX08/Lx8O/u7ezr6uno5+bl5OPi4eDf3t3c29rZ2NfW1dTT0tHQz87NzMvKycjHxsXEw8LBwL++vby7urm4t7a1tLOysbCvrq2sq6qpqKempaSjoqGgn56dnJuamZiXlpWUk5KRkI+OjYyLiomIh4aFhIOCgYB/fn18e3p5eHd2dXRzcnFwb25tbGtqaWhnZmVkY2JhYF9eXVxbWllYV1ZVVFNSUVBPTk1MS0pJSEdGRURDQkFAPz49PDs6OTg3NjU0MzIxMC8uLSwrKikoJyYlJCMiISAfHh0cGxoZGBcWFRQTEhEQDw4NDAsKCQgHBgUEAwIBAAAh+QQFAwACACwAAAAABgAEAAACB4wDcJh6uQoAIfkEBQMAAgAsAAAAAAYABAAAAgiMAXYZqM1CAQAh+QQFAwACACwBAAAABAAEAAACBhQUhnksBQAh+QQFAwACACwBAAAABAAEAAACBoQihpcMBQAh+QQFAwACACwAAAAABgAEAAACBwSCYcl6aQoAIfkEBQMAAgAsAAAAAAYABAAAAghEHmComHtAAQA7' !default;
 $flyout-border: $flyout-border !default;
 
 $tooltip-bg-color: $tooltip-bg-color !default;
@@ -1516,6 +1527,7 @@ $btn-border-radius:4px !default;
 $btn-border-radius:4px !default;
 
 $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
+$progress-btn-spinner-color: #ebf3fc !default;
 
 .e-dark-mode{
   --color-sf-black: #000;
@@ -1889,9 +1901,14 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-contextual-text: #fff;
   --color-sf-cell-selection-bg-color: #08233b;
   --color-sf-document-editor-border-color: #00000000;
+  --color-sf-holiday-bg-color: #141414;
+  --color-sf-taskbar-bg: #0e4775;
+  --color-sf-taskbar-border: #115ea3;
+  --color-sf-taskbar-progress: #115ea3;
+  --color-sf-sort-bg-color: #333333;
 }
 
-.e-high-contrast{
+.e-high-contrast {
   --color-sf-black: #000;
   --color-sf-white: #fff;
   --color-sf-content-bg-color: #000;
@@ -1913,9 +1930,9 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-flyout-bg-color-selected: var(--color-sf-content-bg-color-hover);
   --color-sf-flyout-bg-color-focus: var(--color-sf-content-bg-color-hover);
   --color-sf-overlay-bg-color: rgba(0, 0, 0, .4);
-  --color-sf-table-bg-color-hover: #1a3bff;
-  --color-sf-table-bg-color-pressed: #1a3bff;
-  --color-sf-table-bg-color-selected: #1a3bff;
+  --color-sf-table-bg-color-hover: #1aebff;
+  --color-sf-table-bg-color-pressed: #1aebff;
+  --color-sf-table-bg-color-selected: #1aebff;
 
   --color-sf-content-text-color: #fff;
   --color-sf-content-text-color-alt1: var(--color-sf-content-text-color);
@@ -1962,7 +1979,7 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
 
   --color-sf-primary: #1aebff;
   --color-sf-primary-text-color: #000;
-  --color-sf-primary-light: rgba(26, 235, 255, .8);
+  --color-sf-primary-light: rgba(72, 245, 255, 1);
   --color-sf-primary-lighter: var(--color-sf-primary-light);
   --color-sf-primary-dark: var(--color-sf-primary);
   --color-sf-primary-darker: var(--color-sf-primary);
@@ -1990,9 +2007,9 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-primary-bg-color: #1aebff;
   --color-sf-primary-border-color: var(--color-sf-primary-bg-color);
   --color-sf-primary-text: #000;
-  --color-sf-primary-bg-color-hover: var(--color-sf-primary-bg-color);
-  --color-sf-primary-border-color-hover: var(--color-sf-primary-bg-color);
-  --color-sf-primary-text-hover: var(--color-sf-primary-text);
+  --color-sf-primary-bg-color-hover: #fff;
+  --color-sf-primary-border-color-hover: #fff;
+  --color-sf-primary-text-hover: #000;
   --color-sf-primary-bg-color-pressed: var(--color-sf-primary-bg-color);
   --color-sf-primary-border-color-pressed: var(--color-sf-primary-bg-color);
   --color-sf-primary-text-pressed: var(--color-sf-primary-text);
@@ -2002,9 +2019,9 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-primary-bg-color-disabled: #000;
   --color-sf-primary-border-color-disabled: #3ff23f;
   --color-sf-primary-text-disabled: var(--color-sf-primary-border-color-disabled);
-  --color-sf-primary-bg-color-selected: var(--color-sf-primary-bg-color);
-  --color-sf-primary-border-color-selected: var(--color-sf-primary-bg-color);
-  --color-sf-primary-text-selected: var(--color-sf-primary-text);
+  --color-sf-primary-bg-color-selected: #fff;
+  --color-sf-primary-border-color-selected: #fff;
+  --color-sf-primary-text-selected: #000;
 
   --color-sf-secondary-bg-color: #000;
   --color-sf-secondary-border-color: var(--color-sf-border);
@@ -2022,15 +2039,15 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-secondary-border-color-disabled: #3ff23f;
   --color-sf-secondary-text-color-disabled: var(--color-sf-secondary-border-color-disabled);
   --color-sf-secondary-bg-color-selected: var(--color-sf-secondary-bg-color-hover);
-  --color-sf-secondary-border-color-selected: var(--color-sf-secondary-border-color-hover);
+  --color-sf-secondary-border-color-selected: #fff;
   --color-sf-secondary-text-color-selected: var(--color-sf-secondary-text-color-hover);
 
   --color-sf-success-bg-color: #107c10;
   --color-sf-success-border-color: var(--color-sf-success-bg-color);
   --color-sf-success-text: #fff;
-  --color-sf-success-bg-color-hover: var(--color-sf-success-bg-color);
-  --color-sf-success-border-color-hover: var(--color-sf-success-border-color);
-  --color-sf-success-text-hover: var(--color-sf-success-text);
+  --color-sf-success-bg-color-hover: #fff;
+  --color-sf-success-border-color-hover: #fff;
+  --color-sf-success-text-hover: #000;
   --color-sf-success-bg-color-pressed: var(--color-sf-success-bg-color);
   --color-sf-success-border-color-pressed: var(--color-sf-success-border-color);
   --color-sf-success-text-pressed: var(--color-sf-success-text);
@@ -2041,15 +2058,15 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-success-border-color-disabled: #3ff23f;
   --color-sf-success-text-disabled: var(--color-sf-success-border-color-disabled);
   --color-sf-success-bg-color-selected: var(--color-sf-success-bg-color);
-  --color-sf-success-border-color-selected: var(--color-sf-success-border-color);
+  --color-sf-success-border-color-selected: #fff;
   --color-sf-success-text-selected: var(--color-sf-success-text);
 
   --color-sf-warning-bg-color: #f7630c;
   --color-sf-warning-border-color: var(--color-sf-warning-bg-color);
   --color-sf-warning-text: #000;
-  --color-sf-warning-bg-color-hover: var(--color-sf-warning-bg-color);
-  --color-sf-warning-border-color-hover: var(--color-sf-warning-border-color);
-  --color-sf-warning-text-hover: var(--color-sf-warning-text);
+  --color-sf-warning-bg-color-hover: #fff;
+  --color-sf-warning-border-color-hover: #fff;
+  --color-sf-warning-text-hover: #000;
   --color-sf-warning-bg-color-pressed: var(--color-sf-warning-bg-color);
   --color-sf-warning-border-color-pressed: var(--color-sf-warning-border-color);
   --color-sf-warning-text-pressed: var(--color-sf-warning-text);
@@ -2060,15 +2077,15 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-warning-border-color-disabled: #3ff23f;
   --color-sf-warning-text-disabled: var(--color-sf-primary-text-disabled);
   --color-sf-warning-bg-color-selected: var(--color-sf-warning-bg-color);
-  --color-sf-warning-border-color-selected: var(--color-sf-warning-bg-color-selected);
+  --color-sf-warning-border-color-selected: #fff;
   --color-sf-warning-text-selected: var(--color-sf-warning-text);
 
   --color-sf-info-bg-color: #0099bc;
   --color-sf-info-border-color: var(--color-sf-info-bg-color);
   --color-sf-info-text: #000;
-  --color-sf-info-bg-color-hover: var(--color-sf-info-bg-color);
-  --color-sf-info-border-color-hover: var(--color-sf-info-bg-color-hover);
-  --color-sf-info-text-hover: var(--color-sf-info-text);
+  --color-sf-info-bg-color-hover: #fff;
+  --color-sf-info-border-color-hover: #fff;
+  --color-sf-info-text-hover: #000;
   --color-sf-info-bg-color-pressed: var(--color-sf-info-bg-color);
   --color-sf-info-border-color-pressed: var(--color-sf-info-border-color);
   --color-sf-info-text-pressed: var(--color-sf-info-text);
@@ -2079,15 +2096,15 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-info-border-color-disabled: #3ff23f;
   --color-sf-info-text-disabled: var(--color-sf-info-border-color-disabled);
   --color-sf-info-bg-color-selected: var(--color-sf-info-bg-color);
-  --color-sf-info-border-color-selected: var(--color-sf-info-bg-color-selected);
+  --color-sf-info-border-color-selected: #fff;
   --color-sf-info-text-selected: var(--color-sf-info-text);
 
   --color-sf-danger-bg-color: #c50f1f;
   --color-sf-danger-border-color: var(--color-sf-danger-bg-color);
   --color-sf-danger-text: #fff;
-  --color-sf-danger-bg-color-hover: var(--color-sf-danger-bg-color);
-  --color-sf-danger-border-color-hover: var(--color-sf-danger-bg-color-hover);
-  --color-sf-danger-text-hover: var(--color-sf-danger-text);
+  --color-sf-danger-bg-color-hover: #fff;
+  --color-sf-danger-border-color-hover: #fff;
+  --color-sf-danger-text-hover: #000;
   --color-sf-danger-bg-color-pressed: var(--color-sf-danger-bg-color);
   --color-sf-danger-border-color-pressed: var(--color-sf-danger-bg-color-pressed);
   --color-sf-danger-text-pressed: var(--color-sf-danger-text);
@@ -2098,7 +2115,7 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-danger-border-color-disabled: #3ff23f;
   --color-sf-danger-text-disabled: var(--color-sf-danger-border-color-disabled);
   --color-sf-danger-bg-color-selected: var(--color-sf-danger-bg-color);
-  --color-sf-danger-border-color-selected: var(--color-sf-danger-bg-color-selected);
+  --color-sf-danger-border-color-selected: #fff;
   --color-sf-danger-text-selected: var(--color-sf-danger-text);
 
   --color-sf-primary-outline: var(--color-sf-primary);
@@ -2125,7 +2142,7 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-appbar-border-color-alt2: var(--color-sf-appbar-bg-color-alt1);
   --color-sf-appbar-hover-bg-color-alt2: var(--color-sf-appbar-color-alt1);
 
-  --color-sf-diagram-palette-background: #000;
+  --color-sf-diagram-palette-background: #cccccc;
   --color-sf-diagram-palette-hover-background: var(--color-sf-content-bg-color-hover);
   --color-sf-diagram-palette-selected-background: var(--color-sf-diagram-palette-hover-background);
 
@@ -2254,7 +2271,7 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-secondary-badge-bg-color: #000;
   --color-sf-secondary-badge-bg-color-focus: #fff;
 
-  --color-sf-skeleton-bg-color: #fff;
+  --color-sf-skeleton-bg-color: #ffffff;
 
   --color-sf-tab-selected-bg-color-disabled: #000;
   --color-sf-tab-selected-text-color-disabled: #3ff23f;
@@ -2263,4 +2280,10 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-contextual-text: #000;
   --color-sf-cell-selection-bg-color: #1aecff1f;
   --color-sf-document-editor-border-color: #fff;
+  --color-sf-holiday-bg-color: #333333;
+
+  --color-sf-taskbar-bg: #3e047d;
+  --color-sf-taskbar-border: #fff;
+  --color-sf-taskbar-progress: #6e06f1;
+  --color-sf-sort-bg-color: #333333;
 }

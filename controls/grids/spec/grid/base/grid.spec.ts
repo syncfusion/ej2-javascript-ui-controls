@@ -31,7 +31,8 @@ import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { ExcelExport } from '../../../src/grid/actions/excel-export';
 import { PdfExport } from '../../../src/grid/actions/pdf-export';
 import { Resize } from '../../../src/grid/actions/resize';
-Grid.Inject(Aggregate, Page, Edit, Resize, Toolbar, Group, ColumnChooser, VirtualScroll, InfiniteScroll, DetailRow, PdfExport, ExcelExport, Filter);
+import { RowDD } from '../../../src/grid/actions/row-reorder';
+Grid.Inject(Aggregate, Page, Edit, Resize, Toolbar, Group, ColumnChooser, VirtualScroll, InfiniteScroll, DetailRow, PdfExport, ExcelExport, Filter, RowDD);
 
 describe('Grid base module', () => {
     describe('Grid properties', () => {
@@ -1051,11 +1052,11 @@ describe('Grid base module', () => {
         it('openColumnChooser testing', (done: Function) => {
             setTimeout(() => {
                 gridObj.openColumnChooser();
-                let cheEle: any = gridObj.element.querySelectorAll('.e-cc-chbox')[0];
-                let cheEle1: any = gridObj.element.querySelectorAll('.e-cc-chbox')[1];
+                let cheEle: any = document.querySelectorAll('.e-cc-chbox')[0];
+                let cheEle1: any = document.querySelectorAll('.e-cc-chbox')[1];
                 cheEle.click();
                 cheEle1.click();
-                (<HTMLElement>gridObj.element.querySelector('.e-cc_okbtn')).click();
+                (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
                 gridObj.openColumnChooser();
                 gridObj.openColumnChooser();
                 done();
@@ -1197,7 +1198,13 @@ describe('Grid base module', () => {
                 selectionModule.selectCells([{ rowIndex: 0, cellIndexes: [0] }]);
                 //expect(rows[3].hasAttribute('aria-selected')).toBeFalsy();
                 expect(rows[0].firstElementChild.classList.contains('e-selectionbackground')).toBeFalsy();
-                });
+            });
+
+            // code coverage
+            it('mergeColumns  testing', () => {
+                (gridObj as any).mergeColumns(gridObj.columns, gridObj.columns);
+                (gridObj as any).leftrightColumnWidth('left');
+            });
             afterAll(() => {
                 destroy(gridObj);
                 gridObj = selectionModule = rows = null;
@@ -2229,6 +2236,13 @@ describe('get edit template =>', () => {
         distinctStringValues(['a', 'b', 'a', 'c', 'c']);
         done();
     });
+
+    it('selection file code coverage - 1', () => {
+        gridObj.selectedRowIndex = -5;
+        (gridObj.selectionModule as any).selectRowIndex();
+        
+    });
+
 
     afterAll(() => {
         destroy(gridObj);
@@ -4554,6 +4568,423 @@ describe('EJ2-883850: Custom localization apply on expand/collapse icon =>', () 
         grid = null;
     });
 
+});
+
+
+describe('Code Coverage feature - 1 =>', () => {
+    let grid: Grid;
+    beforeAll((done: Function) => {
+        grid = createGrid(
+            {
+            dataSource: filterData,
+            allowPaging: true,
+            pageSettings: { pageSize: 6 },
+            columns: [
+                { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                { field: 'Freight', headerText: 'Freight', width: 150, format:'C2', textAlign: 'Right' },
+                { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+            ]
+        },done);
+    });
+
+    it('Remove Focus Check', () => {
+        (grid as any).focusModule.focusOutFromHeader();
+        (grid as any).focusModule.content.matrix.get(0, 0 , [-1, 0]);
+        (grid.element.querySelectorAll('.e-rowcell')[2] as any).click();
+        (grid as any).focusModule.currentInfo.element.parentElement.innerHTML = '';
+        (grid as any).isReact = true;
+        (grid as any).focusModule.removeFocus();
+    });
+
+    it('searchBlur coverage', () => {
+        (grid as any).focusModule.content.getNextCurrent();
+        grid.columns = [];
+        (grid as any).focusModule.setFirstFocusableTabIndex();
+        (grid as any).headerModule.headerTable = null;
+        (grid as any).headerModule.refreshUI();
+        (grid as any).headerModule.droppable = null;
+        (grid as any).headerModule.droppableDestroy();
+        (grid as any).headerModule.drag({});
+    });
+
+    afterAll(() => {
+        destroy(grid);
+        grid = null;
+    });
+
+
+    describe('Code Coverage feature - 2 =>', () => {
+        let grid: Grid;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            let templete: string = '<div></div>';
+            document.body.appendChild(createElement('div', { innerHTML: templete, id: 'toolbar' }));
+            grid = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 6 },
+                    toolbarTemplate: '#toolbar',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                        { field: 'Freight', headerText: 'Freight', width: 150, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+                    ]
+                }, done);
+        });
+
+        it('focus focusVirtualElement and focusOutFromHeader coverage', () => {
+            (grid as any).focusModule.showAddNewRowFocus();
+            (grid as any).focusModule.focusVirtualElement();
+            (grid as any).focusModule.focusOutFromHeader({ preventDefault: preventDefault });
+            (grid as any).headerModule.createTable(grid.element.querySelector('.e-headercontent'));
+            (grid as any).contentModule.contentTable.innerHTML = '';
+            (grid as any).focusModule.setLastContentCellTabIndex()
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = preventDefault = null;
+        });
+    });
+
+
+    describe('Code Coverage feature - 3 =>', () => {
+        let grid: Grid;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    toolbar: ['Add'],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                        { field: 'Freight', headerText: 'Freight', width: 150, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+                    ]
+                }, done);
+        });
+
+
+        it('onkeypress shiftTab key coverage', () => {
+            (grid as any).focusModule.onKeyPress ({ target: grid.element,  action: 'shiftTab', preventDefault: preventDefault });
+            (grid as any).focusModule.onKeyPress ({ target: grid.element.querySelector('.e-groupdroparea'),  action: 'shiftTab', preventDefault: preventDefault });
+            grid.groupSettings.showDropArea  = false;
+            (grid as any).focusModule.onKeyPress ({ target: grid.element.querySelector('.e-toolbar'),  action: 'shiftTab', preventDefault: preventDefault });
+        });
+
+        it('onkeypress tab key coverage', () => {
+            (grid as any).focusModule.onKeyPress({ target: grid.element, action: 'tab', preventDefault: preventDefault });
+            (grid as any).toolbar = null;
+            (grid as any).focusModule.onKeyPress({ target: grid.element.querySelector('.e-groupdroparea'), action: 'tab', preventDefault: preventDefault });
+        });
+
+        it('focusOutFromHeader coverage', () => {
+            (grid as any).focusModule.content.getNextCurrent(undefined);
+            (grid as any).focusModule.focusOutFromHeader({ preventDefault: preventDefault });
+            (grid as any).headerModule.createHeader(undefined);
+        });
+
+
+        afterAll(() => {
+            destroy(grid);
+            grid = preventDefault = null;
+        });
+    });
+
+
+    describe('Code Coverage feature - 4 =>', () => {
+        let grid: Grid;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    toolbar: ['Add'],
+                    groupSettings: { columns: ['CustomerID'] },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                        { field: 'Freight', headerText: 'Freight', width: 150, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+                    ]
+                }, done);
+        });
+
+        it('editmodule  coverage', () => {
+            (grid as any).deleteRecord();
+            (grid as any).startEdit();
+            (grid as any).endEdit();
+            (grid as any).closeEdit();
+            (grid as any).addRecord();
+            (grid as any).deleteRow();
+            (grid as any).editCell();
+            (grid as any).saveCell();
+            (grid as any).updateCell();
+            (grid as any).updateRow();
+            (grid as any).filterByColumn();
+            (grid as any).clearFiltering();
+            (grid as any).removeFilteredColsByField();
+
+        });       
+
+        it('onkeypress shiftTab key coverage', () => {
+            (grid as any).createColumnchooser();
+            (grid as any).focusModule.onKeyPress ({ target: grid.element.querySelector('.e-toolbar'),  action: 'tab', preventDefault: preventDefault });
+            (grid as any).focusModule.onKeyPress({ target: grid.element, action: 'tab', preventDefault: preventDefault });
+            (grid as any).focusModule.onKeyPress ({ target: grid.element.querySelector('.e-toolbar'),  action: 'tab', preventDefault: preventDefault });
+        });       
+
+        afterAll(() => {
+            destroy(grid);
+            grid = preventDefault = null;
+        });
+    });
+
+    
+
+    describe('grid file code coverage - 1', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    height: 300,
+                    frozenRows: 2,
+                    allowFiltering: true,
+                    allowResizing: true,
+                    resizeSettings: { mode: 'Auto' },
+                    allowSelection: false,
+                    filterSettings: { type: 'Menu' },
+                    showColumnChooser: true,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Top' },
+                    columns: [
+                        {
+                            field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                            validationRules: { required: true, number: true }, width: 140
+                        },
+                        {
+                            field: 'ShipCountry', headerText: 'Ship Country', validationRules: { required: true }, width: 150, allowFiltering: false
+                        }
+                    ],
+                }, done);
+        });
+
+        it('grid file method complete coverage', () => {
+            gridObj.resetFilterDlgPosition('');
+            gridObj.resetFilterDlgPosition('ShipCountry');
+            gridObj.resetFilterDlgPosition('OrderID');
+            (gridObj as any).calculatePageSizeByParentHeight();
+            (gridObj as any).applyBiggerTheme();
+            (gridObj as any).clearCellSelection();
+            (gridObj as any).clearRowSelection();
+            (gridObj as any).selectCells();
+            (gridObj as any).selectRowsByRange();
+            (gridObj as any).selectRow();
+            (gridObj as any).selectRows();
+            (gridObj as any).clearSelection();
+            (gridObj as any).selectCell();
+            (gridObj as any).getSelectedColumnsUid();
+            (gridObj as any).getSelectedRowCellIndexes();
+            (gridObj as any).getSelectedRecords();
+            (gridObj as any).clearSorting();
+            (gridObj as any).removeSortColumn();
+            (gridObj as any).sortColumn();
+            (gridObj as any).updateExternalMessage();
+            (gridObj as any).goToPage();
+            (gridObj as any).detailExpandAll();
+            (gridObj as any).detailCollapseAll();
+            (gridObj as any).openColumnChooser();
+            (gridObj as any).groupColumn();
+            (gridObj as any).groupExpandAll();
+            (gridObj as any).groupCollapseAll();
+            (gridObj as any).clearGrouping();
+            (gridObj as any).ungroupColumn();
+            (gridObj as any).getNoncontentHeight();
+            (gridObj as any).restoreAdjustColumns();
+            (gridObj as any).preventAdjustColumns();
+            (gridObj as any).reorderColumns();
+            (gridObj as any).reorderColumnByIndex();
+            (gridObj as any).reorderColumnByTargetIndex();
+            (gridObj as any).reorderRows();
+            (gridObj as any).enableToolbarItems();
+            (gridObj as any).getColumnHeaderByUid('grid-column');
+            (gridObj as any).getColumnHeaderByField('');
+            (gridObj as any).rowObject();
+            (gridObj as any).refreshReactHeaderTemplateByUid();
+            (gridObj as any).maintainSelection(-1);
+            (gridObj as any).refreshMaskRow();
+            (gridObj as any).leftrightColumnWidth();
+            gridObj.textWrapSettings.wrapMode = 'Content';
+            (gridObj as any).removeTextWrap();
+            gridObj.isDestroyed = true;
+            gridObj.refresh();
+            gridObj.isDestroyed = false;
+        });
+
+
+        it('renderRowElement and deleteRowElement complete coverage', () => {
+            gridObj.element.classList.add('e-frozenrow-empty');
+            (gridObj as any).renderRowElement({ OrderID: 101 }, 0);
+            let target = gridObj.element.querySelector('.e-rowcell');
+            gridObj.element.querySelector('.e-row').classList.add('e-unboundcelldiv');
+            (gridObj as any).dblClickHandler({ target: target });
+        });
+
+        it('setNewData complete coverage', () => {
+            (gridObj as any).setNewData();
+        });
+
+        it('grid file method complete coverage', () => {
+            gridObj.isEdit = true;
+            (gridObj as any).keyActionHandler({ action: 'leftArrow' });
+            (gridObj as any).keyDownHandler({});
+            (gridObj as any).keyDownHandler({ altKey: true, keyCode: 1212 });
+            (gridObj as any).keyDownHandler({ keyCode: 13 });
+            // (gridObj as any).keyDownHandler({});
+            (gridObj as any).mergeColumns(gridObj.columns, gridObj.columns);
+            (gridObj as any).headerModule.headerPanel = null;
+            (gridObj as any).getNoncontentHeight();
+            (gridObj as any).contentModule.contentTable.innerHTML = '';
+            (gridObj as any).getAllDataRows();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+
+    describe('coverage improvement row-reorder file - 1', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 1),
+                    allowRowDragAndDrop: true,
+                    height: 300,
+                    enableInfiniteScrolling : true,
+                    groupSettings: { enableLazyLoading: true },
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', width: 10 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                }, done);
+        });
+        it('row reorder file method coverage', () => {
+            gridObj.isDestroyed = true;
+            (gridObj as any).isCheckBoxSelection = true;
+            (gridObj.rowDragAndDropModule as any).dragStop({});
+            gridObj.isDestroyed = false;
+            (gridObj.rowDragAndDropModule as any).singleRowDrop({target: gridObj.element.querySelector('.e-rowcell'), droppedElement: gridObj.element.firstElementChild});
+            (gridObj.rowDragAndDropModule as any).enableAfterRender({});
+            var dropELem: any = document.createElement('div');
+            dropELem.setAttribute('action', 'grouping');
+            (gridObj.rowDragAndDropModule as any).columnDrop({
+                target: gridObj.element.querySelector('.e-rowcell'),
+                droppedElement: dropELem
+            });
+            (gridObj.rowDragAndDropModule as any).removeLastRowBorder();
+            (gridObj.rowDragAndDropModule as any).moveDragRows({ target: dropELem });
+            (gridObj.rowDragAndDropModule as any).setScrollDown(gridObj.element.querySelector('.e-content'), 2);
+            (gridObj.rowDragAndDropModule as any).startedRow = gridObj.element.querySelector('.e-row');
+            (gridObj.rowDragAndDropModule as any).currentViewData();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+
+    describe('coverage improvement row-reorder file - 2', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 5),
+                    allowRowDragAndDrop: true,
+                    height: 300,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', width: 10 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                    childGrid: {
+                        dataSource: filterData.slice(0, 5),
+                        queryString: 'ShipCountry',
+                        columns: [
+                            { headerText: 'ShipCountry', field: 'ShipCountry' },
+                            { field: 'ShipName', headerText: 'Ship Name', textAlign: 'Left', width: 100 }
+                        ]
+                    },
+                }, done);
+        });
+        it('row reorder file method coverage - 2', () => {
+            gridObj.detailRowModule.expand(gridObj.getDataRows()[1].querySelector('.e-detailrowcollapse'));
+            gridObj.detailRowModule.expand(gridObj.getDataRows()[3].querySelector('.e-detailrowcollapse'));
+        });
+        it('row reorder coverage', () => {
+            let rows: Element[] = gridObj.getDataRows();
+            (gridObj.rowDragAndDropModule as any).rowOrder({
+                target: gridObj.element.querySelector('.e-rowcelldrag'),
+                droppedElement: rows[1].querySelector('.e-rowcell'),
+                dropIndex: 1,
+                fromIndex: 2,
+                rows: [rows[3]],
+                draggableType: 'rows',
+                data: gridObj.getRowsObject()[3].data
+            });
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('coverage improvement row-reorder file - 2', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 5),
+                    allowRowDragAndDrop: true,
+                    height: 300,
+                    frozenRows: 2,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, showAddNewRow: true},
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', width: 10 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                }, done);
+        });
+
+        it('frozen row reorder coverage - 2', () => {
+            (gridObj.rowDragAndDropModule as any).isNewRowAdded();
+            (gridObj.rowDragAndDropModule as any).getParentGrid(gridObj.element);
+            let rows: Element[] = gridObj.getDataRows();
+            (gridObj.rowDragAndDropModule as any).rowOrder({
+                target: gridObj.element.querySelector('.e-rowcelldrag'),
+                droppedElement: rows[1].querySelector('.e-rowcell'),
+                dropIndex: 1,
+                fromIndex: 2,
+                rows: [rows[3]],
+                draggableType: 'rows',
+                data: gridObj.getRowsObject()[3].data
+            });
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });
 
 describe('EJ2-899559 - Column jumping issue on column resizing with minWidth and width', () => {

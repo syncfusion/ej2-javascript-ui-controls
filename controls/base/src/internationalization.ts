@@ -66,6 +66,10 @@ export interface NumberFormatOptions {
      */
     useGrouping?: boolean;
     /**
+     * Specifies whether to ignore currency symbol in formatted value,
+     */
+    ignoreCurrency?: boolean;
+    /**
      * Specifies the skeleton for perform formatting.
      */
     skeleton?: string;

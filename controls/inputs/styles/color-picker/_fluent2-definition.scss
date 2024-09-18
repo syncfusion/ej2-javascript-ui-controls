@@ -131,6 +131,23 @@ $cpicker-handler-shadow: 0 0 0 2px rgba($black, .7) !default;
 $cpicker-handler-tooltip-color: $white !default;
 $cpicker-btn-border-radius: 0 !default;
 $cpikcer-btn-bg-disabled: $icon-color-disabled !default;
+$cpicker-recent-color-wrap-pad: 4px !default;
+$cpicker-recent-color-span-hgt: 32px !default;
+$cpicker-recent-color-span-pad: 8px 12px !default;
+$cpicker-recent-color-span-line-hgt: 16px !default;
+$cpicker-recent-color-tile-pad: 8px 7px !default;
+$cpicker-recent-color-tile-dim: 16px !default;
+$cpicker-recent-color-tile-margin: 0 7px;
+$cpicker-bigger-recent-color-wrap-pad: 4px !default;
+$cpicker-bigger-recent-color-span-hgt: 40px !default;
+$cpicker-bigger-recent-color-span-pad: 10px 12px !default;
+$cpicker-bigger-recent-color-span-line-hgt: 20px !default;
+$cpicker-bigger-recent-color-tile-pad: 10px 6px !default;
+$cpicker-bigger-recent-color-tile-dim: 20px !default;
+$cpicker-bigger-recent-color-tile-margin: 0 6px;
+$cpicker-recent-color-span-color: $content-text-color !default;
+$cpicker-recent-color-span-weight: 600 !default;
+$cpicker-recent-color-tile-border: $border-light !default;
 
 /* stylelint-disable */
 // .e-colorpicker-wrapper{

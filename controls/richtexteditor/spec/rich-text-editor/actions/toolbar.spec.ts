@@ -1750,7 +1750,7 @@ describe("Toolbar - Actions Module", () => {
             expect(tbItemsEle[6].classList.contains('e-active')).toBe(true);
             expect(tbItemsEle[7].classList.contains('e-active')).toBe(true);
             expect(tbItemsEle[8].classList.contains('e-active')).toBe(true);
-            expect((<HTMLElement>tbItemsEle[9].firstElementChild).innerText.trim()).toBe('Code');
+            expect((<HTMLElement>tbItemsEle[9].firstElementChild).innerText.trim()).toBe('Preformatted');
             expect((<HTMLElement>tbItemsEle[10].firstElementChild).innerText.trim()).toBe('Segoe UI');
             expect((<HTMLElement>tbItemsEle[11].firstElementChild).innerText.trim()).toBe('12 pt');
             expect((<HTMLElement>tbItemsEle[12].firstElementChild).firstElementChild.classList.contains('e-justify-right')).toBe(true);
@@ -2154,11 +2154,11 @@ describe("Toolbar - Actions Module", () => {
             setTimeout(() => {
                 let items: any = document.querySelectorAll('#' + controlId + '_toolbar_Formats-popup .e-item');
                 expect(items[0].textContent === 'Absatz').toBe(true);
-                expect(items[1].textContent === 'Kodex').toBe(true);
-                expect(items[2].textContent === 'Überschrift 1').toBe(true);
-                expect(items[3].textContent === 'Überschrift 2').toBe(true);
-                expect(items[4].textContent === 'Überschrift 3').toBe(true);
-                expect(items[5].textContent === 'Überschrift 4').toBe(true);
+                expect(items[1].textContent === 'Überschrift 1').toBe(true);
+                expect(items[2].textContent === 'Überschrift 2').toBe(true);
+                expect(items[3].textContent === 'Überschrift 3').toBe(true);
+                expect(items[4].textContent === 'Überschrift 4').toBe(true);
+                expect(items[5].textContent === 'Kodex').toBe(true);
                 done();
             }, 200)
         });
@@ -2221,7 +2221,7 @@ describe("Toolbar - Actions Module", () => {
             dispatchEvent(format, 'mouseup');
             format.click();
             let items: any = document.querySelectorAll('#' + controlId + '_toolbar_Formats-popup .e-item');
-            items[2].click();
+            items[1].click();
             expect(rteObj.element.querySelector('#rte').tagName === 'H1').toBe(true);
             done();
         });
@@ -2231,7 +2231,6 @@ describe("Toolbar - Actions Module", () => {
         });
     });
 });
-
 describe('EJ2-58542: Memory leak issue with Rich Text Editor component ', () => {
     let rteObj: RichTextEditor;
     beforeAll(() => {
@@ -2240,13 +2239,11 @@ describe('EJ2-58542: Memory leak issue with Rich Text Editor component ', () => 
         });
     });
     it('When OffsetParent is null in toolbar', (done: Function) => {
-        ((rteObj as any).toolbarModule as any).moduleDestroy();
-        expect(((rteObj as any).toolbarModule as any).parent).toBe(null);
+        ((rteObj as any).toolbarModule as any).destroy();
+        expect(((rteObj as any).toolbarModule as any).isDestroyed).toBe(true);
         detach(rteObj.element);
-        let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
-        for(let i: number = 0; i < allDropDownPopups.length; i++) {
-            detach(allDropDownPopups[i]);
-        }
+        const allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
+        expect(allDropDownPopups.length).toBe(0);
         done();
     });
 });

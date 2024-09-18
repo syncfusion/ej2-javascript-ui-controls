@@ -17,6 +17,7 @@ $ddl-back-icon-padding: 0 8px !default;
 $ddl-popup-shadow: $shadow-lg !default;
 $ddl-readonly-bg-color: $content-bg-color-alt2 !default;
 $ddl-filter-margin: 0 !default;
+$ddl-list-disable-item-color: $flyout-text-color-disabled !default;
 
 // Small Size
 $ddl-small-list-font-size: $text-xs !default;
@@ -64,43 +65,6 @@ $ddl-filter-box-shadow: 0 1.5px 5px -2px $ddl-filter-box-shadow-color !default;
         border: 0;
       }
     }
-  }
-
-  .e-bigger #{&}.e-popup.e-ddl-device-filter {
-    margin-top: 0;
-  }
-
-  .e-bigger #{&}.e-popup.e-ddl {
-    @at-root {
-      #{if(&, '&', '*')} .e-list-item {
-        font-size: $text-base;
-        line-height: 32px;
-        padding-left: 0;
-        text-indent: 16px;
-      }
-
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
-        font-size: $text-sm;
-        line-height: 32px;
-        padding-left: 0;
-        text-indent: 16px;
-      }
-
-      #{if(&, '&', '*')} .e-dd-group .e-list-item {
-        padding-left: 0;
-      }
-
-      #{if(&, '&', '*')} .e-input-group input,
-      #{if(&, '&', '*')} .e-input-group input.e-input {
-        font-size: $text-base;
-        height: 36px;
-      }
-    }
-  }
-
-  .e-bigger #{&}.e-popup.e-ddl .e-dropdownbase {
-    min-height: 40px;
   }
 
   .e-input-group#{&}.e-control-wrapper.e-ddl .e-input[readonly],
@@ -167,35 +131,5 @@ $ddl-filter-box-shadow: 0 1.5px 5px -2px $ddl-filter-box-shadow-color !default;
 
   .e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon {
     font-size: $text-sm;
-  }
-
-  .e-bigger .e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon {
-    font-size: $text-base;
-  }
-
-  .e-bigger.e-small .e-ddl#{&}.e-popup {
-    @at-root {
-      #{if(&, '&', '*')} .e-list-item,
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
-        font-size: $text-sm;
-        line-height: 34px;
-        padding-left: 0;
-        text-indent: 16px;
-      }
-
-      #{if(&, '&', '*')} .e-dd-group .e-list-item {
-        padding-left: 4px;
-      }
-
-      #{if(&, '&', '*')} .e-input-group input,
-      #{if(&, '&', '*')} .e-input-group input.e-input {
-        height: 30px;
-      }
-    }
-  }
-
-  .e-bigger.e-small #{&}.e-popup.e-ddl .e-dropdownbase {
-    min-height: 34px;
   }
 }

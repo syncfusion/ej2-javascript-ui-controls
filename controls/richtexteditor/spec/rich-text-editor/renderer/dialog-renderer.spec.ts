@@ -42,6 +42,10 @@ describe('Image Dialog', () => {
         destroy(rteObj);
     });
     it('Image Dialog Event Trigger', (done) => {
+        (<any>rteObj).isDestroyed = true;
+        (<any>rteObj).imageModule.dialogRenderObj.addEventListener();
+        (<any>rteObj).imageModule.dialogRenderObj.removeEventListener();
+        (<any>rteObj).isDestroyed = false;
         (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
         expect(beforeDialogOpenEvent).toBe(true);
         beforeDialogOpenEvent = false;

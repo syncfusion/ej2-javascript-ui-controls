@@ -197,12 +197,14 @@ export class AggregateMenu {
             buttons: [
                 {
                     click: this.updateValueSettings.bind(this),
+                    isFlat: false,
                     buttonModel: { cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
                 },
                 {
                     click: () => {
                         valueDialog.hide();
                     },
+                    isFlat: false,
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],

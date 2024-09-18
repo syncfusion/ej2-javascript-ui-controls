@@ -20,19 +20,14 @@ export class EnterKeyAction {
     protected addEventListener(): void {
         this.parent.on(events.enterHandler, this.enterHandler, this);
         this.parent.on(events.destroy, this.destroy, this);
-        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
     private destroy(): void {
         if (isNOU(this.parent)) { return; }
         this.removeEventListener();
     }
-    private moduleDestroy(): void {
-        this.parent = null;
-    }
     private removeEventListener(): void {
         this.parent.off(events.enterHandler, this.enterHandler);
         this.parent.off(events.destroy, this.destroy);
-        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
     private getRangeNode(): void {
         this.range = this.parent.getRange();
@@ -69,7 +64,8 @@ export class EnterKeyAction {
             }
             isTableEnter = blockElement.tagName === 'TH' || blockElement.tagName === 'TD' || blockElement.tagName === 'TBODY' ? false : true;
         }
-        if ((e.args as KeyboardEventArgs).which === 13 && !(e.args as KeyboardEventArgs).ctrlKey && (!Browser.isDevice ? (e.args as KeyboardEventArgs).code === 'Enter' : (e.args as KeyboardEventArgs).key === 'Enter' )) {
+        const eventArgs: KeyboardEventArgs = e.args as KeyboardEventArgs;
+        if (eventArgs.which === 13 && !eventArgs.ctrlKey && (!Browser.isDevice ? (eventArgs.code === 'Enter' || eventArgs.code === 'NumpadEnter') : eventArgs.key === 'Enter' )) {
             if (isNOU(this.startNode.closest('LI, UL, OL')) && isNOU(this.endNode.closest('LI, UL, OL')) &&
             isNOU(this.startNode.closest('.e-img-inner')) && isTableEnter &&
             isNOU(this.startNode.closest('PRE')) && isNOU(this.endNode.closest('PRE')) &&
@@ -172,7 +168,7 @@ export class EnterKeyAction {
                         if ((this.parent.enterKey === 'P' && !shiftKey) || (this.parent.enterKey === 'DIV' && !shiftKey) ||
                         (this.parent.shiftEnterKey === 'P' && shiftKey) ||
                         (this.parent.shiftEnterKey === 'DIV' && shiftKey)) {
-                            if (this.range.startOffset === 1 && this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.childNodes[0].nodeName === 'TABLE') {
+                            if ((this.range.startOffset === 1 && this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.childNodes[0].nodeName === 'TABLE') || (this.parent.enterKey === 'BR' && shiftKey)) {
                                 const newElem: Element = this.createInsertElement(shiftKey);
                                 newElem.appendChild(this.parent.createElement('BR'));
                                 this.parent.inputElement.appendChild(newElem);
@@ -535,7 +531,7 @@ export class EnterKeyAction {
                 this.range.insertNode(brElm);
             }
         }
-         if (isEmptyBrInserted || (!isNOU(brElm.nextElementSibling) && brElm.nextElementSibling.tagName === 'BR') || (!isNOU(brElm.nextSibling) && (brElm.nextSibling.textContent.length > 0 || (brElm.nextSibling.nodeName === '#text' && brElm.nextSibling.textContent.trim().length === 0 &&  !isNOU(brElm.nextSibling.nextSibling) && brElm.nextSibling.nextSibling.textContent.trim().length > 0)))) {
+        if (isEmptyBrInserted || (!isNOU(brElm.nextElementSibling) && brElm.nextElementSibling.tagName === 'BR') || (!isNOU(brElm.nextSibling) && (brElm.nextSibling.textContent.length > 0 || (brElm.nextSibling.nodeName === '#text' && brElm.nextSibling.textContent.trim().length === 0 &&  !isNOU(brElm.nextSibling.nextSibling) && brElm.nextSibling.nextSibling.textContent.trim().length > 0)))) {
             this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                 this.parent.contentModule.getDocument(),
                 !isNOU( brElm.nextSibling ) && isFocusTextNode ? (brElm.nextSibling as Element) : brElm, 0);

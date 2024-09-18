@@ -159,6 +159,15 @@ export class Cell extends ChildProperty<RowModel> {
      */
     @Property(false)
     public isReadOnly : boolean;
+
+    /**
+     * It allows to set the formatted value.
+     *
+     * @default ''
+     * @hidden
+     */
+    // @Property(false)
+    public formattedText: string;
 }
 
 /**
@@ -235,9 +244,10 @@ export function skipDefaultValue(style: CellStyleModel, defaultKey?: boolean): C
  * @param {boolean} wrap - Specifies the wrap.
  * @param {Workbook} context - Specifies the context.
  * @param {Workbook} preventEvt - Preventing the before cell update event.
+ * @param {boolean} isPublic - Specifies if the wrap operation is invoked from a public method.
  * @returns {void} - Specifies the wrap.
  */
-export function wrap(address: string, wrap: boolean = true, context?: Workbook, preventEvt?: boolean): void {
+export function wrap(address: string, wrap: boolean = true, context?: Workbook, preventEvt?: boolean, isPublic?: boolean): void {
     const addressInfo: { sheetIndex: number, indices: number[] } = context.getAddressInfo(address);
     const rng: number[] = addressInfo.indices;
     const sheet: SheetModel = getSheet(context, addressInfo.sheetIndex);
@@ -247,7 +257,7 @@ export function wrap(address: string, wrap: boolean = true, context?: Workbook, 
         for (let j: number = rng[1]; j <= rng[3]; j++) {
             cancel = updateCell(context, sheet, { cell: { wrap: wrap }, rowIdx: i, colIdx: j, preventEvt: preventEvt });
             if (!cancel && uiRefresh) {
-                context.notify(wrapEvent, { range: [i, j, i , j], wrap: wrap, sheet: sheet, initial: true });
+                context.notify(wrapEvent, { range: [i, j, i , j], wrap: wrap, sheet: sheet, initial: true, isPublic: isPublic });
             }
         }
     }
@@ -289,8 +299,29 @@ export function getCustomColors(): string[] {
  */
 export function isCustomDateTime(format: string, checkTime?: boolean, option?: { type?: string }, checkBoth?: boolean): boolean {
     let isCustom: boolean;
-    if ((format.includes('d') || format.includes('y')) && !format.includes('#') && !getColorCode(format) &&
-        /^[dyMhHmsaAP0,:[\]\-. /]*$/.test(format)) {
+    if (format.includes('"')) {
+        const formatSection: string[] = format.split(';');
+        let endStrIdx: number; let prevChar: string;
+        formatSection.forEach((formatCode: string, index: number): void => {
+            for (let idx: number = 0; idx < formatCode.length; idx++) {
+                if (formatCode[idx as number] === '"' && formatCode[idx - 1] !== '\\') {
+                    endStrIdx = idx;
+                    do {
+                        endStrIdx = formatCode.indexOf('"', endStrIdx + 1);
+                        prevChar = formatCode[endStrIdx - 1];
+                    } while (prevChar === '\\' || prevChar === '_' || prevChar === '*');
+                    if (endStrIdx === -1) {
+                        break;
+                    }
+                    formatCode = formatCode.substring(0, idx) + formatCode.substring(endStrIdx + 1);
+                    idx--;
+                }
+            }
+            formatSection[index as number] = formatCode;
+        });
+        format = formatSection.join(';');
+    }
+    if ((format.includes('d') || format.includes('y')) && !format.includes('#') && !getColorCode(format)) {
         if (option) {
             option.type = 'date';
         }
@@ -302,7 +333,7 @@ export function isCustomDateTime(format: string, checkTime?: boolean, option?: {
         isCustom = true;
     }
     if (checkTime && (format.includes('h') || format.includes('m') || format.includes('s')) && !format.includes('#') &&
-        !getColorCode(format) && /^[dyMhHmsaAP0,:[\]\-. /]*$/.test(format)) {
+        !getColorCode(format)) {
         if (option) {
             option.type = option.type || '';
             option.type += 'time';

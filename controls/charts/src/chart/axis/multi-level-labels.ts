@@ -16,7 +16,7 @@ import { MultiLevelCategoriesModel } from '../model/chart-base-model';
 import { BorderType } from '../utils/enum';
 
 /**
- * `MultiLevelLabel` module is used to render the multi level label in chart.
+ * The `MultiLevelLabel` module is used to render multi-level labels in charts.
  */
 export class MultiLevelLabel {
     /** @private */
@@ -61,6 +61,7 @@ export class MultiLevelLabel {
     /**
      * Gets the height of multilevel labels for the axis.
      *
+     * @private
      * @param {Axis} axis - The axis.
      * @returns {void}
      */
@@ -346,6 +347,7 @@ export class MultiLevelLabel {
     /**
      * Renders the multi-level labels for the Y-axis.
      *
+     * @private
      * @param {Axis} axis - The Y-axis.
      * @param {number} index - The index of the axis.
      * @param {Element} parent - The parent element to which the labels are appended.
@@ -596,6 +598,7 @@ export class MultiLevelLabel {
     /**
      * Handles the click event for multi-level labels.
      *
+     * @private
      * @param {string} labelIndex - The index of the clicked label.
      * @param {number} axisIndex - The index of the axis.
      * @returns {IMultiLevelLabelClickEventArgs} - The event arguments for multi-level label click.

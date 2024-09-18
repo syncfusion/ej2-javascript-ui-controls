@@ -435,6 +435,19 @@ describe('Range navigator Tooltip', () => {
             range.theme = 'Fluent2Dark';
             range.refresh();
         });
+        it('checking with tooltip template with fill and opacity', (done) => {
+            range.loaded = function (args) {
+                element = document.getElementById('tooltip_container_leftTooltip_path');
+                expect(element.getAttribute('fill')).toBe('red')
+                expect(element.getAttribute('opacity')).toBe('0.6')
+                done();
+            };
+            range.tooltip.enable = true;
+            range.tooltip.fill = 'red';
+            range.tooltip.opacity = 0.6;
+            range.tooltip.displayMode = 'Always';
+            range.refresh();
+        });
 
     });
     it('memory leak', () => {

@@ -179,7 +179,7 @@
           .e-avatar {
             @include avatar-size($listview-template-avatar-size, $listview-template-avatar-size, $listview-template-avatar-top, $listview-template-avatar-left, null);
             position: absolute;
-            @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
+            @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
               margin: $listview-template-avatar-margin;
             }
             @if $skin-name == 'Material3' {

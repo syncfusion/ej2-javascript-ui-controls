@@ -1631,7 +1631,6 @@ describe('ComboBox', () => {
                 }
             });
             dropDowns.appendTo(element);
-            debugger;
             expect(isDataBound).toBe(false);
             dropDowns.showPopup();
             setTimeout(() => {
@@ -3570,6 +3569,521 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
                 expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
                 done();
             }, 450);
+        });
+    });
+    describe('Null or undefined value testing', () => {
+        let listObj: ComboBox;
+        beforeEach(() => {
+            listObj = undefined;
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'list' });
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            document.body.innerHTML = '';
+        });
+        it('actionFailureTemplate', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                actionFailureTemplate: null
+            }, '#list');
+            expect(listObj.actionFailureTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                actionFailureTemplate: undefined
+            }, '#list');
+            expect(listObj.actionFailureTemplate).toBe('Request failed');
+            listObj.destroy();
+        });
+        it('allowCustom', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                allowCustom: null
+            }, '#list');
+            expect(listObj.allowCustom).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                allowCustom: undefined
+            }, '#list');
+            expect(listObj.allowCustom).toBe(true);
+            listObj.destroy();
+        });
+        it('allowFiltering', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                allowFiltering: null
+            }, '#list');
+            expect(listObj.allowFiltering).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                allowFiltering: undefined
+            }, '#list');
+            expect(listObj.allowFiltering).toBe(false);
+            listObj.destroy();
+        });
+        it('allowObjectBinding', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                allowObjectBinding: null
+            }, '#list');
+            expect(listObj.allowObjectBinding).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                allowObjectBinding: undefined
+            }, '#list');
+            expect(listObj.allowObjectBinding).toBe(false);
+            listObj.destroy();
+        });
+        it('autofill', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                autofill: null
+            }, '#list');
+            expect(listObj.autofill).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                autofill: undefined
+            }, '#list');
+            expect(listObj.autofill).toBe(false);
+            listObj.destroy();
+        });
+        it('cssClass', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                cssClass: null
+            }, '#list');
+            expect(listObj.cssClass).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                cssClass: undefined
+            }, '#list');
+            expect(listObj.cssClass).toBe(null);
+            listObj.destroy();
+        });
+        it('enablePersistence', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                enablePersistence: null
+            }, '#list');
+            expect(listObj.enablePersistence).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                enablePersistence: undefined
+            }, '#list');
+            expect(listObj.enablePersistence).toBe(false);
+            listObj.destroy();
+        });
+        it('enableRtl', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                enableRtl: null
+            }, '#list');
+            expect(listObj.enableRtl).toBe(false);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                enableRtl: undefined
+            }, '#list');
+            expect(listObj.enableRtl).toBe(false);
+            listObj.destroy();
+        });
+        it('enableVirtualization', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                enableVirtualization: null
+            }, '#list');
+            expect(listObj.enableVirtualization).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                enableVirtualization: undefined
+            }, '#list');
+            expect(listObj.enableVirtualization).toBe(false);
+            listObj.destroy();
+        });
+        it('enabled', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                enabled: null
+            }, '#list');
+            expect(listObj.enabled).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                enabled: undefined
+            }, '#list');
+            expect(listObj.enabled).toBe(true);
+            listObj.destroy();
+        });
+        it('filterBarPlaceholder', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                allowFiltering: true,
+                filterBarPlaceholder: null
+            }, '#list');
+            expect(listObj.filterBarPlaceholder).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                allowFiltering: true,
+                filterBarPlaceholder: undefined
+            }, '#list');
+            expect(listObj.filterBarPlaceholder).toBe(null);
+            listObj.destroy();
+        });
+        it('footerTemplate', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                footerTemplate: null
+            }, '#list');
+            expect(listObj.footerTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                footerTemplate: undefined
+            }, '#list');
+            expect(listObj.footerTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('groupTemplate', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                groupTemplate: null
+            }, '#list');
+            expect(listObj.groupTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                groupTemplate: undefined
+            }, '#list');
+            expect(listObj.groupTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('headerTemplate', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                headerTemplate: null
+            }, '#list');
+            expect(listObj.headerTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                headerTemplate: undefined
+            }, '#list');
+            expect(listObj.headerTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('ignoreAccent', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                ignoreAccent: null
+            }, '#list');
+            expect(listObj.ignoreAccent).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                ignoreAccent: undefined
+            }, '#list');
+            expect(listObj.ignoreAccent).toBe(false);
+            listObj.destroy();
+        });
+        it('ignoreCase', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                ignoreCase: null
+            }, '#list');
+            expect(listObj.ignoreCase).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                ignoreCase: undefined
+            }, '#list');
+            expect(listObj.ignoreCase).toBe(true);
+            listObj.destroy();
+        });
+        it('itemTemplate', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                itemTemplate: null
+            }, '#list');
+            expect(listObj.itemTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                itemTemplate: undefined
+            }, '#list');
+            expect(listObj.itemTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('noRecordsTemplate', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                noRecordsTemplate: null
+            }, '#list');
+            expect(listObj.noRecordsTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                noRecordsTemplate: undefined
+            }, '#list');
+            expect(listObj.noRecordsTemplate).toBe('No records found');
+            listObj.destroy();
+        });
+        it('placeholder', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                placeholder: null
+            }, '#list');
+            expect(listObj.placeholder).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                placeholder: undefined
+            }, '#list');
+            expect(listObj.placeholder).toBe(null);
+            listObj.destroy();
+        });
+        it('popupHeight', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                popupHeight: null
+            }, '#list');
+            expect(listObj.popupHeight).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                popupHeight: undefined
+            }, '#list');
+            expect(listObj.popupHeight).toBe('300px');
+            listObj.destroy();
+        });
+        it('popupWidth', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                popupWidth: null
+            }, '#list');
+            expect(listObj.popupWidth).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                popupWidth: undefined
+            }, '#list');
+            expect(listObj.popupWidth).toBe('100%');
+            listObj.destroy();
+        });
+        it('readonly', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                readonly: null
+            }, '#list');
+            expect(listObj.readonly).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                readonly: undefined
+            }, '#list');
+            expect(listObj.readonly).toBe(false);
+            listObj.destroy();
+        });
+        it('showClearButton', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                showClearButton: null
+            }, '#list');
+            expect(listObj.showClearButton).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                showClearButton: undefined
+            }, '#list');
+            expect(listObj.showClearButton).toBe(true);
+            listObj.destroy();
+        });
+        it('text', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                text: null
+            }, '#list');
+            expect(listObj.text).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                text: undefined
+            }, '#list');
+            expect(listObj.text).toBe(null);
+            listObj.destroy();
+        });
+        it('value', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                value: null
+            }, '#list');
+            expect(listObj.value).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                value: undefined
+            }, '#list');
+            expect(listObj.value).toBe(null);
+            listObj.destroy();
+        });
+        it('valueTemplate', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                valueTemplate: null
+            }, '#list');
+            expect(listObj.valueTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                valueTemplate: undefined
+            }, '#list');
+            expect(listObj.valueTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('width', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                width: null
+            }, '#list');
+            expect(listObj.width).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                width: undefined
+            }, '#list');
+            expect(listObj.width).toBe('100%');
+            listObj.destroy();
+        });
+        it('index', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                index: null
+            }, '#list');
+            expect(listObj.index).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                index: undefined
+            }, '#list');
+            expect(listObj.index).toBe(null);
+            listObj.destroy();
+        });
+        it('zIndex', () => {
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                zIndex: null
+            }, '#list');
+            expect(listObj.zIndex).toBe(null);
+            listObj.destroy();
+            listObj = new ComboBox({ 
+                dataSource: languageData,
+                fields: { value: "id", text: "text" },
+                zIndex: undefined
+            }, '#list');
+            expect(listObj.zIndex).toBe(1000);
+            listObj.destroy();
+        });
+    });
+    describe('Object value binding', () => {
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [
+            { "State": true, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": true, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": true, "Game": "Golf", "Id" : 'Game6' },
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new ComboBox({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+                value: { "State": true, "Game": "TestGame", "Id" : 'TestId' },
+                allowCustom: true,
+                allowObjectBinding: true
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        it('- With Custom object value', (done) => {
+            expect(listObj.index).toBe(null);
+            listObj.value = { "State": false, "Game": "TestGame1", "Id" : 'TestId1' };
+            listObj.dataBind();
+            expect(listObj.index).toBe(null);
+            done();
         });
     });
 });

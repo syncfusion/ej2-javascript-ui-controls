@@ -9,11 +9,11 @@ import { Row } from '../models/row';
 import * as events from '../base/constant';
 import { Scroll } from '../actions/scroll';
 import { RowDropEventArgs } from '../base/interface';
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { DataManager } from '@syncfusion/ej2-data';
 import { Grid } from '../base';
 import * as literals from '../base/string-literals';
 
-// eslint-disable-next-line valid-jsdoc
+// eslint-disable-next-line valid-jsdoc, jsdoc/require-param, jsdoc/require-returns
 /**
  *
  * Reorder module is used to handle row reordering.
@@ -379,7 +379,8 @@ export class RowDD {
                     if (e.helper.classList.contains('e-cloneproperties') && document.querySelector('.' + e.helper.classList[0])) {
                         remove(e.helper);
                     }
-                    if (gObj.enableVirtualization && !gObj.sortSettings.columns.length && !gObj.filterSettings.columns.length && (!this.parent.allowGrouping || !gObj.groupSettings.columns.length)) {
+                    if (gObj.enableVirtualization && !gObj.sortSettings.columns.length && !gObj.filterSettings.columns.length &&
+                        (!this.parent.allowGrouping || !gObj.groupSettings.columns.length)) {
                         gObj.refresh();
                     } else {
                         this.rowOrder(args);
@@ -594,27 +595,27 @@ export class RowDD {
         return currentVdata;
     }
 
-    private saveChange(changeRecords: object, query: Query): void {
-        this.parent.getDataModule().saveChanges(changeRecords, this.parent.getPrimaryKeyFieldNames()[0], {}, query)
-            .then(() => {
-                this.parent.notify(events.modelChanged, {
-                    type: events.actionBegin, requestType: 'rowdraganddrop'
-                });
-            }).catch((e: Error) => {
-                const error: string = 'error';
-                const message: string = 'message';
-                if (!isNullOrUndefined(e[`${error}`]) && !isNullOrUndefined(e[`${error}`][`${message}`])) {
-                    e[`${error}`] = e[`${error}`][`${message}`];
-                }
-                this.parent.trigger(events.actionFailure, e);
-            });
-    }
+    // private saveChange(changeRecords: object, query: Query): void {
+    //     this.parent.getDataModule().saveChanges(changeRecords, this.parent.getPrimaryKeyFieldNames()[0], {}, query)
+    //         .then(() => {
+    //             this.parent.notify(events.modelChanged, {
+    //                 type: events.actionBegin, requestType: 'rowdraganddrop'
+    //             });
+    //         }).catch((e: Error) => {
+    //             const error: string = 'error';
+    //             const message: string = 'message';
+    //             if (!isNullOrUndefined(e[`${error}`]) && !isNullOrUndefined(e[`${error}`][`${message}`])) {
+    //                 e[`${error}`] = e[`${error}`][`${message}`];
+    //             }
+    //             this.parent.trigger(events.actionFailure, e);
+    //         });
+    // }
 
     public reorderRows(fromIndexes: number[], toIndex: number): void {
         const selectedIndexes: number[] = this.parent.getSelectedRowIndexes();
         const selectedRecords: object[] = [];
         const draggedRecords: object[] = [];
-        let currentViewData: Object[] = this.parent.getDataModule().isRemote() ? this.parent.getCurrentViewRecords() :
+        const currentViewData: Object[] = this.parent.getDataModule().isRemote() ? this.parent.getCurrentViewRecords() :
             this.parent.renderModule.data.dataManager.dataSource.json;
         const skip: number = this.parent.allowPaging ?
             (this.parent.pageSettings.currentPage * this.parent.pageSettings.pageSize) - this.parent.pageSettings.pageSize : 0;
@@ -1064,11 +1065,11 @@ export class RowDD {
             if ((gObj.enableVirtualization || (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache))
                 && gObj.allowGrouping && gObj.groupSettings.columns.length && gObj.getSelectedRows().length) {
                 this.rows = gObj.getSelectedRows();
-                this.rowData = Array.from(this.rows, row => gObj.getRowObjectFromUID(row.getAttribute('data-uid')).data);
+                this.rowData = Array.from(this.rows, (row: Element) => gObj.getRowObjectFromUID(row.getAttribute('data-uid')).data);
             }
         } else {
             this.rows = gObj.getSelectedRows();
-            this.rowData = Array.from(this.rows, row => gObj.getRowObjectFromUID(row.getAttribute('data-uid')).data);
+            this.rowData = Array.from(this.rows, (row: Element) => gObj.getRowObjectFromUID(row.getAttribute('data-uid')).data);
         }
     }
 }

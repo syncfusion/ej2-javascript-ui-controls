@@ -595,6 +595,81 @@ describe('Circular-Gauge Control', () => {
             gauge.legendSettings.alignment = 'Center';
             gauge.refresh();
         });
+        it('Legend Top and range rendering with setRangeValue method', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                gauge.setRangeValue(0, 3, 19, 25);
+                legendEle = getElement(legendId + '_Axis_0_text_3');
+                trigger.clickEvent(legendEle);
+                expect(legendEle.getAttribute('fill') === "#D3D3D3").toBe(true);
+                legendEle = getElement(legendId + '_Axis_0_Shape_3');
+                expect(legendEle.getAttribute('fill') === "#D3D3D3").toBe(true);
+                legendEle = getElement('container_Axis_0_Range_3');
+                expect(legendEle['style'].visibility === "hidden").toBe(true);
+                done();
+            };
+            gauge.axes = [{
+                ranges:[
+                { start: 0, end: 5, color: '#ccffff', legendText: 'Light air'},
+                { start: 5, end: 11, color: '#99ffff', legendText: 'Light breeze' },
+                { start: 11, end: 19, color: '#99ff99', legendText: 'Gentle breeze' },
+                { start: 19, end: 19, color: '#79ff4d', legendText: 'Moderate breeze' },
+                ],
+            }];
+            gauge.legendSettings.toggleVisibility = true;
+            gauge.legendSettings.alignment = 'Center';
+            gauge.legendSettings.position = 'Top';
+            gauge.refresh();
+        });
+        it('Legend Bottom and range rendering with setRangeValue method', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                gauge.setRangeValue(0, 3, 19, 25);
+                legendEle = getElement(legendId + '_Axis_0_text_3');
+                trigger.clickEvent(legendEle);
+                expect(legendEle.getAttribute('fill') === "#D3D3D3").toBe(true);
+                legendEle = getElement(legendId + '_Axis_0_Shape_3');
+                expect(legendEle.getAttribute('fill') === "#D3D3D3").toBe(true);
+                legendEle = getElement('container_Axis_0_Range_3');
+                expect(legendEle['style'].visibility === "hidden").toBe(true);
+                done();
+            };
+            gauge.axes = [{
+                ranges:[
+                { start: 0, end: 5, color: '#ccffff', legendText: 'Light air'},
+                { start: 5, end: 11, color: '#99ffff', legendText: 'Light breeze' },
+                { start: 11, end: 19, color: '#99ff99', legendText: 'Gentle breeze' },
+                { start: 19, end: 19, color: '#79ff4d', legendText: 'Moderate breeze' },
+                ],
+            }];
+            gauge.legendSettings.toggleVisibility = true;
+            gauge.legendSettings.alignment = 'Center';
+            gauge.legendSettings.position = 'Bottom';
+            gauge.refresh();
+        });
+        it('Legend left and range rendering with setRangeValue method', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                gauge.setRangeValue(0, 3, 19, 25);
+                legendEle = getElement(legendId + '_Axis_0_text_3');
+                trigger.clickEvent(legendEle);
+                expect(legendEle.getAttribute('fill') === "#D3D3D3").toBe(true);
+                legendEle = getElement(legendId + '_Axis_0_Shape_3');
+                expect(legendEle.getAttribute('fill') === "#D3D3D3").toBe(true);
+                legendEle = getElement('container_Axis_0_Range_3');
+                expect(legendEle['style'].visibility === "hidden").toBe(true);
+                done();
+            };
+            gauge.axes = [{
+                ranges:[
+                { start: 0, end: 5, color: '#ccffff', legendText: 'Light air'},
+                { start: 5, end: 11, color: '#99ffff', legendText: 'Light breeze' },
+                { start: 11, end: 19, color: '#99ff99', legendText: 'Gentle breeze' },
+                { start: 19, end: 19, color: '#79ff4d', legendText: 'Moderate breeze' },
+                ],
+            }];
+            gauge.legendSettings.toggleVisibility = true;
+            gauge.legendSettings.alignment = 'Center';
+            gauge.legendSettings.position = 'Left';
+            gauge.refresh();
+        });
     });
     describe('Legend checking for enableRtl', () => {
         let gauge: CircularGauge;
@@ -795,5 +870,339 @@ describe('Circular-Gauge Control', () => {
             gauge.legendSettings.position = 'Right';
             gauge.refresh();
         });
+        it('Legend shape Triangle checking with fixed legend size', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                legendEle = getElement(legendId + '_element');
+                expect(legendEle.getAttribute('x') == '285.5' || legendEle.getAttribute('x') == '288').toBe(true);
+                expect(legendEle.getAttribute('y') == '213' || legendEle.getAttribute('y') == '211.5').toBe(true);
+                expect(legendEle.getAttribute('height')).toBe('50');
+                expect(legendEle.getAttribute('width') == '203' || legendEle.getAttribute('width') == '285').toBe(true);
+                done();
+            };
+            gauge.legendSettings.shape = 'Triangle';
+            gauge.refresh();
+        });
+        it('Legend shape InvertedTriangle checking with fixed legend size', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                legendEle = getElement(legendId + '_element');
+                expect(legendEle.getAttribute('x') == '285.5' || legendEle.getAttribute('x') == '288').toBe(true);
+                expect(legendEle.getAttribute('y') == '213' || legendEle.getAttribute('y') == '211.5').toBe(true);
+                expect(legendEle.getAttribute('height')).toBe('50');
+                expect(legendEle.getAttribute('width') == '203' || legendEle.getAttribute('width') == '285').toBe(true);
+                done();
+            };
+            gauge.legendSettings.shape = 'InvertedTriangle';
+            gauge.refresh();
+        });
+    });
+    describe('Legend checking for enableRtl', () => {
+        let gauge: CircularGauge;
+        let ele: HTMLElement;
+        let legendEle: Element;
+        let svg: HTMLElement;
+        let location: GaugeLocation;
+        let value: string[] | string | number;
+        let legendId: string = 'container_gauge_legend';
+        let gaugeEle: Element;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge({
+                title: 'Measure of wind speed in Km/h',
+                 titleStyle: {
+                     fontFamily: 'Segoe UI',
+                 },
+             axes: [{
+                 lineStyle: {
+                     width: 2,
+                     color: '#E0E0E0',
+                 },
+                 labelStyle: {
+                     font: {
+                         fontFamily: 'inherit',
+                         size: '0px',
+                     },
+                     offset: -1,
+                 },
+                 majorTicks: { width: 0, height: 0 },
+                 minorTicks: { width: 0, height: 0 },
+                 ranges: [
+                     {
+                         start: 0,
+                         end: 20,
+                         startWidth: 20,
+                         endWidth: 20,
+                         radius: '100%',
+                         color: '#ffd54f',
+                     },
+                     {
+                         start: 20,
+                         end: 40,
+                         radius: '80%',
+                         startWidth: 20,
+                         endWidth: 20,
+                         color: '#ffe082',
+                     },
+                     {
+                         start: 40,
+                         end: 60,
+                         radius: '80%',
+                         startWidth: 20,
+                         endWidth: 20,
+                         color: '#ffe082',
+                     },
+                     {
+                         start: 60,
+                         end: 70,
+                         radius: '80%',
+                         startWidth: 20,
+                         endWidth: 20,
+                         color: '#ffe082',
+                     },
+                     {
+                         start: 70,
+                         end: 80,
+                         radius: '80%',
+                         startWidth: 20,
+                         endWidth: 20,
+                         color: '#ffe082',
+                     },
+                     {
+                         start: 80,
+                         end: 90,
+                         radius: '80%',
+                         startWidth: 20,
+                         endWidth: 20,
+                         color: '#ffe082',
+                     },
+                     {
+                         start: 90,
+                         end: 95,
+                         radius: '80%',
+                         startWidth: 20,
+                         endWidth: 20,
+                         color: '#ffe082',
+                     },
+                     {
+                         start: 95,
+                         end: 100,
+                         radius: '80%',
+                         startWidth: 20,
+                         endWidth: 20,
+                         color: '#ffe082',
+                     },
+                 ],
+                 pointers: [{
+                     value: 60,
+                     radius: '60%',
+                     pointerWidth: 22,
+                     color: '#ffe082',
+                     animation: {
+                         enable: true,
+                         duration: 500,
+                     },
+                     cap: {
+                         radius: 0,
+                         color: '#c06c84',
+                         border: { width: 0 },
+                     },
+                     needleTail: {
+                         length: '0%',
+                     },
+                 },
+                 {
+                    
+                     value: 100,
+                     type: 'Marker',
+                     markerShape: 'InvertedTriangle',
+                     radius: '110%',
+                     color: '#ffd54f',
+                     markerHeight: 15,
+                     markerWidth: 15,
+                 },]
+             }],
+             legendSettings: {
+                 visible: true,
+                 shapeWidth: 10,
+                 shapeHeight: 10,
+                 shape: 'Diamond',
+                 position: 'Top',
+                 padding: 15,
+                 width:'300px',
+                 height:'50px',
+             },
+             enableRtl:true,
+             tooltip: {
+                 enable: true,
+                 type: ['Pointer', 'Range'],
+                 rangeSettings: { format: 'Start: {start} <br/> End: {end}' },
+                 format: 'Start: {value}',
+             },
+            
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Legend Top position checking with fixed legend size', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                legendEle = getElement(legendId + '_element');
+                expect(legendEle.getAttribute('x') == '233.5' || legendEle.getAttribute('x') == '234.5').toBe(true);
+                expect(legendEle.getAttribute('y')).toBe('34');
+                expect(legendEle.getAttribute('height')).toBe('50');
+                expect(legendEle.getAttribute('width')).toBe('300');
+                done();
+            };
+            gauge.legendSettings.position = 'Top';
+            gauge.refresh();
+        });
+        it('Checking startAngle and endAngle range startWidth and endWidth', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                legendEle = getElement(legendId + '_element');
+                expect(legendEle.getAttribute('x') == '234.5' || legendEle.getAttribute('x') == '233.5').toBe(true);
+                expect(legendEle.getAttribute('y')).toBe('34');
+                expect(legendEle.getAttribute('height')).toBe('50');
+                expect(legendEle.getAttribute('width')).toBe('300');
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 0;
+            gauge.axes[0].ranges[0].startWidth = 10;
+            gauge.axes[0].ranges[0].endWidth = 20;
+            gauge.refresh();
+        });
+    });
+    describe('Legend with allowMargin', () => {
+        let gauge: CircularGauge;
+        let ele: HTMLElement;
+        let legendEle: Element;
+        let svg: HTMLElement;
+        let location: GaugeLocation;
+        let value: string[] | string | number;
+        let legendId: string = 'container_gauge_legend';
+        let gaugeEle: Element;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge({
+                allowMargin: false,
+                legendSettings: {
+                    visible: true,
+                    position: 'Top',
+                },
+                border: {
+                    width: 2
+                },
+                axes: [
+                    {
+                        startAngle: 270,
+                        endAngle: 70,
+                        ranges: [
+                            { start: 0, end: 20 },
+                            { start: 20, end: 40 },
+                            { start: 40, end: 60 },
+                            { start: 60, end: 80 },
+                            { start: 80, end: 100 },
+                            { start: 100, end: 120 }
+                        ],
+                        pointers: [{
+                                animation: { enable: false },
+                                value: 65, radius: '60%', color: '#757575', pointerWidth: 8,
+                                cap: { radius: 7, color: '#757575' }, needleTail: { length: '18%' }
+                        }]
+                    },
+                    {
+                        ranges: [
+                            { start: 0, end: 20 },
+                            { start: 20, end: 40 },
+                            { start: 40, end: 60 },
+                            { start: 60, end: 80 },
+                            { start: 80, end: 100 },
+                            { start: 100, end: 120 }
+                        ],
+                        pointers: [{
+                                animation: { enable: false },
+                                value: 65, radius: '60%', color: '#757575', pointerWidth: 8,
+                                cap: { radius: 7, color: '#757575' }, needleTail: { length: '18%' }
+                        }]
+                    }
+                ]            
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Legend Top position checking with fixed legend size', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                legendEle = getElement(legendId + '_element');
+                expect(legendEle.getAttribute('x') == '193.5' || legendEle.getAttribute('x') == '202.5').toBe(true);
+                expect(legendEle.getAttribute('y')).toBe('13');
+                expect(legendEle.getAttribute('height') == '77' || legendEle.getAttribute('height') == '80').toBe(true);
+                expect(legendEle.getAttribute('width') == '380' || legendEle.getAttribute('width') == '364').toBe(true);
+                done();
+            };
+            gauge.legendSettings.position = 'Top';
+            gauge.refresh();
+        });
+        it('Legend Left position checking with fixed legend size', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                legendEle = getElement(legendId + '_element');
+                expect(legendEle.getAttribute('x') == '170.5' || legendEle.getAttribute('x') == '171.5').toBe(true);
+                expect(legendEle.getAttribute('y') == '78' || legendEle.getAttribute('y') == '84').toBe(true);
+                expect(legendEle.getAttribute('height') == '296' || legendEle.getAttribute('height') == '284').toBe(true);
+                expect(legendEle.getAttribute('width') == '94' || legendEle.getAttribute('width') == '90').toBe(true);
+                done();
+            };
+            gauge.legendSettings.position = 'Left';
+            gauge.refresh();
+        });
+        it('Legend Right position checking with fixed legend size', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                legendEle = getElement(legendId + '_element');
+                expect(legendEle.getAttribute('x') == '502.5' || legendEle.getAttribute('x') == '507.5').toBe(true);
+                expect(legendEle.getAttribute('y') == '78' || legendEle.getAttribute('y') == '84').toBe(true);
+                expect(legendEle.getAttribute('height') == '296' || legendEle.getAttribute('height') == '284').toBe(true);
+                expect(legendEle.getAttribute('width') == '94' || legendEle.getAttribute('width') == '90').toBe(true);
+                done();
+            };
+            gauge.legendSettings.position = 'Right';
+            gauge.refresh();
+        });
+        it('Legend Left position checking with fixed legend size', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                legendEle = getElement(legendId + '_element');
+                expect(legendEle.getAttribute('x') == '170.5' || legendEle.getAttribute('x') == '171.5').toBe(true);
+                expect(legendEle.getAttribute('y') == '78' || legendEle.getAttribute('y') == '84').toBe(true);
+                expect(legendEle.getAttribute('height') == '296' || legendEle.getAttribute('height') == '284').toBe(true);
+                expect(legendEle.getAttribute('width') == '94' || legendEle.getAttribute('width') == '90').toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 200;
+            gauge.axes[0].endAngle = 160;
+            gauge.legendSettings.position = 'Left';
+            gauge.refresh();
+        });
+        it('Legend Left position checking with fixed legend size', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                legendEle = getElement(legendId + '_element');                
+                expect(legendEle.getAttribute('x') == '170.5' || legendEle.getAttribute('x') == '171.5').toBe(true);
+                expect(legendEle.getAttribute('y') == '78' || legendEle.getAttribute('y') == '84').toBe(true);
+                expect(legendEle.getAttribute('height') == '296' || legendEle.getAttribute('height') == '284').toBe(true);
+                expect(legendEle.getAttribute('width') == '94' || legendEle.getAttribute('width') == '90').toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 80;
+            gauge.axes[0].endAngle = 280;
+            gauge.axes[0].radius = '90';
+            gauge.legendSettings.position = 'Left';
+            gauge.refresh();
+        });
+        
     });
 });

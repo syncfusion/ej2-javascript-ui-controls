@@ -12,7 +12,7 @@ import { IBoxPlotQuartile } from '../../chart/model/chart-interface';
 import { Axis } from '../../chart/axis/axis';
 
 /**
- * `BoxAndWhiskerSeries` module is used to render the box and whisker series.
+ * The `BoxAndWhiskerSeries` module is used to render the box and whisker series.
  */
 export class BoxAndWhiskerSeries extends ColumnBase {
 
@@ -136,11 +136,13 @@ export class BoxAndWhiskerSeries extends ColumnBase {
                     const element: Element = getElement(series.chart.dataLabelModule.commonId + visiblePoint.index + '_Text_' + 5);
                     if (element) { element.remove(); }
                 }
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, visiblePoint,
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, visiblePoint, null, series.marker.dataLabel);
+            }
+        }
+        const children: HTMLCollection = series.seriesElement.children;
+        for (let i: number = children.length - 1; i >= 0; i--) {
+            if (children[i as number].children.length === 0) {
+                series.seriesElement.removeChild(children[i as number]);
             }
         }
     }
@@ -152,6 +154,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
      * @param {ChartLocation} median median
      * @param {ChartLocation} average average
      * @returns {string} direction
+     * @private
      */
     public getPathString(point: Points, series: Series, median: ChartLocation, average: ChartLocation): string {
         const topRect: Rect = point.regions[0];
@@ -166,9 +169,9 @@ export class BoxAndWhiskerSeries extends ColumnBase {
         if (!series.chart.requireInvertedAxis) {
             this.updateTipSize(series, point, { x: midRect.x, y: topRect.y, width: midWidth - midRect.x, height: 0 }, true);
             this.updateTipSize(series, point, { x: midRect.x, y: topHeight, width: midWidth - midRect.x, height: 0 }, true);
-            direction += 'M ' + midRect.x + ' ' + topRect.y + ' ' + ' L ' + midWidth + ' ' + topRect.y;
-            direction += ' M ' + center + ' ' + topRect.y + ' ' + ' L ' + center + ' ' + midRect.y;
-            direction += ' M ' + midRect.x + ' ' + midRect.y + ' ' + ' L ' + midWidth + ' ' + midRect.y +
+            direction += 'M ' + midRect.x + ' ' + topRect.y + ' ' + 'L ' + midWidth + ' ' + topRect.y;
+            direction += ' M ' + center + ' ' + topRect.y + ' ' + 'L ' + center + ' ' + midRect.y;
+            direction += ' M ' + midRect.x + ' ' + midRect.y + ' ' + 'L ' + midWidth + ' ' + midRect.y +
                 ' L ' + midWidth + ' ' + midHeight + ' L ' + midRect.x + ' ' + midHeight + ' Z';
             direction += ' M ' + center + ' ' + midHeight + ' L ' + center + ' ' + topHeight;
             direction += ' M ' + midRect.x + ' ' + topHeight + ' L ' + midWidth + ' ' + topHeight;
@@ -180,12 +183,12 @@ export class BoxAndWhiskerSeries extends ColumnBase {
             this.updateTipSize(series, point, { x: topRect.x, y: midRect.y, width: 0, height: midHeight - midRect.y }, false);
             this.updateTipSize(series, point, { x: topWidth, y: midRect.y, width: 0, height: midHeight - midRect.y }, true);
             direction += 'M ' + topRect.x + ' ' + midRect.y + ' L ' + topRect.x + ' ' + midHeight;
-            direction += 'M ' + topRect.x + ' ' + center + ' ' + ' L ' + midRect.x + ' ' + center;
-            direction += ' M ' + midRect.x + ' ' + midRect.y + ' ' + ' L ' + midWidth + ' ' + midRect.y +
+            direction += 'M ' + topRect.x + ' ' + center + ' ' + 'L ' + midRect.x + ' ' + center;
+            direction += ' M ' + midRect.x + ' ' + midRect.y + ' ' + 'L ' + midWidth + ' ' + midRect.y +
                 ' L ' + midWidth + ' ' + midHeight + ' L ' + midRect.x + ' ' + midHeight + ' Z';
             direction += ' M ' + midWidth + ' ' + center + ' L ' + topWidth + ' ' + center;
             direction += ' M ' + topWidth + ' ' + midRect.y + ' L ' + topWidth + ' ' + midHeight;
-            direction += ' M ' + median.x + ' ' + midRect.y + ' ' + ' L ' + median.x + ' ' + midHeight;
+            direction += ' M ' + median.x + ' ' + midRect.y + ' ' + 'L ' + median.x + ' ' + midHeight;
             direction += series.showMean ?
                 'M ' + (average.x + 5) + ' ' + (average.y - 5) + ' L ' + (average.x - 5) + ' ' + (average.y + 5) +
                 'M ' + (average.x - 5) + ' ' + (average.y - 5) + ' L ' + (average.x + 5) + ' ' + (average.y + 5) : '';
@@ -203,6 +206,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
      * @param {string} direction path direction
      * @param {number} median median
      * @returns {void}
+     * @private
      */
     public renderBoxAndWhisker(
         series: Series, point: Points, argsData: IPointRenderEventArgs,
@@ -217,7 +221,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
                 symbolId + '_BoxPath',
                 argsData.fill, argsData.border.width,
                 argsData.border.color, series.opacity, series.dashArray, direction
-            )
+            ), new Int32Array([series.clipRect.x, series.clipRect.y])
         ) as HTMLElement;
         element.setAttribute('role', 'img');
         element.setAttribute('aria-label', point.x.toString() + ':' + point.maximum.toString()
@@ -226,7 +230,8 @@ export class BoxAndWhiskerSeries extends ColumnBase {
             'id': symbolId
         });
         appendChildElement(series.chart.enableCanvas, parentElement, element,
-                           series.chart.redraw, true, null, null, null, previusDirection);
+                           series.chart.redraw, true, null, null, null, previusDirection,
+                           null, null, null, series.chart.duration);
         if (series.removedPointIndex !== null && series.removedPointIndex <= point.index) {
             parentElement.id = series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index;
             element.id = series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index + '_BoxPath';
@@ -246,7 +251,9 @@ export class BoxAndWhiskerSeries extends ColumnBase {
                 true
             );
         }
-        appendChildElement(series.chart.enableCanvas, series.seriesElement, parentElement, series.chart.redraw);
+        appendChildElement(series.chart.enableCanvas, series.seriesElement,
+                           parentElement, series.chart.redraw, false, null,
+                           null, null, null, null, null, null, series.chart.duration, true);
     }
     /**
      * To find the box plot values.
@@ -255,6 +262,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
      * @param {Points} point point
      * @param {BoxPlotMode} mode mode
      * @returns {void}
+     * @private
      */
     public findBoxPlotValues(yValues: number[], point: Points, mode: BoxPlotMode): void {
         const yCount: number = yValues.length;
@@ -389,6 +397,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         this.animate(series);

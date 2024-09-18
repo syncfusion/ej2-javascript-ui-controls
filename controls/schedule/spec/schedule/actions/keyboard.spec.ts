@@ -3201,6 +3201,7 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             util.triggerScrollEvent(contentArea, 450);
             expect(contentArea.scrollTop).toEqual(450);
+            schObj.removeSelectedClass();
             setTimeout(() => { done(); }, 500);
         });
         it('Tab key with enabled virtual scroll', (done: DoneFn) => {
@@ -4144,6 +4145,119 @@ describe('Keyboard interaction', () => {
             expect(document.activeElement.classList.contains('e-resource-cells')).toBe(true);
             keyModule.keyActionHandler({ action: 'tab', target: document.activeElement, shiftKey: false, preventDefault: function () { } });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(1);
+        });
+    });
+
+    describe('Shift + Alt + Y to navigate today Date', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = { selectedDate: new Date(2017, 10, 2) };
+            schObj = util.createSchedule(schOptions, defaultData, done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('navigate to today Date', () => {
+            const todayButton: HTMLElement = schObj.element.querySelector('.e-today') as HTMLElement;
+            expect(todayButton).not.toBeNull();
+            const dateBeforeAction: Date = schObj.selectedDate;
+            keyModule.keyActionHandler({ action: 'shiftAltY', shiftKey: true });
+            const target: HTMLElement = schObj.element.querySelector('.e-header-cells.e-current-day') as HTMLElement;
+            expect(target).not.toBeNull();
+            expect(target.classList.contains('e-header-cells')).toBe(true);
+            expect(target.classList.contains('e-current-day')).toBe(true);
+            const selectedDate: Date = schObj.selectedDate;
+            const today: Date = new Date();
+            expect(selectedDate).not.toEqual(dateBeforeAction);
+            expect(selectedDate.toDateString()).toEqual(today.toDateString());
+        });
+    });
+
+    describe('Shift+Alt+Y to open editor window', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = { selectedDate: new Date(2017, 10, 2) };
+            schObj = util.createSchedule(schOptions, defaultData, done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('open editor window with default value', function () {
+            const target: HTMLElement = schObj.element.querySelector('.e-schedule-table') as HTMLElement;
+            target.click();
+            keyModule.keyActionHandler({ action: 'shiftAltN', shiftKey: false, target: target });
+            const editorWindow: HTMLElement = document.querySelector('.e-dialog.e-schedule-dialog.e-popup') as HTMLElement;
+            expect(editorWindow.classList.contains('e-popup-open')).toEqual(true);
+            const startTime: string = (document.querySelector('.e-start.e-datetimepicker') as HTMLInputElement).value;
+            const endTime: string = (document.querySelector('.e-end.e-datetimepicker') as HTMLInputElement).value;
+            expect(startTime).toEqual('11/2/17 9:00 AM');
+            expect(endTime).toEqual('11/2/17 9:30 AM');
+            (editorWindow.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+        });
+        it('open editor window with workcell', function () {
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.keyActionHandler({ action: 'shiftAltN', shiftKey: true, target: workCell });
+            const editorWindow: HTMLElement = document.querySelector('.e-dialog.e-schedule-dialog.e-popup') as HTMLElement;
+            expect(editorWindow.classList.contains('e-popup-open')).toEqual(true);
+            const cellData: any = schObj.activeCellsData as { startTime: Date, endTime: Date, isAllDay: boolean };
+            const startTime: Date = new Date((document.querySelector('.e-start.e-datetimepicker') as HTMLInputElement).value);
+            const endTime: Date = new Date((document.querySelector('.e-end.e-datetimepicker') as HTMLInputElement).value);
+            expect(startTime).toEqual(cellData.startTime);
+            expect(endTime).toEqual(cellData.endTime);
+            (editorWindow.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+        });
+        it('open editor window with multiple workcells', function () {
+            const workCell: HTMLTableCellElement = schObj.element.querySelector('.e-work-cells') as HTMLTableCellElement;
+            workCell.click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: workCell, preventDefault: function () { } });
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
+            keyModule.keyActionHandler({ action: 'shiftAltN', shiftKey: false, target: workCell });
+            const editorWindow: HTMLElement = document.querySelector('.e-dialog.e-schedule-dialog.e-popup') as HTMLElement;
+            expect(editorWindow.classList.contains('e-popup-open')).toEqual(true);
+            const cellData: any = keyModule.getSelectedElements(workCell);
+            const startTime: Date = new Date((document.querySelector('.e-start.e-datetimepicker') as HTMLInputElement).value);
+            const endTime: Date = new Date((document.querySelector('.e-end.e-datetimepicker') as HTMLInputElement).value);
+            expect(startTime).toEqual(cellData.startTime);
+            expect(endTime).toEqual(cellData.endTime);
+            (editorWindow.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+        });
+        it('open editor window with appointment', function () {
+            const target: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[];
+            target[1].click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.keyActionHandler({ action: 'shiftAltN', shiftKey: true, target: target[1] });
+            const editorWindow: HTMLElement = document.querySelector('.e-dialog.e-schedule-dialog.e-popup') as HTMLElement;
+            expect(editorWindow.classList.contains('e-popup-open')).toEqual(true);
+            const cellData: any = schObj.activeEventData.event as { StartTime: Date, EndTime: Date, IsAllDay: boolean };
+            const startTime: Date = new Date((document.querySelector('.e-start.e-datetimepicker') as HTMLInputElement).value);
+            const endTime: Date = new Date((document.querySelector('.e-end.e-datetimepicker') as HTMLInputElement).value);
+            expect(startTime).toEqual(cellData.StartTime);
+            expect(endTime).toEqual(cellData.EndTime);
+            (editorWindow.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+        });
+        it('open editor window with all-day cells', function () {
+            const allDayCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-all-day-cells')) as HTMLElement[];
+            allDayCell[1].click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            keyModule.keyActionHandler({ action: 'shiftAltN', shiftKey: true, target: allDayCell[1] });
+            const editorWindow: HTMLElement = document.querySelector('.e-dialog.e-schedule-dialog.e-popup') as HTMLElement;
+            expect(editorWindow.classList.contains('e-popup-open')).toEqual(true);
+            const cellData: any = schObj.activeCellsData as { startTime: Date, endTime: Date, isAllDay: boolean };
+            const startTime: Date = new Date((document.querySelector('.e-start.e-datetimepicker') as HTMLInputElement).value);
+            const endTime: Date = new Date((document.querySelector('.e-end.e-datetimepicker') as HTMLInputElement).value);
+            expect(startTime).toEqual(cellData.startTime);
+            expect(endTime).toEqual(cellData.startTime);
+            expect(cellData.isAllDay).toBe(true);
+            (editorWindow.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
         });
     });
 

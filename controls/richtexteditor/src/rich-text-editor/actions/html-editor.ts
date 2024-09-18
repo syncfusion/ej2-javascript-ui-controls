@@ -71,12 +71,12 @@ export class HtmlEditor {
             this.clickTimeout = null;
         }
         this.removeEventListener();
-        this.isCopyAll = null;
         this.locator = null;
         this.contentRenderer = null;
         this.renderFactory = null;
         this.toolbarUpdate = null;
         this.nodeSelectionObj = null;
+        this.isCopyAll = null;
         if (this.rangeCollection.length > 0) {
             this.rangeCollection = [];
         }
@@ -236,12 +236,12 @@ export class HtmlEditor {
             range.startContainer.textContent.replace(regEx, '').length === 0;
         let isMention: boolean = false;
         if (range.startContainer === range.endContainer &&
-            range.startOffset === range.endOffset && (range.startContainer !== this.parent.inputElement && range.startOffset !== 0 )) {
+            range.startOffset === range.endOffset && (range.startContainer !== this.parent.inputElement && range.startOffset !== 0)) {
             const mentionStartNode: Node = range.startContainer.nodeType === 3 ?
                 range.startContainer : range.startContainer.childNodes[range.startOffset - 1];
             isMention = args.keyCode === 16 &&
-            mentionStartNode.textContent.charCodeAt(0) === 8203 &&
-            !isNOU(mentionStartNode.previousSibling) && (mentionStartNode.previousSibling as HTMLElement).contentEditable === 'false';
+                mentionStartNode.textContent.charCodeAt(0) === 8203 &&
+                !isNOU(mentionStartNode.previousSibling) && (mentionStartNode.previousSibling as HTMLElement).contentEditable === 'false';
         }
         if (this.isCopyAll) {
             return;
@@ -250,13 +250,6 @@ export class HtmlEditor {
         let isRootParent: boolean = false;
         if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey && !isEmptyNode && !isMention) {
             pointer = range.startOffset;
-            const container: Node = range.startContainer;
-            // Check if the container is a text node and contains a zero-width space
-            if (container.nodeType === Node.TEXT_NODE && container.nodeValue.includes("\u200B")) {
-                const beforeZeroWidthSpace: Text = (container as Text).splitText(container.nodeValue.indexOf("\u200B"));
-                beforeZeroWidthSpace.splitText(1); // The zero-width space is at the beginning of this node
-                beforeZeroWidthSpace.parentNode.removeChild(beforeZeroWidthSpace);
-            }
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             range.startContainer.nodeName === '#text' ? range.startContainer.parentElement !== this.parent.inputElement ? range.startContainer.parentElement.classList.add('currentStartMark')
                 : isRootParent = true : (range.startContainer as Element).classList.add('currentStartMark');
@@ -316,12 +309,10 @@ export class HtmlEditor {
                         focusNode = currentChildNode[0] as Element;
                     }
                 }
-                if (range.startContainer !== focusNode) {
-                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                        this.parent.contentModule.getDocument(),
-                        focusNode,
-                        pointer);
-                }
+                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                    this.parent.contentModule.getDocument(),
+                    focusNode,
+                    pointer);
             }
             const currentElem: Element = this.parent.inputElement.querySelector('.currentStartMark');
             if (!isNOU(currentElem)) {
@@ -435,7 +426,8 @@ export class HtmlEditor {
             const editorValue: string = currentRange.startContainer.textContent.slice(0, currentRange.startOffset);
             const orderedList: boolean = this.isOrderedList(editorValue);
             const unOrderedList: boolean =  this.isUnOrderedList(editorValue);
-            if (orderedList && !unOrderedList || unOrderedList && !orderedList) {
+            const hasSplitedText: boolean = this.hasMultipleTextNode(currentRange);
+            if (!hasSplitedText && (orderedList && !unOrderedList || unOrderedList && !orderedList)) {
                 const eventArgs: IHtmlKeyboardEvent = {
                     callBack: null,
                     event: ((e as NotifyArgs).args as KeyboardEventArgs),
@@ -496,6 +488,26 @@ export class HtmlEditor {
             for (let i: number = 0; i < ulListStartRegex.length; i++) {
                 if (ulListStartRegex[i as number].test(editorValue)) {
                     return true;
+                }
+            }
+        }
+        return false;
+    }
+    private hasMultipleTextNode(range: Range): boolean {
+        if (range && range.startContainer && range.startContainer.parentNode) {
+            const parentNode: Node = range.startContainer.parentNode as Node;
+            if (this.parent.enterKey === 'BR' || closest(parentNode, 'table')) {
+                return false;
+            }
+            const childNodes: NodeListOf<ChildNode> = parentNode.childNodes;
+            const textNodes: ChildNode[] = [];
+            for (let i: number = 0; i < childNodes.length; i++) {
+                const node: ChildNode = childNodes[i as number];
+                if (node && node.nodeType === Node.TEXT_NODE) {
+                    textNodes.push(node);
+                    if (textNodes.length > 1) {
+                        return true;
+                    }
                 }
             }
         }
@@ -857,7 +869,7 @@ export class HtmlEditor {
                 const linkDialog: Element = document.getElementById(this.parent.getID() + '_rtelink');
                 const imageDialog: Element = document.getElementById(this.parent.getID() + '_image');
                 if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
-                    item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
+                    item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor' || item.subCommand === 'NumberFormatList' || item.subCommand === 'BulletFormatList')) {
                     const range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
                     if (isNullOrUndefined(linkDialog) && isNullOrUndefined(imageDialog)) {
                         save = this.nodeSelectionObj.save(range, this.parent.contentModule.getDocument());
@@ -921,6 +933,15 @@ export class HtmlEditor {
                     break;
                 case 'EmojiPicker':
                     this.parent.notify(events.emojiPicker, { member: 'emojiPicker', args: args });
+                    break;
+                case 'ImportWord':
+                    this.parent.notify(events.onImport, {});
+                    break;
+                case 'ExportWord':
+                    this.parent.notify(events.onExport, { member: 'ExportWord', args: args });
+                    break;
+                case 'ExportPdf':
+                    this.parent.notify(events.onExport, { member: 'ExportPdf', args: args });
                     break;
                 default:
                     this.parent.formatter.process(this.parent, args, args.originalEvent, null);

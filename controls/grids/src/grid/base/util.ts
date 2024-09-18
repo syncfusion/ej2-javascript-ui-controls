@@ -13,7 +13,7 @@ import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { ColumnModel, AggregateColumnModel } from '../models/models';
 import { AggregateType, HierarchyGridPrintMode } from './enum';
-import { Dialog, calculateRelativeBasedPosition, Popup } from '@syncfusion/ej2-popups';
+import { Dialog, calculateRelativeBasedPosition, Popup, calculatePosition } from '@syncfusion/ej2-popups';
 import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
 import { FilterStateObj, IXLFilter } from '../common/filter-interface';
@@ -1687,6 +1687,33 @@ export function sliceElements(row: Element, start: number, end: number): void {
         }
         row.removeChild(row.children[parseInt(k.toString(), 10)]);
         k--;
+    }
+}
+
+/**
+ * @param {IGrid} gObj - Defines the grid
+ * @param {Dialog} dlgObj - Defines the dialog
+ * @returns {void}
+ * @hidden
+ */
+export function resetDialogAppend(gObj: IGrid, dlgObj: Dialog): void {
+    let element: HTMLElement = gObj.createElement('div', { className: 'e-grid-popup', id: gObj.element.id + '_e-popup' });
+    const pos: { left: number; top: number; } = calculatePosition(gObj.element, 'left', 'Top');
+    if (document.getElementById(gObj.element.id + '_e-popup')) {
+        element = document.getElementById(gObj.element.id + '_e-popup');
+    }
+    element.style.top = pos.top + 'px';
+    element.style.left = pos.left + 'px';
+    element.style.zIndex = (dlgObj.zIndex).toString();
+    element.appendChild(dlgObj.element);
+    const sbPanel: HTMLElement = document.querySelector('.sb-demo-section');
+    if (sbPanel) {
+        const sbPos: { left: number; top: number; } = calculateRelativeBasedPosition(gObj.element, sbPanel);
+        element.style.top = sbPos.top + 'px';
+        element.style.left = sbPos.left + 'px';
+        sbPanel.insertBefore(element, sbPanel.firstChild);
+    } else {
+        document.body.insertBefore(element, document.body.firstChild);
     }
 }
 

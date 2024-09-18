@@ -2,116 +2,13 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 27.1.48 (2024-09-18)
 
 ### Tree Grid
 
-#### Bug Fixes
+#### Breaking Changes
 
-- `#F60772` - Resolved the unwanted `actionFailure` event triggered when height and width were given in pixels.
-- `#F60579` - Added an interface or type for the column template event handler.
-
-## 26.2.12 (2024-09-03)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F60489` - Fixed the issue where the `hasChildRecords` property value was not being updated correctly.
-- `#F60854` - Fixed an issue where an exception was thrown when clicking on a row while using the `filterTemplate`.
-
-## 26.2.11 (2024-08-27)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F60202` - Fixed an issue where the filter menu `dialog` would not close after performing a filter or cancel action when utilizing the `filterTemplate` property.
-
-## 26.2.10 (2024-08-20)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I609686` - Fixed an issue where the `Rowdraganddrop` action would drop the previously selected record when virtualization is enabled.
-- `#I620787` - Resolved a white space issue that occurred while scrolling with `persistSelection` and virtualization.
-
-## 26.2.9 (2024-08-13)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I609686` - Fixed an issue where the `Rowdraganddrop` action would drop the previously selected record when virtualization is enabled.
-- `#I609686` - Fixed a console error that occurred when performing row selection followed by the `collapseAll` and `expandAll` actions with virtualization.
-
-## 26.2.8 (2024-08-06)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F59092` - Fixed issue where wrong data was returning in `rowDeselected` event when both `persistSelection` and `filterSettings` were enabled with `loadChildOnDemand`.
-- `#I609686` - Resolved issue where a console error was encountered when selecting a parent row and collapsing the selected row when both `persistSelection` and `enableToggle` with multiple selection type are enabled.
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I609686` - Fixed an issue where row selection was incorrect when virtualization was enabled.
-
-## 26.2.4 (2024-07-24)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F59092` - Fixed issue where wrong data was returning in `rowDeselected` event when both `persistSelection` and `filterSettings` were enabled with remote data.
-
-## 26.1.42 (2024-07-16)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I607837` - Resolved an issue where an action failure logged an error while rendering the Tree Grid with both `idMapping` and `parentIdMapping` properties.
-
-## 26.1.41 (2024-07-09)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F58804` - Fixed an issue where an exception was being thrown when dragging and dropping between the tree grid and detail template.
-- `#F603044` - Resolved a console error that occurred when clicking the checkbox of child records.
-
-## 26.1.40 (2024-07-02)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `F58902` - Fixed an issue where the `CollapseAll` / `ExpandAll` button in the toolbar was not working properly when virtualization was enabled.
-
-## 26.1.39 (2024-06-25)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F58392` - Fixed issue where exporting remained empty when using remote data by returning data in the form of result and count.
-- `#F58393` - Fixed issue where exporting remote data with `exportType` as `AllPages` was sending improper requests to the server.
-- `#596141` - Fixed issue where alphanumeric values were not properly sent in the request during the expand action for remote data.
-- `F58576` - Fixed issue where updating a variable through `useState()` did not reflect in the edit template in tree grid.
-
-## 26.1.35 (2024-06-11)
-
-### Tree Grid
-
-#### Features
-
-- Improved support for the [ActionFailure](https://ej2.syncfusion.com/documentation/api/treegrid#actionfailure) event to better handle exceptions and provide detailed error information.
+- The behaviour of the [LoadChildOnDemand](https://helpej2.syncfusion.com/documentation/api/treegrid/#loadchildondemand) property in the Tree Grid has been modified. Previously, when this property was set to `true`, both parent and child records were loaded simultaneously. Now, when set to `true`, parent records will initially be rendered in a collapsed state, with child records being loaded only when the parent row is expanded. Additionally, the default value of `LoadChildOnDemand` has been changed from `false` to `true`.
 
 ### Tree Grid
 

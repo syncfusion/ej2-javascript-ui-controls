@@ -22,13 +22,15 @@ import { Dictionary } from '../../base/dictionary';
 import {
     LineSpacingType, BaselineAlignment, HighlightColor,
     Strikethrough, Underline, TextAlignment, FormFieldType, FormFieldFillEventArgs, contentControlEvent,
-    beforeFormFieldFillEvent, afterFormFieldFillEvent, requestNavigateEvent, CharacterRangeType, HeaderFooterType
+    beforeFormFieldFillEvent, afterFormFieldFillEvent, requestNavigateEvent, CharacterRangeType, HeaderFooterType,
+    ContentControlInfo,
+    ContentControlType
 } from '../../base/index';
 import { TextPositionInfo, PositionInfo, ParagraphInfo } from '../editor/editor-helper';
 import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
 import { HtmlExport } from '../writer/html-export';
 import { Popup } from '@syncfusion/ej2-popups';
-import { ContextType, RequestNavigateEventArgs, TablePasteOptions ,PasteOptionSwitch } from '../../index';
+import { ContextType, RequestNavigateEventArgs, TablePasteOptions, PasteOptionSwitch } from '../../index';
 import { TextPosition, SelectionWidgetInfo, Hyperlink, ImageSizeInfo } from './selection-helper';
 import { ItemModel, MenuEventArgs, DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Revision } from '../track-changes/track-changes';
@@ -701,6 +703,19 @@ export class Selection {
      */
     public closeHeaderFooter(): void {
         this.disableHeaderFooter();
+        if (this.documentHelper.isHeaderFooter && this.owner.layoutType === 'Pages') {
+            this.owner.layoutType = 'Continuous';
+            this.documentHelper.isHeaderFooter = false;
+        }
+    }
+    /**
+    * Closes the xml Pane region.
+    *
+    * @returns {void}
+    */
+    public closeXmlPane(): void {
+        this.disableXml();
+        this.owner.enableXMLPane = false;
         if (this.documentHelper.isHeaderFooter && this.owner.layoutType === 'Pages') {
             this.owner.layoutType = 'Continuous';
             this.documentHelper.isHeaderFooter = false;
@@ -2591,7 +2606,7 @@ export class Selection {
         if (isNullOrUndefined(start)) {
             return;
         }
-        if (start.offset === 0 && start.paragraph.paragraphFormat.listFormat.listId == -1) {
+        if ((start.offset === 0 || (!this.isForward && this.end.offset === 0)) && start.paragraph.paragraphFormat.listFormat.listId == -1) {
             if (start.currentWidget.isFirstLine()) {
                 isCursorAtParaStart = true;
             }
@@ -3812,7 +3827,8 @@ export class Selection {
             }
             let properties: { [key: string]: string | boolean } = {};
             // isAfterParagraphMark
-            if(this.isParagraphMarkSelected()){
+            // In Ms Word, If the paragraph mark is selected and the bookmark end is inside the table, then the bookmark end is considered to be after the paragraph mark.
+            if (this.isParagraphMarkSelected() && this.end.paragraph.isInsideTable) {
                 properties.isAfterParagraphMark = true;
             }
             // isAfterCellMark
@@ -7012,7 +7028,7 @@ export class Selection {
                         isRtlText = element.isRightToLeft;
                         isParaBidi = (element as TextElementBox).line.paragraph.paragraphFormat.bidi;
                     }
-                    if (caretPosition.x > left + element.margin.left + element.width + element.padding.left) {
+                    if (caretPosition.x > left + element.margin.left + element.width + element.padding.left && !(element instanceof ShapeElementBox)) {
                         //Line End
                         index = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
                         if (isRtlText && isParaBidi) {
@@ -7513,7 +7529,7 @@ export class Selection {
         }
         return element;
     }
-    //Selection API    
+    //Selection API.   
     /**
      * Select content between given range
      * @private
@@ -7798,6 +7814,33 @@ export class Selection {
             return undefined;
         }
     }
+    /**
+    * Retrieves the information about the content control associated with the current selection.
+    *
+    * @returns {ContentControlInfo} An object containing details about the content control, including
+    * its title, tag, value, editability, deletability, type, and any XML mapping if applicable.
+    */
+    public getContentControlInfo(): ContentControlInfo {
+        let contentControl: ContentControl = this.documentHelper.owner.editor.getContentControl();
+        if (!isNullOrUndefined(contentControl)) {
+            let ccValue: string;
+            for (let i = 0; i < contentControl.line.children.length; i++) {
+                if (contentControl.line.children[i] instanceof TextElementBox) {
+                    ccValue = (contentControl.line.children[i] as TextElementBox).text;
+                }
+            }
+            let contentControlInfo: ContentControlInfo = {
+                title: contentControl.contentControlProperties.title,
+                tag: contentControl.contentControlProperties.tag,
+                value: ccValue,
+                canDelete: contentControl.contentControlProperties.lockContentControl,
+                canEdit: contentControl.contentControlProperties.lockContents,
+                type: contentControl.contentControlProperties.type
+            };
+            return contentControlInfo;
+        }
+        return undefined;
+    }
     private setCurrentContextType(): void {
         let contextIsinImage: boolean = this.imageFormat.image ? true : false;
         let contextIsinTable: boolean = (isNullOrUndefined(this.tableFormat) || isNullOrUndefined(this.tableFormat.table)) ? false : true;
@@ -7840,6 +7883,39 @@ export class Selection {
                 this.contextTypeInternal = contextIsinImage ? 'TableImage' : 'TableText';
             } else {
                 this.contextTypeInternal = contextIsinImage ? 'Image' : 'Text';
+            }
+        }
+        if (!isNullOrUndefined(this.owner.editor) && !isNullOrUndefined(this.owner.editor.documentHelper) &&
+            this.owner.editor.documentHelper.contentControlCollection &&
+            this.owner.editor.documentHelper.contentControlCollection.length > 0) {
+            let contentControl: ContentControl = this.owner.editor.getContentControl();
+            let contentControlImage: ElementBox = this.owner.getImageContentControl();
+            if (!isNullOrUndefined(contentControl) || !isNullOrUndefined(contentControlImage)) {
+                let type: ContentControlType = contentControl ? contentControl.contentControlProperties.type :
+                    contentControlImage.contentControlProperties.type;
+                switch (type) {
+                    case 'RichText':
+                        this.contextTypeInternal = "RichTextContentControl";
+                        break;
+                    case 'Text':
+                        this.contextTypeInternal = "PlainTextContentControl";
+                        break;
+                    case 'Picture':
+                        this.contextTypeInternal = "PictureContentControl";
+                        break;
+                    case 'ComboBox':
+                        this.contextTypeInternal = "ComboBoxContentControl";
+                        break;
+                    case 'DropDownList':
+                        this.contextTypeInternal = "DropDownListContentControl";
+                        break;
+                    case 'CheckBox':
+                        this.contextTypeInternal = "CheckBoxContentControl";
+                        break;
+                    case 'Date':
+                        this.contextTypeInternal = "DatePickerContentControl";
+                        break;
+                }
             }
         }
     }
@@ -10606,6 +10682,16 @@ export class Selection {
         return false;
     }
     /**
+    * Disable xml
+    * @private
+    */
+    public disableXml(): void {
+        let page: Page = this.getPage(this.start.paragraph);
+        this.updateTextPositionForBlockContainer(page.bodyWidgets[0]);
+        this.owner.enableHeaderAndFooter = false;
+        this.shiftBlockOnHeaderFooterEnableDisable();
+    }
+    /**
      * /* Here is the explanation for the code below:
         1. When there are multiple sections in a document, the first section is the parent section of the other sections.
         2. If you change the page width or header distance of the parent section, the child section will inherit the page width or header distance of the parent section.
@@ -11651,13 +11737,15 @@ export class Selection {
             endElement = element.comment.commentEnd;
         }
         let endPosition: TextPosition;
-        let line: LineWidget = endElement.line as LineWidget;
-        if(!isNullOrUndefined(endElement.line) && !isNullOrUndefined(line.children)) {
-            offset = endElement.line.getOffset(endElement, isNavigateToNextEditRegion ? 0 : 1);
-            endPosition = new TextPosition(this.owner);
-            endPosition.setPositionParagraph(endElement.line, offset);
-        } else {
-            endPosition = startPosition.clone();
+        if (endElement) {
+            let line: LineWidget = endElement.line as LineWidget;
+            if (!isNullOrUndefined(endElement.line) && !isNullOrUndefined(line.children)) {
+                offset = endElement.line.getOffset(endElement, isNavigateToNextEditRegion ? 0 : 1);
+                endPosition = new TextPosition(this.owner);
+                endPosition.setPositionParagraph(endElement.line, offset);
+            } else {
+                endPosition = startPosition.clone();
+            }
         }
         return { 'startPosition': startPosition, 'endPosition': endPosition };
     }

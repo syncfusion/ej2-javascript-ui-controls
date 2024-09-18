@@ -409,5 +409,111 @@ describe('Bullet Chart Scale', () => {
             bullet.loaded = loaded;
             bullet.refresh();
         });
+        it('Checking with multiple data with theme', (done: Function) => {
+            loaded = (args: Object): void => {
+                bullet.loaded = null;
+                legendElement = document.getElementById('container_chart_legend_translate_g');
+                expect(legendElement.childElementCount).toBe(2);
+                done();
+            };
+            bullet.theme = "BootstrapDark";
+            bullet.dataSource = multipleData;
+            bullet.targetField = 'comparativeMeasureValue';
+            bullet.loaded = loaded;
+            bullet.refresh();
+        });
+        it('bulletchart legend on-property-change checking', (done: Function) => {
+            bullet.legendSettings = {
+                border: { color: 'red', width: 1 },
+            };
+            bullet.theme = "BootstrapDark";
+            bullet.height = '20';
+            bullet.width = '50';
+            bullet.border = { color: 'blue', width: 1},
+            bullet.dataBind();
+            legendElement = document.getElementById(legendId + '_shape_' + 0);
+            expect(legendElement.getAttribute('fill')).toEqual('white');
+            done();
+        });
+        it('chart legend format checking with keyboard navigation', (done: Function) => {
+            legendElement = document.getElementById('container_chart_legend_translate_g');
+            trigger.keyboardEvent('keyup', legendElement, 'Arrow', 'Arrow');
+            trigger.keyboardEvent('keyup', legendElement, 'Tab', 'Tab');
+            expect(legendElement !== null).toBe(true);
+            done();
+            bullet.loaded = loaded;
+            bullet.refresh();
+        });
+        it('Checking with range color as empty', (done: Function) => {
+            loaded = function (args) {
+                bullet.loaded = null;
+                legendElement = document.getElementById('container_chart_legend_shape_2');
+                expect(legendElement.getAttribute('stroke')).toBe('Orange');
+                done();
+            };
+            bullet.theme = "Material3";
+            bullet.enableRtl = true;
+            bullet.ranges = [{ end: 10, name: 'Actual' }, { end: 12, name: 'Target' }];
+            bullet.valueFill = "Orange";
+            bullet.loaded = loaded;
+            bullet.refresh();
+        });
+        it('Checking with legend padding with enableRtl', (done: Function) => {
+            loaded = function (args) {
+                bullet.loaded = null;
+                legendElement = document.getElementById('container_chart_legend_shape_2');
+                expect(legendElement.getAttribute('stroke')).toBe('Orange');
+                done();
+            };
+            bullet.legendSettings.position = 'Left';
+            bullet.legendSettings.padding = 0;
+            bullet.valueFill = "Orange";
+            bullet.ranges = [{ end: 10, name: 'Actual' }, { end: 12, name: 'Target' }];
+            bullet.loaded = loaded;
+            bullet.refresh();
+        });
+        it('Checking with legend padding without enableRtl', (done: Function) => {
+            loaded = function (args) {
+                bullet.loaded = null;
+                legendElement = document.getElementById('container_chart_legend_shape_2');
+                expect(legendElement.getAttribute('stroke')).toBe('Orange');
+                done();
+            };
+            bullet.legendSettings.padding = 800;
+            bullet.valueFill = "Orange";
+            bullet.ranges = [{ end: 10, name: 'Actual' }, { end: 12, name: 'Target' }];
+            bullet.loaded = loaded;
+            bullet.refresh();
+        });
+        it('Checking legend with legend render event', (done: Function) => {
+            loaded = function (args) {
+                bullet.loaded = null;
+                legendElement = document.getElementById('container');
+                expect(legendElement !==  null).toBe(true);
+                done();
+            };
+            bullet.legendSettings.padding = 800;
+            bullet.valueFill = "Orange";
+            bullet.legendRender = function (args) {
+                args.cancel = true;
+            }
+            bullet.ranges = [{ end: 10, name: 'Actual' }, { end: 12, name: 'Target' }];
+            bullet.loaded = loaded;
+            bullet.refresh();
+        });
+        it('Checking with legend without data source', (done: Function) => {
+            loaded = function (args) {
+                bullet.loaded = null;
+                legendElement = document.getElementById('container');
+                expect(legendElement !==  null).toBe(true);
+                done();
+            };
+            bullet.legendSettings.padding = 800;
+            bullet.valueFill = "Orange";
+            bullet.dataSource = null;
+            bullet.ranges = [{ end: 10, name: 'Actual' }, { end: 12, name: 'Target' }];
+            bullet.loaded = loaded;
+            bullet.refresh();
+        });
     });
 });

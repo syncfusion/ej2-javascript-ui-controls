@@ -1,6 +1,6 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { PdfDocument, PdfPage, PdfForm, PdfTextBoxField, PdfFormFieldVisibility, PdfTextAlignment, PdfSignatureField, PdfField, PdfFreeTextAnnotation, PdfFontFamily, PdfStandardFont, PdfAnnotationFlag, PdfRubberStampAnnotation, PdfImage, PdfBitmap, PdfGraphics, PdfGraphicsState, PdfFontStyle as FontStyle, PdfCheckBoxField, PdfComboBoxField, PdfListBoxField, PdfListFieldItem, PdfRadioButtonListField, PdfRadioButtonListItem, PdfRotationAngle, PdfFontStyle, PdfFont, PdfTemplate, PdfInkAnnotation, PdfTrueTypeFont, PdfAnnotationCollection, PdfAnnotation, _PdfReference, _PdfDictionary, _PdfPath} from '@syncfusion/ej2-pdf';
-import { PdfViewer, PdfViewerBase, PageRenderer } from '../index';
+import { PdfDocument, PdfPage, PdfForm, PdfTextBoxField, PdfFormFieldVisibility, PdfTextAlignment, PdfSignatureField, PdfField, PdfFreeTextAnnotation, PdfFontFamily, PdfStandardFont, PdfAnnotationFlag, PdfRubberStampAnnotation, PdfImage, PdfBitmap, PdfGraphics, PdfGraphicsState, PdfFontStyle as FontStyle, PdfCheckBoxField, PdfComboBoxField, PdfListBoxField, PdfListFieldItem, PdfRadioButtonListField, PdfRadioButtonListItem, PdfRotationAngle, PdfFontStyle, PdfFont, PdfTemplate, PdfInkAnnotation, PdfTrueTypeFont, PdfAnnotationCollection, PdfAnnotation, _PdfReference, _PdfDictionary, PdfPath} from '@syncfusion/ej2-pdf';
+import { PdfViewer, PdfViewerBase, PageRenderer, PageRotation } from '../index';
 import { getArialFontData } from '../pdf-base/fontData';
 import { Rect } from '@syncfusion/ej2-drawings';
 
@@ -475,7 +475,9 @@ export class FormFieldsBase {
         textbox.toolTip = isNullOrUndefined(formFieldAttributes.tooltip) ? '' : formFieldAttributes.tooltip;
         textbox.color = [formFieldAttributes.fontColor.r, formFieldAttributes.fontColor.g, formFieldAttributes.fontColor.b];
         textbox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b];
+        // eslint-disable-next-line
         if (formFieldAttributes.borderColor.r == 0 && formFieldAttributes.borderColor.g == 0 &&
+             // eslint-disable-next-line
              formFieldAttributes.borderColor.b == 0 && formFieldAttributes.borderColor.a == 0) {
             textbox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g,
                 formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
@@ -500,7 +502,7 @@ export class FormFieldsBase {
             textbox.rotate = this.getFormfieldRotation(loadedPage.rotation);
         }
         if (!isNullOrUndefined(formFieldAttributes.customData)) {
-            let customData: string = JSON.stringify(formFieldAttributes.customData);
+            const customData: string = JSON.stringify(formFieldAttributes.customData);
             textbox._dictionary.set('CustomData', customData);
         }
         return textbox;
@@ -556,7 +558,9 @@ export class FormFieldsBase {
                 formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
         }
         comboBox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b];
+        // eslint-disable-next-line
         if (formFieldAttributes.borderColor.r == 0 && formFieldAttributes.borderColor.g == 0 &&
+            // eslint-disable-next-line
             formFieldAttributes.borderColor.b == 0 && formFieldAttributes.borderColor.a == 0) {
             comboBox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g,
                 formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
@@ -570,7 +574,7 @@ export class FormFieldsBase {
         comboBox._font = new PdfStandardFont(this.getFontFamily(formFieldAttributes.fontFamily),
                                              this.convertPixelToPoint(formFieldAttributes.fontSize), pdfFontStyle);
         if (!isNullOrUndefined(formFieldAttributes.customData)) {
-            let customData: string = JSON.stringify(formFieldAttributes.customData);
+            const customData: string = JSON.stringify(formFieldAttributes.customData);
             comboBox._dictionary.set('CustomData', customData);
         }
         return comboBox;
@@ -600,7 +604,7 @@ export class FormFieldsBase {
             checkBoxField.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
                 formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
         }
-        checkBoxField.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, 
+        checkBoxField.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g,
             formFieldAttributes.borderColor.b];
         if (formFieldAttributes.borderColor.r === 0 && formFieldAttributes.borderColor.g === 0 && formFieldAttributes.borderColor.b === 0
              && formFieldAttributes.borderColor.a === 0) {
@@ -613,7 +617,7 @@ export class FormFieldsBase {
             checkBoxField.rotate = this.getFormfieldRotation(loadedPage.rotation);
         }
         if (!isNullOrUndefined(formFieldAttributes.customData)) {
-            let customData: string = JSON.stringify(formFieldAttributes.customData);
+            const customData: string = JSON.stringify(formFieldAttributes.customData);
             checkBoxField._dictionary.set('CustomData', customData);
         }
         return checkBoxField;
@@ -673,7 +677,9 @@ export class FormFieldsBase {
                 formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
         }
         listBox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b];
+        // eslint-disable-next-line
         if (formFieldAttributes.borderColor.r == 0 && formFieldAttributes.borderColor.g == 0 &&
+            // eslint-disable-next-line
             formFieldAttributes.borderColor.b == 0 && formFieldAttributes.borderColor.a == 0) {
             listBox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g,
                 formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
@@ -696,7 +702,7 @@ export class FormFieldsBase {
             listBox.rotate = this.getFormfieldRotation(loadedPage.rotation);
         }
         if (!isNullOrUndefined(formFieldAttributes.customData)) {
-            let customData: string = JSON.stringify(formFieldAttributes.customData);
+            const customData: string = JSON.stringify(formFieldAttributes.customData);
             listBox._dictionary.set('CustomData', customData);
         }
         return listBox;
@@ -733,7 +739,9 @@ export class FormFieldsBase {
                 isRequired = true;
             }
             radioButtonItem.borderColor = [radiobuttonItem.borderColor.r, radiobuttonItem.borderColor.g, radiobuttonItem.borderColor.b];
+            // eslint-disable-next-line
             if (radiobuttonItem.borderColor.r == 0 && radiobuttonItem.borderColor.g == 0 &&
+                // eslint-disable-next-line
                 radiobuttonItem.borderColor.b == 0 && radiobuttonItem.borderColor.a == 0) {
                 radioButtonItem.borderColor = [radiobuttonItem.borderColor.r, radiobuttonItem.borderColor.g,
                     radiobuttonItem.borderColor.b, radiobuttonItem.borderColor.a];
@@ -759,12 +767,12 @@ export class FormFieldsBase {
         if (isSelectedItem)
         {field.selectedIndex = selectedIndex; }
         if (!isNullOrUndefined(formFieldAttributes.radiobuttonItem[0].customData)) {
-            let customData: string = JSON.stringify(formFieldAttributes.radiobuttonItem[0].customData);
+            const customData: string = JSON.stringify(formFieldAttributes.radiobuttonItem[0].customData);
             field._dictionary.set('CustomData', customData);
         }
-        else if(!isNullOrUndefined(formFieldAttributes.customData))
+        else if (!isNullOrUndefined(formFieldAttributes.customData))
         {
-            let customData: string = JSON.stringify(formFieldAttributes.customData);
+            const customData: string = JSON.stringify(formFieldAttributes.customData);
             field._dictionary.set('CustomData', customData);
         }
         return field;
@@ -788,6 +796,15 @@ export class FormFieldsBase {
         signatureField.readOnly = formFieldAttributes.isReadonly;
         if (formFieldAttributes.formFieldAnnotationType === 'InitialField') {
             signatureField._dictionary.set('InitialField', true);
+        }
+        if (formFieldAttributes.value === '') {
+            signatureField.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
+                formFieldAttributes.backgroundColor.b];
+            if (formFieldAttributes.backgroundColor.r === 0 && formFieldAttributes.backgroundColor.g === 0 &&
+                formFieldAttributes.backgroundColor.b === 0 && formFieldAttributes.backgroundColor.a === 0) {
+                signatureField.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
+                    formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
+            }
         }
         signatureField.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g,
             formFieldAttributes.borderColor.b];
@@ -816,7 +833,7 @@ export class FormFieldsBase {
             signatureField.rotate = this.getFormfieldRotation(loadedPage.rotation);
         }
         if (!isNullOrUndefined(formFieldAttributes.customData)) {
-            let customData: string = JSON.stringify(formFieldAttributes.customData);
+            const customData: string = JSON.stringify(formFieldAttributes.customData);
             signatureField._dictionary.set('CustomData', customData);
         }
         return signatureField;
@@ -866,7 +883,7 @@ export class FormFieldsBase {
             annotation.border.width = 0;
             annotation.textAlignment = PdfTextAlignment.center;
             annotation.flags = PdfAnnotationFlag.print;
-            if (formFieldAttributes.visibility === "hidden") {
+            if (formFieldAttributes.visibility === 'hidden') {
                 annotation.flags = PdfAnnotationFlag.hidden;
             }
             if (!isFieldRotated) {
@@ -907,7 +924,7 @@ export class FormFieldsBase {
             }
             rubberStampAnnotation._dictionary.set('T', currentFieldName);
             rubberStampAnnotation.flags = PdfAnnotationFlag.print;
-            if (formFieldAttributes.visibility === "hidden") {
+            if (formFieldAttributes.visibility === 'hidden') {
                 rubberStampAnnotation.flags = PdfAnnotationFlag.hidden;
             }
             page.annotations.add(rubberStampAnnotation);
@@ -942,10 +959,10 @@ export class FormFieldsBase {
             let minimumY: number = -1;
             let maximumX: number = -1;
             let maximumY: number = -1;
-            const drawingPath: _PdfPath = new _PdfPath();
+            const drawingPath: PdfPath = new PdfPath();
             for (let p: number = 0; p < stampObjects.length; p++) {
                 const val: any = stampObjects[parseInt(p.toString(), 10)];
-                drawingPath._addLine(val.x, val.y, 0, 0);
+                drawingPath.addLine(val.x, val.y, 0, 0);
             }
             for (let p: number = 0; p <  drawingPath._points.length; p += 2) {
                 const value: number[] = drawingPath._points[parseInt(p.toString(), 10)];
@@ -1011,7 +1028,7 @@ export class FormFieldsBase {
             }
             const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation([left, top, width, height], linePoints);
             inkAnnotation.flags = PdfAnnotationFlag.print;
-            if (formFieldAttributes.visibility === "hidden") {
+            if (formFieldAttributes.visibility === 'hidden') {
                 inkAnnotation.flags = PdfAnnotationFlag.hidden;
             }
             inkAnnotation.bounds = { x: signBounds.X, y: signBounds.Y, width: signBounds.Width, height: signBounds.Height };
@@ -1420,7 +1437,7 @@ export class FormFieldsBase {
         formFields.Text = textBox.text ? textBox.text.replace('"', '') : '';
         formFields.Multiline = textBox.multiLine;
         formFields.RotationAngle = this.GetRotateAngle(textBox.page.rotation);
-        if (textBox._dictionary.has("CustomData")) {
+        if (textBox._dictionary.has('CustomData')) {
             formFields.customData = JSON.parse(textBox._dictionary.get('CustomData'));
         }
         formFields.TextList = [];
@@ -1467,7 +1484,7 @@ export class FormFieldsBase {
         formFields.Visible = comboBoxField.visibility;
         formFields.RotationAngle = this.GetRotateAngle(comboBoxField.page.rotation);
         formFields.Alignment = comboBoxField.textAlignment;
-        if (comboBoxField._dictionary.has("CustomData")) {
+        if (comboBoxField._dictionary.has('CustomData')) {
             formFields.customData = JSON.parse(comboBoxField._dictionary.get('CustomData'));
         }
         formFields.TextList = [];
@@ -1559,7 +1576,7 @@ export class FormFieldsBase {
             }
         }
         formFields.RotationAngle = this.GetRotateAngle(chkField.page.rotation);
-        if (chkField._dictionary.has("CustomData")) {
+        if (chkField._dictionary.has('CustomData')) {
             formFields.customData = JSON.parse(chkField._dictionary.get('CustomData'));
         }
         this.PdfRenderedFormFields.push(formFields);
@@ -1623,7 +1640,7 @@ export class FormFieldsBase {
             }
         }
         formFields.RotationAngle = this.GetRotateAngle(listBoxField.page.rotation);
-        if (listBoxField._dictionary.has("CustomData")) {
+        if (listBoxField._dictionary.has('CustomData')) {
             formFields.customData = JSON.parse(listBoxField._dictionary.get('CustomData'));
         }
         this.PdfRenderedFormFields.push(formFields);
@@ -1657,7 +1674,7 @@ export class FormFieldsBase {
         formFields.IsReadonly = parent.readOnly;
         formFields.Visible = parent.visibility;
         formFields.RotationAngle = this.GetRotateAngle(item.page.rotation);
-        if (parent._dictionary.has("CustomData")) {
+        if (parent._dictionary.has('CustomData')) {
             formFields.customData = JSON.parse(parent._dictionary.get('CustomData'));
         }
         this.PdfRenderedFormFields.push(formFields);
@@ -1955,6 +1972,9 @@ export class FormFieldsBase {
         formFields.IsReadonly = signatureField.readOnly;
         formFields.IsRequired = signatureField.required;
         formFields.Visible = signatureField.visibility;
+        if (!isNullOrUndefined(signatureField.backColor)) {
+            formFields.BackColor = { R: signatureField.backColor[0], G: signatureField.backColor[1], B: signatureField.backColor[2] };
+        }
         formFields.IsSignatureField = true;
         formFields.Rotation = signatureField.rotationAngle;
         formFields.RotationAngle = this.GetRotateAngle(signatureField.page.rotation);
@@ -1962,7 +1982,7 @@ export class FormFieldsBase {
         if (!isNullOrUndefined(initialField)) {
             formFields.IsInitialField = initialField;
         }
-        if (signatureField._dictionary.has("CustomData")) {
+        if (signatureField._dictionary.has('CustomData')) {
             formFields.customData = JSON.parse(signatureField._dictionary.get('CustomData'));
         }
         this.PdfRenderedFormFields.push(formFields);
@@ -2057,6 +2077,13 @@ export class FormFieldsBase {
                         formFields.FieldName = stampAnnotation._dictionary.get('T') + '_' + count;
                         const dictionary: any = annotation._dictionary.get('AP');
                         const pageRender: PageRenderer = new PageRenderer(this.pdfViewer, this.pdfViewerBase);
+                        formFields.LineBounds = {
+                            X: stampAnnotation.bounds.x, Y: stampAnnotation.bounds.y,
+                            Width: stampAnnotation.bounds.width, Height: stampAnnotation.bounds.height
+                        };
+                        formFields.Name = 'SignatureImage';
+                        formFields.PageIndex = i;
+                        count++;
                         if (isNullOrUndefined(dictionary)) {
                             const pdfReference: any = annotation._dictionary.get('AP');
                             if (!isNullOrUndefined(pdfReference) && !isNullOrUndefined(pdfReference.dictionary as _PdfDictionary) && pdfReference.dictionary.has('N')) {
@@ -2066,15 +2093,24 @@ export class FormFieldsBase {
                                 }
                             }
                         } else if (dictionary.has('N')) {
-                            pageRender.findStampImage(annotation);
+                            const template: PdfTemplate = annotation.createTemplate();
+                            if (template.size[0] === 0 || template.size[1] === 0 || isNullOrUndefined(template._appearance)) {
+                                pageRender.findStampImage(annotation);
+                            }
+                            else {
+                                formFields.PageIndex = i;
+                                pageRender.findStampTemplate(
+                                    annotation,
+                                    formFields,
+                                    formFields.Rotation,
+                                    pageRender.annotationOrder.length - 1,
+                                    true,
+                                    formFields.FieldName,
+                                    this.PdfRenderedFormFields,
+                                    formFields.PageIndex
+                                );
+                            }
                         }
-                        formFields.LineBounds = { X: stampAnnotation.bounds.x, Y: stampAnnotation.bounds.y,
-                            Width: stampAnnotation.bounds.width, Height: stampAnnotation.bounds.height };
-                        formFields.Value = pageRender.Imagedata;
-                        formFields.Name = 'SignatureImage';
-                        formFields.PageIndex = i;
-                        this.PdfRenderedFormFields.push(formFields);
-                        count++;
                     }
                 }
             }

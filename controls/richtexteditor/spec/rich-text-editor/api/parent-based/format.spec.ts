@@ -1193,7 +1193,7 @@ describe('RTE PARENT BASED - formats - ', () => {
             // Select the H1 format
             let popup: HTMLElement = document.getElementById(rteObj.element.id + '_toolbar_Formats-popup');
             dispatchEvent((popup.querySelectorAll('.e-item')[2] as HTMLElement), 'mousedown');
-            (popup.querySelectorAll('.e-item')[2] as HTMLElement).click();
+            (popup.querySelectorAll('.e-item')[1] as HTMLElement).click();
             expect(rteObj.getHtml() === '<h1><br></h1>').toBe(true);
         });
     });
@@ -1219,7 +1219,7 @@ describe('RTE PARENT BASED - formats - ', () => {
             // Select the H1 format
             let popup: HTMLElement = document.getElementById(rteObj.element.id + '_toolbar_Formats-popup');
             dispatchEvent((popup.querySelectorAll('.e-item')[2] as HTMLElement), 'mousedown');
-            (popup.querySelectorAll('.e-item')[2] as HTMLElement).click();
+            (popup.querySelectorAll('.e-item')[1] as HTMLElement).click();
             const expected: string =`<p>Paragraph</p><h1 class="target"><br></h1><p>Paragraph</p>`
             expect(rteObj.getHtml() === expected).toBe(true);
         });

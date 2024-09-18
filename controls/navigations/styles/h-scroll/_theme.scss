@@ -110,6 +110,21 @@
 
     .e-scroll-nav  {
       background: $hscroll-default-bg;
+      @if $skin-name == 'fluent2' {
+        &.e-overlay {
+          &.e-scroll-left-nav,
+          &.e-scroll-right-nav {
+            opacity: inherit;
+            border-right: 0;
+            border-left: 0;
+            .e-nav-arrow {
+              &.e-icons {
+                color: $icon-color-disabled !important; /* stylelint-disable-line declaration-no-important */
+              }
+            }
+          }
+        }
+      }
 
       &.e-scroll-left-nav {
         border-right: $hscroll-border-size $hscroll-border-type $hscroll-default-border;

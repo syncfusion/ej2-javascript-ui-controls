@@ -124,7 +124,7 @@ $btn-outline-active-border-color: $btn-active-border-color !default;
 $btn-outline-active-box-shadow: $btn-active-box-shadow !default;
 $btn-outline-disabled-bgcolor: $secondary-bg-color-disabled !default;
 $btn-outline-disabled-border-color: $secondary-border-color-disabled !default;
-$btn-outline-disabled-color: $secondary-text-color-disabled !default;
+$btn-outline-disabled-color: $btn-outline-active-bgcolor !default;
 $btn-outline-primary-color: $primary-outline !default;
 $btn-outline-primary-focus-bgcolor: $btn-primary-bgcolor !default;
 $btn-outline-primary-focus-color: $white !default;

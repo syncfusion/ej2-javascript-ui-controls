@@ -77,43 +77,9 @@ $ddl-filter-box-shadow: 0 1.5px 5px -2px $ddl-filter-box-shadow-color !default;
     margin-top: 2px;
   }
 
-  .e-bigger .e-ddl#{&}.e-popup,
-  .e-bigger.e-ddl#{&}.e-popup {
-    border-radius: 6px;
-    margin-top: 8px;
-  }
-
-  .e-bigger.e-small .e-ddl#{&}.e-popup,
-  .e-small.e-bigger.e-ddl#{&}.e-popup {
-    border-radius: 4px;
-    margin-top: 6px;
-  }
-
   #{&}.e-popup.e-ddl .e-dropdownbase {
     min-height: 26px;
     padding: 4px 0;
-  }
-
-  .e-bigger #{&}.e-popup.e-ddl-device-filter .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) {
-    border-color: $ddl-default-border-color;
-  }
-
-  .e-bigger #{&}.e-popup.e-ddl-device-filter {
-    margin-top: 0;
-  }
-
-  .e-bigger .e-ddl-device .e-input-group,
-  .e-bigger .e-ddl-device .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) {
-    background: $flyout-bg-color;
-    border-width: 0;
-    box-shadow: none;
-    margin-bottom: 0;
-  }
-
-  .e-bigger .e-ddl-device .e-input-group .e-back-icon,
-  .e-bigger .e-ddl-device .e-input-group input.e-input,
-  .e-bigger .e-ddl-device .e-input-group .e-clear-icon {
-    background-color: $flyout-bg-color;
   }
 
   .e-input-group.e-ddl,

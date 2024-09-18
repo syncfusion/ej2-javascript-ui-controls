@@ -6,7 +6,7 @@ import { Chart } from '../chart';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
- * `Trendline` module is used to render 6 types of trendlines in chart.
+ * The `Trendlines` module is used to render six types of trendlines in the chart.
  */
 export class Trendlines {
     /**
@@ -15,6 +15,7 @@ export class Trendlines {
      * @param {Trendline} trendline - The trendline for which the series collection is initialized.
      * @param {Chart} chart - The chart instance.
      * @returns {void}
+     * @private
      */
     public initSeriesCollection(trendline: Trendline, chart: Chart): void {
         const trendLineSeries: Series = new Series(trendline, 'targetSeries', {}, true);
@@ -171,6 +172,7 @@ export class Trendlines {
      *
      * @param {Trendline} trendline - The trendline configuration.
      * @returns {void}
+     * @private
      */
     public initDataSource(trendline: Trendline): void {
         const points: Points[] = trendline.points;
@@ -733,6 +735,7 @@ export class Trendlines {
      * @param {Series} series - The series for which trendlines are to be rendered.
      * @param {Chart} chart - The chart instance.
      * @returns {void}
+     * @private
      */
     public getTrendLineElements(series: Series, chart: Chart): void {
         findClipRect(series);
@@ -768,6 +771,7 @@ export class Trendlines {
      * To destroy the trendline.
      *
      * @returns {void}
+     * @private
      */
     public destroy(): void {
         /**

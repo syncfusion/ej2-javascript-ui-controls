@@ -2023,6 +2023,9 @@ export class Zoom {
             //eslint-disable-next-line @typescript-eslint/no-unused-vars
             target = <Element>e.target;
         }
+        if (!this.isTouch) {
+            e.preventDefault();
+        }
         if (!this.maps.zoomSettings.enablePanning) {
             this.isPan = this.isPanModeEnabled = this.panColor !== this.selectionColor ? this.maps.zoomSettings.enablePanning
                 : this.zoomColor === this.selectionColor;

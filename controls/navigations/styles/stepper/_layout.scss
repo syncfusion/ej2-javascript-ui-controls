@@ -428,15 +428,4 @@
   .e-small .e-stepper {
     @include stepper-styles($stepper-small-step-width, $stepper-small-icon-size, $stepper-small-text-size, $stepper-small-optional-size);
   }
-  .e-bigger.e-stepper,
-  .e-bigger .e-stepper {
-    @include stepper-styles($stepper-bigger-step-width, $stepper-bigger-icon-size, $stepper-bigger-text-size, $stepper-bigger-optional-size);
-  }
-
-  .e-bigger.e-small.e-stepper,
-  .e-bigger.e-small .e-stepper,
-  .e-bigger .e-small.e-stepper,
-  .e-small .e-bigger.e-stepper {
-    @include stepper-styles($stepper-bigger-small-step-width, $stepper-bigger-small-icon-size, $stepper-bigger-small-text-size, $stepper-bigger-small-optional-size);
-  }
 }

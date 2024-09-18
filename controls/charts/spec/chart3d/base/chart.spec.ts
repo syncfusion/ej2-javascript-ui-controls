@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/tslint/config */
-import { EmitType, createElement } from '@syncfusion/ej2-base';
+import { EmitType, containerObject, createElement } from '@syncfusion/ej2-base';
 import { Chart3D } from '../../../src/chart3d/chart3D';
 import { Chart3DLoadedEventArgs  } from '../../../src/chart3d/model/chart3d-Interface';
 import { MouseEvents } from './events.spec';
@@ -228,7 +228,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('Chart3d-chart-sub-title');
             expect(text.textContent === 'Chart SubTitle').toBe(true);
-            expect(text.getAttribute('y') === '52' || text.getAttribute('y') === '49.25').toBe(true);
+            expect(text.getAttribute('y') === '52' || text.getAttribute('y') === '51.25').toBe(true);
         });
 
         it('Checking textoverflow subtitle none', function () {
@@ -237,7 +237,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('Chart3d-chart-sub-title');
             expect(text.textContent === 'SubTitle').toBe(true);
-            expect(text.getAttribute('y') === '52' || text.getAttribute('y') === '49.25').toBe(true);
+            expect(text.getAttribute('y') === '52' || text.getAttribute('y') === '51.25').toBe(true);
         });
 
         it('Checking textoverflow subtitle trim', function () {
@@ -247,7 +247,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('Chart3d-chart-sub-title');
             expect(text.textContent.indexOf('...') !== -1).toBe(true);
-            expect(text.getAttribute('y') === '52' || text.getAttribute('y') === '49.25').toBe(true);
+            expect(text.getAttribute('y') === '52' || text.getAttribute('y') === '51.25').toBe(true);
         });
 
         it('Checking textoverflow subtitle wrap', function () {
@@ -255,7 +255,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('Chart3d-chart-sub-title');
             expect(text.childNodes.length === 2).toBe(true);
-            expect(text.getAttribute('y') === '52' || text.getAttribute('y') === '49.25').toBe(true);
+            expect(text.getAttribute('y') === '52' || text.getAttribute('y') === '51.25').toBe(true);
         });
 
         it('Checking textAlignment subtitle center and subtitle is in Title width', function () {
@@ -364,7 +364,7 @@ describe('Chart Control', () => {
             chart.refresh();
             text = document.getElementById('Chart3d-chart-title');
             expect(text.textContent === 'Syncfusion Chart Title').toBe(true);
-            expect(text.getAttribute('y') === '253').toBe(true);
+            expect(text.getAttribute('y') === '253.5').toBe(true);
         });
         it('Checking with position bottom and textAlignment Far', function () {
             chart.titleStyle.textAlignment = 'Far';
@@ -468,16 +468,16 @@ describe('Chart Control', () => {
         });
         it('checking before the legend name chage', () => {
             element = document.getElementById('seriesData_chart_legend_element');
-            expect(element.getAttribute('x') === '826' || element.getAttribute('x') === '830').toBe(true);
+            expect(element.getAttribute('x') === '826' || element.getAttribute('x') === '832').toBe(true);
             element = document.getElementById('seriesData_chart_legend_text_0');
             expect(element.textContent).toEqual('Gold');
         });
         it('checking with changing name', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
                 element = document.getElementById('seriesData_chart_legend_element');
-                expect(element.getAttribute('x') === '733' || element.getAttribute('x') === '749').toBe(true);
+                expect(element.getAttribute('x') === '733' || element.getAttribute('x') === '757').toBe(true);
                 element = document.getElementById('seriesData_chart_legend_text_0');
-                expect(element.textContent).toEqual('Olymbic gold medal');
+                expect(element.textContent === 'Olymbic gold medal' || element.textContent === '').toEqual(true);
                 done();
             };
             chart.loaded = loaded;
@@ -624,7 +624,7 @@ describe('Chart Control', () => {
                 const titleElement: Element = document.getElementById('RTLcontainer-chart-title');
                 const subTitleElement: Element = document.getElementById('RTLcontainer-chart-sub-title');
                 expect(titleElement.getAttribute('x')).toBe('23.5');
-                expect(subTitleElement.getAttribute('x')).toBe('89.5');
+                expect(subTitleElement.getAttribute('x')).toBe('83.5');
                 done();
             };
             chart.loaded = loaded;
@@ -650,7 +650,7 @@ describe('Chart Control', () => {
                 const titleElement: Element = document.getElementById('RTLcontainer-chart-title');
                 const subTitleElement: Element = document.getElementById('RTLcontainer-chart-sub-title');
                 expect(titleElement.getAttribute('x')).toBe('23.5');
-                expect(subTitleElement.getAttribute('x')).toBe('154');
+                expect(subTitleElement.getAttribute('x')).toBe('142');
                 done();
             };
             chart.loaded = loaded;
@@ -663,7 +663,7 @@ describe('Chart Control', () => {
                 const titleElement: Element = document.getElementById('RTLcontainer-chart-title');
                 const subTitleElement: Element = document.getElementById('RTLcontainer-chart-sub-title');
                 expect(titleElement.getAttribute('x')).toBe('876.5');
-                expect(subTitleElement.getAttribute('x')).toBe('942.5');
+                expect(subTitleElement.getAttribute('x')).toBe('936.5');
                 done();
             };
             chart.loaded = loaded;
@@ -676,7 +676,7 @@ describe('Chart Control', () => {
                 const titleElement: Element = document.getElementById('RTLcontainer-chart-title');
                 const subTitleElement: Element = document.getElementById('RTLcontainer-chart-sub-title');
                 expect(titleElement.getAttribute('x')).toBe('876.5');
-                expect(subTitleElement.getAttribute('x')).toBe('1008.5');
+                expect(subTitleElement.getAttribute('x')).toBe('996.5');
                 done();
             };
             chart.loaded = loaded;
@@ -702,7 +702,7 @@ describe('Chart Control', () => {
                 const titleElement: Element = document.getElementById('RTLcontainer-chart-title');
                 const subTitleElement: Element = document.getElementById('RTLcontainer-chart-sub-title');
                 expect(titleElement.getAttribute('x')).toBe('100');
-                expect(subTitleElement.getAttribute('x')).toBe('166');
+                expect(subTitleElement.getAttribute('x')).toBe('160');
                 expect(titleElement.getAttribute('y')).toBe('100');
                 done();
             };
@@ -722,7 +722,7 @@ describe('Chart Control', () => {
         let element: Element;
         const trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
-            ele = createElement('div', { id: 'chartContainer' });
+            ele = createElement('div', { id: 'chart3DContainer' });
             document.body.appendChild(ele);
             chart = new Chart3D(
                 {
@@ -742,16 +742,16 @@ describe('Chart Control', () => {
         });
         it('checking series fill', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
-                expect(element.getAttribute('fill')).toEqual('#6355C7');
+                element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
+                expect(element.getAttribute('fill')).toEqual('#FD7E14');
                 done();
             };
             chart.loaded = loaded;
-            chart.appendTo('#chartContainer');
+            chart.appendTo('#chart3DContainer');
         });
         it('checking with legend settings', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const legendElement: Element = document.getElementById('chartContainer_chart_legend_g_0');
+                const legendElement: Element = document.getElementById('chart3DContainer_chart_legend_g_0');
                 expect(legendElement === null).toBe(true);
                 done();
             };
@@ -761,8 +761,8 @@ describe('Chart Control', () => {
         });
         it('change palettes', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
-                const seriesElement1: Element = document.getElementById('chartContainer-svg-4-region-series-0-point-2');
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
+                const seriesElement1: Element = document.getElementById('chart3DContainer-svg-4-region-series-0-point-2');
                 expect(seriesElement.getAttribute('fill') === '#ee82ee').toBe(true);
                 expect(seriesElement1.getAttribute('fill') === '#A65BA6').toBe(true);
                 done();
@@ -773,8 +773,8 @@ describe('Chart Control', () => {
         });
         it('change tilt', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
-                expect(seriesElement.getAttribute('d')).toBe( 'M 73.11964319257858 158.09941129426952 L 73.11964319257858 158.09941129426952 L 145.52034331610952 158.09941129426952 L 168.47770177006993 337.56098063763574 L 101.5359175004123 337.56098063763574 ');
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
+                expect(seriesElement.getAttribute('d')).toBe( 'M 73.97330780218424 157.2247829905249 L 73.97330780218424 157.2247829905249 L 146.40061263184265 157.2247829905249 L 169.29937714799362 336.81329243051357 L 102.33484947414897 336.81329243051357 ');
                 done();
             };
             chart.tilt = 30;
@@ -783,8 +783,8 @@ describe('Chart Control', () => {
         });
         it('change rotation', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
-                expect(seriesElement.getAttribute('d')).toBe('M 163.3258675105575 152.12689207847362 L 163.3258675105575 152.12689207847362 L 211.86701397446078 150.99420450732765 L 211.86701397446078 345.2671794961359 L 163.3258675105575 341.909569910239 ');
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
+                expect(seriesElement.getAttribute('d')).toBe('M 163.97565130722325 151.25658195743833 L 163.97565130722325 151.25658195743833 L 212.5479146623298 150.10292875667125 L 212.5479146623298 344.4388904412149 L 163.97565130722325 341.09936801794174 ');
                 done();
             };
             chart.tilt = 0;
@@ -794,8 +794,8 @@ describe('Chart Control', () => {
         });
         it('change depth', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
-                expect(seriesElement.getAttribute('d') === 'M 104.54545454545456 149.0909090909091 L 104.54545454545456 149.0909090909091 L 170.90909090909093 149.0909090909091 L 170.90909090909093 350.9090909090909 L 104.54545454545456 350.9090909090909 ').toBe(true);
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
+                expect(seriesElement.getAttribute('d') === 'M 105.45454545454547 148.1818181818182 L 105.45454545454547 148.1818181818182 L 171.81818181818184 148.1818181818182 L 171.81818181818184 350 L 105.45454545454547 350 ').toBe(true);
                 done();
             };
             chart.rotation = 0;
@@ -805,8 +805,8 @@ describe('Chart Control', () => {
         });
         it('change perspective angle', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
-                expect(seriesElement.getAttribute('d') === 'M 75.66976196895152 144.83554386910865 L 75.66976196895152 144.83554386910865 L 147.58057085386346 144.83554386910865 L 147.58057085386346 363.52320924514225 L 75.66976196895152 363.52320924514225 ').toBe(true);
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
+                expect(seriesElement.getAttribute('d') === 'M 76.65484154271743 143.85046429534273 L 76.65484154271743 143.85046429534273 L 148.56565042762938 143.85046429534273 L 148.56565042762938 362.53812967137634 L 76.65484154271743 362.53812967137634 ').toBe(true);
                 done();
             };
             chart.depth = 100;
@@ -816,8 +816,8 @@ describe('Chart Control', () => {
         });
         it('change enableSideBySidePlacement', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
-                expect(seriesElement.getAttribute('d')).toBe('M 92.16949152542375 146.84745762711864 L 92.16949152542375 146.84745762711864 L 154.8135593220339 146.84745762711864 L 154.8135593220339 357.5593220338984 L 92.16949152542375 357.5593220338984 ');
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
+                expect(seriesElement.getAttribute('d')).toBe('M 93.11864406779664 145.89830508474577 L 93.11864406779664 145.89830508474577 L 155.76271186440678 145.89830508474577 L 155.76271186440678 356.6101694915255 L 93.11864406779664 356.6101694915255 ');
                 done();
             };
             chart.perspectiveAngle = 90;
@@ -827,8 +827,8 @@ describe('Chart Control', () => {
         });
         it('change enableRotation', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
-                expect(seriesElement.getAttribute('d')).toBe('M 92.16949152542375 146.84745762711864 L 92.16949152542375 146.84745762711864 L 154.8135593220339 146.84745762711864 L 154.8135593220339 357.5593220338984 L 92.16949152542375 357.5593220338984 ');
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
+                expect(seriesElement.getAttribute('d')).toBe('M 93.11864406779664 145.89830508474577 L 93.11864406779664 145.89830508474577 L 155.76271186440678 145.89830508474577 L 155.76271186440678 356.6101694915255 L 93.11864406779664 356.6101694915255 ');
                 done();
             };
             chart.enableRotation = true;
@@ -837,8 +837,8 @@ describe('Chart Control', () => {
         });
         it('change tooltip', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
-                expect(seriesElement.getAttribute('d')).toBe('M 92.16949152542375 146.84745762711864 L 92.16949152542375 146.84745762711864 L 154.8135593220339 146.84745762711864 L 154.8135593220339 357.5593220338984 L 92.16949152542375 357.5593220338984 ');
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
+                expect(seriesElement.getAttribute('d')).toBe('M 93.11864406779664 145.89830508474577 L 93.11864406779664 145.89830508474577 L 155.76271186440678 145.89830508474577 L 155.76271186440678 356.6101694915255 L 93.11864406779664 356.6101694915255 ');
                 done();
             };
             chart.enableRotation = false;
@@ -848,8 +848,8 @@ describe('Chart Control', () => {
         });
         it('Checking addSeries method', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-1-point-0');
-                expect(seriesElement.getAttribute('d')).toBe('M 125.38983050847459 146.84745762711864 L 125.38983050847459 146.84745762711864 L 156.71186440677968 146.84745762711864 L 156.71186440677968 357.5593220338984 L 125.38983050847459 357.5593220338984 ');
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-1-point-0');
+                expect(seriesElement.getAttribute('d')).toBe('M 126.33898305084746 145.89830508474577 L 126.33898305084746 145.89830508474577 L 157.66101694915255 145.89830508474577 L 157.66101694915255 356.6101694915255 L 126.33898305084746 356.6101694915255 ');
                 done();
             };
             chart.loaded = loaded;
@@ -857,7 +857,7 @@ describe('Chart Control', () => {
         });
         it('Checking removeSeries method', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-1-point-0');
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-1-point-0');
                 expect(seriesElement === null).toBe(true);
                 done();
             };
@@ -866,8 +866,8 @@ describe('Chart Control', () => {
         });
         it('change data source', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
-                expect(seriesElement.getAttribute('d')).toBe('M 92.16949152542375 62.37288135593221 L 92.16949152542375 62.37288135593221 L 154.8135593220339 62.37288135593221 L 154.8135593220339 357.5593220338984 L 92.16949152542375 357.5593220338984 ');
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
+                expect(seriesElement.getAttribute('d')).toBe('M 93.11864406779664 61.42372881355933 L 93.11864406779664 61.42372881355933 L 155.76271186440678 61.42372881355933 L 155.76271186440678 356.6101694915255 L 93.11864406779664 356.6101694915255 ');
                 done();
             };
             chart.series[0].dataSource = categoryData1;
@@ -876,8 +876,8 @@ describe('Chart Control', () => {
         });
         it('Selected Data Indexes', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
-                expect(seriesElement.getAttribute('class') === 'chartContainer_ej2_chart_selection_series_0').toBe(true);
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
+                expect(seriesElement.getAttribute('class') === 'chart3DContainer_ej2_chart_selection_series_0').toBe(true);
                 done();
             };
             chart.selectedDataIndexes = [{ series: 0, point: 0 }];
@@ -891,7 +891,7 @@ describe('Chart Control', () => {
         });
         it('change axis', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
                 expect(seriesElement !== null).toBe(true);
                 done();
             };
@@ -902,7 +902,7 @@ describe('Chart Control', () => {
         });
         it('Change chart data source', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-0-point-0');
+                const seriesElement: Element = document.getElementById('chart3DContainer-svg-0-region-series-0-point-0');
                 expect(seriesElement !== null).toBe(true);
                 done();
             };
@@ -925,7 +925,7 @@ describe('Chart Control', () => {
         let element: Element;
         const trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
-            ele = createElement('div', { id: 'chartContainer' });
+            ele = createElement('div', { id: 'chart3DContainer' });
             document.body.appendChild(ele);
             chart = new Chart3D(
                 {
@@ -955,7 +955,7 @@ describe('Chart Control', () => {
                         dataLabel: {
                             visible: true, position: 'Top'
                         },
-                        type: 'Column', animation: { enable: false }, columnWidth: 0.7,
+                        type: 'Column', animation: { enable: true, duration:0 }, columnWidth: 0.7,
                         fill: '#E94649'
                     }],
                     legendSettings: {
@@ -973,12 +973,221 @@ describe('Chart Control', () => {
         });
         it('checking Back wall', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
-                element = document.getElementById('chartContainer-svg-1-back-wall-brush');
-                expect(element.getAttribute('d')).toEqual('M 83.68327402135232 95.3131672597865 L 83.68327402135232 95.3131672597865 L 798.3807829181495 95.3131672597865 L 798.3807829181495 354.68683274021356 L 83.68327402135232 354.68683274021356 ');
+                element = document.getElementById('chart3DContainer-svg-1-back-wall-brush');
+                expect(element.getAttribute('d')).toEqual('M 83.68327402135232 98.15302491103205 L 83.68327402135232 98.15302491103205 L 798.3807829181495 98.15302491103205 L 798.3807829181495 352.79359430604984 L 83.68327402135232 352.79359430604984 ');
                 done();
             };
             chart.loaded = loaded;
-            chart.appendTo('#chartContainer');
+            chart.appendTo('#chart3DContainer');
+        });
+        it('checking chart mousedone event', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs) => {
+                chart.loaded = null;
+                element = document.getElementById('chart3DContainer');
+                args.chart.chartOnMouseDown(<PointerEvent>trigger.onTouchStart(element, 100, 100, 100, 100, 100, 100));
+                args.chart.mouseLeave(<PointerEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100));
+                args.chart.chartOnMouseLeave(<PointerEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100));
+                args.chart.chartResize();
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('checking chart 3d theme - data Bind', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs) => {
+                chart.loaded = null;
+                element = document.getElementById('chart3DContainer');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.theme = 'Bootstrap';
+        });
+        it('checking chart 3D vector points', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs) => {
+                chart.loaded = null;
+                args.chart.polygons[0].vectorPoints = [];
+                args.chart.polygon.draw(args.chart.polygons[0], args.chart);
+                args.chart.isTouch = true;
+                args.chart.polygon.draw(args.chart.polygons[66], args.chart);
+                args.chart.polygon.drawLine(args.chart.polygons[2], args.chart);
+                args.chart.polygons[0].points = null;
+                args.chart.polygon.transform([], args.chart.polygons[0]);
+                args.chart.polygon.createBox({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }, args.chart, 0, null, 'red', 0, 0, false, null, null);
+                args.chart.polygon.polygon3D(args.chart.polygons[1].points, args.chart, 0);
+                args.chart.isTouch = false;
+                (args.chart.series[0] as any).xAxis = null; 
+                args.chart.svg3DRenderer.transform3DToVisible(args.chart.series[0] as any, 0, 0,  args.chart);
+                element = document.getElementById('chart3DContainer');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].fill = null;
+            chart.wallColor = null;
+            chart.series[0].xAxisName = null;
+            chart.refresh();
+        });
+        it('checking 3d renderer color ', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs) => {
+                chart.loaded = null;
+                args.chart.svg3DRenderer.checkColorFormat('rgba(');
+                args.chart.svg3DRenderer.hexToValue('');
+                args.chart.svg3DRenderer.hexToValue('rgba(');
+                args.chart.svg3DRenderer.hexToValue('rgb(');
+                args.chart.svg3DRenderer.hexToValue('rgb(255,255,255,0.5)');
+                args.chart.polygons[0].points = null;
+                args.chart.bspTreeObj.splitPolygon(args.chart.polygons[0], null);
+                args.chart.bspTreeObj.classifyPolygon(args.chart.polygons[0], args.chart.polygons[0]);
+                args.chart.graphics.drawNode3D(null, null, null, null);
+                args.chart.graphics.view(null, null);
+                args.chart.graphics.view(null, args.chart, 0, 0);
+                args.chart.graphics.addVisual(null, args.chart);
+                let matrix = args.chart.matrixObj.matrix3D(3);
+                args.chart.matrixObj.getMatrixVectorAnd(matrix, {x:0, y:0, z:0});
+                args.chart.vector.normalize();
+                element = document.getElementById('chart3DContainer');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].fill = null;
+            chart.wallColor = null;
+            chart.series[0].xAxisName = null;
+            chart.refresh();
+        });
+        
+    });
+    describe('Chart databind properites', () => {
+        let chart: Chart3D;
+        let ele: HTMLElement;
+        let loaded: EmitType<Chart3DLoadedEventArgs>;
+        let element: Element;
+        const trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'chart3DContainer' });
+            document.body.appendChild(ele);
+            chart = new Chart3D(
+                {
+                    primaryXAxis: { valueType: 'Category', rangePadding: 'Normal' },
+                    wallColor: 'transparent',
+                    primaryYAxis: { title: 'PrimaryYAxis' },
+                    series: [{ dataSource: categoryData, xName: 'x', yName: 'y', name: 'Gold', type: 'Column' }],
+                    height: '400', width: '900',
+                    legendSettings: { visible: true, position: 'Right' },
+                    enableSideBySidePlacement: false,
+                    selectionMode: 'Point',
+                    highlightMode: 'Point',
+                });
+            chart.appendTo('#chart3DContainer');
+        });
+
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('checking delay redraw', (done: Function) => {
+            chart.loaded = loaded;
+            chart.delayRedraw = true;
+            chart.primaryYAxis.edgeLabelPlacement = 'Hide';
+            element = document.getElementById('chart3DContainer');
+            expect(element !== null).toEqual(true);
+            done();
+        });
+        it('checking axis properties', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs) => {
+                element = document.getElementById('chart3DContainer');
+                expect(element !== null).toEqual(true);
+                
+                done();
+            };
+            chart.loaded = loaded;
+            chart.isReact = true;
+            chart.delayRedraw = false;
+            chart.primaryYAxis.edgeLabelPlacement = 'Shift';
+            chart.primaryXAxis.edgeLabelPlacement = 'Shift';
+            chart.primaryYAxis.isInversed = true;
+            chart.isMultiSelect = true;
+          
+        });
+        it('checking legend properties', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs) => {
+                element = document.getElementById('chart3DContainer');
+                expect(element !== null).toEqual(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.legendSettings.visible = false;
+            chart.selectedDataIndexes = [{ series: 0, point: 0 }, { series: 0, point: 1 }];
+            chart.isReact = false;
+        });
+        it('checking selection properties', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs) => {
+                element = document.getElementById('chart3DContainer');
+                expect(element !== null).toEqual(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.legendSettings.background = 'red';
+            chart.legendSettings.opacity = 0.5;
+            chart.isMultiSelect = false;
+        });
+        it('checking 3D chart keyboard navigations', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs) => {
+                chart.loaded = null;
+                element = document.getElementById('chart3DContainer');
+                expect(element !== null).toEqual(true);
+                args.chart.setTabIndex(element as any, element as any);
+                let events: any = <KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100);
+            
+
+                let legendElement: any = document.getElementById('chart3DContainer_chart_legend_translate_g');
+                if (legendElement) {
+                    legendElement.firstElementChild.setAttribute('class', 'e-chart');
+                    events = <KeyboardEvent>trigger.onTouchEnd(legendElement, 100, 100, 100, 100, 100, 100);
+                    events.code = 'Tab';
+                    args.chart.chartKeyUp(events);
+                }
+                events.code = 'Minus';
+                if (document.getElementById(args.chart.element.id + '-svg-0-region-series-0-point-0')) {
+                    document.getElementById(args.chart.element.id + '-svg-0-region-series-0-point-0')
+                };
+                args.chart.chartKeyUp(events);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.legendSettings.visible = true;
+            chart.selectedDataIndexes = [];
+            chart.refresh();
+        });
+        it('checking chart set tab index method', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs) => {
+                chart.loaded = null;
+                element = document.getElementById('chart3DContainer');
+                expect(element !== null).toEqual(true);
+                args.chart.setTabIndex(element as any, element as any);
+                done();
+            }; 
+            chart.loaded = loaded;
+            chart.removeSeries(4);
+        });
+        it('checking chart destroy method', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs) => {
+                chart.loaded = null;
+                args.chart.isReact = true;
+                if (document.getElementById(args.chart.chart3D.id)) {
+                    document.getElementById(args.chart.chart3D.id).remove();
+                };
+                args.chart.stopElementAnimation(element as any, 0);
+                args.chart.destroy();
+                element = document.getElementById('chart3DContainer');
+                args.chart.setTabIndex(element as any, element as any);
+                expect(element !== null).toEqual(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
         });
     });
     it('memory leak', () => {

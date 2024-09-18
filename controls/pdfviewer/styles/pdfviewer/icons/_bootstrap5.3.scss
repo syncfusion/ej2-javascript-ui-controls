@@ -40,6 +40,7 @@
     .e-pv-organize-view-disable-icon::before{
       color: $pv-thumbnail-icon-disable-color;
       content: '\e8dc';
+      opacity: .5;
     }
 
     .e-pv-organize-view-selection-icon::before{
@@ -262,6 +263,11 @@
 
   .e-pv-copy-icon::before {
     content: '\e77c';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-import-icon::before{
+    content: '\e911';
     font-family: 'e-icons';
   }
 

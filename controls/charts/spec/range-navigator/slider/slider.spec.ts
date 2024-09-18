@@ -1,10 +1,11 @@
 import { RangeNavigator } from '../../../src/range-navigator/index';
-import { Logarithmic, DateTime, LineSeries, AreaSeries, DateTimeCategory, PeriodSelectorSettingsModel, } from '../../../src/chart/index';
+import { Logarithmic, DateTime, LineSeries, AreaSeries, DateTimeCategory } from '../../../src/chart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { IChangedEventArgs } from '../../../src/range-navigator/model/range-navigator-interface';
 import { MouseEvents } from '../../../spec/chart/base/events.spec';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { PeriodSelector } from '../../../src/common/period-selector/period-selector';
+import { PeriodSelectorSettingsModel } from '../../../src/common/model/base-model';
 RangeNavigator.Inject(Logarithmic, DateTime, LineSeries, AreaSeries, DateTimeCategory, PeriodSelector);
 
 let value: number = 0;
@@ -536,6 +537,61 @@ describe('Range navigator', () => {
             range.height = '450';
             range.enableGrouping = false;
             range.enableRtl = true;
+            range.refresh();
+        });
+        it('checking date time axis with area series', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('fill')).toEqual('#00bdae');
+                done();
+            };
+            range.disableRangeSelector = true;
+            range.series[0].type = 'Area';
+            range.series[0].dataSource = dateTime;
+            range.enableGrouping = false;
+            range.labelPosition = 'Outside';
+            range.refresh();
+        });
+        it('checking date time axis with area series in Bootstrap5 theme', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('fill')).toEqual('#FD7E14');
+                done();
+            };
+            range.disableRangeSelector = true;
+            range.series[0].type = 'Area';
+            range.series[0].dataSource = dateTime;
+            range.enableGrouping = false;
+            range.labelPosition = 'Outside';
+            range.theme = 'Bootstrap5'
+            range.refresh();
+        });
+        it('checking date time axis with area series in Bootstrap5 dark theme', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('fill')).toEqual('#FD7E14');
+                done();
+            };
+            range.disableRangeSelector = true;
+            range.series[0].type = 'Area';
+            range.series[0].dataSource = dateTime;
+            range.enableGrouping = false;
+            range.labelPosition = 'Outside';
+            range.theme = 'Bootstrap5Dark'
+            range.refresh();
+        });
+        it('checking date time axis with area series in Fluent2HighContrast theme', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('fill')).toEqual('#9BB449');
+                done();
+            };
+            range.disableRangeSelector = true;
+            range.series[0].type = 'Area';
+            range.series[0].dataSource = dateTime;
+            range.enableGrouping = false;
+            range.labelPosition = 'Outside';
+            range.theme = 'Fluent2HighContrast'
             range.refresh();
         });
        

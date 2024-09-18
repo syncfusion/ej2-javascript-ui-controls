@@ -107,6 +107,9 @@
 
           &::after {
             background-color: $radio-btn-focus-check-bg-color;
+            @if $skin-name == 'fluent2' {
+              color: $radio-btn-focus-check-bg-color;
+            }
           }
         }
       }
@@ -124,6 +127,9 @@
 
           &::after {
             background-color: $radio-btn-hover-check-bg-color;
+            @if $skin-name == 'fluent2' {
+              color: $radio-btn-hover-check-bg-color;
+            }
           }
         }
       }
@@ -133,9 +139,17 @@
       +label {
         cursor: default;
         pointer-events: none;
+        @if $skin-name == 'bootstrap5.3' {
+          opacity: .5;
+        }
 
         &::before {
-          background-color: $radio-btn-disabled-background-color;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+            background-color: $radio-btn-disabled-not-checked-bg-color;
+          }
+          @else {
+            background-color: $radio-btn-disabled-background-color;
+          }
           border-color: $radio-btn-disabled-border-color;
           cursor: default;
         }

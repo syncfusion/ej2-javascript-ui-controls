@@ -3018,6 +3018,7 @@ describe('EJ2-62502 - clear filter testing with ColumnMenu ', ()=>{
                 filterSettings: { type: 'FilterBar',
                 showFilterBarOperator: true },
                 allowPaging: true,
+                cssClass: 'e-grid',
                 groupSettings: { showGroupedColumn: true },
                 showColumnMenu: true,
                 columns: [
@@ -3109,7 +3110,7 @@ describe('EJ2-69040 - Filter Menu dialog is not opening on ForeignKey column whe
         (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
     });
     it('Check foreign key filter template is open or not?', () => {
-        expect(gridObj.element.querySelector('.e-popup-open')).toBeTruthy();
+        expect(document.querySelector('.e-grid-popup').querySelector('.e-popup-open')).toBeTruthy();
     });
 
     afterAll(() => {
@@ -3192,14 +3193,14 @@ describe('EJ2-849870 - Checkbox filtering is not working properly while cancelin
         (gridObj.element.getElementsByClassName('e-filtermenudiv e-icons e-icon-filter')[0] as HTMLElement).click();
     });
     it('Filtering a records ', function () {
-        (gridObj.element.getElementsByClassName('e-frame e-icons e-check')[1] as HTMLElement).click();
-        (gridObj.element.getElementsByClassName('e-control e-btn e-lib e-primary e-flat')[0] as HTMLElement).click()
+        (document.querySelector('.e-grid-popup').getElementsByClassName('e-frame e-icons e-check')[1] as HTMLElement).click();
+        (document.querySelector('.e-grid-popup').getElementsByClassName('e-control e-btn e-lib e-primary')[0] as HTMLElement).click();
         
     });
     it('lick the checkbox filter after filtering', function (done) {
         var actionComplete = function (args:any) {
             if (args.requestType == 'filterAfterOpen') {
-                expect(gridObj.element.getElementsByClassName('e-frame e-icons e-check').length).toBe(6);
+                expect(document.getElementsByClassName('e-frame e-icons e-check').length).toBe(6);
                 done();
             }
         };
@@ -3288,3 +3289,228 @@ describe('EJ2-883199 - MemoryLeak Issue when using FilterBarTemplate in gridColu
         gridObj = (window as any).shipCreate = (window as any).shipRead = (window as any).shipWrite = (window as any).shipDestroy = null;
     });
 });
+
+describe('Render file Code Coverage - 1 => ', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    let actionBegin: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                allowPaging: true,
+                showColumnMenu: true,
+                filterSettings: { type: 'Menu'},
+                columns: [
+                    { field: 'OrderID', type: 'number', visible: true },
+                    { field: 'CustomerID', type: 'string' }],
+                actionComplete: actionComplete,
+                actionBegin: actionBegin,
+            }, done);
+    });
+
+    it('menu filter testing', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.filterByColumn('OrderID', 'equal', '10248', 'and', false);
+    });
+
+    it('clearFiltering filter testing', (done) => {
+        actionBegin = (args?: any): void => {
+            args.cancel = true;
+            args.action = 'clearFilter';
+            done();
+        };
+        gridObj.actionBegin = actionBegin;
+        gridObj.clearFiltering();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});
+
+
+describe('Render file Code Coverage - 2=> ', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    let actionBegin: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                filterSettings: { type: 'Excel'},
+                columns: [
+                    { field: 'OrderID', type: 'number', visible: true },
+                    { field: 'CustomerID', type: 'string' }],
+                actionComplete: actionComplete,
+                actionBegin: actionBegin
+            }, done);
+    });
+
+    it('clearFiltering filter testing', (done: Function) => {
+        actionBegin = (args?: any): void => {
+            if (args.requestType !== 'filtering') {
+                args.cancel = true;
+                args.action = 'clear-filter';
+            }
+            done();
+        };
+        gridObj.actionBegin = actionBegin;
+        gridObj.renderModule.refresh();
+    });
+
+    it('refreshFilterValue coevarge', () => {
+        (gridObj as any).filterModule.refreshFilterValue();
+    });
+     
+    it('filter modeule coverage', () => {
+        (gridObj as any).filterModule.render( { args : { isFrozen: true }});
+    });
+
+    it('addEventListener coevarge', () => {
+        gridObj.isDestroyed = true;
+        (gridObj as any).filterModule.addEventListener();
+        gridObj.isDestroyed = false;
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});
+
+
+
+describe('Render file Code Coverage - 3=> ', () => {
+    let gridObj: Grid;
+    let actionBegin: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: { result: filterData },
+                columns: [
+                    { field: 'OrderID', type: 'number', visible: true },
+                    { field: 'CustomerID', type: 'string' }],
+                actionBegin: actionBegin
+            }, done);
+    });
+
+    it('reordering testing', (done: Function) => {
+        actionBegin = (args?: any): void => {
+            args.requestType = 'reorder';
+            done();
+        };
+        gridObj.actionBegin = actionBegin;
+        gridObj.renderModule.refresh();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionBegin = null;
+    });
+});
+
+
+
+describe('filter file Code Coverage - 1 => ', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    let actionBegin: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                filterSettings: { type: 'FilterBar', mode: 'Immediate' },
+                columns: [
+                    { field: 'OrderID', type: 'number', visible: true },
+                    { field: 'CustomerID', type: 'string' }],
+                actionComplete: actionComplete,
+                actionBegin: actionBegin
+            }, done);
+    });
+
+    it('refreshClearIcon coevarge', () => {
+        let icon: any = gridObj.element.querySelector('.e-input');
+        (gridObj as any).filterModule.refreshClearIcon({ target: icon });
+        (gridObj as any).filterModule.filterByColumn('', 'like', '10');
+        (gridObj as any).filterModule.keyUpHandlerImmediate({ keyCode: 13 });
+        (gridObj as any).filterModule.keyUpHandlerImmediate({});
+        (gridObj as any).filterModule.updateCrossIcon(icon);
+        icon.value = '12';
+        (gridObj as any).filterModule.updateCrossIcon(icon);
+    });
+
+
+    it('clearFiltering filter coevarge', (done: Function) => {
+        actionComplete = (): void => {
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj as any).filterModule.clearFiltering(['']);
+    });
+
+
+    it('getFilterBarElement coevarge', () => {
+        (gridObj as any).filterModule.getFilterBarElement('');
+    }); 
+
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});
+
+
+
+
+describe('filter file Code Coverage - 2 => ', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    let actionBegin: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                filterSettings: { type: 'Menu' },
+                columns: [
+                    { field: 'OrderID', type: 'number', visible: true },
+                    { field: 'CustomerID', type: 'string' }],
+                actionComplete: actionComplete,
+                actionBegin: actionBegin
+            }, done);
+    });
+
+
+
+
+    it('keyUpHandler coverage 1', (done: Function) => {
+        actionComplete = (): void => {
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        let elem: any = gridObj.element.querySelector('.e-headercell');
+        elem.click();
+        (gridObj as any).filterModule.keyUpHandler({ action: 'altDownArrow' });
+    });
+
+    it('keyUpHandler coverage 2', () => {
+        (gridObj as any).filterModule.keyUpHandler({ action: 'escape' });
+    });
+
+
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});
+

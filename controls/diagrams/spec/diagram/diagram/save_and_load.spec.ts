@@ -12,6 +12,7 @@ import { Container } from '../../../src/diagram/core/containers/container';
 import { Node, SwimLane } from '../../../src/diagram/objects/node'; 
 import { Keys, KeyModifiers } from '../../../src/diagram/enum/enum';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { ILoadedEventArgs } from '../../../src/diagram/objects/interface/IElement';
 
 describe('Diagram Control', () => {
 
@@ -112,6 +113,10 @@ describe('Diagram Control', () => {
                     content: getcontent(), position: 'TopLeft', relativeMode: 'Object',
                     animation: { open: { effect: 'FadeZoomIn', delay: 0 }, close: { effect: 'FadeZoomOut', delay: 0 } }
                 },
+                loaded: function(args:ILoadedEventArgs)
+                {
+                    args.diagram.nodes[0].style.fill = 'red';
+                },
             });
             diagram.appendTo('#diagram');
 
@@ -135,7 +140,7 @@ describe('Diagram Control', () => {
         });
         it('Checking before, after, Load the saved diagram', (done: Function) => {
             diagram.loadDiagram(savedata);
-            expect(diagram != null && diagram.commands !== null).toBe(true);
+            expect(diagram.nodes[0].style.fill === 'red').toBe(true);
             done();
         });
         it('Checking before, after, customProperties', (done: Function) => {
@@ -482,8 +487,7 @@ describe('Diagram Control', () => {
         })
 
     });
-
-    describe('883335: loading data wihout nodeTeamplate issue', () => {
+    describe('883335: loading data without nodeTemplate issue', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
@@ -515,5 +519,4 @@ describe('Diagram Control', () => {
             done();
         });
     });
-
 });

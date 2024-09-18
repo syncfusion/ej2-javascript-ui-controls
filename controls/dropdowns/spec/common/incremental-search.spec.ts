@@ -51,16 +51,6 @@ describe('Incremental search', () => {
             expect(li1.innerText).toBe("Armenia");
             addClass([li1], 'e-active');
         });
-        it('again again "a" key pressing ', (done) => {
-            setTimeout(() => {
-                let charCode: number = 65;
-                li2 = incrementalSearch(charCode, listObj.getItems(), 6, true, element.id) as HTMLElement;
-                expect(li2.innerText).toBe("Algeria");
-                addClass([li2], 'e-active');
-                removeClass([li1], 'e-active');
-                done();
-            }, 2000)
-        });
         it('again "a" key pressing ', (done) => {
             setTimeout(() => {
                 let charCode: number = 65;
@@ -70,6 +60,14 @@ describe('Incremental search', () => {
                 removeClass([li1], 'e-active');
                 done();
             }, 2000)
+        });
+        it('getting matches "a" key pressing ', (done) => {
+            setTimeout(() => {
+                let charCode: number = 65;
+                let li: HTMLElement = incrementalSearch(charCode, listObj.getItems(), 6, true, element.id, true, 'Algeria') as HTMLElement;
+                expect(li.innerText).toBe("Algeria");
+                done();
+            }, 1000)
         });
         it('I key with camelcase false', (done) => {
             setTimeout(() => {
@@ -81,18 +79,22 @@ describe('Incremental search', () => {
                 done();
             }, 1000)
         });
-        it('getting matches "a" key pressing ', (done) => {
-            setTimeout(() => {
-                let charCode: number = 65;
-                let li: HTMLElement = incrementalSearch(charCode, listObj.getItems(), 6, true, element.id) as HTMLElement;
-                expect(li.innerText).toBe("Algeria");
-                done();
-            }, 1000)
-        });
         it('"M" key pressing ', () => {
             let charCode: number = 77;
             let li: Element = incrementalSearch(charCode, listObj.getItems(), 3, true, element.id);
             expect(isUndefined(li)).toBe(true);
+        });
+        it('again again "a" key pressing ', (done) => {
+            setTimeout(() => {
+                let charCode: number = 65;
+                let charCode1: number = 108;
+                li2 = incrementalSearch(charCode, listObj.getItems(), 6, true, element.id, true) as HTMLElement;
+                li2 = incrementalSearch(charCode1, listObj.getItems(), 6, true, element.id, true, 'Algeria', true, true) as HTMLElement;
+                expect(li2.innerText).toBe("Algeria");
+                addClass([li2], 'e-active');
+                removeClass([li1], 'e-active');
+                done();
+            }, 2000)
         });
     });
     describe('Search Module', () => {

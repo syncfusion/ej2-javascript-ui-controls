@@ -1,9 +1,9 @@
 import { Axis } from '../axis/axis';
-import { getMinPointsDelta, getActualDesiredIntervalsCount, setRange, triggerLabelRender } from '../../common/utils/helper';
+import { getMinPointsDelta, getActualDesiredIntervalsCount, setRange, triggerLabelRender, logWithIn } from '../../common/utils/helper';
 import { Size } from '@syncfusion/ej2-svg-base';
 import { DoubleRange } from '../utils/double-range';
 import { Chart } from '../chart';
-import { Series } from '../series/chart-series';
+import { Points, Series } from '../series/chart-series';
 import { withIn, logBase } from '../../common/utils/helper';
 import { RangeNavigator } from '../../range-navigator';
 import { isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-base';
@@ -11,7 +11,7 @@ import { Font } from '../../common/model/base';
 
 
 /**
- * Numeric module is used to render numeric axis.
+ * The `Double` module is used to render the numeric axis in charts.
  */
 
 export class Double {
@@ -97,6 +97,7 @@ export class Double {
             axis.actualRange.max = axis.doubleRange.end;
         }
     }
+
     /**
      * Range for the axis.
      *
@@ -340,7 +341,8 @@ export class Double {
                     : axis.visibleRange.interval;
             }
         }
-        if (axis.maximum && axis.orientation === 'Vertical' && axis.rangePadding === 'Auto') {
+        if ((axis.visibleRange.max - axis.visibleRange.min) % axis.visibleRange.interval !== 0 && axis.valueType === 'Double' &&
+            axis.orientation === 'Vertical' && axis.rangePadding === 'Auto') {
             let duplicateTempInterval: number;
             let tempInterval: number = axis.visibleRange.min;
             for (; (tempInterval <= axis.visibleRange.max) && (duplicateTempInterval !== tempInterval);
@@ -435,5 +437,29 @@ export class Double {
         const labelValue: number = !(tempInterval % 1) ? tempInterval : Number(tempInterval.toLocaleString('en-US').split(',').join(''));
         return isCustom ? format.replace('{value}', axis.format(labelValue))
             : format ? axis.format(tempInterval) : axis.format(labelValue);
+    }
+
+    /**
+     * Get module name.
+     *
+     * @returns {string} - Returns the module name.
+     */
+    protected getModuleName(): string {
+        /**
+         * Returns the module name
+         */
+        return 'Double';
+    }
+
+    /**
+     * To destroy the double axis.
+     *
+     * @returns {void}
+     * @private
+     */
+    public destroy(): void {
+        /**
+         * Destroy method performed here.
+         */
     }
 }

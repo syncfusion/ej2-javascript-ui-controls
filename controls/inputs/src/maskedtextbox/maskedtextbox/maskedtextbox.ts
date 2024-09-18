@@ -36,7 +36,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     private escapeMaskValue: string;
     private regExpCollec: { [key: string]: string };
     private customRegExpCollec: string[];
-    private maskedRegExp: string[]
+    private maskedRegExp: string[];
     private inputObj: InputObject;
     private undoCollec: MaskUndo[];
     private redoCollec: MaskUndo[];
@@ -348,7 +348,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
                 this.enabled = false;
             }
-            if (!this.element.hasAttribute('aria-labelledby') && !this.element.hasAttribute('placeholder')) {
+            if (!this.element.hasAttribute('aria-labelledby') && !this.element.hasAttribute('placeholder') && !this.element.hasAttribute('aria-label')) {
                 this.element.setAttribute('aria-label', 'maskedtextbox');
             }
             this.renderComplete();
@@ -402,7 +402,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         this.customRegExpCollec = [];
         this.undoCollec = [];
         this.redoCollec = [];
-        if (this.promptChar.length > 1) {
+        if (this.promptChar && this.promptChar.length > 1) {
             this.promptChar = this.promptChar[0];
         }
         createMask.call(this);

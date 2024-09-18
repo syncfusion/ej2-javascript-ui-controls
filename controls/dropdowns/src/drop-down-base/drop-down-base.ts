@@ -5,7 +5,7 @@ import { DataManager, Query, DataOptions, DataUtil } from '@syncfusion/ej2-data'
 import { ListBase, SortOrder } from '@syncfusion/ej2-lists';
 import { DropDownBaseModel, FieldSettingsModel } from './drop-down-base-model';
 import { Popup } from '@syncfusion/ej2-popups';
-import { remove, select, selectAll } from '@syncfusion/ej2-base';
+import { select, selectAll } from '@syncfusion/ej2-base';
 import { VirtualInfo, VirtualScroll } from '../common/virtual-scroll';
 import { GeneratedData } from '../drop-down-list';
 import { Skeleton } from '@syncfusion/ej2-notifications';
@@ -73,7 +73,7 @@ export const dropDownBaseClasses: DropDownBaseClassList = {
     group: 'e-list-group-item',
     disabled: 'e-disabled',
     grouping: 'e-dd-group',
-    virtualList: 'e-list-item e-virtual-list',
+    virtualList: 'e-list-item e-virtual-list'
 };
 
 const ITEMTEMPLATE_PROPERTY: string = 'ItemTemplate';
@@ -290,7 +290,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected isScrollChanged: boolean = false;
     protected isUpwardScrolling: boolean = false;
     protected containerElementRect: ClientRect;
-    protected previousEndIndex: number; 
+    protected previousEndIndex: number;
     protected previousInfo: VirtualInfo;
     protected startIndex: number = 0;
     protected currentPageNumber: number = 0;
@@ -305,8 +305,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected keyboardEvent: KeyboardEventArgs;
     protected listContainerHeight: string;
     protected isVirtualTrackHeight: boolean = false;
-    protected virtualSelectAll:boolean = false;
-    protected incrementalQueryString: string = '';  
+    protected virtualSelectAll: boolean = false;
+    protected incrementalQueryString: string = '';
     protected incrementalEndIndex: number = 0;
     protected incrementalStartIndex: number = 0;
     protected incrementalPreQueryString: string = '';
@@ -326,7 +326,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         sentinelInfo: {},
         offsets: {},
         startIndex: 0,
-        endIndex: 0,
+        endIndex: 0
     };
     protected viewPortInfo: VirtualInfo = {
         currentPageNumber: null,
@@ -334,7 +334,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         sentinelInfo: {},
         offsets: {},
         startIndex: 0,
-        endIndex: 0,
+        endIndex: 0
     };
     protected selectedValueInfo: VirtualInfo = {
         currentPageNumber: null,
@@ -342,11 +342,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         sentinelInfo: {},
         offsets: {},
         startIndex: 0,
-        endIndex: 0,
+        endIndex: 0
     };
-
-
-    /**
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -637,7 +634,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     compareValue = value;
                     dataSource.filter((item: { [key: string]: Object }) => {
                         const itemValue: string | number = getValue(fields.value, item);
-                        if (!isNullOrUndefined(itemValue) && !isNullOrUndefined(value) && itemValue.toString() === compareValue.toString()) {
+                        if (!isNullOrUndefined(itemValue) && !isNullOrUndefined(value) &&
+                            itemValue.toString() === compareValue.toString()) {
                             value = getValue(fields.text, item) as string;
                         }
                     });
@@ -728,7 +726,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             const liElem: HTMLElement = this.createElement('li');
                             liElem.textContent = noDataElement[i as number].textContent;
                             liElem.classList.add('e-list-nrt');
-                            liElem.setAttribute('role','option')
+                            liElem.setAttribute('role', 'option');
                             ele.appendChild(liElem);
                         } else {
                             noDataElement[i as number].classList.add('e-list-nr-template');
@@ -750,7 +748,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 this.l10n = componentLocale;
             } else {
                 this.l10n = new L10n(this.getModuleName() === 'listbox' ? 'listbox' :
-                this.getModuleName() === 'mention' ? 'mention' : 'dropdowns', l10nLocale, this.locale);
+                    this.getModuleName() === 'mention' ? 'mention' : 'dropdowns', l10nLocale, this.locale);
             }
             const content: string = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
@@ -759,7 +757,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 liElem.textContent = content;
                 ele.appendChild(liElem);
                 liElem.classList.add('e-list-nrt');
-                liElem.setAttribute('role','option')
+                liElem.setAttribute('role', 'option');
             } else {
                 if (!isNullOrUndefined(ele)) {
                     ele.innerHTML = content;
@@ -778,13 +776,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 sentinelInfo: {},
                 offsets: {},
                 startIndex: 0,
-                endIndex: this.itemCount,
+                endIndex: this.itemCount
             };
             this.selectedValueInfo = null;
         }
     }
 
-    protected updateIncrementalInfo(startIndex: number, endIndex: number) {
+    protected updateIncrementalInfo(startIndex: number, endIndex: number): void {
         this.viewPortInfo.startIndex = startIndex;
         this.viewPortInfo.endIndex = endIndex;
         this.updateVirtualItemIndex();
@@ -793,7 +791,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.isIncrementalRequest = false;
     }
 
-    protected updateIncrementalView(startIndex: number, endIndex: number) {
+    protected updateIncrementalView(startIndex: number, endIndex: number): void {
         this.viewPortInfo.startIndex = startIndex;
         this.viewPortInfo.endIndex = endIndex;
         this.updateVirtualItemIndex();
@@ -812,16 +810,16 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected getFilteringSkeletonCount(): void {
         const currentSkeletonCount: number = this.skeletonCount;
         this.getSkeletonCount(true);
-        this.skeletonCount = this.dataCount > this.itemCount * 2 ? this.skeletonCount : 0;
-        let skeletonUpdated = true;
-        if((this.getModuleName() === 'autocomplete' || this.getModuleName() === 'multiselect') && (this.totalItemCount < (this.itemCount * 2))){
+        this.skeletonCount = this.dataCount < this.itemCount * 2 && ((!(this.dataSource instanceof DataManager)) ||
+            ((this.dataSource instanceof DataManager) && (this.totalItemCount <= this.itemCount))) ? 0 : this.skeletonCount;
+        let skeletonUpdated: boolean = true;
+        if ((this.getModuleName() === 'autocomplete' || this.getModuleName() === 'multiselect') && (this.totalItemCount < (this.itemCount * 2)) && ((!(this.dataSource instanceof DataManager)) || ((this.dataSource instanceof DataManager) && (this.totalItemCount <= this.itemCount)))){
             this.skeletonCount = 0;
             skeletonUpdated = false;
         }
         if (!this.list.classList.contains(dropDownBaseClasses.noData)) {
-            const isSkeletonCountChange: boolean = currentSkeletonCount !== this.skeletonCount;
-            if(currentSkeletonCount !== this.skeletonCount && skeletonUpdated){
-                this.UpdateSkeleton(true,Math.abs(currentSkeletonCount - this.skeletonCount));
+            if (currentSkeletonCount !== this.skeletonCount && skeletonUpdated){
+                this.UpdateSkeleton(true, Math.abs(currentSkeletonCount - this.skeletonCount));
             }
             else{
                 this.UpdateSkeleton();
@@ -830,14 +828,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if ((this.list.getElementsByClassName('e-virtual-ddl').length > 0)) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this.list.getElementsByClassName('e-virtual-ddl')[0] as any).style = this.GetVirtualTrackHeight();
-            }
-            else if (!this.list.querySelector('.e-virtual-ddl') && this.skeletonCount > 0 && this.list.querySelector('.e-dropdownbase')) {
-                var virualElement = this.createElement('div', {
+            } else if (!this.list.querySelector('.e-virtual-ddl') && this.skeletonCount > 0 && this.list.querySelector('.e-dropdownbase')) {
+                const virualElement: HTMLElement = this.createElement('div', {
                     id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
                 });
                 this.list.querySelector('.e-dropdownbase').appendChild(virualElement);
             }
-            
+
             if (this.list.getElementsByClassName('e-virtual-ddl-content').length > 0) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any).style = this.getTransformValues();
@@ -855,11 +852,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected GetVirtualTrackHeight(): string {
-        let height: number = this.totalItemCount === this.viewPortInfo.endIndex ? this.totalItemCount * this.listItemHeight - this.itemCount * this.listItemHeight : this.totalItemCount * this.listItemHeight;
+        let height: number = this.totalItemCount === this.viewPortInfo.endIndex ?
+            this.totalItemCount * this.listItemHeight - this.itemCount * this.listItemHeight : this.totalItemCount * this.listItemHeight;
         height = this.isVirtualTrackHeight ? 0 : height;
         const heightDimension: string = `height: ${height - this.itemCount * this.listItemHeight}px;`;
-        if((this.getModuleName() === 'autocomplete' || this.getModuleName() === 'multiselect') && this.skeletonCount === 0) {
-            return "height: 0px;";
+        if ((this.getModuleName() === 'autocomplete' || this.getModuleName() === 'multiselect') && this.skeletonCount === 0) {
+            return 'height: 0px;';
         }
         return heightDimension;
     }
@@ -867,31 +865,34 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected getTransformValues(): string {
         let translateY: number = this.viewPortInfo.startIndex * this.listItemHeight;
         translateY = translateY - (this.skeletonCount * this.listItemHeight);
-        translateY = ((this.viewPortInfo.startIndex === 0 && this.listData && this.listData.length === 0) || this.skeletonCount === 0) ? 0 : translateY;
+        translateY = ((this.viewPortInfo.startIndex === 0 && this.listData && this.listData.length === 0) ||
+         this.skeletonCount === 0) ? 0 : translateY;
         const styleText: string = `transform: translate(0px, ${translateY}px);`;
         return styleText;
     }
 
     protected UpdateSkeleton(isSkeletonCountChange?: boolean, skeletonCount?: number): void {
-        let isContainSkeleton = this.list.querySelector('.e-virtual-ddl-content');
-        let isContainVirtualList = this.list.querySelector('.e-virtual-list');
+        const isContainSkeleton: Element | null = this.list.querySelector('.e-virtual-ddl-content');
+        const isContainVirtualList: Element | null = this.list.querySelector('.e-virtual-list');
         if (isContainSkeleton && (!isContainVirtualList || isSkeletonCountChange) && this.isVirtualizationEnabled) {
             const totalSkeletonCount: number = isSkeletonCountChange ? skeletonCount : this.skeletonCount;
-            for (let i = 0; i < totalSkeletonCount; i++) {
-                const liElement = this.createElement('li', { className: dropDownBaseClasses.virtualList, styles: 'overflow: inherit' });
+            for (let i: number = 0; i < totalSkeletonCount; i++) {
+                const liElement: HTMLElement = this.createElement('li', { className: dropDownBaseClasses.virtualList, styles: 'overflow: inherit' });
                 if (this.isVirtualizationEnabled && this.itemTemplate) {
                     liElement.style.height = this.listItemHeight + 'px';
                 }
-                let skeleton: Skeleton = new Skeleton({
-                    shape: "Text",
-                    height: "10px",
-                    width: "95%",
-                    cssClass: "e-skeleton-text",
+                const skeleton: Skeleton = new Skeleton({
+                    shape: 'Text',
+                    height: '10px',
+                    width: '95%',
+                    cssClass: 'e-skeleton-text'
                 });
                 skeleton.appendTo(this.createElement('div'));
                 liElement.appendChild(skeleton.element);
+                if (isContainSkeleton.firstChild) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                isContainSkeleton.firstChild && isContainSkeleton.firstChild.insertBefore(liElement, (isContainSkeleton.firstChild as any).children[0]);
+                    isContainSkeleton.firstChild.insertBefore(liElement, (isContainSkeleton.firstChild as any).children[0]);
+                }
             }
         }
     }
@@ -907,17 +908,26 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected getFormattedValue(value: string): string | number | boolean {
         if (this.listData && this.listData.length) {
             let item: { [key: string]: Object };
-            if(this.properties.allowCustomValue && this.properties.value && this.properties.value instanceof Array && this.properties.value.length > 0) {
+            if (
+                this.properties.allowCustomValue &&
+                this.properties.value &&
+                this.properties.value instanceof Array &&
+                this.properties.value.length > 0
+            ) {
                 item = this.typeOfData(this.properties.value);
-            }else{
+            } else {
                 item = this.typeOfData(this.listData);
             }
-            if (typeof getValue((this.fields.value ? this.fields.value : 'value'), item.item as { [key: string]: Object }) === 'number'
-                || item.typeof === 'number') {
+            if (
+                typeof getValue((this.fields.value ? this.fields.value : 'value'), item.item as { [key: string]: Object }) === 'number' ||
+                item.typeof === 'number'
+            ) {
                 return parseFloat(value);
             }
-            if (typeof getValue((this.fields.value ? this.fields.value : 'value'), item.item as { [key: string]: Object }) === 'boolean'
-                || item.typeof === 'boolean') {
+            if (
+                typeof getValue((this.fields.value ? this.fields.value : 'value'), item.item as { [key: string]: Object }) === 'boolean' ||
+                item.typeof === 'boolean'
+            ) {
                 return ((value === 'true') || ('' + value === 'true'));
             }
         }
@@ -943,6 +953,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Initialize the Component.
      *
+     * @param {MouseEvent | KeyboardEventArgs | TouchEvent} e - The event object.
      * @returns {void}
      */
     private initialize(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
@@ -980,7 +991,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @returns {void}
      */
     protected updateDataAttribute(value: { [key: string]: string }) : void {
-        const invalidAttr: string[] = ['class', 'style', 'id', 'type','aria-expanded','aria-autocomplete','aria-readonly'];
+        const invalidAttr: string[] = ['class', 'style', 'id', 'type', 'aria-expanded', 'aria-autocomplete', 'aria-readonly'];
         const attr: { [key: string]: string } = {};
         for (let a: number = 0; a < this.element.attributes.length; a++) {
             if (invalidAttr.indexOf(this.element.attributes[a as number].name) === -1 &&
@@ -1074,6 +1085,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @param {Object[] | string[] | number[] | DataManager | boolean[]} dataSource - Specifies the data to generate the list.
      * @param {FieldSettingsModel} fields - Maps the columns of the data table and binds the data to the component.
      * @param {Query} query - Accepts the external Query that execute along with data processing.
+     * @param {MouseEvent | KeyboardEventArgs | TouchEvent} event - Specifies the event which is the reason for the invocation of this method.
      * @returns {void}
      */
     private setListData(
@@ -1098,23 +1110,23 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         }
                         (eventArgs.data as DataManager).executeQuery(this.getQuery(eventArgs.query as Query)).then((e: Object) => {
                             this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
-                            let isReOrder = true;
+                            let isReOrder: boolean = true;
                             if (!this.virtualSelectAll) {
-                                let newQuery: Query = this.getQuery(eventArgs.query as Query);
+                                const newQuery: Query = this.getQuery(eventArgs.query as Query);
                                 for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
                                     if (newQuery.queries[queryElements as number].fn === 'onWhere') {
                                         isWhereExist = true;
                                     }
                                 }
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                if (this.isVirtualizationEnabled && ((e as any).count != 0 && (e as any).count < (this.itemCount * 2))) {
+                                if (this.isVirtualizationEnabled && ((e as any).count !== 0 && (e as any).count < (this.itemCount * 2))) {
                                     if (newQuery) {
                                         for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
                                             if (newQuery.queries[queryElements as number].fn === 'onTake') {
                                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                                 newQuery.queries[queryElements as number].e.nos = (e as any).count;
                                             }
-                                            if (this.getModuleName() === 'multiselect' && (newQuery.queries[queryElements as number].e.condition == 'or' || newQuery.queries[queryElements as number].e.operator == 'equal')) {
+                                            if (this.getModuleName() === 'multiselect' && (newQuery.queries[queryElements as number].e.condition === 'or' || newQuery.queries[queryElements as number].e.operator === 'equal')) {
                                                 isReOrder = false;
                                             }
                                         }
@@ -1124,32 +1136,32 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     this.isVirtualTrackHeight = false;
                                     if (newQuery) {
                                         for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
-                                            if (this.getModuleName() === 'multiselect' && ((newQuery.queries[queryElements as number].e && newQuery.queries[queryElements as number].e.condition == 'or') || (newQuery.queries[queryElements as number].e && newQuery.queries[queryElements as number].e.operator == 'equal'))) {
+                                            if (this.getModuleName() === 'multiselect' && ((newQuery.queries[queryElements as number].e && newQuery.queries[queryElements as number].e.condition === 'or') || (newQuery.queries[queryElements as number].e && newQuery.queries[queryElements as number].e.operator === 'equal'))) {
                                                 isReOrder = false;
                                             }
                                         }
                                     }
                                 }
                             }
-                            if(isReOrder){
+                            if (isReOrder){
                                 // eslint-disable @typescript-eslint/no-explicit-any
-                                 this.dataCount = this.totalItemCount = (e as any).count;
+                                this.dataCount = this.totalItemCount = (e as any).count;
                             }
                             this.trigger('actionComplete', e, (e: Object) => {
                                 if (!(e as { [key: string]: object }).cancel) {
                                     this.isRequesting = false;
                                     const listItems: { [key: string]: Object }[] = (e as ResultData).result;
-                                    if(this.isIncrementalRequest){
+                                    if (this.isIncrementalRequest){
                                         ulElement = this.renderItems(listItems, fields);
                                         return;
                                     }
-                                    if ((!this.isVirtualizationEnabled && listItems.length === 0) || (this.isVirtualizationEnabled && listItems.length === 0 && !isWhereExist)) {
+                                    if ((!this.isVirtualizationEnabled && listItems.length === 0) ||
+                                        (this.isVirtualizationEnabled && listItems.length === 0 && !isWhereExist)) {
                                         this.isDataFetched = true;
                                     }
-                                    if(!isWhereExist){
+                                    if (!isWhereExist){
                                         this.remoteDataCount = (e as any).count;
                                     }
-                                    
                                     this.dataCount = !this.virtualSelectAll ? (e as any).count : this.dataCount;
                                     this.totalItemCount = !this.virtualSelectAll ? (e as any).count : this.totalItemCount;
                                     ulElement = this.renderItems(listItems, fields);
@@ -1160,27 +1172,27 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     }
                                     this.isRequested = false;
                                     this.bindChildItems(listItems, ulElement, fields, e);
-                                    if(this.getInitialData){
+                                    if (this.getInitialData){
                                         this.setListData(dataSource, fields, query, event);
                                         this.getInitialData = false;
                                         this.preventPopupOpen = false;
                                         return;
                                     }
-                                    if(this.isVirtualizationEnabled && this.setCurrentView) {
-                                        this.notify("setCurrentViewDataAsync", {
-                                            module: "VirtualScroll",
+                                    if (this.isVirtualizationEnabled && this.setCurrentView) {
+                                        this.notify('setCurrentViewDataAsync', {
+                                            module: 'VirtualScroll'
                                         });
                                     }
-                                    if(this.keyboardEvent != null){
+                                    if (this.keyboardEvent != null){
                                         this.handleVirtualKeyboardActions(this.keyboardEvent, this.pageCount);
                                     }
                                     if (this.isVirtualizationEnabled) {
                                         this.getFilteringSkeletonCount();
                                     }
-                                    if(this.virtualSelectAll && this.virtualSelectAllData){
+                                    if (this.virtualSelectAll && this.virtualSelectAllData) {
                                         this.virtualSelectionAll(this.virtualSelectAllState, this.liCollections, this.CurrentEvent);
                                         this.virtualSelectAllState = false;
-                                        this.CurrentEvent = null;  
+                                        this.CurrentEvent = null;
                                         this.virtualSelectAll = false;                                 }
                                 }
                             });
@@ -1192,19 +1204,24 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         });
                     } else {
                         this.isRequesting = false;
-                        let isReOrder = true;
+                        let isReOrder: boolean = true;
                         let listItems: { [key: string]: Object }[];
                         if (this.isVirtualizationEnabled && !this.virtualGroupDataSource && this.fields.groupBy) {
-                            let data = <{ [key: string]: Object }[]>new DataManager(<any[]>this.dataSource).executeLocal(new Query().group(this.fields.groupBy));
+                            const data: any = <{ [key: string]: Object }[]>new DataManager(
+                                <any[]>this.dataSource).executeLocal(new Query().group(this.fields.groupBy));
                             this.virtualGroupDataSource = (data as any).records;
                         }
-                        let dataManager: DataManager = this.isVirtualizationEnabled && (this.virtualGroupDataSource as DataOptions | JSON[]) && !this.isCustomDataUpdated ? new DataManager(this.virtualGroupDataSource as DataOptions | JSON[]) : new DataManager(eventArgs.data as DataOptions | JSON[]);
-                        listItems= <{ [key: string]: Object }[]>(
+                        const dataManager: DataManager = this.isVirtualizationEnabled &&
+                        (this.virtualGroupDataSource as DataOptions | JSON[])
+                         && !this.isCustomDataUpdated ? new DataManager(this.virtualGroupDataSource as DataOptions | JSON[]) :
+                            new DataManager(eventArgs.data as DataOptions | JSON[]);
+                        listItems = <{ [key: string]: Object }[]>(
                             this.getQuery(eventArgs.query as Query)).executeLocal(dataManager);
                         if (!this.virtualSelectAll) {
-                            let newQuery: Query = this.getQuery(eventArgs.query as Query);
+                            const newQuery: Query = this.getQuery(eventArgs.query as Query);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            if (this.isVirtualizationEnabled && ((listItems as any).count != 0 && (listItems as any).count < (this.itemCount * 2))) {
+                            if (this.isVirtualizationEnabled && ((listItems as any).count !== 0 &&
+                               (listItems as any).count < (this.itemCount * 2))) {
                                 if (newQuery) {
                                     for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
                                         if (newQuery.queries[queryElements as number].fn === 'onTake') {
@@ -1212,13 +1229,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                             newQuery.queries[queryElements as number].e.nos = (listItems as any).count;
                                             listItems = <{ [key: string]: Object }[]>(newQuery).executeLocal(dataManager);
                                         }
-                                        if (this.getModuleName() === 'multiselect' && (newQuery.queries[queryElements as number].e.condition == 'or' || newQuery.queries[queryElements as number].e.operator == 'equal')) {
+                                        if (this.getModuleName() === 'multiselect' && (newQuery.queries[queryElements as number].e.condition === 'or' || newQuery.queries[queryElements as number].e.operator === 'equal')) {
                                             isReOrder = false;
                                         }
                                     }
                                     if (isReOrder) {
                                         listItems = <{ [key: string]: Object }[]>(newQuery).executeLocal(dataManager);
-                                        this.isVirtualTrackHeight = (!(this.dataSource instanceof DataManager) && !this.isCustomDataUpdated) ? true : false;
+                                        this.isVirtualTrackHeight = (!(this.dataSource instanceof DataManager) &&
+                                        !this.isCustomDataUpdated) ? true : false;
                                     }
                                 }
                             }
@@ -1226,23 +1244,25 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                 this.isVirtualTrackHeight = false;
                                 if (newQuery) {
                                     for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
-                                        if (this.getModuleName() === 'multiselect' && ((newQuery.queries[queryElements as number].e && newQuery.queries[queryElements as number].e.condition == 'or') || (newQuery.queries[queryElements as number].e && newQuery.queries[queryElements as number].e.operator == 'equal'))) {
+                                        if (this.getModuleName() === 'multiselect' && ((newQuery.queries[queryElements as number].e && newQuery.queries[queryElements as number].e.condition === 'or') || (newQuery.queries[queryElements as number].e && newQuery.queries[queryElements as number].e.operator === 'equal'))) {
                                             isReOrder = false;
                                         }
                                     }
                                 }
                             }
                         }
-                        if(isReOrder && (!(this.dataSource instanceof DataManager) && !this.isCustomDataUpdated) && !this.virtualSelectAll){
+                        if (isReOrder && (!(this.dataSource instanceof DataManager) && !this.isCustomDataUpdated) &&
+                            !this.virtualSelectAll) {
                             // eslint-disable @typescript-eslint/no-explicit-any
-                             this.dataCount = this.totalItemCount = this.virtualSelectAll ? (listItems as any).length : (listItems as any).count;
+                            this.dataCount = this.totalItemCount = this.virtualSelectAll ? (listItems as any).length :
+                                (listItems as any).count;
                         }
                         listItems = this.isVirtualizationEnabled ? (listItems as any).result : listItems;
                         // eslint-enable @typescript-eslint/no-explicit-any
                         const localDataArgs: { [key: string]: Object } = { cancel: false, result: listItems };
                         this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                         this.trigger('actionComplete', localDataArgs, (localDataArgs: { [key: string]: object }) => {
-                            if(this.isIncrementalRequest){
+                            if (this.isIncrementalRequest){
                                 ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);
                                 return;
                             }
@@ -1253,7 +1273,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     this.renderGroupTemplate(ulElement);
                                 }
                                 this.bindChildItems(localDataArgs.result as { [key: string]: Object }[], ulElement, fields);
-                                if(this.getInitialData){
+                                if (this.getInitialData){
                                     this.getInitialData = false;
                                     this.preventPopupOpen = false;
                                     return;
@@ -1302,9 +1322,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
     protected isObjectInArray(objectToFind: any, array: any[]): boolean {
-        return array.some(item => {
-            return Object.keys(objectToFind).every(key => {
-                return item.hasOwnProperty(key) && item[key as any] === objectToFind[key as any];
+        return array.some((item: any) => {
+            return Object.keys(objectToFind).every((key: string) => { // Add type annotation for 'key'
+                return Object.prototype.hasOwnProperty.call(item, key) && item[key as any] === objectToFind[key as any];
             });
         });
     }
@@ -1387,8 +1407,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     /* eslint-enable @typescript-eslint/no-unused-vars */
         this.listData = list;
         if (this.isVirtualizationEnabled && !this.isCustomDataUpdated && !this.virtualSelectAll) {
-            this.notify("setGeneratedData", {
-                module: "VirtualScroll",
+            this.notify('setGeneratedData', {
+                module: 'VirtualScroll'
             });
         }
         if (this.getModuleName() !== 'listbox') {
@@ -1397,14 +1417,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if ((this as any).isReact) {
             this.clearTemplate(['itemTemplate', 'groupTemplate', 'actionFailureTemplate', 'noRecordsTemplate']);
         }
-        if(!this.isVirtualizationEnabled){
+        if (!this.isVirtualizationEnabled){
             this.fixedHeaderElement = isNullOrUndefined(this.fixedHeaderElement) ? this.fixedHeaderElement : null;
         }
         if (this.getModuleName() === 'multiselect' && this.properties.allowCustomValue && this.fields.groupBy) {
-            for (let i: number = 0; i< ulElement.childElementCount; i++) {
+            for (let i: number = 0; i < ulElement.childElementCount; i++) {
                 if (ulElement.children[i as number].classList.contains('e-list-group-item')) {
-                    if (isNullOrUndefined(ulElement.children[i as number].innerHTML) || ulElement.children[i as number].innerHTML == "") {
-                        addClass([ulElement.children[i as number]], HIDE_GROUPLIST) }
+                    if (isNullOrUndefined(ulElement.children[i as number].innerHTML) || ulElement.children[i as number].innerHTML === '') {
+                        addClass([ulElement.children[i as number]], HIDE_GROUPLIST); }
                 }
                 if ((ulElement.children[0] as HTMLElement).classList.contains('e-hide-group-header')) {
                     setStyleAttribute(ulElement.children[1] as HTMLElement, { zIndex: 11 });
@@ -1418,7 +1438,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
                 this.ulElement = this.list.querySelector('ul');
                 this.postRender(this.list, list, this.bindEvent);
-            } 
+            }
         }
     }
     /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -1574,8 +1594,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         const liHeight: number = parseInt(getComputedStyle(this.getValidLi(), null).getPropertyValue('height'), 10);
         const topIndex: number = Math.round(target.scrollTop / liHeight);
         const liCollections: NodeListOf<Element> = <NodeListOf<Element>>this.list.querySelectorAll('li' + ':not(.e-hide-listitem)');
-        let virtualListCount: number = this.list.querySelectorAll('.e-virtual-list').length;
-        let count:number = 0;
+        const virtualListCount: number = this.list.querySelectorAll('.e-virtual-list').length;
+        let count: number = 0;
         let isCount: boolean = false;
         for (let i: number = topIndex; i > -1; i--) {
             const index: number = this.isVirtualizationEnabled ? i + virtualListCount : i;
@@ -1604,15 +1624,17 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (this.list) {
             const liHeight: string = this.list.classList.contains(dropDownBaseClasses.noData) ? null :
                 getComputedStyle(this.getItems()[0], null).getPropertyValue('height');
-            let pageCount = Math.round(this.list.getBoundingClientRect().height / parseInt(liHeight, 10));
+            const pageCount: number = Math.round(this.list.getBoundingClientRect().height / parseInt(liHeight, 10));
             return returnExactCount ? pageCount : Math.round(pageCount);
-        } else {
+        }
+        else {
             return 0;
         }
     }
 
     private updateGroupHeader(index: number, liCollections: NodeListOf<Element>, target: Element): boolean {
-        if (!isNullOrUndefined(liCollections[index as number]) && liCollections[index as number].classList.contains(dropDownBaseClasses.group)) {
+        if (!isNullOrUndefined(liCollections[index as number]) &&
+            liCollections[index as number].classList.contains(dropDownBaseClasses.group)) {
             this.updateGroupFixedHeader(liCollections[index as number] as HTMLElement, target);
             return true;
         } else {
@@ -1623,18 +1645,18 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     private updateGroupFixedHeader(element: HTMLElement, target: Element): void {
-        if(this.fixedHeaderElement){
-            if(!isNullOrUndefined(element.innerHTML)){
-              this.fixedHeaderElement.innerHTML = element.innerHTML;
+        if (this.fixedHeaderElement) {
+            if (!isNullOrUndefined(element.innerHTML)) {
+                this.fixedHeaderElement.innerHTML = element.innerHTML;
             }
             this.fixedHeaderElement.style.position = 'fixed';
             this.fixedHeaderElement.style.top = (this.list.parentElement.offsetTop + this.list.offsetTop) - window.scrollY + 'px';
             this.fixedHeaderElement.style.display = 'block';
-         }
+        }
     }
 
     protected getValidLi() : HTMLElement {
-        if(this.isVirtualizationEnabled){
+        if (this.isVirtualizationEnabled){
             return this.liCollections[0].classList.contains('e-virtual-list') ? this.liCollections[this.skeletonCount] : this.liCollections[0];
         }
         return this.liCollections[0];
@@ -1645,6 +1667,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      *
      * @param {object[]} listData - Specifies the list of array of data.
      * @param {FieldSettingsModel} fields - Maps the columns of the data table and binds the data to the component.
+     * @param {boolean} isCheckBoxUpdate - Specifies whether the list item is updated with checkbox.
      * @returns {HTMLElement} Return the list items.
      */
     protected renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel, isCheckBoxUpdate?: boolean): HTMLElement {
@@ -1665,46 +1688,44 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
                 : dataSource;
             ulElement = this.templateListItem((this.getModuleName() === 'autocomplete') ? spliceData : dataSource, fields);
-            if (this.isVirtualizationEnabled) {
-                var oldUlElement = this.list.querySelector('.e-list-parent');
-                var virtualUlElement = this.list.querySelector('.e-virtual-ddl-content');
-                if ((listData.length >= this.virtualizedItemsCount && oldUlElement && virtualUlElement) || (oldUlElement && virtualUlElement && this.isAllowFiltering) || (oldUlElement && virtualUlElement && this.getModuleName() === 'autocomplete')) {
-                    virtualUlElement.replaceChild(ulElement, oldUlElement);
-                    let reOrderList = this.list.querySelectorAll('.e-reorder');
-                    if (this.list.querySelector('.e-virtual-ddl-content') && reOrderList && reOrderList.length > 0 && !isCheckBoxUpdate) {
-                        this.list.querySelector('.e-virtual-ddl-content').removeChild(reOrderList[0]);
-                    }
-                    this.updateListElements(listData);
+            const oldUlElement: HTMLElement = this.list.querySelector('.e-list-parent');
+            const virtualUlElement: HTMLElement = this.list.querySelector('.e-virtual-ddl-content');
+            if ((listData.length >= this.virtualizedItemsCount && oldUlElement && virtualUlElement) || (oldUlElement && virtualUlElement && this.isAllowFiltering) || (oldUlElement && virtualUlElement && this.getModuleName() === 'autocomplete')) {
+                virtualUlElement.replaceChild(ulElement, oldUlElement);
+                const reOrderList: NodeListOf<Element> = this.list.querySelectorAll('.e-reorder');
+                if (this.list.querySelector('.e-virtual-ddl-content') && reOrderList && reOrderList.length > 0 && !isCheckBoxUpdate) {
+                    this.list.querySelector('.e-virtual-ddl-content').removeChild(reOrderList[0]);
                 }
-                else if ((!virtualUlElement)) {
-                    this.list.innerHTML = '';
-                    this.createVirtualContent();
-                    this.list.querySelector('.e-virtual-ddl-content').appendChild(ulElement);
-                    this.updateListElements(listData);
-                }
+                this.updateListElements(listData);
+            }
+            else if ((!virtualUlElement)) {
+                this.list.innerHTML = '';
+                this.createVirtualContent();
+                this.list.querySelector('.e-virtual-ddl-content').appendChild(ulElement);
+                this.updateListElements(listData);
             }
         } else {
-            if(this.getModuleName() === 'multiselect' && this.virtualSelectAll){
+            if (this.getModuleName() === 'multiselect' && this.virtualSelectAll){
                 this.virtualSelectAllData = listData;
                 listData = listData.slice(this.virtualItemStartIndex, this.virtualItemEndIndex);
             }
             ulElement = this.createListItems(listData, fields);
-            if(this.isIncrementalRequest){
+            if (this.isIncrementalRequest){
                 this.incrementalLiCollections = <HTMLElement[] & NodeListOf<Element>>ulElement.querySelectorAll('.' + dropDownBaseClasses.li);
                 this.incrementalUlElement = ulElement;
                 this.incrementalListData = listData;
                 return ulElement;
             }
             if (this.isVirtualizationEnabled) {
-                var oldUlElement = this.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
-                var virtualUlElement = this.list.querySelector('.e-virtual-ddl-content');
-                var isRemovedUlelement = false;
+                let oldUlElement: Element = this.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
+                const virtualUlElement: Element = this.list.querySelector('.e-virtual-ddl-content');
+                const isRemovedUlelement: boolean = false;
                 if (!oldUlElement && this.list.querySelector('.e-list-parent' + '.e-reorder')) {
                     oldUlElement = this.list.querySelector('.e-list-parent' + '.e-reorder');
                 }
                 if ((listData.length >= this.virtualizedItemsCount && oldUlElement && virtualUlElement) || (oldUlElement && virtualUlElement && this.isAllowFiltering) || (oldUlElement && virtualUlElement && (this.getModuleName() === 'autocomplete' || this.getModuleName() === 'multiselect')) || isRemovedUlelement) {
-                    if(!this.appendUncheckList){
-                        virtualUlElement.replaceChild(ulElement, oldUlElement);    
+                    if (!this.appendUncheckList){
+                        virtualUlElement.replaceChild(ulElement, oldUlElement);
                     }
                     else{
                         virtualUlElement.appendChild(ulElement);
@@ -1725,7 +1746,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     private createVirtualContent(): void {
         if (!this.list.querySelector('.e-virtual-ddl-content')) {
             this.list.appendChild(this.createElement('div', {
-                className: 'e-virtual-ddl-content',
+                className: 'e-virtual-ddl-content'
             }));
         }
     }
@@ -1795,10 +1816,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             Refer bug report https://bugzilla.mozilla.org/show_bug.cgi?id=137688
             Refer alternate solution https://stackoverflow.com/a/41696234/9133493*/
             if (isNaN(borderWidth)) {
-                let borderTopWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-top-width'), 10);
-                let borderBottomWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-bottom-width'), 10);
-                let borderLeftWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-left-width'), 10);
-                let borderRightWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-right-width'), 10);
+                const borderTopWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-top-width'), 10);
+                const borderBottomWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-bottom-width'), 10);
+                const borderLeftWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-left-width'), 10);
+                const borderRightWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-right-width'), 10);
                 borderWidth = (borderTopWidth + borderBottomWidth + borderLeftWidth + borderRightWidth);
             }
         }
@@ -1848,13 +1869,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Return the index of item which matched with given value in data source
      *
      * @param {string | number | boolean} value - Specifies given value.
+     * @param {HTMLElement} ulElement - Specifies given value.
      * @returns {number} Returns the index of the item.
      */
     protected getIndexByValueFilter(value: string | number | boolean, ulElement: HTMLElement): number | null {
         let index: number;
 
         if (!ulElement) {
-            return null
+            return null;
         }
         const listItems: NodeListOf<Element> = ulElement.querySelectorAll('li' + ':not(.e-list-group-item)');
         if (listItems) {
@@ -1877,7 +1899,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected dispatchEvent(element: HTMLElement, type: string): void {
         const evt: Event = document.createEvent('HTMLEvents');
         evt.initEvent(type, false, true);
-        if(element){
+        if (element){
             element.dispatchEvent(evt);
         }
     }
@@ -1901,6 +1923,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @param {Object[] | string[] | number[] | DataManager | boolean[]} dataSource - Specifies the data to generate the list.
      * @param {FieldSettingsModel} fields - Maps the columns of the data table and binds the data to the component.
      * @param {Query} query - Accepts the external Query that execute along with data processing.
+     * @param {MouseEvent | KeyboardEventArgs | TouchEvent} e - Specifies the event.
      * @returns {void}
      */
     protected resetList(
@@ -1922,7 +1945,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected updateSelectElementData(isFiltering: boolean): void {
-        if ((isFiltering || this.isVirtualizationEnabled) && isNullOrUndefined(this.selectData) && this.listData && this.listData.length > 0) {
+        if ((isFiltering || this.isVirtualizationEnabled) &&
+            isNullOrUndefined(this.selectData) && this.listData && this.listData.length > 0) {
             this.selectData = this.listData;
         }
     }
@@ -1955,7 +1979,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 (updateData as { [key: string]: { [key: string]: Object }[] }).dataSource = this.dataSource as
                     { [key: string]: Object }[];
             }
-            this.updateDataSource(updateData, oldProp);
+            if (this.getModuleName() === 'listbox') {
+                if (!this.isReact || (this.isReact && !isNullOrUndefined(newProp.dataSource))) {
+                    this.updateDataSource(updateData, oldProp);
+                }
+            } else {
+                this.updateDataSource(updateData, oldProp);
+            }
         }
     }
 
@@ -2005,6 +2035,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Build and render the component
      *
+     * @param {MouseEvent | KeyboardEventArgs | TouchEvent} e - Specifies the event.
      * @param {boolean} isEmptyData - Specifies the component to initialize with list data or not.
      * @private
      * @returns {void}
@@ -2084,7 +2115,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             let newList: { [key: string]: Object }[] = [].slice.call(this.listData as { [key: string]: Object }[]);
             newList.push(items as { [key: string]: Object });
             newList = this.getSortedDataSource(newList);
-            if (this.fields.groupBy) { 
+            if (this.fields.groupBy) {
                 newList = ListBase.groupDataSource(
                     newList, (this.fields as FieldSettingsModel & { properties: Object }).properties, this.sortOrder);
                 itemIndex = newList.indexOf(items as { [key: string]: Object });
@@ -2132,10 +2163,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             if (this.getModuleName() === 'listbox') {
-                if ((item as FieldSettingsModel).disabled) {
-                    li.classList.add('e-disabled');
-                }
-                (this.listData as { [key: string]: Object }[]).splice(isListboxEmpty ? this.listData.length : index, 0, item as { [key: string]: Object });
+                (this.listData as { [key: string]: Object }[]).splice(isListboxEmpty ?
+                    this.listData.length : index, 0, item as { [key: string]: Object });
                 if (this.listData.length !== this.sortedData.length) { this.sortedData = this.listData; }
             } else {
                 (this.listData as { [key: string]: Object }[]).push(item as { [key: string]: Object });
@@ -2144,7 +2173,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 index = null;
             }
             if (this.getModuleName() === 'listbox') {
-                this.updateActionCompleteData(li, item as { [key: string]: Object }, isListboxEmpty ? null : index);
+                this.updateActionCompleteData(li, item as { [key: string]: Object }, isListboxEmpty ? null : index + i);
                 isListboxEmpty = true;
             } else {
                 this.updateActionCompleteData(li, item as { [key: string]: Object }, index);
@@ -2190,9 +2219,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     }
                 } else {
                     if (this.liCollections[index as number] && this.liCollections[index as number].parentNode) {
-                        this.liCollections[index as number].parentNode.insertBefore(liCollections[i as number], this.liCollections[index as number]);
+                        this.liCollections[index as number].parentNode.
+                            insertBefore(liCollections[i as number], this.liCollections[index as number]);
                     } else {
-                        this.ulElement.appendChild(liCollections[i as number]);
+                        if (itemIndex && this.getModuleName() === 'listbox') {
+                            this.ulElement.insertBefore(liCollections[i as number], this.ulElement.childNodes[itemIndex + i]);
+                        } else {
+                            this.ulElement.appendChild(liCollections[i as number]);
+                        }
                     }
                 }
                 const tempLi: HTMLElement[] = [].slice.call(this.liCollections);
@@ -2314,7 +2348,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @returns {void}
      */
     public destroy(): void {
-        if(document){
+        if (document){
             EventHandler.remove(document, 'scroll', this.updateGroupFixedHeader);
             if (document.body.contains(this.list)) {
                 EventHandler.remove(this.list, 'scroll', this.setFloatingHeader);

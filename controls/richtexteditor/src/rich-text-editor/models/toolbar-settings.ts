@@ -60,6 +60,74 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
 }
 
 /**
+ * Configures the importWord settings of the RichTextEditor.
+ */
+
+export class ImportWord extends ChildProperty<ImportWord> {
+    /**
+     * Specifies the URL that will receive and handle file uploads on the server.
+     *
+     * @default 'null'
+     */
+    @Property(null)
+    public serviceUrl: string;
+}
+/**
+ * Configures the export word of the RichTextEditor.
+ */
+
+export class ExportWord extends ChildProperty<ExportWord> {
+    /**
+     * Specifies the URL used to export Rich Text Editor content into Word files.
+     *
+     * @default 'null'
+     */
+    @Property(null)
+    public serviceUrl: string;
+    /**
+     * Specifies the file name of the exported word file.
+     *
+     * @default 'Sample.docx'
+     */
+    @Property('Sample.docx')
+    public fileName: string;
+    /**
+     * Specifies the stylesheet to be applied to the exported file.
+     *
+     * @default 'null'
+     */
+    @Property(null)
+    public stylesheet: string;
+}
+/**
+ * Configures the export settings of the RichTextEditor.
+ */
+
+export class ExportPdf extends ChildProperty<ExportPdf> {
+    /**
+     * Specifies the URL used to export Rich Text Editor content into PDF files.
+     *
+     * @default 'null'
+     */
+    @Property(null)
+    public serviceUrl: string;
+    /**
+     * Specifies the file name of the exported pdf file.
+     *
+     * @default 'Sample.pdf'
+     */
+    @Property('Sample.pdf')
+    public fileName: string;
+    /**
+     * Specifies the stylesheet to be applied to the exported file.
+     *
+     * @default 'null'
+     */
+    @Property(null)
+    public stylesheet: string;
+}
+
+/**
  * Configures the image settings of the RichTextEditor.
  */
 
@@ -100,16 +168,22 @@ export class ImageSettings extends ChildProperty<ImageSettings> {
     @Property('auto')
     public height: string;
     /**
-     * Specifies the URL of save action that will receive the upload files and save in the server.
+     * Specifies the URL of save action that will receive the uploaded image and save it on the server.
      *
-     * @default 'null'
+     *
+     * The URL of the save action for uploading and saving images on the server.
+     * The save action should handle a `POST` request and define an argument with the name `UploadFiles`.
+     *
+     * Trigger the event when inserting the image via Insert image dialog, pasting the image, replacing the existing image, and dragging and dropping from the file browser.
+     *
+     * @default null
      */
     @Property(null)
     public saveUrl: string;
     /**
      * Specifies the path of the location to store the images and refer it to display the images.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public path: string;
@@ -121,9 +195,15 @@ export class ImageSettings extends ChildProperty<ImageSettings> {
     @Property(true)
     public resize: boolean;
     /**
-     * Specifies the URL of remove action that receives the file information and handle the remove operation in server.
+     * Specifies the URL of remove action that receives the image information and handles the remove operation on the server.
      *
-     * @default 'null'
+     * The URL of the remove action for removing the image on the server.
+     *
+     * The remove action should handle a `POST` request and define an argument with the name `UploadFiles`.
+     *
+     * Trigger the event when uploading and canceling or removing an image in the insert image dialog, pasting and removing an image in Paste cleanup popup.
+     *
+     * @default null
      */
     @Property(null)
     public removeUrl: string;

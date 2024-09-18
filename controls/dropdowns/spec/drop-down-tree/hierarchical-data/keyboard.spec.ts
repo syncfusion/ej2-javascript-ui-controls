@@ -401,5 +401,136 @@ describe('DropDown Tree control hierarchical datasource', () => {
             expect(ddtreeObj.text).toBe(null);
             ddtreeObj.onFocusOut();
         });
+
+        it('allowFiltering with altup key pressed', () => {
+            ddtreeObj = new DropDownTree({ allowFiltering:true, fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, destroyPopupOnHide: false }, '#ddtree');
+            keyboardEventArgs.action = 'tab';
+            keyboardEventArgs.action = 'altDown';
+            ddtreeObj.keyActionHandler(keyboardEventArgs);
+            expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('true');
+            keyboardEventArgs.action = 'altUp';
+            ddtreeObj.filterKeyAction(keyboardEventArgs);
+            expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('false');
+            ddtreeObj.onFocusOut();
+        });
+
+        it('allowFiltering with shiftTab key pressed', () => {
+            ddtreeObj = new DropDownTree({ allowFiltering:true, fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, destroyPopupOnHide: false }, '#ddtree');
+            keyboardEventArgs.action = 'tab';
+            keyboardEventArgs.action = 'altDown';
+            keyboardEventArgs.action = 'shiftTab';
+            ddtreeObj.filterKeyAction(keyboardEventArgs);
+            expect(document.querySelector('.e-control-wrapper').classList.contains('e-input-focus')).toBe(true);
+        });
+
+        it('allowFiltering with down arrow key pressed', () => {
+            ddtreeObj = new DropDownTree({ allowFiltering:true, fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, destroyPopupOnHide: false }, '#ddtree');
+            keyboardEventArgs.action = 'tab';
+            keyboardEventArgs.action = 'altDown';
+            ddtreeObj.keyActionHandler(keyboardEventArgs);
+            expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('true');
+            keyboardEventArgs.action = 'moveDown';
+            ddtreeObj.filterKeyAction(keyboardEventArgs);
+            let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            expect(li[1].classList.contains('e-node-focus')).toBe(false);
+        });
+
+        it('TreeView items focus testing with allowFiltering property', () => {
+            ddtreeObj = new DropDownTree({ allowFiltering:true, fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, destroyPopupOnHide: false }, '#ddtree');
+            keyboardEventArgs.action = 'tab';
+            keyboardEventArgs.action = 'altDown';
+            ddtreeObj.keyActionHandler(keyboardEventArgs);
+            expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('true');
+            keyboardEventArgs.action = 'moveDown';
+            ddtreeObj.filterKeyAction(keyboardEventArgs);
+            let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            keyboardEventArgs.action = 'moveDown';
+            ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].classList.contains('e-node-focus')).toBe(false);
+            expect(li[1].classList.contains('e-node-focus')).toBe(true);
+            ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
+            ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[3].classList.contains('e-node-focus')).toBe(true);
+            keyboardEventArgs.action = 'altUp';
+            ddtreeObj.treeAction(keyboardEventArgs);
+            expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
+            keyboardEventArgs.action = 'tab';
+            keyboardEventArgs.action = 'altDown';
+            ddtreeObj.keyActionHandler(keyboardEventArgs);
+            keyboardEventArgs.action = 'moveDown';
+            ddtreeObj.filterKeyAction(keyboardEventArgs);
+            expect(li[0].classList.contains('e-node-focus')).toBe(false);
+            expect(li[3].classList.contains('e-node-focus')).toBe(true);
+        });
+
+        it('TreeView items focus testing with showSelectAll property', () => {
+            ddtreeObj = new DropDownTree({ showCheckBox:true, showSelectAll: true, fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, destroyPopupOnHide: false }, '#ddtree');
+            keyboardEventArgs.action = 'tab';
+            keyboardEventArgs.action = 'altDown';
+            ddtreeObj.keyActionHandler(keyboardEventArgs);
+            expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('true');
+            keyboardEventArgs.action = 'tab';
+            ddtreeObj.keyActionHandler(keyboardEventArgs);
+            keyboardEventArgs.action = 'moveDown';
+            ddtreeObj.checkAllAction(keyboardEventArgs);
+            let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            keyboardEventArgs.action = 'moveDown';
+            ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].classList.contains('e-node-focus')).toBe(false);
+            expect(li[1].classList.contains('e-node-focus')).toBe(true);
+            ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
+            ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[3].classList.contains('e-node-focus')).toBe(true);
+            keyboardEventArgs.action = 'altUp';
+            ddtreeObj.treeAction(keyboardEventArgs);
+            expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
+            keyboardEventArgs.action = 'tab';
+            keyboardEventArgs.action = 'altDown';
+            ddtreeObj.keyActionHandler(keyboardEventArgs);
+            keyboardEventArgs.action = 'moveDown';
+            ddtreeObj.checkAllAction(keyboardEventArgs);
+            expect(li[0].classList.contains('e-node-focus')).toBe(false);
+            expect(li[3].classList.contains('e-node-focus')).toBe(true);
+        });
+
+        it('TreeView items focus testing with allowFiltering & showSelectAll properties', () => {
+            ddtreeObj = new DropDownTree({ allowFiltering:true, showCheckBox: true, showSelectAll: true, fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, destroyPopupOnHide: false }, '#ddtree');
+            keyboardEventArgs.action = 'tab';
+            keyboardEventArgs.action = 'altDown';
+            ddtreeObj.keyActionHandler(keyboardEventArgs);
+            expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('true');
+            keyboardEventArgs.action = 'tab';
+            ddtreeObj.filterKeyAction(keyboardEventArgs);
+            keyboardEventArgs.action = 'moveDown';
+            ddtreeObj.checkAllAction(keyboardEventArgs);
+            let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            keyboardEventArgs.action = 'moveDown';
+            ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].classList.contains('e-node-focus')).toBe(false);
+            expect(li[1].classList.contains('e-node-focus')).toBe(true);
+            ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
+            ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[3].classList.contains('e-node-focus')).toBe(true);
+            keyboardEventArgs.action = 'altUp';
+            ddtreeObj.treeAction(keyboardEventArgs);
+            expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
+            keyboardEventArgs.action = 'tab';
+            keyboardEventArgs.action = 'altDown';
+            ddtreeObj.keyActionHandler(keyboardEventArgs);
+            keyboardEventArgs.action = 'moveDown';
+            ddtreeObj.filterKeyAction(keyboardEventArgs);
+            expect(li[0].classList.contains('e-node-focus')).toBe(false);
+            expect(li[3].classList.contains('e-node-focus')).toBe(true);
+        });
     });
 });

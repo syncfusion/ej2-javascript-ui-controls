@@ -124,7 +124,7 @@ export const collaborativeUpdate: string = 'collaborativeUpdate';
 /** @hidden */
 export const autoFit: string = 'autoFitRowsColumns';
 /** @hidden */
-export const resizeRowHeight: string = 'resizeRowHeight';
+export const refreshFilterCellsOnResize: string = 'refreshFilterCellsOnResize';
 /** @hidden */
 export const updateToggleItem: string = 'updateToggleItem';
 /** @hidden */
@@ -192,8 +192,6 @@ export const setAutoFit: string = 'setAutoFit';
 /** @hidden */
 export const refreshFormulaDatasource: string = 'refreshFormulaDatasource';
 /** @hidden */
-export const setScrollEvent: string = 'setScrollEvent';
-/** @hidden */
 export const initiateDataValidation: string = 'initiatedatavalidation';
 /** @hidden */
 export const validationError: string = 'validationError';
@@ -219,6 +217,8 @@ export const findDlg: string = 'renderFindDlg';
 export const findHandler: string = 'findHandler';
 /** @hidden */
 export const created: string = 'created';
+/** @hidden */
+export const spreadsheetCreated: string = 'spreadsheetCreated';
 /** @hidden */
 export const editAlert: string = 'editAlert';
 /** @hidden */
@@ -351,3 +351,5 @@ export const refreshCheckbox: string = 'refreshCheckbox';
 export const renderInsertDlg: string = 'renderInsertDlg';
 /** @hidden */
 export const toggleProtect: string = 'toggleProtect';
+/** @hidden */
+export const propertyChange: string = 'propertyChange';

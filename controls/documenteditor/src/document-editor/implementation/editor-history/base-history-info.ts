@@ -11,7 +11,7 @@ import {
     FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget,
     EditRangeStartElementBox, CommentElementBox, CheckBoxFormField, TextFrame, TextFormField,
     TextElementBox, HeaderFooters, CommentEditInfo, FormField, FootnoteElementBox, ImageElementBox,
-    Widget, ListTextElementBox, ContentControl 
+    Widget, ListTextElementBox, ContentControl
 } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
@@ -99,8 +99,8 @@ export class BaseHistoryInfo {
      */
     public lastElementRevision: ElementBox;
     /**
-    * @private
-    */
+     * @private
+     */
     public isRevisionEndInAnotherCell: boolean;
     /**
      * @private
@@ -413,7 +413,7 @@ export class BaseHistoryInfo {
     private revertContentControl(): void {
         const contentControlInfo: ContentInfo = this.removedNodes[0] as ContentInfo;
         const contentcontrol: ContentControl = contentControlInfo.contentcontrol;
-        if(this.editorHistory.isUndoing) {
+        if (this.editorHistory.isUndoing) {
             const markerData: MarkerInfo = this.owner.editorModule.getMarkerData(contentcontrol);
             this.documentHelper.contentControlCollection.push(contentcontrol);
             this.markerData.push(markerData);

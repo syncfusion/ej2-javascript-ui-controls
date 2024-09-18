@@ -24,7 +24,7 @@ import { DateTime3D } from '../../../src/chart3d/axis/date-time-axis';
 import { Tooltip3D } from '../../../src/chart3d/user-interaction/tooltip';
 
 
-Chart3D.Inject(Legend3D, StackingColumnSeries3D, ColumnSeries3D, Selection3D, Highlight3D, DateTime3D, Tooltip3D);
+Chart3D.Inject(Legend3D, StackingColumnSeries3D, ColumnSeries3D, Tooltip3D, Selection3D, Highlight3D, DateTime3D, Tooltip3D);
 
 let i: number; let currentPoint: Points; let value: number = 0; let data: Points[] = []; const seriesCollection: Chart3DSeriesModel[] = [];
 const colors: string[] = ['#663AB6', '#EB3F79', '#F8AB1D', '#B82E3D', '#049CB1', '#F2424F', '#C2C924', '#3DA046', '#074D67', '#02A8F4'];
@@ -166,6 +166,8 @@ describe('Chart Legend', () => {
                     legendElement = document.getElementById(legendId + '_shape_' + 0);
                     expect(legendElement !== null).toEqual(true);
                     trigger.mousemovetEvent(legendElement, 0, 0);
+                    legendElement = document.getElementById(legendId + '_shape_' + 0);
+                    trigger.mousemovetEvent(legendElement, 0, 0);
                     legendElement = document.getElementById(id);
                     trigger.mousemovetEvent(legendElement, 0, 0);
                 done();
@@ -174,6 +176,7 @@ describe('Chart Legend', () => {
             chartObj.loaded = loaded;
             chartObj.highlightMode = 'None';
             chartObj.highlightColor = 'Red';
+            chartObj.tooltip.enable = true
             chartObj.refresh();
         });
         it('Style font, background, padding', (done: Function) => {
@@ -763,8 +766,8 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '285.5' || xValue === '291.5');
-                expect(yValue === '425.25' || yValue === '425').toBe(true);
+                expect(xValue === '285.5' || xValue === '292');
+                expect(yValue === '425.25' || yValue === '425.5').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
                 legendText = document.getElementById('container_chart_legend_text_1').textContent;
@@ -780,8 +783,8 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '458' || xValue === '454.5').toBe(true);
-                expect(yValue === '425' || yValue === '425').toBe(true);
+                expect(xValue === '458' || xValue === '449').toBe(true);
+                expect(yValue === '425' || yValue === '425.5').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
                 legendText = document.getElementById('container_chart_legend_text_1').textContent;
@@ -811,8 +814,8 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '277' || xValue === '291.5').toBe(true);
-                expect(yValue === '70' || yValue === '68').toBe(true);
+                expect(xValue === '277' || xValue === '292').toBe(true);
+                expect(yValue === '70' || yValue === '67.5').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
                 legendText = document.getElementById('container_chart_legend_text_1').textContent;
@@ -828,8 +831,8 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '458' || xValue === '454.5').toBe(true);
-                expect(yValue === '70' || yValue === '68').toBe(true);
+                expect(xValue === '458' || xValue === '449').toBe(true);
+                expect(yValue === '70' || yValue === '67.5').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
                 legendText = document.getElementById('container_chart_legend_text_1').textContent;
@@ -845,8 +848,8 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '741' || xValue === '746').toBe(true);
-                expect(yValue === '221.75' || yValue === '220.5').toBe(true);
+                expect(xValue === '741' || xValue === '747.5').toBe(true);
+                expect(yValue === '221.5' || yValue === '220.5').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
                 legendText = document.getElementById('container_chart_legend_text_1').textContent;
@@ -863,8 +866,8 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '741' || xValue === '744.5').toBe(true);
-                expect(yValue === '221.75' || yValue === '220.5').toBe(true);
+                expect(xValue === '741' || xValue === '747.5').toBe(true);
+                expect(yValue === '221.75' || yValue === '221.5').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
                 legendText = document.getElementById('container_chart_legend_text_1').textContent;
@@ -880,8 +883,8 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '741' || xValue === '744.5').toBe(true);
-                expect(yValue === '221.75' || yValue === '220.5').toBe(true);
+                expect(xValue === '741' || xValue === '747.5').toBe(true);
+                expect(yValue === '221.5' || yValue === '220.5').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
                 legendText = document.getElementById('container_chart_legend_text_1').textContent;
@@ -897,8 +900,8 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '59' || xValue === '56.5').toBe(true);
-                expect(yValue === '221.75' || yValue === '220.5').toBe(true);
+                expect(xValue === '59' || xValue === '52.5').toBe(true);
+                expect(yValue === '221.5' || yValue === '220.5').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
                 legendText = document.getElementById('container_chart_legend_text_1').textContent;
@@ -915,8 +918,8 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '59' || xValue === '56.5').toBe(true);
-                expect(yValue === '221.75' || yValue === '220.5').toBe(true);
+                expect(xValue === '59' || xValue === '52.5').toBe(true);
+                expect(yValue === '221.5' || yValue === '220.5').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
                 legendText = document.getElementById('container_chart_legend_text_1').textContent;
@@ -932,8 +935,8 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '59' || xValue === '56.5').toBe(true);
-                expect(yValue === '221.75' || yValue === '220.5').toBe(true);
+                expect(xValue === '59' || xValue === '52.5').toBe(true);
+                expect(yValue === '221.5' || yValue === '220.5').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
                 legendText = document.getElementById('container_chart_legend_text_1').textContent;
@@ -948,8 +951,8 @@ describe('Chart Legend', () => {
                 const legendText: Element = document.getElementById('container_chart_legend_text_0');
                 xValue = legendText.getAttribute('x');
                 yValue = legendText.getAttribute('y');
-                expect(xValue === '317.5' || xValue === '326.5').toBe(true);
-                expect(yValue === '419.75' || yValue === '420').toBe(true);
+                expect(xValue === '317.5' || xValue === '329.5').toBe(true);
+                expect(yValue === '419.75' || yValue === '420.25').toBe(true);
                 done();
             };
             chartObj.legendSettings.position = 'Bottom';
@@ -1011,11 +1014,11 @@ describe('Chart Legend', () => {
             chart.destroy();
             ele.remove();
         });
-        it('Checking the legend group default position', (done: Function) => {
+        it('Checking 3d chart the legend group default position', (done: Function) => {
             loaded = (args: Object): void => {
                 element = document.getElementById('container_chart_legend_text_0');
                 posX = element.getAttribute('x');
-                expect(posX == '395' || posX == '389').toBe(true);
+                expect(posX == '402' || posX == '389').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -1025,7 +1028,7 @@ describe('Chart Legend', () => {
             loaded = (args: Object): void => {
                 element = document.getElementById('container_chart_legend_text_0');
                 posX = element.getAttribute('x');
-                expect(posX == '840' || posX == '831').toBe(true);
+                expect(posX == '844' || posX == '831').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -1048,7 +1051,7 @@ describe('Chart Legend', () => {
             loaded = (args: Object): void => {
                 element = document.getElementById('container_chart_legend_text_0');
                 posX = element.getAttribute('x');
-                expect(posX == '813' || posX == '822').toBe(true);
+                expect(posX == '813' || posX == '826').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -1061,7 +1064,8 @@ describe('Chart Legend', () => {
                 expect(element.getAttribute('text-anchor') == '').toBe(true);
                 element = document.getElementById('container_chart_legend_text_0');
                 posX = element.getAttribute('x');
-                expect(posX == '441.5' || posX == '438.5').toBe(true);
+
+                expect(posX == '448.5' || posX == '438.5').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -1077,7 +1081,7 @@ describe('Chart Legend', () => {
                 expect(element.getAttribute('text-anchor') == 'end').toBe(true);
                 element = document.getElementById('container_chart_legend_text_0');
                 posX = element.getAttribute('x');
-                expect(posX == '514.5' || posX == '505.5').toBe(true);
+                expect(posX == '511.5' || posX == '505.5').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -1088,7 +1092,7 @@ describe('Chart Legend', () => {
             loaded = (args: Object): void => {
                 element = document.getElementById('container_chart_legend_text_0');
                 posX = element.getAttribute('x');
-                expect(posX == '527.5' || posX == '518.5').toBe(true);
+                expect(posX == '524.5' || posX == '518.5').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -1096,7 +1100,7 @@ describe('Chart Legend', () => {
             chart.legendSettings.reverse = true;
             chart.appendTo('#container');
         });
-        it('Checking the legend paging with rtl', (done: Function) => {
+        it('Checking the chart 3d legend paging with rtl', (done: Function) => {
             loaded = (args: Object): void => {
                 element = document.getElementById('container_chart_legend_navigation');
                 posX = element.getAttribute('transform');
@@ -1132,5 +1136,14 @@ describe('Chart Legend', () => {
             chart.appendTo('#container');
         });
 
+    });
+    it('memory leak', () => {
+        profile.sample();
+        const average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        const memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

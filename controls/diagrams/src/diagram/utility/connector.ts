@@ -1276,7 +1276,7 @@ function nodeOrPortToNode(ele: Connector, source: End, target: End): PointModel[
         const len: number = (source.direction === 'Bottom') ? (source.corners.bottom - source.point.y + 20) :
             (source.point.y - source.corners.top + 20);
         point = orthoConnection3Segment(ele, source, target, len);
-    } else {//901771- Connector routing is not proper while setting the segment direction as "Left"
+    } else { //901771- Connector routing is not proper while setting the segment direction as "Left"
         if (source.direction === target.direction) {
             if (((source.direction === 'Left' || source.direction === 'Right') &&
                 target.point.y > source.corners.top - 20 && target.point.y < source.corners.bottom + 20) ||

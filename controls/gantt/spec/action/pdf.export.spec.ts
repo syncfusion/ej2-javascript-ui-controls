@@ -1,15 +1,20 @@
 /**
  * Gantt toolbar spec
  */
-import { Gantt, Edit, Toolbar, Selection, ZoomTimelineSettings, Filter, PdfQueryCellInfoEventArgs, PdfExport, CriticalPath, DayMarkers, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ContextMenu, ExcelExport, PdfQueryTimelineCellInfoEventArgs } from '../../src/index';
-import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,datapdf, pdfquerycelldata, editingResourcess, editingDatas, adventProFont1 } from '../base/data-source.spec';
+import { Gantt, Edit, Toolbar, Selection, ZoomTimelineSettings, Filter, PdfQueryCellInfoEventArgs, PdfExport, CriticalPath, DayMarkers, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ContextMenu, ExcelExport, PdfQueryTimelineCellInfoEventArgs, PdfTreeGridLayoutFormat } from '../../src/index';
+import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate, datapdf,editingResourcess, editingDatas, adventProFont1, pdfquerycelldata,editingResources, overviewData } from '../base/data-source.spec';
 import { PdfExportProperties } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
-import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
+import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfPen, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
 import { getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfTrueTypeFont } from '@syncfusion/ej2-pdf-export';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import {  triggerMouseEvent, getKeyUpObj } from '../base/gantt-util.spec';
+import {
+     RectangleF,PointF,PdfStringFormat, RowLayoutResult, PdfPage
+} from '@syncfusion/ej2-pdf-export';
+import {  TemporaryDictionary, PdfPaddings, PdfTreeGridHeaderCollection, PdfTreeGridRow, PdfTreeGridLayouter, PdfTreeGridColumn, PdfTreeGridColumnCollection, PdfTreeGridCell} from '../../src/gantt/export/pdf-base/index';
+import { PdfTreeGrid } from '../../src/gantt/export/pdf-treegrid';
 Gantt.Inject(Edit, Toolbar, Selection, Filter, PdfExport, CriticalPath, DayMarkers, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ContextMenu, ExcelExport);
 
 describe('Gantt pdfexport support', () => {
@@ -709,6 +714,14 @@ describe('Gantt PDF Export with customization of header and footer', () => {
         }
     });
     it("Export data with header and footer", () => {
+        ganttObj.pdfExportModule.helper['getHorizontalAlignment']('Right',undefined);
+        ganttObj.pdfExportModule.helper['getHorizontalAlignment']('Centre',undefined);
+        ganttObj.pdfExportModule.helper['getHorizontalAlignment']('Justify',undefined);
+        ganttObj.pdfExportModule.helper['getHorizontalAlignment']('Left',undefined);
+        ganttObj.pdfExportModule.helper['getFontFamily']('TimesRoman');
+        ganttObj.pdfExportModule.helper['getFontFamily']('Courier');
+        ganttObj.pdfExportModule.helper['getFontFamily']('Symbol');
+        ganttObj.pdfExportModule.helper['getFontFamily']('ZapfDingbats');
         let exportProperties: PdfExportProperties = {
             header: {
                 fromTop: 0,
@@ -811,6 +824,12 @@ describe('Gantt PDF Export with customization of header and footer', () => {
                         position: { x: 250, y: 10 },
                         pageNumberType:'UpperLatin',
                         style: { textBrushColor: '#C67878', fontSize: 14 }
+                    },
+                    {
+                        type: 'Image',
+                        src: image,
+                        position: { x: 400, y: 70 },
+                        size: { height: 50, width: 50 },
                     },
                     {
                         type: 'Line',
@@ -2280,6 +2299,9 @@ describe('Gantt PDF Export with column template', () => {
                 displayText: (args as any).data.taskData.EmailId
             };
         }
+        args.style.fontBrush =  new PdfColor(205, 92, 92);
+        args.style.fontFamily =  2;
+        args.style.fontStyle = 2;
     }
     beforeAll((done: Function) => {
         ganttObj = createGantt(
@@ -5995,6 +6017,5493 @@ describe('Gantt PDF Export for big font size', () => {
         }
     });
 });
+
+describe('Gantt PDF Export with unnscheduled task with fit to width ', () => {
+    let ganttObj: Gantt;
+    let unscheduledData: Object[] = [
+        {
+            TaskId: 1, TaskName: 'Task 1', StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'), Duration: '5', TaskType: ''
+        },
+        {
+            TaskId: 2, TaskName: 'Task 2', Duration: '5', TaskType: 'Task with duration only'
+        },
+        {
+            TaskId: 3, TaskName: 'Task 3', StartDate: new Date('04/03/2019'), TaskType: 'Task with start date only'
+        },
+        {
+            TaskId: 4, TaskName: 'Task 4', EndDate: new Date('04/08/2019'), TaskType: 'Task with end date only'
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData,
+    enableContextMenu: true,
+    pdfExportComplete: (args: any) => {
+        expect(args.name).toBe("pdfExportComplete");
+    },
+    taskFields: {
+        id: 'TaskId',
+        name: 'TaskName',
+        startDate: 'StartDate',
+        endDate: 'EndDate',
+        duration: 'Duration',
+    },
+    editSettings: {
+        allowAdding: true,
+        allowEditing: true,
+        allowDeleting: true,
+        allowTaskbarEditing: true,
+        showDeleteConfirmDialog: true
+    },
+    columns: [
+        {field: 'TaskId', width: 75 },
+        {field: 'TaskName', width: 80 },
+        {field: 'StartDate', width: 120},
+        {field: 'EndDate', width: 120 },
+        {field: 'Duration', width: 90 },
+        {field: 'TaskType', visible: false}
+    ],
+    sortSettings: {
+        columns: [{ field: 'TaskID', direction: 'Ascending' }, 
+        { field: 'TaskName', direction: 'Ascending' }]
+    },
+    splitterSettings: {
+        columnIndex: 4
+    },
+    toolbar: ['PdfExport'],
+    allowSelection: true,
+    allowRowDragAndDrop: true,
+    selectedRowIndex: 1,
+    selectionSettings: {
+        mode: 'Row',
+        type: 'Single',
+        enableToggle: false
+    },
+    tooltipSettings: {
+        showTooltip: true
+    },
+    filterSettings: {
+        type: 'Menu'
+    },
+    eventMarkers: [
+        {
+            day: '04/11/2019',
+            cssClass: 'e-custom-event-marker',
+            label: 'Project approval and kick-off'
+        }
+    ],
+    holidays: [{
+        from: "04/16/2019",
+        to: "04/16/2019",
+        label: " Public holidays",
+        cssClass: "e-custom-holiday"
+    
+    },
+    {
+        from: "03/26/2019",
+        to: "03/26/2019",
+        label: " Public holiday",
+        cssClass: "e-custom-holiday"
+    
+    }],
+    allowFiltering: true,
+    gridLines: "Both",
+    showColumnMenu: true,
+    highlightWeekends: true,
+    timelineSettings: {
+        showTooltip: true,
+        topTier: {
+            unit: 'Week',
+            format: 'dd/MM/yyyy'
+        },
+        bottomTier: {
+            unit: 'Day',
+            count: 1
+        }
+    },
+    searchSettings:
+     { fields: ['TaskName', 'Duration'] 
+    },
+    labelSettings: {
+        leftLabel: 'TaskID',
+        rightLabel: 'Task Name: ${taskData.TaskName}',
+        taskLabel: '${Progress}%'
+    },
+    allowResizing: true,
+    readOnly: false,
+    taskbarHeight: 20,
+    rowHeight: 40,
+    height: '550px',
+    allowUnscheduledTasks: true,
+  //  connectorLineBackground: "red",
+  //  connectorLineWidth: 3,
+    projectStartDate: new Date('03/25/2019'),
+    projectEndDate: new Date('05/30/2019'),
+    allowPdfExport: true,
+            }, done);
+    });
+    it('Export data with customZoomingLevels', () => {
+        let pdfExportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true
+            }
+        }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+
+describe('Gantt PDF Export with unscheduled task template with fit to width', () => {
+    let ganttObj: Gantt;
+    let unscheduledData: Object[] = [
+        {
+            TaskId: 1, TaskName: 'Task 1', StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'), Duration: '5', TaskType: ''
+        },
+        {
+            TaskId: 2, TaskName: 'Task 2', Duration: '5', TaskType: 'Task with duration only'
+        },
+        {
+            TaskId: 3, TaskName: 'Task 3', StartDate: new Date('04/03/2019'), TaskType: 'Task with start date only'
+        },
+        {
+            TaskId: 4, TaskName: 'Task 4', EndDate: new Date('04/08/2019'), TaskType: 'Task with end date only'
+        },
+        {
+            TaskId: 5, TaskName: 'Task 1', StartDate: new Date('03/01/2019'),
+            EndDate: new Date('04/21/2019'), TaskType: '', resourcesImage: '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'
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData,
+        enableContextMenu: true,
+        pdfQueryTaskbarInfo: (args: any) => {
+            if (!args.data.hasChildRecords) {
+                args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+
+                }
+            }
+            if (args.data.hasChildRecords) {
+                args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+
+                }
+            }
+            if (args.data.ganttProperties.duration === 0) {
+                args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20,
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName,
+                    args.taskbarTemplate.fontStyle = {
+                        fontColor: new PdfColor(255, 255, 255),
+                        fontFamily: 'TimesRoman'
+                    }
+            }
+        },
+        taskFields: {
+            id: 'TaskId',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskId', width: 75 },
+            { field: 'TaskName', width: 80 },
+            { field: 'StartDate', width: 120 },
+            { field: 'EndDate', width: 120 },
+            { field: 'Duration', width: 90 },
+            { field: 'TaskType', visible: false }
+        ],
+        pdfExportComplete: (args: any) => {
+            expect(args.name).toBe("pdfExportComplete");
+        },
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        splitterSettings: {
+            columnIndex: 4
+        },
+        allowPdfExport: true,
+        toolbar: ['PdfExport'],
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        eventMarkers: [
+            {
+                day: '04/11/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/16/2019",
+                to: "04/16/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "03/26/2019",
+                to: "03/26/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('Export data with customZoomingLevels', () => {
+        let pdfExportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true
+            }
+        }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt PDF Export with unscheduled task template', () => {
+    let ganttObj: Gantt;
+    let unscheduledData: Object[] = [
+        {
+            TaskId: 1, TaskName: 'Task 1', StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'), Duration: '5', TaskType: ''
+        },
+        {
+            TaskId: 2, TaskName: 'Task 2', Duration: '5', TaskType: 'Task with duration only'
+        },
+        {
+            TaskId: 3, TaskName: 'Task 3', StartDate: new Date('04/03/2019'), TaskType: 'Task with start date only'
+        },
+        {
+            TaskId: 4, TaskName: 'Task 4', EndDate: new Date('04/08/2019'), TaskType: 'Task with end date only'
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData,
+        enableContextMenu: true,
+        pdfQueryTaskbarInfo: (args: any) => {
+            if (!args.data.hasChildRecords) {
+                args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+
+                }
+            }
+            if (args.data.hasChildRecords) {
+                args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+
+                }
+            }
+            if (args.data.ganttProperties.duration === 0) {
+                args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20,
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName,
+                    args.taskbarTemplate.fontStyle = {
+                        fontColor: new PdfColor(255, 255, 255),
+                        fontFamily: 'TimesRoman'
+                    }
+            }
+        },
+        taskFields: {
+            id: 'TaskId',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskId', width: 75 },
+            { field: 'TaskName', width: 80 },
+            { field: 'StartDate', width: 120 },
+            { field: 'EndDate', width: 120 },
+            { field: 'Duration', width: 90 },
+            { field: 'TaskType', visible: false }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        splitterSettings: {
+            columnIndex: 4
+        },
+        allowPdfExport: true,
+        toolbar: ['PdfExport'],
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        pdfExportComplete: (args: any) => {
+            expect(args.name).toBe("pdfExportComplete");
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        eventMarkers: [
+            {
+                day: '04/11/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/16/2019",
+                to: "04/16/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "03/26/2019",
+                to: "03/26/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('Export data with unscheduled task', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt PDF Export with split tasks width template', () => {
+    let ganttObj: Gantt;
+    var splitTasksData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project Schedule',
+            StartDate: new Date('02/04/2019'),
+            EndDate: new Date('03/10/2019'),
+            subtasks: [
+                {
+                    TaskID: 2,
+                    TaskName: 'Planning',
+                    StartDate: new Date('02/04/2019'),
+                    resourcesImage: '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',
+                    subtasks: [
+                        {
+                            TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                             Progress: '60', resourcesImage: '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',
+                            Segments: [
+                                { StartDate: new Date('02/04/2019'), Duration: 2 },
+                                { StartDate: new Date('02/05/2019'), Duration: 5 },
+                                { StartDate: new Date('02/08/2019'), Duration: 3 }
+                            ]
+                        },
+                        {
+                            TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                            Duration: 10, Progress: '90', resourcesImage: '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'
+                        },
+                        {
+                            TaskID: 5, TaskName: 'Allocate resources', StartDate: new Date('02/04/2019'),
+                            Duration: 20, Progress: '75',
+                            Segments: [
+                                { StartDate: new Date('02/04/2019'), Duration: 4 },
+                                { StartDate: new Date('02/08/2019'), Duration: 2 }
+                            ]
+                        },
+                        {
+                            TaskID: 6, TaskName: 'Planning complete', StartDate: new Date('02/21/2019'), EndDate: new Date('02/21/2019'),
+                            Duration: 0, Predecessor: '3FS,5FS'
+                        },
+                    ]
+                },
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasksData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                enableVirtualization: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                eventMarkers: [
+                    {
+                        day: '04/10/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                searchSettings: { fields: ['TaskName', 'Duration']
+                },
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: 'TaskID'
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('Export data with unscheduled task', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with split tasks width template', () => {
+    let ganttObj: Gantt;
+    var splitTasksData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project Schedule',
+            StartDate: new Date('02/04/2019'),
+            EndDate: new Date('03/10/2019'),
+            subtasks: [
+                {
+                    TaskID: 2,
+                    TaskName: 'Planning',
+                    StartDate: new Date('02/04/2019'),
+                    resourcesImage: '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',
+                    subtasks: [
+                        {
+                            TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                             Progress: '60', resourcesImage: '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',
+                            Segments: [
+                                { StartDate: new Date('02/04/2019'), Duration: 2 },
+                                { StartDate: new Date('02/05/2019'), Duration: 5 },
+                                { StartDate: new Date('02/08/2019'), Duration: 3 }
+                            ]
+                        },
+                        {
+                            TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                            Duration: 10, Progress: '90', resourcesImage: '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'
+                        },
+                        {
+                            TaskID: 5, TaskName: 'Allocate resources', StartDate: new Date('02/04/2019'),
+                            Duration: 20, Progress: '75',
+                            Segments: [
+                                { StartDate: new Date('02/04/2019'), Duration: 4 },
+                                { StartDate: new Date('02/08/2019'), Duration: 2 }
+                            ]
+                        },
+                        {
+                            TaskID: 6, TaskName: 'Planning complete', StartDate: new Date('02/21/2019'), EndDate: new Date('02/21/2019'),
+                            Duration: 0, Predecessor: '3FS,5FS'
+                        },
+                    ]
+                },
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasksData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                enableVirtualization: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                pdfQueryTaskbarInfo: function (args) {
+                    if (!args.data.hasChildRecords) {
+                        args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                        if(args.data.taskData.resourcesImage)
+                        args.taskbarTemplate.image = [{
+                                width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                            }];
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontColor: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+                        };
+                    }
+                    if (args.data.hasChildRecords) {
+                        args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                        if(args.data.taskData.resourcesImage)
+                        args.taskbarTemplate.image = [{
+                                width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                            }];
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontColor: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+                        };
+                    }
+                    if (args.data.ganttProperties.duration === 0) {
+                        args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                        if(args.data.taskData.resourcesImage)
+                        args.taskbarTemplate.image = [{
+                                width: 20, base64: args.data.taskData.resourcesImage, height: 20,
+                            }];
+                        args.taskbarTemplate.value = args.data.TaskName,
+                            args.taskbarTemplate.fontStyle = {
+                                fontColor: new PdfColor(255, 255, 255),
+                                fontFamily: 'TimesRoman'
+                            };
+                    }
+                },
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                eventMarkers: [
+                    {
+                        day: '04/10/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                searchSettings: { fields: ['TaskName', 'Duration']
+                },
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: 'TaskID'
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('Export data with unscheduled task', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt PDF Export with split tasks width template', () => {
+    let ganttObj: Gantt;
+    var splitTasksData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project Schedule',
+            StartDate: new Date('02/04/2019'),
+            EndDate: new Date('03/10/2019'),
+            subtasks: [
+                {
+                    TaskID: 2,
+                    TaskName: 'Planning',
+                    StartDate: new Date('02/04/2019'),
+                    resourcesImage: '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',
+                    subtasks: [
+                        {
+                            TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                             Progress: '60', resourcesImage: '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',
+                            Segments: [
+                                { StartDate: new Date('02/04/2019'), Duration: 2 },
+                                { StartDate: new Date('02/05/2019'), Duration: 5 },
+                                { StartDate: new Date('02/08/2019'), Duration: 3 }
+                            ]
+                        },
+                        {
+                            TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                            Duration: 10, Progress: '90', resourcesImage: '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'
+                        },
+                        {
+                            TaskID: 5, TaskName: 'Allocate resources', StartDate: new Date('02/04/2019'),
+                            Duration: 10, Progress: '75',
+                            Segments: [
+                                { StartDate: new Date('02/04/2019'), Duration: 4 },
+                                { StartDate: new Date('02/08/2019'), Duration: 2 }
+                            ]
+                        },
+                        {
+                            TaskID: 6, TaskName: 'Planning complete', StartDate: new Date('02/21/2019'), EndDate: new Date('02/21/2019'),
+                            Duration: 0, Predecessor: '3FS,5FS'
+                        },
+                    ]
+                },
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasksData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                enableVirtualization: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                pdfQueryTaskbarInfo: function (args) {
+                    if (!args.data.hasChildRecords) {
+                        args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                        if(args.data.taskData.resourcesImage)
+                        args.taskbarTemplate.image = [{
+                                width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                            }];
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontColor: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+                        };
+                    }
+                    if (args.data.hasChildRecords) {
+                        args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                        if(args.data.taskData.resourcesImage)
+                        args.taskbarTemplate.image = [{
+                                width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                            }];
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontColor: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+                        };
+                    }
+                    if (args.data.ganttProperties.duration === 0) {
+                        args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                        if(args.data.taskData.resourcesImage)
+                        args.taskbarTemplate.image = [{
+                                width: 20, base64: args.data.taskData.resourcesImage, height: 20,
+                            }];
+                        args.taskbarTemplate.value = args.data.TaskName,
+                            args.taskbarTemplate.fontStyle = {
+                                fontColor: new PdfColor(255, 255, 255),
+                                fontFamily: 'TimesRoman'
+                            };
+                    }
+                },
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                eventMarkers: [
+                    {
+                        day: '04/10/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                searchSettings: { fields: ['TaskName', 'Duration']
+                },
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: 'TaskID'
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('Export data with split task', () => {
+        let pdfExportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true
+            }
+        }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt PDF Export with split tasks width template', () => {
+    let ganttObj: Gantt;
+    var splitTasksData = [
+        {
+            TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/01/2019'),
+            Duration: 20, Progress: '60', resourcesImage: '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',
+            Segments: [
+                { StartDate: new Date('02/01/2019'), Duration: 2 },
+                { StartDate: new Date('02/05/2019'), Duration: 5 },
+            ]
+        },
+        {
+            TaskID: 4, TaskName: 'Plan timeline', StartDate: new Date('02/01/2019'),
+            Duration: 20, Progress: '60',
+            Segments: [
+                { StartDate: new Date('02/01/2019'), Duration: 2 },
+                { StartDate: new Date('02/05/2019'), Duration: 5 },
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasksData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        enableVirtualization: false,
+        pdfQueryTaskbarInfo: function (args) {
+            if (!args.data.hasChildRecords) {
+                args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                if(args.data.taskData.resourcesImage)
+                args.taskbarTemplate.image = [{
+                        width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                    }];
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+                };
+            }
+            if (args.data.hasChildRecords) {
+                args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                if(args.data.taskData.resourcesImage)
+                args.taskbarTemplate.image = [{
+                        width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                    }];
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+                };
+            }
+            if (args.data.ganttProperties.duration === 0) {
+                args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                if(args.data.taskData.resourcesImage)
+                args.taskbarTemplate.image = [{
+                        width: 20, base64: args.data.taskData.resourcesImage, height: 20,
+                    }];
+                args.taskbarTemplate.value = args.data.TaskName,
+                    args.taskbarTemplate.fontStyle = {
+                        fontColor: new PdfColor(255, 255, 255),
+                        fontFamily: 'TimesRoman'
+                    };
+            }
+        },
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            child: 'subtasks',
+            segments: 'Segments'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', width: 60 },
+            { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+            { field: 'StartDate' },
+            { field: 'EndDate' },
+            { field: 'Duration' },
+            { field: 'Progress' },
+            { field: 'Predecessor' }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/10/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: 'TaskID'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        projectStartDate: new Date('01/30/2019'),
+        projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('Export data with unscheduled task', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt PDF Export with split tasks width template', () => {
+    let ganttObj: Gantt;
+    var splitTasksData = [
+        {
+            TaskID: 4, TaskName: 'Plan timeline', StartDate: new Date('02/01/2019'),
+            Duration: 20, Progress: '60'
+            
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasksData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        enableVirtualization: false,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            child: 'subtasks',
+            segments: 'Segments'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', width: 60 },
+            { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+            { field: 'StartDate' },
+            { field: 'EndDate' },
+            { field: 'Duration' },
+            { field: 'Progress' },
+            { field: 'Predecessor' }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/10/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: 'TaskID'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        projectStartDate: new Date('01/30/2019'),
+        projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('Export data with unscheduled task', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with task mode', () => {
+    let ganttObj: Gantt;
+    var taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        },
+        {
+            'TaskID': 5,
+            'TaskName': 'Parent Task 2',
+            'StartDate': new Date('03/05/2017'),
+            'EndDate': new Date('03/09/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40' },
+                { 'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', },
+                { 'TaskID': 8, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/28/2017'),
+                    'EndDate': new Date('03/05/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 9, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/04/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', 'isManual': true }
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowSelection: true,
+        highlightWeekends: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            manual: 'isManual',
+        },
+        taskMode: 'Custom',
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowUnscheduledTasks: true,
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        allowFiltering: true,
+        columns: [
+            { field: 'TaskID', visible: true },
+            { field: 'TaskName' },
+            { field: 'isManual' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' }
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        allowReordering: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        gridLines: "Both",
+        showColumnMenu: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%'
+        },
+        projectStartDate: new Date('02/20/2017'),
+        projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('Export data with split task', () => {
+        let pdfExportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true
+            }
+        }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with task mode', () => {
+    let ganttObj: Gantt;
+    var taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        },
+        {
+            'TaskID': 5,
+            'TaskName': 'Parent Task 2',
+            'StartDate': new Date('03/05/2017'),
+            'EndDate': new Date('03/09/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40' },
+                { 'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', },
+                { 'TaskID': 8, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/28/2017'),
+                    'EndDate': new Date('03/05/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 9, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/04/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', 'isManual': true }
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowSelection: true,
+        highlightWeekends: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            manual: 'isManual',
+        },
+        taskMode: 'Custom',
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowUnscheduledTasks: true,
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        allowFiltering: true,
+        columns: [
+            { field: 'TaskID', visible: true },
+            { field: 'TaskName' },
+            { field: 'isManual' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' }
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        allowReordering: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        gridLines: "Both",
+        showColumnMenu: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%'
+        },
+        projectStartDate: new Date('02/20/2017'),
+        projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('Export data with task mode', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt PDF Export with task mode', () => {
+    let ganttObj: Gantt;
+    var taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/20/2017'), 'Progress': '40' },
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('03/20/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        },
+        {
+            'TaskID': 5,
+            'TaskName': 'Parent Task 2',
+            'StartDate': new Date('03/05/2017'),
+            'EndDate': new Date('04/09/2017'),
+            'Progress': '40',
+            'Children': [
+                { 'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40' },
+                { 'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', },
+                { 'TaskID': 8, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/28/2017'),
+                    'EndDate': new Date('03/05/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 9, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/04/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', 'isManual': true }
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowSelection: true,
+        highlightWeekends: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            manual: 'isManual',
+        },
+        taskMode: 'Custom',
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowUnscheduledTasks: true,
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        allowFiltering: true,
+        columns: [
+            { field: 'TaskID', visible: true },
+            { field: 'TaskName' },
+            { field: 'isManual' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' }
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        allowReordering: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        gridLines: "Both",
+        showColumnMenu: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%'
+        },
+        projectStartDate: new Date('02/20/2017'),
+        projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('Export data with task mode', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with task mode', () => {
+    let ganttObj: Gantt;
+    var taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/20/2017'), 'Progress': '40' },
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('03/20/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        },
+        {
+            'TaskID': 5,
+            'TaskName': 'Parent Task 2',
+            'StartDate': new Date('03/05/2017'),
+            'EndDate': new Date('04/09/2017'),
+            'Progress': '40',
+            'Children': [
+                { 'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40' },
+                { 'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', },
+                { 'TaskID': 8, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/28/2017'),
+                    'EndDate': new Date('03/05/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 9, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/04/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', 'isManual': true }
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowSelection: true,
+        highlightWeekends: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            manual: 'isManual',
+        },
+        taskMode: 'Custom',
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowUnscheduledTasks: true,
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        allowFiltering: true,
+        columns: [
+            { field: 'TaskID', visible: true },
+            { field: 'TaskName' },
+            { field: 'isManual' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' }
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        allowReordering: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        gridLines: "Both",
+        showColumnMenu: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%'
+        },
+        projectStartDate: new Date('02/20/2017'),
+        projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('Export data with task mode', () => {
+        let pdfExportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true
+            }
+        }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt PDF Export with unnscheduled task with fit to width ', () => {
+    let ganttObj: Gantt;
+    let unscheduledData: Object[] = [
+        {
+            TaskId: 1, TaskName: 'Task 1', StartDate: new Date('03/01/2019'),
+            EndDate: new Date('04/21/2019'), TaskType: '', resourcesImage: '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'
+        },
+        {
+            TaskId: 2, TaskName: 'Task 1', StartDate: new Date('03/01/2019'),
+            EndDate: new Date('04/21/2019'), TaskType: ''
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData,
+        enableContextMenu: true,
+        pdfQueryTaskbarInfo: (args) => {
+            if (!args.data.hasChildRecords) {
+                args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                if(args.data.taskData.resourcesImage)
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args ).data.taskData.resourcesImage, height: 20
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+
+                }
+            }
+            if (args.data.hasChildRecords) {
+                args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                if(args.data.taskData.resourcesImage)
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args).data.taskData.resourcesImage, height: 20
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+
+                }
+            }
+            if (args.data.ganttProperties.duration === 0) {
+                args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                if(args.data.taskData.resourcesImage)
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args).data.taskData.resourcesImage, height: 20,
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName,
+                    args.taskbarTemplate.fontStyle = {
+                        fontColor: new PdfColor(255, 255, 255),
+                        fontFamily: 'TimesRoman'
+                    }
+            }
+        },
+        taskFields: {
+            id: 'TaskId',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskId', width: 75 },
+            { field: 'TaskName', width: 80 },
+            { field: 'StartDate', width: 120 },
+            { field: 'EndDate', width: 120 },
+            { field: 'Duration', width: 90 },
+            { field: 'TaskType', visible: false }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        splitterSettings: {
+            columnIndex: 4
+        },
+        allowPdfExport: true,
+        toolbar: ['PdfExport'],
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        eventMarkers: [
+            {
+                day: '04/11/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/16/2019",
+                to: "04/16/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "03/26/2019",
+                to: "03/26/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/01/2019'),
+        projectEndDate: new Date('05/30/2019'),
+    }, done);
+    });
+    it('Export data with customZoomingLevels', () => {
+        let pdfExportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true
+            }
+        }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with unnscheduled task with fit to width ', () => {
+    let ganttObj: Gantt;
+    let unscheduledData: Object[] = [
+        {
+            TaskId: 1, TaskName: 'Task 1', StartDate: new Date('03/01/2019'),
+            EndDate: new Date('04/21/2019'), TaskType: '', resourcesImage: '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'
+        },
+        {
+            TaskId: 2, TaskName: 'Task 1', StartDate: new Date('03/01/2019'),
+            EndDate: new Date('04/21/2019'), TaskType: ''
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData,
+        enableContextMenu: true,
+        pdfQueryTaskbarInfo: (args) => {
+            if (!args.data.hasChildRecords) {
+                args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                if(args.data.taskData.resourcesImage)
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args ).data.taskData.resourcesImage, height: 20
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+
+                }
+            }
+            if (args.data.hasChildRecords) {
+                args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                if(args.data.taskData.resourcesImage)
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args).data.taskData.resourcesImage, height: 20
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+
+                }
+            }
+            if (args.data.ganttProperties.duration === 0) {
+                args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                if(args.data.taskData.resourcesImage)
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args).data.taskData.resourcesImage, height: 20,
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName,
+                    args.taskbarTemplate.fontStyle = {
+                        fontColor: new PdfColor(255, 255, 255),
+                        fontFamily: 'TimesRoman'
+                    }
+            }
+        },
+        taskFields: {
+            id: 'TaskId',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskId', width: 75 },
+            { field: 'TaskName', width: 80 },
+            { field: 'StartDate', width: 120 },
+            { field: 'EndDate', width: 120 },
+            { field: 'Duration', width: 90 },
+            { field: 'TaskType', visible: false }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        splitterSettings: {
+            columnIndex: 4
+        },
+        allowPdfExport: true,
+        toolbar: ['PdfExport'],
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        eventMarkers: [
+            {
+                day: '04/11/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/16/2019",
+                to: "04/16/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "03/26/2019",
+                to: "03/26/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/01/2019'),
+        projectEndDate: new Date('05/30/2019'),
+    }, done);
+    });
+    it('Export data with customZoomingLevels', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with task mode', () => {
+    let ganttObj: Gantt;
+    var taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('04/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('04/20/2017'), 'Progress': '40' },
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('04/20/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        },
+        {
+            'TaskID': 5,
+            'TaskName': 'Parent Task 2',
+            'StartDate': new Date('03/05/2017'),
+            'EndDate': new Date('04/09/2017'),
+            'Progress': '40',
+            'Children': [
+                { 'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40' },
+                { 'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', },
+                { 'TaskID': 8, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/28/2017'),
+                    'EndDate': new Date('03/20/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 9, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/04/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', 'isManual': true }
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowSelection: true,
+        highlightWeekends: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            manual: 'isManual',
+        },
+        taskMode: 'Custom',
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowUnscheduledTasks: true,
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        allowFiltering: true,
+        columns: [
+            { field: 'TaskID', visible: true },
+            { field: 'TaskName' },
+            { field: 'isManual' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' }
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        allowReordering: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        gridLines: "Both",
+        showColumnMenu: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%'
+        },
+        projectStartDate: new Date('02/20/2017'),
+        projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('Export data with task mode', () => {
+        let pdfExportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true
+            }
+        }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with task mode', () => {
+    let ganttObj: Gantt;
+    var taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('04/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'), 'Duration': 20,
+                     'Progress': '40' },
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('04/20/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowSelection: true,
+        highlightWeekends: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            manual: 'isManual',
+        },
+        taskMode: 'Custom',
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowUnscheduledTasks: true,
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        allowFiltering: true,
+        columns: [
+            { field: 'TaskID', visible: true },
+            { field: 'TaskName' },
+            { field: 'isManual' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' }
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        allowReordering: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        gridLines: "Both",
+        showColumnMenu: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%'
+        },
+            }, done);
+    });
+    it('Export data with task mode', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with unscheduled task template with fit to width', () => {
+    let ganttObj: Gantt;
+    let unscheduledData: Object[] = [
+        {
+            TaskId: 5, TaskName: 'Task 1', StartDate: new Date('04/01/2019'),Duration: 2,
+            TaskType: '', resourcesImage: '/9j/4AAQSkZJRgABAQAAAQABAAD//gAfQ29tcHJlc3NlZCBieSBqcGVnLXJlY29tcHJlc3P/2wCEAAQEBAQEBAQEBAQGBgUGBggHBwcHCAwJCQkJCQwTDA4MDA4MExEUEA8QFBEeFxUVFx4iHRsdIiolJSo0MjRERFwBBAQEBAQEBAQEBAYGBQYGCAcHBwcIDAkJCQkJDBMMDgwMDgwTERQQDxAUER4XFRUXHiIdGx0iKiUlKjQyNEREXP/CABEIADcANwMBIgACEQEDEQH/xAAbAAADAAMBAQAAAAAAAAAAAAAFBwgEBgkCA//aAAgBAQAAAAC/hQFOvYjnCinKzbmZbGH5zuQtL+rjE/fO5y7I93/rpMhES5qCgxOTPErmqDaDCzVpNoBsPfbf/8QAGgEAAQUBAAAAAAAAAAAAAAAAAAECAwQFBv/aAAgBAhAAAAAoWZjmNLVM6a2Pan//xAAXAQEBAQEAAAAAAAAAAAAAAAAABAUG/9oACAEDEAAAAGjNO7PFxm1FEH//xAA3EAACAgECBAMFBgQHAAAAAAABAgMEBQAGBxESQSExMhATUVKBCBQiYWKhFiNxkTNCU2RygrH/2gAIAQEAAT8A0chavSvWwcaFUYrJdlBMSkeYjA9Z/bW5b209pY98xvncBFf57UrKrP8ACOGL1H8gCdRcfOB8txaopTojeU5p8o9Uq+OuVUv7XzrLE4DIYpvvNduY+Vif2I1Vyk0NiPH5eBYLD+EUqEmCc/BSfJv0n2ZB5MjajwlZ2RCnvbkinkViJ5CMH5n/APNdNajV5L0Q14IyflREUeJ1vDP53jTu65l72QMOMWZ4MbW/yQwBuw+Yj1HW3OAEF1lntZ50iHNRGkHiSe/MtrbEF3ghuPEWkyktvbt2daeQRx4oH8EfkPk1PTr5CrLVtRBom5fkQR3B7EdjrD2Z1exibrdVury/mf6sLeiT+vY6wRV69rJv671mSX4n3anoRfoo1l6pv4rKUAwQ2ak8AY+QMiFef76x2VbacmNrvjnnmjAMiGRU5OW9IB8WOtucRXk2ra3FiMK9panISQGTpCv+ZAJ1ZvZjiJgbr28VBVimjjmj6RYVo2V/DwljQN3BI1Gysqup5hgCNZ2VcbZx2Z7Rl683LzaORSw/syjW3HUYHFfEVkB9m7sNitqby3LVzlFmkhlkmrFVKO6MSY+nXBvN0Zq+YoLQsixLKr9DxosBHkSCxAIXvrFTRzyDCrSjhnM6x9KgCFwT6l5dtIOlFX4Aa3uhG3bCjxYyxfU9WsEfu5v4lvBqlhygPeGY9aH9yPZ9rHEQ0M5tvOo/4sjVnqSoP9uQQw+kuuFMAd0DW4pK5J61lkYsOf8A28DrYaU23dFVqoohgWWdlTyDEcv7nnz9mShTIZGhiTzaNFe1Z5dlAKIPqTrK1bEU8GYx8ZezApSWIec8BPMqP1DzXXEn7Ue2dlT2sNisLfyGZi7TxmrWT+rP+JtY7c03GVty/wAVSKcnNcjsQyJ4CCLoEaJEOypy1tjgruGnuypiZcpXkSWMWVevZVHeH5mTnzGt75ylwWweJkw5jmzlu5FyD94IiGm+jenWy+NG1N60m+4CxHlo4laTGshMhZjyHQw8GBOsZTmrJNaukNftMJJyPJeyxj9KD2cReDu0OJNUnJVBDdH+Hai/C6nW2+AWe4ZbrOTe3VvYKeKSByT0ypzIKkL31tfZ+8It62tx5a37h6+T+/0pY5FKycj0CAgEkRmPw1ujg/n+Ke7XzuRvpTwcaJBVjRg0vuk8T/xJOtmcPtu7EpJVw9VRL0/zJ28XY+z/xAAiEQACAQMEAgMAAAAAAAAAAAABAgMABBEQEhNRISIFQYH/2gAIAQIBAT8AqW/hjk4y/t1ioJ0nTemtyA0pYREOjeT3XxjFufxhcg/ut5aMw5Ez7H6Gas7ZraHa4wzHcdVYjaOjmiSTk6f/xAAiEQACAQIGAwEAAAAAAAAAAAABAgMEEQAFEBITISJBUZH/2gAIAQMBAT8AxFltRJGsvH4H3fFTTvTPsf2LjWlBEChp1aNk8V+YzdVUwDddrH81y6t4xxkjpSLsbdYr6hamfehuoULr91//2Q=='
+        },
+        {
+            TaskId: 6, TaskName: 'Task 1', StartDate: new Date('04/01/2019'),Duration: 2,
+            TaskType: ''
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData,
+        enableContextMenu: true,
+        pdfQueryTaskbarInfo: (args: any) => {
+            if (!args.data.hasChildRecords) {
+                args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                if(args.data.taskData.resourcesImage)
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+
+                }
+            }
+            if (args.data.hasChildRecords) {
+                args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                if(args.data.taskData.resourcesImage)
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+
+                }
+            }
+            if (args.data.ganttProperties.duration === 0) {
+                args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                if(args.data.taskData.resourcesImage)
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20,
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName,
+                    args.taskbarTemplate.fontStyle = {
+                        fontColor: new PdfColor(255, 255, 255),
+                        fontFamily: 'TimesRoman'
+                    }
+            }
+        },
+        taskFields: {
+            id: 'TaskId',
+            name: 'TaskName',
+            duration: 'Duration',
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskId', width: 75 },
+            { field: 'TaskName', width: 80 },
+            { field: 'StartDate', width: 120 },
+            { field: 'EndDate', width: 120 },
+            { field: 'Duration', width: 90 },
+            { field: 'TaskType', visible: false }
+        ],
+        pdfExportComplete: (args: any) => {
+            expect(args.name).toBe("pdfExportComplete");
+        },
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        splitterSettings: {
+            columnIndex: 4
+        },
+        allowPdfExport: true,
+        toolbar: ['PdfExport'],
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        eventMarkers: [
+            {
+                day: '04/11/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/16/2019",
+                to: "04/16/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "03/26/2019",
+                to: "03/26/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('Export data with customZoomingLevels', () => {
+        let pdfExportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true
+            }
+        }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with unscheduled task template with fit to width', () => {
+    let ganttObj: Gantt;
+    let unscheduledData: Object[] = [
+        {
+            TaskId: 5, TaskName: 'Task 1', StartDate: new Date('04/01/2019'),Duration: 2,
+            TaskType: '', resourcesImage: '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'
+        },
+        {
+            TaskId: 6, TaskName: 'Task 1', StartDate: new Date('04/01/2019'),Duration: 2,
+            TaskType: ''
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData,
+        enableContextMenu: true,
+        pdfQueryTaskbarInfo: (args: any) => {
+            if (!args.data.hasChildRecords) {
+                args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                if(args.data.taskData.resourcesImage)
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+
+                }
+            }
+            if (args.data.hasChildRecords) {
+                args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                if(args.data.taskData.resourcesImage)
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+
+                }
+            }
+            if (args.data.ganttProperties.duration === 0) {
+                args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                if(args.data.taskData.resourcesImage)
+                    args.taskbarTemplate.image = [{
+                        width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20,
+                    }]
+                args.taskbarTemplate.value = args.data.TaskName,
+                    args.taskbarTemplate.fontStyle = {
+                        fontColor: new PdfColor(255, 255, 255),
+                        fontFamily: 'TimesRoman'
+                    }
+            }
+        },
+        taskFields: {
+            id: 'TaskId',
+            name: 'TaskName',
+            duration: 'Duration',
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskId', width: 75 },
+            { field: 'TaskName', width: 80 },
+            { field: 'StartDate', width: 120 },
+            { field: 'EndDate', width: 120 },
+            { field: 'Duration', width: 90 },
+            { field: 'TaskType', visible: false }
+        ],
+        pdfExportComplete: (args: any) => {
+            expect(args.name).toBe("pdfExportComplete");
+        },
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        splitterSettings: {
+            columnIndex: 4
+        },
+        allowPdfExport: true,
+        toolbar: ['PdfExport'],
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        eventMarkers: [
+            {
+                day: '04/11/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/16/2019",
+                to: "04/16/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "03/26/2019",
+                to: "03/26/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('Export data with customZoomingLevels', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Beyond end date with split tasks width template', () => {
+    let ganttObj: Gantt;
+    var splitTasksData = [
+        {
+            TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('01/29/2019'),BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'),
+            Duration: 30, Progress: '60', resourcesImage: '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',
+            
+        },
+        {
+            TaskID: 4, TaskName: 'Plan timeline', StartDate: new Date('01/29/2019'),BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'),
+            Duration: 30, Progress: '60'
+            
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasksData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                renderBaseline: true,
+                allowUnscheduledTasks: true,
+                enableVirtualization: false,
+                pdfQueryTaskbarInfo: function (args) {
+                    if (!args.data.hasChildRecords) {
+                        args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                        if(args.data.taskData.resourcesImage)
+                        args.taskbarTemplate.image = [{
+                                width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                            }];
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontColor: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+                        };
+                    }
+                    if (args.data.hasChildRecords) {
+                        args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                        if(args.data.taskData.resourcesImage)
+                        args.taskbarTemplate.image = [{
+                                width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                            }];
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontColor: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+                        };
+                    }
+                    if (args.data.ganttProperties.duration === 0) {
+                        args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                        if(args.data.taskData.resourcesImage)
+                        args.taskbarTemplate.image = [{
+                                width: 20, base64: args.data.taskData.resourcesImage, height: 20,
+                            }];
+                        args.taskbarTemplate.value = args.data.TaskName,
+                            args.taskbarTemplate.fontStyle = {
+                                fontColor: new PdfColor(255, 255, 255),
+                                fontFamily: 'TimesRoman'
+                            };
+                    }
+                },
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                eventMarkers: [
+                    {
+                        day: '04/10/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                searchSettings: { fields: ['TaskName', 'Duration']
+                },
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: 'TaskID'
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('Export data with unscheduled task', () => {
+        let pdfExportProperties = {
+           fitToWidthSettings: {
+                isFitToWidth: true
+           }
+        }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Beyond end date with split tasks width template', () => {
+    let ganttObj: Gantt;
+    var splitTasksData = [
+        {
+            TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('01/29/2019'),BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'),
+            Duration: 30, Progress: '60', resourcesImage: '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',
+            
+        },
+        {
+            TaskID: 4, TaskName: 'Plan timeline', StartDate: new Date('01/29/2019'),BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'),
+            Duration: 30, Progress: '60'
+            
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasksData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                renderBaseline: true,
+                allowUnscheduledTasks: true,
+                enableVirtualization: false,
+                pdfQueryTaskbarInfo: function (args) {
+                    if (!args.data.hasChildRecords) {
+                        args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                        if(args.data.taskData.resourcesImage)
+                        args.taskbarTemplate.image = [{
+                                width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                            }];
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontColor: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+                        };
+                    }
+                    if (args.data.hasChildRecords) {
+                        args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                        if(args.data.taskData.resourcesImage)
+                        args.taskbarTemplate.image = [{
+                                width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                            }];
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontColor: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+                        };
+                    }
+                    if (args.data.ganttProperties.duration === 0) {
+                        args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                        if(args.data.taskData.resourcesImage)
+                        args.taskbarTemplate.image = [{
+                                width: 20, base64: args.data.taskData.resourcesImage, height: 20,
+                            }];
+                        args.taskbarTemplate.value = args.data.TaskName,
+                            args.taskbarTemplate.fontStyle = {
+                                fontColor: new PdfColor(255, 255, 255),
+                                fontFamily: 'TimesRoman'
+                            };
+                    }
+                },
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                eventMarkers: [
+                    {
+                        day: '04/10/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                searchSettings: { fields: ['TaskName', 'Duration']
+                },
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: 'TaskID'
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('Export data with unscheduled task', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Beyond end date with split tasks width template for manual mode', () => {
+    let ganttObj: Gantt;
+    var splitTasksData = [
+        {
+            TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('01/29/2019'),BaselineStartDate: new Date('04/02/2019'),            'isManual': true,                            BaselineEndDate: new Date('04/06/2019'),
+            Duration: 50, Progress: '60', resourcesImage: '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',
+            
+        },
+        {
+            TaskID: 4, TaskName: 'Plan timeline', StartDate: new Date('01/29/2019'),BaselineStartDate: new Date('04/02/2019'),            'isManual': true,                            BaselineEndDate: new Date('04/06/2019'),
+            Duration: 50, Progress: '60'
+            
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasksData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        taskMode: 'Custom',
+        renderBaseline: true,
+        allowUnscheduledTasks: true,
+        enableVirtualization: false,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            manual: 'isManual',
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', width: 60 },
+            { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+            { field: 'StartDate' },
+            { field: 'EndDate' },
+            { field: 'Duration' },
+            { field: 'Progress' },
+            { field: 'Predecessor' }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/10/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: 'TaskID'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        projectStartDate: new Date('01/30/2019'),
+        projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('Export data with unscheduled task', () => {
+        let pdfExportProperties = {
+            fitToWidthSettings: {
+                 isFitToWidth: true
+            }
+         }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Beyond end date with split tasks width template for manual mode', () => {
+    let ganttObj: Gantt;
+    var splitTasksData = [
+        {
+            TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('01/29/2019'),BaselineStartDate: new Date('04/02/2019'),            'isManual': true,                            BaselineEndDate: new Date('04/06/2019'),
+            Duration: 50, Progress: '60', resourcesImage: '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',
+            
+        },
+        {
+            TaskID: 4, TaskName: 'Plan timeline', StartDate: new Date('01/29/2019'),BaselineStartDate: new Date('04/02/2019'),            'isManual': true,                            BaselineEndDate: new Date('04/06/2019'),
+            Duration: 50, Progress: '60'
+            
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasksData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        taskMode: 'Custom',
+        renderBaseline: true,
+        allowUnscheduledTasks: true,
+        enableVirtualization: false,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            manual: 'isManual',
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', width: 60 },
+            { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+            { field: 'StartDate' },
+            { field: 'EndDate' },
+            { field: 'Duration' },
+            { field: 'Progress' },
+            { field: 'Predecessor' }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/10/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: 'TaskID'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        projectStartDate: new Date('01/30/2019'),
+        projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    it('Export data with manual task', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Beyond end date with split tasks width template for manual parent task', () => {
+    let ganttObj: Gantt;
+    var taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/18/2017'),
+            'EndDate': new Date('03/21/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/18/2017'),
+                    'EndDate': new Date('05/03/2017'), 'Progress': '40', 'isManual': true },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowUnscheduledTasks: true,
+        allowSelection: true,
+        highlightWeekends: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            manual: 'isManual',
+        },
+        taskMode: 'Custom',
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        allowFiltering: true,
+        columns: [
+            { field: 'TaskID', visible: true },
+            { field: 'TaskName' },
+            { field: 'isManual' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' }
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        allowReordering: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        gridLines: "Both",
+        showColumnMenu: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%'
+        },
+        projectStartDate: new Date('02/20/2017'),
+        projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('Export data with manual task', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Beyond end date with split tasks width template for manual parent task', () => {
+    let ganttObj: Gantt;
+    var taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/18/2017'),
+            'EndDate': new Date('03/21/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/18/2017'),
+                    'EndDate': new Date('05/03/2017'), 'Progress': '40', 'isManual': true },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowUnscheduledTasks: true,
+        allowSelection: true,
+        highlightWeekends: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            manual: 'isManual',
+        },
+        taskMode: 'Custom',
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        allowFiltering: true,
+        columns: [
+            { field: 'TaskID', visible: true },
+            { field: 'TaskName' },
+            { field: 'isManual' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' }
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        allowReordering: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        gridLines: "Both",
+        showColumnMenu: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%'
+        },
+        projectStartDate: new Date('02/20/2017'),
+        projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('Export data with manual task', () => {
+        let pdfExportProperties = {
+            fitToWidthSettings: {
+                 isFitToWidth: true
+            }
+         }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Beyond end date with split tasks width template for manual parent task', () => {
+    let ganttObj: Gantt;
+    var unscheduledData = [
+        {
+            TaskId: 1, TaskName: 'Task 1', StartDate: new Date('04/02/2019'),BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'),
+            EndDate: new Date('04/21/2019'), Duration: '5', TaskType: '', resourcesImage: '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'
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData,
+        enableContextMenu: true,
+        pdfQueryTaskbarInfo: function (args) {
+            args.labelSettings.leftLabel.value = '1';
+            args.labelSettings.leftLabel.image = [{
+                width: 20, base64: args.data.taskData.resourcesImage, height: 20
+            }];
+        },
+        taskFields: {
+            id: 'TaskId',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        pdfExportComplete: (args: any) => {
+            expect(args.name).toBe("pdfExportComplete");
+        },
+        columns: [
+            { field: 'TaskId', width: 75 },
+            { field: 'TaskName', width: 80 },
+            { field: 'StartDate', width: 120 },
+            { field: 'EndDate', width: 120 },
+            { field: 'Duration', width: 90 },
+            { field: 'TaskType', visible: false }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        splitterSettings: {
+            columnIndex: 4
+        },
+        allowPdfExport: true,
+        toolbar: ['PdfExport'],
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        eventMarkers: [
+            {
+                day: '04/11/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/16/2019",
+                to: "04/16/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "03/26/2019",
+                to: "03/26/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('left label and image', () => {
+        let pdfExportProperties = {
+            fitToWidthSettings: {
+                 isFitToWidth: true
+            }
+         }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Beyond end date with split tasks width template for manual parent task', () => {
+    let ganttObj: Gantt;
+    var unscheduledData = [
+        {
+            TaskId: 1, TaskName: 'Task 1', StartDate: new Date('04/02/2019'),BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'),
+            EndDate: new Date('04/21/2019'), Duration: '5', TaskType: '', resourcesImage: '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'
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData,
+        enableContextMenu: true,
+        pdfQueryTaskbarInfo: function (args) {
+            args.labelSettings.leftLabel.value = '1';
+            args.labelSettings.leftLabel.image = [{
+                width: 20, base64: args.data.taskData.resourcesImage, height: 20
+            }];
+        },
+        renderBaseline: true,
+        pdfExportComplete: (args: any) => {
+            expect(args.name).toBe("pdfExportComplete");
+        },
+        taskFields: {
+            id: 'TaskId',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskId', width: 75 },
+            { field: 'TaskName', width: 80 },
+            { field: 'StartDate', width: 120 },
+            { field: 'EndDate', width: 120 },
+            { field: 'Duration', width: 90 },
+            { field: 'TaskType', visible: false }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        splitterSettings: {
+            columnIndex: 4
+        },
+        allowPdfExport: true,
+        toolbar: ['PdfExport'],
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        eventMarkers: [
+            {
+                day: '04/11/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/16/2019",
+                to: "04/16/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "03/26/2019",
+                to: "03/26/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('left label and image', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Beyond end date with split tasks width template for manual parent task', () => {
+    let ganttObj: Gantt;
+    var unscheduledData = [
+        {
+            TaskId: 1, TaskName: 'Task 1',BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'),
+            Duration: '30', TaskType: '', resourcesImage: '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'
+        },
+        {
+            TaskId: 2, TaskName: 'Task 1',BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('05/06/2019'),
+            Duration: '30', TaskType: ''
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData,
+        enableContextMenu: true,
+        pdfQueryTaskbarInfo: function (args) {
+            if (!args.data.hasChildRecords) {
+                args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                if(args.data.taskData.resourcesImage)
+                args.taskbarTemplate.image = [{
+                        width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                    }];
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+                };
+            }
+            if (args.data.hasChildRecords) {
+                args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                if(args.data.taskData.resourcesImage)
+                args.taskbarTemplate.image = [{
+                        width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                    }];
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+                };
+            }
+            if (args.data.ganttProperties.duration === 0) {
+                args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                if(args.data.taskData.resourcesImage)
+                args.taskbarTemplate.image = [{
+                        width: 20, base64: args.data.taskData.resourcesImage, height: 20,
+                    }];
+                args.taskbarTemplate.value = args.data.TaskName,
+                    args.taskbarTemplate.fontStyle = {
+                        fontColor: new PdfColor(255, 255, 255),
+                        fontFamily: 'TimesRoman'
+                    };
+            }
+        },
+        taskFields: {
+            id: 'TaskId',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+        },
+        renderBaseline: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskId', width: 75 },
+            { field: 'TaskName', width: 80 },
+            { field: 'StartDate', width: 120 },
+            { field: 'EndDate', width: 120 },
+            { field: 'Duration', width: 90 },
+            { field: 'TaskType', visible: false }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        pdfExportComplete: (args: any) => {
+            expect(args.name).toBe("pdfExportComplete");
+        },
+        splitterSettings: {
+            columnIndex: 4
+        },
+        allowPdfExport: true,
+        toolbar: ['PdfExport'],
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        eventMarkers: [
+            {
+                day: '04/11/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/16/2019",
+                to: "04/16/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "03/26/2019",
+                to: "03/26/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('render baseline', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Beyond end date with split tasks width template for unscheduled task', () => {
+    let ganttObj: Gantt;
+    var unscheduledData = [
+        {
+            TaskId: 1, TaskName: 'Task 1',BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'),
+            Duration: '30', TaskType: '', resourcesImage: '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'
+        },
+        {
+            TaskId: 2, TaskName: 'Task 1',BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'),
+            Duration: '30', TaskType: ''
+        },
+        {
+            TaskId: 3, TaskName: 'Task 1', StartDate: new Date('04/02/2019'),BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'),
+            Duration: '0', TaskType: '', resourcesImage: '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'
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData,
+        enableContextMenu: true,
+        pdfQueryTaskbarInfo: function (args) {
+            args.labelSettings.leftLabel.value = '1';
+            args.labelSettings.rightLabel.value = '1';
+            if (!args.data.hasChildRecords) {
+                args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                if(args.data.taskData.resourcesImage)
+                args.taskbarTemplate.image = [{
+                        width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                    }];
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+                };
+            }
+            if (args.data.hasChildRecords) {
+                args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                if(args.data.taskData.resourcesImage)
+                args.taskbarTemplate.image = [{
+                        width: 20, base64: args.data.taskData.resourcesImage, height: 20
+                    }];
+                args.taskbarTemplate.value = args.data.TaskName;
+                args.taskbarTemplate.fontStyle = {
+                    fontColor: new PdfColor(255, 255, 255),
+                    fontFamily: 'TimesRoman',
+                };
+            }
+            if (args.data.ganttProperties.duration === 0) {
+                args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                if(args.data.taskData.resourcesImage)
+                args.taskbarTemplate.image = [{
+                        width: 20, base64: args.data.taskData.resourcesImage, height: 20,
+                    }];
+                args.taskbarTemplate.value = args.data.TaskName,
+                    args.taskbarTemplate.fontStyle = {
+                        fontColor: new PdfColor(255, 255, 255),
+                        fontFamily: 'TimesRoman'
+                    };
+            }
+        },
+        taskFields: {
+            id: 'TaskId',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+        },
+        renderBaseline: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        pdfExportComplete: (args: any) => {
+            expect(args.name).toBe("pdfExportComplete");
+        },
+        columns: [
+            { field: 'TaskId', width: 75 },
+            { field: 'TaskName', width: 80 },
+            { field: 'StartDate', width: 120 },
+            { field: 'EndDate', width: 120 },
+            { field: 'Duration', width: 90 },
+            { field: 'TaskType', visible: false }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        splitterSettings: {
+            columnIndex: 4
+        },
+        allowPdfExport: true,
+        toolbar: ['PdfExport'],
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        eventMarkers: [
+            {
+                day: '04/11/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/16/2019",
+                to: "04/16/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "03/26/2019",
+                to: "03/26/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'TaskID',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('render baseline', () => {
+        let pdfExportProperties = {
+            fitToWidthSettings: {
+                 isFitToWidth: true
+            },
+            ganttStyle: {
+                font: new PdfTrueTypeFont(adventProFont, 12)
+            }
+         }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Beyond end date with split tasks for manual parent task', () => {
+    let ganttObj: Gantt;
+    var taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('03/15/2017'),
+            'EndDate': new Date('05/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/15/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+            ]
+        },
+        {
+            'TaskID': 3,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('03/15/2017'),
+            'EndDate': new Date('05/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 4, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/15/2017'),
+                    'EndDate': new Date('05/03/2017'), 'Progress': '40' },
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowSelection: true,
+        highlightWeekends: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            manual: 'isManual',
+        },
+        taskMode: 'Custom',
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        allowFiltering: true,
+        columns: [
+            { field: 'TaskID', visible: true },
+            { field: 'TaskName' },
+            { field: 'isManual' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' }
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        allowReordering: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        gridLines: "Both",
+        showColumnMenu: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        pdfQueryTaskbarInfo: function (args) {
+            args.labelSettings.leftLabel.value = '1';
+            args.labelSettings.rightLabel.value = '1';
+        },
+        labelSettings: {
+            leftLabel: 'TaskName',
+            rightLabel: 'TaskName',
+            taskLabel: '${Progress}%'
+        },
+        projectStartDate: new Date('02/20/2017'),
+        projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('render baseline', () => {
+        let pdfExportProperties = {
+            fitToWidthSettings: {
+                 isFitToWidth: true
+            },
+            ganttStyle: {
+                font: new PdfTrueTypeFont(adventProFont, 12)
+            }
+         }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('predecessor connection', () => {
+    let ganttObj: Gantt;
+    var projectNewData = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, Predecessor: "4FS+2",TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "5",
+                    Indicators: [
+                        {
+                            'date': '04/10/2019',
+                            'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                            'name': 'Indicator title',
+                            'tooltip': 'tooltip'
+                        }
+                    ]
+                },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            ]
+        },
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0 },
+        { TaskID: 6, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'7FF-2' },
+        { TaskID: 7, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 8, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 9, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 ,Predecessor:'8FF-2'},
+        { TaskID: 10, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'11SS-2' },
+        { TaskID: 11, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 12, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'13SS+2' },
+        { TaskID: 13, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 14, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'15SF-2' },
+        { TaskID: 15, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 16, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'17SF+2' },
+        { TaskID: 17, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 18, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'19FF+2' },
+        { TaskID: 19, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectNewData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            indicators: 'Indicators'
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', format:'m/d/yy',type:'date'},
+            { field: 'StartDate', headerText: 'Start Date', format:'m/d/yy',type:'time'},
+            { field: 'StartDate', headerText: 'Start Date',type:'date'},
+            { field: 'StartDate', headerText: 'Start Date',type:'time'},
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/10/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('FS type connection', () => {
+        let pdfExportProperties = {
+            fitToWidthSettings: {
+                 isFitToWidth: true
+            },
+         }
+        ganttObj.pdfExport(pdfExportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('predecessor connection', () => {
+    let ganttObj: Gantt;
+    var projectNewData = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, Predecessor: "4FS+2",TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "5",
+                    Indicators: [
+                        {
+                            'date': '04/10/2019',
+                            'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                            'name': 'Indicator title',
+                            'tooltip': 'tooltip'
+                        }
+                    ]
+                },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            ]
+        },
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0 },
+        { TaskID: 6, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'7FF-2' },
+        { TaskID: 7, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 8, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 9, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 ,Predecessor:'8FF-2'},
+        { TaskID: 10, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'11SS-2' },
+        { TaskID: 11, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 12, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'13SS+2' },
+        { TaskID: 13, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 14, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'15SF-2' },
+        { TaskID: 15, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 16, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'17SF+2' },
+        { TaskID: 17, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 18, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'19FF+2' },
+        { TaskID: 19, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectNewData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            indicators: 'Indicators'
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/10/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('FS type connection', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('predecessor connection', () => {
+    let ganttObj: Gantt;
+    var projectNewData = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, Predecessor: "4FS+2",TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "5",
+                    Indicators: [
+                        {
+                            'date': '04/10/2019',
+                            'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                            'name': 'Indicator title',
+                            'tooltip': 'tooltip'
+                        }
+                    ]
+                },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            ]
+        },
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0 },
+        { TaskID: 6, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'7FF-2' },
+        { TaskID: 7, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 8, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 9, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 ,Predecessor:'8FF-2'},
+        { TaskID: 10, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'11SS-2' },
+        { TaskID: 11, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 12, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'13SS+2' },
+        { TaskID: 13, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 14, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'15SF-2' },
+        { TaskID: 15, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 16, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'17SF+2' },
+        { TaskID: 17, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 18, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30,Predecessor:'19FF+2' },
+        { TaskID: 19, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 29, TaskName: 'Prepare product sketch and notes game game game game game game game game game game game game game game', StartDate: new Date('04/02/2019'), Duration: 20, Progress: 30 }
+
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectNewData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            indicators: 'Indicators'
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/10/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('cover draw', () => {
+        ganttObj.pdfExport();
+        const layout: RectangleF = new RectangleF(0, 0, 0, 0);
+        const format: any = new PdfTreeGridLayoutFormat();
+        ganttObj.pdfExportModule.gantt.draw(ganttObj.pdfExportModule.pdfPage,layout,format);
+        ganttObj.pdfExportModule.gantt.draw(ganttObj.pdfExportModule.pdfPage,10,10);
+        const layout1: RectangleF = new RectangleF(0, 0, 400, 0);
+        ganttObj.pdfExportModule.gantt.draw(ganttObj.pdfExportModule.pdfPage,layout1,undefined);
+        ganttObj.pdfExportModule.gantt.draw(ganttObj.pdfExportModule.pdfPage, 10, 10,null);
+        ganttObj.pdfExportModule.gantt.draw(ganttObj.pdfExportModule.pdfPage, layout1, true);
+        const layout3 = new PointF(10, 10);
+        ganttObj.pdfExportModule.gantt.draw(ganttObj.pdfExportModule.pdfPage, layout3, undefined);
+        ganttObj.pdfExportModule.gantt.draw(ganttObj.pdfExportModule.pdfPage, layout3, format);
+        let a = {height:480,width:760,x:0.5,y:0.5};
+        ganttObj.pdfExportModule.gantt.columns.getColumn(0).width = -10;
+        ganttObj.pdfExportModule.gantt.measureColumnsWidth(a);
+        ganttObj.pdfExportModule.gantt.columns.getColumn(0).width = -10;
+        ganttObj.pdfExportModule.gantt.measureColumnsWidth(undefined);
+        const dic: any = new TemporaryDictionary();
+        dic.add(ganttObj.pdfExportModule.pdfPage, [0,1]);
+        dic.getValue(ganttObj.pdfExportModule.pdfPage);
+        dic.setValue([0,1],ganttObj.pdfExportModule.pdfPage);
+        dic.setValue(ganttObj.pdfExportModule.pdfPage,ganttObj.pdfExportModule.pdfPage);
+        dic.remove(ganttObj.pdfExportModule.pdfPage);
+        dic.size();
+        dic.keys();
+        dic.values();
+        dic.clear();
+        ganttObj.pdfExportModule.helper['row'].cells['cells'][0].style.borders.bottom = new PdfPen(ganttObj.pdfExportModule.helper['row'].cells['cells'][0].style.borderColor);
+        ganttObj.pdfExportModule.helper['row'].cells['cells'][0].style.borders.top = new PdfPen(ganttObj.pdfExportModule.helper['row'].cells['cells'][0].style.borderColor);
+        ganttObj.pdfExportModule.helper['row'].cells['cells'][0].style.borders.left = new PdfPen(ganttObj.pdfExportModule.helper['row'].cells['cells'][0].style.borderColor);
+        ganttObj.pdfExportModule.helper['row'].cells['cells'][0].style.borders.right = new PdfPen(ganttObj.pdfExportModule.helper['row'].cells['cells'][0].style.borderColor);
+        ganttObj.pdfExportModule.helper['row'].cells['cells'][0].style.padding.all = 10;
+        let newPadding = new PdfPaddings(10, 10, 10, 10);
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).width = ganttObj.pdfExportModule.helper['row'].cells.getCell(0).width;
+        let b = new PdfTreeGrid();
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).value = b;
+        let c= {height:50,width:82,x:0.5,y:0.5};
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0)['adjustContentLayoutArea'](c);
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).style.format.alignment = 1;
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0)['adjustContentLayoutArea'](c);
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).style.format.alignment = 2;
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0)['adjustContentLayoutArea'](c);
+        let d:PdfTreeGridLayouter = new PdfTreeGridLayouter(ganttObj.pdfExportModule.gantt);
+        ganttObj.pdfExportModule.helper['row'].treegrid.style.borderOverlapStyle = 1;
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).style.borders.left.dashStyle = 1;
+    ganttObj.pdfExportModule.helper['row'].cells.getCell(0).style.borders.right.dashStyle = 1;
+    ganttObj.pdfExportModule.helper['row'].cells.getCell(0).style.borders.top.dashStyle = 1;
+    ganttObj.pdfExportModule.helper['row'].cells.getCell(0).style.borders.bottom.dashStyle = 1;
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0)['drawCellBorder'](ganttObj.pdfExportModule.pdfPage.graphics,c);
+        let e: PdfTreeGridRow = new PdfTreeGridRow(b);
+        e.treegrid=b;
+        e.rowOverflowIndex = e.rowOverflowIndex;
+        e.width;
+        e['measureWidth']();
+        let headerCollection: PdfTreeGridHeaderCollection = new PdfTreeGridHeaderCollection(b);
+        headerCollection.getHeader(0);
+        headerCollection.count;
+        headerCollection.add(ganttObj.pdfExportModule.helper['row']);
+        headerCollection.indexOf(ganttObj.pdfExportModule.helper['row']);
+        let treegridColumn: PdfTreeGridColumn = new PdfTreeGridColumn(b);
+        treegridColumn.headerText;
+        treegridColumn.field;
+        treegridColumn.format = treegridColumn.format;
+        let columncollection:PdfTreeGridColumnCollection  = new PdfTreeGridColumnCollection(b);
+        columncollection.width;
+        columncollection.measureColumnsWidth();
+        ganttObj.pdfExportModule.gantt.allowRowBreakAcrossPages = false;
+        let pdfPage =ganttObj.pdfExportModule.pdfPage.graphics;
+        let bounds= {height:550,width:82,x:0.5,y:0.5};
+        ganttObj.pdfExportModule.helper['row'].treegrid.allowRowBreakAcrossPages = false;
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).remainingString = '';
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0)['draw'](pdfPage,bounds,false,0);
+        ganttObj.pdfExportModule.helper['row'].cells.add(undefined);
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).columnSpan = 0;
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).rowSpan = 0;
+       // ganttObj.pdfExportModule.helper['row']['measureHeight']();
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).finishedDrawingCell = false;
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).remainingString = '';
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).measureHeight();
+        let rowCell: PdfTreeGridCell= new PdfTreeGridCell(ganttObj.pdfExportModule.helper['row']);
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).finishedDrawingCell = false;
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).remainingString = '';
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0)['draw'](pdfPage,bounds,false,0);
+        d['startLocation'] = new PointF(0.5,0.5);
+        d['checkBounds'](format);
+        d.treegrid.allowRowBreakAcrossPages = false;
+        d['currentPageBounds'] = { height: 480, width: 700 };
+        ganttObj.pdfExportModule.helper['row'].height = 500;
+        let cols = new PdfTreeGridColumnCollection(b);
+        cols.add(6);
+        let string: PdfStringFormat = new PdfStringFormat();
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).style.format = string;
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).columnSpan = 4;
+        cols.getColumn(0).format.lineSpacing = 10;
+        d.treegrid.columns = cols;
+        d['currentGraphics'] = pdfPage;
+        d['cellStartIndex'] = 0;
+        d['cellEndIndex'] = 2;
+        d['drawRow'](ganttObj.pdfExportModule.helper['row'], undefined, 600);
+        ganttObj.pdfExportModule.helper['row'].height = 100;
+        d['repeatRowIndex'] = 3;
+        d['drawRow'](ganttObj.pdfExportModule.helper['row'], undefined, 100);
+        const result: RowLayoutResult = new RowLayoutResult();
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).value = null;
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).remainingString = null;
+        d['drawRowWithBreak'](result,ganttObj.pdfExportModule.helper['row'],29.73913043478261);
+        const lay: TemporaryDictionary<PdfPage, number[]> = new TemporaryDictionary();
+        d['currentPage'] = ganttObj.pdfExportModule.pdfPage;
+        lay.add(ganttObj.pdfExportModule.pdfPage, [0,1]);
+        d['reArrangePages'](lay);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('render timeline in year mode', () => {
+    let ganttObj: Gantt;
+    var projectNewData = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, Predecessor: "4FS+2",TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "5",
+                    Indicators: [
+                        {
+                            'date': '04/10/2019',
+                            'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                            'name': 'Indicator title',
+                            'tooltip': 'tooltip'
+                        }
+                    ]
+                },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectNewData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'm/d/yy', type: 'date' },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    bottomTier: {
+                        unit: 'Year',
+                        count: 1
+                    }
+                },
+                eventMarkers: [
+                    {
+                        day: '04/10/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                searchSettings: { fields: ['TaskName', 'Duration']
+                },
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('render year in timeline', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt PDF Export with column header template with fittowidth', () => {
+    let ganttObj: Gantt;
+    let i: number = 0;
+    let pdfColumnHeaderQueryCellInfo = (args: any) => {
+        let base64Array: Object[] = [
+            { 'TaskName': '/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/9sAQwEDAwMEAwQIBAQIEAsJCxAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ/8AAEQgAIAAgAwERAAIRAQMRAf/EABgAAQEBAQEAAAAAAAAAAAAAAAYIAAcF/8QALBAAAQQCAgEDAwIHAAAAAAAAAQIDBAUGBxESAAgTIRQVQRYxFzhXdpa01f/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwB7gessOlaiw2zpdS4Ld2cqngOyl2rLbHcqjpLiy6IzylL7/gp/J+RxwQQt68w6mewu7XrfEKC+azXGuiqiO2r2ybqKnhD3stLVy2TyOg/cj5A5IXr4G8Cf9+aD0XT6K2Nb1GlsEgz4OJW8mLKjY5DaeYdRDdUhxC0thSVJUAQoEEEAjwNW2XoFprGLb1E/QEGdBeRJiyoztK08w6hQUhxC0kFKkqAIUCCCAR4CDD9sbV2RWSso19r3BrDGza2NfWWEnOH21T2Yst2MJKUs1ryAhwslSeHFfBHyRwSHnW26tv12qpO5Ier8GtMdYoVZI2qJm01L0iCGPfC0IeqEcKLfyErKT+DwfjwFvqO/l62h/Zl3/oveB0TwJTe2FRYxX5RqrLrj065HUuZRdzXIOQ7GRHc6yLV+YlmVDcgPJS6044AQVHhTY/I58Ao3lmJUeibfRWBZH6bKCFbUL1K7PTtRpTrzjsQRlzJCWqxoPyFISkqWepUQOfj48Ctdj4j/ABA15lGB/cPoP1JSzaj6v2vd+n+oYW17nTsnv1789ew5445H7+Ad+x+oX+qGu/8AA53/AGPA5drHb+D4rru/xSy3nrPG86i5hkwnOXDjbTIkG9lrU4qCqY271W0R0BfJSFI5UvqQQKWW5cOT6NMhxTZO+9d5Fl72ByIYjQrmM9LMo1oQll0iXIMuSH+3Z9BSlaiFBCeOSH//2Q==' },
+            { 'StartDate': '/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/9sAQwEDAwMEAwQIBAQIEAsJCxAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ/8AAEQgAIAAgAwERAAIRAQMRAf/EABcAAQEBAQAAAAAAAAAAAAAAAAcABgX/xAAzEAAABAQDBwEGBwAAAAAAAAABAgMEBQYHEQgSEwAUFRYYITI0IiQxMzVCN0NRVWaCg//EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAGBEBAQEBAQAAAAAAAAAAAAAAABEBIUH/2gAMAwEAAhEDEQA/AG2t2PafKP4qHFI3sLlRGR4bE4QlEIi4Yu1XqLJdBsq5UAU1spjEKqoJQBIfEoZTD8QCJcxxTdhwp3JlI6RxCQ5yYQmGOVYjEVYbE8oPVoi8VFNMVRanEoInbjcUvIxwAw27BTHjim7EfTuc6R1ciEhyawi0MbKw6IpQ2J5ReoxFmqCagpC6OBRRI4G4JeRSAJgv3B3ojj2nysGKhvSNlC5UWkeJROLpQ+It2LtJ6syQQcqtlBFRbKUxypJiYBSDyMGUo/AOtP7GoFVcRtTZRkWjGHiLcm8F3qKTvLi68Qd72wIoTMslm1MmmcgXAtigmAXsO1lSwYwJKqEwV0mLD8yw54TiTFLMNJFXblWUHAMjpHK2MAJnC5xNZ2n2EgB2N37BdCqOpVQl+uku4fnuHPCceYpmhp4q0cpSg4FkRIhXJhBQ42OBrNFOwEEO5e/cbIUnSAxqBSrEbTKUZ6oxh4hPOXGt1ikkS4uhEGm6MDqHyrK5dPPqEINgNcoqANrhskLWameB0/jWL2uPPWIuYaV6PLO68Jm5CB8SvCy58+qA62nYlreOqN/INmGiCT5cpetjBnmEvcV00w2XUIAio0ndKem6L2Jq5GN2ykQEMixQEygaYBcN3KH5Y7PTxThLlL0cYMjQlliummJS6vAFlHc7qz03WewxXI+s2TiABkRKIlTDTELjvBg/MDZ6eF+WIHT+C4vaHci4i5hqprczb1xabkI5w20LNkyaQBo6lz3v5aQW8R2aYz1VOkrq9rP1Sfx3gX1P9rJvPof8PP8Ar92zDQxLHQ71NzbzJ+EHBkuAfV/X5Gefw968t8+Z7P6fZs4dUz9DvU3KXLf4QcGV4/8AV/X5HmTz968tz+X7P6/fs4dM9K+krq9ox0t/yLjv1P8Aaz7t67/fw/t9uzTH/9k=' },
+            { 'Progress': '/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/9sAQwEDAwMEAwQIBAQIEAsJCxAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ/8AAEQgAIAAgAwERAAIRAQMRAf/EABoAAAICAwAAAAAAAAAAAAAAAAAIAwUGBwn/xAArEAAABQIEBQQDAQAAAAAAAAABAgQFBgMHABESFAgTFSEiFhcxMiQzYWL/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A6p4AwBgDAK3BuMx4n0rYrftUSgyaWSFuTuiVlVyt1LWLRroSria6pGUycDbYwHEAqjl9ft2wELJxwJ5HEJLPGZJbtQxRDZ9aV+pXwm13dUaSfwMwgc+o5RDwKbL5HIO+Ay6N8Q85l8QaZ5HYpbtWxPnP2Cv1g7U+dyao0qvgdkA5cjlEPIoZ5ZhmHfATzm+d2YC0vrm62ygympHm5Q6KkaSarjVjUaFA1c+gTtBaYm5ZREAE4Z/Hz2wC92j4bLmQW9EOvm+W2nNRwjrCgaVLIkpsFSieonZCNgmIrM8FMJREnNDOiA99P+sBUQng6m8OtDcq1XpO4iv3D6N+f02PU9jsFRq/6+ujzderT9iacs/L4wG3bbW5m9vbQxO1XtNcRf6X3/5/Lj1LcblUev8Ar6ybRp16fsOeWfb4wFvdxruZOmWYlY7FTmm4SJhXtKairVsFOiSooQnTAY9QroYwFAT6hyII9sv7gGcwBgDAGA//2Q==' }
+        ]
+        while (i < base64Array.length) {
+            const key = Object.keys(base64Array[i])[0];
+            const value = base64Array[i][key];
+            if (key === args.column.field) {
+                args.headerTemplate.image = [{
+                    base64: value, width: 250, height: 20
+                }];
+                args.headerTemplate.value = args.column.field;
+                args.headerTemplate.fontStyle.fontColor = new PdfColor(255, 0, 0);
+                break;
+            }
+            i++;
+        }
+    }
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: templateData,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                columns: [
+                    { field: 'TaskName', width: 250 },
+                    { field: 'StartDate' },
+                    { field: 'Progress' }
+                ],
+                toolbar: ['PdfExport'],
+                resources: projectResourcestemplate,
+                pdfColumnHeaderQueryCellInfo: pdfColumnHeaderQueryCellInfo,
+                projectStartDate: new Date('03/24/2019'),
+                projectEndDate: new Date('07/06/2019'),
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    it('Export data with column template', () => {
+        ganttObj.pdfExport();
+        let pdfPage =ganttObj.pdfExportModule.pdfPage.graphics;
+        let bounds= {height:550,width:82,x:0.5,y:0.5};
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0).remainingString = '';
+        ganttObj.pdfExportModule.helper['row'].cells.getCell(0)['draw'](pdfPage,bounds,false,0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt PDF Export with column template without height and width to image', () => {
+    let ganttObj: Gantt;
+    function pdfQueryCellInfo(args: PdfQueryCellInfoEventArgs): any {
+        args.image = { height: 40, width: 40, base64: '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' };        
+    }
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coulmntemplate,
+                resources: resourceCollectiontemplate1,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['PdfExport'],
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Left' },
+                    { field: 'TaskName', headerText: 'Task Name', width: '250' },
+                    { field: 'resources', headerText: 'Resources', width: '250' },
+                    { field: 'EmailId', headerText: 'Email ID', width: 180 }
+                ],
+                allowExcelExport: true,
+                pdfQueryCellInfo: pdfQueryCellInfo,
+                allowPdfExport: true,
+                allowSelection: true,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    it('Gantt PDF Export with column template', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with column template without height and width to image', () => {
+    let ganttObj: Gantt;
+    function pdfQueryCellInfo(args: PdfQueryCellInfoEventArgs): any {
+        args.hyperLink = {
+            target: 'mailto:' + 'FullerKing@gmail.com',
+            displayText: 'FullerKing@gmail.com'
+        };
+        }
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coulmntemplate,
+                resources: resourceCollectiontemplate1,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['PdfExport'],
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Left' },
+                    { field: 'TaskName', headerText: 'Task Name', width: '250' },
+                    { field: 'resources', headerText: 'Resources', width: '250' },
+                    { field: 'EmailId', headerText: 'Email ID', width: 180 }
+                ],
+                allowExcelExport: true,
+                pdfQueryCellInfo: pdfQueryCellInfo,
+                allowPdfExport: true,
+                allowSelection: true,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    it('Gantt PDF Export with column template', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with column template', () => {
+    let ganttObj: Gantt;
+    function pdfQueryCellInfo(args: PdfQueryCellInfoEventArgs): any {
+        if (args.column.headerText === 'Resources') {
+            {
+                args.image = { height: 40, width: 40, base64: (args as any).data.taskData.resourcesImage };
+            }
+        }
+        if (args.column.headerText === 'Email ID') {
+            args.hyperLink = {
+                target: 'mailto:' + (args as any).data.taskData.EmailId,
+                displayText: (args as any).data.taskData.EmailId
+            };
+        }
+        if (args.column.field == 'Progress') {
+            if (args.value === 10) {
+                args.style = { backgroundColor: new PdfColor(205, 92, 92) };
+                args.style.borderColor = new PdfColor(205, 92, 92);
+                args.style.fontBrush = new PdfColor(205, 92, 92);
+                args.style.fontStyle = 1;
+                args.style.fontFamily = 0;
+                args.style.fontSize = 12
+            }
+            else if (args.value === 20) {
+                args.style = { borderColor: new PdfColor(205, 92, 92) };
+                args.style.fontColor = new PdfColor(205, 92, 92);
+                args.style.fontStyle = 2;
+                args.style.fontFamily = 1;
+                args.style.fontSize = 12
+            }
+            else if (args.value === 30) {
+                args.style = { fontBrush: new PdfColor(205, 92, 92) };
+                args.style.fontStyle = 4;
+                args.style.fontFamily = 2;
+                args.style.fontSize = 12;
+                args.style.padding.all = 2;
+            }
+            else if (args.value === 40) {
+                args.style = { backgroundColor: new PdfColor(205, 92, 92) };
+                args.style.fontStyle = 8;
+                args.style.fontFamily = 3;
+                args.style.fontSize = 12
+            }
+            else {
+                args.style = { backgroundColor: new PdfColor(205, 92, 92) };
+                args.style.fontStyle = 0;
+                args.style.fontFamily = 4;
+            }
+        }
+    }
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coulmntemplate,
+                resources: resourceCollectiontemplate1,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['PdfExport'],
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Left' },
+                    { field: 'TaskName', headerText: 'Task Name', width: '250' },
+                    { field: 'resources', headerText: 'Resources', width: '250', template: '#columnTemplate' },
+                    { field: 'EmailId', headerText: 'Email ID', template: '#template2', width: 180 }
+                ],
+                allowExcelExport: true,
+                pdfQueryCellInfo: pdfQueryCellInfo,
+                allowPdfExport: true,
+                allowSelection: true,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    it('Gantt PDF Export with column template', () => {
+        let exportProperties: PdfExportProperties = {
+            pageSize : 'B1'
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
 describe('Gantt PDF Export for baseline task', () => {
     let ganttObj: Gantt;
     let datasource: Object[]=  [
@@ -6029,7 +11538,6 @@ describe('Gantt PDF Export for baseline task', () => {
                 },
                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
                 'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
-            
                 toolbarClick: (args?: ClickEventArgs) => {
                     if (args.item.id === 'ganttContainer_excelexport') {
                         ganttObj.excelExport();
@@ -6042,6 +11550,96 @@ describe('Gantt PDF Export for baseline task', () => {
                             }       
                         };
                         ganttObj.pdfExport(exportProperties);
+                    }
+                },
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                allowResizing: true,
+                readOnly: false,
+                height: '550px',
+              //  connectorLineBackground: "red",
+              //  connectorLineWidth: 3,
+              projectStartDate:new Date('03/05/2024'),
+              projectEndDate:new Date('10/05/2024'),
+            }, done);
+    });
+    it('Export data with baseline', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export for baseline task', () => {
+    let ganttObj: Gantt;
+    let datasource: Object[]=  [
+        {
+            TaskId: 1, TaskName: 'Receive vehicle and create job card', BaselineStartDate: new Date('03/05/2024 10:00:00 AM'),
+            BaselineEndDate: new Date('12/05/2024 10:00:00 AM'), StartDate: new Date('03/05/2024 10:00:00 AM'),
+            EndDate: new Date('06/05/2024 10:00:00 AM')
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: datasource,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    progress: 'Progress',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    child: 'subtasks'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+                'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+
+                toolbarClick: (args?: ClickEventArgs) => {
+                    if (args.item.id === 'ganttContainer_excelexport') {
+                        ganttObj.excelExport();
+                    } else if (args.item.id === 'ganttContainer_csvexport') {
+                        ganttObj.csvExport();
+                    } else if (args.item.id === 'ganttContainer_pdfexport') {
+                        ganttObj.pdfExport();
                     }
                 },
                 pdfExportComplete: (args: any) => {
@@ -6323,6 +11921,133 @@ describe('Gantt PDF Export  getting console error', () => {
             }, done);
     });
     it('Export data with custom font', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export  getting console error', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: overviewData,
+        resources: editingResources,
+        height: '500px',
+        width: "100%",
+        highlightWeekends: true,
+        allowSelection: true,
+        allowSorting: true,
+        treeColumnIndex: 1,
+        viewType: 'ProjectView',
+        taskFields: {
+            id: 'TaskId',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'TimeLog',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            parentID: 'ParentId',
+            resourceInfo: 'Assignee'
+        },
+        resourceFields: {
+            id: 'resourceId',
+            name: 'resourceName',
+        },
+        columns: [
+            { field: 'TaskId', width: 60, visible: false },
+            { field: 'TaskName', width: 200, headerText: 'Product Release' },
+            { field: 'Assignee', width: 130, allowSorting: false, headerText: 'Assignee', template: '#columnTemplate' },
+            // { field: 'Status', minWidth: 100, width: 120, headerText: 'Status', template: '#columnTemplate1' },
+            // { field: 'Priority', minWidth: 80, width: 100, headerText: 'Priority', template: '#columnTemplate2' },
+            { field: 'Work', width: 120, headerText: 'Planned Hours' },
+            { field: 'TimeLog', width: 120, headerText: 'Work Log' }
+        ],
+        pdfQueryCellInfo(args) {
+            if (args.column.headerText === 'Assignee' && args.data.taskData.resourcesImage) {
+                {
+                    args.image = { height:30,width:30, base64: args.data.taskData.resourcesImage };
+                }
+            }
+        },
+        toolbar: ['ExpandAll', 'CollapseAll', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: true
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Vertical",
+        showColumnMenu: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Month',
+                format: 'MMM yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 4,
+                format: 'dd'
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/04/2024',
+                cssClass: 'e-custom-event-marker',
+                label: 'Q-1 Release'
+            },
+            {
+                day: '06/30/2024',
+                cssClass: 'e-custom-event-marker',
+                label: 'Q-2 Release'
+            },
+            {
+                day: '09/29/2024',
+                cssClass: 'e-custom-event-marker',
+                label: 'Q-3 Release'
+            }
+        ],
+        holidays: [{
+            from: "01/01/2024",
+            to: "01/01/2024",
+            label: "New Year holiday",
+            cssClass: "e-custom-holiday"
+        },
+        {
+            from: "12/25/2023",
+            to: "12/26/2023",
+            label: "Christmas holidays",
+            cssClass: "e-custom-holiday"
+        }],
+        labelSettings: {
+            rightLabel: 'Assignee',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        taskbarHeight: 24,
+        rowHeight: 36,
+        projectStartDate: new Date('12/17/2023'),
+        projectEndDate: new Date('10/26/2024'),
+
+            }, done);
+    });
+    it('Export data with image', () => {
         ganttObj.pdfExport();
     });
     afterAll(() => {

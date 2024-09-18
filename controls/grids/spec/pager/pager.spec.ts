@@ -697,4 +697,41 @@ describe('Pager base module', () => {
             pagerObj = pagerElements = elem = null;
         });
     });
+
+    describe('pager onproperty changed', () => {
+        let pagerObj: Pager;
+        let elem: HTMLElement = createElement('div', { id: 'Pager' });
+        beforeAll((done: Function) => {
+            let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            pagerObj = new Pager(
+                {
+                    totalRecordsCount: 100, currentPage: 8, pageCount: 5, pageSize: 5,
+                    enablePagerMessage: true, enableExternalMessage: true, externalMessage: 'externalMessage',
+                    enableRtl: true, customText: 'sheet', cssClass: 'e- custom',
+                    created: created
+                });
+            pagerObj.appendTo('#Pager');
+        });
+
+        it('check the addEventListener Binding', () => {
+            pagerObj.isDestroyed = true;
+            (pagerObj as any).addListener();
+            (pagerObj as any).removeListener();
+            pagerObj.isDestroyed = false;
+            pagerObj.setPagerContainerFocus();
+        });
+
+
+        it('check the isReactTemplate ', () => {
+            pagerObj.isVue = true;
+            pagerObj.template = '<span>Template</span>';
+        });
+
+        afterAll(() => {
+            pagerObj.destroy();
+            elem.remove();
+            pagerObj = elem = null;
+        });
+    });
 });

@@ -1,0 +1,39 @@
+@include export-module('h-scroll-bigger') {
+  .e-bigger #{&}.e-hscroll,
+  #{&}.e-hscroll.e-bigger {
+    min-height: $hscroll-nav-bgr-minheight;
+
+    &:not(.e-scroll-device) {
+      padding: $hscroll-bgr-padding;
+    }
+
+    &.e-scroll-device {
+      padding-right: $hscroll-nav-bgr-width;
+    }
+
+    &.e-rtl.e-scroll-device {
+      padding-left: $hscroll-nav-bgr-width;
+      padding-right: initial;
+    }
+
+    .e-nav-arrow.e-icons {
+      font-size: $hscroll-device-arrow-size-bigger;
+    }
+
+    &.e-rtl .e-scroll-overlay.e-scroll-right-overlay {
+      left: $hscroll-nav-bgr-width;
+    }
+
+    .e-scroll-overlay {
+
+      &.e-scroll-right-overlay {
+        right: $hscroll-nav-bgr-width;
+      }
+    }
+
+    .e-scroll-nav {
+      min-height: $hscroll-nav-bgr-minheight;
+      width: $hscroll-nav-bgr-width;
+    }
+  }
+}

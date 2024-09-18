@@ -1,5 +1,5 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { PdfRenderer } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { AccessibilityTags } from './index';import { FormFields } from './index';import { FormDesigner } from './index';import { Print, CalibrationUnit } from './index';import { PageOrganizer } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs, PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { CustomContextMenuSelectEventArgs, CustomContextMenuBeforeOpenEventArgs } from './index';import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect, Point, Size } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs, KeyboardCustomCommandsEventArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs, SignatureUnselectEventArgs } from './base';import { IFormField, IFormFieldBound } from './form-designer/form-designer';import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
-import {IAjaxHeaders} from "./pdfviewer";
+import {IAjaxHeaders,IPdfRectBounds} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -210,6 +210,11 @@ export interface SignatureFieldSettingsModel {
      */
     customData?: object;
 
+    /**
+     * Allows setting the font name for typed signatures at specific indices. The maximum number of font names is limited to 4, so the key values should range from 0 to 3.
+     */
+    typeSignatureFonts?: { [key: number]: string };
+
 }
 
 /**
@@ -281,6 +286,11 @@ export interface InitialFieldSettingsModel {
      * specifies the custom data of the form fields.
      */
     customData?: object;
+
+    /**
+     * Allows setting the font name for typed initials at specific indices. The maximum number of font names is limited to 4, so the key values should range from 0 to 3.
+     */
+    typeInitialFonts?: { [key: number]: string };
 
 }
 
@@ -409,6 +419,11 @@ export interface ServerActionSettingsModel {
      * specifies the export action of PdfViewer.
      */
     renderTexts?: string;
+
+    /**
+     * Specifies the password validation action of PDF Viewer.
+     */
+    validatePassword?: string;
 
 }
 
@@ -2388,6 +2403,41 @@ export interface HandWrittenSignatureSettingsModel {
      */
     initialDialogSettings?: SignatureDialogSettingsModel;
 
+    /**
+     * Gets or sets the signature offset.
+     *
+     * @default {x:0,y:0}
+     */
+    offset?: IPoint;
+
+    /**
+     * Gets or sets the signature page number.
+     *
+     * @default 1
+     */
+    pageNumber?: number;
+
+    /**
+     * Gets or sets the path of the signature.
+     *
+     * @default ''
+     */
+    path?: string;
+
+    /**
+     * Gets or sets the font family for text signature.
+     *
+     * @default 'Helvetica'
+     */
+    fontFamily?: string;
+
+    /**
+     * Allows saving of programmatically added signatures.
+     *
+     * @default false
+     */
+    canSave?: boolean;
+
 }
 
 /**
@@ -3557,6 +3607,28 @@ export interface PageOrganizerSettingsModel {
      */
     canRearrange?: boolean;
 
+    /**
+     * Specifies whether the other PDF document can be imported.
+     */
+    canImport?: boolean;
+
+}
+
+/**
+ * Interface for a class SearchResult
+ */
+export interface SearchResultModel {
+
+    /**
+     * Returns the page index of the search text.
+     */
+    pageIndex?: number;
+
+    /**
+     * Returns the bounds of the search text.
+     */
+    bounds?: IPdfRectBounds[];
+
 }
 
 /**
@@ -3582,12 +3654,13 @@ export interface PdfViewerModel extends ComponentModel{
     pageCount?: number;
 
     /**
-     * gets the printScaleRatio value of the document loaded in the PdfViewer control.
+     *Specifies the document printing quality. The default printing quality is set to 1.0. This limit varies from 0.5 to 5.0. If an invalid value is specified, the default value of 1.0 will be used. For documents with smaller page dimensions, a higher print quality is recommended.
      *
-     * @private
-     * @default 1
+     *{% codeBlock src='pdfviewer/printScaleFactor/index.md' %}{% endBlock %}
+     *
+     * @default 1.0
      */
-    printScaleRatio?: number;
+    printScaleFactor?: number;
 
     /**
      * Checks whether the PDF document is edited.

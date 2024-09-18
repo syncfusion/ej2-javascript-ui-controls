@@ -1,6 +1,6 @@
 import { ChartLocation, ColorValue, RectOption, isCollide, isOverlap, LabelLocation, rotateTextSize } from '../../common/utils/helper';
 import { markerAnimate, appendChildElement, getVisiblePoints } from '../../common/utils/helper';
-import { getLabelText, convertHexToColor, calculateRect, textElement, colorNameToHex } from '../../common/utils/helper';
+import { getLabelText, convertHexToColor, calculateRect, textElement, colorNameToHex, animateTextElement } from '../../common/utils/helper';
 import { Chart } from '../chart';
 import { Size, measureText, TextOption, Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { BorderModel, MarginModel, FontModel } from '../../common/model/base-model';
@@ -19,7 +19,7 @@ import { Axis } from '../../chart/axis/axis';
 import { PolarRadarPanel } from '../axis/polar-radar-panel';
 
 /**
- * `DataLabel` module is used to render data label for the data point.
+ * The `DataLabel` module is used to render data labels for data points.
  */
 export class DataLabel {
 
@@ -130,6 +130,7 @@ export class DataLabel {
      * @param {Chart} chart - The parent chart.
      * @param {DataLabelSettingsModel} dataLabel - The settings for data labels.
      * @returns {void}
+     * @private
      */
     public render(series: Series, chart: Chart, dataLabel: DataLabelSettingsModel): void {
         // initialize the private variable
@@ -284,6 +285,10 @@ export class DataLabel {
                             }
                             const textAnchor: string = dataLabel.labelIntersectAction === 'Rotate90' ? (dataLabel.position === 'Top' ? 'start' : (dataLabel.position === 'Middle' ? 'middle' : 'end')) :
                                 ((angle === -90 && dataLabel.enableRotation) ? (dataLabel.position === 'Top' ? 'end' : (dataLabel.position === 'Middle' ? 'middle' : 'start')) : 'middle');
+                            let oldText: string;
+                            if (this.chart.redraw && document.getElementById(this.commonId + point.index + '_Text_' + i)) {
+                                oldText = document.getElementById(this.commonId + point.index + '_Text_' + i).textContent;
+                            }
                             dataLabelElement.push(textElement(
                                 this.chart.renderer,
                                 new TextOption(
@@ -291,14 +296,19 @@ export class DataLabel {
                                     xPos, yPos,
                                     textAnchor, argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree
                                 ),
-                                argsData.font, argsData.font.color ||
-                            ((contrast >= 128 || series.type === 'Hilo' || series.type === 'HiloOpenClose') ? 'black' : 'white'),
+                                argsData.font, argsData.font.color || (this.chart.theme === 'Bootstrap5' ? '#212529' : this.chart.theme === 'Bootstrap5Dark' ? '#DEE2E6' :
+                                    ((contrast >= 128 || series.type === 'Hilo' || series.type === 'HiloOpenClose') ? 'black' : 'white')),
                                 series.textElement, false, this.chart.redraw, true, false, series.chart.duration, series.clipRect, null,
                                 null, this.chart.enableCanvas, null, this.chart.themeStyle.datalabelFont, new ChartLocation(xValue, yValue)
                             ));
                             if (series.removedPointIndex !== null && series.removedPointIndex <= point.index) {
                                 (series.textElement.lastChild as HTMLElement).id = this.commonId + point.index + '_Text_' + i;
                             }
+                            if (this.chart.redraw && oldText !== argsData.text) {
+                                animateTextElement(series.textElement.querySelector('#' + this.commonId + point.index + '_Text_' + i), this.chart.duration, parseFloat(oldText), parseFloat(argsData.text), series.marker.dataLabel.format || series.yAxis.labelFormat);
+                            }
+                        } else if (getElement(this.commonId + point.index + '_Text_0') && series.chart.redraw && series.currentData) {
+                            getElement(this.commonId + point.index + '_Text_0').remove();
                         }
                     }
                 }
@@ -384,8 +394,8 @@ export class DataLabel {
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(backgroundColor));
         const vAxis: Axis = series.chart.requireInvertedAxis ? series.xAxis : series.yAxis;
         const hAxis: Axis = series.chart.requireInvertedAxis ? series.yAxis : series.xAxis;
-        childElement.style.color = dataLabel.font.color ||
-            ((Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000)) >= 128 ? 'black' : 'white');
+        childElement.style.color = dataLabel.font.color || (this.chart.theme === 'Bootstrap5' ? '#212529' : this.chart.theme === 'Bootstrap5Dark' ? '#DEE2E6' :
+            ((Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000)) >= 128 ? 'black' : 'white'));
         if (childElement.childElementCount && !isOverlap && (!isCollide(rect, this.chart.dataLabelCollections, clip) ||
             dataLabel.labelIntersectAction === 'None') && (series.seriesType !== 'XY' || point.yValue === undefined ||
                 withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('Stacking') > -1) ||
@@ -634,7 +644,8 @@ export class DataLabel {
             break;
         default:
             this.extraSpace += this.errorHeight;
-            labelLocation = this.calculateTopAndOuterPosition(labelLocation, rect, position, series, labelIndex, this.extraSpace, isMinus, point);
+            labelLocation = this.calculateTopAndOuterPosition(labelLocation, rect,
+                                                              position, series, labelIndex, this.extraSpace, isMinus, point);
 
             break;
         }
@@ -903,6 +914,7 @@ export class DataLabel {
      * @param {Series} series - The series associated with the data labels.
      * @param {Element} [element] - The element to animate.
      * @returns {void}
+     * @private
      */
     public doDataLabelAnimation(series: Series, element?: Element): void {
         const shapeElements: NodeList = series.shapeElement.childNodes;

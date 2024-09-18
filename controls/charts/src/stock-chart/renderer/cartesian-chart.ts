@@ -183,7 +183,7 @@ export class CartesianChart {
                 chartSeries[i as number].dataSource = (series[i as number] as StockSeries).localData;
             }
             chartSeries[i as number].yName = series[i as number].yName === '' ? series[i as number].close :  series[i as number].yName;
-            chartSeries[i as number].splineType = 'Cardinal';
+            chartSeries[i as number].splineType = chartSeries[i as number].type === 'Spline' ? 'Cardinal' : 'Natural';
         }
         return chartSeries;
     }

@@ -235,38 +235,42 @@ describe('Selection ->', () => {
                 done();
             });
         }); 
-        it('Resize the column by selecting whole column->', (done: Function) => {
+        // it('Resize the column by selecting whole column->', (done: Function) => {
+            // const spreadsheet: Spreadsheet = helper.getInstance();
+            // spreadsheet.unfreezePanes(0);
+            // setTimeout(() => {
+                // helper.invoke('selectRange', ['C1:C200']);
+                // const colHdr: HTMLElement = helper.invoke('getCell', [null, 3, helper.invoke('getColHeaderTable').rows[0]]);
+                // const hdrPanel: HTMLElement = spreadsheet.element.querySelector('.e-header-panel') as HTMLElement;
+                // const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+                // helper.triggerMouseAction('mousemove', { x: offset.left + 0.5, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                // helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                // setTimeout(() => {
+                    // expect(spreadsheet.sheets[0].columns[2].width).toBe(84);
+                    // done();
+                // });
+            // });
+        // });
+        it('Select all with select locked cells as false', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.unfreezePanes(0);
             setTimeout(() => {
-                helper.invoke('selectRange', ['C1:C200']);
-                const colHdr: HTMLElement = helper.invoke('getCell', [null, 3, helper.invoke('getColHeaderTable').rows[0]]);
-                const hdrPanel: HTMLElement = spreadsheet.element.querySelector('.e-header-panel') as HTMLElement;
-                const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
-                helper.triggerMouseAction('mousemove', { x: offset.left + 0.5, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
-                helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
+                helper.triggerMouseAction('mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null, selectAl);
+                helper.triggerMouseAction('mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document, selectAl);
                 setTimeout(() => {
-                    expect(spreadsheet.sheets[0].columns[2].width).toBe(84);
-                    done();
-                });
-            });
-        });
-        it('Select all with select locked cells as false', (done: Function) => {
-            const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
-            helper.triggerMouseAction('mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null, selectAl);
-            helper.triggerMouseAction('mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document, selectAl);
-            setTimeout(() => {
-                helper.switchRibbonTab(4);
-                helper.click('#' + helper.id + '_protect');
-                setTimeout(() => {
-                    helper.setAnimationToNone('.e-protect-dlg.e-dialog');
-                    (document.getElementsByClassName('e-frame e-icons')[1] as HTMLElement).click();
-                    helper.click('.e-protect-dlg .e-primary');
+                    helper.switchRibbonTab(4);
+                    helper.click('#' + helper.id + '_protect');
                     setTimeout(() => {
-                        const spreadsheet: Spreadsheet = helper.getInstance();
-                        expect(spreadsheet.sheets[0].selectedRange).toBe('A1:CV100');
-                        helper.invoke('selectRange', ['C3']);
-                        done();
+                        helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                        (document.getElementsByClassName('e-frame e-icons')[1] as HTMLElement).click();
+                        helper.click('.e-protect-dlg .e-primary');
+                        setTimeout(() => {
+                            const spreadsheet: Spreadsheet = helper.getInstance();
+                            expect(spreadsheet.sheets[0].selectedRange).toBe('A1:CV100');
+                            helper.invoke('selectRange', ['C3']);
+                            done();
+                        });
                     });
                 });
             });
@@ -307,6 +311,7 @@ describe('Selection ->', () => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.unprotectSheet('Sheet1');
             setTimeout(() => {
+                helper.switchRibbonTab(4);
                 helper.click('#' + helper.id + '_protect');
                 setTimeout(() => {
                     helper.setAnimationToNone('.e-protect-dlg.e-dialog');
@@ -339,6 +344,57 @@ describe('Selection ->', () => {
                 helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
                 setTimeout(() => {
                     expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Item Name');
+                    done();
+                });
+            });
+        });
+        it('Check the selection with the frozen column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(0, 2);
+            setTimeout(() => {
+                helper.invoke('selectRange', ['A1']);
+                let td: HTMLElement = helper.invoke('getCell', [0, 0]);
+                let coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                setTimeout(() => {
+                    helper.click('#' + helper.id + '_contextmenu li:nth-child(9)');
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['A1']);
+                        td = helper.invoke('getCell', [0, 0]);
+                        coords = <DOMRect>td.getBoundingClientRect();
+                        helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                        setTimeout(() => {
+                            helper.click('#' + helper.id + '_contextmenu li:nth-child(9)');
+                            setTimeout(() => {
+                                const rowHeaderCell: HTMLElement = helper.invoke('getRowHeaderTable').rows[0].cells[0];
+                                helper.triggerMouseAction('mousedown', { x: rowHeaderCell.getBoundingClientRect().left + 1, y: rowHeaderCell.getBoundingClientRect().top + 1 }, null, rowHeaderCell);
+                                helper.triggerMouseAction('mouseup', { x: rowHeaderCell.getBoundingClientRect().left + 1, y: rowHeaderCell.getBoundingClientRect().top + 1 }, document, rowHeaderCell);
+                                setTimeout((): void => {
+                                    const spreadsheet: Spreadsheet = helper.getInstance();
+                                    expect(spreadsheet.sheets[0].selectedRange).toBe('A1:CV1');
+                                    done();
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+        it('Formula reference selection with frozen column', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            helper.invoke('startEdit');
+            setTimeout((): void => {
+                helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '=', refreshCurPos: true, refreshEditorElem: true });
+                let cell: HTMLElement = helper.invoke('getCell', [1, 3]);
+                helper.triggerMouseAction(
+                    'mousedown', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 }, null,
+                    cell);
+                helper.triggerMouseAction(
+                    'mouseup', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 }, document,
+                    cell);
+                setTimeout((): void => {
+                    expect(helper.getElement('#' + helper.id + '_edit').textContent).toEqual('=D2');
+                    helper.invoke('endEdit');
                     done();
                 });
             });

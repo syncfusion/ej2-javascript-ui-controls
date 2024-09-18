@@ -24,4 +24,6 @@ $image-editor-save-dlg-big-btn-pad: 0 10px !default;
 $image-editor-save-dlg-grp-btn-padding: 0 12px !default;
 $image-editor-save-dlg-dev-grp-btn-padding: 0 15px !default;
 $image-editor-icon-button: 3px !default;
-$image-editor-filter-canvas-focus: 1px solid $gray-25 !default;
+$image-editor-filter-canvas-focus: $gray-25 !default;
+$image-editor-button-label-mobile: 9px !default;
+$image-editor-button-width-mobile: calc(65% - 30px) !default;

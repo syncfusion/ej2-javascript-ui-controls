@@ -918,7 +918,15 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
-    private setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
+    /**
+     * Sets the tab index for the specified elements.
+     *
+     * @param {HTMLElement} previousElement - The previous element whose tab index needs to be removed.
+     * @param {HTMLElement} currentElement - The current element to which the tab index needs to be set.
+     * @returns {void}
+     * @private
+     */
+    public setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
         if (previousElement) {
             previousElement.removeAttribute('tabindex');
         }
@@ -927,7 +935,15 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
-    private getActualIndex(index: number, totalLength: number): number {
+    /**
+     * Gets the actual index based on the provided index and the total length.
+     *
+     * @param {number} index - The provided index.
+     * @param {number} totalLength - The total length of the collection.
+     * @returns {number} - The actual index, ensuring it is within the valid range.
+     * @private
+     */
+    public getActualIndex(index: number, totalLength: number): number {
         return index > totalLength - 1 ? 0 : (index < 0 ? totalLength - 1 : index);
     }
 

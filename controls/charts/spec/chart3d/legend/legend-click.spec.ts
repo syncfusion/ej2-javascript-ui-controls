@@ -649,6 +649,31 @@ describe('3DChart Control Selection ', () => {
         chartObj.selectionPattern = 'HorizontalStripe';
         chartObj.refresh();
     });
+    it('checking with keyboard navigation', (done: Function) => {
+        loaded = () => {
+            if (!enterKeyUpTriggered) {
+                enterKeyUpTriggered = true;
+                element = document.getElementById(id + '_chart' + '_legend_g_1');
+                trigger.keyboardEvent('keyup', element, 'ArrowLeft', 'ArrowLeft');
+                trigger.keyboardEvent('keyup', element, 'ArrowRight', 'ArrowRight');
+                trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                expect(element !== null).toBe(true);
+            }
+            done();
+        };
+        let enterKeyUpTriggered: boolean = false;
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
+    it('memory leak', () => {
+        profile.sample();
+        const average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        const memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
     it('memory leak', () => {
         profile.sample();
         const average: any = inMB(profile.averageChange);

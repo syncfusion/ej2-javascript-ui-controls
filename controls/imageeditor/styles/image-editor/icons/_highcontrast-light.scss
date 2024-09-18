@@ -92,10 +92,19 @@
       }
     }
 
-    & .e-fill.e-template {
+    & .e-fill.e-template,
+    & .e-text-background-color.e-template {
       & .e-caret {
         &::before {
           content: '\e35c';
+        }
+      }
+    }
+
+    & .e-stroke-text-font-color.e-template {
+      & .e-caret {
+        &::before {
+          content: '\e9da';
         }
       }
     }

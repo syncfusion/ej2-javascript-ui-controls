@@ -10,7 +10,7 @@ import { Axis } from '../axis/axis';
 import { DragSettingsModel } from '../../common/model/base-model';
 
 /**
- * `DataEditing` module handles data editing.
+ * The `DataEditing` module handles data editing functionalities for chart series.
  */
 export class DataEditing {
     private chart: Chart;
@@ -35,6 +35,7 @@ export class DataEditing {
      * Point drag start here.
      *
      * @returns {void}
+     * @private
      */
     public pointMouseDown(): void {
         const chart: Chart = this.chart;
@@ -63,6 +64,7 @@ export class DataEditing {
      *
      * @param {PointerEvent | TouchEvent} event - The pointer event or touch event.
      * @returns {void}
+     * @private
      */
     public pointMouseMove(event: PointerEvent | TouchEvent): void {
         const chart: Chart = this.chart;
@@ -148,6 +150,7 @@ export class DataEditing {
                 seriesIndex: si, pointIndex: pi, series: series, point: series.points[pi as number],
                 oldValue: chart.visibleSeries[this.seriesIndex].yData[this.pointIndex], newValue: series.points[pi as number].yValue
             });
+            chart.zoomRedraw = false;
         }
     }
 
@@ -155,6 +158,7 @@ export class DataEditing {
      * Point drag ends here.
      *
      * @returns {void}
+     * @private
      */
     public pointMouseUp(): void {
         const chart: Chart = this.chart;

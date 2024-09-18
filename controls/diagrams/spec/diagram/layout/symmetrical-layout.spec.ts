@@ -16,6 +16,13 @@ let connectors: ConnectorModel[] = [];
 /**
  * Connection between nodes
  */
+function getNodeDefaults(node: NodeModel){
+    node.height = 35;
+    node.width = 35;
+    node.style.fill = '#ff6329';
+    node.shape.type = 'Basic';
+    (node.shape as BasicShapeModel).shape = 'Ellipse';
+}
 export function ConnectNodes(parentNode: NodeModel, childNode: NodeModel): ConnectorModel {
     let connector: ConnectorModel = {
         id: parentNode.id + childNode.id,
@@ -195,6 +202,63 @@ describe('Diagram Control', () => {
 
         it('Checking group node at layout', (done: Function) => {
             expect(diagram.nameTable['group'].offsetX == 600 && diagram.nameTable['group'].offsetY == 160).toBe(true);
+            done();
+        });
+    });
+    describe('Tree Layout', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '1200px', height: '580px',
+                layout: { type: 'SymmetricalLayout', springLength: 60.69145326979739, springFactor: 0.8, maxIteration: 500 },
+                    nodes: [], connectors:[], getNodeDefaults: getNodeDefaults,
+                });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking SymmetricalLayout without node', (done: Function) => {
+            let smtLayout: SymmetricLayout = new SymmetricLayout();
+            smtLayout.springLength = 100;
+            diagram.layout.springLength = smtLayout.springLength;
+            diagram.dataBind();
+            expect(diagram.nodes.length == 0);
+            done();
+        });
+    });
+    describe('Tree Layout', function () {
+        var diagram: Diagram;
+        var ele: HTMLElement;
+        beforeAll(function () {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            var node1 = { id: 'node1', annotations: [{ content: 'node1' }], };
+            var node2 = { id: 'node2', annotations: [{ content: 'node2' }], };
+            var node3 = { id: 'node3',annotations: [{ content: 'node3' }], };
+            var connector1: ConnectorModel = {id: 'connector1', sourceID:'node1', targetID:'node2',targetDecorator:{shape: 'None'}, type: 'Straight'};
+            var connector2: ConnectorModel = {id: 'connector2', sourceID:'node1', targetID:'node3', targetDecorator:{shape: 'None'}, type: 'Straight'};
+            diagram = new Diagram({
+                width: '1200px', height: '580px',
+                layout: { type: 'SymmetricalLayout', springLength: 60.69145326979739, springFactor: 0.8, maxIteration: 500 },
+                nodes: [node1, node2, node3], connectors:[connector1, connector2], getNodeDefaults: getNodeDefaults,
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(function () {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking SymmetricalLayout springLength same as calculated distance', function (done) {
+            var smtLayout = new SymmetricLayout();
+            smtLayout.springLength = 100;
+            diagram.layout.springLength = smtLayout.springLength;
+            diagram.dataBind();
+            expect(diagram.nodes.length == 3).toBe(true);
             done();
         });
     });

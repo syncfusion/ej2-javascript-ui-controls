@@ -237,8 +237,6 @@ export class ConnectorLine {
                     return 'SFType1';
                 } else if (data.type === 'SS') {
                     return 'SSType2';
-                } else if (data.type === 'FF') {
-                    return 'FFType2';
                 }
             } else if ((data.parentLeft < data.childLeft && (data.childLeft < (data.parentLeft + data.parentWidth)))
                 || (data.parentLeft === data.childLeft || data.parentLeft > data.childLeft)) {
@@ -254,20 +252,11 @@ export class ConnectorLine {
                     if (data.type === 'SF') {
                         return 'SFType1';
                     }
-                    if (data.type === 'FF') {
-                        return 'FFType1';
-                    }
-                } else if ((data.childLeft + data.childWidth) > (data.parentLeft + data.parentWidth)) {
-                    if (data.type === 'FF') {
-                        return 'FFType2';
-                    }
                 }
                 if (data.type === 'FS') {
                     return 'FSType2';
                 } else if (data.type === 'SS') {
                     return 'SSType2';
-                } else if (data.type === 'FF') {
-                    return 'FFType1';
                 } else if (data.type === 'SF') {
                     return 'SFType1';
                 }
@@ -275,8 +264,6 @@ export class ConnectorLine {
 
                 if (data.type === 'FS') {
                     return 'FSType2';
-                } else if (data.type === 'FF') {
-                    return 'FFType2';
                 } else if (data.type === 'SS') {
                     return 'SSType2';
                 } else if (data.type === 'SF') {
@@ -293,7 +280,7 @@ export class ConnectorLine {
                         return 'FSType4';
                     }
                 }
-                if (data.parentLeft < data.childLeft || ((data.childLeft + data.childWidth) > (data.parentLeft + data.parentWidth))) {
+                if (((data.childLeft + data.childWidth) > (data.parentLeft + data.parentWidth))) {
                     if (data.type === 'SS') {
                         return 'SSType4';
                     }
@@ -302,11 +289,6 @@ export class ConnectorLine {
                     }
                     if (data.type === 'SF') {
                         return 'SFType4';
-                    }
-                    // eslint-disable-next-line
-                } else if ((data.childLeft + data.childWidth) > (data.parentLeft + data.parentWidth)) {
-                    if (data.type === 'FF') {
-                        return 'FFType4';
                     }
                 }
             } else if ((data.parentLeft < data.childLeft && (data.childLeft < (data.parentLeft + data.parentWidth)))
@@ -433,11 +415,43 @@ export class ConnectorLine {
         return (data.childLeft - data.parentLeft);
     }
 
-    private getBorderStyles(cssType: string, unit: number): string {
-        const borderWidth: string = 'border-' + cssType + '-width:' + unit + 'px;';
-        const borderStyle: string = 'border-' + cssType + '-style:solid;';
-        const borderColor: string = !isNullOrUndefined(this.lineColor) ? 'border-' + cssType + '-color:' + this.lineColor + ';' : '';
-        return (borderWidth + borderStyle + borderColor);
+    // private getBorderStyles(cssType: string, unit: number): string {
+    //     const borderWidth: string = 'border-' + cssType + '-width:' + unit + 'px;';
+    //     const borderStyle: string = 'border-' + cssType + '-style:solid;';
+    //     const borderColor: string = !isNullOrUndefined(this.lineColor) ? 'border-' + cssType + '-color:' + this.lineColor + ';' : '';
+    //     return (borderWidth + borderStyle + borderColor);
+    // }
+    private calculateAdjustments(rowHeight: number, isMilestone: boolean, type: string): Object {
+        const taskbarHeightValue: number = this.parent.renderBaseline ? 0.45 : ((!isNullOrUndefined(document.body.className) && document.body.className.includes('e-bigger')) ? 0.7 : 0.62);
+        const defaultTaskbarHeight: number = Math.floor(this.parent.rowHeight * taskbarHeightValue);
+        if (((isNullOrUndefined(this.parent.taskbarHeight) && rowHeight <= 36) || (!isNullOrUndefined(this.parent.taskbarHeight) &&
+            this.parent.taskbarHeight <= defaultTaskbarHeight)) || !isMilestone) {
+            return {
+                adjustY1: 0,  // Corresponds to +1
+                adjustX: 0,   // Corresponds to -6
+                adjustY2: 0,   // Corresponds to +1
+                adjustZ: 0
+            };
+        } else {
+            // Calculate adjustments dynamically for rowHeight greater than 36
+            const divisorY1: number = ((type === 'FSType2' || type === 'FSType3' || type === 'FSType4' || type === 'SSType1' || type === 'SSType2' || type === 'SSType4' || type === 'SFType2')) ? 12 : 24;
+            const adjustY1: number = (rowHeight - 36) / divisorY1;
+            const adjustX: number = -(rowHeight - 36) / 4;
+            const adjustZ: number = -2 * (rowHeight - 36) / 24;
+            if (rowHeight <= 36) {
+                return {
+                    adjustY1: 0,
+                    adjustX: 0,
+                    adjustY2: 0,
+                    adjustZ: 0
+                };
+            }
+            return {
+                adjustY1: adjustY1,
+                adjustX: adjustX,
+                adjustZ: adjustZ
+            };
+        }
     }
 
     /**
@@ -560,6 +574,9 @@ export class ConnectorLine {
         }
         if (this.getParentPosition(data)) {
             // Create the group element
+            const type: string = this.getParentPosition(data);
+            const rowHeight1: number = this.parent.rowHeight;
+            const adjustments: Object = this.calculateAdjustments(rowHeight1, isMilestone, type);
             this.transform = this.parent.enableRtl ? `translate(${(this.parent.enableTimelineVirtualization ? this.parent.timelineModule.wholeTimelineWidth : this.parent.timelineModule.totalTimelineWidth)}, 0) scale(-1, 1)` : '';
             this.connectorId = 'ConnectorLine' + data.connectorLineId;
             this.groupObject = this.renderer.createGroup({
@@ -573,7 +590,7 @@ export class ConnectorLine {
                 class: cls.connectorLineSVG,
                 d: this.connectorLinePath,
                 fill: 'transparent',
-                'stroke-width': 1
+                'stroke-width': this.lineStroke
             });
             // Create the path element for the arrow
             this.arrowlinePath = this.renderer.drawPath({
@@ -599,11 +616,11 @@ export class ConnectorLine {
                     this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue));
                 this.y2 = heightValue + this.taskLineValue + borderTopWidth - this.lineStroke;
 
-                this.connectorLinePath = 'M ' + this.x1 + ' ' + (this.y1) + ' L ' + (this.x1 + this.x2) + ' ' + (this.y1) + ' L ' + (this.x1 + this.x2) + ' ' + (this.y1 + this.y2) +
-                    ' L ' + (this.x1 + this.x2 + 12) + ' ' + (this.y1 + this.y2);
-                this.arrowPath = 'M ' + (this.x1 + this.x2 + 20) + ' ' + (this.y1 + this.y2) +
-                    ' L ' + (this.x1 + this.x2 + 12) + ' ' + (this.y1 + this.y2 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x1 + this.x2 + 12) + ' ' + (this.y1 + this.y2 + 4) + ' Z';
+                this.connectorLinePath = 'M ' + this.x1 + ' ' + (this.y1) + ' L ' + ((this.x1 + this.x2) + adjustments['adjustZ']) + ' ' + (this.y1) + ' L ' + ((this.x1 + this.x2) + adjustments['adjustZ']) + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + this.x2 + 12) + adjustments['adjustX']) + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1']);
+                this.arrowPath = 'M ' + ((this.x1 + this.x2 + 20) + adjustments['adjustX']) + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + this.x2 + 12) + adjustments['adjustX']) + ' ' + ((this.y1 + this.y2 - (4 + this.lineStroke)) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + this.x2 + 12) + adjustments['adjustX']) + ' ' + ((this.y1 + this.y2 + 4) + adjustments['adjustY1']) + ' Z';
             }
             if (this.getParentPosition(data) === 'FSType2') {
                 this.x1 = data.parentLeft;
@@ -620,10 +637,10 @@ export class ConnectorLine {
                     (this.y1 + this.y2 - ((this.y1 + this.y2) % data.rowHeight)));
 
                 this.connectorLinePath = 'M ' + (this.x1 + this.x2) + ' ' + (this.y1) + ' ' + ' L ' + (this.x1 + this.x3) + ' ' + (this.y1) + ' L ' + (this.x1 + this.x3) + ' ' + this.y4 +
-                    ' L ' + (this.x1 + this.x4) + ' ' + this.y4 + ' L ' + (this.x1 + this.x4) + ' ' + (this.y1 + this.y2 + this.y3) + ' L ' + (this.x1 + this.x4 + 12) + ' ' + (this.y1 + this.y2 + this.y3);
-                this.arrowPath = 'M ' + (this.x1 + this.x4 + 20) + ' ' + (this.y1 + this.y2 + this.y3) +
-                    ' L ' + (this.x1 + this.x4 + 12) + ' ' + (this.y1 + this.y2 + this.y3 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x1 + this.x4 + 12) + ' ' + (this.y1 + this.y2 + this.y3 + 4 + this.lineStroke) + ' Z';
+                    ' L ' + ((this.x1 + this.x4) + adjustments['adjustZ']) + ' ' + this.y4 + ' L ' + ((this.x1 + this.x4) + adjustments['adjustZ']) + ' ' + ((this.y1 + this.y2 + this.y3) + adjustments['adjustY1']) + ' L ' + ((this.x1 + this.x4 + 12) + adjustments['adjustX']) + ' ' + ((this.y1 + this.y2 + this.y3) + adjustments['adjustY1']);
+                this.arrowPath = 'M ' + ((this.x1 + this.x4 + 20) + adjustments['adjustX']) + ' ' + ((this.y1 + this.y2 + this.y3) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + this.x4 + 12) + adjustments['adjustX']) + ' ' + ((this.y1 + this.y2 + this.y3 - (4 + this.lineStroke)) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + this.x4 + 12) + adjustments['adjustX']) + ' ' + ((this.y1 + this.y2 + this.y3 + 4 + this.lineStroke) + adjustments['adjustY1']) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'FSType3') {
@@ -642,11 +659,11 @@ export class ConnectorLine {
                 this.y3 = this.getconnectorLineGap(data);
                 this.y4 = this.y2 - (this.y2 % data.rowHeight);
 
-                this.connectorLinePath = 'M ' + (this.x1 + 12) + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + this.y4 +
+                this.connectorLinePath = 'M ' + (this.x1 + 12) + ' ' + ((this.y1) + adjustments['adjustY1']) + ' L ' + this.x1 + ' ' + ((this.y1) + adjustments['adjustY1']) + ' L ' + this.x1 + ' ' + this.y4 +
                     ' L ' + (this.x1 + this.x2) + ' ' + this.y4 + ' L ' + (this.x1 + this.x2) + ' ' + (this.y2 + this.y3) + ' L ' + (this.x1 + this.x2 - 12) + ' ' + (this.y2 + this.y3);
-                this.arrowPath = 'M ' + (this.x1 + 20) + ' ' + (this.y1) +
-                    ' L ' + (this.x1 + 12) + ' ' + (this.y1 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x1 + 12) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
+                this.arrowPath = 'M ' + ((this.x1 + 20) + adjustments['adjustX']) + ' ' + ((this.y1) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + 12) + adjustments['adjustX']) + ' ' + ((this.y1 - (4 + this.lineStroke)) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + 12) + adjustments['adjustX']) + ' ' + ((this.y1 + 4 + this.lineStroke) + adjustments['adjustY1']) + ' Z';
 
             }
 
@@ -662,14 +679,15 @@ export class ConnectorLine {
                     (this.parent.renderBaseline ? (data.milestoneChild && !(data.milestoneParent) ? -12 :
                         data.milestoneParent && !(data.milestoneChild) ? 11 : 0) : 0);
 
-                this.connectorLinePath = 'M ' + (this.x1 + this.x2 + 12) + ' ' + (this.y1) + ' L ' + (this.x1 + this.x2) + ' ' + (this.y1) + ' L ' + (this.x1 + this.x2) + ' ' + this.y2 +
+                this.connectorLinePath = 'M ' + (this.x1 + this.x2 + 12) + ' ' + ((this.y1) + adjustments['adjustY1']) + ' L ' + (this.x1 + this.x2) + ' ' + ((this.y1) + adjustments['adjustY1']) + ' L ' + (this.x1 + this.x2) + ' ' + this.y2 +
                     ' L ' + this.x1 + ' ' + this.y2;
-                this.arrowPath = 'M ' + (this.x1 + this.x2 + 20) + ' ' + (this.y1) +
-                    ' L ' + (this.x1 + this.x2 + 12) + ' ' + (this.y1 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x1 + this.x2 + 12) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
+                this.arrowPath = 'M ' + ((this.x1 + this.x2 + 20) + adjustments['adjustX']) + ' ' + ((this.y1) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + this.x2 + 12) + adjustments['adjustX']) + ' ' + ((this.y1 - (4 + this.lineStroke)) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + this.x2 + 12) + adjustments['adjustX']) + ' ' + ((this.y1 + 4 + this.lineStroke) + adjustments['adjustY1']) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'SSType4') {
+                const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 2 : adjustments['adjustX'];
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : 0;
                 this.point1 = heightValue + this.taskLineValue + borderTopWidth;
                 this.point2 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ?
@@ -681,11 +699,11 @@ export class ConnectorLine {
                 this.y2 = this.y1 + this.point1 + (this.parent.renderBaseline ? (data.milestoneParent && !(data.milestoneChild) ? 10 :
                     data.milestoneChild && !(data.milestoneParent) ? -13 : 0) : 0);
 
-                this.connectorLinePath = 'M ' + (this.x1 + this.x2) + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y1) +
+                this.connectorLinePath = 'M ' + ((this.x1 + this.x2) + adjustedX) + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y1) +
                     ' L ' + this.x1 + ' ' + this.y2 + ' L ' + (this.x1 + 10) + ' ' + this.y2;
-                this.arrowPath = 'M ' + (this.x1 + this.x2 + 8) + ' ' + (this.y1) +
-                    ' L ' + (this.x1 + this.x2) + ' ' + (this.y1 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x1 + this.x2) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
+                this.arrowPath = 'M ' + ((this.x1 + this.x2 + 8) + adjustedX) + ' ' + (this.y1) +
+                    ' L ' + ((this.x1 + this.x2) + adjustedX) + ' ' + (this.y1 - (4 + this.lineStroke)) +
+                    ' L ' + ((this.x1 + this.x2) + adjustedX) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'SSType3') {
@@ -699,14 +717,15 @@ export class ConnectorLine {
                 this.y2 = this.y1 + this.point1 + (this.parent.renderBaseline ? (data.milestoneChild && !(data.milestoneParent) ? -11 :
                     data.milestoneParent && !(data.milestoneChild) ? 10 : 0) : 0);
 
-                this.connectorLinePath = 'M ' + (this.x1 + 12) + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y1) +
+                this.connectorLinePath = 'M ' + ((this.x1 + 12) + adjustments['adjustX']) + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y1) +
                     ' L ' + this.x1 + ' ' + this.y2 + ' L ' + (this.x1 + this.x2) + ' ' + this.y2;
-                this.arrowPath = 'M ' + (this.x1 + 20) + ' ' + (this.y1) +
-                    ' L ' + (this.x1 + 12) + ' ' + (this.y1 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x1 + 12) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
+                this.arrowPath = 'M ' + ((this.x1 + 20) + adjustments['adjustX']) + ' ' + (this.y1) +
+                    ' L ' + ((this.x1 + 12) + adjustments['adjustX']) + ' ' + (this.y1 - (4 + this.lineStroke)) +
+                    ' L ' + ((this.x1 + 12) + adjustments['adjustX']) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'SSType2') {
+                const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 2 : adjustments['adjustX'];
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : data.milestoneChild ? 1 : 0;
                 this.point1 = heightValue + this.taskLineValue + borderTopWidth - this.lineStroke;
                 this.x1 = setInnerElementLeftSSType2;
@@ -716,11 +735,11 @@ export class ConnectorLine {
                         this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)));
                 this.y2 = this.y1 + this.point1;
 
-                this.connectorLinePath = 'M ' + (this.x1 + this.x2) + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + this.y2 +
-                    ' L ' + (this.x1 + setInnerElementWidthSSType2) + ' ' + this.y2;
-                this.arrowPath = 'M ' + (this.x1 + setInnerElementWidthSSType2 + 8) + ' ' + (this.y2) +
-                    ' L ' + (this.x1 + setInnerElementWidthSSType2) + ' ' + (this.y2 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x1 + setInnerElementWidthSSType2) + ' ' + (this.y2 + 4 + this.lineStroke) + ' Z';
+                this.connectorLinePath = 'M ' + (this.x1 + this.x2) + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y2 + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + setInnerElementWidthSSType2) + adjustedX) + ' ' + (this.y2 + adjustments['adjustY1']);
+                this.arrowPath = 'M ' + ((this.x1 + setInnerElementWidthSSType2 + 8) + adjustedX) + ' ' + ((this.y2) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + setInnerElementWidthSSType2) + adjustedX) + ' ' + ((this.y2 - (4 + this.lineStroke)) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + setInnerElementWidthSSType2) + adjustedX) + ' ' + ((this.y2 + 4 + this.lineStroke) + adjustments['adjustY1']) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'SSType1') {
@@ -733,14 +752,15 @@ export class ConnectorLine {
                         this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)));
                 this.y2 = this.y1 + this.point1;
 
-                this.connectorLinePath = 'M ' + (this.x1 + this.x2) + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + this.y2 +
-                    ' L ' + (this.x1 + 12) + ' ' + this.y2;
-                this.arrowPath = 'M ' + (this.x1 + 20) + ' ' + (this.y2) +
-                    ' L ' + (this.x1 + 12) + ' ' + (this.y2 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x1 + 12) + ' ' + (this.y2 + 4 + this.lineStroke) + ' Z';
+                this.connectorLinePath = 'M ' + (this.x1 + this.x2) + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y2 + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + 12) + adjustments['adjustX']) + ' ' + (this.y2 + adjustments['adjustY1']);
+                this.arrowPath = 'M ' + ((this.x1 + 20) + adjustments['adjustX']) + ' ' + ((this.y2) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + 12) + adjustments['adjustX']) + ' ' + ((this.y2 - (4 + this.lineStroke)) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + 12) + adjustments['adjustX']) + ' ' + ((this.y2 + 4 + this.lineStroke) + adjustments['adjustY1']) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'FFType1') {
+                const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 11 : adjustments['adjustX'];
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : (data.milestoneChild ? 1 : 0);
                 this.x1 = data.childEndPoint;
                 this.x2 = data.parentEndPoint + (data.milestoneParent ? -1 : 0);
@@ -751,14 +771,15 @@ export class ConnectorLine {
                         this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)));
                 this.y2 = heightValue + this.taskLineValue + borderTopWidth - this.lineStroke;
 
-                this.connectorLinePath = 'M ' + this.x2 + ' ' + (this.y1) + ' L ' + (this.x2 + this.x3) + ' ' + (this.y1) + ' L ' + (this.x2 + this.x3) + ' ' + (this.y1 + this.y2) +
-                    ' L ' + (this.x1 + this.x4) + ' ' + (this.y1 + this.y2);
-                this.arrowPath = 'M ' + this.x1 + ' ' + (this.y1 + this.y2) +
-                    ' L ' + (this.x1 + 8) + ' ' + (this.y1 + this.y2 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x1 + 8) + ' ' + (this.y1 + this.y2 + 4 + this.lineStroke) + ' Z';
+                this.connectorLinePath = 'M ' + this.x2 + ' ' + (this.y1) + ' L ' + (this.x2 + this.x3) + ' ' + (this.y1) + ' L ' + (this.x2 + this.x3) + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1']) +
+                    ' L ' + (this.x1 + this.x4) + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1']);
+                this.arrowPath = 'M ' + ((this.x1) + adjustedX) + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + 8) + adjustedX) + ' ' + ((this.y1 + this.y2 - (4 + this.lineStroke)) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + 8) + adjustedX) + ' ' + ((this.y1 + this.y2 + 4 + this.lineStroke) + adjustments['adjustY1']) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'FFType2') {
+                const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 11 : adjustments['adjustX'];
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : (data.milestoneChild ? 1 : 0);
                 this.x1 = data.parentEndPoint;
                 this.x2 = data.childEndPoint + (data.milestoneParent ? 22 : 21);
@@ -769,14 +790,15 @@ export class ConnectorLine {
                                 this.getTaskbarMidpoint(data.milestoneParent) - (this.lineStroke - 1)));
                 this.y2 = heightValue + this.taskLineValue + borderTopWidth - this.lineStroke;
 
-                this.connectorLinePath = 'M ' + this.x1 + ' ' + (this.y1) + ' L ' + this.x2 + ' ' + (this.y1) + ' L ' + this.x2 + ' ' + (this.y1 + this.y2) +
-                    ' L ' + this.x3 + ' ' + (this.y1 + this.y2);
-                this.arrowPath = 'M ' + (this.x3 - 8) + ' ' + (this.y1 + this.y2) +
-                    ' L ' + this.x3 + ' ' + (this.y1 + this.y2 - (4 + this.lineStroke)) +
-                    ' L ' + this.x3 + ' ' + (this.y1 + this.y2 + 4 + this.lineStroke) + ' Z';
+                this.connectorLinePath = 'M ' + this.x1 + ' ' + (this.y1) + ' L ' + this.x2 + ' ' + (this.y1) + ' L ' + this.x2 + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1']) +
+                    ' L ' + this.x3 + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1']);
+                this.arrowPath = 'M ' + ((this.x3 - 8) + adjustedX) + ' ' + ((this.y1 + this.y2) + adjustments['adjustY1']) +
+                    ' L ' + (this.x3 + adjustedX) + ' ' + ((this.y1 + this.y2 - (4 + this.lineStroke)) + adjustments['adjustY1']) +
+                    ' L ' + (this.x3 + adjustedX) + ' ' + ((this.y1 + this.y2 + 4 + this.lineStroke) + adjustments['adjustY1']) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'FFType3') {
+                const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 11 : adjustments['adjustX'];
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : 0;
                 this.x1 = data.childEndPoint;
                 this.x2 = this.x1 + (data.milestoneChild ? 4 : 8);
@@ -790,12 +812,13 @@ export class ConnectorLine {
 
                 this.connectorLinePath = 'M ' + this.x2 + ' ' + (this.y1) + ' L ' + (this.x2 + this.x3) + ' ' + (this.y1) + ' L ' + (this.x2 + this.x3) + ' ' + (this.y1 + this.y2) +
                     ' L ' + this.x4 + ' ' + (this.y1 + this.y2);
-                this.arrowPath = 'M ' + this.x1 + ' ' + (this.y1) +
-                    ' L ' + (this.x1 + 8) + ' ' + (this.y1 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x1 + 8) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
+                this.arrowPath = 'M ' + (this.x1 + adjustedX) + ' ' + (this.y1) +
+                    ' L ' + ((this.x1 + 8) + adjustedX) + ' ' + (this.y1 - (4 + this.lineStroke)) +
+                    ' L ' + ((this.x1 + 8) + adjustedX) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'FFType4') {
+                const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 11 : adjustments['adjustX'];
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : 0;
                 this.x1 = data.parentEndPoint;
                 this.x2 = data.childEndPoint + (data.milestoneChild ? 7 : 8);
@@ -809,12 +832,13 @@ export class ConnectorLine {
 
                 this.connectorLinePath = 'M ' + this.x2 + ' ' + (this.y1) + ' L ' + this.x3 + ' ' + (this.y1) + ' L ' + this.x3 + ' ' + (this.y1 + this.y2) +
                     ' L ' + this.x1 + ' ' + (this.y1 + this.y2);
-                this.arrowPath = 'M ' + (this.x2 - 8) + ' ' + (this.y1) +
-                    ' L ' + this.x2 + ' ' + (this.y1 - (4 + this.lineStroke)) +
-                    ' L ' + this.x2 + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
+                this.arrowPath = 'M ' + ((this.x2 - 8) + adjustedX) + ' ' + (this.y1) +
+                    ' L ' + (this.x2 + adjustedX) + ' ' + (this.y1 - (4 + this.lineStroke)) +
+                    ' L ' + (this.x2 + adjustedX) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'SFType4') {
+                const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 11 : adjustments['adjustX'];
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : (data.milestoneChild ? -1 : 0);
                 this.point1 = (this.taskLineValue + heightValue + borderTopWidth - this.getconnectorLineGap(data) - (this.lineStroke - 1));
                 this.point2 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ?
@@ -829,14 +853,15 @@ export class ConnectorLine {
                 this.y3 = this.getconnectorLineGap(data);
                 this.y4 = this.y2 - (this.y2 % data.rowHeight);
 
-                this.connectorLinePath = 'M ' + this.x2 + ' ' + (this.y1) + ' L ' + this.x3 + ' ' + (this.y1) + ' L ' + this.x3 + ' ' + this.y4 + ' L ' + this.x1 + ' ' + this.y4 +
-                    ' L ' + this.x1 + ' ' + (this.y2 + this.y3) + ' L ' + (this.x1 + 11) + ' ' + (this.y2 + this.y3);
-                this.arrowPath = 'M ' + (this.x2 - 8) + ' ' + (this.y1) +
-                    ' L ' + this.x2 + ' ' + (this.y1 - (4 + this.lineStroke)) +
-                    ' L ' + this.x2 + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
+                this.connectorLinePath = 'M ' + this.x2 + ' ' + ((this.y1) - adjustments['adjustY1']) + ' L ' + this.x3 + ' ' + ((this.y1) - adjustments['adjustY1']) + ' L ' + this.x3 + ' ' + this.y4 + ' L ' + this.x1 + ' ' + this.y4 +
+                    ' L ' + this.x1 + ' ' + ((this.y2 + this.y3)) + ' L ' + (this.x1 + 11) + ' ' + ((this.y2 + this.y3));
+                this.arrowPath = 'M ' + ((this.x2 - 8) + adjustedX) + ' ' + ((this.y1) - adjustments['adjustY1']) +
+                    ' L ' + (this.x2 + adjustedX) + ' ' + ((this.y1 - (4 + this.lineStroke)) - adjustments['adjustY1']) +
+                    ' L ' + (this.x2 + adjustedX) + ' ' + ((this.y1 + 4 + this.lineStroke) - adjustments['adjustY1']) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'SFType3') {
+                const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 11 : adjustments['adjustX'];
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : 0;
                 this.point1 = (data.parentLeft - (data.childEndPoint + (data.milestoneParent ? 23 : 20))) + 1;
                 this.point2 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ?
@@ -851,12 +876,13 @@ export class ConnectorLine {
                         data.milestoneParent && !(data.milestoneChild) ? 10 : 0) : 0);
                 this.connectorLinePath = 'M ' + this.x2 + ' ' + (this.y1) + ' L ' + this.x3 + ' ' + (this.y1) +
                     ' L ' + this.x3 + ' ' + this.y2 + ' L ' + (this.x3 + this.point1) + ' ' + this.y2;
-                this.arrowPath = 'M ' + (this.x2 - 8) + ' ' + (this.y1) +
-                    ' L ' + this.x2 + ' ' + (this.y1 - (4 + this.lineStroke)) +
-                    ' L ' + this.x2 + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
+                this.arrowPath = 'M ' + ((this.x2 - 8) + adjustedX) + ' ' + (this.y1) +
+                    ' L ' + (this.x2 + adjustedX) + ' ' + (this.y1 - (4 + this.lineStroke)) +
+                    ' L ' + (this.x2 + adjustedX) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'SFType1') {
+                const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 11 : adjustments['adjustX'];
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : data.milestoneChild ? 1 : 0;
                 this.point1 = heightValue + borderTopWidth - this.getconnectorLineGap(data) + this.taskLineValue - this.lineStroke;
                 this.point2 = this.getconnectorLineGap(data);
@@ -870,13 +896,14 @@ export class ConnectorLine {
                 this.x3 = (data.childEndPoint - data.parentLeft) + 18;
                 this.y3 = this.y2 - (this.y2 % data.rowHeight);
                 this.connectorLinePath = 'M ' + (this.x1 + 11) + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + this.y3 +
-                    ' L ' + (this.x1 + this.x2) + ' ' + this.y3 + ' L ' + (this.x1 + this.x2) + ' ' + (this.y2 + this.point2) + ' L ' + (this.x1 + this.x3) + ' ' + (this.y2 + this.point2);
-                this.arrowPath = 'M ' + (this.x1 + this.x3 - 8) + ' ' + (this.y2 + this.point2) +
-                    ' L ' + (this.x1 + this.x3) + ' ' + (this.y2 + this.point2 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x1 + this.x3) + ' ' + (this.y2 + this.point2 + 4 + this.lineStroke) + ' Z';
+                    ' L ' + (this.x1 + this.x2) + ' ' + this.y3 + ' L ' + (this.x1 + this.x2) + ' ' + ((this.y2 + this.point2) + adjustments['adjustY1']) + ' L ' + (this.x1 + this.x3) + ' ' + ((this.y2 + this.point2) + adjustments['adjustY1']);
+                this.arrowPath = 'M ' + ((this.x1 + this.x3 - 8) + adjustedX) + ' ' + ((this.y2 + this.point2) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + this.x3) + adjustedX) + ' ' + ((this.y2 + this.point2 - (4 + this.lineStroke)) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + this.x3) + adjustedX) + ' ' + ((this.y2 + this.point2 + 4 + this.lineStroke) + adjustments['adjustY1']) + ' Z';
             }
 
             if (this.getParentPosition(data) === 'SFType2') {
+                const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 11 : adjustments['adjustX'];
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : 0;
                 this.x1 = data.childEndPoint;
                 this.y1 = (this.parent.enableVirtualization ? rowPositionHeight :
@@ -887,10 +914,10 @@ export class ConnectorLine {
                 this.y2 = this.y1 + heightValue + this.taskLineValue + borderTopWidth - this.lineStroke;
 
                 this.connectorLinePath = 'M ' + (this.x1 + this.x2 + 1) + ' ' + (this.y1) + ' L ' + (this.x1 + this.x2 - 10) + ' ' + (this.y1) +
-                    ' L ' + (this.x1 + this.x2 - 10) + ' ' + this.y2 + ' L ' + (this.x1 + 8) + ' ' + this.y2;
-                this.arrowPath = 'M ' + this.x1 + ' ' + (this.y2) +
-                    ' L ' + (this.x1 + 8) + ' ' + (this.y2 - (4 + this.lineStroke)) +
-                    ' L ' + (this.x1 + 8) + ' ' + (this.y2 + 4 + this.lineStroke) + ' Z';
+                    ' L ' + (this.x1 + this.x2 - 10) + ' ' + (this.y2 + adjustments['adjustY1']) + ' L ' + (this.x1 + 8) + ' ' + (this.y2 + adjustments['adjustY1']);
+                this.arrowPath = 'M ' + (this.x1 + adjustedX) + ' ' + ((this.y2) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + 8) + adjustedX) + ' ' + ((this.y2 - (4 + this.lineStroke)) + adjustments['adjustY1']) +
+                    ' L ' + ((this.x1 + 8) + adjustedX) + ' ' + ((this.y2 + 4 + this.lineStroke) + adjustments['adjustY1']) + ' Z';
             }
             this.connectorPath.setAttribute('d', this.connectorLinePath);
             this.arrowlinePath.setAttribute('d', this.arrowPath);
@@ -1056,7 +1083,7 @@ export class ConnectorLine {
      * @private
      */
     public removeConnectorLineById(id: string): void {
-        const element: Element = this.parent.connectorLineModule.dependencyViewContainer.querySelector('#ConnectorLine' + id.replace(/([\.])/g, '\\$1'));
+        const element: Element = this.parent.connectorLineModule.dependencyViewContainer.querySelector('#ConnectorLine' + id.replace(/([.])/g, '\\$1'));
         if (!isNullOrUndefined(element)) {
             remove(element);
         }

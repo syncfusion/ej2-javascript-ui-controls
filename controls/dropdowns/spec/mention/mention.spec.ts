@@ -1122,8 +1122,9 @@ describe('Mention', () => {
         });
         it('insert the list item using mouseclick and check change event being triggered', () => {
             mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
+            (<any>mentionObj).mentionChar = '#';
             mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.element.innerHTML).toBe('<p><span contenteditable="false" class="e-mention-chip">@PERL</span>​</p>');
+            expect(mentionObj.element.innerHTML).toBe('<p>@<span contenteditable="false" class="e-mention-chip">#PERL</span>​</p>');
             expect(changeAction).toHaveBeenCalled();
         });
     });
@@ -1782,6 +1783,84 @@ describe('Mention', () => {
         });
     });
 
+    describe('Disable items', () => {       
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'mention' });
+        let listObj: any;
+        let sportsData: { [key: string]: Object }[] = [ 
+            { "State": false, "Game": "American Football", "Id" : 'Game1' },
+            { "State": false, "Game": "Badminton", "Id" : 'Game2' },
+            { "State": false, "Game": "Basketball", "Id" : 'Game3' },
+            { "State": true, "Game": "Cricket", "Id" : 'Game4' },
+            { "State": false, "Game": "Football", "Id" : 'Game5' },
+            { "State": false, "Game": "Golf", "Id" : 'Game6' },
+            { "State": true, "Game": "Hockey", "Id" : 'Game7' },
+            { "State": false, "Game": "Rugby", "Id" : 'Game8' },
+            { "State": false, "Game": "Snooker", "Id" : 'Game9' },
+            { "State": false, "Game": "Tennis", "Id" : 'Game10' } 
+
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new Mention({
+                dataSource: sportsData,
+                fields: { value: 'Id', text: 'Game', disabled: 'State' },
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        /**
+       * Mouse click
+       */
+        it('checked with disableItem method', (done) => {      
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                listObj.disableItem("Game4");
+                expect(listObj.liCollections[3].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[3].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[3].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.liCollections[6].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[6].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[6].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                listObj.disableItem({ "State": true, "Game": "Hockey", "Id" : 'Game7' });
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(8);
+                listObj.disableItem(0);
+                expect(listObj.liCollections[0].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[0].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[0].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(7);
+                listObj.disableItem("Game8");
+                expect(listObj.liCollections[7].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[7].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[7].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(6);
+                listObj.disableItem({ "State": false, "Game": "Tennis", "Id": 'Game10' });
+                expect(listObj.liCollections[9].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem(0);
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem("Game8");
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem({ "State": false, "Game": "Tennis", "Id": 'Game10' });
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(5);
+                listObj.disableItem(listObj.liCollections[8]);
+                expect(listObj.liCollections[8].classList.contains('e-disabled')).toBe(true);
+                expect(listObj.liCollections[8].getAttribute('aria-selected')).toBe('false');
+                expect(listObj.liCollections[8].getAttribute('aria-disabled')).toBe('true');
+                expect(listObj.list.querySelectorAll('.e-list-item:not(.e-disabled)').length).toBe(4);
+                done();
+            }, 450);
+        });
+    });
+
     describe('keyboard interaction with disabled items', () => {
         let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', code: 'ArrowDown', keyCode: 40, key: 'ArrowDown' };
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'mention' });
@@ -1887,6 +1966,824 @@ describe('Mention', () => {
                 expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
                 done();
             }, 450);
+        });
+    });
+    describe('Null or undefined value testing', () => {
+        let listObj: Mention;
+        beforeEach(() => {
+            listObj = undefined;
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'list' });
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            document.body.innerHTML = '';
+        });
+        it('cssClass', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                cssClass: null
+            }, '#list');
+            expect(listObj.cssClass).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                cssClass: undefined
+            }, '#list');
+            expect(listObj.cssClass).toBe(null);
+            listObj.destroy();
+        });
+        it('highlight', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                highlight: null
+            }, '#list');
+            expect(listObj.highlight).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                highlight: undefined
+            }, '#list');
+            expect(listObj.highlight).toBe(false);
+            listObj.destroy();
+        });
+        it('ignoreCase', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                ignoreCase: null
+            }, '#list');
+            expect(listObj.ignoreCase).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                ignoreCase: undefined
+            }, '#list');
+            expect(listObj.ignoreCase).toBe(true);
+            listObj.destroy();
+        });
+        it('displayTemplate', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                displayTemplate: null
+            }, '#list');
+            expect(listObj.displayTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                displayTemplate: undefined
+            }, '#list');
+            expect(listObj.displayTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('itemTemplate', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                itemTemplate: null
+            }, '#list');
+            expect(listObj.itemTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                itemTemplate: undefined
+            }, '#list');
+            expect(listObj.itemTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('noRecordsTemplate', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                noRecordsTemplate: null
+            }, '#list');
+            expect(listObj.noRecordsTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                noRecordsTemplate: undefined
+            }, '#list');
+            expect(listObj.noRecordsTemplate).toBe('No records found');
+            listObj.destroy();
+        });
+        it('mentionChar', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                mentionChar: null
+            }, '#list');
+            expect(listObj.mentionChar).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                mentionChar: undefined
+            }, '#list');
+            expect(listObj.mentionChar).toBe('@');
+            listObj.destroy();
+        });
+        it('minLength', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                minLength: null
+            }, '#list');
+            expect(listObj.minLength).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                minLength: undefined
+            }, '#list');
+            expect(listObj.minLength).toBe(0);
+            listObj.destroy();
+        });
+        it('popupHeight', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                popupHeight: null
+            }, '#list');
+            expect(listObj.popupHeight).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                popupHeight: undefined
+            }, '#list');
+            expect(listObj.popupHeight).toBe('300px');
+            listObj.destroy();
+        });
+        it('popupWidth', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                popupWidth: null
+            }, '#list');
+            expect(listObj.popupWidth).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                popupWidth: undefined
+            }, '#list');
+            expect(listObj.popupWidth).toBe('auto');
+            listObj.destroy();
+        });
+        it('showMentionChar', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                showMentionChar: null
+            }, '#list');
+            expect(listObj.showMentionChar).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                showMentionChar: undefined
+            }, '#list');
+            expect(listObj.showMentionChar).toBe(false);
+            listObj.destroy();
+        });
+        it('spinnerTemplate', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                spinnerTemplate: null
+            }, '#list');
+            expect(listObj.spinnerTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                spinnerTemplate: undefined
+            }, '#list');
+            expect(listObj.spinnerTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('suffixText', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                suffixText: null
+            }, '#list');
+            expect(listObj.suffixText).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                suffixText: undefined
+            }, '#list');
+            expect(listObj.suffixText).toBe(null);
+            listObj.destroy();
+        });
+        it('suggestionCount', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                suggestionCount: null
+            }, '#list');
+            expect(listObj.suggestionCount).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                suggestionCount: undefined
+            }, '#list');
+            expect(listObj.suggestionCount).toBe(25);
+            listObj.destroy();
+        });
+        it('target', () => {
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                target: null
+            }, '#list');
+            expect(listObj.target).toBe(null);
+            listObj.destroy();
+            listObj = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                target: undefined
+            }, '#list');
+            expect(listObj.target).toBe(undefined);
+            listObj.destroy();
+        });
+    });
+
+    describe('Coverage improvements for mention component ', () => {
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'up', code: 'ArrowUp' };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'mention' });
+        let listObj: any;
+        let originalTimeout: number;
+        let emplist: { [key: string]: Object }[] = [ 
+            { id: 'level1', country: 'American Football', State: true }, 
+            { id: 'level2', country: 'Badminton', State: false },
+            { id: 'level3', country: 'Basketball', State: true },
+            { id: 'level4', country: 'Cricket', State: true },
+            { id: 'level5', country: 'Football', State: false },
+            { id: 'level6', country: 'Golf', State: true }       
+        ]; 
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+            document.body.appendChild(element);
+           
+        });
+        afterAll((done) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        /**
+       * Mouse click
+       */
+        it('- checkAndUpdateInternalComponent', () => {
+            const divElement = document.createElement('div');
+            divElement.classList.add('e-rte-content');
+            let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea' });
+            divElement.appendChild(textAreaelement);
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+            });
+            listObj.appendTo(textAreaelement);
+            (<any>listObj).isVue = false;
+            textAreaelement.classList.add('e-richtexteditor');
+            (<any>listObj).checkAndUpdateInternalComponent(textAreaelement);
+            (<any>listObj).isVue = true;
+            textAreaelement.classList.add('e-rte-hidden');
+            divElement.classList.add('e-richtexteditor');
+            (<any>listObj).checkAndUpdateInternalComponent(textAreaelement);
+            (<any>listObj).isVue = false;
+            textAreaelement.classList.remove('e-richtexteditor');
+            divElement.classList.add('e-content');
+            (<any>listObj).checkAndUpdateInternalComponent(textAreaelement);
+            (<any>listObj).highlight = true;
+            (<any>listObj).fields.itemCreated = empList[0];
+            (<any>listObj).listOption(empList, listObj.fields);
+            (<any>listObj).suggestionCount = 24;
+            (<any>listObj).getQuery(new Query());
+        });
+        it('- keydownhandler', () => {
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+            });
+            listObj.appendTo(element);
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, action: 'up', code: 'ArrowUp', keyCode: 40, key: 'ArrowUp' };
+            (<any>listObj).keyDownHandler(keyEventArgs);
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, action: 'up', code: 'ArrowUp', keyCode: 38, key: 'ArrowUp',altKey:true };
+            (<any>listObj).keyDownHandler(keyEventArgs);
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, action: 'up', code: 'ArrowUp', keyCode: 38, key: 'ArrowUp',altKey:false };
+            (<any>listObj).keyDownHandler(keyEventArgs);
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, action: 'down', code: 'ArrowDown', keyCode: 40, key: 'ArrowDown' };
+            (<any>listObj).keyDownHandler(keyEventArgs);
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, action: 'pageUp', code: 'PageUp', keyCode: 33, key: 'PageUp' };
+            (<any>listObj).keyDownHandler(keyEventArgs);
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, action: 'home', code: 'Home', keyCode: 36, key: 'Home' };
+            (<any>listObj).keyDownHandler(keyEventArgs);
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, action: 'end', code: 'End', keyCode: 35, key: 'End' };
+            (<any>listObj).keyDownHandler(keyEventArgs);
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, action: 'space', code: 'Space', keyCode: 32, key: ' ' };
+            (<any>listObj).keyDownHandler(keyEventArgs);
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, action: 'pageDown', code: 'PageDown', keyCode: 34, key: 'PageDown' };
+            (<any>listObj).keyDownHandler(keyEventArgs);
+            listObj.showPopup();
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, action: 'escape', code: 'escape', keyCode: 13, key: 'escape' };
+            (<any>listObj).keyDownHandler(keyEventArgs);
+        });
+        it('- renderhighlightSearch', () => {
+            let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea' });
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+                highlight:true
+            });
+            listObj.appendTo(textAreaelement);
+            (<any>listObj).showPopup();
+            (<any>listObj).ulElement.querySelector('li').classList.add('e-active');
+            (<any>listObj).renderHightSearch();
+            (<any>listObj).highlight = false;
+            (<any>listObj).renderHightSearch();
+            (<any>listObj).highlight = true;
+            (<any>listObj).listOption(listObj.dataSource,listObj.fields);
+            (<any>listObj).listOption(listObj.dataSource,listObj.fields);
+
+        });
+        it('- onDocumentClick ', () => {
+            let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea' });
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+                highlight:true
+            });
+            listObj.appendTo(textAreaelement);
+            listObj.showPopup();
+            //(<any>listObj).popupObj = null;
+            let mouseEventArgs: any = { preventDefault: function () { }, target: document.body };
+            (<any>listObj).onDocumentClick(mouseEventArgs);
+        });
+        it('- PropertyChanges ', () => {
+            let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea' });
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+                highlight:true
+            });
+            listObj.appendTo(textAreaelement);
+            (<any>listObj).popupObj = null;
+            (<any>listObj).updateCssClass(null,null);
+            (<any>listObj).setCssClass(null,null,null);
+            (<any>listObj).showWaitingSpinner();
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, action: 'pageDown', code: 'PageDown', keyCode: 229, key: 'PageDown' };
+            (<any>listObj).isPopupOpen = true;
+            (<any>listObj).isUpDownKey = true;
+            (<any>listObj).onKeyUp(keyEventArgs)
+        });
+        it('- PropertyChanges ', () => {
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+            let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea' });
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+                highlight:true
+            });
+            listObj.appendTo(textAreaelement);
+            (<any>listObj).unBindCommonEvent();
+            Browser.userAgent = navigator.userAgent;
+            
+        });
+        it('- onmouseclick', () => {
+            let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea' });
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+                highlight:true
+            });
+            listObj.appendTo(textAreaelement);
+            (<any>listObj).showPopup();
+            (<any>listObj).isRTE = true;
+            let mouseEventArgs: any = { preventDefault: function () { }, target: (<any>listObj).popupObj.element.querySelector('li') };
+            (<any>listObj).isSelectCancel = true;
+            (<any>listObj).onMouseClick(mouseEventArgs);
+        });
+        it('- setscrollposition', () => {
+            let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea' });
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+                highlight:true
+            });
+            listObj.appendTo(textAreaelement);
+            (<any>listObj).showPopup();
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, action: 'pageDown', code: 'PageDown', keyCode: 34, key: 'PageDown' };
+            (<any>listObj).setScrollPosition(keyEventArgs);
+            (<any>listObj).setScrollPosition(null);
+            (<any>listObj).selectedLI = null;
+            (<any>listObj).scrollTop();
+            (<any>listObj).list = null;
+            (<any>listObj).removeHover();
+            let liElement: HTMLElement = document.createElement('li');
+            liElement.className = 'e-list-item e-hover';
+            (<any>listObj).setHover(liElement);
+        });
+        it('- updateUpDownAction', () => {
+            let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea' });
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+                highlight: true
+            });
+            listObj.appendTo(textAreaelement);
+            (<any>listObj).fields.isDisabled = 'State';
+            // Create ul element with required class
+            const ulElement = document.createElement('ul');
+            ulElement.classList.add('e-list');
+            const liElement1 = document.createElement('li');
+            liElement1.classList.add('e-list-item', 'e-disabled');
+            liElement1.textContent = 'Item 1 (Disabled)';
+            const liElement2 = document.createElement('li');
+            liElement2.classList.add('e-list-item','e-disabled');
+            liElement2.textContent = 'Item 2';
+            const liElement3 = document.createElement('li');
+            liElement3.classList.add('e-list-item', 'e-disabled');
+            liElement3.textContent = 'Item 3 (Disabled)';
+            ulElement.appendChild(liElement1);
+            ulElement.appendChild(liElement2);
+            ulElement.appendChild(liElement3);
+            (<any>listObj).list = ulElement;
+            (<any>listObj).updateUpDownAction();
+        });
+        it('- searchlist', () => {
+            let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea'});
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+                filtering(event: any) {
+                    event.preventDefaultAction = true;
+                    event.cancel = true;
+                    let query = new Query();
+                    event.updateData(empList, query);
+                }
+            });
+            listObj.appendTo(textAreaelement);
+            textAreaelement.value = 'text';
+            textAreaelement.focus();
+            (<any>listObj).showPopup();
+            keyEventArgs = { preventDefault: (): void => { /** NO Code */ }, type:'keyboard', action: 'up', code: 'ArrowUp', keyCode: 40, key: 'ArrowUp' };
+            (<any>listObj).searchLists(keyEventArgs);
+        });
+        it('- filteringaction', () => {
+            let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea'});
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+                filtering(event: any) {
+                    event.preventDefaultAction = true;
+                    event.cancel = true;
+                    let query = new Query();
+                    event.updateData(empList, query);
+                },
+                minLength: 5
+            });
+            listObj.appendTo(textAreaelement);
+            textAreaelement.value = 'text';
+            textAreaelement.focus();
+            (<any>listObj).showPopup();
+            (<any>listObj).queryString = 'text';
+            (<any>listObj).filterAction(empList)
+        });
+        it('- getQuery', () => {
+            let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea' });
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+                highlight:true
+            });
+            listObj.appendTo(textAreaelement);
+            (<any>listObj).showPopup();
+            (<any>listObj).isFiltered = true;
+            (<any>listObj).getQuery(new Query());
+            (<any>listObj).isFiltered = false;
+            listObj.suggestionCount = 36;
+            (<any>listObj).getQuery(new Query());
+        });
+        it('- actioncomplete with isactive as true', () => {
+            let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea'});
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country'},
+                filtering(event: any) {
+                    event.preventDefaultAction = true;
+                    event.cancel = true;
+                    let query = new Query();
+                    event.updateData(empList, query);
+                },
+                minLength: 5
+            });
+            listObj.appendTo(textAreaelement);
+            textAreaelement.value = 'text';
+            textAreaelement.focus();
+            (<any>listObj).showPopup();
+            (<any>listObj).onActionComplete((<any>listObj).ulElement,(<any>listObj).list,keyEventArgs,true);
+        });
+        it('- renderHightSearch  without active ul element', (done) => {
+            listObj.showPopup();
+            listObj.highlight = true;
+            setTimeout(function () {
+                expect(listObj.isPopupOpen).toEqual(true);
+                expect(listObj.element.classList.contains('e-mention')).toEqual(true);
+                var activeElement = (<any>listObj).ulElement.querySelector('.e-active');
+                if (activeElement) {
+                    activeElement.classList.remove('e-active');
+                }
+                (<any>listObj).renderHightSearch();
+                done();
+            }, 450);
+        });
+        it('- Closepopup prevention', (done) => {
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country'},
+                closed(event: any) {
+                    event.cancel = true;
+                },
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(function () {
+                expect(listObj.isPopupOpen).toEqual(true);
+                expect(listObj.element.classList.contains('e-mention')).toEqual(true);
+                let mouseeventargs = { preventDefault: function () { }, target: document.body };
+                (<any>listObj).closePopup(100,mouseeventargs);
+                done();
+            }, 450);
+        });
+        it('- beforeOpen prevention', () => {
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country'},
+                beforeOpen(event: any) {
+                    event.cancel = true;
+                },
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+        });
+        it('- keyActionHandler with escape key', (done) => {
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country'},
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(function () {
+                (<any>listObj).isPopupOpen = true;
+                let keyEventArgs: any = {
+                    preventDefault: (): void => { /** NO Code */ },
+                    action: 'escape',
+                    keyCode: 27,
+                    key: 'Escape'
+                };
+                listObj.onKeyUp(keyEventArgs);
+                listObj.keyActionHandler(keyEventArgs);
+                done();
+            }, 450);
+        });
+        it('- before open event prevention', () => {
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country'},
+                beforeOpen(event: any) {
+                    event.cancel = true;
+                },
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+        });
+        it('with all disabled items 1', (done) => {
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country'},
+                highlight: true
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            setTimeout(() => {
+                listObj.list.querySelectorAll('.e-list-item')[0].classList.add('e-item-focus');
+                keyEventArgs.action = 'down';
+                listObj.keyActionHandler(keyEventArgs);
+                (<any>listObj).updateValues();
+                done();
+            }, 450);
+        });
+        it('- getTextRange', () => {
+            (<any>listObj).range = null;
+            (<any>listObj).getTextRange();
+        });
+        it('with all disabled items 2', () => {
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country'},
+                highlight: true,
+                displayTemplate: '<div>selected</div>',
+                spinnerTemplate: '<div>spinner</div>'
+            });
+            listObj.appendTo(element);
+            (<any>listObj).isReact = true;
+            let liElement: HTMLElement = document.createElement('li');
+            liElement.className = 'e-list-item e-hover';
+            (<any>listObj).item = liElement;
+            (<any>listObj).inputElement.value = 'Build Status: INPROGRESS';
+            (<any>listObj).setDisplayTemplate(keyDownEventArgs);
+            listObj.showPopup();
+            (<any>listObj).setSpinnerTemplate(keyDownEventArgs);
+            (<any>listObj).isReact = false;
+            let mouseEvent = { preventDefault: function () { }, target: document.body };
+            (<any>listObj).onMouseLeave();
+            (<any>listObj).isReact = false;
+        });
+    });
+
+    describe('Showpopup with mention character as "a"', () => {
+        let mentionObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('div', { id: 'divMention' });
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(() => {
+            element.innerHTML ="<p><br></p>";
+            document.body.appendChild(element);
+            mentionObj = new Mention({ dataSource: datasource2, mentionChar: 'a', showMentionChar: true, allowSpaces:true });
+            mentionObj.appendTo(element);
+            mentionObj.initValue();
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        /**
+         * initialize
+         */
+        it('ShowPopup with "a" as value', () => {
+            element.innerHTML = 'a';
+            let range:Range = document.createRange();
+            range.setStart(mentionObj.element.firstChild, 1);
+            range.setEnd(mentionObj.element.firstChild, 1);
+            let selection: Selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            mentionObj.onKeyUp(keyMentionEventArgs);
+            expect(document.querySelectorAll('.e-mention.e-popup').length > 0).toBe(true);
+        });
+        it('insert the list item using mouseclick', () => {
+            mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
+            mentionObj.onMouseClick(mouseEventArgs);
+            expect(mentionObj.element.innerHTML).toBe('<span contenteditable="false" class="e-mention-chip">aPERL</span>​');
+            element.innerHTML = '<span contenteditable="false" class="e-mention-chip">aPERL</span>a';
+            let textNode = mentionObj.element.childNodes[1]; // Get the text node containing 'a'
+            let range: Range = document.createRange();
+            range.setStart(textNode, 1); // Set cursor after 'a'
+            range.setEnd(textNode, 1); // Set cursor after 'a'
+            let selection: Selection = window.getSelection();
+            mentionObj.showPopup();
+            mentionObj.isPopupOpen = true;
+            selection.removeAllRanges();
+            selection.addRange(range);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            mentionObj.onKeyUp(keyMentionEventArgs);
+            mentionObj.showPopup();
+            element.innerHTML = '<span contenteditable="false" class="e-mention-chip">aPERL</span>aa';
+            textNode = mentionObj.element.childNodes[1]; // Get the text node containing 'aa'
+            range = document.createRange();
+            range.setStart(textNode, 2); // Set cursor after the last 'a'
+            range.setEnd(textNode, 2); // Set cursor after the last 'a'
+            selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range); // This line is enough to set the range, no need to repeat
+            mentionObj.onKeyUp(keyMentionEventArgs);
+            mentionObj.isPopupOpen = false;
+        });
+    });
+    describe('coverage', function () {
+        let keyEventArgs: any = { preventDefault: function () { }, action: 'up', code: 'ArrowUp' };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('div', { id: 'divMention' });
+        let listObj: any;
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(function () {
+            document.body.appendChild(element);
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(function (done) {
+            listObj.hidePopup();
+            setTimeout(function () {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450);
+        });
+        it('with all disabled items', function (done) {
+            var query = new Query();
+            var fields =  { text: 'country', disabled: 'State' };
+            element.value = '@';
+            listObj.showPopup();
+            (<any>listObj).searchLists(keyEventArgs);
+            (<any>listObj).isPopupOpen = true;
+            (<any>listObj).minLength = 1;
+            (<any>listObj).filterAction(empList, query, fields);
+            (<any>listObj).isReact = true;
+            (<any>listObj).setValue(mouseEventArgs);
+            done();
+        });
+        it('with all disabled items', function (done) {
+            element.value = '@';
+            listObj.showPopup();
+            (<any>listObj).isReact = true;
+            (<any>listObj).displayTemplate = "Template";
+            (<any>listObj).setValue(mouseEventArgs);
+            done();
+        });
+    });
+  
+    describe('EJ2-902235 Mention styles affect the Slash menu popup.', ()=>{
+        let mention: Mention;
+        let editor: HTMLDivElement;
+        let slashMenuRoot: HTMLElement;
+        beforeAll(()=>{
+            mention = new Mention({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                mentionChar: '/',
+                target: '#defaultRTE_rte-edit-view',
+                cssClass: 'e-slash-menu'
+            });
+            editor = mention.createElement('div', {id: 'defaultRTE_rte-edit-view' , attrs: { contenteditable: 'true' } });
+            const editorWrapper = mention.createElement('div', { className: 'e-rte-content' });
+            document.body.appendChild(editorWrapper);
+            editorWrapper.appendChild(editor);
+            const slashMenuRoot: HTMLElement = document.createElement('div');
+            slashMenuRoot.id = 'slashMenu';
+            document.body.appendChild(slashMenuRoot);
+            mention.appendTo(slashMenuRoot);
+        });
+        afterAll((done: DoneFn)=>{
+            mention.destroy();
+            document.querySelector('.e-rte-content').remove();
+            slashMenuRoot.remove();
+            done();
+        });
+        it('Should have the input element id have slash menu', (done: DoneFn)=>{
+            editor.innerHTML = '<p><br></p>';
+            setCursorPoint((mention as any).inputElement.firstChild, 0);
+            (mention as any).onKeyUp(keyMentionEventArgs);
+            mention.showPopup();
+            setTimeout(()=>{
+                expect(((mention as any).popupObj.element as HTMLElement).id).toBe('defaultRTE_rte-edit-view_slash_menu_popup');
+                expect(((mention as any).popupObj.element as HTMLElement).querySelector('ul').id).toBe('defaultRTE_rte-edit-view_slash_menu_options');
+                done();
+            }, 300);
         });
     });
 });

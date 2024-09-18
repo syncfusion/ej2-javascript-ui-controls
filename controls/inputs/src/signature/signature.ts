@@ -202,7 +202,7 @@ export class Signature extends SignatureBase implements INotifyPropertyChanged {
      * @private
      */
     protected getModuleName(): string {
-        return 'signature';
+        return super.getModuleName();
     }
 
     /**
@@ -211,7 +211,7 @@ export class Signature extends SignatureBase implements INotifyPropertyChanged {
      * @returns {string} - Persist data
      */
     protected getPersistData(): string {
-        return this.addOnPersist(['signatureValue']);
+        return super.getPersistData();
     }
 
     /**
@@ -234,6 +234,21 @@ export class Signature extends SignatureBase implements INotifyPropertyChanged {
             case 'strokeColor':
                 if (newProp.strokeColor !== oldProp.strokeColor) {
                     super.propertyChanged(prop, newProp.strokeColor);
+                }
+                break;
+            case 'maxStrokeWidth':
+                if (newProp.maxStrokeWidth !== oldProp.maxStrokeWidth) {
+                    super.propertyChanged(prop, newProp.maxStrokeWidth);
+                }
+                break;
+            case 'minStrokeWidth':
+                if (newProp.minStrokeWidth !== oldProp.minStrokeWidth) {
+                    super.propertyChanged(prop, newProp.minStrokeWidth);
+                }
+                break;
+            case 'velocity':
+                if (newProp.velocity !== oldProp.velocity) {
+                    super.propertyChanged(prop, newProp.velocity);
                 }
                 break;
             case 'saveWithBackground':

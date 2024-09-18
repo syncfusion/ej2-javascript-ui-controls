@@ -52,9 +52,6 @@ export class Crop {
         case 'calcRatio':
             this.calcRatio(args.value['obj'], args.value['dimension']);
             break;
-        case 'isObjInImage':
-            this.isObjInImage(args.value['obj'], args.value['object']);
-            break;
         case 'getCurrFlipState':
             this.getCurrFlipState(args.value['panObj']);
             break;
@@ -92,6 +89,12 @@ export class Crop {
             break;
         case 'setInitCrop':
             this.isInitCrop = args.value['bool'];
+            break;
+        case 'resetZoom':
+            this.resetZoom();
+            break;
+        case 'revertTransform':
+            this.revertTransform(args.value['type'], args.value['coll']);
             break;
         case 'reset':
             this.reset();
@@ -196,7 +199,7 @@ export class Crop {
             y: parent.img.destTop + parent.img.destHeight / 2
         };
         for (const obj of parent.objColl) {
-            if (['rectangle', 'ellipse', 'text', 'image'].indexOf(obj.shape) !== -1) {
+            if (['rectangle', 'ellipse', 'text', 'image', 'redact'].indexOf(obj.shape) !== -1) {
                 if (isInitialRotated || obj.rotatedAngle !== 0) {
                     const { startX, startY, width, height } = obj.activePoint;
                     const angle: number = type === 'initial' ? obj.rotatedAngle : -obj.rotatedAngle;
@@ -756,7 +759,10 @@ export class Crop {
             }
             const transitionArgs: CropEventArgs = {cancel: false, startPoint: { x: startX, y: startY },
                 endPoint: {x: endX, y: endY }, preventScaling: false };
-            if (!object['isCropToolbar']) {parent.trigger('cropping', transitionArgs); }
+            if (!object['isCropToolbar']) {
+                parent.trigger('cropping', transitionArgs);
+                parent.editCompleteArgs = transitionArgs;
+            }
             this.cropEvent(transitionArgs, obj, object);
         }
     }
@@ -842,22 +848,6 @@ export class Crop {
             obj['height'] = heightRatio;
         }
         return { width: widthRatio, height: heightRatio };
-    }
-
-    private isObjInImage(obj: SelectionPoint, dummyObj?: Object): boolean {
-        const parent: ImageEditor = this.parent;
-        const { destLeft, destTop, destWidth, destHeight } = parent.img;
-        const { startX, endX, startY, endY } = obj.activePoint;
-        const isInside: boolean = (
-            (startX >= destLeft && endX <= (destLeft + destWidth)) ||
-            (startX <= destLeft && endX >= destLeft) ||
-            (startX <= (destLeft + destWidth) && endX >= (destLeft + destWidth)) ||
-            (startY >= destTop && endY <= (destTop + destHeight)) ||
-            (startY <= destTop && endY >= destTop) ||
-            (startY <= (destTop + destHeight) && endY >= (destTop + destHeight))
-        );
-        if (dummyObj) { dummyObj['isInside'] = isInside; }
-        return isInside;
     }
 
     private getCurrFlipState(panObj?: Object): string {

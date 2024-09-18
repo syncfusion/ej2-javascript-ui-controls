@@ -1,8 +1,8 @@
 $carousel-navigator-btn-bg: transparent !default;
-$carousel-navigator-btn-bg-hover: rgba($primary-text-color, .4) !default;
-$carousel-navigator-icon-color: $primary-text-color !default;
+$carousel-navigator-btn-bg-hover: rgba($white, .4) !default;
+$carousel-navigator-icon-color: rgba($white) !default;
 $carousel-indicator-bar-bg: $primary-text-color !default;
-$carousel-indicator-bar-border: 1px solid rgba($primary-text-color, .4) !default;
+$carousel-indicator-bar-border: 1px solid rgba($white, .4) !default;
 $carousel-indicator-bar-bg-active: $primary !default;
 $carousel-indicator-border-color-focus: $black !default;
 $carousel-indicator-progress-bg: rgba($carousel-indicator-bar-bg-active, .4) !default;

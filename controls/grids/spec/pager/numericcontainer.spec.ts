@@ -60,7 +60,7 @@ describe('Numericcontainer module testing', () => {
                 {
                     totalRecordsCount: 100, currentPage: 6, pageCount: 5, pageSize: 5,
                     enablePagerMessage: true, enableExternalMessage: true, externalMessage: 'externalMessage',
-                    enableRtl: true,customText: 'sheet',
+                    enableRtl: true, customText: 'sheet',
                     created: created
                 });
             pagerObj.appendTo('#Pager');
@@ -425,6 +425,51 @@ describe('Numericcontainer module testing', () => {
             pagerObj = elem = null;
         });
 
+    });
+
+    describe('Standardize Code coverage', () => {
+        let pagerObj: Pager;
+        let elem: HTMLElement = createElement('div', { id: 'Pager' });
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            pagerObj = new Pager(
+                {
+                    totalRecordsCount: 100, currentPage: 6, pageCount: 5, pageSize: 5,
+                    enablePagerMessage: true, enableExternalMessage: true, externalMessage: 'externalMessage',
+                    enableRtl: true, customText: 'sheet',
+                    created: created
+                });
+            pagerObj.appendTo('#Pager');
+        });
+
+
+        it('Navigate page testing', () => {
+            (pagerObj as any).keyPressHandler({ preventDefault: preventDefault });
+            (pagerObj as any).isPagerResized = true;
+            (pagerObj.element.querySelector('.e-next') as HTMLElement).click();
+            (pagerObj.element.querySelector('.e-last') as HTMLElement).click();
+            (pagerObj.element.querySelector('.e-prev') as HTMLElement).click();
+            (pagerObj.element.querySelector('.e-first') as HTMLElement).click();
+            (pagerObj.element.querySelector('.e-np') as HTMLElement).click();
+            (pagerObj.element.querySelector('.e-pp') as HTMLElement).click();
+            (pagerObj as any).keyDownHandler( { altKey: true, keyCode: 72 });
+            (pagerObj as any).keyDownHandler( { altKey: false });
+            pagerObj.element.innerHTML = '';
+            (pagerObj as any).keyDownHandler( { altKey: true, keyCode: 74 });
+            (pagerObj as any).setPagerFocus();
+            (pagerObj as any).getActiveElement();
+            pagerObj.hasParent = true;
+            (pagerObj as any).onKeyPress();
+        });
+
+
+        afterAll(() => {
+            pagerObj.destroy();
+            elem.remove();
+            pagerObj = elem = null;
+        });
     });
 
 });

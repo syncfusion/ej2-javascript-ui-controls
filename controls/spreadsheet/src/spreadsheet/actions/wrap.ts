@@ -46,10 +46,10 @@ export class WrapText {
     private wrapTextHandler(
         args: {
             range: number[], wrap: boolean, sheet: SheetModel, initial: boolean, td: Element, row: HTMLElement,
-            hRow: HTMLElement, isCustomHgt?: boolean
+            hRow: HTMLElement, isCustomHgt?: boolean, isPublic?: boolean
         }): void {
         if (args.initial || inView(this.parent, args.range, true)) {
-            if (isReadOnlyCells(this.parent, args.range)) { return; }
+            if (args.isPublic && isReadOnlyCells(this.parent, args.range)) { return; }
             if (args.initial && !args.td && inView(this.parent, args.range, true)) {
                 args.initial = false;
             }
@@ -72,8 +72,8 @@ export class WrapText {
                         } else {
                             ele.classList.remove(WRAPTEXT); lineHgt = null;
                         }
-                        if (isCustomHgt || isMerge || row.height < 20 ||
-                            (!isNullOrUndefined(args.sheet.standardHeight) && args.sheet.standardHeight < 20)) { // Row height less than default row height(20)
+                        if (isCustomHgt || isMerge || row.height < 20
+                            || (!isNullOrUndefined(args.sheet.standardHeight) && args.sheet.standardHeight < 20)) {
                             this.updateWrapCell(i, j, args.sheet, ele);
                         }
                         if (Browser.isIE) {

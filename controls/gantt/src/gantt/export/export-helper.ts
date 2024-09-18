@@ -353,7 +353,7 @@ export class ExportHelper {
         cell.isHeaderCell = false;
         cell.style.padding = new PdfPaddings();
         this.copyStyles(this.ganttStyle.cell, cell, row.isParentRow);
-        if (this.colIndex !== this.parent.treeColumnIndex) {
+        if (column['index'] !== this.parent.treeColumnIndex) {
             cell.style.format.alignment = PdfTextAlignment[column.textAlign];
         } else {
             cell.style.format.paragraphIndent = cell.row.level * 10;
@@ -385,6 +385,9 @@ export class ExportHelper {
                 const fontFamily: number = this.getFontFamily(font);
                 cell.style.fontFamily = fontFamily;
             }
+            else {
+                cell.style.fontFamily = this.ganttStyle.fontFamily;
+            }
             if (args.style.fontSize) {
                 cell.style.fontSize = args.style.fontSize;
             }
@@ -392,6 +395,9 @@ export class ExportHelper {
                 const style: any = args.style.fontStyle;
                 const fontStyle: number = this.getFontStyle(style);
                 cell.style.fontStyle = fontStyle;
+            }
+            else {
+                cell.style.fontStyle = this.ganttStyle.footer.fontStyle;
             }
             if (args.style.format) {
                 cell.style.format = args.style.format;
@@ -401,9 +407,11 @@ export class ExportHelper {
             }
         }
         if (!isNullOrUndefined(args.image) && !isNullOrUndefined(args.image.base64)) {
-            args.value = new PdfBitmap(args.image.base64);
-            args.value.height = (<{ height?: number }>args.image).height || args.value.height;
-            args.value.width = (<{ width?: number }>args.image).width || args.value.width;
+            const dimension: Object = extend({}, args.image, null, true);
+            args.image = new PdfBitmap(args.image.base64) as any;
+            args.image.height = dimension['height'] ?  dimension['height'] : (<{ height?: number }>args.image).height;
+            args.image.width = dimension['width'] ? dimension['width'] : (<{ width?: number }>args.image).width;
+            cell.image = args.image as any;
         }
         cell.value = args.value;
         if (!isNullOrUndefined(args.hyperLink) && (!isNullOrUndefined(args.hyperLink.displayText) ||
@@ -719,19 +727,18 @@ export class ExportHelper {
             return 0;
         }
     }
-
     private getFontStyle(fontStyle: string): number {
         switch (fontStyle) {
-            case 'Strikeout':
-                return 8;
-            case 'Underline':
-                return 4;
-            case 'Italic':
-                return 2;
-            case 'Bold':
-                return 1;
-            default:
-                return 0;
+        case 'Strikeout':
+            return 8;
+        case 'Underline':
+            return 4;
+        case 'Italic':
+            return 2;
+        case 'Bold':
+            return 1;
+        default:
+            return 0;
         }
     }
 
@@ -1066,7 +1073,8 @@ export class ExportHelper {
     }
     private setContentFormat(content: PdfHeaderFooterContent, format: PdfStringFormat): { format: PdfStringFormat, size: SizeF } {
         const width: number = (content.size) ? content.size.width * 0.75 : this.pdfDoc.pageSettings.size.width;
-        const height: number = (content.size) ? content.size.height * 0.75 : (!isNullOrUndefined(this.exportProps.footer) ? this.exportProps.footer.height * 0.50 : 0);
+        const height: number = (content.size) ? content.size.height * 0.75 : (!isNullOrUndefined(this.exportProps.footer) ?
+            this.exportProps.footer.height * 0.50 : 0);
         format = new PdfStringFormat(PdfTextAlignment.Left, PdfVerticalAlignment.Middle);
         if (!isNullOrUndefined(content.style.hAlign)) {
             switch (content.style.hAlign) {

@@ -16,7 +16,7 @@
     }
 
     & .e-filter-icon {
-      @if $sheet-skin == 'Material3' or $skin-name == 'fluent2' {
+      @if $sheet-skin == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
         color: $spreadsheet-filter-icon-color;
       }
     }
@@ -138,12 +138,15 @@
             }
           }
         }
-        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'FluentUI' {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' or $sheet-skin == 'FluentUI' {
           & .e-toolbar-item {
             border-right-color: $spreadsheet-border-color;
+            @if $skin-name == 'bootstrap5.3' {
+              border-right-color: $spreadsheet-separator-border-color;
+            }
 
             & .e-tab-wrap {
-              border-radius: 0;
+              border-radius: $sheet-tab-wrap-border-radius;
               color: $sheet-tab-color;
             }
 
@@ -165,7 +168,7 @@
             }
           }
         }
-        @if $sheet-skin == 'material' or $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5-dark' {
+        @if $sheet-skin == 'material' or $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5-dark' {
           & .e-toolbar-item {
             & .e-tab-wrap:hover .e-tab-text,
             &.e-active .e-tab-wrap .e-tab-text {
@@ -174,8 +177,17 @@
           }
         }
 
+        @if $skin-name == 'bootstrap5.3' {
+          & .e-toolbar-item {
+            & .e-tab-wrap:hover .e-tab-text,
+            &.e-active .e-tab-wrap .e-tab-text {
+              color: $spread-sheet-tab-text-color;
+            }
+          }
+        }
+
         & .e-tab-wrap:hover {
-          @if $skin-name != 'fluent2' {
+          @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
             background: $sheet-tab-hover-bg-color;
           }
         }
@@ -188,25 +200,25 @@
       & .e-btn.e-flat.e-icon-btn {
         border-color: transparent;
         box-shadow: none;
-        @if $skin-name != 'bootstrap5' {
+        @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' {
           color: $agg-clr;
         }
-        @if $skin-name == 'material' or $skin-name == 'bootstrap5' or $skin-name == 'material-dark' or $skin-name == 'fluent2' {
+        @if $skin-name == 'material' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'material-dark' or $skin-name == 'fluent2' {
           & .e-btn-icon {
             color: $sheet-tab-btn-icon-color;
           }
         }
 
         &:hover:not(.e-disabled) {
-          @if $skin-name == 'bootstrap4' {
+          @if $skin-name == 'bootstrap4' or $skin-name == 'fluent2' {
             & .e-btn-icon {
-              color: $btn-color;
+              color: $sheet-tab-btn-icon-hover-color;
             }
           }
         }
 
         &:hover {
-          @if $skin-name == 'bootstrap5' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             & .e-btn-icon {
               color: $btn-color;
             }
@@ -220,7 +232,7 @@
         }
 
         &:disabled {
-          @if $skin-name == 'bootstrap5' or $skin-name == 'Material3' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' {
             & .e-btn-icon {
               color: $btn-disabled-color;
             }
@@ -235,6 +247,11 @@
         }
         @if $skin-name == 'bootstrap4' {
           color: $btn-color;
+        }
+        @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+          & .e-btn-icon {
+            color: $sheet-tab-btn-icon-active-color;
+          }
         }
       }
 
@@ -273,7 +290,7 @@
       }
       @else {
         box-shadow: none;
-        @if $skin-name != 'highcontrast' and $skin-name != 'bootstrap5' {
+        @if $skin-name != 'highcontrast' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' {
           &:focus {
             background: $hdr-hover-bg-color;
           }
@@ -306,6 +323,10 @@
         }
         @else {
           background: $sheet-tab-aggr-bg-color-hover;
+          color: $content-text-color-hover;
+          & .e-btn-icon {
+            color: $sheet-tab-btn-icon-hover-color;
+          }
         }
         border-color: $spreadsheet-ribbon-item-hover-border-color;
         @if $skin-name == 'Material3' {
@@ -319,7 +340,7 @@
             color: $tbar-active-font-color;
           }
         }
-        @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' {
           color: $btn-flat-hover-color;
 
           & .e-icons,
@@ -335,6 +356,12 @@
           border-color: $spreadsheet-ribbon-item-active-border-color;
           @if $skin-name == 'Material3' {
             border-radius: 4px;
+          }
+          @if $skin-name == 'fluent2' {
+            color: $content-text-color-selected;
+            & .e-btn-icon {
+              color: $sheet-tab-btn-icon-active-color;
+            }
           }
         }
       }
@@ -356,7 +383,7 @@
           border-color: $hdr-selection-bg-color;
         }
       }
-      @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' {
         &.e-active,
         &:focus {
           color: $btn-flat-active-color;
@@ -416,24 +443,34 @@
           background-color: transparent;
           color: $tbar-default-font;
         }
+        @if $skin-name == 'bootstrap5.3' {
+          &:not(:hover):not(.e-active) .e-btn-icon.e-icons {
+            color: $spreadsheet-tbar-btn-icon-color;
+          }
+        }
 
         &:hover:not(.e-active) {
           background: $spreadsheet-ribbon-toolbar-btn-hover-color;
           border-color: $spreadsheet-ribbon-item-hover-border-color;
           @if $skin-name == 'fluent2' {
+            color: $content-text-color-hover;
             & .e-btn-icon.e-icons:not(.e-caret) {
               color: $spreadsheet-ribbon-toolbar-btn-hover-active-color;
+            }
+            & .e-btn-icon.e-icons.e-caret {
+              color: $icon-color-hover;
             }
           }
           @if $skin-name == 'Material3' {
             border-radius: 4px;
           }
-          @if $skin-name == 'bootstrap5' {
-            color: $tbar-active-icon-color;
-
-            & .e-icons,
-            &.e-dropdown-btn .e-tbar-btn-text {
-              color: inherit;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+            color: $spreadsheet-ribbon-item-hover-color;
+            @if $skin-name != 'bootstrap5.3' {
+              & .e-icons,
+              &.e-dropdown-btn .e-tbar-btn-text {
+                color: inherit;
+              }
             }
           }
           @if $skin-name == 'bootstrap4' {
@@ -455,12 +492,16 @@
             }
           }
           @if $skin-name == 'fluent2' {
+            color: $content-text-color-selected;
             & .e-btn-icon.e-icons:not(.e-caret) {
               color: $spreadsheet-ribbon-toolbar-btn-hover-active-color;
             }
+            & .e-btn-icon.e-icons.e-caret {
+              color: $icon-color-pressed;
+            }
           }
-          @if $skin-name == 'bootstrap5' {
-            color: $tbar-active-icon-color;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+            color: $spreadsheet-ribbon-item-active-color;
           }
           @if $skin-name == 'bootstrap4' {
             color: $tbar-hover-font;
@@ -518,11 +559,20 @@
         }
 
         &.e-split-colorpicker {
-          @if $skin-name == 'bootstrap5' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             color: $tbar-default-font;
           }
         }
       }
+
+      @if $skin-name == 'bootstrap5.3' {
+        &.e-split-colorpicker {
+          &.e-icon-btn:focus:not(:hover) {
+            color: $spreadsheet-tbar-btn-icon-color;
+          }
+        }
+      }
+
       @if $skin-name == 'bootstrap' {
         &.e-split-colorpicker:hover + .e-dropdown-btn {
           border-left-color: transparent;
@@ -546,7 +596,7 @@
       }
 
       & .e-separator {
-        @if $skin-name != 'fluent2' {
+        @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
           border-left-color: $spreadsheet-border-color;
         }
         @else {
@@ -574,7 +624,7 @@
 
     & .e-sheet .e-spreadsheet-edit::selection,
     & .e-formula-bar::selection {
-      @if $skin-name == 'Material3' {
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
         background: $select-all-active-bg-color;
         color: $spreadsheet-edit-selection-font-color;
       }
@@ -587,13 +637,16 @@
 
     & .e-main-panel,
     & .e-header-panel {
-      @if $skin-name != 'Material3' {
+      @if $skin-name != 'Material3' and $skin-name != 'bootstrap5.3' {
         background-color: $cell-background;
       }
     }
 
     & .e-column-header {
       border-color: $spreadsheet-border-color;
+      @if $skin-name == 'bootstrap5.3' {
+        border-color: $spreadsheet-separator-border-color;
+      }
     }
 
     & .e-header-cell {
@@ -610,6 +663,9 @@
     & .e-select-all-cell {
       @if $skin-name == 'Material3' {
         border-bottom-color: $hdr-cell-border-color;
+      }
+      @else if $skin-name == 'bootstrap5.3' {
+        border-bottom-color: $spreadsheet-separator-border-color;
       }
       @else {
         border-bottom-color: $spreadsheet-border-color;
@@ -663,6 +719,9 @@
           @if $skin-name == 'Material3' {
             border-right-color: $hdr-cell-border-color;
           }
+          @else if $skin-name == 'bootstrap5.3' {
+            border-right-color: $spreadsheet-separator-border-color;
+          }
           @else {
             border-right-color: $spreadsheet-border-color;
           }
@@ -687,7 +746,7 @@
         & .e-column-header .e-header-cell.e-prev-highlight,
         & .e-column-header .e-header-cell.e-highlight,
         & .e-select-all-cell.e-prev-highlight-right {
-          border-right-color: $hdr-selection-border-color;
+          border-right-color: $spreadsheet-hdr-selection-border-color;
         }
 
         & .e-column-header .e-header-cell.e-hide-start.e-prev-highlight,
@@ -695,14 +754,14 @@
           border-right-color: transparent;
 
           &::after {
-            border-right-color: $hdr-selection-border-color;
+            border-right-color: $spreadsheet-hdr-selection-border-color;
           }
         }
 
         & .e-column-header .e-header-cell.e-hide-end.e-highlight,
         & .e-column-header .e-header-cell.e-highlight + th.e-header-cell.e-hide-end {
           &::before {
-            border-left-color: $hdr-selection-border-color;
+            border-left-color: $spreadsheet-hdr-selection-border-color;
           }
         }
       }
@@ -721,6 +780,9 @@
         & .e-selectall-container .e-header-cell {
           @if $skin-name == 'Material3' {
             border-left-color: $hdr-cell-border-color;
+          }
+          @else if $skin-name == 'bootstrap5.3' {
+            border-left-color: $spreadsheet-separator-border-color;
           }
           @else {
             border-left-color: $spreadsheet-border-color;
@@ -746,7 +808,7 @@
         & .e-column-header .e-header-cell.e-prev-highlight,
         & .e-column-header .e-header-cell.e-highlight,
         & .e-select-all-cell.e-prev-highlight-right {
-          border-left-color: $hdr-selection-border-color;
+          border-left-color: $spreadsheet-hdr-selection-border-color;
         }
 
         & .e-column-header .e-header-cell.e-hide-start.e-prev-highlight,
@@ -754,14 +816,14 @@
           border-left-color: transparent;
 
           &::after {
-            border-left-color: $hdr-selection-border-color;
+            border-left-color: $spreadsheet-hdr-selection-border-color;
           }
         }
 
         & .e-column-header .e-header-cell.e-hide-end.e-highlight,
         & .e-column-header .e-header-cell.e-highlight + th.e-header-cell.e-hide-end {
           &::before {
-            border-right-color: $hdr-selection-border-color;
+            border-right-color: $spreadsheet-hdr-selection-border-color;
           }
         }
       }
@@ -842,16 +904,24 @@
     .e-select-all-cell.e-prev-highlight-bottom,
     .e-row-header .e-table tr.e-hide-end.e-prev-highlight .e-header-cell::before,
     .e-row-header .e-table tr.e-hide-end .e-header-cell.e-highlight::before {
-      border-bottom-color: $hdr-selection-border-color;
+      border-bottom-color: $spreadsheet-hdr-selection-border-color;
     }
 
     .e-row-header .e-table tr.e-hide-start.e-prev-highlight .e-header-cell::after,
     .e-row-header .e-table tr.e-hide-start .e-header-cell.e-highlight::after {
-      border-top-color: $hdr-selection-border-color;
+      border-top-color: $spreadsheet-hdr-selection-border-color;
     }
 
     & .e-toolbar-panel .e-dropdown-btn.e-btn {
       border-color: $spreadsheet-border-color;
+    }
+
+    & .e-ribbon .e-menu-wrapper.e-file-menu {
+      & ul .e-menu-item {
+        @if $skin-name == 'bootstrap5.3' {
+          color: $spreadsheet-file-menu-color;
+        }
+      }
     }
 
     .e-menu-wrapper {
@@ -879,6 +949,9 @@
         &.e-hover,
         &.e-active {
           background-color: transparent;
+          @if $skin-name == 'fluent2' {
+            color: $content-text-color;
+          }
         }
 
         &.e-hover {
@@ -890,7 +963,7 @@
       }
 
       & .e-sort-delete {
-        @if $skin-name != 'fluent2' {
+        @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
           border-left-color: $spreadsheet-border-color;
         }
         @else {
@@ -906,13 +979,13 @@
 
     & .e-frozen-column {
       background-color: $freezepane-color;
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'Material3' or $sheet-skin == 'fluent2' {
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' or $sheet-skin == 'Material3' or $sheet-skin == 'fluent2' {
         border-right: $spreadsheet-frozen-border;
       }
     }
 
     & .e-frozen-row {
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'Material3' or $sheet-skin == 'fluent2' {
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' or $sheet-skin == 'Material3' or $sheet-skin == 'fluent2' {
         border-bottom: $spreadsheet-frozen-border;
       }
       @else {
@@ -925,7 +998,7 @@
       @if $sheet-skin == 'highcontrast' {
         background-color: $cell-color;
       }
-      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' {
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' {
         background-color: $dark-ele-color;
       }
 
@@ -952,6 +1025,12 @@
 
     & .e-datavalidation-dlg .e-dlg-error {
       color: $dlg-error-color;
+    }
+
+    & .sf-spreadsheet {
+      .e-resize-helper {
+        border-color: $selection-border-color;
+      }
     }
   }
 
@@ -1109,13 +1188,14 @@
     & .e-menu-item.e-focused {
       @if $skin-name == 'fluent2' {
         background-color: transparent;
+        color: $flyout-text-color;
       }
     }
     & .e-is1,
     & .e-is3,
     & .e-is5,
     & .e-is7 {
-      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' {
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' {
         background-color: $ele-color;
       }
       @else if $skin-name == 'highcontrast' {
@@ -1134,7 +1214,7 @@
     & .e-is4,
     & .e-is6,
     & .e-is8 {
-      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' {
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' {
         background-color: $dark-ele-color;
       }
       @else if $skin-name == 'highcontrast' {
@@ -1147,7 +1227,7 @@
 
     & .e-is-wrapper:hover,
     & .e-is-wrapper:focus {
-      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' {
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' {
         background-color: $dark-ele-hover-color;
       }
       @else if $skin-name == 'highcontrast' {
@@ -1537,6 +1617,30 @@
     background: transparent url('data:image/svg+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNCIgaGVpZ2h0PSIxNCIgdmlld0JveD0iMCAwIDE0IDE0Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiAjYjNiM2IzOwogICAgICB9CgogICAgICAuY2xzLTIgewogICAgICAgIGZpbGw6ICM3MjcyNzI7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDx0aXRsZT5BcnRib2FyZCA1MCBjb3B5PC90aXRsZT4KICA8Zz4KICAgIDxyZWN0IGNsYXNzPSJjbHMtMSIgeD0iMC41IiB5PSIwLjUiIHdpZHRoPSI2IiBoZWlnaHQ9IjYiIHJ4PSIwLjUiIHJ5PSIwLjUiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTYsN0gxQTEsMSwwLDAsMSwwLDZWMUExLDEsMCwwLDEsMSwwSDZBMSwxLDAsMCwxLDcsMVY2QTEsMSwwLDAsMSw2LDdaTTYsNlY2Wk0xLDFWNkg2VjFaIi8+CiAgPC9nPgogIDxnPgogICAgPHJlY3QgY2xhc3M9ImNscy0xIiB4PSI2LjUiIHk9IjAuNSIgd2lkdGg9IjYiIGhlaWdodD0iNiIgcng9IjAuNSIgcnk9IjAuNSIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTIsN0g3QTEsMSwwLDAsMSw2LDZWMUExLDEsMCwwLDEsNywwaDVhMSwxLDAsMCwxLDEsMVY2QTEsMSwwLDAsMSwxMiw3Wm0wLTFWNlpNNywxVjZoNVYxWiIvPgogIDwvZz4KICA8Zz4KICAgIDxyZWN0IGNsYXNzPSJjbHMtMSIgeD0iMC41IiB5PSI2LjUiIHdpZHRoPSI2IiBoZWlnaHQ9IjYiIHJ4PSIwLjUiIHJ5PSIwLjUiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTYsMTNIMWExLDEsMCwwLDEtMS0xVjdBMSwxLDAsMCwxLDEsNkg2QTEsMSwwLDAsMSw3LDd2NUExLDEsMCwwLDEsNiwxM1ptMC0xdjBaTTEsN3Y1SDZWN1oiLz4KICA8L2c+CiAgPGc+CiAgICA8cmVjdCBjbGFzcz0iY2xzLTEiIHg9IjYuNSIgeT0iNi41IiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiByeD0iMC41IiByeT0iMC41Ii8+CiAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xMiwxM0g3YTEsMSwwLDAsMS0xLTFWN0ExLDEsMCwwLDEsNyw2aDVhMSwxLDAsMCwxLDEsMXY1QTEsMSwwLDAsMSwxMiwxM1ptMC0xdjBaTTcsN3Y1aDVWN1oiLz4KICA8L2c+Cjwvc3ZnPgo=') no-repeat 50% 50%;
   }
 
+  .e-chart-menu.e-menu-wrapper .e-menu .e-menu-item.e-selected .e-menu-icon,
+  .e-chart-menu.e-menu-wrapper .e-menu .e-menu-item.e-focused .e-menu-icon,
+  .e-addchart-menu.e-menu-wrapper .e-menu .e-menu-item.e-selected .e-menu-icon,
+  .e-addchart-menu.e-menu-wrapper .e-menu .e-menu-item.e-focused .e-menu-icon,
+  .e-chart-type-menu.e-menu-wrapper .e-menu .e-menu-item.e-selected .e-menu-icon,
+  .e-chart-type-menu.e-menu-wrapper .e-menu .e-menu-item.e-focused .e-menu-icon,
+  .e-cf-menu.e-menu-wrapper .e-menu .e-menu-item.e-selected .e-menu-icon,
+  .e-chart-type-menu.e-menu-wrapper .e-menu .e-menu-item.e-focused .e-menu-icon,
+  .e-chart-menu.e-menu-wrapper .e-menu .e-menu-item.e-selected .e-caret,
+  .e-chart-menu.e-menu-wrapper .e-menu .e-menu-item.e-focused .e-caret,
+  .e-addchart-menu.e-menu-wrapper .e-menu .e-menu-item.e-selected .e-caret,
+  .e-addchart-menu.e-menu-wrapper .e-menu .e-menu-item.e-focused .e-caret,
+  .e-chart-type-menu.e-menu-wrapper .e-menu .e-menu-item.e-selected .e-caret,
+  .e-chart-type-menu.e-menu-wrapper .e-menu .e-menu-item.e-focused .e-caret,
+  .e-cf-menu.e-menu-wrapper .e-menu .e-menu-item.e-selected .e-caret,
+  .e-chart-type-menu.e-menu-wrapper .e-menu .e-menu-item.e-focused .e-caret {
+    @if $skin-name == 'bootstrap5.3' {
+      background-color: transparent;
+      color: $flyout-text-color-pressed;
+      outline: 0 solid $flyout-bg-color-pressed;
+      outline-offset: 0;
+    }
+  }
+
   .e-popup.e-menu-popup.e-chart-menu ul,
   .e-popup.e-menu-popup.e-chart-type-menu ul {
     & .e-column1-text,
@@ -1554,7 +1658,7 @@
       @else if $skin-name == 'highcontrast' {
         background-color: $cell-color;
       }
-      @else if $skin-name != 'fluent2' {
+      @else if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
         background-color: $ele-hover-color;
       }
     }
@@ -1568,7 +1672,7 @@
     & .e-radar-cont,
     & .e-area-cont,
     & .e-scatter-cont {
-      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind-dark' or $sheet-skin == 'bootstrap5' {
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind-dark' or $sheet-skin == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
         background-color: $dark-ele-color;
       }
       @else if $skin-name == 'highcontrast' {
@@ -1636,13 +1740,13 @@
       & .e-stackedarea100:hover,
       & .e-scatter:hover,
       & .e-menu-icon:focus {
-        @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' {
+        @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' {
           background-color: $dark-ele-hover-color;
         }
         @else if $skin-name == 'highcontrast' or $skin-name == 'tailwind-dark' or $sheet-skin == 'bootstrap5-dark' {
           background-color: $hdr-hover-bg-color;
         }
-        @else if $skin-name == 'fluent2' {
+        @else if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
           background-color: $spreadsheet-chart-icon-bg-color;
           border-radius: 4px;
         }
@@ -1654,13 +1758,13 @@
 
     & .e-is-wrapper:hover,
     & .e-is-wrapper:focus {
-      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' {
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' {
         background-color: $dark-ele-hover-color;
       }
       @else if $skin-name == 'highcontrast' {
         background-color: $hdr-hover-bg-color;
       }
-      @else if $skin-name == 'fluent2' {
+      @else if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3'{
         background-color: $spreadsheet-chart-icon-bg-color;
       }
       @else {
@@ -1677,15 +1781,45 @@
     & ul .e-item .e-menu-icon.e-selected-icon {
       color: $select-icon-color;
     }
-
-    &.e-align-ddb ul .e-item.e-selected .e-menu-icon {
+    & ul .e-item:hover {
       @if $skin-name == 'fluent2' {
-        color: $spreadsheet-ribbon-toolbar-btn-hover-active-color;
+        & .e-menu-icon.e-selected-icon {
+          color: $icon-color-hover;
+        }
+      }
+    }
+
+    &.e-borders-ddb {
+      & .e-menu-wrapper.e-borders-menu ul {
+        & .e-menu-item:active .e-menu-icon {
+          @if $skin-name == 'bootstrap5.3' {
+            color: $flyout-text-color-pressed;
+          }
+        }
+      }
+    }
+
+    &.e-align-ddb ul .e-item.e-selected,
+    &.e-align-ddb ul .e-item.e-focused {
+      & .e-menu-icon {
+        @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+          color: $spreadsheet-ribbon-toolbar-btn-hover-active-color;
+        }
       }
     }
 
     &.e-align-ddb ul .e-item:not(.e-selected) .e-menu-icon {
-      color: $tbar-default-icon-color;
+      @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
+        color: $tbar-default-icon-color;
+      }
+    }
+
+    &.e-align-ddb ul .e-item:not(.e-selected):hover {
+      @if $skin-name == 'fluent2' {
+        & .e-menu-icon {
+          color: $icon-color-hover;
+        }
+      }
     }
     @if $skin-name == 'fabric' {
       &.e-borders-ddb .e-menu-wrapper {
@@ -1700,7 +1834,7 @@
 
   .e-sort-dialog {
     & .e-sort-listwrapper {
-      @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+      @if $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
         border-bottom: 1px dashed $spreadsheet-border-color;
       }
     }

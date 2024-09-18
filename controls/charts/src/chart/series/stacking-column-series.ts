@@ -7,7 +7,7 @@ import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { CylinderSeriesOption } from './column-series';
 
 /**
- * `StackingColumnSeries` module used to render the stacking column series.
+ * The `StackingColumnSeries` module is used to render the stacking column series.
  */
 export class StackingColumnSeries extends ColumnBase {
     public sideBySideInfo: DoubleRange[] = [];
@@ -92,12 +92,9 @@ export class StackingColumnSeries extends ColumnBase {
                 }
                 if (seriesCollection[j as number].marker.dataLabel.visible && seriesCollection[j as number].chart.dataLabelModule) {
                     seriesCollection[j as number].chart.dataLabelModule.commonId = seriesCollection[j as number].chart.element.id + '_Series_' + seriesCollection[j as number].index + '_Point_';
-                    const dataLabelElement: Element[] = seriesCollection[j as number].chart.dataLabelModule.renderDataLabel(
+                    seriesCollection[j as number].chart.dataLabelModule.renderDataLabel(
                         seriesCollection[j as number], seriesCollection[j as number].points[point[i as number]],
                         null, seriesCollection[j as number].marker.dataLabel);
-                    for (let j: number = 0; j < dataLabelElement.length; j++) {
-                        series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                    }
                 }
             }
         }
@@ -107,6 +104,7 @@ export class StackingColumnSeries extends ColumnBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         this.animate(series);

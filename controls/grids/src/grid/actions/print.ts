@@ -108,7 +108,7 @@ export class Print {
         const printGrid: IGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode) as Object);
         for (let i: number = 0; i < printGrid.columns.length; i++) {
             (printGrid.columns[parseInt(i.toString(), 10)] as Column) = extend({}, printGrid.columns[parseInt(i.toString(), 10)]) as Column;
-            if (gObj.isFrozenGrid() && !gObj.getFrozenColumns()) {
+            if (!gObj.getFrozenColumns() && gObj.isFrozenGrid()) {
                 (printGrid.columns[parseInt(i.toString(), 10)] as Column).freeze = undefined;
             }
         }

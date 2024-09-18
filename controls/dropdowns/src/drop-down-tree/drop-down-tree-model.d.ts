@@ -104,6 +104,13 @@ export interface TreeSettingsModel {
     autoCheck?: boolean;
 
     /**
+     * Determines whether the disabled children will be checked or not if their parent is checked.
+     *
+     * @default true
+     */
+    checkDisabledChildren?: boolean;
+
+    /**
      * Specifies the action on which the parent items in the pop-up should expand or collapse. The available actions are
      * * `Auto` - In desktop, the expand or collapse operation happens when you double-click the node,
      * and in mobile devices it happens on single-tap.
@@ -461,6 +468,18 @@ export interface DropDownTreeModel extends ComponentModel{
      * @aspType Object
      */
     value?: string[];
+
+    /**
+     * Specifies the way to customize the selected values in the Dropdown Tree component based on application needs. If the **valueTemplate** property is set, the template content overrides the displayed item text.
+     * The property accepts [template string] (https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID holding the content. The context for the valueTemplate comes from the data object passed to it.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    valueTemplate?: string | Function;
 
     /**
      * Specifies the width of the component. By default, the component width sets based on the width of its parent container.

@@ -4,7 +4,7 @@ import { RangeModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
-import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler, ExtendedSheet } from '../common/index';
+import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler, ExtendedSheet, moveSheetHandler } from '../common/index';
 import { ProtectSettings, getCellAddress } from '../common/index';
 import { isUndefined, ChildProperty, Property, Complex, Collection, extend } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
@@ -278,7 +278,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
      *
      * @default { rowIndex: 0, colIndex: 0 }
      */
-    @Property({})
+    @Complex<UsedRangeModel>({}, UsedRange)
     public usedRange: UsedRangeModel;
 
     /**
@@ -537,17 +537,17 @@ export function initSheet(context: Workbook, sheet?: SheetModel[], isImport?: bo
     sheets.forEach((sheet:  ExtendedSheet) => {
         sheet.id = sheet.id || 0;
         sheet.name = sheet.name || '';
-        sheet.rowCount = isUndefined(sheet.rowCount) ? 100 : sheet.rowCount;
-        sheet.colCount = isUndefined(sheet.colCount) ? 100 : sheet.colCount;
+        context.setSheetPropertyOnMute(sheet, 'rowCount', sheet.rowCount || 100);
+        context.setSheetPropertyOnMute(sheet, 'colCount', sheet.colCount || 100);
         context.setSheetPropertyOnMute(sheet, 'topLeftCell', sheet.topLeftCell || 'A1');
         context.setSheetPropertyOnMute(sheet, 'activeCell', sheet.activeCell || 'A1');
         context.setSheetPropertyOnMute(sheet, 'selectedRange', sheet.selectedRange || sheet.activeCell + ':' + sheet.activeCell);
-        sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
+        context.setSheetPropertyOnMute(sheet, 'usedRange', sheet.usedRange || { rowIndex: 0, colIndex: 0 });
         context.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges ? sheet.ranges : []);
         context.setSheetPropertyOnMute(sheet, 'rows', (sheet.rows && extend([], sheet.rows, null, true)) || []);
         context.setSheetPropertyOnMute(sheet, 'columns', sheet.columns || []);
-        sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
-        sheet.showGridLines = isUndefined(sheet.showGridLines) ? true : sheet.showGridLines;
+        context.setSheetPropertyOnMute(sheet, 'showHeaders', isUndefined(sheet.showHeaders) ? true : sheet.showHeaders);
+        context.setSheetPropertyOnMute(sheet, 'showGridLines', isUndefined(sheet.showGridLines) ? true : sheet.showGridLines);
         context.setSheetPropertyOnMute(sheet, 'state', sheet.state || 'Visible');
         sheet.maxHgts = sheet.maxHgts || [];
         sheet.isImportProtected = sheet.isProtected && isImport;
@@ -624,6 +624,7 @@ export function moveSheet(
         context.trigger('actionBegin', args);
     }
     if (!args.eventArgs.cancel) {
+        context.notify(moveSheetHandler, { prevIndex: context.activeSheetIndex, currentIndex: position });
         sheetIndexes.forEach((sIdx: number, idx: number) => {
             context.sheets.splice(position + idx, 0, context.sheets.splice(sIdx + (position > sIdx ? -1 * idx : 0), 1)[0]);
         });

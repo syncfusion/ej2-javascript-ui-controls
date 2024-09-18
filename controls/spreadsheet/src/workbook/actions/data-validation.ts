@@ -1,8 +1,8 @@
 import { Workbook, SheetModel, CellModel, getSheet, getColumn, ColumnModel, isHiddenRow, getCell, setCell, getSheetIndex, getSheetNameFromAddress } from '../base/index';
 import { cellValidation, applyCellFormat, isValidation, addHighlight, getCellAddress, validationHighlight, getSwapRange, getSheetIndexFromAddress, getSplittedAddressForColumn, getRangeFromAddress, getViewportIndexes } from '../common/index';
-import { removeHighlight, InsertDeleteEventArgs, checkIsFormula, checkCellValid } from '../common/index';
+import { removeHighlight, InsertDeleteEventArgs, checkIsFormula, CheckCellValidArgs } from '../common/index';
 import { getRangeIndexes, getUpdatedFormulaOnInsertDelete, InsertDeleteModelArgs } from '../common/index';
-import { CellFormatArgs, ValidationModel, updateCell, beforeInsert, beforeDelete } from '../common/index';
+import { CellFormatArgs, ValidationModel, updateCell, beforeInsert, beforeDelete, addListValidationDropdown } from '../common/index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 
@@ -58,7 +58,15 @@ export class WorkbookDataValidation {
             onlyRange = args.range.split('!')[1];
             sheetName = args.range.split('!')[0];
         }
-        const sheet: SheetModel = getSheet(this.parent, sheetName ? getSheetIndex(this.parent, sheetName) : this.parent.activeSheetIndex);
+        let sheet: SheetModel; let isActiveSheet: boolean;
+        if (sheetName) {
+            const sheetIdx: number = getSheetIndex(this.parent, sheetName);
+            sheet = getSheet(this.parent, sheetIdx);
+            isActiveSheet = sheetIdx === this.parent.activeSheetIndex;
+        } else {
+            sheet = this.parent.getActiveSheet();
+            isActiveSheet = true;
+        }
         this.parent.dataValidationRange = (this.parent.dataValidationRange.indexOf('!') > -1 ? '' : sheet.name + '!') + this.parent.dataValidationRange + onlyRange + ',';
         const rangeInfo: { range: string, isFullCol: boolean }  = this.getRangeWhenColumnSelected(onlyRange, sheet);
         onlyRange = rangeInfo.range;
@@ -72,15 +80,22 @@ export class WorkbookDataValidation {
         if (args.viewport && rangeInfo.isFullCol) {
             viewportIndexes = getViewportIndexes(this.parent, args.viewport);
         }
-        if (this.parent.listSeparator !== ',' && !args.isRemoveValidation && args.rules.type === 'List' &&
-            args.rules.value1.includes(this.parent.listSeparator)) {
-            args.rules.value1 = args.rules.value1.split(this.parent.listSeparator).join(',');
+        if (!args.isRemoveValidation && args.rules.type === 'List' && args.rules.value1) {
+            args.rules.value1 = args.rules.value1.trim();
+            if (args.rules.value1[args.rules.value1.length - 1] === this.parent.listSeparator) {
+                args.rules.value1 = args.rules.value1.substring(0, args.rules.value1.length - 1);
+            }
         }
+        const activeCellIndex: number[] = getSwapRange(getRangeIndexes(sheet.activeCell));
+        let isListValidation: boolean;
         for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
             if (rangeInfo.isFullCol) {
                 column = getColumn(sheet, colIdx);
                 if (args.isRemoveValidation) {
                     if (column && column.validation) {
+                        if (colIdx === activeCellIndex[1]) {
+                            isListValidation = column.validation.type === 'List';
+                        }
                         delete column.validation;
                         if (viewportIndexes) {
                             viewportIndexes.forEach((viewportIndex: number[]) => {
@@ -98,6 +113,9 @@ export class WorkbookDataValidation {
                     column = getColumn(sheet, colIdx);
                     column.validation = { operator: args.rules.operator, type: args.rules.type, value1: args.rules.value1, value2:
                         args.rules.value2, inCellDropDown: args.rules.inCellDropDown, ignoreBlank: args.rules.ignoreBlank };
+                    if (colIdx === activeCellIndex[1]) {
+                        isListValidation = column.validation.type === 'List';
+                    }
                     continue;
                 }
             }
@@ -111,29 +129,53 @@ export class WorkbookDataValidation {
                         }
                     }
                     cell = getCell(rowIdx, colIdx, sheet);
-                    if (cell && cell.validation &&
-                        !updateCell(this.parent, sheet, { cell: { validation: {} }, rowIdx: rowIdx, colIdx: colIdx })) {
-                        delete (cell.validation);
-                        this.parent.notify(
-                            applyCellFormat, <CellFormatArgs>{
-                                rowIdx: rowIdx, colIdx: colIdx, style:
-                                    this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx])
-                            });
+                    if (cell && cell.validation) {
+                        if (rowIdx === activeCellIndex[0] && colIdx === activeCellIndex[1]) {
+                            isListValidation = cell.validation.type === 'List';
+                        }
+                        if (!updateCell(this.parent, sheet, { cell: { validation: {} }, rowIdx: rowIdx, colIdx: colIdx })) {
+                            delete cell.validation;
+                            this.parent.notify(
+                                applyCellFormat, <CellFormatArgs>{
+                                    rowIdx: rowIdx, colIdx: colIdx, style:
+                                        this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx])
+                                });
+                        } else {
+                            isListValidation = false;
+                        }
                     }
                 } else {
                     cell = { validation: Object.assign({}, args.rules) };
                     updateCell(this.parent, sheet, { cell: cell, rowIdx: rowIdx, colIdx: colIdx });
+                    if (rowIdx === activeCellIndex[0] && colIdx === activeCellIndex[1]) {
+                        isListValidation = cell.validation.type === 'List';
+                    }
                 }
             }
+        }
+        if (isActiveSheet && isListValidation) {
+            let validation: ValidationModel;
+            const cell: CellModel = getCell(activeCellIndex[0], activeCellIndex[1], sheet, false, true);
+            if (args.isRemoveValidation) {
+                validation = {};
+            } else {
+                validation = cell.validation;
+                if (!validation) {
+                    column = getColumn(sheet, activeCellIndex[1]);
+                    validation = (column && column.validation) || {};
+                }
+            }
+            this.parent.notify(
+                addListValidationDropdown, { validation, cell, rowIdx: activeCellIndex[0], colIdx: activeCellIndex[1], isRefresh: true });
         }
     }
 
     private addHighlightHandler(args: { range: string, td? : HTMLElement, isclearFormat?: boolean }): void {
-        this.InvalidDataHandler(args.range, false, args.td, args.isclearFormat);
+        this.invalidDataHandler(args.range, false, args.td, args.isclearFormat);
     }
 
     private removeHighlightHandler(args: { range: string }): void {
-        this.InvalidDataHandler(args.range, true);
+        this.invalidDataHandler(args.range, true);
     }
 
     private getRange(range: string): string {
@@ -149,8 +191,7 @@ export class WorkbookDataValidation {
         return range;
     }
 
-    private InvalidDataHandler(range: string, isRemoveHighlightedData: boolean, td?: HTMLElement, isclearFormat?: boolean): void {
-        const isCell: boolean = false;
+    private invalidDataHandler(range: string, isRemoveHighlightedData: boolean, td?: HTMLElement, isclearFormat?: boolean): void {
         let cell: CellModel;
         let value: string;
         const sheetIdx: number = range ? getSheetIndexFromAddress(this.parent, range) : this.parent.activeSheetIndex;
@@ -201,7 +242,7 @@ export class WorkbookDataValidation {
                         value = cell.value ? cell.value : '';
                         const range: number[] = [rowIdx, colIdx];
                         if (validation && this.parent.allowDataValidation) {
-                            const validEventArgs: checkCellValid = { value, range, sheetIdx, isCell, td: td, isValid: true };
+                            const validEventArgs: CheckCellValidArgs = { value, range, sheetIdx, td: td, isValid: true };
                             this.parent.notify(isValidation, validEventArgs);
                             const isValid: boolean = validEventArgs.isValid;
                             if (!isValid) {

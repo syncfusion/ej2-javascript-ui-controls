@@ -470,6 +470,10 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
     public destroy(): void {
         this.notify('destroy', {});
         super.destroy();
+        const content: HTMLElement = document.getElementById(this.element.id + 'content');
+        if (content) {
+            this.element.removeChild(content);
+        }
     }
 
 

@@ -204,6 +204,13 @@
               border-radius: 4px;
             }
           }
+
+          &:active {
+            @if $skin-name == 'bootstrap5.3' {
+              background-color: $cmenu-li-selection-bgcolor;
+              color: $cmenu-selected-color;
+            }
+          }
         }
       }
     }
@@ -228,7 +235,12 @@
       background: $menu-ul-bgcolor;
 
       & .e-nav-arrow.e-icons {
-        color: $cmenu-caret-color;
+        @if $skin-name == 'fluent2' {
+          color: $icon-color;
+        }
+        @else {
+          color: $cmenu-caret-color;
+        }
       }
 
       &:hover {
@@ -246,6 +258,12 @@
         @else {
           background: $menu-li-bgcolor;
         }
+
+        @if $skin-name == 'fluent2' {
+          & .e-nav-arrow.e-icons {
+            color: $icon-color-pressed;
+          }
+        }
       }
 
       &:focus {
@@ -260,6 +278,12 @@
         @else {
           background: $menu-li-bgcolor;
         }
+
+        @if $skin-name == 'fluent2' {
+          & .e-nav-arrow.e-icons {
+            color: $icon-color-hover;
+          }
+        }
       }
 
       &:active {
@@ -269,6 +293,11 @@
         }
         @else {
           background: $menu-li-bgcolor;
+        }
+        @if $skin-name == 'fluent2' {
+          & .e-nav-arrow.e-icons {
+            color: $icon-color-pressed;
+          }
         }
       }
     }
@@ -284,6 +313,19 @@
       &:hover,
       &:focus {
         background: $cmenu-li-bgcolor;
+        @if $skin-name == 'fluent2' {
+          & .e-nav-arrow.e-icons {
+            color: $flyout-text-color-selected;
+          }
+        }
+      }
+
+      &.e-overlay {
+        @if $skin-name == 'fluent2' {
+          & .e-nav-arrow.e-icons {
+            color: $icon-color-disabled !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
       }
 
       &:active {
@@ -334,5 +376,11 @@
         }
       }
     }
+  }
+}
+
+@if $skin-name == 'fluent2' {
+  .e-menu-wrapper.e-hamburger .e-menu-popup .e-menu-item.e-menu-caret-icon:not(.e-selected):not(.e-focused) .e-icons {
+    color: $icon-color !important; /* stylelint-disable-line declaration-no-important */
   }
 }

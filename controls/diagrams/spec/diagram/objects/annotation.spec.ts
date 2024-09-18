@@ -189,18 +189,21 @@ describe('Diagram Control', () => {
         });
 
         it('checking hyperlink', (done: Function) => {
+
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 108, 308, true);
             mouseEvents.mouseUpEvent(diagramCanvas, 108, 308, true);
             let element: HTMLElement = document.getElementById('diagram53content');
-            console.log(element.style.cursor);
             expect(element.style.cursor === 'pointer').toBe(true);
             (diagram.nodes[4] as NodeModel).annotations[0].hyperlink.link = 'https://gitlab.syncfusion.com';
             diagram.dataBind();
+            mouseEvents.clickEvent(diagramCanvas, 10, 10, true);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 108, 308, true);
+            mouseEvents.mouseUpEvent(diagramCanvas, 108, 308, true);
+
             let node: NodeModel = diagram.nodes[4];
             let link: HyperlinkModel = (node.wrapper.children[1]) as HyperlinkModel;
-            console.log((link as AnnotationModel).hyperlink.link);
             expect((link as AnnotationModel).hyperlink.link === 'https://gitlab.syncfusion.com').toBe(true);
             done();
         });

@@ -368,7 +368,7 @@ export class MeasureAnnotation {
                             if (vertexPoints == null) {
                                 vPoints = [];
                             }
-                            const annotationSelectorSettings : any = typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
+                            const annotationSelectorSettings: any = typeof (annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
                             if (isNullOrUndefined(annotation.AnnotationSelectorSettings)) {
                                 this.pdfViewerBase.annotationSelectorSettingLoad(annotation);
                             }
@@ -401,8 +401,8 @@ export class MeasureAnnotation {
                                 isPrint: isPrint, isCommentLock: annotationObject.isCommentLock, customData: annotationObject.customData
                             };
                             this.pdfViewer.annotation.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
-                            if (this.isAddAnnotationProgramatically)
-                            {
+                            this.pdfViewer.add(annot as PdfAnnotationBase);
+                            if (this.isAddAnnotationProgramatically) {
                                 const settings: any = {
                                     opacity: annot.opacity, strokeColor: annot.strokeColor, thickness: annot.thickness,
                                     modifiedDate: annot.modifiedDate,
@@ -411,7 +411,6 @@ export class MeasureAnnotation {
                                 this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, annotation.ShapeAnnotationType,
                                                                  annot.bounds, settings);
                             }
-                            this.pdfViewer.add(annot as PdfAnnotationBase);
                         }
                     }
                 }
@@ -579,7 +578,8 @@ export class MeasureAnnotation {
             document.getElementById(commentsDivid).id = annotationName;
         }
         annotationModel.annotName = annotationName;
-        annotationModel.author = annotationModel && annotationModel.author != "Guest" ? annotationModel.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationModel.subject);
+        // eslint-disable-next-line
+        annotationModel.author = annotationModel && annotationModel.author != 'Guest' ? annotationModel.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationModel.subject);
         this.pdfViewer.annotation.stickyNotesAnnotationModule.addTextToComments(annotationName, annotationModel.notes);
         if (annotationModel.wrapper.bounds) {
             bound = {
@@ -1090,7 +1090,9 @@ export class MeasureAnnotation {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[parseInt(i.toString(), 10)].id) {
                     if (property === 'bounds') {
-                        this.pdfViewerBase.isBounds = this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds, annotationBase.wrapper.bounds);
+                        this.pdfViewerBase.isBounds =
+                        this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds,
+                                                             annotationBase.wrapper.bounds);
                         if (this.pdfViewerBase.isBounds) {
                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationBase, true);
                             if (pageAnnotations[parseInt(i.toString(), 10)].shapeAnnotationType === 'Line' || pageAnnotations[parseInt(i.toString(), 10)].shapeAnnotationType === 'Polyline') {
@@ -1633,7 +1635,9 @@ export class MeasureAnnotation {
         }
         annotation.allowedInteractions = annotation.AllowedInteractions ?
             annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
-        annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewerBase.annotationSelectorSettingLoad(annotation);
+        annotation.AnnotationSelectorSettings =
+        annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings :
+            this.pdfViewerBase.annotationSelectorSettingLoad(annotation);
         annotation.AnnotationSettings = annotation.AnnotationSettings ?
             annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
         if (annotation.IsLocked) {
@@ -1782,7 +1786,7 @@ export class MeasureAnnotation {
         {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.polygonSettings.annotationSelectorSettings;
-            this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings); 
+            this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.polygonSettings);
             annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
             allowedInteractions = this.pdfViewer.polygonSettings.allowedInteractions ?

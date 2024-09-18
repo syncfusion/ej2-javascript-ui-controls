@@ -3,14 +3,17 @@ import { DateFormatOptions  } from '@syncfusion/ej2-base';
 import { ScrollElements, createScrollSvg } from './scrollbar-elements';
 import { getElement, minMax, logBase  } from '../utils/helper';
 import { Chart } from '../../chart/chart';
-import { Axis, IScrollbarThemeStyle, IScrollEventArgs, VisibleRangeModel } from '../../chart/index';
+import { Axis, IScrollbarThemeStyle, IScrollEventArgs } from '../../chart/index';
 import { getScrollbarThemeColor } from '../model/theme';
 import { ScrollbarSettingsRangeModel, ScrollbarSettingsModel } from '../../chart/model/chart-base-model';
 import { scrollChanged, scrollEnd, scrollStart } from '../model/constants';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { VisibleRangeModel } from '../../common/model/interface';
 
 /**
  * Configures the scrollbar base.
+ *
+ * @private
  */
 
 export class ScrollBar {

@@ -298,6 +298,66 @@ describe('Linear gauge control', () => {
             gauge.refresh();
         });
     });
+    describe('Checking animation duration as 1000', () => {
+        let gauge: LinearGauge;
+        let element: HTMLElement;
+        let svg: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            element = createElement('div', { id: 'container' });
+            document.body.appendChild(element);
+            gauge = new LinearGauge({
+                animationDuration: 1000,
+                orientation: 'Horizontal',
+                axes: [{
+                    line: {
+                        width: 0
+                    },
+                    pointers: [{
+                        value: 10,
+                        height: 15,
+                        width: 15,
+                        placement: 'Near',
+                        color: '#757575',
+                        offset: -50,
+                        markerType: 'Triangle'
+                    }],
+                    majorTicks: null,
+                    minorTicks: null,
+                    labelStyle: {
+                        font: {
+                            size: '0px',
+                            color: '#424242'
+                        },
+                        offset: 48
+                    }
+                }],
+                annotations: [{
+                    content: '<div id="pointer" style="width:70px"><h1 style="font-size:14px;color:#424242">10 MPH</h1></div>',
+                    axisIndex: 0,
+                    axisValue: 10,
+                    x: 10, zIndex: '1',
+                    y: -70
+                }]
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+            element.remove();
+        });
+
+        it('checking with pointer group', (): void => {
+            gauge.setPointerValue(0, 0, 20);
+            svg = document.getElementById('container_AnnotationsGroup');
+            expect(svg.childElementCount).toBe(1);
+        });
+        it('checking with setAnnotationValue method', (): void => {
+            gauge.setAnnotationValue(0, '10 MPH', -10);
+            svg = document.getElementById('container_AnnotationsGroup');
+            expect(svg !== null).toBe(true);
+        });
+    });
+    
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

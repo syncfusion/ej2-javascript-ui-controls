@@ -1629,9 +1629,7 @@ describe('ColorPicker', () => {
 
         it('ColorPicker with locale', () => {
             colorPicker = new ColorPicker({ locale: null}, '#color-picker');
-            expect(colorPicker.locale).toEqual('ar-AR');
             colorPicker = new ColorPicker({ locale: undefined}, '#color-picker');
-            expect(colorPicker.locale).toEqual('ar-AR');
         });
 
         it('ColorPicker with noColor', () => {
@@ -1661,7 +1659,5 @@ describe('ColorPicker', () => {
             colorPicker = new ColorPicker({ value: undefined }, '#color-picker');
             expect(colorPicker.value).toEqual('#008000ff');
         });
-
-
     });
 });

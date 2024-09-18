@@ -250,24 +250,24 @@ export class Gradient {
             id: name,
             r: !isNullOrUndefined(element.radialGradient.radius) ?
                 (element.radialGradient.radius.indexOf('%') === -1 ?
-                element.radialGradient.radius :
-                parseFloat(element.radialGradient.radius).toString()) + '%' : '0%',
+                    element.radialGradient.radius :
+                    parseFloat(element.radialGradient.radius).toString()) + '%' : '0%',
             cx: (!isNullOrUndefined(element.radialGradient.outerPosition) && !isNullOrUndefined(element.radialGradient.outerPosition.x)) ?
                 (element.radialGradient.outerPosition.x.indexOf('%') === -1 ?
-                element.radialGradient.outerPosition.x :
-                parseFloat(element.radialGradient.outerPosition.x).toString()) + '%' : '0%',
+                    element.radialGradient.outerPosition.x :
+                    parseFloat(element.radialGradient.outerPosition.x).toString()) + '%' : '0%',
             cy: (!isNullOrUndefined(element.radialGradient.outerPosition) && !isNullOrUndefined(element.radialGradient.outerPosition.y)) ?
                 (element.radialGradient.outerPosition.y.indexOf('%') === -1 ?
-                element.radialGradient.outerPosition.y :
-                parseFloat(element.radialGradient.outerPosition.y).toString()) + '%' : '0%',
+                    element.radialGradient.outerPosition.y :
+                    parseFloat(element.radialGradient.outerPosition.y).toString()) + '%' : '0%',
             fx: (!isNullOrUndefined(element.radialGradient.innerPosition) && !isNullOrUndefined(element.radialGradient.innerPosition.x)) ?
                 (element.radialGradient.innerPosition.x.indexOf('%') === -1 ?
-                element.radialGradient.innerPosition.x :
-                parseFloat(element.radialGradient.innerPosition.x).toString()) + '%' : '0%',
+                    element.radialGradient.innerPosition.x :
+                    parseFloat(element.radialGradient.innerPosition.x).toString()) + '%' : '0%',
             fy: (!isNullOrUndefined(element.radialGradient.innerPosition) && !isNullOrUndefined(element.radialGradient.innerPosition.y)) ?
                 (element.radialGradient.innerPosition.y.indexOf('%') === -1 ?
-                element.radialGradient.innerPosition.y :
-                parseFloat(element.radialGradient.innerPosition.y).toString()) + '%' : '0%'
+                    element.radialGradient.innerPosition.y :
+                    parseFloat(element.radialGradient.innerPosition.y).toString()) + '%' : '0%'
         };
         const def: Element = render.drawGradient('radialGradient', gradientPosition, colors);
         this.gauge.svgObject.appendChild(def);

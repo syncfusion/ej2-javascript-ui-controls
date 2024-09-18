@@ -385,7 +385,7 @@ export class PivotButton implements IAction {
         } else {
             engineModule = this.parent.engineModule;
         }
-        if (engineModule.fieldList[field[i as number].name] !== undefined) {
+        if (engineModule.fieldList && engineModule.fieldList[field[i as number].name] !== undefined) {
             aggregation = engineModule.fieldList[field[i as number].name].aggregateType;
             if ((aggregation !== 'DistinctCount') && (engineModule.fieldList[field[i as number].name].type !== 'number' || engineModule.fieldList[field[i as number].name].type === 'include' ||
                 engineModule.fieldList[field[i as number].name].type === 'exclude')) {
@@ -423,9 +423,12 @@ export class PivotButton implements IAction {
         } else {
             engineModule = this.parent.engineModule;
         }
-        const fieldListItem: IField = engineModule.fieldList[field[i as number].name];
-        if (fieldListItem.aggregateType !== 'CalculatedField' && this.validateDropdown(fieldListItem.type)) {
-            this.createSummaryType(buttonElement, field[i as number].name, field[i as number]);
+        if (engineModule.fieldList)
+        {
+            const fieldListItem: IField = engineModule.fieldList[field[i as number].name];
+            if (fieldListItem.aggregateType !== 'CalculatedField' && this.validateDropdown(fieldListItem.type)) {
+                this.createSummaryType(buttonElement, field[i as number].name, field[i as number]);
+            }
         }
     }
     private validateDropdown(type: string): boolean {
@@ -562,7 +565,7 @@ export class PivotButton implements IAction {
                 }
             }
         }
-        if (engineModule.fieldList[fieldName as string].sort === 'None') {
+        if (engineModule.fieldList && engineModule.fieldList[fieldName as string].sort === 'None') {
             spanElement = createElement('span', {
                 attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('sort') },
                 className: cls.ICON
@@ -898,6 +901,11 @@ export class PivotButton implements IAction {
                     const thisObj: PivotButton = this as PivotButton;
                     if (thisObj.parent instanceof PivotFieldList) {
                         thisObj.axisField.render();
+                        if ((this.parent as PivotFieldList).isPopupView && (this.parent as PivotFieldList).pivotGridModule) {
+                            (this.parent as PivotFieldList).pivotGridModule.notify(events.uiUpdate, this);
+                        } else if ((this.parent as PivotFieldList).staticPivotGridModule) {
+                            (this.parent as PivotFieldList).staticPivotGridModule.notify(events.uiUpdate, this);
+                        }
                     }
                 }
             } catch (execption) {
@@ -1001,6 +1009,7 @@ export class PivotButton implements IAction {
     private buttonModel(): ButtonPropsModel[] {
         return [
             {
+                isFlat: false,
                 buttonModel: {
                     cssClass: 'e-clear-filter-button' + (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter ? '' : ' ' + cls.ICON_DISABLE) + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     iconCss: 'e-icons e-clear-filter-icon', enableRtl: this.parent.enableRtl,
@@ -1009,12 +1018,14 @@ export class PivotButton implements IAction {
                 click: this.ClearFilter.bind(this)
             },
             {
+                isFlat: false,
                 buttonModel: {
                     cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('ok'), isPrimary: true
                 },
                 click: (this.index === 0 ? this.updateFilterState.bind(this, this.fieldName) : this.updateCustomFilter.bind(this))
             },
             {
+                isFlat: false,
                 click: this.parent.pivotCommon.filterDialog.closeFilterDialog.bind(this.parent.pivotCommon.filterDialog),
                 buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
             }];

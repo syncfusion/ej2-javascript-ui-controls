@@ -33,8 +33,9 @@ import { tooltipData1, tooltipData2, tool1, datetimeData, categoryData, negative
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { Export} from '../../../src/chart/print-export/export';
 
-Chart.Inject(LineSeries, Zoom, ColumnSeries,PolarSeries,StackingColumnSeries, BarSeries, Category, DateTime, ErrorBar, Tooltip, Crosshair, DataLabel);
+Chart.Inject(LineSeries, Zoom, ColumnSeries,PolarSeries,StackingColumnSeries, BarSeries, Category, DateTime, ErrorBar, Tooltip, Crosshair, DataLabel, Export);
 let data: any = tooltipData1;
 let data2: any = tooltipData2;
 let data3: any = tool1;
@@ -1144,6 +1145,15 @@ describe('Chart Control', () => {
                 chartObj.loaded = loaded;
                 chartObj.zoomSettings.enableSelectionZooming = true;
                 chartObj.zoomSettings.enablePinchZooming = true;
+                chartObj.refresh();
+            });
+            it('Checking a XLSX export', (): void => {
+                chartObj.loaded = (args: Object): void => {
+                    const element: Element = document.getElementById('container');
+                    expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                };
+                chartObj.enableExport = true
+                chartObj.export('XLSX', 'Chart');
                 chartObj.refresh();
             });
     });

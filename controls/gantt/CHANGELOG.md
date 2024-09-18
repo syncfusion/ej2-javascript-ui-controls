@@ -2,185 +2,25 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#I626561` - Separator size property in splitter settings not working properly issue has been fixed.
-- `#I627377` - `allowTaskbarOverlap` property is not working properly with `collapseAllParentTasks` property enabled issue has been fixed.
-- `#I519903` - Spinner showing endlessly  with null value filtering issue has been fixed.
-
-## 26.2.12 (2024-09-03)
-
-### GanttChart
-
-#### Bug fixes
-
--`#I625331` - An unwanted error message is thrown in the `actionFailure` event issues has been fixed.
--`#I623226` - Negative offset getting removed while using locale has been fixed.
-
-## 26.2.11 (2024-08-27)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#I624244` - Taskbar and weekend not rendered incorrect position issue has been fixed.
-- `#I619938` - White space issue occurs after horizontal scrolling with `enableTimelineVirtualization` issue has been fixed.
-- `#I623700` - Duration value not validated in the edit dialog when the end date is changed issue has been fixed.
-- `#I617142` - Left value miscalculated for taskbar while duration in decimals issue has been fixed.
-
-## 26.2.10 (2024-08-20)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#I621276` - Connector lines rendered in wrong position with `enableTimelineVirtualization` and `enableRtl` issue has been fixed.
-- `#I616825` - Timeline not updated properly while using `setSplitterPosition` issue has been fixed.
-- `#I618909`,`#I607695` - PDF export exception thrown when using different font style  issue has been fixed.
-- `#I618061` - Updating `selectedRowIndex` and `dataSource` dynamically only updates the data, `selectedRowIndex` does not work issue has been fixed.
-- `#I620597` - `getSelectedRecords` method not return selected records when `persistSelection` is set to true issue has been fixed.
-- `#I617142` - Left value miscalculated for taskbar while duration in decimals issue has been fixed.
-
-## 26.2.9 (2024-08-13)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#I610470` - Row drag and drop action persists the previous selection in chart side if persist selection & virtualization is enabled issue has been fixed.
-- `#I613295` - Milestone `endDate` not properly validating when convert to task issue has been fixed.
-- `#I612261` - Console error occurs when connecting predecessor with decimal task Id issue has been fixed.
-- `#I608671` - When the resource tab column is edited and tab is switched, the edited value is not saved issue has been fixed.
-
-## 26.2.8 (2024-08-06)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#I189356` - Split tasks not working properly while using `segmentData` property issue has been fixed.
-- `#I607879`  - Predecessor validation is not working correctly for offset days with split tasks issue has been fixed.
-- `#I611815` - `pdfQueryCellInfo` event not working properly in Pdf export issue has been fixed.
-- `#I612296` - Exception thrown when adding a milestone task using the context menu issue has been fixed.
-- `#I612296` - Day light saving is not working properly issue has been fixed.
-- `#I617432` - Exception thrown when updating datasource issue has been fixed.
-
-## 26.2.7 (2024-07-30)
-
-### GanttChart
-
-#### Bug fixes
-
--`#I607879`  - Work Property Value Not Calculating Properly When Adding or Editing a Record issue has been fixed.
-- `#I607391` - Baseline not render properly  when Pdf export issue has been fixed.
-- `#I614007` - Dependency offset value not updating properly with unscheduled tasks issue has been fixed.
-- `#I603923` - Row selection toggling not working properly while `persistSelection` is enabled issue has been fixed.
-- `#I606658` - `timezone` property is not working properly in Gantt issue has been fixed.
-
-## 26.2.5 (2024-07-26)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#F189417` - `queryTaskbarInfo` event is not working properly while change the color of taskbar issue has been fixed.
-- `#I612340` - `actionFailure` event not working properly for duration issue has been fixed.
-- `#I608398` - `autoCalculateDateScheduling` property not working properly with `loadChildOnDemand` feature issue has been fixed.
-- `#I896027` - `UpdateTaskId` method not working properly issue has been fixed.
-
-## 26.2.5 (2024-07-26)
-
-### GanttChart
-
-#### Bug fixes
-
-## 26.2.4 (2024-07-24)
+## 27.1.48 (2024-09-18)
 
 ### GanttChart
 
 #### Features
 
-- `#I577723` - Provided support for dependency type localization in the cell edit.
+- `#I893608`- The [Zooming](https://ej2.syncfusion.com/documentation/gantt/timeline/zooming) feature in the timeline has been enhanced to include touch support and mouse wheel interaction. Users can now perform zoom-in and zoom-out actions by pinching in/out on the chart pane or using the mouse wheel in combination with the 'Ctrl' key. Explore the demo [here](https://ej2.syncfusion.com/demos/#/fluent2/gantt/zooming.html).
+- `#I885165`,`#F56892`- Provided support for taskbar resizing for manually scheduled parent taskbars [Task Scheduling](https://ej2.syncfusion.com/documentation/gantt/task-scheduling#manually-scheduled-tasks), allowing taskbar resize actions.
+- `#I885310`,`#F56941`- The Gantt Chart now supports localized text for [Dependency](https://ej2.syncfusion.com/documentation/gantt/task-dependency) types (FS, FF, SF, SS), improving readability and providing greater flexibility for localized applications. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/fluent2/gantt/editing.html).
+
+#### Breaking Changes
+
+- The behaviour of the [`loadChildOnDemand`](https://ej2.syncfusion.com/documentation/api/gantt/#loadchildondemand) property in the Gantt Chart has been modified. Previously, when this property was set to `true`, both parent and child records were loaded simultaneously. Now, when set to true, parent records will initially be rendered in a collapsed state, with child records being loaded only when the parent row is expanded. Additionally, the default value of `loadChildOnDemand` has been changed from `false` to `true`.
 
 #### Bug fixes
 
-- `#603505` - Keyboard interaction for selecting all record is not working properly after clicking chart side issue has been fixed.
-- `#I607803`,`#I607856`,`#I607879`,`#I608671`  - Milestone and Work Property Not Working Properly issue has been fixed.
-
-## 26.1.42 (2024-07-16)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#I594182` - Tasks misaligned between grid and chart side with load on demand issue has been fixed.
-- `#I600292` - Mismatching dates between pdf file and UI when progress value set to 300 issue has been fixed.
-- `#I606401` - Empty space occur when height is dynamically changed with side bar issue has been fixed.
-- `#I605379` - Value modified in the post method doesn't reflect in UI issue has been fixed.
-- `#I605147` - The issue with triggering the `actionFailure` event when an invalid predecessor tries to connect has been fixed.
-- `#I604784`,`#I604753` - `AdditionalParams` property not working properly issue has been fixed.
-- `#I604864` - The issue of missing modified records and task data in the `actionComplete` argument when merging records via the context menu has been fixed.
-- `#I604120` - Milestone task `endDate` is not updating properly when using cell edit and dialog.
-- `#I603502` - Toolbar item is not working properly with virtualization issue has been fixed.
-- `#I603710` - Export properties not working properly issue has been fixed.
-- `#I603923` - Row selection toggling not working properly while `persistSelection` is enabled issue has been fixed.
-
-## 26.1.41 (2024-07-09)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#I606422` - The split task split line extends when performing the `zoomToFit` action and affecting the task end date issue has been fixed.
-- `#I594804` - Performance issue occurs when `autoCalculateDateScheduling` is set to false issue has been fixed.
-- `#I603710` - Export properties not working properly issue has been fixed.
-- `#I603923` - Row selection toggling not working properly while `persistSelection` is enabled issue has been fixed.
-- `#I603502` - Toolbar item is not working properly with virtualization issue has been fixed.
-- `#I594182` - White space issue occurred  when using remote data with virtualization issue has been fixed.
-
-## 26.1.40 (2024-07-02)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#I605424` - `ValidationRules` property not working properly issue has been fixed.
-- `#I599788` - Duration column is not working properly when using `editType` as `numericedit` issue has been fixed.
-- `#I603492` - `CollapseAll` / `ExpandAll` button in is not working properly when virtualization is enabled issue has been fixed.
-
-## 26.1.39 (2024-06-25)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#I599445` - Console error occurs while exporting pdf with header and without footer issue has been fixed.
-- `#I601248` - Selection not working when dynamically updated issue has been fixed.
-- `#I598080` - When initial load, the predecessor validation case is not properly handled issue has been fixed.
-- `#I598858` - Segment task duration is not validating properly after resizing issue has been fixed.
-- `#I602401` - Shift tab key navigation not working properly when cell is in edited state issue has been fixed.
-- `#F188524` - PDF export is not working properly when `taskMode` is set to `Manual` issue has been fixed.
-- `#I598987` - Start and end date not validated when editing record by event issue has been fixed.
-
-## 26.1.38 (2024-06-19)
-
-### GanttChart
-
-#### Bug fixes
-
-- `#I587460` - Console error throws when assigning predecessor to an unscheduled task issue has been fixed.
-- `#I594645` - Cannot edit cell after validation rule is applied issue has been fixed.
-- `#I598329` - Cancel in `actionBegin` event argument doesn't cancel taskbar and dialog edit action issue been fixed.
-- `#I594908`,`#I594882`, `#I592404` - Incorrect validation of resource, work and duration utilization while mapping `taskType` issues has been fixed.
-- `#I594878` - When adding a record via dialog, if the `startDate` is set to a Friday, the `endDate` and duration become empty issue has been fixed.
-- `#I585587` - Filter pop up misalign in column menu filter issue has been fixed.
-- `#I590307` - The issue about the "Add" and "Delete" buttons in the dependency tab were not being disabled when unnecessary has been fixed.
-- `#I594645` - Date validation not working properly when taskbar is moved issue has been fixed.
-- `#I592824` - Event markers height not updated properly issue has been fixed.
+- `#I629322` - Edit dialog closes even when the action is cancel issue has been fixed.
+- `#I629080` - The console error that occurred when changing the view type dynamically with a button click issue has been fixed.
+- `#I632016` - Console error occurred while connecting `FF` type dependency to duration only tasks issue has been fixed.
 
 ## 26.1.35 (2024-06-11)
 

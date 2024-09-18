@@ -224,7 +224,10 @@ export class SpreadsheetImage {
     }
 
     public deleteImage(
-        args: { id: string, range?: string, preventEventTrigger?: boolean, sheet?: SheetModel, rowIdx?: number, colIdx?: number }): void {
+        args: {
+            id: string, range?: string, preventEventTrigger?: boolean, sheet?: SheetModel,
+            rowIdx?: number, colIdx?: number, isUndoRedo?: boolean
+        }): void {
         let sheet: SheetModel = args.sheet || this.parent.getActiveSheet();
         const pictureElements: HTMLElement = document.getElementById(args.id);
         let rowIdx: number = args.rowIdx; let colIdx: number = args.colIdx;
@@ -280,7 +283,7 @@ export class SpreadsheetImage {
         if (!args.preventEventTrigger) {
             this.parent.notify(
                 completeAction,
-                { action: 'deleteImage', eventArgs: { address: address, id: image.id, imageData: image.src, imageWidth: image.width, imageHeight: image.height, cancel: false } });
+                { action: 'deleteImage', eventArgs: { address: address, id: image.id, imageData: image.src, imageWidth: image.width, imageHeight: image.height, cancel: false }, preventAction: args.isUndoRedo });
         }
     }
 

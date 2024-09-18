@@ -2334,7 +2334,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     private onScheduleResize(): void {
         if (isNullOrUndefined(this.activeView) || ((this.isAdaptive || util.isMobile()) && document.activeElement
-            && document.activeElement.classList.contains(cls.SUBJECT_CLASS)) || this.uiStateValues.isTapHold) {
+            && (document.activeElement.classList.contains(cls.SUBJECT_CLASS) ||
+                document.activeElement.classList.contains(cls.INLINE_SUBJECT_CLASS))) || this.uiStateValues.isTapHold) {
             return;
         }
         if (this.virtualScrollModule && this.activeView.isTimelineView()) {

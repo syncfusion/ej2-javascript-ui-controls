@@ -1,6 +1,6 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
-import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI, updateSortCollection, isReadOnlyCells, readonlyAlert } from '../common/index';
+import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI, updateSortCollection, isReadOnlyCells, readonlyAlert, removeElements } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, renderCFDlg, focus, freeze, toggleProtect } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, protectCellFormat, protectWorkbook } from '../common/index';
 import { DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
@@ -12,10 +12,10 @@ import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ClickEventArgs, Toolbar, M
 import { ItemModel as TlbItemModel } from '@syncfusion/ej2-navigations';
 import { SelectingEventArgs } from '@syncfusion/ej2-navigations';
 import { ColorPicker, ColorPickerEventArgs, PaletteTileEventArgs } from '@syncfusion/ej2-inputs';
-import { ListView, SelectEventArgs } from '@syncfusion/ej2-lists';
+import { ListView, SelectEventArgs, SelectedItem } from '@syncfusion/ej2-lists';
 import { extend, L10n, isNullOrUndefined, getComponent, closest, detach, selectAll, select, EventHandler } from '@syncfusion/ej2-base';
 import { attributes } from '@syncfusion/ej2-base';
-import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFormat, setCell, RowModel } from '../../workbook/index';
+import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFormat } from '../../workbook/index';
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ClickEventArgs as BtnClickEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
@@ -27,9 +27,9 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { insertDesignChart, removeDesignChart, isImported } from '../common/index';
-import { refreshRibbonIcons, ChartTheme, beginAction, setCFRule, addFormatToCustomFormatDlg } from '../../workbook/common/index';
-import { currencyFormat, findToolDlg } from '../../workbook/common/index';
+import { insertDesignChart, removeDesignChart } from '../common/index';
+import { LocalizedFormatActionArgs, refreshRibbonIcons, ChartTheme, beginAction, setCFRule } from '../../workbook/common/index';
+import { findToolDlg, localizedFormatAction, convertToDefaultFormat, isImported } from '../../workbook/index';
 
 /**
  * Represents Ribbon for Spreadsheet.
@@ -268,15 +268,9 @@ export class Ribbon {
     }
 
     private getHyperlinkDlg(): void {
-        const indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
-        const row: RowModel = this.parent.sheets[this.parent.activeSheetIndex].rows[indexes[0]];
-        let cell: CellModel;
-        if (!isNullOrUndefined(row)) {
-            cell = row.cells[indexes[1]];
-        }
-        if (isNullOrUndefined(cell)) {
-            setCell(indexes[0], indexes[1], this.parent.getActiveSheet(), cell, false);
-        }
+        const activeSheet: SheetModel = this.parent.getActiveSheet();
+        const indexes: number[] = getRangeIndexes(activeSheet.activeCell);
+        const cell: CellModel = getCell(indexes[0], indexes[1], activeSheet);
         if (cell && cell.hyperlink) {
             this.parent.notify(editHyperlink, null);
         } else {
@@ -505,23 +499,23 @@ export class Ribbon {
         const numFormatText: HTMLElement = this.parent.createElement('span', { className: 'e-tbar-btn-text' });
         numFormatText.innerText = l10n.getConstant('General');
         numFormatBtn.appendChild(numFormatText);
-        const customFormatData: string[] = ['General', '0', '0.00', '#,##0', '#,##0.00', '#,##0_);(#,##0)', '#,##0_);[Red](#,##0)',
-            '#,##0.00_);(#,##0.00)', '#,##0.00_);[Red](#,##0.00)', currencyFormat.currency[4], currencyFormat.currency[2],
-            currencyFormat.currency[3], currencyFormat.currency[5], '0%', '0.00%', '0.00E+00', '##0.0E+0', '# ?/?', '# ??/??', 'dd-MM-yy',
-            'dd-MMM-yy', 'dd-MMM', 'MMM-yy', 'h:mm AM/PM', 'h:mm:ss AM/PM', 'h:mm', 'h:mm:ss', 'dd-MM-yy h:mm', 'mm:ss', 'mm:ss.0', '@',
-            '[h]:mm:ss', currencyFormat.accounting[1], '_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)', currencyFormat.accounting[0],
-            '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'];
+        const eventArgs: { action: string, defaultFormats?: string[], localizedFormats?: string[] } = { action: 'getLocalizedFormats' };
+        this.parent.notify(localizedFormatAction, eventArgs);
+        const defaultFormats: string[] = eventArgs.defaultFormats;
+        const localizedFormats: string[] = eventArgs.localizedFormats;
         this.numFormatDDB = new DropDownButton({
             items: this.getNumFormatDdbItems(id),
             createPopupOnClick: true,
             select: (args: MenuEventArgs): void => {
                 const l10n: L10n = this.parent.serviceLocator.getService(locale);
                 if (args.item.text === l10n.getConstant('Custom')) {
-                    this.renderCustomFormatDialog(customFormatData);
+                    this.renderCustomFormatDialog(defaultFormats, localizedFormats);
                 } else {
                     const type: NumberFormatType = args.item.id.split(this.parent.element.id + '_')[1] as NumberFormatType;
-                    this.applyNumFormat(getFormatFromType(type), args.item.text);
+                    const format: string = getFormatFromType(type);
+                    this.applyNumFormat(format);
                     const sheet: SheetModel = this.parent.getActiveSheet();
+                    this.refreshNumFormatSelection(getTypeFromFormat(format, true), sheet, l10n, format);
                     const cellIndex: number[] = getCellIndexes(sheet.activeCell);
                     this.refreshTextAlign(sheet, getCell(cellIndex[0], cellIndex[1], sheet, false, true), type, cellIndex);
                     this.numFormatDDB.element.setAttribute('aria-label', type);
@@ -1023,8 +1017,15 @@ export class Ribbon {
                 if (args.event && closest(args.event.target as Element, '.e-cf-menu')) {
                     args.cancel = true;
                 } else {
-                    cfMenu.destroy();
                     EventHandler.remove(ul, 'keydown', this.closeDropdownPopup);
+                    if (cfMenu && cfMenu.element) {
+                        removeElements(this.spanElements); this.spanElements = [];
+                        removeElements(this.iconWrapElements); this.iconWrapElements = [];
+                        removeElements(this.iconSetElements); this.iconSetElements = [];
+                        removeElements(this.iconSetGroupElement); this.iconSetGroupElement = [];
+                        cfMenu.destroy();
+                        cfMenu.element.remove();
+                    }
                 }
             }
         });
@@ -1033,15 +1034,23 @@ export class Ribbon {
         return this.cfDdb.element;
     }
 
+    private spanElements: HTMLElement[] = []; // To keep track of dynamically added elements in conditional formatting.
+    private iconSetGroupElement: HTMLElement[] = [];
+    private iconSetElements: HTMLElement[] = [];
+    private iconWrapElements: HTMLElement[] = [];
+
     private createCFMenu(ul: HTMLElement): Menu {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const addIcons: Function = (icons: string[], category: string, appendTo: Element): void => {
             let content: string;
             icons.forEach((icon: string): void => {
                 content = l10n.getConstant(icon + category);
-                appendTo.appendChild(
-                    this.parent.createElement('span', { id: icon + category, className: `e-${icon.toLowerCase()} e-cf-icon`,
-                        attrs: { 'title': content, 'aria-label': content, tabindex: '-1' } }));
+                const span: HTMLElement = this.parent.createElement('span', {
+                    id: icon + category, className: `e-${icon.toLowerCase()} e-cf-icon`,
+                    attrs: { 'title': content, 'aria-label': content, tabindex: '-1' }
+                });
+                this.spanElements.push(span);
+                appendTo.appendChild(span);
             });
         };
         const cfMenu: Menu = new Menu({
@@ -1089,6 +1098,71 @@ export class Ribbon {
                     EventHandler.add(args.element, 'keydown', this.menuIconKeyDown.bind(this, 'e-cf-icon', 4));
                 } else if (args.parentItem.iconCss === 'e-icons e-iconsets') {
                     args.element.parentElement.classList.add('e-iconsets');
+                    const iconSetGroup: HTMLElement = this.parent.createElement('div', { id: 'is', className: 'e-is' });
+                    this.iconSetGroupElement.push(iconSetGroup);
+                    const iconSets: { hdr?: string, cont?: { key: string, cls: string, count: number, id?: string }[] }[] = [
+                        { hdr: 'Directional' }, {
+                            cont: [
+                                { cls: '3arrows', key: 'ThreeArrowsColor', id: 'ThreeArrows', count: 3 },
+                                { cls: '3arrowsgray', key: 'ThreeArrowsGray', count: 3 },
+                                { cls: '3triangles', key: 'ThreeTriangles', count: 3 },
+                                { cls: '4arrowsgray', key: 'FourArrowsGray', count: 4 },
+                                { cls: '4arrows', key: 'FourArrowsColor', id: 'FourArrows', count: 4 },
+                                { cls: '5arrowsgray', key: 'FiveArrowsGray', count: 5 },
+                                { cls: '5arrows', key: 'FiveArrowsColor', id: 'FiveArrows', count: 5 }
+                            ]
+                        },
+                        { hdr: 'Shapes' }, {
+                            cont: [
+                                { cls: '3trafficlights', key: 'ThreeTrafficLights1', count: 3 },
+                                { cls: '3rafficlights2', key: 'ThreeTrafficLights2', count: 3 },
+                                { cls: '3signs', key: 'ThreeSigns', count: 3 },
+                                { cls: '4trafficlights', key: 'FourTrafficLights', count: 4 },
+                                { cls: '4redtoblack', key: 'RedToBlack', id: 'FourRedToBlack', count: 4 }
+                            ]
+                        },
+                        { hdr: 'Indicators' }, {
+                            cont: [
+                                { cls: '3symbols', key: 'ThreeSymbols1', id: 'ThreeSymbols', count: 3 },
+                                { cls: '3symbols2', key: 'ThreeSymbols2', count: 3 },
+                                { cls: '3flags', key: 'ThreeFlags', count: 3 }
+                            ]
+                        },
+                        { hdr: 'Ratings' }, {
+                            cont: [
+                                { cls: '3stars', key: 'ThreeStars', count: 3 },
+                                { cls: '4rating', key: 'FourRatings', id: 'FourRating', count: 4 },
+                                { cls: '5quarters', key: 'FiveQuarters', count: 5 },
+                                { cls: '5rating', key: 'FiveRatings', id: 'FiveRating', count: 5 },
+                                { cls: '5boxes', key: 'FiveBoxes', count: 5 }
+                            ]
+                        }];
+                    let iconSetEle: HTMLElement; let iconWrap: HTMLElement; let cultureText: string; let countIdx: number;
+                    iconSets.forEach((iconSet:
+                    { hdr?: string, cont?: { key: string, cls: string, count: number }[] }, index: number): void => {
+                        iconSetEle = this.parent.createElement('div', { id: `is${index + 1}`, className: `e-is${index + 1}` });
+                        this.iconSetElements.push(iconSetEle);
+                        if (iconSet.hdr) {
+                            iconSetEle.innerText = l10n.getConstant(iconSet.hdr);
+                        } else {
+                            iconSet.cont.forEach((icon: { key: string, cls: string, count: number, id?: string }): void => {
+                                cultureText = l10n.getConstant(icon.key);
+                                iconWrap =
+                                    this.parent.createElement('div', {
+                                        id: icon.id || icon.key, className: `e-${icon.cls} e-is-wrapper`,
+                                        attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' }
+                                    });
+                                this.iconWrapElements.push(iconWrap);
+                                for (countIdx = 0; countIdx < icon.count; countIdx++) {
+                                    const span: HTMLElement = this.createElement('span', `e-${icon.cls}-${countIdx + 1} e-iconsetspan`);
+                                    this.spanElements.push(span);
+                                    iconWrap.appendChild(span);
+                                }
+                                iconSetEle.appendChild(iconWrap);
+                            });
+                        }
+                        iconSetGroup.appendChild(iconSetEle);
+                    });
                     args.element.firstChild.appendChild(iconSetGroup);
                     EventHandler.add(args.element, 'keydown', this.menuIconKeyDown.bind(this, 'e-is-wrapper', 0));
                 }
@@ -1107,40 +1181,6 @@ export class Ribbon {
                     EventHandler.remove(args.element, 'keydown', this.menuIconKeyDown);
                 }
             }
-        });
-        cfMenu.createElement = this.parent.createElement;
-        const iconSetGroup: HTMLElement = this.parent.createElement('div', { id: 'is', className: 'e-is' });
-        const iconSets: { hdr?: string, cont?: { key: string, cls: string, count: number, id?: string }[] }[] =  [{ hdr: 'Directional' },
-            { cont: [{ cls: '3arrows', key: 'ThreeArrowsColor', id: 'ThreeArrows', count: 3 }, { cls: '3arrowsgray', key: 'ThreeArrowsGray',
-                count: 3 }, { cls: '3triangles', key: 'ThreeTriangles', count: 3 }, { cls: '4arrowsgray', key: 'FourArrowsGray', count: 4 },
-            { cls: '4arrows', key: 'FourArrowsColor', id: 'FourArrows', count: 4 }, { cls: '5arrowsgray', key: 'FiveArrowsGray',
-                count: 5 }, { cls: '5arrows', key: 'FiveArrowsColor', id: 'FiveArrows', count: 5 }] }, { hdr: 'Shapes' },
-            { cont: [{ cls: '3trafficlights', key: 'ThreeTrafficLights1', count: 3 }, { cls: '3rafficlights2', key: 'ThreeTrafficLights2',
-                count: 3 }, { cls: '3signs', key: 'ThreeSigns', count: 3 }, { cls: '4trafficlights', key: 'FourTrafficLights',
-                count: 4 }, { cls: '4redtoblack', key: 'RedToBlack', id: 'FourRedToBlack', count: 4 }] }, { hdr: 'Indicators' },
-            { cont: [{ cls: '3symbols', key: 'ThreeSymbols1', id: 'ThreeSymbols', count: 3 }, { cls: '3symbols2', key: 'ThreeSymbols2',
-                count: 3 }, { cls: '3flags', key: 'ThreeFlags', count: 3 }] }, { hdr: 'Ratings' }, { cont: [{ cls: '3stars',
-                key: 'ThreeStars', count: 3 }, { cls: '4rating', key: 'FourRatings', id: 'FourRating', count: 4 },
-            { cls: '5quarters', key: 'FiveQuarters', count: 5 }, { cls: '5rating', key: 'FiveRatings', id: 'FiveRating', count: 5 },
-            { cls: '5boxes', key: 'FiveBoxes', count: 5 }] } ];
-        let iconSetEle: HTMLElement; let iconWrap: HTMLElement; let cultureText: string; let countIdx: number;
-        iconSets.forEach((iconSet: { hdr?: string, cont?: { key: string, cls: string, count: number }[] }, index: number): void => {
-            iconSetEle = this.parent.createElement('div', { id: `is${index + 1}`, className: `e-is${index + 1}` });
-            if (iconSet.hdr) {
-                iconSetEle.innerText = l10n.getConstant(iconSet.hdr);
-            } else {
-                iconSet.cont.forEach((icon: { key: string, cls: string, count: number, id?: string }): void => {
-                    cultureText = l10n.getConstant(icon.key);
-                    iconWrap = this.parent.createElement(
-                        'div', { id: icon.id || icon.key, className: `e-${icon.cls} e-is-wrapper`,
-                            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
-                    for (countIdx = 0; countIdx < icon.count; countIdx++) {
-                        iconWrap.appendChild(this.createElement('span', `e-${icon.cls}-${countIdx + 1} e-iconsetspan`));
-                    }
-                    iconSetEle.appendChild(iconWrap);
-                });
-            }
-            iconSetGroup.appendChild(iconSetEle);
         });
         cfMenu.createElement = this.parent.createElement;
         cfMenu.appendTo(ul);
@@ -1937,7 +1977,7 @@ export class Ribbon {
             { text: 'Tahoma' }, { text: 'Times New Roman' }, { text: 'Verdana' }];
     }
 
-    private applyNumFormat(format: string, text: string): void {
+    private applyNumFormat(format: string): string {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const eventArgs: { format: string, range: string, cancel: boolean, requestType: string } = {
             format: format, range: sheet.selectedRange, cancel: false, requestType: 'NumberFormat'
@@ -1950,18 +1990,18 @@ export class Ribbon {
             this.parent.trigger('beforeCellFormat', eventArgs);
             this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'format' });
             if (eventArgs.cancel) {
-                return;
+                return eventArgs.format;
             }
         }
         this.parent.notify(applyNumberFormatting, eventArgs);
         this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });
-        this.refreshNumFormatSelection(text);
         if (!isReadonly) {
             this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
         }
+        return eventArgs.format;
     }
 
-    private renderCustomFormatDialog(formatData: string[]): void {
+    private renderCustomFormatDialog(defaultFormats: string[], localizedFormats: string[]): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dummyDiv: HTMLElement = this.parent.createElement('div');
         const dialogCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-dialog'});
@@ -1969,13 +2009,16 @@ export class Ribbon {
         dialogBtn.innerText = l10n.getConstant('Apply');
         const sampleDiv: HTMLElement = this.parent.createElement('div', { className: 'e-custom-sample' });
         sampleDiv.innerText = l10n.getConstant('CustomFormatTypeList') + ':';
-        const inputElem: HTMLElement = this.parent.createElement('input', {className: 'e-input e-dialog-input', attrs: { 'type': 'text', 'name': 'input', 'placeholder': l10n.getConstant('CustomFormatPlaceholder'), 'spellcheck': 'false' }});
+        const inputElem: HTMLInputElement = this.parent.createElement(
+            'input', {className: 'e-input e-dialog-input', attrs: { 'type': 'text', 'name': 'input', 'spellcheck': 'false',
+                'placeholder': l10n.getConstant('CustomFormatPlaceholder') }});
         const listviewCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-listview'});
-        const customFormatDialog: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        const customFormatDialog: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
         const listview: ListView = new ListView({
-            dataSource: formatData,
+            dataSource: localizedFormats,
             select: (args: SelectEventArgs) => {
-                (inputElem as HTMLInputElement).value = args.text;
+                // Listview trim the front and end spaces, so we are taking the textContent from selected element instead of using text.
+                inputElem.value = args.item.textContent;
                 if (args.event && args.event.type === 'keydown' && args.item) {
                     (args.item as HTMLElement).focus();
                 }
@@ -1986,19 +2029,32 @@ export class Ribbon {
         dialogCont.appendChild(sampleDiv);
         dialogCont.appendChild(listviewCont);
         listview.appendTo(listviewCont);
-        const addCustomNumFormat: (args: { format: string }) => void = (args: { format: string }): void => {
-            if (formatData.indexOf(args.format) === -1) {
-                formatData.push(args.format);
+        const applyBtnClickHandler: () => void = () => {
+            const format: string = inputElem.value;
+            const formatIdx: number = localizedFormats.indexOf(format);
+            let defaultFormat: string;
+            if (formatIdx > -1) {
+                defaultFormat = defaultFormats[formatIdx as number];
+            } else {
+                defaultFormat = convertToDefaultFormat(this.parent, format);
+            }
+            defaultFormat = this.applyNumFormat(defaultFormat);
+            if (defaultFormat) {
+                this.refreshNumFormatSelection(
+                    getTypeFromFormat(defaultFormat, true), this.parent.getActiveSheet(), l10n, defaultFormat);
+                this.parent.notify(
+                    localizedFormatAction, <LocalizedFormatActionArgs>{ action: 'addToCustomFormats', format, defaultFormat });
+            }
+            customFormatDialog.hide();
+        };
+        dialogBtn.addEventListener('click', applyBtnClickHandler);
+        const inputChangeHandler: () => void = () => {
+            const selectedList: SelectedItem = <SelectedItem>listview.getSelectedItems();
+            if (selectedList) {
+                listview.unselectItem();
             }
         };
-        this.parent.on(addFormatToCustomFormatDlg, addCustomNumFormat, this);
-        dialogBtn.addEventListener('click', () => {
-            const format: string = (inputElem as HTMLInputElement).value;
-            this.applyNumFormat(format, l10n.getConstant('Custom'));
-            listview.destroy();
-            customFormatDialog.hide();
-            addCustomNumFormat({ format: format });
-        });
+        inputElem.addEventListener('input', inputChangeHandler);
         customFormatDialog.show({
             header: l10n.getConstant('CustomFormat'),
             cssClass: 'e-custom-format-dlg',
@@ -2008,13 +2064,29 @@ export class Ribbon {
             showCloseIcon: true,
             content: dialogCont,
             footerTemplate: dummyDiv,
-            beforeOpen: (): void => focus(this.parent.element)
+            beforeOpen: (beforeOpenArgs: BeforeOpenEventArgs): void => {
+                const dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'CustomNumberFormatDlg',
+                    element: beforeOpenArgs.element, target: beforeOpenArgs.target, cancel: beforeOpenArgs.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    beforeOpenArgs.cancel = true;
+                    getUpdateUsingRaf((): void => {
+                        customFormatDialog.hide(true);
+                        focus(this.parent.element);
+                    });
+                } else {
+                    focus(this.parent.element);
+                }
+            }
         });
         const sheet: SheetModel = this.parent.getActiveSheet();
         const actCell: number[] = getCellIndexes(sheet.activeCell);
         const cell: CellModel = getCell(actCell[0], actCell[1], sheet);
         if (cell && cell.format) {
-            listview.selectItem(cell.format as unknown as Element);
+            const formatIdx: number = defaultFormats.indexOf(cell.format);
+            listview.selectItem(listview.element.getElementsByClassName('e-list-item')[formatIdx as number]);
         }
     }
 
@@ -2099,21 +2171,11 @@ export class Ribbon {
             this.numFormatDDB = getComponent(document.getElementById(this.parent.element.id + '_number_format'), DropDownButton);
         }
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const actCell: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        const actCell: number[] = getCellIndexes(sheet.activeCell);
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const cell: CellModel = getCell(actCell[0], actCell[1], this.parent.getActiveSheet()) || {};
-        let type: string = getTypeFromFormat(cell.format || 'General', true);
-        if (this.numFormatDDB) {
-            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
-                type = 'General';
-                this.refreshNumFormatSelection(type);
-            } else {
-                if (cell.format && type === 'General' && cell.format !== 'General') {
-                    type = 'Custom';
-                }
-                this.refreshNumFormatSelection(l10n.getConstant(type));
-            }
-        }
+        const cell: CellModel = getCell(actCell[0], actCell[1], sheet, false, true);
+        const type: string = getTypeFromFormat(cell.format || 'General', true);
+        this.refreshNumFormatSelection(type, sheet, l10n, cell.format);
         if (this.fontNameDdb) {
             if (sheet.isProtected && !sheet.protectSettings.formatCells) {
                 this.refreshFontNameSelection('Calibri');
@@ -2235,18 +2297,28 @@ export class Ribbon {
         this.fontNameDdb.element.setAttribute('aria-label', fontFamily);
     }
 
-    private refreshNumFormatSelection(type: string): void {
-        for (let i: number = 0; i < this.numFormatDDB.items.length; i++) {
-            if (this.numFormatDDB.items[i as number].iconCss !== '') {
-                this.numFormatDDB.items[i as number].iconCss = '';
+    private refreshNumFormatSelection(type: string, sheet: SheetModel, l10n: L10n, format: string): void {
+        if (this.numFormatDDB) {
+            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                type = 'General';
+            } else {
+                if (format && type === 'General' && format !== 'General') {
+                    type = 'Custom';
+                }
+                type = l10n.getConstant(type);
             }
-            if (this.numFormatDDB.items[i as number].text === type) {
-                this.numFormatDDB.items[i as number].iconCss = 'e-icons e-selected-icon';
+            for (let i: number = 0; i < this.numFormatDDB.items.length; i++) {
+                if (this.numFormatDDB.items[i as number].iconCss !== '') {
+                    this.numFormatDDB.items[i as number].iconCss = '';
+                }
+                if (this.numFormatDDB.items[i as number].text === type) {
+                    this.numFormatDDB.items[i as number].iconCss = 'e-icons e-selected-icon';
+                }
             }
+            this.numFormatDDB.element.firstElementChild.textContent = type;
+            this.numFormatDDB.setProperties({ 'items': this.numFormatDDB.items }, true);
+            this.numFormatDDB.element.setAttribute('aria-label', type);
         }
-        this.numFormatDDB.element.firstElementChild.textContent = type;
-        this.numFormatDDB.setProperties({ 'items': this.numFormatDDB.items }, true);
-        this.numFormatDDB.element.setAttribute('aria-label', type);
     }
 
     private fileMenuItemSelect(args: MenuEventArgs): void {
@@ -2915,7 +2987,7 @@ export class Ribbon {
         let curTabIndex: number;
         if (ribbonTabObj) { curTabIndex = ribbonTabObj.selectedItem; }
         this.switchRibbonTab(l10n.getConstant('Home'));
-        ['bold', 'italic', 'line-through', 'underline'].forEach((name: string): void => {
+        ['bold', 'italic', 'line-through', 'underline', 'cut', 'copy', 'undo', 'redo', 'wrap'].forEach((name: string): void => {
             destroyComponent(select('#' + `${id}_${name}`, parentElem), Button);
         });
         if (this.pasteSplitBtn) { this.pasteSplitBtn.destroy(); } this.pasteSplitBtn = null;
@@ -2934,27 +3006,31 @@ export class Ribbon {
         this.destroyComponent(id + '_chart_menu', 'menu'); this.destroyComponent(id + '_chart_type_menu', 'menu');
         this.destroyComponent(id + '_chart-btn', 'dropdown-btn'); this.destroyComponent(id + '_chart-type-btn', 'dropdown-btn');
         this.destroyComponent(`${id}_cf_menu`, 'menu');
-        if (this.cfDdb) { this.cfDdb.destroy(); } this.cfDdb = null;
+        if (this.cfDdb) { this.cfDdb.destroy(); if (this.cfDdb.element) { this.cfDdb.element.remove(); } } this.cfDdb = null;
         this.detachPopupElement(id);
         this.parent.notify('destroyRibbonComponents', null);
         if (curTabIndex) { ribbonTabObj.selectedItem = curTabIndex; ribbonTabObj.dataBind(); }
         if (this.addChartDdb) { this.addChartDdb.destroy(); this.addChartDdb = null; }
         this.destroyComponent(id + '_chart_theme', 'menu'); this.destroyComponent(id + '_chart_theme', 'dropdown-btn');
         this.destroyComponent(id + '_chart-type-btn', 'menu'); this.destroyComponent(id + '_chart-type-btn', 'dropdown-btn');
+        if (this.datavalidationDdb) { this.datavalidationDdb.destroy(); } this.datavalidationDdb = null;
+        if (cPickerEle) {
+            detach(cPickerEle);
+        }
+        const customFormatDlg: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
+        if (customFormatDlg.dialogInstance && customFormatDlg.dialogInstance.element.classList.contains('e-custom-format-dlg')) {
+            customFormatDlg.hide(true);
+        }
+        this.cPickerEle = null;
+        if (this.border) { this.border = ''; }
+        if (this.fontNameIndex) { this.fontNameIndex = null; }
+        if (this.preTabIdx) { this.preTabIdx = null; }
+        if (this.numPopupWidth) { this.numPopupWidth = null; }
         if (this.ribbon) { this.ribbon.destroy(); }
         if (ribbonEle) {
             detach(ribbonEle);
         }
         this.ribbon = null;
-        if (cPickerEle) {
-            detach(cPickerEle);
-        }
-        this.cPickerEle = null;
-        if (this.datavalidationDdb) { this.datavalidationDdb.destroy(); } this.datavalidationDdb = null;
-        if (this.border) { this.border = ''; }
-        if (this.fontNameIndex) { this.fontNameIndex = null; }
-        if (this.preTabIdx) { this.preTabIdx = null; }
-        if (this.numPopupWidth) { this.numPopupWidth = null; }
         this.removeEventListener();
         this.parent = null;
     }
@@ -3019,7 +3095,6 @@ export class Ribbon {
             this.parent.off(insertDesignChart, this.insertDesignChart);
             this.parent.off(removeDesignChart, this.removeDesignChart);
             this.parent.off(unMerge, this.unMerge);
-            this.parent.off(addFormatToCustomFormatDlg);
         }
     }
 }

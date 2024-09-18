@@ -491,7 +491,7 @@ export class Tooltip3D extends BaseTooltip {
                     }
                 }
             }
-            if (!tooltipElement && upperElement.length !== 0) {
+            if (upperElement.length !== 0 && !tooltipElement) {
                 tooltipElement = upperElement[0].getBoundingClientRect();
             }
         }
@@ -659,7 +659,7 @@ export class Tooltip3D extends BaseTooltip {
         if (targetElement && currentX > rect.x && currentX < (rect.x + rect.width) &&
             currentY > rect.y && currentY < (rect.y + rect.height)) {
             const nodeName: string | null = targetElement.nodeName;
-            if ((nodeName === 'path' || nodeName === 'shape') && targetElement.id.indexOf('region') > 1) {
+            if ((nodeName === 'shape' || nodeName === 'path') && targetElement.id.indexOf('region') > 1) {
                 index = targetElement.id.match(/(\d+)/g);
                 pointIndex = parseInt(index[index.length - 1].toString(), 10);
                 seriesIndex = parseInt(index[index.length - 2].toString(), 10);

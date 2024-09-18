@@ -2,12 +2,23 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 27.1.48 (2024-09-18)
 
 ### Schedule
 
+#### Features
+
+- `#I546459` - Improved timeline views virtual scrolling performance.
+- Provided new keyboard shortcuts to open the editor window and navigate to today's date.
+
+| Keys | Description |
+|-----|-----|
+| <kbd>Shift + Alt + N</kbd> | To open a new editor window. |
+| <kbd>Shift + Alt + Y</kbd> | To navigate today date. |
+
 #### Bug fixes
 
+- `#I194307` - An issue where the `firstDayOfWeek` property was not working in the year view's specific settings has been fixed.
 - `#I621521` - An issue where the tooltip shows the wrong end time value when the start and end of the appointment are the same has been fixed.
 - `#FB60391` - Deleted recurrence appointment added into the `changedRecords` instead of `deletedRecords` and upon clicking `YES` in the series edit confirmation alert to delete the individual occurrences the deleted records not included in the `deletedRecords` in the `actionBegin` event has been fixed.
 

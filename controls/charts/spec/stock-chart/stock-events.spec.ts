@@ -2,7 +2,7 @@
  * Unit test cases for stock events
  */
 import { CandleSeries, DateTime, getElement, ChartLocation } from '../../src/chart/index';
-import { StockChart, IStockEventRenderArgs } from '../../src/stock-chart/index';
+import { StockChart, IStockEventRenderArgs, ITooltipRenderEventArgs } from '../../src/stock-chart/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { chartData } from './indicatordata.spec';
 import { MouseEvents } from '../chart/base/events.spec';
@@ -68,6 +68,20 @@ describe('default stock chart', () => {
             pointLocation = stockchart.stockEvent.symbolLocations[0][0];
             trigger.mousemovetEvent(element.childNodes[0] as Element, pointLocation.x, pointLocation.y + 40);
             expect(getElement('stockEvents_StockEvents_Tooltip_text').textContent).toEqual('Stock events tooltip');
+            done();
+        };
+        stockchart.stockEvents = [{ date: new Date(2017, 2, 31), text: 'Market', description: 'Stock events tooltip' }];
+        stockchart.tooltipRender = (args: ITooltipRenderEventArgs) => { args.cancel = false; };
+        stockchart.refresh();
+    });
+    it('checking with stock events tooltip', (done: Function) => {
+        stockchart.loaded = (args: Object) => {
+            stockchart.loaded = null;
+            element = getElement(chartElement.id + '_StockEvents');
+            expect(element.childElementCount).toEqual(1);
+            pointLocation = stockchart.stockEvent.symbolLocations[0][0];
+            console.log(element);
+            trigger.mouseLeaveEvent(element);
             done();
         };
         stockchart.stockEvents = [{ date: new Date(2017, 2, 31), text: 'Market', description: 'Stock events tooltip' }];

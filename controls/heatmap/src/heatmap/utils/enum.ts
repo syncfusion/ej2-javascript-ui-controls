@@ -71,7 +71,7 @@ export type HeatMapTheme =
     /**  Render a heatmap with Fluent2 Dark theme. */
     'Fluent2Dark' |
     /**  Render a heatmap with Fluent2 High Contrast theme. */
-    'Fluent2HighContrast' ;
+    'Fluent2HighContrast';
 
 /**
  * @private

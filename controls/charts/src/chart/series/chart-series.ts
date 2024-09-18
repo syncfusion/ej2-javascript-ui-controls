@@ -7,11 +7,9 @@ import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getCol
 import { Rect, SvgRenderer, CanvasRenderer, Size } from '@syncfusion/ej2-svg-base';
 import { ChartSeriesType, ChartShape, SeriesValueType, SplineType, StepPosition } from '../utils/enum';
 import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';
-import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';
-import { ConnectorModel } from '../../common/model/base-model';
-import { CornerRadiusModel, DragSettingsModel } from '../../common/model/base-model';
+import { BorderModel, FontModel, MarginModel, AnimationModel, OffsetModel, DragSettingsModel, EmptyPointSettingsModel, ConnectorModel, CornerRadiusModel } from '../../common/model/base-model';
 import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes } from '../utils/enum';
-import { Border, Font, Margin, Animation, EmptyPointSettings, CornerRadius, Connector, DragSettings } from '../../common/model/base';
+import { Border, Font, Margin, Animation, DragSettings, EmptyPointSettings, Connector, CornerRadius } from '../../common/model/base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { Chart } from '../chart';
 import { Axis, Column, Row } from '../axis/axis';
@@ -27,13 +25,13 @@ import { StockSeries } from '../../stock-chart/index';
 import { CartesianAxisLayoutPanel } from '../axis/cartesian-panel';
 
 /**
- * Configures the data label in the series.
+ * This class provides options to customize the appearance and behavior of data labels within a series.
  */
 
 export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
-     * If set true, data label for series renders.
+     * If set to true, data labels for the series are render. By default, it is set to false.
      *
      * @default false
      */
@@ -42,7 +40,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public visible: boolean;
 
     /**
-     * If set to true, data labels for zero values in the series render.
+     * If set to true, data labels for zero values in the series are render.
      *
      * @default true
      */
@@ -51,7 +49,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public showZero: boolean;
 
     /**
-     * The DataSource field that contains the data label value.
+     * Specifies the data source field that contains the data label value.
      *
      * @default null
      */
@@ -60,7 +58,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public name: string;
 
     /**
-     * The background color of the data label accepts value in hex and rgba as a valid CSS color string.
+     * The background color of the data label accepts hex and rgba values as valid CSS color strings.
      *
      * @default 'transparent'
      */
@@ -69,8 +67,8 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public fill: string;
 
     /**
-     * Used to format the point data label that accepts any global string format like 'C', 'n1', 'P' etc.
-     * It also accepts placeholder like '{value}°C' in which value represent the point data label, e.g, 20°C.
+     * Used to format the data label, accepting global string formats like `C`, `n1`, `P`, etc.
+     * It also supports placeholders, such as `{value}°C`, where `{value}` represent the point data label (e.g., 20°C).
      *
      * @default null
      */
@@ -79,7 +77,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public format: string;
 
     /**
-     * The opacity for the background.
+     * Specifies the opacity level for the data label background, which controls its transparency.
      *
      * @default 1
      */
@@ -88,7 +86,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public opacity: number;
 
     /**
-     * Specifies angle for data label.
+     * Specifies the rotation angle of the data label.
      *
      * @default 0
      */
@@ -97,7 +95,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public angle: number;
 
     /**
-     * Enables rotation for data label.
+     * If set to true, the data label will be rotated according to the specified angle.
      *
      * @default false
      */
@@ -106,12 +104,13 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public enableRotation: boolean;
 
     /**
-     * Specifies the position of the data label. They are,
+     * Specifies the position of the data label relative to the data point.
+     * The available options are:
      * * Outer: Positions the label outside the point.
-     * * top: Positions the label on top of the point.
+     * * Top: Positions the label on top of the point.
      * * Bottom: Positions the label at the bottom of the point.
-     * * Middle: Positions the label to the middle of the point.
-     * * Auto: Positions the label based on series.
+     * * Middle: Positions the label in the middle of the point.
+     * * Auto: Automatically selects the best position for the label based on the series and data point.
      *
      * @default 'Auto'
      */
@@ -120,7 +119,8 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public position: LabelPosition;
 
     /**
-     * The roundedCornerX for the data label. It requires `border` values not to be null.
+     * Specifies the X-axis rounded corner radius for the data label.
+     > Note that `border` values must not be null for this feature to work.
      *
      * @default 5
      */
@@ -128,7 +128,8 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public rx: number;
 
     /**
-     * The roundedCornerY for the data label. It requires `border` values not to be null.
+     * Specifies the Y-axis rounded corner radius for the data label.
+     > Note that `border` values must not be null for this feature to work.
      *
      * @default 5
      */
@@ -136,10 +137,11 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public ry: number;
 
     /**
-     * Specifies the alignment for data Label. They are,
-     * * Near: Aligns the label to the left of the point.
-     * * Center: Aligns the label to the center of the point.
-     * * Far: Aligns the label to the right of the point.
+     * Specifies the alignment of the data label relative to the data point.
+     * The available options are:
+     * * Near: Positions the label to the left of the data point.
+     * * Center: Positions the label in the center of the data point.
+     * * Far: Positions the label to the right of the data point.
      *
      * @default 'Center'
      */
@@ -147,29 +149,29 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public alignment: Alignment;
 
     /**
-     * Option for customizing the border lines.
+     * Configures the appearance of the border lines with options for width and color properties.
      */
 
     @Complex<BorderModel>({ width: null, color: null }, Border)
     public border: BorderModel;
 
     /**
-     * Margin configuration for the data label.
+     * Configures the margin for the data label.
      */
 
     @Complex<MarginModel>({ left: 5, right: 5, top: 5, bottom: 5 }, Margin)
     public margin: MarginModel;
 
     /**
-     * Option for customizing the data label text.
+     * Customizes the appearance of the data label text with options for font size, color, style, weight, and family.
      */
 
     @Complex<FontModel>({ size: null, color: null, fontStyle: null, fontWeight: null, fontFamily: null }, Font)
     public font: FontModel;
 
     /**
-     * Custom template to show the data label. Use ${point.x} and ${point.y} as a placeholder
-     * text to display the corresponding data point.
+     * Custom template for the data label.
+     * Use `${point.x}` and `${point.y}` as placeholders to display the corresponding data point values.
      *
      * @default null
      * @aspType string
@@ -179,7 +181,11 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public template: string | Function;
 
     /**
-     * Show Datalabel Even two Data Labels Are Overflow.
+     * Specifies the action to handle overlapping data labels.
+     * Available options include:
+     * * None - All data labels are displayed, even if they overlap.
+     * * Hide - Overlapping data labels are hidden to avoid clutter.
+     * * Rotate90 - Data labels are rotated 90 degrees to avoid overlap and improve readability.
      *
      * @default 'Hide'
      */
@@ -191,13 +197,13 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
 
 /**
- *  Configures the marker in the series.
+ * This class is used to define the appearance and behavior of the series markers.
  */
 
 export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
-     * If set to true the marker for the series is rendered. This is applicable only for line and area type series.
+     * If set to true, this enables the marker for the series.
      *
      * @default false
      */
@@ -206,18 +212,19 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public visible: boolean;
 
     /**
-     * The different shapes of a marker:
-     * * Circle
-     * * Rectangle
-     * * Triangle
-     * * Diamond
-     * * HorizontalLine
-     * * VerticalLine
-     * * Pentagon
-     * * InvertedTriangle
-     * * Image
-     * * Star
-     * 
+     * Configures the shape of the marker used in the series.
+     * Available options are:
+     * * Circle - Circular shape for the marker.
+     * * Rectangle - Rectangular shape for the marker.
+     * * Triangle - Triangular shape for the marker.
+     * * Diamond - Diamond shape for the marker.
+     * * HorizontalLine - Marker as a horizontal line.
+     * * VerticalLine - Marker as a vertical line.
+     * * Pentagon - Pentagon shape for the marker.
+     * * InvertedTriangle - Inverted triangle shape for the marker.
+     * * Image - Custom image as the marker.
+     * * Star - Star shape fot the marker.
+     *
      * @default null
      */
 
@@ -226,7 +233,8 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
 
     /**
-     * The URL for the Image that is to be displayed as a marker.  It requires marker `shape` value to be an `Image`.
+     * The URL for the image to be displayed as a marker. It requires the marker's `shape` value to be `Image`.
+     > Note that the marker's `shape` value must be `Image` for this feature to work.
      *
      * @default ''
      */
@@ -235,7 +243,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public imageUrl: string;
 
     /**
-     * The height of the marker in pixels.
+     * Specifies the height of the marker in pixels.
      *
      * @default 5
      */
@@ -244,7 +252,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public height: number;
 
     /**
-     *If set true , marker get filled with series color.
+     * If set to true, the marker will be filled with the series color.
      *
      * @default false
      */
@@ -253,7 +261,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public isFilled: boolean;
 
     /**
-     * The width of the marker in pixels.
+     * Specifies the width of the marker in pixels.
      *
      * @default 5
      */
@@ -262,21 +270,21 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public width: number;
 
     /**
-     * Options for customizing the border of a marker.
+     * Options for customizing the border of a marker, including setting the border's width and color.
      */
 
     @Complex<BorderModel>({ width: 2, color: null }, Border)
     public border: BorderModel;
 
     /**
-     * Options for customizing the marker position.
+     * This property allows for the adjustment of the marker's position relative to its data point by specifying horizontal and vertical offsets.
      */
 
     @Complex<OffsetModel>({ x: 0, y: 0 }, Offset)
     public offset: OffsetModel;
 
     /**
-     *  The fill color of the marker that accepts value in hex and rgba as a valid CSS color string. By default, it will take series' color.
+     * The fill color of the marker, which accepts values in hex and rgba as valid CSS color strings. By default, it takes the series color.
      *
      * @default null
      */
@@ -285,7 +293,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public fill: string;
 
     /**
-     * Trackball is enabled by default when the mouse moves, but it can be disabled by setting "false" to the marker's "allowHighlight" property.
+     * The trackball is enabled by default when the mouse moves but disabling it can be achieved by setting the marker's `allowHighlight` property to 'false'.
      *
      * @default true
      */
@@ -294,7 +302,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public allowHighlight: boolean;
 
     /**
-     * The opacity of the marker.
+     * Sets the opacity level for the marker, which controls its transparency.
      *
      * @default 1
      */
@@ -303,7 +311,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public opacity: number;
 
     /**
-     * The data label for the series.
+     * The `dataLabel` property can be used to show the data label and customize its position and styling.
      */
 
     @Complex<DataLabelSettingsModel>({}, DataLabelSettings)
@@ -312,13 +320,14 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 }
 
 /**
- *  Configures the pareto series.
+ * The `ParetoOptions` class provides a set of properties for configuring the Pareto series.
  */
 
 export class ParetoOptions extends ChildProperty<ParetoOptions> {
 
     /**
-     * The fill color of the pareto line, which accepts a value in hex or rgba as a valid CSS color string. By default, it will use a color based on the theme.
+     * The fill color of the Pareto line, which accepts values in hex or rgba as valid CSS color strings.
+     * By default, a color based on the theme is used.
      *
      * @default null
      */
@@ -327,7 +336,7 @@ export class ParetoOptions extends ChildProperty<ParetoOptions> {
     public fill: string;
 
     /**
-     * Defines the width of the pareto line series.
+     * The `width` property controls the thickness of the line for the Pareto series, affecting its visual weight on the chart.
      *
      * @default 1
      */
@@ -336,7 +345,7 @@ export class ParetoOptions extends ChildProperty<ParetoOptions> {
     public width: number;
 
     /**
-     * Defines the pattern of dashes and gaps for the stroke.
+     * Sets the pattern of dashes and gaps for the stroke of the Pareto line series.
      *
      * @default '0'
      */
@@ -345,14 +354,14 @@ export class ParetoOptions extends ChildProperty<ParetoOptions> {
     public dashArray: string;
 
     /**
-     * Options for displaying and customizing markers for individual points in a pareto line.
+     * Options for displaying and customizing markers for individual points in a Pareto line.
      */
 
     @Complex<MarkerSettingsModel>(null, MarkerSettings)
     public marker: MarkerSettingsModel;
 
     /**
-     * By default, the axis for the Pareto line will be displayed, but this can be disabled by using the 'showAxis' property.
+     * By default, the axis for the Pareto line is displayed, but this can be disabled using the `showAxis` property.
      *
      * @default true
      */
@@ -362,108 +371,109 @@ export class ParetoOptions extends ChildProperty<ParetoOptions> {
 }
 
 /**
- * Points model for the series.
+ * The model that represents how the points in a series are configured and displayed.
  *
  * @public
  */
 export class Points {
-    /** point x. */
+    /** Specifies the x-value of the point. */
     public x: Object;
-    /** point y. */
+    /** Specifies the y-value of the point. */
     public y: Object;
-    /** point visibility. */
+    /** Indicates whether the point is visible. */
     public visible: boolean;
-    /** point text. */
+    /** Specifies the text associated with the point. */
     public text: string;
-    /** point tooltip. */
+    /** Specifies the tooltip content for the point. */
     public tooltip: string;
-    /** point color. */
+    /** Specifies the color of the point. */
     public color: string;
-    /** point open value. */
+    /** Specifies the open value of the point. */
     public open: Object;
-    /** point close value. */
+    /** Specifies the close value of the point. */
     public close: Object;
-    /** point symbol location. */
+    /** Specifies the locations of symbols associated with the point. */
     public symbolLocations: ChartLocation[] = null;
-    /** point x value. */
+    /** Specifies the x-value of the point. */
     public xValue: number;
-    /** point y value. */
+    /** Specifies the y-value of the point. */
     public yValue: number;
-    /** point color mapping column. */
+    /** Specifies the color mapping column for the point. */
     public colorValue: number;
-    /** point index value. */
+    /** Specifies the index of the point in the series. */
     public index: number;
-    /** point region. */
+    /** Specifies the regions associated with the point. */
     public regions: Rect[] = null;
-    /** point percentage value. */
+    /** Specifies the percentage value of the point. */
     public percentage: number = null;
-    /** point high value. */
+    /** Specifies the high value of the point. */
     public high: Object;
-    /** point low value. */
+    /** Specifies the low value of the point. */
     public low: Object;
-    /** point volume value. */
+    /** Specifies the volume value of the point. */
     public volume: Object;
-    /** point size value. */
+    /** Specifies the size value of the point. */
     public size: Object;
-    /** point empty checking. */
+    /** Indicates whether the point is empty. */
     public isEmpty: boolean;
-    /** point region data. */
+    /** Specifies the region data of the point. */
     public regionData: PolarArc = null;
-    /** point minimum value. */
+    /** Specifies the minimum value of the point. */
     public minimum: number;
-    /** point maximum value. */
+    /** Specifies the maximum value of the point. */
     public maximum: number;
-    /** point upper quartile value. */
+    /** Specifies the upper quartile value of the point. */
     public upperQuartile: number;
-    /** point lower quartile value. */
+    /** Specifies the lower quartile value of the point. */
     public lowerQuartile: number;
-    /** point median value. */
+    /** Specifies the median value of the point. */
     public median: number;
-    /** point outliers value. */
+    /** Specifies the outliers value of the point. */
     public outliers: number[];
-    /** point average value. */
+    /** Specifies the average value of the point. */
     public average: number;
-    /** point error value. */
+    /** Specifies the error value of the point. */
     public error: number | string;
-    /** point interior value. */
+    /** Specifies the interior color of the point. */
     public interior: string;
-    /** To know the point is selected. */
+    /** Indicates whether the point is selected. */
     public isSelect: boolean = false;
-    /** point x. */
+    /** Specifies the series to which the point belongs. */
     public series: Object;
-    /** point marker. */
+    /** Specifies the marker settings for the point. */
     public marker: MarkerSettingsModel = {
         visible: false
     };
     /**
-     * To identify point y value with in the range.
+     * Indicates whether the point is within the specified range.
      *
      * @private
      */
     public isPointInRange: boolean = true;
 
-    /** Color for the point error bar. */
+    /** Specifies the color of the error bar for the point. */
     public errorBarColor: string;
-    /** vertical error value for the point. */
+    /** Specifies the vertical error value for the point. */
     public verticalError: number = null;
-    /** vertical negative error value for the point. */
+    /** Specifies the vertical negative error value for the point. */
     public verticalNegativeError: number = null;
-    /** horizontal error value for the point. */
+    /** Specifies the horizontal error value for the point. */
     public horizontalError: number = null;
-    /** horizontal negative error value for the point. */
+    /** Specifies the horizontal negative error value for the point. */
     public horizontalNegativeError: number = null;
-    /** vertical positive error value for the point. */
+    /** Specifies the vertical positive error value for the point. */
     public verticalPositiveError: number = null;
-    /** horizontal positive error value for the point. */
+    /** Specifies the horizontal positive error value for the point. */
     public horizontalPositiveError: number = null;
 }
 
 /**
- * Defines the behavior of the trendlines.
+ * Configures the behavior and appearance of trendlines in a chart series.
+ * Trendlines indicate trends and the rate of price changes over a period.
  */
 export class Trendline extends ChildProperty<Trendline> {
     /**
-     * Defines the name of trendline.
+     * The `name` property is used to assign a descriptive name to the trendline, which will be displayed in the chart as a legend.
      *
      * @default ''
      */
@@ -471,7 +481,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public name: string;
 
     /**
-     * Defines the pattern of dashes and gaps to stroke.
+     * Configures the pattern of dashes and gaps in the trendline stroke using the `dashArray` property.
      *
      * @default ''
      */
@@ -480,7 +490,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public dashArray: string;
 
     /**
-     * Specifies the visibility of trendline.
+     * The `visible` property controls the display of the trendline. If set to true, the trendline will be rendered on the chart. If set to false, the trendline will be hidden.
      *
      * @default true
      */
@@ -489,7 +499,14 @@ export class Trendline extends ChildProperty<Trendline> {
     public visible: boolean;
 
     /**
-     * Defines the type of the trendline.
+     * Defines the type of trendline used in the series.
+     * Available types are:
+     * * Linear - A straight line that shows the general direction of data.
+     * * Exponential - A curve that fits data with exponential growth or decay.
+     * * Polynomial - A curve that fits data with a polynomial function.
+     * * Power - A curve that represents data with a power function.
+     * * Logarithmic - A curve that fits data with a logarithmic scale.
+     * * MovingAverage - A trendline that smoothens data using a moving average calculation.
      *
      * @default 'Linear'
      */
@@ -497,7 +514,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public type: TrendlineTypes;
 
     /**
-     * Defines the period, the price changes over which will be considered to predict moving average trend line.
+     * Defines the period, the price changes over which will be considered to predict the moving average trendline.
      *
      * @default 2
      */
@@ -513,7 +530,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public polynomialOrder: number;
 
     /**
-     * Defines the period, by which the trend has to backward forecast.
+     * Defines the period by which the trend is to be backward forecasted.
      *
      * @default 0
      */
@@ -521,7 +538,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public backwardForecast: number;
 
     /**
-     * Defines the period, by which the trend has to forward forecast.
+     * Defines the period by which the trend must be forward forecasted.
      *
      * @default 0
      */
@@ -536,7 +553,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public animation: AnimationModel;
 
     /**
-     * Options to customize the marker for trendlines.
+     * Options for customizing the markers for trendlines, including shape, size, color, and other visual aspects.
      *
      * @deprecated
      */
@@ -544,7 +561,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public marker: MarkerSettingsModel;
 
     /**
-     * Enables/disables tooltip for trendlines.
+     * Enables or disables the tooltip for the trendline using the `enableTooltip` property. By default, it is set to true.
      *
      * @default true
      */
@@ -553,7 +570,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
 
     /**
-     * Defines the intercept of the trendline.
+     * Specifies the intercept value of the trendline.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -562,7 +579,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public intercept: number;
 
     /**
-     * Defines the fill color of trendline.
+     * The fill color for the trendline, which accepts values in hex or rgba as valid CSS color strings.
      *
      * @default ''
      */
@@ -578,7 +595,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public width: number;
 
     /**
-     * Sets the legend shape of the trendline.
+     * The `legendShape` property defines the shape used to represent the trendline in the chart legend.
      *
      * @default 'SeriesType'
      */
@@ -628,13 +645,13 @@ export class Trendline extends ChildProperty<Trendline> {
 }
 
 /**
- * Configures Error bar in series.
+ * The `ErrorBarCapSettings` class provides options to customize the appearance and behavior of error bars in a series.
  */
 
 export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
-     * The width of the error bar in pixels.
+     * The width of the error bar cap in pixels.
      *
      * @default 1
      */
@@ -643,7 +660,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
     public width: number;
 
     /**
-     * The length of the error bar in pixels.
+     * The length of the caps on the error bars, measured in pixels.
      *
      * @default 10
      */
@@ -652,7 +669,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
     public length: number;
 
     /**
-     *  The stroke color of the cap, which accepts value in hex, rgba as a valid CSS color string.
+     * The stroke color of the cap, which accepts values in hex or rgba as valid CSS color strings.
      *
      * @default null
      */
@@ -661,7 +678,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
     public color: string;
 
     /**
-     * The opacity of the cap.
+     * The opacity of the error bar caps in the chart.
      *
      * @default 1
      */
@@ -683,7 +700,7 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
     public value: Object;
 
     /**
-     * Defines the color of a region.
+     * Defines the fill color for the region using a color name, hex code, or rgba value.
      *
      * @default null
      */
@@ -692,7 +709,7 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
     public color: string;
 
     /**
-     * Defines the pattern of dashes and gaps to stroke.
+     * Specifies the dash pattern for the stroke of the series. The string format allows defining various dash and gap lengths.
      *
      * @default '0'
      */
@@ -708,14 +725,14 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 
 }
 /**
- * Configures error bar settings.
+ * The `ErrorBarSettings` class provides options to customize the appearance and behavior of error bars in a series.
  *
  * @public
  */
 export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
-     * If set true, error bar for data gets rendered.
+     * If set to true, the error bar for the data will be rendered.
      *
      * @default false
      */
@@ -724,12 +741,13 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public visible: boolean;
 
     /**
-     * The type of the error bar . They are
-     * * Fixed -  Renders a fixed type error bar.
+     * Specifies the type of error bar.
+     * The available options are:
+     * * Fixed - Renders a fixed type error bar.
      * * Percentage - Renders a percentage type error bar.
      * * StandardDeviation - Renders a standard deviation type error bar.
-     * * StandardError -Renders a standard error type error bar.
-     * * Custom -Renders a custom type error bar.
+     * * StandardError - Renders a standard error type error bar.
+     * * Custom - Renders a custom type error bar.
      *
      * @default 'Fixed'
      */
@@ -738,10 +756,11 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public type: ErrorBarType;
 
     /**
-     * The direction of the error bar . They are
-     * * Both -  Renders both direction of error bar.
-     * * Minus - Renders minus direction of error bar.
-     * * Plus - Renders plus direction error bar.
+     * Specifies the direction of the error bar.
+     * The available options are:
+     * * Both - Renders error bars in both directions (positive and negative).
+     * * Minus - Renders error bars in the negative direction.
+     * * Plus - Renders error bars in the positive direction.
      *
      * @default 'Both'
      */
@@ -750,10 +769,11 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public direction: ErrorBarDirection;
 
     /**
-     * The mode of the error bar . They are:
-     * * Vertical -  Renders a vertical error bar.
-     * * Horizontal - Renders a horizontal error bar.
-     * * Both - Renders an error bar on both sides.
+     * Specifies the mode for the error bar.
+     * The available options are:
+     * * Vertical - Renders error bars in a vertical direction.
+     * * Horizontal - Renders error bars in a horizontal direction.
+     * * Both - Renders error bars in both vertical and horizontal directions.
      *
      * @default 'Vertical'
      */
@@ -762,7 +782,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public mode: ErrorBarMode;
 
     /**
-     *  The color for stroke of the error bar, which accepts value in hex, rgba as a valid CSS color string.
+     * The color of the error bar's stroke, which accepts values in hex, rgba, or as a valid CSS color string.
      *
      * @default null
      */
@@ -771,7 +791,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public color: string;
 
     /**
-     * The vertical error of the point can be mapped from the data source as well.
+     * The vertical error for the point can also be mapped from the data source.
      *
      * @default 1
      * @aspType Object
@@ -781,7 +801,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public verticalError: number | string;
 
     /**
-     * The stroke width of the error bar.
+     * The `width` property determines the thickness of the error bars rendered in the chart series.
      *
      * @default 1
      */
@@ -790,7 +810,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public width: number;
 
     /**
-     * The horizontal error of the point can be mapped from the data source as well.
+     * The horizontal error of the point can also be mapped from the data source.
      *
      * @default 1
      * @aspType Object
@@ -840,13 +860,13 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public horizontalNegativeError: number | string;
 
     /**
-     * Options for customizing the cap of the error bar.
+     * The `errorBarCap` property allows customization of the appearance and behavior of the caps at the ends of error bars in a chart series.
      */
     @Complex<ErrorBarCapSettingsModel>(null, ErrorBarCapSettings)
     public errorBarCap: ErrorBarCapSettingsModel;
 
     /**
-     * Defines the color for the error bar, which is mapped with the mapping name of the data source.
+     * Defines the color for the error bar, which is mapped to the data source mapping name.
      *
      * @default ''
      */
@@ -856,12 +876,12 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 }
 
 /**
- * Defines the common behavior of both series and technical indicators.
+ * Defines the common behavior for series and technical indicators.
  */
 export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
-     * The DataSource field that contains the x value.
-     * It is applicable for both series and technical indicators.
+     * The data source field that contains the x value.
+     * It is applicable to both series and technical indicators.
      *
      * @default ''
      */
@@ -870,15 +890,15 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public xName: string;
 
     /**
-     * The DataSource field that contains the color mapping value.
-     * It is applicable for range color mapping properly.
+     * The data source field that contains the color mapping value.
+     * It is applicable for range color mapping.
      */
     @Property('')
     public colorName: string;
 
     /**
-     * The DataSource field that contains the high value of y.
-     * It is applicable for both series and technical indicators.
+     * The data source field that contains the high value.
+     * It is applicable for both financial series and technical indicators.
      *
      * @default ''
      */
@@ -887,8 +907,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public high: string;
 
     /**
-     * The DataSource field that contains the low value of y
-     * It is applicable for series and technical indicators
+     * The data source field that contains the low value.
+     * It is applicable for both financial series and technical indicators.
      *
      * @default ''
      */
@@ -897,8 +917,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public low: string;
 
     /**
-     * The DataSource field that contains the open value of y
-     * It is applicable for series and technical indicators
+     * The data source field that contains the open value.
+     * It is applicable for both financial series and technical indicators.
      *
      * @default ''
      */
@@ -907,8 +927,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public open: string;
 
     /**
-     * The DataSource field that contains the close value of y.
-     * It is applicable for both series and technical indicators
+     * The data source field that contains the close value.
+     * It is applicable for both financial series and technical indicators.
      *
      * @default ''
      */
@@ -918,7 +938,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * Defines the data source field that contains the volume value in candle charts.
-     * It is applicable for both financial series and technical indicators
+     * It is applicable for both financial series and technical indicators.
      *
      * @default ''
      */
@@ -927,7 +947,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public volume: string;
 
     /**
-     * The DataSource field that contains the color value of a point.
+     * The data source field that contains the color value of a point.
      * It is applicable for series.
      *
      * @default ''
@@ -937,7 +957,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public pointColorMapping: string;
 
     /**
-     * Specifies the visibility of the series.
+     * If set to `true`, the series will be visible. If set to `false`, the series will be hidden.
      *
      * @default true
      */
@@ -947,7 +967,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * The name of the horizontal axis associated with the series. It requires `axes` of the chart.
-     * It is applicable for series and technical indicators
+     * It is applicable for series and technical indicators.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -958,12 +978,12 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      *               { width: '50%' }],
      *     axes: [{
      *                name: 'xAxis 1',
-     *                columnIndex: 1,
+     *                columnIndex: 1
      *            }],
      *     series: [{
      *                dataSource: data,
      *                xName: 'x', yName: 'y',
-     *                xAxisName: 'xAxis 1',
+     *                xAxisName: 'xAxis 1'
      *     }],
      * });
      * chart.appendTo('#Chart');
@@ -977,7 +997,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * The name of the vertical axis associated with the series. It requires `axes` of the chart.
-     * It is applicable for series and technical indicators
+     * It is applicable for series and technical indicators.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -988,7 +1008,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      *            { height: '50%' }],
      *     axes: [{
      *                name: 'yAxis 1',
-     *                rowIndex: 1,
+     *                rowIndex: 1
      *            }],
      *     series: [{
      *                dataSource: data,
@@ -1006,16 +1026,21 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public yAxisName: string;
 
     /**
-     * Options for customizing animation for the series.
+     * Options for customizing the animation of the series.
+     * By default, animation is enabled with a duration of 1000 milliseconds (about 1 second). It can be disabled by setting enable to `false`.
+     * The following properties are supported in animation:
+     * * enable: If set to true, the series is animated on initial loading.
+     * * duration: The duration of the animation in milliseconds.
+     * * delay: The delay before the animation starts, in milliseconds.
      */
 
     @Complex<AnimationModel>(null, Animation)
     public animation: AnimationModel;
 
     /**
-     * The fill color for the series, which can accept values in hex or rgba as a valid CSS color string.
+     * The fill color for the series, which accepts values in hex or rgba as a valid CSS color string.
      * It also represents the color of the signal lines in technical indicators.
-     * For technical indicators, the default value is 'blue' and for series, it is null.
+     * For technical indicators, the default value is 'blue', and for series, it is null.
      *
      * @default null
      */
@@ -1024,7 +1049,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public fill: string;
 
     /**
-     * The stroke width for the series that is applicable only for `Line` type series.
+     * The stroke width for the series, applicable only for `Line` type series.
      * It also represents the stroke width of the signal lines in technical indicators.
      *
      * @default 1
@@ -1034,7 +1059,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public width: number;
 
     /**
-     * Defines the pattern of dashes and gaps to stroke the lines in `Line` type series.
+     * Defines the pattern of dashes and gaps used to stroke the lines in `Line` type series.
      *
      * @default ''
      */
@@ -1043,36 +1068,37 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public dashArray: string;
 
     /**
-     * Specifies the data source for the series. It can be an array of JSON objects or an instance of DataManager.
+     * Specifies the data source for the series. It can be an array of JSON objects, or an instance of DataManager.
      * ```html
-     * <div id='Chart'></div>
-     * ```
-     * ```typescript
-     * let dataManager: DataManager = new DataManager({
-     *         url: 'http://mvc.syncfusion.com/Services/Northwnd.svc/Tasks/'
-     * });
-     * let query: Query = new Query().take(50).where('Estimate', 'greaterThan', 0, false);
-     * let chart: Chart = new Chart({
-     * ...
-     *     series: [{
+     * <div id='Chart'></div>
+     * ```
+     * ```typescript
+     * let dataManager: DataManager = new DataManager({
+     *    url: 'https://services.syncfusion.com/js/production/api/orders'
+     * });
+     * let query: Query = new Query().take(5);
+     * let chart: Chart = new Chart({
+     * ...
+     *   series: [{
+     *        type: 'Column',
      *        dataSource: dataManager,
-     *        xName: 'Id',
-     *        yName: 'Estimate',
-     *        query: query
-     *    }],
-     * ...
-     * });
-     * chart.appendTo('#Chart');
-     * ```
-     *
-     * @default ''
-     */
+     *        xName: 'CustomerID',
+     *        yName: 'Freight',
+     *        query: query
+     *    }],
+     * ...
+     * });
+     * chart.appendTo('#Chart');
+     * ```
+     *
+     * @default ''
+     */
 
     @Property('')
     public dataSource: Object | DataManager;
 
     /**
-     * Specifies a query to select data from the DataSource. This property is applicable only when the DataSource is an `ej.DataManager`.
+     * Specifies a query to select data from the data source. This property is applicable only when the data source is an `ej.DataManager`.
      *
      * @default ''
      */
@@ -1080,19 +1106,19 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public query: Query;
 
     /**
-     * Defines the collection of regions that helps to differentiate a line series.
+     * Specifies a collection of regions used to differentiate a line series.
      */
     @Collection<ChartSegmentModel>([], ChartSegment)
     public segments: ChartSegmentModel[];
 
     /**
-     * Defines the axis, based on which the line series will be split.
+     * Defines the axis along which the line series will be split.
      */
     @Property('X')
     public segmentAxis: Segment;
 
     /**
-     * This property is used to improve chart performance via data mapping for series dataSource.
+     * This property is used to improve chart performance through data mapping for the series data source.
      *
      * @default false
      */
@@ -1283,7 +1309,6 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * Retrieves the data point at the specified index with the given text mapping name and x-name.
      *
-     * @protected
      * @param {number} i - The index of the data point to retrieve.
      * @param {string} textMappingName - The name used to map text data.
      * @param {string} xName - The name used for the x-axis.
@@ -1527,7 +1552,6 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * Pushes category data into the series points.
      *
-     * @protected
      * @param {Points} point - The point to which category data will be pushed.
      * @param {number} index - The index of the data point.
      * @param {string} pointX - The x-value of the point.
@@ -1692,7 +1716,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 }
 
 /**
- * Configures the series in charts.
+ * The `Series` class is used to configure individual series in a chart.
  *
  * @public
  */
@@ -1700,7 +1724,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 export class Series extends SeriesBase {
 
     /**
-     * The name of the series as displayed in the legend.
+     * The `name` property allows setting a name for the series, which will be displayed in the legend, identifying different series in the chart, especially when multiple series are present.
      *
      * @default ''
      */
@@ -1709,7 +1733,7 @@ export class Series extends SeriesBase {
     public name: string;
 
     /**
-     * The DataSource field that contains the y value.
+     * The data source field that contains the y value.
      *
      * @default ''
      */
@@ -1718,16 +1742,17 @@ export class Series extends SeriesBase {
     public yName: string;
 
     /**
-     * Type of series to be drawn in radar or polar series. They are:
-     * * 'Line'
-     * * 'Column'
-     * * 'Area'
-     * * 'Scatter'
-     * * 'Spline'
-     * * 'StackingColumn'
-     * * 'StackingArea'
-     * * 'RangeColumn'
-     * * 'SplineArea'
+     * Specifies the type of series to be drawn in radar or polar charts.
+     * The available options are:
+     * * 'Line' - Renders a line series.
+     * * 'Column' - Renders a column series.
+     * * 'Area' - Renders an area series.
+     * * 'Scatter' - Renders a scatter series.
+     * * 'Spline' - Renders a spline series.
+     * * 'StackingColumn' - Renders a stacking column series.
+     * * 'StackingArea' - Renders a stacking area series.
+     * * 'RangeColumn' - Renders a range column series.
+     * * 'SplineArea' - Renders a spline area series.
      *
      * @default 'Line'
      */
@@ -1735,7 +1760,7 @@ export class Series extends SeriesBase {
     public drawType: ChartDrawType;
 
     /**
-     * Specifies whether to join the start and end point of a line/area series used in polar/radar chart to form a closed path.
+     * Specifies whether to join the start and end points of a line/area series used in a polar/radar chart to form a closed path.
      *
      * @default true
      */
@@ -1743,8 +1768,8 @@ export class Series extends SeriesBase {
     public isClosed: boolean;
 
     /**
-     * This property is used in financial charts to visualize the price movements in stock.
-     * It defines the color of the candle/point, when the opening price is less than the closing price.
+     * This property is used in financial charts to visualize price movements in stocks.
+     * It defines the color of the candle/point when the opening price is less than the closing price.
      *
      * @default null
      */
@@ -1753,8 +1778,8 @@ export class Series extends SeriesBase {
     public bearFillColor: string;
 
     /**
-     * This property is used in financial charts to visualize the price movements in stock.
-     * It defines the color of the candle/point, when the opening price is higher than the closing price.
+     * This property is used in financial charts to visualize price movements in stocks.
+     * It defines the color of the candle/point when the opening price is higher than the closing price.
      *
      * @default null
      */
@@ -1763,8 +1788,8 @@ export class Series extends SeriesBase {
     public bullFillColor: string;
 
     /**
-     * This property is applicable for candle series.
-     * It enables/disables to visually compare the current values with the previous values in stock.
+     * This property is applicable for the candle series.
+     * It enables or disables the visual comparison of the current values with previous values in stock charts.
      *
      * @default false
      */
@@ -1772,7 +1797,7 @@ export class Series extends SeriesBase {
     public enableSolidCandles: boolean;
 
     /**
-     * The DataSource field that contains the size value of y.
+     * The data source field that contains the size value for the y-axis.
      *
      * @default ''
      */
@@ -1781,7 +1806,7 @@ export class Series extends SeriesBase {
     public size: string;
 
     /**
-     * The bin interval of each histogram point.
+     * The `binInterval` property controls the width of each bin and the interval between bins for histogram points.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -1791,7 +1816,7 @@ export class Series extends SeriesBase {
     public binInterval: number;
 
     /**
-     * The normal distribution of histogram series.
+     * Specifies whether to display the normal distribution curve for the histogram series.
      *
      * @default false
      */
@@ -1800,9 +1825,9 @@ export class Series extends SeriesBase {
     public showNormalDistribution: boolean;
 
     /**
-     * This property allows grouping of series in `stacked column / bar` charts.
-     * Any string value can be provided to the stackingGroup property.
-     * If any two or more series have the same value, those series will be grouped together.
+     * This property allows the grouping of series in stacked column and stacked bar charts.
+     * Any string value can be assigned to the `stackingGroup` property.
+     * Series with the same `stackingGroup` value will be grouped together in the chart.
      *
      * @default ''
      */
@@ -1811,14 +1836,15 @@ export class Series extends SeriesBase {
     public stackingGroup: string;
 
     /**
-     * Options for customizing the border of the series. This is applicable only for `Column` and `Bar` type series.
+     * Options for customizing the border of the series.
+     > Note that this property is applicable only for `Column` and `Bar` type series.
      */
 
     @Complex<BorderModel>({ color: null, width: 0 }, Border)
     public border: BorderModel;
 
     /**
-     * The opacity of the series.
+     * Sets the opacity of the series, with a value between 0 and 1 where 0 is fully transparent and 1 is fully opaque.
      *
      * @default 1
      */
@@ -1826,7 +1852,7 @@ export class Series extends SeriesBase {
     public opacity: number;
 
     /**
-     * The z order of the series.
+     * The z-order of the series, which controls the stack order of the series. Higher values are drawn on top of lower values.
      *
      * @default 0
      */
@@ -1835,7 +1861,7 @@ export class Series extends SeriesBase {
 
     /**
      * Defines the name that specifies the chart series are mutually exclusive and can be overlaid.
-     * The axis in the same group shares the same baseline and location on the corresponding axis.
+     * Series in the same group share the same baseline and location on the corresponding axis.
      *
      * @default ''
      */
@@ -1845,34 +1871,35 @@ export class Series extends SeriesBase {
 
 
     /**
-     * The type of the series are:
-     * * Line
-     * * Column
-     * * Area
-     * * Bar
-     * * Histogram
-     * * StackingColumn
-     * * StackingArea
-     * * StackingBar
-     * * StepLine
-     * * StepArea
-     * * Scatter
-     * * Spline
-     * * StackingColumn100
-     * * StackingBar100
-     * * StackingArea100
-     * * RangeColumn
-     * * Hilo
-     * * HiloOpenClose
-     * * Waterfall
-     * * RangeArea
-     * * SplineRangeArea
-     * * Bubble
-     * * Candle
-     * * Polar
-     * * Radar
-     * * BoxAndWhisker
-     * * Pareto
+     * The type of the series determines the visual representation of the data.
+     * Available series types include:
+     * * Line - Draws a line series.
+     * * Column - Draws a column series.
+     * * Area - Draws an area series.
+     * * Bar - Draws a bar series.
+     * * Histogram - Draws a histogram series.
+     * * StackingColumn - Draws a stacking column series.
+     * * StackingArea - Draws a stacking area series.
+     * * StackingBar - Draws a stacking bar series.
+     * * StepLine - Draws a step line series.
+     * * StepArea - Draws a step area series.
+     * * Scatter - Draws a scatter series.
+     * * Spline - Draws a spline series.
+     * * StackingColumn100 - Draws a 100% stacked column series.
+     * * StackingBar100 - Draws a 100% stacked bar series.
+     * * StackingArea100 - Draws a 100% stacked area series.
+     * * RangeColumn - Draws a range column series.
+     * * Hilo - Draws a Hilo series.
+     * * HiloOpenClose - Draws a Hilo Open Close series.
+     * * Waterfall - Draws a waterfall series.
+     * * RangeArea - Draws a range area series.
+     * * SplineRangeArea - Draws a spline range area series.
+     * * Bubble - Draws a bubble series.
+     * * Candle - Draws a candle series.
+     * * Polar - Draws a polar series.
+     * * Radar - Draws a radar series.
+     * * BoxAndWhisker - Draws a box and whisker series.
+     * * Pareto - Draws a Pareto series.
      *
      * @default 'Line'
      */
@@ -1881,7 +1908,7 @@ export class Series extends SeriesBase {
     public type: ChartSeriesType;
 
     /**
-     * Options for displaying and customizing error bar for individual points in a series.
+     * Options for displaying and customizing error bars for individual points in a series.
      */
     @Complex<ErrorBarSettingsModel>(null, ErrorBarSettings)
     public errorBar: ErrorBarSettingsModel;
@@ -1893,25 +1920,25 @@ export class Series extends SeriesBase {
     public marker: MarkerSettingsModel;
 
     /**
-     * Options for customizing the pareto line series.
+     * Options for customizing the Pareto line series, including its appearance and behavior in the chart.
      */
     @Complex<ParetoOptionsModel>(null, ParetoOptions)
     public paretoOptions: ParetoOptionsModel;
 
     /**
-     * Options to customize the drag settings for series
+     * Customize the drag settings for the series with this property to configure drag behavior in the chart.
      */
     @Complex<DragSettingsModel>({}, DragSettings)
     public dragSettings: DragSettingsModel;
 
     /**
-     * Defines the collection of trendlines that are used to predict the trend.
+     * Defines the collection of trendlines used to predict the trend.
      */
     @Collection<TrendlineModel>([], Trendline)
     public trendlines: TrendlineModel[];
 
     /**
-     * Enable tooltip for the chart series.
+     * Controls whether the tooltip for the chart series is enabled or disabled. Set to true to display tooltips on hover, or false to hide them.
      *
      * @default true
      */
@@ -1919,7 +1946,25 @@ export class Series extends SeriesBase {
     public enableTooltip: boolean;
 
     /**
-     * Format of the tooltip content.
+     * Use this property to define a custom format for how tooltips are displayed.
+     * ```html
+     * <div id='Chart'></div>
+     * ```
+     * ```typescript
+     * let chart: Chart = new Chart({
+     * ...
+     *    series: [{
+     *           dataSource: data,
+     *           xName: 'x',
+     *           yName: 'y',
+     *           tooltipFormat: '${point.x} : ${point.y}'
+     *     }],
+     *    tooltip: {
+     *       enable: true
+     *    }
+     * });
+     * chart.appendTo('#Chart');
+     * ```
      *
      * @default ''
      */
@@ -1927,7 +1972,7 @@ export class Series extends SeriesBase {
     public tooltipFormat: string;
 
     /**
-     * The data source field that contains the tooltip value.
+     * The data source field that contains the value to be displayed in the tooltip.
      *
      * @default ''
      */
@@ -1935,18 +1980,19 @@ export class Series extends SeriesBase {
     public tooltipMappingName: string;
 
     /**
-     * The shape of the legend. Each series has its own legend shape, which can be one of the following:
-     * * Circle
-     * * Rectangle
-     * * Triangle
-     * * Diamond
-     * * Cross
-     * * HorizontalLine
-     * * VerticalLine
-     * * Pentagon
-     * * InvertedTriangle
-     * * SeriesType
-     * * Image
+     * Specifies the shape of the legend icon for each series.
+     * Available shapes for legend:
+     * * Circle - Renders a circular icon.
+     * * Rectangle - Renders a rectangular icon.
+     * * Triangle - Renders a triangular icon.
+     * * Diamond - Renders a diamond-shaped icon.
+     * * Cross - Renders a cross-shaped icon.
+     * * HorizontalLine - Renders a horizontal line icon.
+     * * VerticalLine - Renders a vertical line icon.
+     * * Pentagon - Renders a pentagon-shaped icon.
+     * * InvertedTriangle - Renders an inverted triangle-shaped icon.
+     * * SeriesType - Uses the default icon shape based on the series type.
+     * * Image - Renders a custom image for the legend icon.
      *
      * @default 'SeriesType'
      */
@@ -1955,7 +2001,8 @@ export class Series extends SeriesBase {
     public legendShape: LegendShape;
 
     /**
-     * The URL for the image that is to be displayed as a legend icon.  It requires `legendShape` value to be an `Image`.
+     * The URL for the image to be displayed as a legend icon.
+     > Note that `legendShape` must be set to `Image`.
      *
      * @default ''
      */
@@ -1964,7 +2011,7 @@ export class Series extends SeriesBase {
     public legendImageUrl: string;
 
     /**
-     * Custom style for the selected series or points.
+     * The `selectionStyle` property is used to specify custom CSS styles for the selected series or points.
      *
      * @default null
      */
@@ -1972,7 +2019,7 @@ export class Series extends SeriesBase {
     public selectionStyle: string;
 
     /**
-     * Custom style for the deselected series or points.
+     * The `unSelectedStyle` property is used to specify custom CSS styles for the deselected series or points.
      *
      * @default null
      */
@@ -1980,7 +2027,7 @@ export class Series extends SeriesBase {
     public unSelectedStyle: string;
 
     /**
-     * Custom style for the non-highlighted series or points.
+     * The `nonHighlightStyle` property is used to specify custom CSS styles for the non-highlighted series or points.
      *
      * @default null
      */
@@ -1988,7 +2035,7 @@ export class Series extends SeriesBase {
     public nonHighlightStyle: string;
 
     /**
-     * Specifies the minimum radius.
+     * Specifies the minimum radius for the data points in the series.
      *
      * @default 1
      */
@@ -1996,7 +2043,7 @@ export class Series extends SeriesBase {
     public minRadius: number;
 
     /**
-     * Specifies the maximum radius.
+     * Specifies the maximum radius for the data points in the series.
      *
      * @default 3
      */
@@ -2004,14 +2051,19 @@ export class Series extends SeriesBase {
     public maxRadius: number;
 
     /**
-     * Defines the type of spline to be rendered.
+     * Specifies the type of spline used for rendering.
+     * Available options include:
+     * * Natural - Renders a natural spline.
+     * * Cardinal - Renders a cardinal spline.
+     * * Clamped - Renders a clamped spline.
+     * * Monotonic - Renders a monotonic spline.
      *
      * @default 'Natural'
      */
     @Property('Natural')
     public splineType: SplineType;
     /**
-     * It defines tension of cardinal spline types.
+     * Specifies the tension parameter for cardinal splines. This affects the curvature of the spline.
      *
      * @default 0.5
      */
@@ -2019,13 +2071,14 @@ export class Series extends SeriesBase {
     public cardinalSplineTension: number;
 
     /**
-     * Options to customize the empty points in series.
+     * Customization options for the appearance of empty points in the series.
+     * `null` or `undefined` values are considered empty points.
      */
     @Complex<EmptyPointSettingsModel>(null, EmptyPointSettings)
     public emptyPointSettings: EmptyPointSettingsModel;
 
     /**
-     * If set to true, the mean value for box and whisker will be visible.
+     * If set to true, the mean value for the box and whisker plot will be visible.
      *
      * @default true
      */
@@ -2033,10 +2086,11 @@ export class Series extends SeriesBase {
     public showMean: boolean;
 
     /**
-     * The mode of the box and whisker char series. They are,
-     * Exclusive
-     * Inclusive
-     * Normal
+     * Specifies the box plot mode for the box and whisker chart series.
+     * The available modes are:
+     * Exclusive - Renders the series based on the exclusive mode.
+     * Inclusive - Renders the series based on the inclusive mode.
+     * Normal - Renders the series based on the normal mode.
      *
      * @default 'Normal'
      */
@@ -2044,8 +2098,8 @@ export class Series extends SeriesBase {
     public boxPlotMode: BoxPlotMode;
 
     /**
-     * Render the column series points with a particular column width. If the series type is histogram the
-     * default value is 1 otherwise 0.7.
+     * The `columnWidth` property can be used to customize the width of the columns in a column series.
+     > Note that if the series type is histogram, the default value is 1; otherwise, it is 0.7.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -2055,7 +2109,7 @@ export class Series extends SeriesBase {
     public columnWidth: number;
 
     /**
-     * To render the column series points with particular column width as pixel.
+     * To render the column series points with a specific column width in pixels.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -2066,8 +2120,9 @@ export class Series extends SeriesBase {
 
     /**
      * Defines the shape of the data in a column and bar chart.
-     * * Rectangle: Displays the data in a column and bar chart in a rectangle shape.
-     * * Cylinder: Displays the data in a column and bar chart in a cylinder shape.
+     * Available shapes are:
+     * * Rectangle: Displays the data in a column and bar chart with a rectangular shape.
+     * * Cylinder: Displays the data in a column and bar chart with a cylindrical shape.
      *
      * @default 'Rectangle'
      */
@@ -2075,7 +2130,8 @@ export class Series extends SeriesBase {
     public columnFacet: ShapeType;
 
     /**
-     * To render the column series points with particular column spacing. It takes value from 0 - 1.
+     * This property determines the space between columns in a column or bar chart.
+     > Note that it takes a value from 0 to 1.
      *
      * @default 0
      */
@@ -2084,7 +2140,7 @@ export class Series extends SeriesBase {
 
 
     /**
-     * Defines the visual representation of the negative changes in waterfall charts.
+     * Defines the visual representation of negative changes in waterfall charts.
      *
      * @default '#C64E4A'
      */
@@ -2092,7 +2148,7 @@ export class Series extends SeriesBase {
     public negativeFillColor: string;
 
     /**
-     * Defines the visual representation of the summaries in waterfall charts.
+     * Defines the visual representation of summaries in waterfall charts.
      *
      * @default '#4E81BC'
      */
@@ -2100,7 +2156,7 @@ export class Series extends SeriesBase {
     public summaryFillColor: string;
 
     /**
-     * Defines the collection of indexes of the intermediate summary columns in waterfall charts.
+     * Defines the collection of indexes for the intermediate summary columns in waterfall charts.
      *
      * @default []
      * @aspType int[]
@@ -2109,7 +2165,7 @@ export class Series extends SeriesBase {
     public intermediateSumIndexes: number[];
 
     /**
-     * Defines the collection of indexes of the overall summary columns in waterfall charts.
+     * Defines the collection of indexes for the overall summary columns in waterfall charts.
      *
      * @default []
      * @aspType int[]
@@ -2118,7 +2174,7 @@ export class Series extends SeriesBase {
     public sumIndexes: number[];
 
     /**
-     * Defines the position for the steps in the step line, step area, and step range area chart types.
+     * The `step` property can be used to change the position of the steps in step line, step area, and step range area chart types.
      * * Left: Steps start from the left side of the 2nd point.
      * * Center: Steps start between the data points.
      * * Right: Steps start from the right side of the 1st point. 
@@ -2129,7 +2185,16 @@ export class Series extends SeriesBase {
     public step: StepPosition;
 
     /**
-     * Defines the appearance of line connecting adjacent points in waterfall charts.
+     * When set to true, the step series will be rendered without the vertical lines (risers) connecting the horizontal steps.
+     > Note this property is only applicable to step series.
+     *
+     * @default false
+     */
+    @Property(false)
+    public noRisers: boolean;
+
+    /**
+     * Specifies the appearance of the line connecting adjacent points in waterfall charts.
      */
 
     @Complex<ConnectorModel>({ color: 'black', width: 2 }, Connector)
@@ -2137,7 +2202,7 @@ export class Series extends SeriesBase {
 
 
     /**
-     * To render the column series points with particular rounded corner.
+     * The `cornerRadius` property specifies the radius for the corners of the column series points to create a rounded appearance in the chart.
      */
     @Complex<CornerRadiusModel>(null, CornerRadius)
     public cornerRadius: CornerRadiusModel;
@@ -2184,6 +2249,8 @@ export class Series extends SeriesBase {
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
     }
+    /** @private */
+    public currentData: Array<number | string> = [];
 
     /**
      * Refresh the axis label.
@@ -2207,7 +2274,7 @@ export class Series extends SeriesBase {
             if (item.visible && item.category !== 'TrendLine') {
                 item.xMin = Infinity; item.xMax = -Infinity;
                 for (const point of item.points) {
-                    item.pushCategoryData(point, point.index, this.xAxis.valueType === "DateTimeCategory" ? Date.parse(dateParser(dateFormatter(point.x))).toString() : <string>point.x);
+                    item.pushCategoryData(point, point.index, this.xAxis.valueType === 'DateTimeCategory' ? Date.parse(dateParser(dateFormatter(point.x))).toString() : <string>point.x);
                     item.xMin = Math.min(item.xMin, point.xValue);
                     item.xMax = Math.max(item.xMax, point.xValue);
                 }
@@ -2581,7 +2648,7 @@ export class Series extends SeriesBase {
             if (errorBar.visible) {
                 chart.errorBarModule.doErrorBarAnimation(this);
             }
-            if (marker.visible) {
+            if (marker.visible && (this.isRectSeries || this.type === 'Line' || this.type === 'Polar' || this.type === 'Radar')) {
                 chart.markerRender.doMarkerAnimation(this);
             }
             //to datalabel animation disabled for edge and IE
@@ -2841,16 +2908,42 @@ export class Series extends SeriesBase {
      * @returns {void}
      */
     public setData(data: Object[], duration?: number): void {
-
         if (!data) {
             return null;
         }
+        const updatedData: Array<number | string> = [];
+        if ((this.dataSource as Object[]).length === data.length) {
+            for (let i: number = 0; i < data.length; i++) {
+                if (data[i as number][this.xName] instanceof Date) {
+                    updatedData.push((data[i as number][this.xName] as Date).getTime());
+                } else {
+                    updatedData.push(data[i as number][this.xName]);
+                }
+                if (this.currentData.length < (this.dataSource as Object[]).length) {
+                    const dataSource: Object[] = extend([], this.dataSource, null, true) as Object[];
+                    if (dataSource[i as number][this.xName] instanceof Date) {
+                        this.currentData.push(dataSource[i as number][this.xName].getTime());
+                    } else {
+                        this.currentData.push(dataSource[i as number][this.xName]);
+                    }
+                }
+            }
+        }
+        let isSameData: boolean = updatedData.every((element: number | string) => this.currentData.indexOf(element) !== -1);
+        if (this.currentViewData) {
+            isSameData = true;
+        }
+        let isXAxisChanged: boolean = false;
         const yMin: number = this.yMin;
         const yMax: number = this.yMax;
         this.yMin = Infinity; this.yMax = -Infinity;
-        const pointList: number[] = [];
+        const points: number[] = [];
+        this.chart.dataLabelCollections = [];
+        this.chart.rotatedDataLabelCollections = [];
         let samePoints: boolean = false;
-        if ((this.dataSource as Object[]).length === data.length && !(this.type === 'Radar' || this.type === 'Polar')) {
+        let index: number = null;
+
+        if ((this.dataSource as Object[]).length === data.length && !(this.type === 'Radar' || this.type === 'Polar') && isSameData) {
             samePoints = true;
             this.yData = [];
             if (this.type === 'Histogram' && (this.dataSource as Object[]).length === data.length) {
@@ -2868,34 +2961,40 @@ export class Series extends SeriesBase {
                         newData = data[i as number][this.xName].getTime();
                         existingData = this.dataSource[i as number][this.xName].getTime();
                     }
-                    if (existingData === newData) {
-                        const point: Points = this.points[i as number];
-                        const getObjectValueByMappingString: Function = this.enableComplexProperty ? getValue : this.getObjectValue;
-                        const existingPoint: Object = this.dataSource[i as number]; const newPoint: Object = data[i as number];
-                        if ((this.seriesType === 'XY' || this.seriesType === 'BoxPlot') && (existingPoint[this.yName] !== newPoint[this.yName] || existingPoint[this.size] !== newPoint[this.size])) {
-                            point.y = getObjectValueByMappingString(this.yName, newPoint);
-                            if (this.type === 'Bubble' && existingPoint[this.size] !== newPoint[this.size]) {
-                                point.size = getObjectValueByMappingString(this.size, newPoint);
-                            }
-                            pointList.push(i);
-                        } else if (existingPoint[this.high] !== newPoint[this.high] || existingPoint[this.low] !== newPoint[this.low] ||
-                             existingPoint[this.open] !== newPoint[this.open] || existingPoint[this.close] !== newPoint[this.close] ||
-                             existingPoint[this.volume] !== newPoint[this.volume]) {
-                            point.high = getObjectValueByMappingString(this.high, newPoint);
-                            point.low = getObjectValueByMappingString(this.low, newPoint);
-                            point.open = getObjectValueByMappingString(this.open, newPoint);
-                            point.close = getObjectValueByMappingString(this.close, newPoint);
-                            point.volume = getObjectValueByMappingString(this.volume, newPoint);
-                            pointList.push(i);
+                    if (this.currentData[i as number] !== newData) {
+                        isXAxisChanged = true;
+                    }
+                    const point: Points = this.points[i as number];
+                    const getObjectValueByMappingString: Function = this.enableComplexProperty ? getValue : this.getObjectValue;
+                    const existingPoint: Object = this.dataSource[i as number]; const newPoint: Object = data[i as number];
+                    if ((this.seriesType === 'XY' || this.seriesType === 'BoxPlot')) {
+                        point.y = getObjectValueByMappingString(this.yName, newPoint);
+                        if (this.type === 'Bubble' && existingPoint[this.size] !== newPoint[this.size]) {
+                            point.size = getObjectValueByMappingString(this.size, newPoint);
                         }
-                        point.yValue = <number>point.y;
-                        this.setEmptyPoint(point, i);
-                        this.dataSource[i as number] = data[i as number];
+                        points.push(i);
+                    } else if (existingPoint[this.high] !== newPoint[this.high] || existingPoint[this.low] !== newPoint[this.low] ||
+                        existingPoint[this.open] !== newPoint[this.open] || existingPoint[this.close] !== newPoint[this.close] ||
+                        existingPoint[this.volume] !== newPoint[this.volume]) {
+                        point.high = getObjectValueByMappingString(this.high, newPoint);
+                        point.low = getObjectValueByMappingString(this.low, newPoint);
+                        point.open = getObjectValueByMappingString(this.open, newPoint);
+                        point.close = getObjectValueByMappingString(this.close, newPoint);
+                        point.volume = getObjectValueByMappingString(this.volume, newPoint);
+                        points.push(i);
                     }
-                    else {
-                        samePoints = false;
-                        break;
+                    point.yValue = <number>point.y;
+                    point.x = getObjectValueByMappingString(this.xName, newPoint);
+                    if (!this.currentViewData) {
+                        point.index = (this.xAxis.valueType === 'DateTime' && typeof (point.x) !== 'number') ? this.currentData.indexOf((point.x as Date).getTime()) : this.currentData.indexOf(<number>point.x);
                     }
+                    if ((this.xAxis.valueType === 'Category' || this.xAxis.valueType === 'DateTimeCategory') && i < this.xAxis.visibleLabels.length) {
+                        this.xAxis.visibleLabels[i as number].value = updatedData.indexOf(this.currentData[i *
+                                                                                          this.xAxis.visibleRange.interval]);
+                        this.xAxis.labels[i as number] = String(updatedData[i as number]);
+                    }
+                    this.setEmptyPoint(point, i);
+                    this.dataSource[i as number] = data[i as number];
                 }
             }
         }
@@ -2906,13 +3005,18 @@ export class Series extends SeriesBase {
             this.chart.pointsAdded = true;
             const chartDuration: number = this.chart.duration;
             this.chart.duration = isNullOrUndefined(duration) ? 500 : duration;
-            this.chart.calculateStackValues();
+            if (this.type.indexOf('Stacking') !== -1) {
+                this.chart.calculateStackValues();
+            }
             this.updateSplineValue();
             if (yMax === this.yMax && yMin === this.yMin && this.visible) {
                 this.chart.pointsAdded = false;
-                this.chart[firstToLowerCase((this.category === 'Pareto' ? 'Column' : this.type.replace('100', ''))) + 'SeriesModule'].updateDirection(this, pointList, this.chart.requireInvertedAxis);
+                this.chart[firstToLowerCase((this.category === 'Pareto' ? 'Column' : this.type.replace('100', ''))) + 'SeriesModule'].updateDirection(this, points, this.chart.requireInvertedAxis);
                 if (this.chart.annotationModule) {
                     this.chart.annotationModule.renderAnnotations(getElement((this.chart.element.id) + '_Secondary_Element'));
+                }
+                if (!setRange(this.xAxis) && (isXAxisChanged)) {
+                    this.xAxis.updateAxis();
                 }
             }
             else if ((yMax < this.yMax || yMin > this.yMin || yMax > this.yMax || yMin < this.yMin) && this.visible) {
@@ -2932,6 +3036,9 @@ export class Series extends SeriesBase {
                     if (!setRange(this.yAxis)) {
                         this.yAxis.updateAxis();
                     }
+                    if (!setRange(this.xAxis) && (isXAxisChanged)) {
+                        this.xAxis.updateAxis();
+                    }
                     if (this.type === 'Histogram' && !setRange(this.xAxis)) {
                         this.xAxis.baseModule.calculateRangeAndInterval(new Size(this.xAxis.rect.width,
                                                                                  this.chart.availableSize.height), this.xAxis);
@@ -2939,10 +3046,11 @@ export class Series extends SeriesBase {
                     }
                 }
                 this.chart.pointsAdded = false;
-                this.updateSeries(false, true);
-                if (this.marker.dataLabel.visible && this.chart.dataLabelModule) {
-                    this.chart.dataLabelModule.doDataLabelAnimation(this);
+                if (isXAxisChanged) {
+                    this.chart[firstToLowerCase((this.category === 'Pareto' ? 'Column' : this.type.replace('100', ''))) + 'SeriesModule'].updateDirection(this, points, this.chart.requireInvertedAxis);
+                    index = this.index;
                 }
+                this.updateSeries(false, true, index);
                 if (this.chart.stripLineModule) {
                     this.chart.stripLineModule.renderStripLine(this.chart, 'Behind', this.chart.axisCollections);
                 }
@@ -2983,7 +3091,7 @@ export class Series extends SeriesBase {
         }
     }
 
-    private updateSeries(xAxis: boolean, yAxis: boolean): void {
+    private updateSeries(xAxis: boolean, yAxis: boolean, index?: number): void {
         let seriesCollection: Series[] = [];
         if (xAxis && yAxis) {
             const set: Set<Series> = new Set(this.xAxis.series.concat(this.yAxis.series));
@@ -2995,7 +3103,7 @@ export class Series extends SeriesBase {
             seriesCollection = xAxis ? this.xAxis.series.slice() : this.yAxis.series.slice();
         }
         for (const series of seriesCollection) {
-            if (series.visible) {
+            if (series.visible && series.index !== index) {
                 findClipRect(series, this.chart.enableCanvas);
                 const transform: string = 'translate(' + this.clipRect.x + ',' + (this.clipRect.y) + ')';
                 series.seriesElement.setAttribute('transform', transform);

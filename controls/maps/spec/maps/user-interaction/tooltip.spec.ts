@@ -155,6 +155,32 @@ describe('Map layer testing', () => {
             tooltip.layers[0].bubbleSettings[0].tooltipSettings.format = '${State} <br> Vote Counts ${Electors} <br> Bubble';
             tooltip.refresh();
         });
+        it('tooltip checking for bubble and isDevice as true', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(bubbleId + 0);
+                tooltip.isDevice = true;
+                let event: PointerEvent = <PointerEvent>trigger.onPointerMove(spec, 140, 230, 1, 'touch');
+                (tooltip.mapsTooltipModule['renderTooltip'])(event);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                expect(tooltipElement.textContent).toBe('Alabama  Vote Counts $9.00  Bubble');
+                done();
+            };
+            tooltip.format = null;
+            tooltip.layers[0].bubbleSettings[0].tooltipSettings.format = '${State} <br> Vote Counts ${Electors} <br> Bubble';
+            tooltip.refresh();
+        });
+        it('tooltip checking for bubble and isDevice as true', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(bubbleId + 0);
+                let event: PointerEvent = <PointerEvent>trigger.onPointerMove(spec, 140, 230, 1, 'touch');
+                tooltip.mapsTooltipModule.mouseUpHandler(event);
+                done();
+            };
+            tooltip.format = null;
+            tooltip.tooltipDisplayMode = 'MouseMove';
+            tooltip.layers[0].bubbleSettings[0].tooltipSettings.format = '${State} <br> Vote Counts ${Electors} <br> Bubble';
+            tooltip.refresh();
+        });
         it('tooltip checking format for bubble', (done: Function) => {
             tooltip.loaded = (args: ILoadedEventArgs) => {
                 spec = getElement(bubbleId + 0);
@@ -176,6 +202,18 @@ describe('Map layer testing', () => {
             trigger.mousemoveEvent(spec, 0, 0, 190, 230);
             tooltipElement = document.getElementById('mapst_mapsTooltip_text');
             expect(tooltipElement.textContent).toBe('Colorado  Lat 39.5501  Marker');
+        });
+        it('tooltip element id changed for marker', () => {
+            spec = getElement(markerId + 1);
+            tooltip.element.id = 'mapstr';
+            trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+            tooltip.mapsTooltipModule['isTouch'] = false;
+            trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+            trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+            trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+            tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+            expect(tooltipElement.textContent).toBe('Colorado  Lat 39.5501  Marker');
+            tooltip.element.id = 'mapst';
         });
         it('tooltip checking format for Shape', () => {
             spec = getElement(getShape(23));
@@ -809,6 +847,70 @@ describe('Map layer testing', () => {
             tooltips.refresh();
         });
     });
+    describe('tooltip testing', () => {
+        let id: string = 'mapst';
+        let tooltips: Maps;
+        let trigger: MouseEvents = new MouseEvents();
+        let ele: HTMLDivElement;
+        let spec: Element;
+        let tooltipElement: HTMLElement;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            tooltips = new Maps({
+                //  format: 'n0',
+                enableRtl: false,
+                layers: [{
+                    tooltipSettings: {
+                        visible: true,
+                        template: 'Name: ${name}',
+                        valuePath: 'name',
+                    },
+                    shapeData: usMap,
+                    shapeDataPath: 'name',
+                    shapePropertyPath: ['name', 'admin'],
+                    shapeSettings: {
+                        autofill: true,
+                    }
+                }]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            tooltips.destroy();
+            tooltips.mapsTooltipModule = new MapsTooltip(tooltips);
+            tooltips.mapsTooltipModule.destroy();
+            remove(ele);
+        });
+        it('tooltip data from shapeData', (done: Function) => {
+            tooltips.loaded = (args: ILoadedEventArgs) => {
+                debugger
+                spec = getElement(getShape(23));
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltipparent_template');
+                expect(tooltipElement.textContent).toBe('Name: Texas');
+                done();
+            };
+            let layer: LayerSettingsModel = tooltips.layers[0];
+            layer.tooltipSettings.valuePath = 'name', 
+            layer.tooltipSettings.template = '<div><div>Name: ${name}</div></div>';
+            tooltips.refresh();
+        });
+        it('tooltip data from shapeData and dataSource as null', (done: Function) => {
+            tooltips.loaded = (args: ILoadedEventArgs) => {
+                debugger
+                spec = getElement(getShape(23));
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltipparent_template');
+                expect(tooltipElement.textContent).toBe('Name: Texas');
+                done();
+            };
+            let layer: LayerSettingsModel = tooltips.layers[0];
+            layer.dataSource = null;
+            layer.tooltipSettings.valuePath = 'name', 
+            layer.tooltipSettings.template = '<div><div>Name: ${name}</div></div>';
+            tooltips.refresh();
+        });
+    })
     describe('tooltip testing', () => {
         let id: string = 'mapst';
         let tooltips: Maps;

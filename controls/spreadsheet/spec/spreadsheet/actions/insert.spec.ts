@@ -423,6 +423,40 @@ describe('Insert & Delete ->', () => {
             helper.invoke('destroy');
         });
 
+        it('EJ2-895900 - Formatting not applied while inserting the row between the formatted rows', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.cellFormat({ backgroundColor: '#FFFF00', border:'1px solid #000000', fontWeight: 'bold' }, 'A4:C6');
+            expect(spreadsheet.sheets[0].rows[4].cells[0].style).toEqual({ backgroundColor: '#FFFF00', fontWeight: 'bold', borderLeft:'1px solid #000000', borderRight: '1px solid #000000', borderTop:'1px solid #000000',borderBottom:'1px solid #000000' });
+            spreadsheet.insertRow(5);
+            expect(spreadsheet.sheets[0].rows[5].cells[0].style).toEqual({ backgroundColor: '#FFFF00', fontWeight: 'bold', borderLeft:'1px solid #000000', borderRight: '1px solid #000000', borderTop:'1px solid #000000',borderBottom:'1px solid #000000' });
+            spreadsheet.cellFormat({ backgroundColor: '#FFFF00', border:'1px solid #000000', fontWeight: 'bold' }, 'A12:C12');
+            expect(spreadsheet.sheets[0].rows[11].cells[0].style).toEqual({ backgroundColor: '#FFFF00', fontWeight: 'bold', borderLeft:'1px solid #000000', borderRight: '1px solid #000000', borderTop:'1px solid #000000',borderBottom:'1px solid #000000' });
+            spreadsheet.insertRow(12);
+            expect(spreadsheet.sheets[0].rows[12].cells[0].style).toEqual({ backgroundColor: '#FFFF00', fontWeight: 'bold' });
+            expect(spreadsheet.sheets[0].rows[12].cells[0].style.borderLeft).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[12].cells[0].style.borderRight).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[12].cells[0].style.borderTop).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[12].cells[0].style.borderBottom).toBeUndefined();
+            done();
+        });
+
+        it('EJ2-895900 - Formatting not applied while inserting the column between the formatted columns', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.cellFormat({ backgroundColor: '#FFFF00', border:'1px solid #000000', fontWeight: 'bold' }, 'D3:F5');
+            expect(spreadsheet.sheets[0].rows[2].cells[3].style).toEqual({ backgroundColor: '#FFFF00', fontWeight: 'bold', borderLeft:'1px solid #000000', borderRight: '1px solid #000000', borderTop:'1px solid #000000',borderBottom:'1px solid #000000' });
+            spreadsheet.insertColumn(4);
+            expect(spreadsheet.sheets[0].rows[2].cells[4].style).toEqual({ backgroundColor: '#FFFF00', fontWeight: 'bold', borderLeft:'1px solid #000000', borderRight: '1px solid #000000', borderTop:'1px solid #000000',borderBottom:'1px solid #000000' });
+            spreadsheet.cellFormat({ backgroundColor: '#FFFF00', border:'1px solid #000000', fontWeight: 'bold' }, 'I3:I5');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].style).toEqual({ backgroundColor: '#FFFF00', fontWeight: 'bold', borderLeft:'1px solid #000000', borderRight: '1px solid #000000', borderTop:'1px solid #000000',borderBottom:'1px solid #000000' });
+            spreadsheet.insertColumn(9);
+            expect(spreadsheet.sheets[0].rows[2].cells[9].style).toEqual({ backgroundColor: '#FFFF00', fontWeight: 'bold' });
+            expect(spreadsheet.sheets[0].rows[2].cells[9].style.borderLeft).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[2].cells[9].style.borderRight).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[2].cells[9].style.borderTop).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[2].cells[9].style.borderBottom).toBeUndefined();
+            done();
+        });
+        
         it('Delete Row with enable virtualization False->', (done: Function) => {
             helper.invoke('selectRange', ['A2']);
             expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');
@@ -646,100 +680,96 @@ describe('Insert & Delete ->', () => {
             helper.setAnimationToNone('#' + helper.id + '_contextmenu');
             helper.openAndClickCMenuItem(0, 3, [7], false, true);
             setTimeout((): void => {
-                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                const cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("D2:F11");
                 done();
-            },50);
+            });
         });
         it('Undo after deleting by selecting cf applied and non cf applied column ->', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.undo(); 
             setTimeout((): void => {
-                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                const cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("E2:H11");
                 done();
-            },50);
+            });
         });
         it('Delete by selecting cf applied and non cf applied column II->', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.selectRange('D1:G1');
-            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
             helper.openAndClickCMenuItem(0, 3, [7], false, true);
             setTimeout((): void => {
-                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                const cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("D2:D11");
                 done();
-            },50);
+            });
         });
         it('Undo after deleting by selecting cf applied and non cf applied column II->', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.undo(); 
             setTimeout((): void => {
-                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                const cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("E2:H11");
                 done();
-            },50);
+            });
         });
         it('Delete by selecting cf applied and non cf applied row ->', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.selectRange('A1:A2');
-            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
             helper.openAndClickCMenuItem(0, 0, [7], true, false);
             setTimeout((): void => {
-                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                const cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("E1:H9");
                 done();
-            },50);
+            });
         });
         it('Undo after deleting by selecting cf applied and non cf applied row ->', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.undo(); 
             setTimeout((): void => {
-                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                const cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("E2:H11");
                 done();
-            },50);
+            });
         });
         it('Delete by selecting cf applied and non cf applied row II->', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.selectRange('A3:A13');
-            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
             helper.openAndClickCMenuItem(2, 0, [7], true, false);
             setTimeout((): void => {
-                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                const cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("E2:H2");
                 done();
-            },50);
+            });
         });
         it('Undo after deleting by selecting cf applied and non cf applied row ->', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.undo(); 
             setTimeout((): void => {
-                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                const cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("E2:H11");
                 done();
-            },50);
+            });
         });
         it('Delete by selecting cf applied and non cf applied row III->', (done: Function) => {
             helper.edit('A12', '12');
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.selectRange('A11:A12');
-            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
             helper.openAndClickCMenuItem(10, 0, [7], true, false);
             setTimeout((): void => {
-                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                const cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("E2:H10");
                 done();
-            },50);
+            });
         });
         it('Undo after deleting by selecting cf applied and non cf applied row ->', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.undo(); 
             setTimeout((): void => {
-                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                const cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("E2:H11");
                 done();
-            },50);
+            });
         });
     });
     
@@ -1632,66 +1662,66 @@ describe('Insert & Delete ->', () => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             let cfRule: ConditionalFormatModel[];
             spreadsheet.insertColumn(0,0);
-            setTimeout(function () {
+            setTimeout((): void => {
                 cfRule = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("A2:B11");
                 expect(cfRule[1].range).toEqual("C2:C11");
                 expect(cfRule[2].range).toEqual("D2:D11");
                 expect(cfRule[3].range).toEqual("F2:I11");
                 done();
-                }, 50);
+            });
         });
         it('Public method - Insert column conditional formaating cells 2', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             let cfRule: ConditionalFormatModel[];
             spreadsheet.insertColumn(4,4);
-            setTimeout(function () {
+            setTimeout((): void => {
                 cfRule = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("A2:B11");
                 expect(cfRule[1].range).toEqual("C2:C11");
                 expect(cfRule[2].range).toEqual("D2:D11");
                 expect(cfRule[3].range).toEqual("G2:J11");
                 done();
-                }, 50);
+            });
         });
         it('Public method - Insert column conditional formaating cells 3', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             let cfRule: ConditionalFormatModel[];
             spreadsheet.insertColumn(7,8);
-            setTimeout(function () {
+            setTimeout((): void => {
                 cfRule = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("A2:B11");
                 expect(cfRule[1].range).toEqual("C2:C11");
                 expect(cfRule[2].range).toEqual("D2:D11");
                 expect(cfRule[3].range).toEqual("G2:L11");
                 done();
-                }, 50);
+            });
         });
         it('Public method - Insert column conditional formaating cells 4', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             let cfRule: ConditionalFormatModel[];
             spreadsheet.insertColumn(11,12);
-            setTimeout(function () {
+            setTimeout((): void => {
                 cfRule = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("A2:B11");
                 expect(cfRule[1].range).toEqual("C2:C11");
                 expect(cfRule[2].range).toEqual("D2:D11");
                 expect(cfRule[3].range).toEqual("G2:L11");
                 done();
-                }, 50);
+            });
         });
         it('Public method - Insert column conditional formaating cells 5', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             let cfRule: ConditionalFormatModel[];
             spreadsheet.insertColumn(5,6);
-            setTimeout(function () {
+            setTimeout((): void => {
                 cfRule = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("A2:B11");
                 expect(cfRule[1].range).toEqual("C2:C11");
                 expect(cfRule[2].range).toEqual("D2:D11");
                 expect(cfRule[3].range).toEqual("G2:N11");
                 done();
-                }, 50);
+            });
         });
     });
     describe('Public methods Insert row with conditional formatting ->', () => {
@@ -1719,53 +1749,53 @@ describe('Insert & Delete ->', () => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             let cfRule: ConditionalFormatModel[];
             spreadsheet.insertRow(0,0);
-            setTimeout(function () {
+            setTimeout((): void => {
                 cfRule = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("A3:A12");
                 expect(cfRule[1].range).toEqual("B3:B12");
                 expect(cfRule[2].range).toEqual("C3:C12");
                 expect(cfRule[3].range).toEqual("E3:H12");
                 done();
-                }, 50);
+            });
         });
         it('Public method - Insert row conditional formaating cells 2', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             let cfRule: ConditionalFormatModel[];
             spreadsheet.insertRow(2, 2);
-            setTimeout(function () {
+            setTimeout((): void => {
                 cfRule = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("A3:A13");
                 expect(cfRule[1].range).toEqual("B3:B13");
                 expect(cfRule[2].range).toEqual("C3:C13");
                 expect(cfRule[3].range).toEqual("E3:H13");
                 done();
-            }, 50);
+            });
         });
         it('Public method - Insert row conditional formaating cells 3', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             let cfRule: ConditionalFormatModel[];
             spreadsheet.insertRow(11, 12);
-                setTimeout(function () {
-                    cfRule = spreadsheet.sheets[0].conditionalFormats;
-                    expect(cfRule[0].range).toEqual("A3:A15");
-                    expect(cfRule[1].range).toEqual("B3:B15");
-                    expect(cfRule[2].range).toEqual("C3:C15");
-                    expect(cfRule[3].range).toEqual("E3:H15");
-                    done();
-                }, 50);
-        });
-        it('Public method - Insert row conditional formaating cells 4', (done: Function) => {
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            let cfRule: ConditionalFormatModel[];
-            spreadsheet.insertRow(17, 18);
-            setTimeout(function () {
+            setTimeout((): void => {
                 cfRule = spreadsheet.sheets[0].conditionalFormats;
                 expect(cfRule[0].range).toEqual("A3:A15");
                 expect(cfRule[1].range).toEqual("B3:B15");
                 expect(cfRule[2].range).toEqual("C3:C15");
                 expect(cfRule[3].range).toEqual("E3:H15");
                 done();
-            }, 50);
+            });
+        });
+        it('Public method - Insert row conditional formaating cells 4', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            let cfRule: ConditionalFormatModel[];
+            spreadsheet.insertRow(17, 18);
+            setTimeout((): void => {
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A3:A15");
+                expect(cfRule[1].range).toEqual("B3:B15");
+                expect(cfRule[2].range).toEqual("C3:C15");
+                expect(cfRule[3].range).toEqual("E3:H15");
+                done();
+            });
         });
     });
     describe('Delete column with conditional formatting ->', () => {

@@ -13,7 +13,7 @@ import { StringFilterUI } from './string-filter-ui';
 import { NumberFilterUI } from './number-filter-ui';
 import { BooleanFilterUI } from './boolean-filter-ui';
 import { DateFilterUI } from './date-filter-ui';
-import { getFilterMenuPostion, parentsUntil, appendChildren, clearReactVueTemplates } from '../base/util';
+import { getFilterMenuPostion, parentsUntil, appendChildren, resetDialogAppend } from '../base/util';
 import * as events from '../base/constant';
 import { IXLFilter } from '../common/filter-interface';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
@@ -92,6 +92,7 @@ export class FilterMenuRenderer {
                 this.isMenuCheck = false;
             }
             if ((this.parent.isReact || this.parent.isVue) && this.col.filterTemplate && this.col.filterTemplate instanceof Function) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this.parent as any).clearTemplate(['filterTemplate'], undefined, () => {
                     this.dlgObj.destroy();
                 });
@@ -178,7 +179,7 @@ export class FilterMenuRenderer {
         const isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
         const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
-        if (!isNullOrUndefined(column.filterTemplate) && !(isReactCompiler || isReactChild)) {
+        if (!isNullOrUndefined(column.filterTemplate) && !(isReactCompiler || isReactChild) ) {
             (this.dlgDiv.querySelector('.e-flmenu-valuediv').firstElementChild as HTMLElement).focus();
             this.dlgDiv.querySelector('.e-flmenu-valuediv').firstElementChild.classList.add('e-input-focus');
         }
@@ -206,6 +207,9 @@ export class FilterMenuRenderer {
             this.dlgObj.element.style.maxHeight = this.maxHeight;
         }
         this.dlgObj.show();
+        if ((this.parent.getContent().firstElementChild as HTMLElement).offsetHeight < this.dlgObj.element.offsetHeight) {
+            resetDialogAppend(this.parent, this.dlgObj);
+        }
         const optrInput: HTMLInputElement = this.dlgObj.element.querySelector('.e-flm_optrdiv').querySelector('input');
         const valInput: HTMLInputElement = this.dlgObj.element.querySelector('.e-flmenu-valuediv').querySelector('input');
         if (optrInput.value === 'Empty' || optrInput.value === 'Not Empty' ||

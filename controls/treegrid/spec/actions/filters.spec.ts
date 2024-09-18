@@ -1167,3 +1167,31 @@ describe('EJ2-63073: The checkbox selection is not working properly while removi
         destroy(gridObj);
     });
 });
+
+describe('Code coverage improvement', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                enableCollapseAll: true,
+                filterSettings: { type: 'Menu', hierarchyMode: 'None'},
+                columns: ['taskID', 'taskName', 'startDate', 'duration']
+            },
+            done
+        );
+    });
+    it('clear filtering with enableCollapseAll', (done: Function) => {
+        gridObj.filterByColumn('taskName', 'startswith', 'Plan');
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
+        (<HTMLElement>document.querySelectorAll('.e-flmenu-cancelbtn')[0]).click();
+        expect(gridObj.getRows().length === 36).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

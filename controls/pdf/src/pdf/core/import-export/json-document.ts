@@ -13,6 +13,7 @@ export class _JsonDocument extends _ExportHelper {
     _isImport: boolean = false;
     _isColorSpace: boolean = false;
     _isDuplicate: boolean = false;
+    _isGroupingSupport: boolean = false;
     constructor(fileName?: string) {
         super();
         if (fileName !== null && typeof fileName !== 'undefined') {
@@ -594,7 +595,7 @@ export class _JsonDocument extends _ExportHelper {
     _writeAppearanceDictionary(table: Map<string, string>, dictionary: _PdfDictionary): void {
         if (dictionary && dictionary.size > 0) {
             dictionary.forEach((key: string, value: any) => { // eslint-disable-line
-                if (key === 'OC' && value instanceof Array || (key !== 'P' && key !== 'Parent' && key !== 'Dest' && key !== 'OC') ) {
+                if (key === 'OC' && value instanceof Array || (key !== 'P' && key !== 'Parent' && key !== 'Dest' && key !== 'OC' && !(key === 'AP' && this._isGroupingSupport)) ) {
                     this._writeObject(table, ((value instanceof _PdfReference) ? dictionary.get(key) : value), dictionary, key);
                 }
             });
@@ -615,12 +616,17 @@ export class _JsonDocument extends _ExportHelper {
             this._isColorSpace = false;
             this._writeTable('array', this._convertToJsonArray(list), table, key, array);
         } else if (typeof value === 'string') {
+            let isTabSpace: boolean = false;
+            if (value.indexOf('\t') !== -1) {
+                isTabSpace = true;
+            }
             if (key !== 'AllowedInteractions') {
                 value = this._getValidString(value);
             }
-            if (this._isColorSpace || key === 'AllowedInteractions' || this._hasUnicodeCharacters(value)) {
+            if (this._isColorSpace || key === 'AllowedInteractions' || this._hasUnicodeCharacters(value) || isTabSpace) {
                 const bytes: Uint8Array = _stringToBytes(value) as Uint8Array;
                 this._writeTable('unicodeData', _byteArrayToHexString(bytes), table, key, array);
+                isTabSpace = false;
             } else {
                 this._writeTable('string', value, table, key, array);
             }

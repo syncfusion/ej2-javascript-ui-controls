@@ -6,8 +6,8 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { PyramidSeries } from '../../../src/accumulation-chart/renderer/pyramid-series';
 import { AccumulationChart } from '../../../src/accumulation-chart/accumulation';
 import { AccumulationLegend } from '../../../src/accumulation-chart/renderer/legend';
-import { AccPoints } from '../../../src/accumulation-chart/model/acc-base';
-import { getElement } from '../../../src/common/utils/helper';
+import { AccPoints, AccumulationSeries } from '../../../src/accumulation-chart/model/acc-base';
+import { getElement, removeElement } from '../../../src/common/utils/helper';
 import { AccumulationDataLabel } from '../../../src/accumulation-chart/renderer/dataLabel';
 import { AccumulationSelection } from '../../../src/accumulation-chart/user-interaction/selection';
 import { AccumulationTooltip } from '../../../src/accumulation-chart/user-interaction/tooltip';
@@ -15,6 +15,7 @@ import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { SliceOption } from '../base/util.spec';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { IAccLoadedEventArgs, IAccTooltipRenderEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
+import { piedata} from '../../chart/base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 AccumulationChart.Inject(PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationSelection, AccumulationTooltip);
 
@@ -702,6 +703,140 @@ describe('Accumulation Chart Control', () => {
             chart.refresh();
         });
     });
+    describe('Corner Radius', () => {
+        let ele: HTMLElement;
+
+        let id: string = 'ej2container';
+
+        let chart: AccumulationChart;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: id });
+            document.body.appendChild(ele);
+            chart = new AccumulationChart({
+                series: [
+                    {
+                        type: 'Pyramid',
+                        borderRadius: 30
+                    }
+                ], width: '600', height: '400', legendSettings: { visible: false },
+
+            });
+            chart.appendTo('#' + id);
+        });
+
+        afterAll((): void => {
+            chart.loaded = null;
+            chart.destroy();
+            remove(getElement(id));
+        });
+        it('Top', (done: Function) => {
+
+            chart.loaded = () => {
+                let group: Element = getElement('ej2container_Series_0_Point_0');
+                expect(group.getAttribute('d')).toBe('M 290.0092924195622 61.091272001952944 Q300 48 309.9907075804378 61.091272001952944 L309.9907075804378 61.091272001952944 L322.94532986105986 78.06629430069916 Q332.93603744149766 91.1575663026521 332.93603744149766 91.1575663026521 L267.06396255850234 91.1575663026521 Q267.06396255850234 91.1575663026521 277.05467013894014 78.06629430069916 Z ');
+                done();
+            }
+            chart.series[0].dataSource = data;
+            chart.series[0].xName = 'x';
+            chart.series[0].yName = 'y';
+            chart.refresh();
+
+        });
+        it('OnePoint', (done: Function) => {
+
+            chart.loaded = () => {
+                let group: Element = getElement('ej2container_Series_0_Point_0');
+                expect(group.getAttribute('d')).toBe('M 281.79980041949426 71.84853738135232 Q300 48 318.20019958050574 71.84853738135232 L318.20019958050574 71.84853738135232 L513.7998004194943 328.1514626186476 Q532 351.99999999999994 502 351.99999999999994 L98.00000000000003 351.99999999999994 Q68.00000000000003 351.99999999999994 86.20019958050575 328.1514626186476 Z ');
+                done();
+            }
+            chart.series[0].dataSource = [{ x: 'Renewed', y: 18.2, text: '18.20%' }];
+            chart.series[0].xName = 'x';
+            chart.series[0].yName = 'y';
+            chart.refresh();
+
+        });
+        it('Bottom', (done: Function) => {
+
+            chart.loaded = () => {
+                let group: Element = getElement('ej2container_Series_0_Point_4');
+                expect(group.getAttribute('d')).toBe('M 230.76703910904186 138.71905220194515 Q248.96723868954757 114.87051482059282 248.96723868954757 114.87051482059282 L351.03276131045243 114.87051482059282 L513.7998004194943 328.15146261864766 Q532 352 502 352 L98 352 Q68 352 86.20019958050571 328.15146261864766 Z ');
+                done();
+            }
+            chart.series[0].dataSource = data;
+            chart.series[0].xName = 'x';
+            chart.series[0].yName = 'y';
+
+            chart.refresh();
+
+        });
+    });
+    describe('Pyramid Series - Checking animation on data changes.', () => {
+        let ele: HTMLElement;
+        let pie: AccumulationChart;
+        let id: string = 'ej2container';
+        beforeAll((): void => {
+            ele = createElement('div', { id: id });
+            document.body.appendChild(ele);
+
+            pie = new AccumulationChart({
+                series: [
+                    {
+                        type: 'Pyramid',
+                        dataLabel: { visible: true, name: 'text' },
+                        dataSource: piedata, animation: { enable: false }, xName: 'x', yName: 'y'
+
+                    }
+                ], width: '450', height: '400', legendSettings: { visible: true }
+            });
+            pie.appendTo('#' + id);
+        });
+
+        afterAll((): void => {
+            pie.loaded = null;
+            pie.destroy();
+            removeElement(id);
+        });
+
+        it('checking pyramid series with setdata', (done: Function) => {
+            pie.loaded = (args: Object): void => {
+                pie.loaded = null;
+                const element: Element = document.getElementById('ej2container_Series_0_Point_1');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                console.log('pyramid');
+                done();
+            };
+            (pie.series[0] as AccumulationSeries).setData([{ y: 18, x: 1, name: 'Bald Eagle', text: 'Bald Eagle : 18', radius: '50%' }, { y: 23, x: 2, name: 'Bison', text: 'Bison : 23', radius: '60%' },
+            { y: 30, x: 3, name: 'Brown Bear', text: 'Brown Bear : 30', radius: '70%' }, { y: 44, x: 4, name: 'Elk', text: 'Elk : 44', radius: '100%' },
+            { y: 52, x: 10, name: 'Pronghorn', text: 'Pronghorn : 52', radius: '80%' }, { y: 62, x: 6, name: 'Turkey', text: 'Turkey : 62', radius: '80%' },
+            { y: 74, x: 7, name: 'Alligator', text: 'Alligator : 74', radius: '80%' }, { y: 85, x: 8, name: 'Prairie Dog', text: 'Prairie Dog : 85', radius: '80%' },
+            { y: 96, x: 15, name: 'Mountain Lion', text: 'Mountain Lion : 96', radius: '80%' }, { y: 102, x: 10, name: 'Beaver', text: 'Beaver : 102', radius: '80%' }])
+            pie.refresh();
+        });
+
+        it('checking pyramid series with addPoint', (done: Function) => {
+            pie.loaded = (args: Object): void => {
+                pie.loaded = null;
+                const element: Element = document.getElementById('ej2container_Series_0_Point_1');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            (pie.series[0] as AccumulationSeries).addPoint({ x: "Dog", y: 15, text: '15%' });
+            pie.refresh();
+        });
+
+        it('checking pyramid series with removePoint', (done: Function) => {
+            pie.loaded = (args: Object): void => {
+                pie.loaded = null;
+                const element: Element = document.getElementById('ej2container_Series_0_Point_1');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            (pie.series[0] as AccumulationSeries).removePoint(0);
+            pie.refresh();
+        });
+
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -710,5 +845,5 @@ describe('Accumulation Chart Control', () => {
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
+    });
 });

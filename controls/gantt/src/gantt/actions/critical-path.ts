@@ -298,7 +298,7 @@ export class CriticalPath {
                     if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
                         // execute if the offset value is not given.
                         if (fromDateArray1.length <= 1) {
-                            if (collection[totaskId as number]['slack'] + dateDifference < 0) {
+                            if (collection[totaskId as number]['slack'] + dateDifference <= 0) {
                                 collection[fromTaskIdIndex as number]['slack'] = 0;
                             }
                             else {
@@ -311,7 +311,7 @@ export class CriticalPath {
                         collection[fromTaskIdIndex as number]['slack'] !== 0) {
                         // execute if the offset value is not given.
                         if (fromDateArray1.length <= 1) {
-                            if (collection[totaskId as number]['slack'] + dateDifference < 0) {
+                            if (collection[totaskId as number]['slack'] + dateDifference <= 0) {
                                 collection[fromTaskIdIndex as number]['slack'] = 0;
                             }
                             else {
@@ -323,14 +323,14 @@ export class CriticalPath {
                     if (fromDateArray1.length > 1) {
                         collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] + dateDifference;
                         collection[fromTaskIdIndex as number]['slack'] = collection[fromTaskIdIndex as number]['slack'] - (offsetInMillSec);
-                        if (collection[fromTaskIdIndex as number]['slack'] < 0) {
+                        if (collection[fromTaskIdIndex as number]['slack'] <= 0) {
                             collection[fromTaskIdIndex as number]['slack'] = 0;
                         }
                     }
                     collection[fromTaskIdIndex as number]['fs'] = 1;
                     collection[fromTaskIdIndex as number]['fsslack'] = collection[fromTaskIdIndex as number]['slack'];
                     collection[fromTaskIdIndex as number]['enddate'] = fromIdFlatData.startDate;
-                    if (fromIdFlatData.endDate >= checkEndDate && fromIdFlatData.endDate <= checkEndDate) {
+                    if (fromIdFlatData.endDate >= checkEndDate) {
                         collection[fromTaskIdIndex as number]['slack'] = 0;
                     }
                 }
@@ -348,7 +348,7 @@ export class CriticalPath {
                         // It execute while the slack value is not set to the corresponding task.
                         if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
                             if (fromDateArray1.length <= 1) {
-                                if (collection[totaskId as number]['slack'] + dateDifference < 0) {
+                                if (collection[totaskId as number]['slack'] + dateDifference <= 0) {
                                     collection[fromTaskIdIndex as number]['slack'] = 0;
                                 }
                                 else {
@@ -360,7 +360,7 @@ export class CriticalPath {
                         else if (collection[fromTaskIdIndex as number]['slack'] > dateDifference &&
                             collection[fromTaskIdIndex as number]['slack'] !== 0) {
                             if (fromDateArray1.length <= 1) {
-                                if (collection[totaskId as number]['slack'] + dateDifference < 0) {
+                                if (collection[totaskId as number]['slack'] + dateDifference <= 0) {
                                     collection[fromTaskIdIndex as number]['slack'] = 0;
                                 }
                                 else {
@@ -372,7 +372,7 @@ export class CriticalPath {
                         if (fromDateArray1.length > 1) {
                             collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] + dateDifference;
                             collection[fromTaskIdIndex as number]['slack'] = collection[fromTaskIdIndex as number]['slack'] - (offsetInMillSec);
-                            if (collection[fromTaskIdIndex as number]['slack'] < 0) {
+                            if (collection[fromTaskIdIndex as number]['slack'] <= 0) {
                                 collection[fromTaskIdIndex as number]['slack'] = 0;
                             }
                         }
@@ -445,7 +445,7 @@ export class CriticalPath {
                         if (fromDateArray1.length > 1) {
                             collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] - dateDifference;
                             collection[fromTaskIdIndex as number]['slack'] = collection[fromTaskIdIndex as number]['slack'] - (offsetInMillSec);
-                            if (collection[fromTaskIdIndex as number]['slack'] < 0) {
+                            if (collection[fromTaskIdIndex as number]['slack'] <= 0) {
                                 collection[fromTaskIdIndex as number]['slack'] = 0;
                             }
                         }
@@ -481,7 +481,7 @@ export class CriticalPath {
                                         dateDifference = this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute',
                                                                                flatRecords[indexFromTaskId as number]);
                                     }
-                                    if (collection[totaskId as number]['slack'] + dateDifference < 0) {
+                                    if (collection[totaskId as number]['slack'] + dateDifference <= 0) {
                                         collection[fromTaskIdIndex as number]['slack'] = 0;
                                     }
                                     else {
@@ -504,7 +504,7 @@ export class CriticalPath {
                                 }
                                 collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] + dateDifference;
                                 collection[fromTaskIdIndex as number]['slack'] = collection[fromTaskIdIndex as number]['slack'] - (offsetInMillSec);
-                                if (collection[fromTaskIdIndex as number]['slack'] < 0) {
+                                if (collection[fromTaskIdIndex as number]['slack'] <= 0) {
                                     collection[fromTaskIdIndex as number]['slack'] = 0;
                                 }
                             }
@@ -530,7 +530,7 @@ export class CriticalPath {
                                     if (isNullOrUndefined(collection[totaskId as number]['to'])) {
                                         collection[fromTaskIdIndex as number]['slack'] = dateDifference;
                                     } else if (!isNullOrUndefined(collection[totaskId as number]['to'])) {
-                                        if (collection[totaskId as number]['slack'] + dateDifference < 0) {
+                                        if (collection[totaskId as number]['slack'] + dateDifference <= 0) {
                                             collection[fromTaskIdIndex as number]['slack'] = 0;
                                         }
                                         else {
@@ -553,7 +553,7 @@ export class CriticalPath {
                                 if (collection[fromTaskIdIndex as number]['slack'] > dateDifference && collection[fromTaskIdIndex as number]['slack'] !== 0) {
                                     collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] + dateDifference;
                                     collection[fromTaskIdIndex as number]['slack'] = collection[fromTaskIdIndex as number]['slack'] - (offsetInMillSec);
-                                    if (collection[fromTaskIdIndex as number]['slack'] < 0) {
+                                    if (collection[fromTaskIdIndex as number]['slack'] <= 0) {
                                         collection[fromTaskIdIndex as number]['slack'] = 0;
                                     }
                                 }
@@ -648,11 +648,10 @@ export class CriticalPath {
                 }
                 if (durationDiff >= 0 && this.validatedids.indexOf(parseInt(fromRecord.ganttProperties.taskId, 10)) === -1 &&
                 fromRecord.ganttProperties.taskId !== record.ganttProperties.taskId) {
-                    fromRecord.ganttProperties.slack = durationDiff <= 0 ? record.ganttProperties.slack :
-                        durationDiff + record.ganttProperties.durationUnit;
-                    fromRecord.slack = durationDiff <= 0 ? record.slack : durationDiff + record.ganttProperties.durationUnit;
-                    fromRecord.isCritical = durationDiff <= 0 ? record.ganttProperties.isCritical : false;
-                    fromRecord.ganttProperties.isCritical = durationDiff <= 0 ? record.ganttProperties.isCritical : false;
+                    fromRecord.ganttProperties.slack = record.ganttProperties.slack;
+                    fromRecord.slack = record.slack;
+                    fromRecord.isCritical = record.ganttProperties.isCritical;
+                    fromRecord.ganttProperties.isCritical = record.ganttProperties.isCritical;
                     if (criticalPathIds.indexOf(fromRecord.ganttProperties.taskId) === -1 && fromRecord.ganttProperties.isCritical &&
                     fromRecord.ganttProperties.progress < 100) {
                         criticalPathIds.push(fromRecord.ganttProperties.taskId);

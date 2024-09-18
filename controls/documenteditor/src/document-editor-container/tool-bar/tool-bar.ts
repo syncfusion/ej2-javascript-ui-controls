@@ -58,6 +58,7 @@ const DROPDOWNDOWN_CONTENT_CONTROL_ID: string = '_dropdown_content_control';
 const DATEPICKER_CONTENT_CONTROL_ID: string = '_datepicker_content_control';
 const CHECKBOX_CONTENT_CONTROL_ID: string = '_checkbox_content_control';
 const PICTURE_CONTENT_CONTROL_ID: string = '_picture_content_control';
+const XMLMAPPING_ID: string = '_xmlmapping';
 
 /**
  * Toolbar Module
@@ -170,7 +171,7 @@ export class Toolbar {
         else {
             this.buttonElement.title = locale.getConstant('Show properties pane');
             classList(propertiesPaneDiv, this.container.restrictEditing ? ['e-de-overlay'] : [], this.container.restrictEditing ? [] : ['e-de-overlay']);
-            propertiesPaneDiv.classList.add('e-de-pane-disable-clr'); 
+            propertiesPaneDiv.classList.add('e-de-pane-disable-clr');
         }
         this.propertiesPaneButton.appendTo(this.buttonElement);
         EventHandler.add(this.buttonElement, 'click', this.showHidePropertiesPane, this);
@@ -624,6 +625,13 @@ export class Toolbar {
                         id: id + CONTENT_CONTROL_ID, htmlAttributes: { 'aria-label': locale.getConstant('Content Control') }
                     });
                     break;
+                case 'XML Mapping':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-xml-mapping', tooltipText: locale.getConstant('XML Mapping Pane'),
+                        id: id + XMLMAPPING_ID, text: this.onWrapText(locale.getConstant('XML Mapping Pane')), cssClass: className,
+                        htmlAttributes: { 'aria-label': locale.getConstant('XML Mapping Pane') }
+                    });
+                    break;
                 default:
                     //Here we need to process the items
                     toolbarItems.push(tItem[parseInt(i.toString(), 10)]);
@@ -683,6 +691,12 @@ export class Toolbar {
         case id + TABLE_OF_CONTENT_ID:
             this.onToc();
             break;
+        case id + XMLMAPPING_ID:
+            if (!this.container.documentEditor.isXmlPaneTool) {
+                this.container.documentEditor.showXmlPane();
+            }
+            this.container.statusBar.toggleWebLayout();
+            break;
         case id + FOOTER_ID:
             this.container.documentEditor.selectionModule.goToFooter();
             this.container.statusBar.toggleWebLayout();
@@ -714,10 +728,10 @@ export class Toolbar {
         }
 
         if (args.item.id === id + NEW_ID || args.item.id === id + OPEN_ID || args.item.id === id + UNDO_ID || args.item.id === REDO_ID
-            || args.item.id === id + COMMENT_ID || args.item.id === id + TRACK_ID || args.item.id === id + HEADER_ID
-            || args.item.id === id + TABLE_OF_CONTENT_ID || args.item.id === id + FOOTER_ID || args.item.id === id + PAGE_NUMBER_ID ||
-            args.item.id === id + CLIPBOARD_ID || args.item.id === id + UPDATE_FIELDS_ID || args.item.id === id + FOOTNOTE_ID
-            || args.item.id === id + ENDNOTE_ID || args.item.id === id + PAGE_SET_UP_ID ||
+            || args.item.id === id + XMLMAPPING_ID || args.item.id === id + COMMENT_ID || args.item.id === id + TRACK_ID
+            || args.item.id === id + HEADER_ID || args.item.id === id + TABLE_OF_CONTENT_ID || args.item.id === id + FOOTER_ID
+            || args.item.id === id + PAGE_NUMBER_ID || args.item.id === id + CLIPBOARD_ID || args.item.id === id + UPDATE_FIELDS_ID
+            || args.item.id === id + FOOTNOTE_ID || args.item.id === id + ENDNOTE_ID || args.item.id === id + PAGE_SET_UP_ID ||
             args.item.id === id + BREAK_ID || args.item.id === id + RESTRICT_EDITING_ID || args.item.id === id + FORM_FIELDS_ID) {
             this.documentEditor.focusIn();
         }
@@ -824,7 +838,7 @@ export class Toolbar {
                         this.container.documentEditor.documentHelper.openTextFile(fileReader.result as string);
                     } else {
                         /* eslint-disable */
-                        this.container.documentEditor.open(fileReader.result as string);
+                        this.container.documentEditor.openAsync(fileReader.result as string);
                         /* eslint-enable */
                     }
                 };
@@ -975,7 +989,7 @@ export class Toolbar {
      * @returns {void}
      */
     public enableDisableToolBarItem(enable: boolean, isProtectedContent: boolean): void {
-        if(!isNullOrUndefined(this.container.element)) {
+        if (!isNullOrUndefined(this.container.element)) {
             const id: string = this.container.element.id + TOOLBAR_ID;
             for (const item of this.toolbar.items) {
                 const itemId: string = item.id;
@@ -987,13 +1001,16 @@ export class Toolbar {
                     }
                     if (itemId !== id + UNDO_ID && itemId !== id + REDO_ID && itemId !== id + INSERT_TABLE_ID &&
                         itemId !== id + INSERT_LINK_ID && itemId !== id + BOOKMARK_ID && itemId !== id + COMMENT_ID &&
-                        itemId !== id + HEADER_ID && itemId !== id + TABLE_OF_CONTENT_ID && itemId !== id + FOOTER_ID &&
-                        itemId !== id + PAGE_SET_UP_ID && itemId !== id + CONTENT_CONTROL_ID && itemId !== id + PAGE_NUMBER_ID &&
-                        itemId !== id + INSERT_IMAGE_ID && itemId !== id + FORM_FIELDS_ID && itemId !== id + BREAK_ID &&
-                        itemId !== id + TRACK_ID && itemId !== id + FOOTNOTE_ID && itemId !== id + ENDNOTE_ID && itemId !== id + UPDATE_FIELDS_ID) {
+                        itemId !== id + HEADER_ID && itemId !== id + XMLMAPPING_ID && itemId !== id + TABLE_OF_CONTENT_ID &&
+                        itemId !== id + FOOTER_ID && itemId !== id + PAGE_SET_UP_ID && itemId !== id + CONTENT_CONTROL_ID
+                        && itemId !== id + PAGE_NUMBER_ID && itemId !== id + INSERT_IMAGE_ID && itemId !== id + FORM_FIELDS_ID
+                        && itemId !== id + BREAK_ID && itemId !== id + TRACK_ID && itemId !== id + FOOTNOTE_ID
+                        && itemId !== id + ENDNOTE_ID &&
+                        itemId !== id + UPDATE_FIELDS_ID) {
                         continue;
                     }
-                    if (isProtectedContent && this.documentEditor.documentHelper.isFormFillProtectedMode && itemId === id + UPDATE_FIELDS_ID) {
+                    if (isProtectedContent && this.documentEditor.documentHelper.isFormFillProtectedMode
+                        && itemId === id + UPDATE_FIELDS_ID) {
                         continue;
                     }
                     const element: HTMLElement = document.getElementById(item.id);

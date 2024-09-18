@@ -25,6 +25,7 @@ export class FreehandDrawing {
     private straightenPoint: Point = {x: null, y: null, ratioX: null, ratioY: null };
     private prevStraightenObj: SelectionPoint;
     private straightenPointAngle: number = 0;
+    private isMasking: boolean = false;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -128,6 +129,9 @@ export class FreehandDrawing {
         case 'setSelPointColl':
             this.selPointColl = extend([], args.value['obj']['selPointColl']);
             break;
+        case 'pushSelPointColl':
+            this.selPointColl.push(extend([], args.value['obj']['selPointColl']));
+            break;
         case 'setFreehandDrawHoveredIndex':
             this.fhdHovIdx = args.value['index'];
             break;
@@ -194,6 +198,12 @@ export class FreehandDrawing {
         case 'triggerShapeChanging':
             this.triggerShapeChanging(args.value['shapeChangingArgs']);
             break;
+        case 'setMasking':
+            this.isMasking = args.value['value'];
+            break;
+        case 'resetSelPoints':
+            this.selPoints = [];
+            break;
         }
     }
 
@@ -207,7 +217,7 @@ export class FreehandDrawing {
         this.fhdObj = {lastWidth: 0, lastVelocity: 0, time: 0, pointX: 0, pointY: 0};
         this.isFreehandDrawing = this.isFreehandPointMoved = false; this.selPoints = []; this.dummyPoints = [];
         this.freehandDownPoint = {x: 0, y: 0}; this.selPointColl = {}; this.straightenPointAngle = 0;
-        this.fhdHovIdx = null; this.pointCounter = 0; this.fhdSelID = null;
+        this.fhdHovIdx = null; this.pointCounter = 0; this.fhdSelID = null; this.isMasking = false;
         this.penStrokeWidth = undefined; this.currFHDIdx = 0; this.fhdSelIdx = null;
         this.tempFHDStyles = {strokeColor: null, fillColor: null, strokeWidth: null};
         this.straightenPoint = {x: null, y: null, ratioX: null, ratioY: null }; this.prevStraightenObj = null;
@@ -319,11 +329,13 @@ export class FreehandDrawing {
         this.selPoints = []; this.pointCounter = 0;
         parent.freehandCounter++;
         this.isFreehandDrawing = false;
-        parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
-            value: {operation: 'freehand-draw', previousObj: prevObj, previousObjColl: prevObj.objColl,
-                previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
-                previousCropObj: prevCropObj, previousText: null,
-                currentText: null, previousFilter: null, isCircleCrop: null}});
+        if (!parent.isMaskImage) {
+            parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
+                value: {operation: 'freehand-draw', previousObj: prevObj, previousObjColl: prevObj.objColl,
+                    previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
+                    previousCropObj: prevCropObj, previousText: null,
+                    currentText: null, previousFilter: null, isCircleCrop: null}});
+        }
         const shapeSettings: ShapeSettings = {id: 'pen_' + (this.currFHDIdx + 1), type: ShapeType.FreehandDraw,
             startX: this.freehandDownPoint.x, startY: this.freehandDownPoint.y,
             strokeColor: parent.activeObj.strokeSettings.strokeColor, strokeWidth: this.penStrokeWidth,
@@ -345,6 +357,7 @@ export class FreehandDrawing {
         }
         if (this.isFreehandDrawing) {
             this.upperContext.fillStyle = this.parent.activeObj.strokeSettings.strokeColor;
+            if (this.parent.isMaskImage) {this.upperContext.globalCompositeOperation = 'xor'; }
             this.processPoint(x, y, false, this.upperContext);
         }
     }
@@ -658,6 +671,7 @@ export class FreehandDrawing {
         }
     }
 
+    // eslint-disable-next-line  @typescript-eslint/no-unused-vars
     private deleteFhd(index: number, isId?: boolean): void {
         const parent: ImageEditor = this.parent;
         if (this.isFHDIdx(index)) {
@@ -667,21 +681,11 @@ export class FreehandDrawing {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const tempSelPointColl: any = extend({}, this.selPointColl, {}, true);
             parent.pointColl = {}; this.selPointColl = {}; let count: number = 0;
-            if (isNullOrUndefined(isId)) {
-                for (let i: number = 0; i < parent.freehandCounter; i++) {
-                    if (i !== index) {
-                        parent.pointColl[count as number] = tempPointColl[i as number];
-                        this.selPointColl[count as number] = tempSelPointColl[i as number];
-                        count++;
-                    }
-                }
-            } else {
-                for (let i: number = 0; i < parent.freehandCounter; i++) {
-                    if (parseInt(tempPointColl[i as number].id.split('_')[1], 10) - 1 !== index) {
-                        parent.pointColl[count as number] = tempPointColl[i as number];
-                        this.selPointColl[count as number] = tempSelPointColl[i as number];
-                        count++;
-                    }
+            for (let i: number = 0; i < parent.freehandCounter; i++) {
+                if (parseInt(tempPointColl[i as number].id.split('_')[1], 10) - 1 !== index) {
+                    parent.pointColl[count as number] = tempPointColl[i as number];
+                    this.selPointColl[count as number] = tempSelPointColl[i as number];
+                    count++;
                 }
             }
             parent.freehandCounter -= 1; this.fhdHovIdx = this.fhdSelIdx = null;
@@ -1021,8 +1025,12 @@ export class FreehandDrawing {
             if (isNullOrUndefined(parent.activeObj.strokeSettings.strokeWidth)) {
                 parent.activeObj.strokeSettings.strokeWidth = 2;
             }
-            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
-                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+            if (parent.isMaskImage) {
+                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
+            } else {
+                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
+                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+            }
         } else {
             parent.upperCanvas.style.cursor = parent.cursor = 'default';
             const strokeWidth: number = this.penStrokeWidth;
@@ -1068,6 +1076,16 @@ export class FreehandDrawing {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         const parent: ImageEditor = this.parent; const point: any = parent.pointColl[this.fhdSelIdx];
         parent.trigger('shapeChanging', shapeChangingArgs);
+        if (parent.element.getAttribute('data-value') === 'mask-drawing' && !this.isMasking) {
+            this.isMasking = true;
+            parent.upperCanvas.style.cursor = 'crosshair';
+            parent.notify('draw', { prop: 'updateTempObjColl'});
+            parent.notify('draw', { prop: 'updateTempPointColl'});
+            parent.discard();
+            parent.selectMaskImage();
+            return;
+        }
+        parent.editCompleteArgs = shapeChangingArgs;
         if (shapeChangingArgs.currentShapeSettings.id.indexOf('pen_') === -1 &&
             (shapeChangingArgs.action === 'draw-end' || shapeChangingArgs.action === 'select')) {
             const id: string = 'pen_' + shapeChangingArgs.currentShapeSettings.id;

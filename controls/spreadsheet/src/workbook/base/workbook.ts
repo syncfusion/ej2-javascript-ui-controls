@@ -3,9 +3,9 @@ import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheet
 import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 import { getWorkbookRequiredModules } from '../common/module';
-import { SheetModel, CellModel, ColumnModel, RowModel, getData, RangeModel } from './index';
+import { SheetModel, CellModel, ColumnModel, RowModel, getData, RangeModel, isHiddenRow, isHiddenCol } from './index';
 import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';
-import { DefineName, CellStyle, updateRowColCount, getIndexesFromAddress, localeData, workbookLocale, BorderType, getSheetIndexFromAddress, inRange } from '../common/index';
+import { DefineName, CellStyle, updateRowColCount, getIndexesFromAddress, localeData, workbookLocale, BorderType, getSheetIndexFromAddress } from '../common/index';
 import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
 import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';
@@ -15,19 +15,19 @@ import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoE
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';
 import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, dataChanged } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
-import { DataBind, setRow, setColumn, InsertDeleteEventArgs, NumberFormatArgs } from '../index';
+import { DataBind, setRow, setColumn, InsertDeleteEventArgs, NumberFormatArgs, parseLocaleNumber, refreshRibbonIcons } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';
 import { WorkbookChart } from '../integrations/index';
 import { WorkbookNumberFormat, getFormatFromType } from '../integrations/number-format';
 import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet, WorkbookAutoFill } from '../actions/index';
-import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';
+import { WorkbookDataValidation, WorkbookMerge, addListValidationDropdown } from '../index';
 import { ServiceLocator } from '../services/index';
-import { setLinkModel, setImage, setChart, activeCellChanged, setAutoFill, BeforeCellUpdateArgs, updateCell, isNumber } from '../common/index';
+import { setLinkModel, setImage, setChart, setAutoFill, BeforeCellUpdateArgs, updateCell, isNumber } from '../common/index';
 import { deleteChart, formulaBarOperation } from '../../spreadsheet/common/event';
 import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation, clearCFRule, CFArgs, setCFRule } from '../index';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 import { AutoFillSettingsModel } from '../..';
-import { checkCellValid, VisibleMergeIndexArgs, setVisibleMergeIndex, dataSourceChanged } from '../common/index';
+import { CheckCellValidArgs, setVisibleMergeIndex, calculateFormula, dataSourceChanged } from '../common/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 
 /**
@@ -653,12 +653,12 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='spreadsheet/numberFormat/index.md' %}{% endcodeBlock %}
      *
      * @param {string} format - Specifies the number format code.
-     * @param {string} range - Specifies the address for the range of cells.
+     * @param {string} range - Specifies the address of the range of cells.
      * @returns {void} - Applies the number format (number, currency, percentage, short date, etc...) to the specified range of cells.
      */
     public numberFormat(format: string, range?: string): void {
         this.notify(events.applyNumberFormatting, { format: format, range: range });
-        this.notify(events.addFormatToCustomFormatDlg, { format: format });
+        this.notify(events.localizedFormatAction, { action: 'addToCustomFormats', format: format });
     }
 
     /**
@@ -920,7 +920,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             sheetIdx = this.isPrintingProcessing ? this.currentPrintSheetIndex : getSheetIndexFromAddress(this, range);
             sheet = getSheet(this, sheetIdx);
         } else {
-            sheet = this.getActiveSheet(); range = sheet.selectedRange;
+            sheet = this.getActiveSheet(); range = sheet.selectedRange; sheetIdx = this.activeSheetIndex;
         }
         this.notify(setMerge, <MergeArgs>{ merge: true, range: range, type: type || 'All', sheetIndex: sheetIdx, refreshRibbon:
             range.indexOf(sheet.activeCell) > -1 ? true : false, preventRefresh: this.activeSheetIndex !== sheetIdx });
@@ -939,7 +939,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         if (range) {
             sheetIdx = getSheetIndexFromAddress(this, range); sheet = getSheet(this, sheetIdx);
         } else {
-            sheet = this.getActiveSheet(); range = sheet.selectedRange;
+            sheet = this.getActiveSheet(); range = sheet.selectedRange; sheetIdx = this.activeSheetIndex;
         }
         this.notify(setMerge, <MergeArgs>{
             merge: false, range: range, sheetIndex: sheetIdx, type: 'All',
@@ -1016,18 +1016,17 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         rowIdx: number, colIdx: number, sheet: SheetModel = this.getActiveSheet(), preventRowColUpdate?: boolean,
         forceUpdate?: boolean ): void {
         if (forceUpdate) {
-            sheet.usedRange.rowIndex = rowIdx;
-            sheet.usedRange.colIndex = colIdx;
+            this.setSheetPropertyOnMute(sheet, 'usedRange', { rowIndex: rowIdx, colIndex: colIdx });
             return;
         }
         if (rowIdx > sheet.usedRange.rowIndex) {
-            sheet.usedRange.rowIndex = rowIdx;
+            this.setSheetPropertyOnMute(sheet, 'usedRange', { rowIndex: rowIdx, colIndex: sheet.usedRange.colIndex });
             if (sheet === this.getActiveSheet() && !preventRowColUpdate) {
                 this.notify(updateRowColCount, { index: rowIdx, update: 'row' });
             }
         }
         if (colIdx > sheet.usedRange.colIndex) {
-            sheet.usedRange.colIndex = colIdx;
+            this.setSheetPropertyOnMute(sheet, 'usedRange', { rowIndex: sheet.usedRange.rowIndex, colIndex: colIdx });
             if (sheet === this.getActiveSheet() && !preventRowColUpdate) {
                 this.notify(updateRowColCount, { index: colIdx, update: 'col' });
             }
@@ -1109,7 +1108,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             }
         } else if (cell && cell.formula && (refresh || isNullOrUndefined(cell.value)) && !isUnique) {
             this.notify(
-                'calculateFormula', { cell: cell, rowIdx: rowIndex - 1, colIdx: colIndex - 1, sheetIndex: sheetIndex,
+                calculateFormula, { cell: cell, rowIdx: rowIndex - 1, colIdx: colIndex - 1, sheetIndex: sheetIndex,
                     formulaRefresh: true });
         }
         if (cell && !isNumber(cell.value) && !this.isEdit) {
@@ -1399,8 +1398,18 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     public addDataValidation(rules: ValidationModel, range?: string): void {
-        if (rules.type === 'List' && rules.value1.length > 256) {
-            rules.value1 = (rules.value1 as string).substring(0, 255);
+        if (isNullOrUndefined(rules.value1)) {
+            return;
+        }
+        if (rules.type === 'List') {
+            if (rules.value1.length > 256) {
+                rules.value1 = (rules.value1 as string).substring(0, 255);
+            }
+        } else {
+            rules.value1 =  parseLocaleNumber([rules.value1], this)[0];
+            if (rules.value2) {
+                rules.value2 = parseLocaleNumber([rules.value2], this)[0];
+            }
         }
         this.notify(events.cellValidation, { rules: rules, range: range || this.getActiveSheet().selectedRange });
     }
@@ -1424,12 +1433,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {boolean} - It return true if the cell value is valid; otherwise, false.
      */
     public isValidCell(cellAddress?: string): boolean {
-        const range: number[] = getCellIndexes(cellAddress);
-        const cell: CellModel = getCell(range[0], range[1], this.getActiveSheet());
-        if (cell && cell.validation) {
+        const sheet: SheetModel = this.getActiveSheet();
+        const range: number[] = getCellIndexes(cellAddress ? cellAddress : sheet.activeCell);
+        const cell: CellModel = getCell(range[0], range[1], sheet);
+        if ((cell && cell.validation) || (sheet.columns && sheet.columns[range[1]] && sheet.columns[range[1]].validation)) {
             const value: string = cell.value ? cell.value : '';
             const sheetIdx: number = this.activeSheetIndex;
-            const validEventArgs: checkCellValid = { value, range, sheetIdx, isCell: false, td: null, isValid: true };
+            const validEventArgs: CheckCellValidArgs = { value, range, sheetIdx, td: null, isValid: true };
             this.notify(events.isValidation, validEventArgs);
             return validEventArgs.isValid;
         } else {
@@ -1444,6 +1454,20 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             }
         } else {
             conditionalFormat.range = this.getActiveSheet().selectedRange;
+        }
+        if (conditionalFormat.value) {
+            let cfValues: string[];
+            if (conditionalFormat.type === 'Between') {
+                if (this.listSeparator !== ',' && conditionalFormat.value.includes(this.listSeparator)) {
+                    cfValues = conditionalFormat.value.split(this.listSeparator);
+                } else {
+                    cfValues = conditionalFormat.value.split(',');
+                }
+            } else {
+                cfValues = [conditionalFormat.value];
+            }
+            parseLocaleNumber(cfValues, this);
+            conditionalFormat.value = cfValues.join(',');
         }
         this.notify(setCFRule, <CFArgs>{ cfModel: conditionalFormat });
     }
@@ -1488,21 +1512,34 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         const sheet: SheetModel = getSheet(this, sheetIdx);
         updateCell(this, sheet, { cell: cell, rowIdx: range[0], colIdx: range[1], preventEvt: true });
         const val: string = isNullOrUndefined(cell.value) ? (cell.formula || null) : cell.value;
-        if (val !== null) {
+        const valChange: boolean = val !== null;
+        const cellModel: CellModel = getCell(range[0], range[1], sheet, false, true);
+        if (valChange) {
+            delete cellModel.formattedText;
             this.notify(workbookEditOperation, { action: 'updateCellValue', address: range, value: val, sheetIndex: sheetIdx });
+        } else if (!isNullOrUndefined(cell.format) && cellModel.formattedText) {
+            delete cellModel.formattedText;
         }
         if (sheetIdx === this.activeSheetIndex) {
-            let cellEle: HTMLElement;
-            const cellModel: CellModel = getCell(range[0], range[1], sheet, false, true);
-            const mergeArgs: VisibleMergeIndexArgs = { sheet: sheet, cell: cellModel, rowIdx: range[0], colIdx: range[1] };
+            const eventArgs: { sheet: SheetModel, cell: CellModel, rowIdx: number, colIdx: number, td?: HTMLElement,
+                validation?: ValidationModel, isRefresh?: boolean } = { sheet: sheet, cell: cellModel, rowIdx: range[0], colIdx: range[1] };
             if (cellModel.rowSpan > 1 || cellModel.colSpan > 1) {
-                setVisibleMergeIndex(mergeArgs);
-                cellEle = this.getCell(mergeArgs.rowIdx, mergeArgs.colIdx);
+                setVisibleMergeIndex(eventArgs);
             }
-            this.serviceLocator.getService<{ refresh: Function }>('cell').refresh(range[0], range[1], true, cellEle, val !== null);
-            this.notify(activeCellChanged, null);
-            if (inRange(getRangeIndexes(sheet.activeCell), mergeArgs.rowIdx, mergeArgs.colIdx)) {
-                this.notify(formulaBarOperation, { action: 'refreshFormulabar', value: this.getDisplayText(cell) || cell.formula });
+            const cellEle: HTMLElement = !isHiddenRow(sheet, eventArgs.rowIdx) && !isHiddenCol(sheet, eventArgs.colIdx) &&
+                this.getCell(eventArgs.rowIdx, eventArgs.colIdx);
+            if (cellEle) {
+                this.serviceLocator.getService<{ refresh: Function }>('cell').refresh(
+                    eventArgs.rowIdx, eventArgs.colIdx, true, cellEle, valChange, valChange);
+            }
+            const activeCellIdx: number[] = getCellIndexes(sheet.activeCell);
+            if (range[0] === activeCellIdx[0] && range[1] === activeCellIdx[1]) {
+                this.notify(refreshRibbonIcons, null);
+                this.notify(formulaBarOperation, { action: 'refreshFormulabar', cell: cellModel });
+                if (cellEle && cell.validation) {
+                    eventArgs.validation = cellModel.validation; eventArgs.td = cellEle; eventArgs.isRefresh = true;
+                    this.notify(addListValidationDropdown, eventArgs);
+                }
             }
         }
     }
@@ -1564,7 +1601,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='spreadsheet/wrap/index.md' %}{% endcodeBlock %}
      */
     public wrap(address: string, wrap: boolean = true): void {
-        wrapText(address, wrap, this);
+        wrapText(address, wrap, this, null, true);
     }
 
     /**
@@ -1778,7 +1815,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * The `calculateNow` method is used to calculate any `uncalculated formulas` in a spreadsheet.
+     * The `calculateNow` method is used to calculate any uncalculated formulas in a spreadsheet.
      * This method accepts an option to specify whether the calculation should be performed for the entire workbook or a specific sheet.
      *
      * @param {string} [scope] - Specifies the scope of the calculation. Acceptable values are `Sheet` or `Workbook`.

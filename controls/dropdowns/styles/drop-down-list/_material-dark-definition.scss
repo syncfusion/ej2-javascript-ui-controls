@@ -71,44 +71,11 @@ $ddl-bigger-small-list-font-size: 13px !default;
     margin-top: 2px;
   }
 
-  .e-bigger #{&}.e-popup.e-ddl-device-filter .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) {
-    border-color: $ddl-default-border-color;
-  }
-
-  .e-bigger #{&}.e-popup.e-ddl-device-filter {
-    margin-top: 0;
-  }
-
-  .e-bigger .e-ddl-device .e-input-group,
-  .e-bigger .e-ddl-device .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) {
-    background: $grey-100;
-    border-width: 0;
-    box-shadow: none;
-    margin-bottom: 0;
-  }
-
-  .e-bigger .e-ddl-device .e-input-group .e-back-icon,
-  .e-bigger .e-ddl-device .e-input-group input.e-input,
-  .e-bigger .e-ddl-device .e-input-group .e-clear-icon {
-    background-color: $grey-100;
-  }
-
   #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon {
     margin: 6px 6px 5px;
     min-height: 12px;
     min-width: 12px;
     padding: 6px;
-  }
-
-  .e-bigger #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
-  .e-bigger#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon {
-    min-height: 16px;
-    min-width: 16px;
-  }
-
-  .e-bigger #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-filter,
-  .e-bigger#{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-filter {
-    padding: 8px 16px 8px 0;
   }
 
   .e-input-group.e-ddl,

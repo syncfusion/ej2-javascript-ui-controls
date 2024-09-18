@@ -8,8 +8,9 @@ import { IPrintEventArgs } from '../../../src/chart/model/chart-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import { Export } from '../../../src/chart/print-export/export';
 
-
+RangeNavigator.Inject(Export);
 describe('Range Navigator Control', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;

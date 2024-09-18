@@ -4,14 +4,6 @@
 
 ## [Unreleased]
 
-## 26.1.38 (2024-06-19)
-
-### Circular Gauge
-
-#### Bug Fixes
-
-- `#I580684` - Exceptions will no longer be thrown when the pointer is removed, and its value is updated dynamically in the Circular Gauge.
-
 ## 25.1.35 (2024-03-15)
 
 ### Circular Gauge

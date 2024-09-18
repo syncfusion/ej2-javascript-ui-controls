@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { L10n, isBlazor } from '@syncfusion/ej2-base';
+import { L10n } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { ContextMenu as Menu, MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ServiceLocator } from './service';
@@ -115,26 +115,24 @@ export class DiagramContextMenu {
 
     private render(): void {
         this.l10n = this.serviceLocator.getService<L10n>('localization');
-        if (!isBlazor()) {
-            this.element = createHtmlElement('ul', { id: this.parent.element.id + '_contextMenu' }) as HTMLUListElement;
-            this.parent.element.appendChild(this.element);
-            const target: string = '#' + this.parent.element.id;
-            this.contextMenu = new Menu({
-                items: this.getMenuItems(),
-                enableRtl: this.parent.enableRtl,
-                enablePersistence: this.parent.enablePersistence,
-                locale: this.parent.locale,
-                target: target,
-                select: this.contextMenuItemClick.bind(this),
-                beforeOpen: this.contextMenuBeforeOpen.bind(this),
-                onOpen: this.contextMenuOpen.bind(this),
-                beforeItemRender: this.BeforeItemRender.bind(this),
-                onClose: this.contextMenuOnClose.bind(this),
-                cssClass: 'e-diagram-menu',
-                animationSettings: { effect: 'None' }
-            });
-            this.contextMenu.appendTo(this.element);
-        }
+        this.element = createHtmlElement('ul', { id: this.parent.element.id + '_contextMenu' }) as HTMLUListElement;
+        this.parent.element.appendChild(this.element);
+        const target: string = '#' + this.parent.element.id;
+        this.contextMenu = new Menu({
+            items: this.getMenuItems(),
+            enableRtl: this.parent.enableRtl,
+            enablePersistence: this.parent.enablePersistence,
+            locale: this.parent.locale,
+            target: target,
+            select: this.contextMenuItemClick.bind(this),
+            beforeOpen: this.contextMenuBeforeOpen.bind(this),
+            onOpen: this.contextMenuOpen.bind(this),
+            beforeItemRender: this.BeforeItemRender.bind(this),
+            onClose: this.contextMenuOnClose.bind(this),
+            cssClass: 'e-diagram-menu',
+            animationSettings: { effect: 'None' }
+        });
+        this.contextMenu.appendTo(this.element);
     }
 
     private getMenuItems(): ContextMenuItemModel[] {
@@ -155,16 +153,12 @@ export class DiagramContextMenu {
                     menuItems.push(this.buildDefaultItems(item));
                 }
             }
-            if (groupItems.length > 0) {
-                const orderGroup: ContextMenuItemModel = this.buildDefaultItems('grouping');
-                orderGroup.items = groupItems;
-                menuItems.push(orderGroup);
-            }
-            if (orderItems.length > 0) {
-                const orderGroup: ContextMenuItemModel = this.buildDefaultItems('order');
-                orderGroup.items = orderItems;
-                menuItems.push(orderGroup);
-            }
+            const groupMenus: ContextMenuItemModel = this.buildDefaultItems('grouping');
+            groupMenus.items = groupItems;
+            menuItems.push(groupMenus);
+            const orderMenus: ContextMenuItemModel = this.buildDefaultItems('order');
+            orderMenus.items = orderItems;
+            menuItems.push(orderMenus);
         }
         if (this.parent.contextMenuSettings.items) {
             for (const customItem of this.parent.contextMenuSettings.items) {
@@ -302,7 +296,7 @@ export class DiagramContextMenu {
             this.parent.checkMenu = args.cancel = true;
         }
         if (this.parent.checkMenu) { this.hiddenItems = []; }
-        let diagramArgs: DiagramBeforeMenuOpenEventArgs = args as DiagramBeforeMenuOpenEventArgs;
+        const diagramArgs: DiagramBeforeMenuOpenEventArgs = args as DiagramBeforeMenuOpenEventArgs;
         diagramArgs.hiddenItems = [];
         for (const item of args.items) {
             this.ensureItems(item, args.event);
@@ -393,10 +387,8 @@ export class DiagramContextMenu {
      * @returns {void} To destroy the context menu
      */
     public destroy(): void {
-        if (!isBlazor()) {
-            this.contextMenu.destroy();
-            remove(this.element);
-        }
+        this.contextMenu.destroy();
+        remove(this.element);
         this.removeEventListener();
     }
 

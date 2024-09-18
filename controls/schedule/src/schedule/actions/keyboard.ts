@@ -51,7 +51,9 @@ export class KeyboardInteraction {
         ctrlShiftUpArrow: 'ctrl+shift+uparrow',
         ctrlShiftDownArrow: 'ctrl+shift+downarrow',
         ctrlShiftLeftArrow: 'ctrl+shift+leftarrow',
-        ctrlShiftRightArrow: 'ctrl+shift+rightarrow'
+        ctrlShiftRightArrow: 'ctrl+shift+rightarrow',
+        shiftAltY: 'shift+alt+y',
+        shiftAltN: 'shift+alt+n'
     };
     private keyboardModule: KeyboardEvents;
     constructor(parent: Schedule) {
@@ -134,6 +136,45 @@ export class KeyboardInteraction {
                 this.processFTwelve(e);
             }
             break;
+        case 'shiftAltY':
+            this.parent.changeDate(new Date(), e);
+            break;
+        case 'shiftAltN':
+            if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda' ||
+                this.parent.currentView === 'Year') {
+                return;
+            }
+            this.processShiftAltN(e);
+            break;
+        }
+    }
+
+    private processShiftAltN(e: Event): void {
+        const selectedCells: Element[] = this.parent.getSelectedCells();
+        const target: HTMLTableCellElement = e.target as HTMLTableCellElement;
+        let cellData: CellClickEventArgs = <CellClickEventArgs>extend({}, null, true);
+        if (selectedCells.length > 0 && (closest(target, '.' + cls.WORK_CELLS_CLASS)
+            || closest(target, '.' + cls.ALLDAY_CELLS_CLASS) || closest(target, '.' + cls.HEADER_CELLS_CLASS))) {
+            cellData = this.getSelectedElements(target);
+        }
+        else if (closest(target, '.' + cls.APPOINTMENT_CLASS) && !isNullOrUndefined(this.parent.activeEventData.event)) {
+            const event: { StartTime: Date, EndTime: Date, IsAllDay: boolean } =
+                this.parent.activeEventData.event as { StartTime: Date, EndTime: Date, IsAllDay: boolean };
+            cellData.startTime = event.StartTime;
+            cellData.endTime = event.EndTime;
+            cellData.isAllDay = event.IsAllDay;
+        }
+        else {
+            const workHour: Date = this.parent.getStartEndTime(this.parent.workHours.start);
+            const slotInterval: number = this.parent.activeViewOptions.timeScale.interval /
+                this.parent.activeViewOptions.timeScale.slotCount;
+            cellData.startTime = new Date(this.parent.selectedDate);
+            cellData.startTime.setHours(workHour.getHours(), workHour.getMinutes(), 0, 0);
+            cellData.endTime = new Date(cellData.startTime.getTime() + slotInterval * 60000);
+        }
+        const args: CellClickEventArgs = <CellClickEventArgs>extend(cellData, { cancel: false, event: e });
+        if (args != null) {
+            this.parent.eventWindow.openEditor(args, 'Add');
         }
     }
 

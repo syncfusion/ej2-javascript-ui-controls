@@ -4,7 +4,7 @@ import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
 
 /**
- * `EmaIndicator` module is used to render EMA indicator.
+ * The `EmaIndicator` module is used to render the Exponential Moving Average indicator.
  */
 export class EmaIndicator extends TechnicalAnalysis {
     /**

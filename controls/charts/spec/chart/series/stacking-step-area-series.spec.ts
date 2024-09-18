@@ -793,11 +793,87 @@ describe('Chart Control', () => {
         });
         it('checking with animation', (done: Function) => {
             loaded = (args: Object): void => {
+                let seriesElement = document.getElementById('container_Series_0');
+                expect(seriesElement !== null).toBe(true);
                 done();
             };
             chart.loaded = loaded;
             chart.series[0].animation.enable = true;
             chart.series[1].animation.enable = true;
+            chart.refresh();
+        });
+    });
+
+    describe('Stacking step area - animation on data changes', () => {
+        let chart: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement = createElement('div', { id: 'container' });
+        let dataLabel: HTMLElement;
+        let dataLabel1: HTMLElement;
+        let point: Points;
+        let trigger: MouseEvents = new MouseEvents();
+        let x: number;
+        let y: number;
+        let tooltip: HTMLElement;
+        let chartArea: HTMLElement;
+        let series: Series;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chart = new Chart({
+                primaryXAxis: { title: 'primaryXAxis', valueType: 'DateTime' },
+                primaryYAxis: { title: 'PrimaryYAxis'},
+                series: [
+                    {
+                        type: 'StackingStepArea', name: 'series1',
+                        dataSource: [
+                            { x: new Date(2000, 6, 11), y: 10 }, { x: new Date(2002, 3, 7), y: -30 },
+                            { x: new Date(2004, 3, 6), y: 15 }, { x: new Date(2006, 3, 30), y: -65 },
+                            { x: new Date(2008, 3, 8), y: 0 }, { x: new Date(2010, 3, 8), y: 85 }],
+                        xName: 'x', yName: 'y', animation: { enable: false },
+                        marker: { visible: true }
+                    }
+                ],
+                title: 'Step Area Chart'
+            });
+            chart.appendTo('#container');
+        });
+        afterAll((): void => {
+            chart.destroy();
+            element.remove();
+        });
+       
+        it('Stacking Step area - Checking setData method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement = document.getElementById('container_Series_0');
+                expect(seriesElement !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            let seriesData = [{ x: new Date(2000, 6, 11), y: 10 }, { x: new Date(2002, 3, 7), y: -30 },
+            { x: new Date(2004, 3, 6), y: 17 }, { x: new Date(2006, 3, 30), y: -65 },
+            { x: new Date(2008, 3, 8), y: 0 }, { x: new Date(2010, 3, 8), y: 85 }]
+            chart.series[0].setData(seriesData);
+            chart.refresh();
+        });
+        it('Stacking Step area - Checking addPoint method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement = document.getElementById('container_Series_0');
+                expect(seriesElement.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].addPoint({ x: new Date(2010, 3, 11), y: 85 });
+            chart.refresh();
+        });
+        it('Stacking Step area - Checking removePoint method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement = document.getElementById('container_Series_0');
+                expect(seriesElement.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].removePoint(0); chart.series[0].removePoint(1);
+            chart.series[0].removePoint(2); chart.series[0].removePoint(3); chart.series[0].removePoint(4);
             chart.refresh();
         });
     });
@@ -810,6 +886,84 @@ describe('Chart Control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+
+    describe('Chart StackingSteparea series without vertical risers', () => {
+        let chartObj: Chart;
+        let svg: HTMLElement;
+        let marker: HTMLElement;
+        let targetElement: HTMLElement;
+        let datalabel: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        beforeAll(() => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { title: 'PrimaryXAxis' },
+                    primaryYAxis: { title: 'PrimaryYAxis', rangePadding: 'Normal' },
+                    series: [{
+                        dataSource: data, xName: 'x', yName: 'y', animation: { enable: false }, type: 'StepArea',
+                        name: 'ChartSeriesNameGold', fill: 'skyblue', marker:{visible: true,dataLabel:{visible:false}},
+                        border: {
+                            color: 'blue',
+                            width: 4,
+                        },
+                        noRisers : true
+                    },
+                    ], width: '800',
+                    title: 'Chart TS Title', legendSettings: { visible: false, },
+
+                });
+            chartObj.appendTo('#container');
+
+        });
+
+        afterAll((): void => {
+            elem.remove();
+            chartObj.destroy();
+        });
+        it('Checking with step as Right', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_border_0');
+                //expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125 M 0 175.125 L 105.07142857142857 175.125 M 105.07142857142857 43.78125 L 210.14285714285714 43.78125 M 210.14285714285714 87.5625 L 315.2142857142857 87.5625 M 315.2142857142857 131.34375 L 420.2857142857143 131.34375 M 420.2857142857143 175.125 L 525.3571428571429 175.125 M 525.3571428571429 175.125 L 630.4285714285714 175.125 M 630.4285714285714 43.78125 L 735.5 43.78125 L 735.5 43.78125 ' || 'M 0 43.78125 L 0 43.78125 M 0 175.125 L 105.21428571428571 175.125 M 105.21428571428571 43.78125 L 210.42857142857142 43.78125 M 210.42857142857142 87.5625 L 315.6428571428571 87.5625 M 315.6428571428571 131.34375 L 420.85714285714283 131.34375 M 420.85714285714283 175.125 L 526.0714285714286 175.125 M 526.0714285714286 175.125 L 631.2857142857142 175.125 M 631.2857142857142 43.78125 L 736.5 43.78125 L 736.5 43.78125 ')
+                expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125 M 0 175.125 L 105.21428571428571 175.125 M 105.21428571428571 43.78125 L 210.42857142857142 43.78125 M 210.42857142857142 87.5625 L 315.6428571428571 87.5625 M 315.6428571428571 131.34375 L 420.85714285714283 131.34375 M 420.85714285714283 175.125 L 526.0714285714286 175.125 M 526.0714285714286 175.125 L 631.2857142857142 175.125 M 631.2857142857142 43.78125 L 736.5 43.78125 L 736.5 43.78125 ' );
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].dataSource = [{ x: 1000, y: 70 }, { x: 2000, y: 40 },
+                { x: 3000, y: 70 }, { x: 4000, y: 60 },
+                { x: 5000, y: 50 }, { x: 6000, y: 40 },
+                { x: 7000, y: 40 }, { x: 8000, y: 70 }]           
+            chartObj.series[0].step = 'Right'
+            chartObj.refresh();
+        });
+
+        it('Checking with step as Left', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_border_0');
+                // expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125 L 105.07142857142857 43.78125 M 105.07142857142857 175.125 L 210.14285714285714 175.125 M 210.14285714285714 43.78125 L 315.2142857142857 43.78125 M 315.2142857142857 87.5625 L 420.2857142857143 87.5625 M 420.2857142857143 131.34375 L 525.3571428571429 131.34375 M 525.3571428571429 175.125 L 630.4285714285714 175.125 M 630.4285714285714 175.125 L 735.5 175.125 M 735.5 43.78125 L 735.5 43.78125 ' || 'M 0 43.78125 L 0 43.78125 L 105.21428571428571 43.78125 M 105.21428571428571 175.125 L 210.42857142857142 175.125 M 210.42857142857142 43.78125 L 315.6428571428571 43.78125 M 315.6428571428571 87.5625 L 420.85714285714283 87.5625 M 420.85714285714283 131.34375 L 526.0714285714286 131.34375 M 526.0714285714286 175.125 L 631.2857142857142 175.125 M 631.2857142857142 175.125 L 736.5 175.125 M 736.5 43.78125 L 736.5 43.78125 ')
+                expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125 L 105.21428571428571 43.78125 M 105.21428571428571 175.125 L 210.42857142857142 175.125 M 210.42857142857142 43.78125 L 315.6428571428571 43.78125 M 315.6428571428571 87.5625 L 420.85714285714283 87.5625 M 420.85714285714283 131.34375 L 526.0714285714286 131.34375 M 526.0714285714286 175.125 L 631.2857142857142 175.125 M 631.2857142857142 175.125 L 736.5 175.125 M 736.5 43.78125 L 736.5 43.78125 ');
+ 
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Left'
+            chartObj.refresh();
+        });
+
+        it('Checking with step as Center', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_border_0');
+                // expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125 L 52.535714285714285 43.78125 M 52.535714285714285 175.125 L 105.07142857142857 175.125 L 157.60714285714286 175.125 M 157.60714285714286 43.78125 L 210.14285714285714 43.78125 L 262.67857142857144 43.78125 M 262.67857142857144 87.5625 L 315.2142857142857 87.5625 L 367.75 87.5625 M 367.75 131.34375 L 420.2857142857143 131.34375 L 472.82142857142856 131.34375 M 472.82142857142856 175.125 L 525.3571428571429 175.125 L 577.8928571428571 175.125 M 577.8928571428571 175.125 L 630.4285714285714 175.125 L 682.9642857142858 175.125 M 682.9642857142858 43.78125 L 735.5 43.78125 L 735.5 43.78125 ' || 'M 0 43.78125 L 0 43.78125 L 52.607142857142854 43.78125 M 52.607142857142854 175.125 L 105.21428571428571 175.125 L 157.82142857142856 175.125 M 157.82142857142856 43.78125 L 210.42857142857142 43.78125 L 263.0357142857143 43.78125 M 263.0357142857143 87.5625 L 315.6428571428571 87.5625 L 368.25 87.5625 M 368.25 131.34375 L 420.85714285714283 131.34375 L 473.46428571428567 131.34375 M 473.46428571428567 175.125 L 526.0714285714286 175.125 L 578.6785714285713 175.125 M 578.6785714285713 175.125 L 631.2857142857142 175.125 L 683.8928571428571 175.125 M 683.8928571428571 43.78125 L 736.5 43.78125 L 736.5 43.78125 ')
+                expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125 L 52.607142857142854 43.78125 M 52.607142857142854 175.125 L 105.21428571428571 175.125 L 157.82142857142856 175.125 M 157.82142857142856 43.78125 L 210.42857142857142 43.78125 L 263.0357142857143 43.78125 M 263.0357142857143 87.5625 L 315.6428571428571 87.5625 L 368.25 87.5625 M 368.25 131.34375 L 420.85714285714283 131.34375 L 473.46428571428567 131.34375 M 473.46428571428567 175.125 L 526.0714285714286 175.125 L 578.6785714285713 175.125 M 578.6785714285713 175.125 L 631.2857142857142 175.125 L 683.8928571428571 175.125 M 683.8928571428571 43.78125 L 736.5 43.78125 L 736.5 43.78125 ');
+
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Center'
+            chartObj.refresh();
+        });
+    });
 });
 export interface series1 {
     series: Series;

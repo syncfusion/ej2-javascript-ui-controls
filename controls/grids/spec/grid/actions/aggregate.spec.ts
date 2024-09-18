@@ -2048,7 +2048,7 @@ describe('Aggregates Functionality testing', () => {
             grid = rows = null;
         });
     });
-	
+
     describe('EJ2-898870: Editing a record of column that contains multiple aggregates throws a script error.', () => {
         let grid: Grid;
         beforeAll((done: Function) => {

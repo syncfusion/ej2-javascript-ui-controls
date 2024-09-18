@@ -40,7 +40,7 @@ describe('Document Editor container ParaMark toggling true', () => {
                 expect((ele as HTMLDivElement).classList.length).toBe(0);
                 expect((ele as HTMLDivElement).className).toBe('');
                 done();
-            }, 100);
+            } ,100);
         }, 100);
     });
 });

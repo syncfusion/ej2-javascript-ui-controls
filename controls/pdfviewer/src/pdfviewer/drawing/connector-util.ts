@@ -66,7 +66,14 @@ export function updateSegmentElement(connector: PdfAnnotationBaseModel, points: 
     if (connector.wrapper) {
         connector.wrapper.offsetX = element.offsetX;
         connector.wrapper.offsetY = element.offsetY;
-        connector.wrapper.width = bounds.width;
+        let boundsValue: number = bounds.width;
+        if (bounds.width < bounds.height) {
+            boundsValue = bounds.height;
+        }
+        else {
+            boundsValue = bounds.width;
+        }
+        connector.wrapper.width = connector.enableShapeLabel ? boundsValue / 2 : boundsValue;
         connector.wrapper.height = bounds.height;
     }
     return element;

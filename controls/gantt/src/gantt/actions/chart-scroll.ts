@@ -326,14 +326,11 @@ export class ChartScroll {
      * @returns {void} .
      */
     public setScrollLeft(scrollLeft: number, leftSign?: number): void {
-        if (leftSign) {
-            scrollLeft = leftSign === -1 && this.parent.enableRtl ? -scrollLeft : scrollLeft;
-        }
+        scrollLeft = leftSign === -1 && this.parent.enableRtl ? -scrollLeft : scrollLeft;
         this.isSetScrollLeft = true;
         this.element.scrollLeft = scrollLeft;
         this.parent.ganttChartModule.chartTimelineContainer.scrollLeft = this.element.scrollLeft;
-        if (!this.parent.enableTimelineVirtualization || (!this.parent.enableTimelineVirtualization &&
-            this.parent.timelineModule.totalTimelineWidth > this.parent.element.offsetWidth * 3)) {
+        if (!this.parent.enableTimelineVirtualization) {
             this.previousScroll.left = this.element.scrollLeft;
         }
     }

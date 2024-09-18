@@ -110,7 +110,7 @@ export class Year extends ViewBase implements IRenderer {
         this.setAriaAttributes(contentTable);
         const thead: HTMLElement = createElement('thead', { className: 'e-week-header' });
         const tr: HTMLElement = createElement('tr');
-        let currentWeek: Date = util.getWeekFirstDate(util.firstDateOfMonth(currentDate), this.parent.firstDayOfWeek);
+        let currentWeek: Date = util.getWeekFirstDate(util.firstDateOfMonth(currentDate), this.parent.activeViewOptions.firstDayOfWeek);
         if (this.parent.activeViewOptions.showWeekNumber) {
             tr.appendChild(createElement('th'));
         }
@@ -244,7 +244,7 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     public getMonthDates(date: Date): Date[] {
-        const startDate: Date = util.getWeekFirstDate(util.firstDateOfMonth(date), this.parent.firstDayOfWeek);
+        const startDate: Date = util.getWeekFirstDate(util.firstDateOfMonth(date), this.parent.activeViewOptions.firstDayOfWeek);
         const endDate: Date = util.addDays(new Date(+startDate), (6 * util.WEEK_LENGTH));
         const dateCollection: Date[] = [];
         for (let start: Date = startDate; start.getTime() < endDate.getTime(); start = util.addDays(start, 1)) {
@@ -385,11 +385,11 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     public startDate(): Date {
-        return this.parent.currentView === 'Year' ? util.getWeekFirstDate(this.getStartDate(), this.parent.firstDayOfWeek) : this.getStartDate();
+        return this.parent.currentView === 'Year' ? util.getWeekFirstDate(this.getStartDate(), this.parent.activeViewOptions.firstDayOfWeek) : this.getStartDate();
     }
 
     public endDate(): Date {
-        return this.parent.currentView === 'Year' ? util.addDays(util.getWeekLastDate(this.getEndDate(), this.parent.firstDayOfWeek), 1) :
+        return this.parent.currentView === 'Year' ? util.addDays(util.getWeekLastDate(this.getEndDate(), this.parent.activeViewOptions.firstDayOfWeek), 1) :
             util.addDays(this.getEndDate(), 1);
     }
 

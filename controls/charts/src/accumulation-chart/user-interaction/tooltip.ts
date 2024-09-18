@@ -15,7 +15,7 @@ import { tooltipRender } from '../../common/model/constants';
 
 
 /**
- * `AccumulationTooltip` module is used to render tooltip for accumulation chart.
+ * The `AccumulationTooltip` module is used to render tooltips for the accumulation chart.
  */
 export class AccumulationTooltip extends BaseTooltip {
     public accumulation: AccumulationChart;
@@ -66,6 +66,7 @@ export class AccumulationTooltip extends BaseTooltip {
      *
      * @param {PointerEvent | TouchEvent} event - The mouse move event or touch event.
      * @returns {void}
+     * @private
      */
     public tooltip(event: PointerEvent | TouchEvent): void {
         this.renderSeriesTooltip(this.accumulation,

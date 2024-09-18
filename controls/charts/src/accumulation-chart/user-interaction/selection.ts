@@ -8,14 +8,16 @@ import { AccumulationSelectionMode, AccumulationHighlightMode } from '../model/e
 import { AccumulationChart } from '../accumulation';
 import { AccumulationSeries, pointByIndex, AccPoints } from '../model/acc-base';
 import { AccumulationSeriesModel } from '../model/acc-base-model';
-import { Indexes, Index } from '../../common/model/base';
+import { Index, Indexes } from '../../common/model/base';
 import { BaseSelection } from '../../common/user-interaction/selection';
 import { AccumulationTooltip } from './tooltip';
 import { IAccSelectionCompleteEventArgs } from '../model/pie-interface';
 import { selectionComplete } from '../../common/model/constants';
 
 /**
- * `AccumulationSelection` module handles the selection for accumulation chart.
+ * The `AccumulationSelection` module handles selection for the accumulation chart.
+ *
+ * @private
  */
 export class AccumulationSelection extends BaseSelection {
     /** @private */
@@ -79,6 +81,7 @@ export class AccumulationSelection extends BaseSelection {
      *
      * @param {AccumulationChart} accumulation - Define the chart to invoke the selection.
      * @returns {void}
+     * @private
      */
     public invokeSelection(accumulation: AccumulationChart): void {
         this.initPrivateVariables(accumulation);
@@ -97,21 +100,22 @@ export class AccumulationSelection extends BaseSelection {
     private generateStyle(series: AccumulationSeriesModel, point?: number): string {
         return (series.selectionStyle || this.styleId + '_series_' + (<AccumulationSeries>series).index + '_point_' + point);
     }
-    /**
-     * To get series selection style while hovering legend.
-     *
-     * @param {AccumulationSeriesModel} series - The series for which to get the selection style.
-     * @param {string} eventType - The event type indicating the legend interaction (e.g., hover).
-     * @returns {string} - The selection style for the specified series.
-     */
-    private generateLegendClickStyle(series: AccumulationSeriesModel, eventType: string): string {
-        if (eventType === 'mousemove') {
-            this.styleId = this.accumulation.element.id + '_ej2_chart_highlight';
-        } else if (eventType === 'click') {
-            this.styleId = this.accumulation.element.id + '_ej2_chart_selection';
-        }
-        return (series.selectionStyle || this.styleId + '_series_' + (<AccumulationSeries>series).index);
-    }
+    // /**
+    //  * To get series selection style while hovering legend.
+    //  *
+    //  * @param {AccumulationSeriesModel} series - The series for which to get the selection style.
+    //  * @param {string} eventType - The event type indicating the legend interaction (e.g., hover).
+    //  * @returns {string} - The selection style for the specified series.
+    //  */
+    // private generateLegendClickStyle(series: AccumulationSeriesModel, eventType: string): string {
+    //     if (eventType === 'mousemove') {
+    //         this.styleId = this.accumulation.element.id + '_ej2_chart_highlight';
+    //     } else if (eventType === 'click') {
+    //         this.styleId = this.accumulation.element.id + '_ej2_chart_selection';
+    //     }
+    //     return (series.selectionStyle || this.styleId + '_series_' + (<AccumulationSeries>series).index);
+    // }
+
     /**
      * To get elements by index, series.
      *
@@ -246,7 +250,7 @@ export class AccumulationSelection extends BaseSelection {
     }
 
     /**
-     *  Method to get the selected data index.
+     * Method to get the selected data index.
      *
      * @private
      * @param {AccumulationChart} accumulation - The accumulation chart control.
@@ -602,25 +606,26 @@ export class AccumulationSelection extends BaseSelection {
             return;
         }
     }
-    /**
-     * To check selected points are visibility.
-     *
-     * @param  {Indexes[]} selectedDataIndexes - The array of indexes representing selected points.
-     * @returns {boolean} - Indicates whether the selected points are visible.
-     */
-    private checkPointVisibility(selectedDataIndexes: Indexes[]): boolean {
-        let visible: boolean = false;
-        for (const data of selectedDataIndexes) {
-            if (pointByIndex(data.point, <AccPoints[]>this.control.visibleSeries[0].points).visible) {
-                visible = true;
-                break;
-            }
-        }
-        return visible;
-    }
+    // /**
+    //  * To check selected points are visibility.
+    //  *
+    //  * @param  {Indexes[]} selectedDataIndexes - The array of indexes representing selected points.
+    //  * @returns {boolean} - Indicates whether the selected points are visible.
+    //  */
+    // private checkPointVisibility(selectedDataIndexes: Indexes[]): boolean {
+    //     let visible: boolean = false;
+    //     for (const data of selectedDataIndexes) {
+    //         if (pointByIndex(data.point, <AccPoints[]>this.control.visibleSeries[0].points).visible) {
+    //             visible = true;
+    //             break;
+    //         }
+    //     }
+    //     return visible;
+    // }
     /**
      * Get module name.
      *
+     * @private
      * @returns {string} - Returns the module name.
      */
     public getModuleName(): string {

@@ -4,6 +4,7 @@ import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base'
 import { AjaxHandler } from '../index';
 import { DiagramHtmlElement } from '../drawing/html-element';
 import { Size } from '@syncfusion/ej2-drawings';
+
 /**
  * Print module
  */
@@ -15,7 +16,6 @@ export class Print {
     private printHeight: number = 1056;
     private printWidth: number = 816 ;
     private maximumPixels: number = 16777216;
-    
     /**
      * @private
      */
@@ -88,7 +88,7 @@ export class Print {
                             this.printHeight = a4PrintHeight;
                         }
                         this.pdfViewer.printModule.createRequestForPrint(pageIndex, pageWidth, pageHeight,
-                                                                         this.pdfViewerBase.pageCount, this.pdfViewer.printScaleRatio);
+                                                                         this.pdfViewerBase.pageCount, this.pdfViewer.printScaleFactor);
                     }
                     this.pdfViewer.firePrintEnd(this.pdfViewer.downloadFileName);
                 },
@@ -107,7 +107,9 @@ export class Print {
             action: 'PrintImages',
             elementId: this.pdfViewer.element.id,
             uniqueId: this.pdfViewerBase.documentId,
-            digitalSignaturePresent: this.pdfViewerBase.digitalSignaturePresent(pageIndex)
+            digitalSignaturePresent: this.pdfViewerBase.digitalSignaturePresent(pageIndex),
+            printScaleFactor: printScaleFactor >= 0.5 && printScaleFactor <= 5 ? printScaleFactor : 1
+
         };
         if (this.pdfViewerBase.jsonDocumentId) {
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
@@ -123,7 +125,7 @@ export class Print {
             this.pdfViewerBase.showPrintLoadingIndicator(false);
         } else {
             if (proxy.pdfViewerBase.clientSideRendering) {
-                this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'printImage', printScaleFactor: printScaleFactor >= 1 ? printScaleFactor : 1});
+                this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'printImage', printScaleFactor: printScaleFactor >= 0.5 && printScaleFactor <= 5 ? printScaleFactor : 1});
             } else {
                 proxy.printRequestHandler.send(jsonObject);
             }
@@ -156,7 +158,7 @@ export class Print {
         canvasContext.putImageData(imageData, 0, 0);
         const imageUrl: string = canvas.toDataURL();
         this.pdfViewerBase.releaseCanvas(canvas);
-        const data = ({ image: imageUrl, pageNumber: pageIndex, uniqueId: this.pdfViewerBase.documentId, pageWidth: width });
+        const data: any = ({ image: imageUrl, pageNumber: pageIndex, uniqueId: this.pdfViewerBase.documentId, pageWidth: width });
         this.printSuccess(data, pageWidth, pageHeight, pageIndex);
     }
 
@@ -530,7 +532,7 @@ export class Print {
             Create a new Base64-encoded image with increased quality
             Also help to reduce the file size while save as pdf
             */
-            const canvasUrl: string = (this.printViewerContainer.children[parseInt(i.toString(), 10)] as HTMLCanvasElement).toDataURL('image/jpeg', 0.75);
+            const canvasUrl: string = (this.printViewerContainer.children[parseInt(i.toString(), 10)] as HTMLCanvasElement).toDataURL('image/jpeg');
             printDocument.write('<div style="margin:0mm;width:' + this.printWidth.toString() + 'px;height:' + this.printHeight.toString() + 'px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '" style="margin:0px;top:0px;left:0px;position:absolute;width:' + this.printWidth.toString() + 'px;height:' + this.printHeight.toString() + 'px;z-index:2"></div></div>');
             if (this.pdfViewer.formFieldsModule || this.pdfViewer.formDesignerModule) {
                 const pageWidth: number = this.pdfViewerBase.pageSize[parseInt(i.toString(), 10)].width;
@@ -665,5 +667,4 @@ export class Print {
     public getModuleName(): string {
         return 'Print';
     }
-
 }

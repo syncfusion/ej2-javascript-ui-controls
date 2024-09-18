@@ -1920,7 +1920,7 @@ describe('Chart Legend', () => {
         let ele: HTMLElement;
         let loaded: EmitType<ILoadedEventArgs>;
         let element: Element;
-        let posX: string;
+        let posX: string;let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
@@ -2022,10 +2022,13 @@ describe('Chart Legend', () => {
             chart.loaded = loaded;
             chart.enableRtl = false;
             chart.legendSettings.reverse = true;
+            chart.legendSettings.maximumLabelWidth=60;
+            chart.legendSettings.textWrap = "AnyWhere";
             chart.appendTo('#container');
         });
         it('Checking the legend paging with rtl', (done: Function) => {
             loaded = (args: Object): void => {
+                chart.loaded = null;
                 element = document.getElementById('container_chart_legend_navigation');
                 posX = element.getAttribute('transform');
                 expect(posX).toBe("translate(5, 0)");
@@ -2041,7 +2044,88 @@ describe('Chart Legend', () => {
                 { dataSource: categoryData1, xName: 'x', yName: 'y', name: 'Series 4', animation: { enable: false }}],
             chart.legendSettings.width = "100px";
             chart.legendSettings.title = "";
+            chart.legendSettings.maximumLabelWidth=20;
+            chart.legendSettings.textWrap = "AnyWhere";
             chart.appendTo('#container');
+        });
+        it('Checking the legend paging with rtl and textwrap as Wrap', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_chart_legend_navigation');
+                posX = element.getAttribute('transform');
+                expect(posX).toBe("translate(5, 0)");
+                done();
+            };
+            chart.loaded = loaded;
+            chart.enableRtl = true;
+            chart.series = [
+                { dataSource: categoryData, xName: 'x', yName: 'y', name: 'Series 0', animation: { enable: false } },
+                { dataSource: categoryData1, xName: 'x', yName: 'y', name: 'Series 1', animation: { enable: false } },
+                { dataSource: categoryData1, xName: 'x', yName: 'y', name: 'Series 2', animation: { enable: false } },
+                { dataSource: categoryData1, xName: 'x', yName: 'y', name: 'Series 3', animation: { enable: false } },
+                { dataSource: categoryData1, xName: 'x', yName: 'y', name: 'Series 4', animation: { enable: false } }],
+                chart.legendSettings.width = "100px";
+            chart.legendSettings.title = "";
+            chart.legendSettings.maximumLabelWidth = 20;
+            chart.legendSettings.textWrap = "Wrap";
+            chart.appendTo('#container');
+        });
+        it('legend highlight with patterns', (done: Function) => {
+            loaded = (args: Object): void => {
+                chart.loaded = null;
+                let legendElement = document.getElementById('container_chart_legend_text_0');
+                trigger.mousemoveEvent(legendElement, 0, 0, 387, 309.25);
+                expect(legendElement !== null).toBe(true);
+                done();
+            };
+            chart.legendSettings = { width: '80', toggleVisibility: false, enableHighlight: true, };
+            chart.series[0].name = 'Series one';
+            chart.series[1].name = 'Series two';
+            chart.highlightMode = 'None';
+            chart.highlightColor = 'red';
+            chart.highlightPattern = 'HorizontalDash';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+    });
+
+    describe('Chart Control Legend Checking in canvas mode.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let id: string = 'container1';
+        let legendElement: Element;
+        let trigger: MouseEvents = new MouseEvents();
+        let ele: HTMLElement = createElement('div', { id: id });
+        document.body.appendChild(ele);
+        let series: SeriesModel[] = [seriesCollection[0], seriesCollection[1], seriesCollection[2], seriesCollection[3], seriesCollection[4]];
+        beforeAll((): void => {
+            chartObj = new Chart({
+                height: '400', width: '800', series: series,
+                legendSettings: { border: { color: 'red' }, visible: true },
+                primaryYAxis: { minimum: 0, maximum: 100 },
+                primaryXAxis: { minimum: 0, maximum: 10 }
+            });
+            chartObj.appendTo(ele);
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById(id).remove();
+        });
+        it('Legend - Checking page elements.', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                legendElement = document.getElementById('container1_canvas');
+                let pagenumber: number;
+                trigger.clickEvent(legendElement);
+                expect(pagenumber !== null).toBe(true);
+                done();
+            };
+            chartObj.series = seriesCollection;
+            chartObj.legendSettings = {
+                position: 'Right', alignment: 'Near', height: '180', width: '100'
+            };
+            chartObj.enableCanvas = true;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
         });
     });
 });

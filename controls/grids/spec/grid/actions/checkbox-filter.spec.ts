@@ -75,7 +75,7 @@ describe('Checkbox Filter module => ', () => {
         it('dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-searchinput').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-selectall').length).toBe(1);    
                 expect(checkBoxFilter.querySelectorAll('.e-chk-hidden').length).toBe(72);
@@ -103,7 +103,7 @@ describe('Checkbox Filter module => ', () => {
         it('search box keyup testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterchoicerequest'){
-                expect(gridObj.element.querySelector('.e-searchcontainer').querySelectorAll('.e-searchinput').length).toBe(1);
+                expect(document.querySelector('.e-searchcontainer').querySelectorAll('.e-searchinput').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-selectall').length).toBe(1);    
                 expect(checkBoxFilter.querySelectorAll('.e-add-current').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-chk-hidden').length).toBe(4);
@@ -115,7 +115,7 @@ describe('Checkbox Filter module => ', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;        
-            let searchElement : any  = gridObj.element.querySelector('.e-searchinput');
+            let searchElement : any  = document.querySelector('.e-searchinput');
             searchElement.value = '1024';
             (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
@@ -133,7 +133,7 @@ describe('Checkbox Filter module => ', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;        
-            let searchElement : any  = gridObj.element.querySelector('.e-searchinput');
+            let searchElement : any  = document.querySelector('.e-searchinput');
             searchElement.value = '10249';
             (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
@@ -151,7 +151,7 @@ describe('Checkbox Filter module => ', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;        
-            let searchElement : any  = gridObj.element.querySelector('.e-searchinput');
+            let searchElement : any  = document.querySelector('.e-searchinput');
             searchElement.value = '1024923';
             (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
@@ -170,7 +170,7 @@ describe('Checkbox Filter module => ', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;        
-            let searchElement : any  = gridObj.element.querySelector('.e-searchinput');
+            let searchElement : any  = document.querySelector('.e-searchinput');
             searchElement.value = '10248';
             (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
@@ -187,7 +187,7 @@ describe('Checkbox Filter module => ', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;        
-            let searchElement : any  = gridObj.element.querySelector('.e-searchinput');
+            let searchElement : any  = document.querySelector('.e-searchinput');
             searchElement.value = '';
             (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
@@ -210,7 +210,7 @@ describe('Checkbox Filter module => ', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;        
-            let searchElement : any  = gridObj.element.querySelector('.e-searchinput');
+            let searchElement : any  = document.querySelector('.e-searchinput');
             searchElement.value = '10255';
             (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
@@ -227,7 +227,7 @@ describe('Checkbox Filter module => ', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;        
-            let searchElement : any  = gridObj.element.querySelector('.e-searchinput');
+            let searchElement : any  = document.querySelector('.e-searchinput');
             searchElement.value = '';
             (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
@@ -286,7 +286,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(69);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -301,7 +301,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(69);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -316,7 +316,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(43);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -348,7 +348,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(66);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -363,7 +363,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(40);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -378,7 +378,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(66);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -410,7 +410,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(64);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -425,7 +425,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(40);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -440,7 +440,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(63);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -469,7 +469,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(66);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -485,7 +485,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen') {    
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');          
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');          
                 done();
                 }
             };
@@ -510,7 +510,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(43);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -525,7 +525,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen') {    
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');          
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');          
                 done();
                 }
             };
@@ -550,7 +550,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(72);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -584,7 +584,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(69);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -599,7 +599,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(69);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -614,7 +614,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(43);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -646,7 +646,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(66);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -661,7 +661,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(40);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -676,7 +676,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(66);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -708,7 +708,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(64);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -723,7 +723,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(40);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -738,7 +738,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(63);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -753,7 +753,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen') {    
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');          
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');          
                 done();
                 }
             };
@@ -778,7 +778,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(67);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -793,7 +793,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(65);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -809,7 +809,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen') {    
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter'); 
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter'); 
                     expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(41);
                     expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                     expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);         
@@ -837,7 +837,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(44);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -852,7 +852,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen') {    
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');   
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');   
                     expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(70);
                     expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                     expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);       
@@ -866,7 +866,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(68);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -895,7 +895,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(72);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -932,7 +932,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(4);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(67);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -947,7 +947,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(5);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -962,7 +962,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(5);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -994,7 +994,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(1);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -1009,7 +1009,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -1024,7 +1024,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(3);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1056,7 +1056,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1071,7 +1071,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1086,7 +1086,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(1);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -1115,7 +1115,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(3);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1131,7 +1131,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen') {    
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');          
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');          
                 done();
                 }
             };
@@ -1156,7 +1156,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(5);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1171,7 +1171,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen') {    
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');          
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');          
                 done();
                 }
             };
@@ -1196,7 +1196,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(72);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1233,7 +1233,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(4);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(67);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -1248,7 +1248,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(5);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1263,7 +1263,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(5);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1295,7 +1295,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(1);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -1310,7 +1310,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -1325,7 +1325,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(3);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1357,7 +1357,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1372,7 +1372,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1387,7 +1387,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(1);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -1402,7 +1402,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen') {    
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');          
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');          
                 done();
                 }
             };
@@ -1427,7 +1427,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1442,7 +1442,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -1458,7 +1458,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen') {    
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter'); 
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter'); 
                     expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                     expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                     expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);         
@@ -1486,7 +1486,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1501,7 +1501,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen') {    
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');   
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');   
                     expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                     expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                     expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);       
@@ -1515,7 +1515,7 @@ describe('Checkbox Filter module => ', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(69);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -1544,7 +1544,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(72);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1578,7 +1578,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(68);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(3);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -1610,7 +1610,7 @@ describe('Checkbox Filter module => ', () => {
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(69);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(1);
@@ -1639,7 +1639,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(72);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);
@@ -1655,7 +1655,7 @@ describe('Checkbox Filter module => ', () => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
                     expect(gridObj.getColumnByField('OrderDate').type).toBe('datetime');
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                     (<any>gridObj.filterModule).filterModule.checkBoxBase.sInput.value = '7/9/1996';
                     (<any>gridObj.filterModule).filterModule.checkBoxBase.refreshCheckboxes();
                     expect(checkBoxFilter.querySelector('.e-checkboxlist.e-fields').children.length).toBeGreaterThanOrEqual(2);
@@ -1687,7 +1687,7 @@ describe('Checkbox Filter module => ', () => {
     //     it('EJ2-7257-Need to hide the filter button in check box filter when no matches found like EJ1 ', (done: Function) => {            
     //         actionComplete = (args?: any): void => {
     //             if(args.requestType === 'filterAfterOpen'){
-    //                 checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+    //                 checkBoxFilter = document.querySelector('.e-checkboxfilter');
     //                 (<any>gridObj.filterModule).filterModule.sInput.value = 'edybh';
     //                 (<any>gridObj.filterModule).filterModule.refreshCheckboxes();
     //                 expect(checkBoxFilter.querySelector('.e-footer-content').children[0].hasAttribute('disabled')).toBeTruthy();
@@ -1736,7 +1736,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){          
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');         
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');         
                 gridObj.actionComplete =null;
                 done();
                 }
@@ -1801,7 +1801,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'filterAfterOpen') {
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                     gridObj.actionComplete = null;
                     done();
                 }
@@ -1810,9 +1810,11 @@ describe('Checkbox Filter module => ', () => {
             (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
         });
 
-        it('Filter CustomerID testing', () => {
+        it('Filter CustomerID testing - 1', () => {
             (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[0] as any).click();
             (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[1] as any).click();
+        });
+        it('Filter CustomerID testing - 2', () => {
             checkBoxFilter.querySelectorAll('button')[0].click();
         });
         it('Check confirm dialog & check data are filtered', (done: Function) => {
@@ -1877,8 +1879,8 @@ describe('Checkbox Filter module => ', () => {
         it('Filter after search toolbar action', function (done) {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                expect(gridObj.element.querySelectorAll('.e-check').length).toBe(2);
-                expect(gridObj.element.querySelectorAll('.e-selectall').length).toBe(1);                          
+                expect(document.querySelectorAll('.e-check').length).toBe(2);
+                expect(document.querySelectorAll('.e-selectall').length).toBe(1);                          
                 gridObj.actionComplete =null;
                 done();
                 }
@@ -1934,7 +1936,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 gridObj.actionComplete =null;
                 done();
                 }
@@ -1961,7 +1963,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 gridObj.actionComplete =null;
                 done();
                 }
@@ -1989,7 +1991,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 gridObj.actionComplete =null;
                 done();
                 }
@@ -2018,7 +2020,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                     gridObj.actionComplete =null;
                     done();
                 }
@@ -2083,7 +2085,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 gridObj.actionComplete =null;
                 done();
                 }
@@ -2102,7 +2104,7 @@ describe('Checkbox Filter module => ', () => {
                 done();
             };
             gridObj.actionComplete = actionComplete;
-            let searchElement: any = gridObj.element.querySelector('.e-searchinput');
+            let searchElement: any = document.querySelector('.e-searchinput');
             searchElement.value = '10248';
             (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13, searchElement));
         });
@@ -2116,7 +2118,7 @@ describe('Checkbox Filter module => ', () => {
                 done();
             };
             gridObj.actionComplete = actionComplete;
-            let searchElement: any = gridObj.element.querySelector('.e-searchinput');
+            let searchElement: any = document.querySelector('.e-searchinput');
             searchElement.value = '';
             (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13, searchElement));
         });
@@ -2149,7 +2151,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 gridObj.actionComplete =null;
                 done();
                 }
@@ -2164,7 +2166,7 @@ describe('Checkbox Filter module => ', () => {
                 done();
             };
             gridObj.actionBegin = actionBegin;
-            let searchElement: any = gridObj.element.querySelector('.e-searchinput');
+            let searchElement: any = document.querySelector('.e-searchinput');
             searchElement.value = '10248';
             (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13, searchElement));
         });
@@ -2216,9 +2218,9 @@ describe('Checkbox Filter module => ', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelectorAll('.e-checkboxlist .e-frame:not(.e-selectall)')[0] as any).click();
-            (gridObj.element.querySelectorAll('.e-checkboxlist .e-frame:not(.e-selectall)')[1] as any).click();
-            (gridObj.element.querySelectorAll('.e-checkboxfilter .e-btn')[0] as any).click();
+            (document.querySelectorAll('.e-checkboxlist .e-frame:not(.e-selectall)')[0] as any).click();
+            (document.querySelectorAll('.e-checkboxlist .e-frame:not(.e-selectall)')[1] as any).click();
+            (document.querySelectorAll('.e-checkboxfilter .e-btn')[0] as any).click();
         });
         afterAll(function () {
             destroy(gridObj);
@@ -2250,7 +2252,7 @@ describe('Checkbox Filter module => ', () => {
         it('OrderID filter dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){          
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');      
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');      
                     done();
                 }   
             };
@@ -2268,7 +2270,7 @@ describe('Checkbox Filter module => ', () => {
         it('CustomerID filter dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen'){          
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter'); 
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter'); 
                     done();     
                 }
             };
@@ -2279,7 +2281,7 @@ describe('Checkbox Filter module => ', () => {
             actionComplete = (args?: any): void => {               
                 expect(gridObj.filterSettings.columns.length).toBe(2);                                               
             };           
-            let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+            let searchElement : any = document.querySelector('.e-searchinput');
             searchElement.value = 'ER';
             (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[0] as any).click();           
             (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[1] as any).click(); 
@@ -2322,7 +2324,7 @@ describe('Checkbox Filter module => ', () => {
                 done();
             };
             gridObj.actionComplete = actionComplete;
-            chkAll = gridObj.element.querySelector('.e-checkselectall').nextElementSibling as HTMLElement;
+            chkAll = document.querySelector('.e-checkselectall').nextElementSibling as HTMLElement;
             chkAll.click();
             gridObj.filterByColumn('OrderID', 'equal', '67');
         });
@@ -2426,7 +2428,7 @@ describe('EJ2-46285 - Provide support to handle custom filter dataSource in Exce
         it('checking the locale text', (done: Function) => {
             gridObj.actionComplete = actionComplete = (args?: any): void => {
                 if (args.requestType === "filterchoicerequest") {
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                     expect(checkBoxFilter.querySelectorAll('.e-checkboxfiltertext')[1].innerHTML).toBe('Falsch');
                     expect(checkBoxFilter.querySelectorAll('.e-checkboxfiltertext')[2].innerHTML).toBe('Wahr');
                     done();
@@ -2544,7 +2546,7 @@ describe('EJ2-50998 - Searching blank in filter text box', () => {
     it('open filter popup', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                checkBoxFilter = document.querySelector('.e-checkboxfilter');
                 gridObj.actionComplete = null;
                 done();
             }
@@ -2564,7 +2566,7 @@ describe('EJ2-50998 - Searching blank in filter text box', () => {
             }
         };
         gridObj.actionComplete = actionComplete;
-        let searchElement : any  = gridObj.element.querySelector('.e-searchinput');
+        let searchElement : any  = document.querySelector('.e-searchinput');
         searchElement.value = 'Blanks';
         (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
     });
@@ -2648,7 +2650,7 @@ describe('EJ2-56656 - Wrong operator while filtering with Excel filter search bo
     it('CustomerID filter dialog open testing', (done: Function) => {
         actionComplete = (args?: any): void => {
             if(args.requestType === 'filterAfterOpen'){          
-                checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');      
+                checkBoxFilter = document.querySelector('.e-checkboxfilter');      
                 done();
             }   
         };
@@ -2661,7 +2663,7 @@ describe('EJ2-56656 - Wrong operator while filtering with Excel filter search bo
                 done();
             }                                 
         };
-        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        let searchElement : any = document.querySelector('.e-searchinput');
         searchElement.value = 'NA';
         gridObj.actionComplete = actionComplete;
         (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));            
@@ -2674,7 +2676,7 @@ describe('EJ2-56656 - Wrong operator while filtering with Excel filter search bo
                 done();
             }                                 
         };
-        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        let searchElement : any = document.querySelector('.e-searchinput');
         gridObj.actionComplete = actionComplete;
         (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({ target: searchElement });              
     });
@@ -2706,7 +2708,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open testing', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -2720,7 +2722,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open testing and down scroll', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -2728,7 +2730,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
             }
         };
         gridObj.actionComplete = actionComplete;
-        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+        document.querySelector('.e-checkboxlist').scrollTop = 500;
         (<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteScrollHandler();
         setTimeout(done, 1000);
     });
@@ -2736,7 +2738,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open testing and down scroll - 1', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3) - 2);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3) - 2);
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -2744,7 +2746,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
             }
         };
         gridObj.actionComplete = actionComplete;
-        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+        document.querySelector('.e-checkboxlist').scrollTop = 500;
         const target = (<any>gridObj.filterModule).filterModule.checkBoxBase;
         target.infiniteScrollMouseKeyUpHandler({target: target.cBox});
         setTimeout(done, 1000);
@@ -2753,7 +2755,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open testing and up scroll', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -2761,7 +2763,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
             }
         };
         gridObj.actionComplete = actionComplete;
-        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 0;
+        document.querySelector('.e-checkboxlist').scrollTop = 0;
         (<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteScrollHandler();
         setTimeout(done, 1000);
     });
@@ -2769,7 +2771,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open testing and down scroll - 2', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -2777,7 +2779,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
             }
         };
         gridObj.actionComplete = actionComplete;
-        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+        document.querySelector('.e-checkboxlist').scrollTop = 500;
         const target = (<any>gridObj.filterModule).filterModule.checkBoxBase;
         target.infiniteScrollMouseKeyUpHandler({target: target.cBox});
         setTimeout(done, 1000);
@@ -2786,7 +2788,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open testing and down scroll - 3', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3) - 2);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3) - 2);
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -2794,7 +2796,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
             }
         };
         gridObj.actionComplete = actionComplete;
-        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+        document.querySelector('.e-checkboxlist').scrollTop = 500;
         (<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteScrollHandler();
         setTimeout(done, 1000);
     });
@@ -2802,7 +2804,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open testing and up scroll - 1', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3) - 2);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3) - 2);
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -2810,7 +2812,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
             }
         };
         gridObj.actionComplete = actionComplete;
-        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 0;
+        document.querySelector('.e-checkboxlist').scrollTop = 0;
         const target = (<any>gridObj.filterModule).filterModule.checkBoxBase;
         target.infiniteScrollMouseKeyUpHandler({target: target.cBox});
         setTimeout(done, 1000);
@@ -2819,7 +2821,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open testing and up scroll - 2', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3));
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3));
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -2827,7 +2829,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
             }
         };
         gridObj.actionComplete = actionComplete;
-        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 0;
+        document.querySelector('.e-checkboxlist').scrollTop = 0;
         (<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteScrollHandler();
         setTimeout(done, 1000);
     });
@@ -2835,7 +2837,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open testing and up scroll - 3', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3));
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3));
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -2843,21 +2845,21 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
             }
         };
         gridObj.actionComplete = actionComplete;
-        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 0;
+        document.querySelector('.e-checkboxlist').scrollTop = 0;
         const target = (<any>gridObj.filterModule).filterModule.checkBoxBase;
         target.infiniteScrollMouseKeyUpHandler({target: target.cBox});
         setTimeout(done, 1000);
     });
 
     it('checkbox selection', () => {
-        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        let checkBoxList: Element = document.querySelector('.e-checkboxlist');
         let checkBox: Element = checkBoxList.children[0].querySelector('input');
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
         checkBox = checkBoxList.children[1].querySelector('input');
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(2);
-        let selectAllCheckBox: Element = (<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelector('input');
+        let selectAllCheckBox: Element = (<any>document.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelector('input');
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: selectAllCheckBox });
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(0);
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: selectAllCheckBox });
@@ -2871,20 +2873,20 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
                 done();
             }                                 
         };
-        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        let searchElement : any = document.querySelector('.e-searchinput');
         searchElement.value = '2';
         gridObj.actionComplete = actionComplete;
         (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
     });
 
     it('search checkbox selection', () => {
-        let checkBox: Element = gridObj.element.querySelector('.e-checkboxlist').children[0].querySelector('input');
+        let checkBox: Element = document.querySelector('.e-checkboxlist').children[0].querySelector('input');
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
-        checkBox = gridObj.element.querySelector('.e-checkboxlist').children[1].querySelector('input');
+        checkBox = document.querySelector('.e-checkboxlist').children[1].querySelector('input');
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(2);
-        checkBox = gridObj.element.querySelector('.e-checkboxlist').children[0].querySelector('input');
+        checkBox = document.querySelector('.e-checkboxlist').children[0].querySelector('input');
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteSearchPred).not.toBe(undefined);
@@ -2897,7 +2899,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
                 done();
             }                                 
         };
-        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        let searchElement : any = document.querySelector('.e-searchinput');
         gridObj.actionComplete = actionComplete;
         (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({ target: searchElement });              
     });
@@ -2905,7 +2907,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open after filter testing', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -2919,7 +2921,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('selectall checkbox selection', () => {
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteUnloadParentExistPred.length).toBe(1);
-        let selectAllCheckBox: Element = (<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelector('input');
+        let selectAllCheckBox: Element = (<any>document.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelector('input');
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: selectAllCheckBox });
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(0);
     });
@@ -2931,7 +2933,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
                 done();
             }                                 
         };
-        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        let searchElement : any = document.querySelector('.e-searchinput');
         gridObj.actionComplete = actionComplete;
         (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({ target: searchElement });              
     });
@@ -2939,7 +2941,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open after filter testing - 1', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -2953,10 +2955,10 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('unselectall checkbox selection - 1', () => {
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(0);
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteUnloadParentExistPred.length).toBe(0);
-        let selectAllCheckBox: Element = (<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelector('input');
+        let selectAllCheckBox: Element = (<any>document.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelector('input');
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: selectAllCheckBox });
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(0);
-        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        let checkBoxList: Element = document.querySelector('.e-checkboxlist');
         let checkBox: Element = checkBoxList.children[0].querySelector('input');
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
@@ -2976,7 +2978,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
                 done();
             }                                 
         };
-        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        let searchElement : any = document.querySelector('.e-searchinput');
         gridObj.actionComplete = actionComplete;
         (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({ target: searchElement });              
     });
@@ -2984,7 +2986,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open after filter testing - 2', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -2999,12 +3001,12 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('search available value', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterchoicerequest') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
             }                                 
         };
-        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        let searchElement : any = document.querySelector('.e-searchinput');
         searchElement.value = '2';
         gridObj.actionComplete = actionComplete;
         (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
@@ -3013,12 +3015,12 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('search not available value', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterchoicerequest') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(1);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(1);
                 actionComplete = null;
                 done();
             }                                 
         };
-        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        let searchElement : any = document.querySelector('.e-searchinput');
         searchElement.value = '1000000';
         gridObj.actionComplete = actionComplete;
         (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
@@ -3027,19 +3029,19 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('search available value for coverage', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterchoicerequest') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
             }                                 
         };
-        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        let searchElement : any = document.querySelector('.e-searchinput');
         searchElement.value = '2';
         gridObj.actionComplete = actionComplete;
         (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
     });
 
     it('checkbox selection after search for coverage', () => {
-        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        let checkBoxList: Element = document.querySelector('.e-checkboxlist');
         let checkBox: Element = checkBoxList.children[1].querySelector('input');
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
         let addCurrSelection: Element = <any>checkBoxList.parentElement.previousSibling;
@@ -3049,12 +3051,12 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('search not available value for coverage', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterchoicerequest') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(1);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(1);
                 actionComplete = null;
                 done();
             }                                 
         };
-        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        let searchElement : any = document.querySelector('.e-searchinput');
         searchElement.value = '1000000';
         gridObj.actionComplete = actionComplete;
         (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
@@ -3068,7 +3070,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterchoicerequest') {
                 expect(args.filterModel.dlg.querySelectorAll('.e-searchinput').length).toBe(1);
-                gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+                document.querySelector('.e-checkboxlist').scrollTop = 500;
                 gridObj.actionComplete = null;
                 done();
             }
@@ -3080,7 +3082,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('down scroll', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -3094,7 +3096,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('checkbox selection after down scroll', () => {
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
-        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        let checkBoxList: Element = document.querySelector('.e-checkboxlist');
         let checkBox: Element = checkBoxList.children[checkBoxList.children.length - 4].querySelector('input');
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(2);
@@ -3109,7 +3111,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('up scroll', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
             } else if (args.requestType === 'filterchoicerequest') {
@@ -3117,14 +3119,14 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
             }
         };
         gridObj.actionComplete = actionComplete;
-        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 0;
+        document.querySelector('.e-checkboxlist').scrollTop = 0;
         const target = (<any>gridObj.filterModule).filterModule.checkBoxBase;
         target.infiniteScrollMouseKeyUpHandler({target: target.cBox});
         setTimeout(done, 1000);
     });
 
     it('checkbox selection after up scroll', () => {
-        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        let checkBoxList: Element = document.querySelector('.e-checkboxlist');
         let checkBox: Element = checkBoxList.children[1].querySelector('input');
         (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
         expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(3);
@@ -3138,7 +3140,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
                 done();
             }
         };
-        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        let searchElement : any = document.querySelector('.e-searchinput');
         gridObj.actionComplete = actionComplete;
         (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({ target: searchElement });
     });
@@ -3146,9 +3148,9 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
     it('OrderID filter dialog open after filter testing - 3', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterAfterOpen') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
-                expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(0);
-                expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
+                expect(document.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(document.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(0);
+                expect((<any>document.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
                 expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
                 expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteUnloadParentExistPred.length).toBe(2);
                 actionComplete = null;
@@ -3238,7 +3240,7 @@ describe('EJ2-58687 - template support for checkbox rendering in checkbox filter
         });
         actionComplete = (args?: any): void => {
             if(args.requestType === 'filterAfterOpen'){  
-                expect(gridObj.element.querySelector('.e-excelfilter').querySelector('.e-checkboxlist').innerHTML).toBe('');      
+                expect(document.querySelector('.e-excelfilter').querySelector('.e-checkboxlist').innerHTML).toBe('');      
                 done();
             }   
         };
@@ -3257,7 +3259,7 @@ describe('EJ2-58687 - template support for checkbox rendering in checkbox filter
         });
         actionComplete = (args?: any): void => {
             if(args.requestType === 'filterAfterOpen'){  
-                expect(gridObj.element.querySelector('.e-excelfilter').querySelector('.e-checkboxlist').innerHTML).toBe('<input>');      
+                expect(document.querySelector('.e-excelfilter').querySelector('.e-checkboxlist').innerHTML).toBe('<input>');      
                 done();
             }   
         };
@@ -3293,7 +3295,7 @@ describe('EJ2-61734 - disableHtmlEncode property is not working with Excel Filte
 
         actionComplete = (args?: any): void => {
             if(args.requestType === 'filterAfterOpen'){  
-                expect(gridObj.element.querySelector('.e-excelfilter').querySelector('.e-checkboxlist').querySelectorAll('button').length).toBe(0);      
+                expect(document.querySelector('.e-excelfilter').querySelector('.e-checkboxlist').querySelectorAll('button').length).toBe(0);      
                 done();
             }   
         };
@@ -3636,7 +3638,7 @@ describe('coverage improvemnet.', () => {
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterAfterOpen') {
-                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
                     done();
                 }
             };
@@ -3647,6 +3649,130 @@ describe('coverage improvemnet.', () => {
         afterAll((done) => {
             destroy(gridObj);
             gridObj = actionComplete = null;
+        });
+    });
+
+
+    describe('Checkbox filter base file code coverage =>', () => {
+        let gridObj: Grid;
+        let checkBoxFilter: Element;
+        let actionComplete: (e?: any) => void;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            let options: Object = {
+                dataSource: fdata.slice(0, 10),
+                allowFiltering: true,
+                filterSettings: {
+                    type: "CheckBox"
+                },
+                columns: [
+                    { field: 'OrderID', width: 120 },
+                    { field: 'ShipCity', width: 120 },
+                    { field: 'Verified', width: 120 },
+                ],
+                actionComplete: actionComplete,
+            };
+            gridObj = createGrid(options, done);
+        });
+
+        it('open filter menu filtering', (done: Function) => {
+            actionComplete = (e: any) => {
+                checkBoxFilter = document.querySelector('.e-checkboxfilter');
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+        }); 
+
+        it('updateSearchIcon and keyupHandler coverage', () => {
+            (gridObj.filterModule as any).filterModule.checkBoxBase.keyupHandler({key:'ArrowDown', preventDefault: preventDefault })
+        });
+    
+
+        it('searchBoxClick coverage', () => {
+            (gridObj.filterModule as any).filterModule.checkBoxBase.isForeignColumn({}); 
+            let target = checkBoxFilter.querySelector('.e-searchclear');
+            (gridObj.filterModule as any).filterModule.checkBoxBase.isCheckboxFilterTemplate = true;
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxClick({ target: target });
+        });
+
+        it('searchBoxKeyUp coverage', () => {
+            (gridObj.filterModule as any).filterModule.checkBoxBase.dataSuccess({});
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp({ key:'Tab' });
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp({});
+            (gridObj.filterModule as any).filterModule.checkBoxBase.infiniteScrollMouseKeyDownHandler();
+            document.body.querySelector('.e-searchclear.e-search-icon').remove();
+            (gridObj.filterModule as any).filterModule.checkBoxBase.updateSearchIcon();
+        });
+
+        afterAll((done) => {
+            destroy(gridObj);
+            gridObj = actionComplete = preventDefault = null;
+        });
+    });
+
+    describe('EJ2-900938: The "Blanks" filter option is not working properly => ', () => {
+        let gridObj: Grid;
+        let searchElement : any;
+        let checkBoxFilter: Element;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [{  OrderID: 10251, ShipCountry: 'France', Freight: 41.34,},
+                                 {  OrderID: 10252, ShipCountry: '', Freight: 7, }],
+                    allowFiltering: true,
+                    filterSettings: { type: 'CheckBox', enableInfiniteScrolling: true },
+                    columns: [
+                        { field: 'OrderID' ,headerText:"Order ID"},
+                        { field: 'Freight',headerText:"Freight"},
+                        { field: 'ShipCountry', headerText:"Ship Country" }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('ShipCountry dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterAfterOpen') {
+                    checkBoxFilter = document.querySelector('.e-checkboxfilter');
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('ShipCountry').querySelector('.e-filtermenudiv')));
+        });
+
+        it('search input testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterchoicerequest'){
+                expect(document.querySelector('.e-searchcontainer').querySelectorAll('.e-searchinput').length).toBe(1);      
+                gridObj.actionComplete =null;
+                done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;        
+            searchElement = document.querySelector('.e-searchinput');
+            searchElement.value = 'blanks';
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+        });
+
+        it('Check the filter data length', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filtering') {
+                    expect(gridObj.currentViewData.length).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            checkBoxFilter.querySelectorAll('button')[0].click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = checkBoxFilter = actionComplete = searchElement = null;
         });
     });
 

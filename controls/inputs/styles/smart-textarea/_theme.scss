@@ -1,0 +1,43 @@
+@include export-module('smart-textarea-theme') {
+  .smart-textarea-suggestion-overlay {
+    @if $skin-name =='fluent2-dark' {
+      background-color: #{#1f1f1f};
+      color: #{#fff};
+    }
+
+    @else if $skin-name =='fluent-dark' {
+      background-color: #{#1b1a19};
+      color: #{#f3f2f1};
+    }
+
+    @else if $skin-name=='tailwind-dark' {
+      background-color: #{#232e3e};
+      color: #{#fff};
+    }
+
+    @else if $skin-name=='bootstrap5-dark' {
+      background-color: #{#212529};
+      color: #{#fff};
+    }
+
+    @else if $skin-name=='material3-dark' {
+      background-color: #{#1c1b1f};
+      color: #{#e6e1e5};
+    }
+
+    @else {
+      background-color: $sta-background-color;
+      color: $sta-color;
+    }
+    box-shadow: 0 1.25px 4px 0 $sta-box-shadow;
+  }
+
+  [data-suggestion-visible]::selection {
+    color: #{#999} !important; /* stylelint-disable-line declaration-no-important */
+    background: none !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .smart-textarea-caret {
+    background: #{#ff0000};
+  }
+}

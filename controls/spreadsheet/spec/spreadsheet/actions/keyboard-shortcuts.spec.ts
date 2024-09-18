@@ -113,114 +113,98 @@ describe('Keyboard shortcuts module ->', () => {
 
         it('Bold shortcut testing', (done: Function) => {
             helper.triggerKeyNativeEvent(66, true);
-            setTimeout(() => {
-                helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
-                    expect(values.get('L2').style.fontWeight).toEqual('bold');
-                    expect(values.get('L3').style.fontWeight).toEqual('bold');
-                    expect(values.get('L4').style.fontWeight).toEqual('bold');
-                    expect(values.get('L5').style.fontWeight).toEqual('bold');
-                    expect(values.get('L6').style.fontWeight).toEqual('bold');
-                    done();
-                });
-            }, 20);
+            helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
+                expect(values.get('L2').style.fontWeight).toEqual('bold');
+                expect(values.get('L3').style.fontWeight).toEqual('bold');
+                expect(values.get('L4').style.fontWeight).toEqual('bold');
+                expect(values.get('L5').style.fontWeight).toEqual('bold');
+                expect(values.get('L6').style.fontWeight).toEqual('bold');
+                done();
+            });
         });
 
         it('Bold shortcut revert testing', (done: Function) => {
             helper.triggerKeyNativeEvent(66, true);
-            setTimeout(() => {
-                helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
-                    expect(values.get('L2').style.fontWeight).toEqual('normal');
-                    expect(values.get('L3').style.fontWeight).toEqual('normal');
-                    expect(values.get('L4').style.fontWeight).toEqual('normal');
-                    expect(values.get('L5').style.fontWeight).toEqual('normal');
-                    expect(values.get('L6').style.fontWeight).toEqual('normal');
-                    done();
-                });
-            }, 20);
+            helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
+                expect(values.get('L2').style.fontWeight).toEqual('normal');
+                expect(values.get('L3').style.fontWeight).toEqual('normal');
+                expect(values.get('L4').style.fontWeight).toEqual('normal');
+                expect(values.get('L5').style.fontWeight).toEqual('normal');
+                expect(values.get('L6').style.fontWeight).toEqual('normal');
+                done();
+            });
         });
 
         it('Italic shortcut testing', (done: Function) => {
             helper.triggerKeyNativeEvent(73, true);
-            setTimeout(() => {
-                helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
-                    expect(values.get('L2').style.fontStyle).toEqual('italic');
-                    expect(values.get('L3').style.fontStyle).toEqual('italic');
-                    expect(values.get('L4').style.fontStyle).toEqual('italic');
-                    expect(values.get('L5').style.fontStyle).toEqual('italic');
-                    expect(values.get('L6').style.fontStyle).toEqual('italic');
-                    done();
-                });
-            }, 20);
+            helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
+                expect(values.get('L2').style.fontStyle).toEqual('italic');
+                expect(values.get('L3').style.fontStyle).toEqual('italic');
+                expect(values.get('L4').style.fontStyle).toEqual('italic');
+                expect(values.get('L5').style.fontStyle).toEqual('italic');
+                expect(values.get('L6').style.fontStyle).toEqual('italic');
+                done();
+            });
         });
 
         it('Italic shortcut revert testing', (done: Function) => {
             helper.triggerKeyNativeEvent(73, true);
-            setTimeout(() => {
-                helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
-                    expect(values.get('L2').style.fontStyle).toEqual('normal');
-                    expect(values.get('L3').style.fontStyle).toEqual('normal');
-                    expect(values.get('L4').style.fontStyle).toEqual('normal');
-                    expect(values.get('L5').style.fontStyle).toEqual('normal');
-                    expect(values.get('L6').style.fontStyle).toEqual('normal');
-                    done();
-                });
-            }, 20);
+            helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
+                expect(values.get('L2').style.fontStyle).toEqual('normal');
+                expect(values.get('L3').style.fontStyle).toEqual('normal');
+                expect(values.get('L4').style.fontStyle).toEqual('normal');
+                expect(values.get('L5').style.fontStyle).toEqual('normal');
+                expect(values.get('L6').style.fontStyle).toEqual('normal');
+                done();
+            });
         });
 
         it('Text Decoration underline shortcut testing', (done: Function) => {
             helper.triggerKeyNativeEvent(85, true);
-            setTimeout(() => {
-                helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
-                    expect(values.get('L2').style.textDecoration).toEqual('underline');
-                    expect(values.get('L3').style.textDecoration).toEqual('underline');
-                    expect(values.get('L4').style.textDecoration).toEqual('underline');
-                    expect(values.get('L5').style.textDecoration).toEqual('underline');
-                    expect(values.get('L6').style.textDecoration).toEqual('underline');
-                    done();
-                });
-            }, 20);
+            helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
+                expect(values.get('L2').style.textDecoration).toEqual('underline');
+                expect(values.get('L3').style.textDecoration).toEqual('underline');
+                expect(values.get('L4').style.textDecoration).toEqual('underline');
+                expect(values.get('L5').style.textDecoration).toEqual('underline');
+                expect(values.get('L6').style.textDecoration).toEqual('underline');
+                done();
+            });
         });
 
         it('Text Decoration underline shortcut revert testing', (done: Function) => {
             helper.triggerKeyNativeEvent(85, true);
-            setTimeout(() => {
-                helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
-                    expect(values.get('L2').style.textDecoration).toEqual('none');
-                    expect(values.get('L3').style.textDecoration).toEqual('none');
-                    expect(values.get('L4').style.textDecoration).toEqual('none');
-                    expect(values.get('L5').style.textDecoration).toEqual('none');
-                    expect(values.get('L6').style.textDecoration).toEqual('none');
-                    done();
-                });
-            }, 20);
+            helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
+                expect(values.get('L2').style.textDecoration).toEqual('none');
+                expect(values.get('L3').style.textDecoration).toEqual('none');
+                expect(values.get('L4').style.textDecoration).toEqual('none');
+                expect(values.get('L5').style.textDecoration).toEqual('none');
+                expect(values.get('L6').style.textDecoration).toEqual('none');
+                done();
+            });
         });
 
         it('Text Decoration line-through shortcut testing', (done: Function) => {
             helper.triggerKeyNativeEvent(53, true);
-            setTimeout(() => {
-                helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
-                    expect(values.get('L2').style.textDecoration).toEqual('line-through');
-                    expect(values.get('L3').style.textDecoration).toEqual('line-through');
-                    expect(values.get('L4').style.textDecoration).toEqual('line-through');
-                    expect(values.get('L5').style.textDecoration).toEqual('line-through');
-                    expect(values.get('L6').style.textDecoration).toEqual('line-through');
-                    done();
-                });
-            }, 20);
+            helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
+                expect(values.get('L2').style.textDecoration).toEqual('line-through');
+                expect(values.get('L3').style.textDecoration).toEqual('line-through');
+                expect(values.get('L4').style.textDecoration).toEqual('line-through');
+                expect(values.get('L5').style.textDecoration).toEqual('line-through');
+                expect(values.get('L6').style.textDecoration).toEqual('line-through');
+                done();
+            });
         });
 
         it('Text Decoration line-through shortcut revert testing', (done: Function) => {
             helper.triggerKeyNativeEvent(53, true);
-            setTimeout(() => {
-                helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
-                    expect(values.get('L2').style.textDecoration).toEqual('none');
-                    expect(values.get('L3').style.textDecoration).toEqual('none');
-                    expect(values.get('L4').style.textDecoration).toEqual('none');
-                    expect(values.get('L5').style.textDecoration).toEqual('none');
-                    expect(values.get('L6').style.textDecoration).toEqual('none');
-                    done();
-                });
-            }, 20);
+            helper.invoke('getData', ['Sheet1!L2:L6']).then((values: Map<string, CellModel>) => {
+                expect(values.get('L2').style.textDecoration).toEqual('none');
+                expect(values.get('L3').style.textDecoration).toEqual('none');
+                expect(values.get('L4').style.textDecoration).toEqual('none');
+                expect(values.get('L5').style.textDecoration).toEqual('none');
+                expect(values.get('L6').style.textDecoration).toEqual('none');
+                done();
+            });
         });
         it('SF-401897 -> Alt ribbon header text focus shortcut testing', (done: Function) => {
             const spreadsheet: any = helper.getInstance();
@@ -413,8 +397,8 @@ describe('Keyboard shortcuts module ->', () => {
                 setTimeout(() => {
                     expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('Casual Shoes');
                     done();
-                }, 50);
-            }, 50);
+                });
+            });
         });
         it('Apply Filter using shortcut->', (done: Function) => {
             helper.invoke('selectRange', ['A1']);
@@ -490,11 +474,9 @@ describe('Keyboard shortcuts module ->', () => {
         it('Apply "$#,##0.00;[Red]($#,##0.00)" Number Format using shortcut->', (done: Function) => {
             helper.invoke('selectRange', ['B6']);
             helper.triggerKeyNativeEvent(52, true, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[5].cells[1].format).toBe('$#,##0.00;[Red]($#,##0.00)');
-                expect(helper.invoke('getCell', [5, 1]).textContent).toBe('$41,813.00');
-                done();
-            });
+            expect(helper.getInstance().sheets[0].rows[5].cells[1].format).toBe('$#,##0.00_);[Red]($#,##0.00)');
+            expect(helper.invoke('getCell', [5, 1]).textContent).toBe('$41,813.00 ');
+            done();
         });
         it('Apply "0%" Number Format using shortcut->', (done: Function) => {
             helper.invoke('selectRange', ['B6']);
@@ -558,7 +540,7 @@ describe('Keyboard shortcuts module ->', () => {
                 expect(helper.getInstance().activeSheetIndex).toBe(1);
                 expect(helper.getInstance().sheets.length).toBe(2);
                 done();
-            }, 20);
+            });
         });
         it('List All Sheets using shortcut->', (done: Function) => {
             helper.invoke('selectRange', ['A1']);
@@ -654,6 +636,164 @@ describe('Keyboard shortcuts module ->', () => {
                     });
                 });
             })
+        });
+    });
+
+    describe('Testing keyboard shortcuts in context menu cases ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }], scrollSettings: { enableVirtualization: false, isFinite: true }
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Open Context Menu using Shift+Fn+F10.', function (done) {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            setTimeout(function () {
+                helper.edit('F4', 'Test');
+                helper.invoke('selectRange', ['E1:E1']);
+                helper.triggerKeyNativeEvent(121, false, true);
+                setTimeout(function () {
+                    expect(spreadsheet.activeSheetIndex).toEqual(0);
+                    done();
+                });
+            });
+        });
+        it('Open Context Menu using Shift+Fn+F10 in second row.', function (done) {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            setTimeout(function () {
+                helper.edit('F4', 'Test');
+                helper.invoke('selectRange', ['E2:E2']);
+                helper.triggerKeyNativeEvent(121, false, true);
+                setTimeout(function () {
+                    expect(spreadsheet.activeSheetIndex).toEqual(0);
+                    done();
+                });
+            });
+        });
+        it('Open Context Menu using Shift+Fn+F10 in inside freeze column.', function (done) {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(0, 3);
+            setTimeout(() => {
+                helper.edit('F4', 'Test');
+                helper.invoke('selectRange', ['B3']);
+                setTimeout(() => {
+                    helper.triggerKeyNativeEvent(121, false, true);
+                    setTimeout(() => {
+                        expect(spreadsheet.activeSheetIndex).toEqual(0);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Open Context Menu using Shift+Fn+F10 in inside freeze column by selecting whole column.', function (done) {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(0, 3);
+            setTimeout(() => {
+                helper.edit('A4', 'Test');
+                helper.invoke('selectRange', ['B1:B100']);
+                setTimeout(() => {
+                    helper.triggerKeyNativeEvent(121, false, true);
+                    setTimeout(() => {
+                        expect(spreadsheet.activeSheetIndex).toEqual(0);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Open Context Menu using Shift+Fn+F10 in inside freeze row by selecting whole row.', function (done) {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(2, 0);
+            setTimeout(() => {
+                helper.edit('A4', 'Test');
+                helper.invoke('selectRange', ['A1:CV1']);
+                setTimeout(() => {
+                    helper.triggerKeyNativeEvent(121, false, true);
+                    setTimeout(() => {
+                        expect(spreadsheet.activeSheetIndex).toEqual(0);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Open Context Menu using Shift+Fn+F10 with Freeze pane.', function (done) {
+            const spreadsheet: Spreadsheet  = helper.getInstance();
+            spreadsheet.freezePanes(2, 3);
+            setTimeout(function () {
+                helper.edit('F4', 'Test');
+                helper.invoke('selectRange', ['E1:E1']);
+                helper.triggerKeyNativeEvent(121, false, true);
+                setTimeout(function () {
+                    expect(spreadsheet.activeSheetIndex).toEqual(0);
+                    done();
+                });
+            });
+        });
+        it('Open Context Menu using Shift+Fn+F10 with Column Selection .', (done: Function) => {
+            helper.edit('A4', 'Test');
+            helper.invoke('selectRange', ['A1:A100']);
+            setTimeout(() => {
+                helper.triggerKeyNativeEvent(121, false, true);
+                setTimeout(() => {
+                    expect(helper.getInstance().activeSheetIndex).toEqual(0);
+                    done();
+                });
+            });
+        });
+        it('Open Context Menu using Shift+Fn+F10 Row Selection.', (done: Function) => {
+            helper.edit('A4', 'Test');
+            helper.invoke('selectRange', ['A1:CV1']);
+            setTimeout(() => {
+                helper.triggerKeyNativeEvent(121, false, true);
+                setTimeout(() => {
+                    expect(helper.getInstance().activeSheetIndex).toEqual(0);
+                    done();
+                });
+            });
+        });
+        it('Open Context Menu using Shift+Fn+F10 with Column Selection with Frozen Column.', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(1, 3);
+            setTimeout(() => {
+                helper.edit('F4', 'Test');
+                helper.invoke('selectRange', ['F1:F100']);
+                setTimeout(() => {
+                    helper.triggerKeyNativeEvent(121, false, true);
+                    setTimeout(() => {
+                        expect(spreadsheet.activeSheetIndex).toEqual(0);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Open Context Menu using Shift+Fn+F10 Row Selection with Frozen Row.', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(1, 3);
+            setTimeout(() => {
+                helper.edit('F8', 'Test');
+                helper.invoke('selectRange', ['A5:CV5']);
+                setTimeout(() => {
+                    helper.triggerKeyNativeEvent(121, false, true);
+                    setTimeout(() => {
+                        expect(spreadsheet.activeSheetIndex).toEqual(0);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Hide Row and Column in Protect Sheet.', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet('Sheet1', { selectCells: true, formatRows: true, formatColumns: true, formatCells: true });
+            setTimeout(() => {
+                helper.triggerKeyNativeEvent(57, true, false);
+                setTimeout(() => {
+                    helper.triggerKeyNativeEvent(48, true, false);
+                    helper.triggerKeyNativeEvent(52, true, true);
+                    expect(spreadsheet.activeSheetIndex).toEqual(0);
+                    done();
+                });
+            });
         });
     });
 });

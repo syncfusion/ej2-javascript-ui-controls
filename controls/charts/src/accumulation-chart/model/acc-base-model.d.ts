@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, createElement, Browser, animationMode } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Border, Font, Animation, EmptyPointSettings, Connector } from '../../common/model/base';import { Rect, Size, PathOption } from '@syncfusion/ej2-svg-base';import { ChartLocation, stringToNumber, appendChildElement } from '../../common/utils/helper';import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs } from '../model/pie-interface';import { LegendShape } from '../../common/utils/enum';import { Data } from '../../common/model/data';import { seriesRender, pointRender } from '../../common/model/constants';import { getSeriesColor } from '../../common/model/theme';import { FontModel, BorderModel, AnimationModel, EmptyPointSettingsModel, ConnectorModel } from '../../common/model/base-model';import { AccumulationChart } from '../accumulation';import { getElement, firstToLowerCase } from '../../common/utils/helper';import { Units, Alignment, Regions, Position, SeriesCategories, LabelOverflow, TextWrap } from '../../common/utils/enum';import { GroupModes } from './enum';
+import { Property, ChildProperty, Complex, createElement, Browser, animationMode, extend } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Border, Font, Animation, EmptyPointSettings, Connector } from '../../common/model/base';import { Rect, Size, PathOption, measureText } from '@syncfusion/ej2-svg-base';import { ChartLocation, stringToNumber, appendChildElement, subtractRect } from '../../common/utils/helper';import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs } from '../model/pie-interface';import { LegendShape, SelectionPattern } from '../../common/utils/enum';import { Data } from '../../common/model/data';import { seriesRender, pointRender } from '../../common/model/constants';import { getSeriesColor } from '../../common/model/theme';import { FontModel, BorderModel, AnimationModel, ConnectorModel, EmptyPointSettingsModel } from '../../common/model/base-model';import { AccumulationChart } from '../accumulation';import { getElement, firstToLowerCase } from '../../common/utils/helper';import { Units, Alignment, Regions, Position, SeriesCategories, LabelOverflow, TextWrap } from '../../common/utils/enum';import { GroupModes } from './enum';import { BaseSelection } from '../../common/user-interaction/selection';import { LegendOptions } from '../../common/legend/legend';
 
 /**
  * Interface for a class AccumulationAnnotationSettings
@@ -6,32 +6,33 @@ import { Property, ChildProperty, Complex, createElement, Browser, animationMode
 export interface AccumulationAnnotationSettingsModel {
 
     /**
-     * Content of the annotation, which accepts the id of the custom element.
+     * The content of the annotation, which can also accept the ID of a custom element.
      *
      * @default null
      */
     content?: string;
 
     /**
-     * If set coordinateUnit as `Pixel` X specifies the axis value.
-     * Else is specifies pixel or percentage of coordinate.
+     * If `coordinateUnit` is set to `Pixel`, x specifies the pixel value.
+     * If `coordinateUnit` is set to `Point`, x specifies the data value.
      *
      * @default '0'
      */
     x?: string | Date | number;
 
     /**
-     * If set coordinateUnit as `Pixel` Y specifies the axis value.
-     * Else is specifies pixel or percentage of coordinate.
+     * If `coordinateUnit` is set to `Pixel`, y specifies the pixel value.
+     * If `coordinateUnit` is set to `Point`, y specifies the data value.
      *
      * @default '0'
      */
     y?: string | number;
 
     /**
-     * Specifies the coordinate units of the annotation. They are:
-     * * Pixel - Annotation renders based on x and y pixel value.
-     * * Point - Annotation renders based on x and y axis value.
+     * Specifies the coordinate units of the annotation.
+     * The options are:
+     * * Pixel - Renders the annotation based on x and y pixel values.
+     * * Point - Renders the annotation based on x and y data values.
      *
      * @default 'Pixel'
      */
@@ -39,9 +40,10 @@ export interface AccumulationAnnotationSettingsModel {
     coordinateUnits?: Units;
 
     /**
-    * Specifies the regions of the annotation. They are:
-     * * Chart - Annotation renders based on chart coordinates.
-     * * Series - Annotation renders based on series coordinates.
+     * Specifies the regions of the annotation.
+     * The options are:
+     * * Chart - Renders the annotation based on chart coordinates.
+     * * Series - Renders the annotation based on series coordinates.
      *
      * @default 'Chart'
      */
@@ -49,10 +51,11 @@ export interface AccumulationAnnotationSettingsModel {
     region?: Regions;
 
     /**
-     * Specifies the position of the annotation. They are:
-     * * Top - Align the annotation element as top side.
-     * * Bottom - Align the annotation element as bottom side.
-     * * Middle - Align the annotation element as mid point.
+     * Specifies the position of the annotation.
+     * The options are
+     * * Top - Aligns the annotation element to the top side.
+     * * Bottom - Aligns the annotation element to the bottom side.
+     * * Middle - Aligns the annotation element to the midpoint.
      *
      * @default 'Middle'
      * @deprecated
@@ -61,10 +64,11 @@ export interface AccumulationAnnotationSettingsModel {
     verticalAlignment?: Position;
 
     /**
-     * Specifies the alignment of the annotation. They are:
-     * * Near - Align the annotation element as top side.
-     * * Far - Align the annotation element as bottom side.
-     * * Center - Align the annotation element as mid point.
+     * Specifies the alignment of the annotation.
+     * The options are:
+     * * Near - Aligns the annotation element to the top side.
+     * * Far - Aligns the annotation element to the bottom side.
+     * * Center - Aligns the annotation element to the midpoint.
      *
      * @default 'Center'
      * @deprecated
@@ -73,7 +77,7 @@ export interface AccumulationAnnotationSettingsModel {
     horizontalAlignment?: Alignment;
 
     /**
-     * Information about annotation for assistive technology.
+     * A description for the annotation that provides additional information about its content for screen readers.
      *
      * @default null
      */
@@ -87,7 +91,7 @@ export interface AccumulationAnnotationSettingsModel {
 export interface AccumulationDataLabelSettingsModel {
 
     /**
-     * If set true, data label for series gets render.
+     * If set to true, data labels for the series are render. By default, it is set to false.
      *
      * @default false
      */
@@ -95,7 +99,7 @@ export interface AccumulationDataLabelSettingsModel {
     visible?: boolean;
 
     /**
-     * If set true, data label for zero values in series gets render.
+     * If set to true, the data label for zero values in the series will be rendered.
      *
      * @default true
      */
@@ -103,7 +107,7 @@ export interface AccumulationDataLabelSettingsModel {
     showZero?: boolean;
 
     /**
-     * The DataSource field which contains the data label value.
+     * Specifies the data source field that contains the data label value.
      *
      * @default null
      */
@@ -111,7 +115,7 @@ export interface AccumulationDataLabelSettingsModel {
     name?: string;
 
     /**
-     * The background color of the data label, which accepts value in hex, rgba as a valid CSS color string.
+     * The background color of the data label accepts hex and rgba values as valid CSS color strings.
      *
      * @default 'transparent'
      */
@@ -119,9 +123,10 @@ export interface AccumulationDataLabelSettingsModel {
     fill?: string;
 
     /**
-     * Specifies the position of data label. They are:
-     * * Outside - Places label outside the point.
-     * * Inside - Places label inside the point.
+     * Specifies the position of the data label relative to the data point.
+     * The available options are:
+     * * Outside - Places the data label outside the data point, which is typically used to avoid overlap with the data point.
+     * * Inside - Places the data label inside the data point, which is useful for displaying labels within the data point.
      *
      * @default 'Inside'
      */
@@ -129,28 +134,30 @@ export interface AccumulationDataLabelSettingsModel {
     position?: AccumulationLabelPosition;
 
     /**
-     * The roundedCornerX for the data label. It requires `border` values not to be null.
+     * Specifies the X-axis rounded corner radius for the data label.
+     > Note that `border` values must not be null for this feature to work.
      *
      * @default 5
      */
     rx?: number;
 
     /**
-     * The roundedCornerY for the data label. It requires `border` values not to be null.
+     * Specifies the Y-axis rounded corner radius for the data label.
+     > Note that `border` values must not be null for this feature to work.
      *
      * @default 5
      */
     ry?: number;
 
     /**
-     * Specifies angle for data label.
+     * Specifies the rotation angle of the data label.
      *
      * @default 0
      */
     angle?: number;
 
     /**
-     * Enables rotation for data label.
+     * If set to true, the data label will be rotated according to the specified angle.
      *
      * @default false
      */
@@ -158,27 +165,26 @@ export interface AccumulationDataLabelSettingsModel {
     enableRotation?: boolean;
 
     /**
-     * Option for customizing the border lines.
+     * Configures the appearance of the border lines with options for width and color properties.
      */
 
     border?: BorderModel;
 
     /**
-     * Option for customizing the data label text.
+     * Customizes the appearance of the data label text with options for font size, color, style, weight, and family.
      */
 
     font?: FontModel;
 
     /**
-     * Options for customize the connector line in series.
-     * This property is applicable for Pie, Funnel and Pyramid series.
-     * The default connector length for Pie series is '4%'. For other series, it is null.
+     * Options to customize the connector line in the series.
+     * By default, the connector length for the Pie series is set to '4%'. For other series, it is set to `null`.
      */
     connectorStyle?: ConnectorModel;
 
     /**
-     * Custom template to format the data label content. Use ${point.x} and ${point.y} as a placeholder
-     * text to display the corresponding data point.
+     * Custom template to format the content of the data label.
+     * Use `${point.x}` and `${point.y}` as placeholders to display the corresponding data point values.
      *
      * @default null
      * @aspType string
@@ -187,15 +193,15 @@ export interface AccumulationDataLabelSettingsModel {
     template?: string | Function;
 
     /**
-     * Used to format the data label that accepts any global string format like 'C', 'n1', 'P' etc.
-     * It also accepts placeholder like '{value}°C' in which value represent the data label, e.g, 20°C.
+     * Used to format the data label, accepting global string formats like `C`, `n1`, `P`, etc.
+     * It also supports placeholders, such as `{value}°C`, where `{value}` represent the point data label (e.g., 20°C).
      *
      * @default ''
      */
     format?: string;
 
     /**
-     * Specifies the maximum width of the data label.Use this property to limit label width and apply wrap or trimming to the label.
+     * Use this property to limit the label width and apply wrapping or trimming.
      *
      * @default 'null'
      */
@@ -203,10 +209,11 @@ export interface AccumulationDataLabelSettingsModel {
     maxWidth?: number;
 
     /**
-     * Defines the text overflow behavior to employ when the data label text overflow.
-     * * Clip - Truncates data label when it overflows the bounds.
-     * * Ellipsis - Specifies an ellipsis (“...”) to the data label when it overflows the bounds.
-     * You can define maximum width of label by setting maxWidth property.
+     * Defines the text overflow behavior for the data label when the text exceeds the bounds.
+     * Available options are:
+     * * Clip - Truncates the data label when it overflows the bounds.
+     * * Ellipsis - Displays an ellipsis ("...") at the end of the data label when it overflows the bounds.
+     * Set the maximum width of the label using the `maxWidth` property.
      *
      * @default 'Ellipsis'
      */
@@ -214,11 +221,12 @@ export interface AccumulationDataLabelSettingsModel {
     textOverflow?: LabelOverflow;
 
     /**
-     * Defines the text wrap behavior to employ when the data label overflow.
-     * * Normal - Truncates data label when it overflows the bounds.
-     * * Wrap - Specifies to break a data label once it is too long to fit on a line by itself.
-     * * AnyWhere - Specifies to break a data label at any point if there are no otherwise-acceptable break points in the line.
-     * You can define maximum width of label by setting maxWidth property.
+     * Defines the text wrap behavior for the data label when it overflows the bounds.
+     * Available options are:
+     * * Normal - Truncates the data label when it overflows the bounds.
+     * * Wrap - Breaks the data label into multiple lines when it is too long to fit on a single line.
+     * * AnyWhere - Breaks the data label at any point if there are no otherwise acceptable break points.
+     * Set the maximum width of the label using the `maxWidth` property.
      *
      * @default 'Normal'
      */
@@ -233,14 +241,14 @@ export interface AccumulationDataLabelSettingsModel {
 export interface PieCenterModel {
 
     /**
-     * X value of the center.
+     * Specifies the x-coordinate of the center position for the Pie series in the chart.
      *
      * @default '50%'
      */
     x?: string;
 
     /**
-     * Y value of the center.
+     * Specifies the y-coordinate of the center position for the Pie series in the chart.
      *
      * @default '50%'
      */
@@ -261,21 +269,21 @@ export interface AccPointsModel {
 export interface AccumulationSeriesModel {
 
     /**
-     * Specifies the dataSource for the series. It can be an array of JSON objects or an instance of DataManager.
+     * Specifies the data source for the series. It can be an array of JSON objects, or an instance of DataManager.
      * ```html
      * <div id='Pie'></div>
      * ```
      * ```typescript
      * let dataManager: DataManager = new DataManager({
-     *         url: 'http://mvc.syncfusion.com/Services/Northwnd.svc/Tasks/'
+     *    url: 'https://services.syncfusion.com/js/production/api/orders'
      * });
-     * let query: Query = new Query().take(50).where('Estimate', 'greaterThan', 0, false);
+     * let query: Query = new Query().take(5);
      * let pie: AccumulationChart = new AccumulationChart({
      * ...
      *     series: [{
      *        dataSource: dataManager,
-     *        xName: 'Id',
-     *        yName: 'Estimate',
+     *        xName: 'CustomerID',
+     *        yName: 'Freight',
      *        query: query
      *    }],
      * ...
@@ -289,14 +297,14 @@ export interface AccumulationSeriesModel {
     dataSource?: Object | DataManager;
 
     /**
-     * Specifies Query to select data from dataSource. This property is applicable only when the dataSource is `ej.DataManager`.
+     * Specifies a query to select data from the data source. This property is applicable only when the data source is an `ej.DataManager`.
      *
      * @default null
      */
     query?: Query;
 
     /**
-     * The DataSource field which contains the x value.
+     * The data source field that contains the x value.
      *
      * @default ''
      */
@@ -304,7 +312,7 @@ export interface AccumulationSeriesModel {
     xName?: string;
 
     /**
-     * Specifies the series name.
+     * The `name` property allows for setting a name for the series.
      *
      * @default ''
      */
@@ -312,14 +320,14 @@ export interface AccumulationSeriesModel {
     name?: string;
 
     /**
-     * The provided value will be considered as a Tooltip Mapping name.
+     * The data source field that contains the value to be displayed in the tooltip.
      *
      * @default ''
      */
     tooltipMappingName?: string;
 
     /**
-     * The DataSource field which contains the y value.
+     * The data source field that contains the y value.
      *
      * @default ''
      */
@@ -327,7 +335,7 @@ export interface AccumulationSeriesModel {
     yName?: string;
 
     /**
-     * Specifies the series visibility.
+     * If set to true, the series will be visible. If set to false, the series will be hidden.
      *
      * @default true
      */
@@ -341,24 +349,30 @@ export interface AccumulationSeriesModel {
     border?: BorderModel;
 
     /**
-     * Options for customizing the animation for series.
+     * Options for customizing the animation of the series.
+     * By default, animation is enabled with a duration of 1000 milliseconds (about 1 second). It can be disabled by setting enable to `false`.
+     * The following properties are supported in animation:
+     * * enable: If set to true, the series is animated on initial loading.
+     * * duration: The duration of the animation in milliseconds.
+     * * delay: The delay before the animation starts, in milliseconds.
      */
 
     animation?: AnimationModel;
 
     /**
-     * The shape of the legend. Each series has its own legend shape. They are:
-     * * Circle - Renders a circle.
-     * * Rectangle - Renders a rectangle.
-     * * Triangle - Renders a triangle.
-     * * Diamond - Renders a diamond.
-     * * Cross - Renders a cross.
-     * * HorizontalLine - Renders a horizontalLine.
-     * * VerticalLine - Renders a verticalLine.
-     * * Pentagon - Renders a pentagon.
-     * * InvertedTriangle - Renders a invertedTriangle.
-     * * SeriesType -Render a legend shape based on series type.
-     * * Image -Render a image.   *
+     * Specifies the shape of the legend icon for each data point.
+     * Available shapes for legend:
+     * * Circle - Renders a circular icon.
+     * * Rectangle - Renders a rectangular icon.
+     * * Triangle - Renders a triangular icon.
+     * * Diamond - Renders a diamond-shaped icon.
+     * * Cross - Renders a cross-shaped icon.
+     * * HorizontalLine - Renders a horizontal line icon.
+     * * VerticalLine - Renders a vertical line icon.
+     * * Pentagon - Renders a pentagon-shaped icon.
+     * * InvertedTriangle - Renders an inverted triangle-shaped icon.
+     * * SeriesType - Uses the default icon shape based on the series type.
+     * * Image - Renders a custom image for the legend icon.
      *
      * @default 'SeriesType'
      */
@@ -366,7 +380,8 @@ export interface AccumulationSeriesModel {
     legendShape?: LegendShape;
 
     /**
-     * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     * The URL for the image to be displayed as a legend icon.
+     > Note that `legendShape` must be set to `Image`.
      *
      * @default ''
      */
@@ -374,8 +389,8 @@ export interface AccumulationSeriesModel {
     legendImageUrl?: string;
 
     /**
-     * The DataSource field that contains the color value of point
-     * It is applicable for series
+     * The data source field that contains the color value of a point.
+     * It is applicable for series.
      *
      * @default ''
      */
@@ -383,103 +398,110 @@ export interface AccumulationSeriesModel {
     pointColorMapping?: string;
 
     /**
-     * Custom style for the selected series or points.
+     * When set to true, a different pattern is applied to each slice of the pie.
+     *
+     * @default false
+     */
+    applyPattern?: boolean;
+
+    /**
+     * The `selectionStyle` property is used to specify custom CSS styles for the selected series or points.
      *
      * @default null
      */
     selectionStyle?: string;
 
     /**
-     * AccumulationSeries y values less than groupTo are combined into single slice named others.
+     * The y-values of the accumulation series that are less than `groupTo` are combined into a single slice named 'others'.
      *
      * @default null
      */
     groupTo?: string;
 
     /**
-     * AccumulationSeries y values less than groupMode are combined into single slice named others.
+     * In the accumulation series, y-values less than `groupMode` are combined into a single slice named 'others'.
      *
      * @default Value
      */
     groupMode?: GroupModes;
 
     /**
-     * The data label for the series.
+     * The data label property can be used to show the data label and customize its position and styling.
      */
     dataLabel?: AccumulationDataLabelSettingsModel;
 
     /**
-     * Palette for series points.
+     * The `palettes` array defines a set of colors used for rendering the accumulation chart's points. Each color in the array is applied to each point in order.
      *
      * @default []
      */
     palettes?: string[];
 
     /**
-     * Start angle for a series.
+     * Specifies the starting angle for the series, in degrees.
      *
      * @default 0
      */
     startAngle?: number;
 
     /**
-     * End angle for a series.
+     * Specifies the ending angle for the series, in degrees.
      *
      * @default null
      */
     endAngle?: number;
 
     /**
-     * Radius of the pie series and its values in percentage.
+     * Specifies the radius of the pie series as a percentage of the chart's size.
      *
      * @default null
      */
     radius?: string;
 
     /**
-     * When the innerRadius value is greater than 0 percentage, a donut will appear in pie series. It takes values only in percentage.
+     * When the `innerRadius` value is greater than 0%, a donut shape will appear in the pie series. It accepts only percentage values.
      *
      * @default '0'
      */
     innerRadius?: string;
 
     /**
-     * Specify the type of the series in accumulation chart.
+     * Specifies the type of series in the accumulation chart.
      *
      * @default 'Pie'
      */
     type?: AccumulationType;
 
     /**
-     * To enable or disable tooltip for a series.
+     * Controls whether the tooltip for the accumulation chart series is enabled or disabled. Set to true to display tooltips on hover, or false to hide them.
      *
      * @default true
      */
     enableTooltip?: boolean;
 
     /**
-     * If set true, series points will be exploded on mouse click or touch.
+     * If set to true, series points will explode on mouse click or touch.
      *
      * @default false
      */
     explode?: boolean;
 
     /**
-     * Distance of the point from the center, which takes values in both pixels and percentage.
+     * Specifies the distance of the point from the center, which can be defined in both pixels and percentage.
      *
      * @default '30%'
      */
     explodeOffset?: string;
 
     /**
-     * If set true, all the points in the series will get exploded on load.
+     * If set to true, all the points in the series will explode on load.
      *
      * @default false
      */
     explodeAll?: boolean;
 
     /**
-     * Index of the point, to be exploded on load.
+     * Index of the point in the series to be exploded on initial load.
      *
      * @default null
      *
@@ -490,65 +512,103 @@ export interface AccumulationSeriesModel {
     explodeIndex?: number;
 
     /**
-     * Options to customize the empty points in series.
+     * Customization options for the appearance of empty points in the series, where `null` or `undefined` values are considered as empty points.
      */
     emptyPointSettings?: EmptyPointSettingsModel;
 
     /**
-     * Defines the distance between the segments of a funnel/pyramid series. The range will be from 0 to 1
+     * Defines the distance between the segments of a funnel or pyramid series.
+     * The range is from 0 to 1.
      *
      * @default 0
      */
     gapRatio?: number;
 
     /**
-     * Defines the width of the funnel/pyramid with respect to the chart area.
+     * Defines the width of the funnel or pyramid series relative to the chart area.
      *
      * @default '80%'
      */
     width?: string;
 
     /**
-     * Defines the height of the funnel/pyramid with respect to the chart area.
+     * Defines the height of the funnel or pyramid series relative to the chart area.
      *
      * @default '80%'
      */
     height?: string;
 
     /**
-     * Defines the width of the funnel neck with respect to the chart area.
+     * Defines the width of the funnel neck relative to the chart area.
      *
      * @default '20%'
      */
     neckWidth?: string;
 
     /**
-     * Defines the height of the funnel neck with respect to the chart area.
+     * Defines the height of the funnel neck relative to the chart area.
      *
      * @default '20%'
      */
     neckHeight?: string;
 
     /**
-     * Defines how the values have to be reflected, whether through height/surface of the segments.
+     * Defines how the values are represented, either through the height or surface area of the segments.
      *
      * @default 'Linear'
      */
     pyramidMode?: PyramidModes;
 
     /**
-     * The opacity of the series.
+     * Sets the opacity of the series, with a value between 0 and 1 where 0 is fully transparent and 1 is fully opaque.
      *
      * @default 1.
      */
     opacity?: number;
 
     /**
-     * Defines the pattern of dashes and gaps to the series border.
+     * Defines the pattern of dashes and gaps for the series border.
      *
      * @default '0'
      */
 
     dashArray?: string;
+
+    /**
+     * Option for customizing the border radius.
+     *
+     * @default 0
+     */
+    borderRadius?: number;
+
+    /**
+     * Updates the data source for the series.
+     *
+     * @function setData
+     * @param {Object} data – Updated data source for the series.
+     * @param {number} duration – The duration for the animation.
+     * @returns {void}
+     */
+    setData?(data: Object[], duration?: number) : void
+
+    /**
+     * Adds a data point to the data source for the series.
+     *
+     * @function addPoint
+     * @param {Object} dataPoint - The data point to be added.
+     * @param {number} duration – The duration for the animation.
+     * @returns {void}
+     */
+    addPoint?(dataPoint: Object, duration?: number) : void
+
+    /**
+     * Removes a data point from the series data source at the specified index.
+     *
+     * @function removePoint
+     * @param {number} index – The index of the data point to be removed from the series.
+     * @param {number} duration – The duration for the animation.
+     * @returns {void}
+     */
+    removePoint?(index: number, duration?: number) : void
 
 }

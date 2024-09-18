@@ -1,13 +1,13 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs, ICellRenderer, completeAction, isLockedCells } from '../index';
-import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus, isReadOnlyCells, readonlyAlert } from '../common/index';
-import { editHyperlink, openHyperlink, editAlert, removeHyperlink, isImported } from '../common/index';
+import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus, isReadOnlyCells, readonlyAlert, removeElements } from '../common/index';
+import { editHyperlink, openHyperlink, editAlert, removeHyperlink } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getCellIndexes, getRangeAddress } from '../../workbook/common/address';
 import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell, CellStyleModel } from '../../workbook/index';
 import { beforeHyperlinkClick, afterHyperlinkClick, refreshRibbonIcons, deleteHyperlink, beginAction } from '../../workbook/common/event';
-import { isCellReference, DefineNameModel, updateCell } from '../../workbook/index';
+import { isCellReference, DefineNameModel, updateCell, isImported } from '../../workbook/index';
 import { Tab, TreeView } from '@syncfusion/ej2-navigations';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
@@ -145,6 +145,7 @@ export class SpreadsheetHyperlink {
                         focus(dialogInst.dialogInstance.element.querySelectorAll('.e-webpage input')[1] as HTMLElement);
                     });
                 },
+                beforeClose: this.dialogBeforeClose.bind(this),
                 buttons: [{
                     buttonModel: {
                         content: l10n.getConstant('Insert'), isPrimary: true, disabled: true
@@ -156,6 +157,17 @@ export class SpreadsheetHyperlink {
                 }]
             });
         }
+    }
+
+    private dialogBeforeClose(): void {
+        const headerTab: Tab = this.headerTabs;
+        if (headerTab && headerTab.element) {
+            headerTab.destroy();
+            headerTab.element.remove();
+        }
+        this.headerTabs = null;
+        removeElements(this.inputElements); this.inputElements = [];
+        removeElements(this.divElements); this.divElements = [];
     }
 
     private dlgClickHandler(displayText: string): void {
@@ -639,6 +651,10 @@ export class SpreadsheetHyperlink {
         return dialog;
     }
 
+    private divElements: HTMLElement[] = [];
+    private inputElements: HTMLElement[] = [];
+    private headerTabs: Tab;
+
     private hyperlinkContent(): HTMLElement {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let idx: number = 0; let selIdx: number = 0;
@@ -709,7 +725,7 @@ export class SpreadsheetHyperlink {
         const dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-link-dialog' });
         const webContElem: HTMLElement = this.parent.createElement('div', { className: 'e-webpage' });
         const docContElem: HTMLElement = this.parent.createElement('div', { className: 'e-document' });
-        const headerTabs: Tab = new Tab({
+        this.headerTabs = new Tab({
             selectedItem: selIdx,
             items: [
                 {
@@ -722,7 +738,7 @@ export class SpreadsheetHyperlink {
                 }
             ]
         });
-        headerTabs.appendTo(dialogElem);
+        this.headerTabs.appendTo(dialogElem);
         if (isWeb) {
             dialogElem.querySelector('.e-toolbar-items').querySelector('.e-indicator').setAttribute('style', 'left: 0; right: 136px');
         } else {
@@ -735,6 +751,7 @@ export class SpreadsheetHyperlink {
         const urlH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
         urlH.innerText = l10n.getConstant('Url');
         const textInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
+        this.inputElements.push(textInput);
         if (!isEnable) {
             textInput.classList.add('e-disabled');
             textInput.setAttribute('readonly', 'true');
@@ -744,6 +761,7 @@ export class SpreadsheetHyperlink {
             textInput.setAttribute('value', this.parent.getDisplayText(cell));
         }
         const urlInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
+        this.inputElements.push(urlInput);
         textInput.setAttribute('placeholder', l10n.getConstant('EnterTheTextToDisplay'));
         urlInput.setAttribute('placeholder', l10n.getConstant('EnterTheUrl'));
         textCont.appendChild(textInput);
@@ -797,12 +815,14 @@ export class SpreadsheetHyperlink {
         const cellrefInput: HTMLElement = this.parent.createElement(
             'input', { className: 'e-input e-text e-hyp-text', attrs: { 'type': 'Text' } });
         cellrefInput.setAttribute('value', 'A1');
+        this.inputElements.push(cellrefInput);
         cellrefCont.appendChild(cellrefInput);
         cellrefCont.insertBefore(cellrefH, cellrefInput);
         const textCont1: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
         const textH1: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
         textH1.innerText = l10n.getConstant('DisplayText');
         const textInput1: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
+        this.inputElements.push(textInput1);
         if (!isEnable) {
             textInput1.classList.add('e-disabled');
             textInput1.setAttribute('readonly', 'true');
@@ -818,6 +838,13 @@ export class SpreadsheetHyperlink {
         const sheetH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
         sheetH.innerText = l10n.getConstant('Sheet');
         const refCont: HTMLElement = this.parent.createElement('div', { className: 'e-refcont' });
+        this.divElements.push(textCont); this.divElements.push(urlCont);
+        this.divElements.push(textH); this.divElements.push(urlH);
+        this.divElements.push(cellrefCont); this.divElements.push(cellrefH);
+        this.divElements.push(textCont1); this.divElements.push(textH1);
+        this.divElements.push(sheetCont); this.divElements.push(sheetH);
+        this.divElements.push(refCont); this.divElements.push(docContElem);
+        this.divElements.push(webContElem); this.divElements.push(dialogElem);
         sheetCont.appendChild(refCont);
         sheetCont.insertBefore(sheetH, refCont);
         docContElem.appendChild(cellrefCont);

@@ -277,7 +277,8 @@ export class LineRouting {
                         const target: VirtualBoundaries = this.targetGridCollection[parseInt(i.toString(), 10)];
                         if (startGridNode.gridX === target.gridX && startGridNode.gridY === target.gridY) {
                             this.getIntermediatePoints(startGridNode);
-                            isBreak = this.updateConnectorSegments(diagram, this.intermediatePoints, this.gridCollection, connector, isUpdate);
+                            isBreak = this.updateConnectorSegments(diagram, this.intermediatePoints,
+                                                                   this.gridCollection, connector, isUpdate);
                             if (!isBreak) {
                                 this.targetGridCollection.splice(this.targetGridCollection.indexOf(target), 1);
                                 startGridNode = this.startArray.pop();

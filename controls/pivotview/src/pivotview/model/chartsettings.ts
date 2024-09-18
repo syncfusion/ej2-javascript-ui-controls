@@ -1,5 +1,5 @@
 import { Property, ChildProperty, EmitType, Event, Complex, Collection } from '@syncfusion/ej2-base';
-import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel, AccumulationLabelPosition, ILegendClickEventArgs } from '@syncfusion/ej2-charts';
+import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel, AccumulationLabelPosition, ILegendClickEventArgs, titleSettings } from '@syncfusion/ej2-charts';
 import { ChartDrawType, ChartShape, DataLabelSettingsModel as PivotChartDataLabelSettingsModel, ZoomMode } from '@syncfusion/ej2-charts';
 import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes, ToolbarItems, IScrollEventArgs } from '@syncfusion/ej2-charts';
 import { EmptyPointMode, TextOverflow, Alignment, ZIndex, Anchor, SizeType, BorderType, LineType } from '@syncfusion/ej2-charts';
@@ -12,7 +12,7 @@ import { IResizeEventArgs, IPrintEventArgs, FontModel as PivotChartFontModel, Le
 import { ITextRenderEventArgs, IPointRenderEventArgs, ISeriesRenderEventArgs, ITooltipRenderEventArgs } from '@syncfusion/ej2-charts';
 import { IMouseEventArgs, IPointEventArgs, EmptyPointSettingsModel as PivotChartEmptyPointSettingsModel } from '@syncfusion/ej2-charts';
 import { LabelIntersectAction, ErrorBarCapSettingsModel as PivotChartErrorBarCapSettingsModel, ChartTheme } from '@syncfusion/ej2-charts';
-import { CornerRadiusModel as PivotChartCornerRadiusModel, AccumulationSelectionMode } from '@syncfusion/ej2-charts';
+import { CornerRadiusModel as PivotChartCornerRadiusModel, AccumulationSelectionMode, titleSettingsModel } from '@syncfusion/ej2-charts';
 import { MajorGridLinesModel as PivotChartMajorGridLinesModel, ConnectorType, PyramidModes } from '@syncfusion/ej2-charts';
 import { IAnimationCompleteEventArgs, StripLineSettingsModel as PivotChartStripLineSettingsModel } from '@syncfusion/ej2-charts';
 import { CrosshairTooltipModel as PivotChartCrosshairTooltipModel, IZoomCompleteEventArgs } from '@syncfusion/ej2-charts';
@@ -24,7 +24,7 @@ import { Segment, AxisPosition, LegendSettingsModel, ILoadedEventArgs, Selection
 import { PivotSeriesModel, PivotAxisModel, PivotTooltipSettingsModel, PivotZoomSettingsModel } from './chartsettings-model';
 import { PivotPieChartCenterModel, PivotChartDataLabelModel, PivotChartConnectorStyleModel } from './chartsettings-model';
 import { ChartSeriesType, ChartSelectionMode } from '../../common/base/enum';
-import { axisLabelFont, axisTitleFont, chartSubTitleFont, chartTitleFont, crosshairLabelFont, legendLabelFont, stripLineLabelFont, tooltipLabelFont } from '../../common/base/themes';
+import { axisLabelFont, axisTitleFont, crosshairLabelFont, legendLabelFont, stripLineLabelFont, tooltipLabelFont } from '../../common/base/themes';
 import { MultiLevelLabelClickEventArgs, MultiLevelLabelRenderEventArgs, OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';
 import { LabelPosition, MultipleAxisMode } from '../../common/base/enum';
 
@@ -3739,8 +3739,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Allow options to customize the title in the pivot chart with different properties such as fontStyle, font size, fontWeight, font color, testAlignment, fontFamily, opacity, textOverflow.
      */
-    @Complex<PivotChartFontModel>(chartTitleFont, Font)
-    public titleStyle: PivotChartFontModel;
+    @Complex<titleSettingsModel>({ border: { color: null, width: 0.5 }, background: 'transparent' }, titleSettings)
+    public titleStyle: titleSettingsModel;
 
     /**
      * Allows you to add title to the pivot chart.
@@ -3753,8 +3753,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Allow options to customize the subtitle in the pivot chart with different properties such as fontStyle, font size, fontWeight, font color, testAlignment, fontFamily, opacity, textOverflow.
      */
-    @Complex<PivotChartFontModel>(chartSubTitleFont, Font)
-    public subTitleStyle: PivotChartFontModel;
+    @Complex<titleSettingsModel>({ border: { color: null, width: 0.5 }, background: 'transparent' }, titleSettings)
+    public subTitleStyle: titleSettingsModel;
 
     /**
      * Allows you to add the subtitle to the pivot chart.

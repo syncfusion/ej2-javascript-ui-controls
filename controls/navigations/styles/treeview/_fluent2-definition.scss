@@ -10,6 +10,8 @@ $treeview-radius: 4px !default;
 $treeview-item-height: 32px !default;
 $treeview-text-height: 30px !default;
 $treeview-input-height: 32px !default;
+$treeview-input-border-color: $border-focus;
+$treeview-sibling-border-color: $primary-border-color;
 $treeview-root-ul-padding: 0 0 0 12px !default;
 $treeview-rtl-root-ul-padding: 0 12px 0 0 !default;
 $treeview-child-ul-padding: 0 0 0 20px !default;

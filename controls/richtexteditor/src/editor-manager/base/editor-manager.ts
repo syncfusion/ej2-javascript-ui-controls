@@ -57,6 +57,7 @@ export class EditorManager {
     public editableElement: Element;
     public emojiPickerObj: EmojiPickerAction;
     public tableCellSelection: TableSelection;
+    public isDestroyed: boolean;
     /**
      * Constructor for creating the component
      *
@@ -90,6 +91,7 @@ export class EditorManager {
         this.emojiPickerObj = new EmojiPickerAction(this);
         this.tableCellSelection = new TableSelection(this.editableElement as HTMLElement, this.currentDocument);
         this.wireEvents();
+        this.isDestroyed = false;
     }
     private wireEvents(): void {
         this.observer.on(EVENTS.KEY_DOWN, this.editorKeyDown, this);
@@ -331,11 +333,11 @@ export class EditorManager {
     }
 
     public destroy(): void {
+        if (this.isDestroyed) { return; }
         this.unwireEvents();
         this.observer.notify(EVENTS.INTERNAL_DESTROY);
         if (this.editableElement) { this.editableElement = null; }
         this.currentDocument = null;
-        // if (this.nodeSelection) { this.nodeSelection = null; }
         if (this.nodeCutter) { this.nodeCutter = null; }
         if (this.domNode) { this.domNode = null; }
         if (this.listObj) { this.listObj = null; }
@@ -355,6 +357,27 @@ export class EditorManager {
         if (this.formatPainterEditor) { this.formatPainterEditor = null; }
         if (this.emojiPickerObj) { this.emojiPickerObj = null; }
         if (this.tableCellSelection) { this.tableCellSelection = null; }
+        this.isDestroyed = true;
+    }
+
+    public beforeSlashMenuApplyFormat(): void {
+        const currentRange: Range = this.nodeSelection.getRange(this.currentDocument);
+        const node: Node = this.nodeSelection.getNodeCollection(currentRange)[0];
+        let startPoint: number = currentRange.startOffset;
+        while (this.nodeSelection.getRange(document).toString().indexOf('/') === -1) {
+            this.nodeSelection.setSelectionText(document, node, node, startPoint, currentRange.endOffset);
+            startPoint--;
+        }
+        const slashRange: Range = this.nodeSelection.getRange(this.currentDocument);
+        const slashNode: Node = this.nodeCutter.GetSpliceNode(slashRange, node as HTMLElement);
+        const previouNode: Node = slashNode.previousSibling;
+        if (slashNode.parentElement && slashNode.parentElement.innerHTML.length === 1) {
+            slashNode.parentElement.appendChild(document.createElement('br'));
+        }
+        slashNode.parentNode.removeChild(slashNode);
+        if (previouNode) {
+            this.nodeSelection.setCursorPoint(document, previouNode as Element, previouNode.textContent.length);
+        }
     }
 }
 

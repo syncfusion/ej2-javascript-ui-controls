@@ -762,8 +762,10 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         const params: Object = this.rules[`${name}`][`${rule}`];
         const param: Object = (params instanceof Array && typeof params[1] === 'string') ? params[0] : params;
         const currentRule: { [key: string]: Object } = <IKeyValue>this.rules[`${name}`][`${rule}`];
-        const dateFormat: string = ((rule === 'min' || rule === 'max') && this.rules["" + name].date && typeof (this.rules["" + name].date) === 'string') ? this.rules["" + name].date as string : null;
-        const args: ValidArgs = { value: this.inputElement.value, param: param, element: this.inputElement, formElement: this.element, format: dateFormat };
+        const dateFormat: string = ((rule === 'min' || rule === 'max') && this.rules['' + name].date &&
+            typeof (this.rules['' + name].date) === 'string') ? this.rules['' + name].date as string : null;
+        const args: ValidArgs =
+            { value: this.inputElement.value, param: param, element: this.inputElement, formElement: this.element, format: dateFormat };
         this.trigger('validationBegin', args);
         if (!args.param && rule === 'required') {
             return true;
@@ -1026,7 +1028,7 @@ export interface ValidArgs {
     /**
      * Returns the current form element.
      */
-    formElement?: HTMLFormElement
+    formElement?: HTMLFormElement,
     /**
      * Returns the date format mapped for the input.
      */

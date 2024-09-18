@@ -40,10 +40,7 @@ export function measureText(text: string, font: FontModel): Size {
  * @private
  */
 export function toPixel(value: string, maxDimension: number): number {
-    if (value !== null && value !== undefined) {
-        return value.indexOf('%') !== -1 ? (maxDimension / 100) * parseInt(value, 10) : parseInt(value, 10);
-    }
-    return null;
+    return value.indexOf('%') !== -1 ? (maxDimension / 100) * parseInt(value, 10) : parseInt(value, 10);
 }
 
 /**

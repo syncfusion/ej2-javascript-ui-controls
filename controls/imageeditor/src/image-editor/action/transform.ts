@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
 import { Browser, extend, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ActivePoint, Dimension, NumericTextBox } from '@syncfusion/ej2-inputs';
-import { CurrentObject, Direction, FlipEventArgs, ImageEditor, PanEventArgs, Point, ResizeEventArgs, ShapeType } from '../index';
+import { EditCompleteEventArgs , CurrentObject, Direction, FlipEventArgs, ImageEditor, PanEventArgs, Point, ResizeEventArgs, ShapeType } from '../index';
 import { ImageDimension, RotateEventArgs, SelectionPoint, StrokeSettings, ZoomEventArgs } from '../index';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar } from '@syncfusion/ej2-navigations';
@@ -202,7 +202,10 @@ export class Transform {
         const parent: ImageEditor = this.parent;
         const transitionArgs: RotateEventArgs = {cancel: false, previousDegree: parent.transform.degree,
             currentDegree: Math.abs(parent.transform.degree + degree) === 360 ? 0 : parent.transform.degree + degree };
-        if (!this.isPreventSelect) {parent.trigger('rotating', transitionArgs); }
+        if (!this.isPreventSelect) {
+            parent.trigger('rotating', transitionArgs);
+            parent.editCompleteArgs = transitionArgs;
+        }
         this.rotateEvent(transitionArgs, degree);
     }
 
@@ -335,11 +338,6 @@ export class Transform {
                 height: parent.img.destHeight};
             parent.objColl = [];
             parent.objColl.push(extend({}, parent.currSelectionPoint, {}, true) as SelectionPoint);
-            if (isNullOrUndefined(parent.objColl[0].imageRatio)) {
-                parent.activeObj = parent.objColl[0];
-                parent.notify('shape', { prop: 'updImgRatioForActObj', onPropertyChange: false});
-                parent.objColl[0] = parent.activeObj;
-            }
             parent.img = {srcLeft: 0, srcTop: 0, srcWidth: parent.baseImgCanvas.width, srcHeight: parent.baseImgCanvas.height,
                 destLeft: this.currDestPoint.startX, destTop: this.currDestPoint.startY, destWidth: this.currDestPoint.width,
                 destHeight: this.currDestPoint.height};
@@ -362,7 +360,10 @@ export class Transform {
         const parent: ImageEditor = this.parent;
         const transitionArgs: FlipEventArgs = {direction: direction, cancel: false,
             previousDirection: parent.toPascalCase(parent.transform.currFlipState || direction )};
-        if (!this.isPreventSelect) {parent.trigger('flipping', transitionArgs); }
+        if (!this.isPreventSelect) {
+            parent.trigger('flipping', transitionArgs);
+            parent.editCompleteArgs = transitionArgs;
+        }
         this.flipEvent(transitionArgs, direction);
     }
 
@@ -610,7 +611,9 @@ export class Transform {
             if (splitWords !== undefined && splitWords[0] === 'crop') {
                 this.tempActiveObj = extend({}, parent.activeObj, {}, true) as SelectionPoint;
                 parent.isCropTab = true;
-            } else if (parent.activeObj.shape && splitWords[0] !== 'crop') {
+            } else if (parent.activeObj.shape && splitWords[0] !== 'crop' &&
+                (parent.activeObj.activePoint.width !== 0 || parent.activeObj.activePoint.height !== 0) ||
+                (parent.activeObj.shape === 'path' && parent.activeObj.pointColl.length > 0)) {
                 this.isShape = true;
             }
             const obj: Object = {zoomType: null };
@@ -629,16 +632,25 @@ export class Transform {
             const previousZoomFactor: number = parent.zoomSettings.zoomFactor - (zoomFactor * 10);
             const zoomEventArgs: ZoomEventArgs = {zoomPoint: zoomPoint, cancel: false, previousZoomFactor: previousZoomFactor,
                 currentZoomFactor: parent.zoomSettings.zoomFactor, zoomTrigger: obj['zoomType']};
-            if (!parent.isCropToolbar && parent.isZoomBtnClick) {parent.trigger('zooming', zoomEventArgs); }
+            if (!parent.isCropToolbar && parent.isZoomBtnClick) {
+                parent.trigger('zooming', zoomEventArgs);
+                parent.editCompleteArgs = zoomEventArgs;
+            }
             this.zoomEvent(zoomEventArgs, zoomFactor, isPreventApply);
         }
     }
 
     private zoomEvent(zoomEventArgs: ZoomEventArgs, zoomFact: number, isPreventApply?: boolean): void {
         const parent: ImageEditor = this.parent;
+        let shapeId: string;
         const { zoomFactor, minZoomFactor } = parent.zoomSettings;
         if (zoomEventArgs.cancel) { parent.isZoomBtnClick = false; return; }
-        parent.notify('toolbar', { prop: 'close-contextual-toolbar', onPropertyChange: false});
+        if (this.parent.activeObj.redactType !== 'blur' && this.parent.activeObj.redactType !== 'pixelate') {
+            parent.notify('toolbar', { prop: 'close-contextual-toolbar', onPropertyChange: false});
+        }
+        if (!parent.isCropTab && parent.activeObj.shape) {
+            shapeId = parent.activeObj.currIndex;
+        }
         parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,
             value: {x: null, y: null, isMouseDown: true}});
         parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
@@ -743,15 +755,19 @@ export class Transform {
             parent.activeObj = extend({}, this.tempActiveObj, {}, true) as SelectionPoint;
         }
         if (parent.activeObj.shape === 'crop-custom') {parent.currObjType.isCustomCrop = true; }
-        const panBtn: HTMLElement = parent.element.querySelector('.e-img-pan .e-btn');
-        if (panBtn && parent.togglePan) {
-            panBtn.classList.add('e-selected-btn');
-        } else if (panBtn) {
-            panBtn.classList.remove('e-selected-btn');
-        }
         if (this.isShape) {
-            parent.activeObj = extend({}, parent.objColl[parent.objColl.length - 1], {}, true) as SelectionPoint;
-            parent.objColl.pop();
+            if (shapeId) {
+                for (let i: number = 0, len: number = parent.objColl.length; i < len; i++) {
+                    if (parent.objColl[i as number].currIndex === shapeId) {
+                        parent.activeObj = extend({}, parent.objColl[i as number], {}, true) as SelectionPoint;
+                        parent.objColl.splice(i, 1);
+                        break;
+                    }
+                }
+            } else {
+                parent.activeObj = extend({}, parent.objColl[parent.objColl.length - 1], {}, true) as SelectionPoint;
+                parent.objColl.pop();
+            }
             parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate', obj: parent.activeObj, isCropRatio: null,
                 points: null, isPreventDrag: true, saveContext: null, isPreventSelection: null} });
             parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
@@ -770,15 +786,22 @@ export class Transform {
             parent.activeObj = activeObj;
             if (activeObj.activePoint.width > 0 || activeObj.activePoint.height > 0 ||
                 (activeObj.pointColl && activeObj.pointColl.length > 0)) {
+                if (activeObj.shape === 'redact') {
+                    parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: { isPenEdit: null } });
+                }
                 const zOrderElem: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_zOrderBtn');
                 const dupElem: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_duplicate');
                 const removeElem: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_remove');
                 const editTextElem: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_editText');
-                if (zOrderElem) {zOrderElem.classList.remove('e-disabled'); }
-                if (dupElem) {dupElem.classList.remove('e-disabled'); }
-                if (removeElem) {removeElem.classList.remove('e-disabled'); }
-                if (editTextElem) {editTextElem.classList.remove('e-disabled'); }
+                if (zOrderElem) {zOrderElem.classList.remove('e-overlay'); }
+                if (dupElem) {dupElem.classList.remove('e-overlay'); }
+                if (removeElem) {removeElem.classList.remove('e-overlay'); }
+                if (editTextElem) {editTextElem.classList.remove('e-overlay'); }
             }
+        } else if (parent.activeObj.shape && parent.activeObj.shape === 'redact') {
+            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: { type: 'redact',
+                isApplyBtn: false, isCropping: false } });
+            parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: { isPenEdit: null } });
         }
     }
 
@@ -942,21 +965,13 @@ export class Transform {
         const parent: ImageEditor = this.parent;
         let destLeft: number = parent.img.destLeft; let destTop: number = parent.img.destTop;
         let maxDimension: Dimension = {width: 0, height: 0};
-        if (parent.img.srcLeft === 0 || parent.img.srcTop === 0) {
-            if (isNullOrUndefined(selectionObj)) {
-                maxDimension = this.setZoomDimension(value, null);
-            } else {
-                maxDimension = this.setZoomDimension(value, selectionObj);
-            }
+        if (parent.transform.degree % 90 === 0 && parent.transform.degree % 180 !== 0) {
+            maxDimension = this.calcMaxDimension(parent.img.srcHeight, parent.img.srcWidth);
         } else {
-            if (parent.transform.degree % 90 === 0 && parent.transform.degree % 180 !== 0) {
-                maxDimension = this.calcMaxDimension(parent.img.srcHeight, parent.img.srcWidth);
-            } else {
-                maxDimension = this.calcMaxDimension(parent.img.srcWidth, parent.img.srcHeight);
-            }
-            maxDimension.width += (maxDimension.width * parent.transform.zoomFactor);
-            maxDimension.height += (maxDimension.height * parent.transform.zoomFactor);
+            maxDimension = this.calcMaxDimension(parent.img.srcWidth, parent.img.srcHeight);
         }
+        maxDimension.width += (maxDimension.width * parent.transform.zoomFactor);
+        maxDimension.height += (maxDimension.height * parent.transform.zoomFactor);
         parent.img.destLeft = destLeft - ((maxDimension.width - parent.img.destWidth) / 2);
         parent.img.destTop = destTop - ((maxDimension.height - parent.img.destHeight) / 2);
         destLeft = parent.img.destLeft; destTop = parent.img.destTop;
@@ -1167,9 +1182,6 @@ export class Transform {
 
     private performTransformation(text: string): void {
         const parent: ImageEditor = this.parent;
-        const tempZoomFactor: number = parent.transform.defaultZoomFactor;
-        const isUndoRedo: boolean = parent.isUndoRedo;
-        const prevCropObj: CurrentObject = extend({}, parent.cropObj, {}, true) as CurrentObject;
         this.resetZoom();
         this.updateTransform(text);
         for (let i: number = 0, len: number = parent.objColl.length; i < len; i++) {
@@ -1182,20 +1194,6 @@ export class Transform {
                     parent.objColl[i as number].shapeFlip = '';
                 }
             }
-        }
-        if (tempZoomFactor !== 0) {
-            parent.isUndoRedo = true;
-            this.zoomAction(tempZoomFactor);
-            parent.isUndoRedo = isUndoRedo;
-            let state: string = '';
-            if (text === 'rotateleft' || text === 'rotateright') {state = 'rotate'; }
-            else if (text === 'horizontalflip' || text === 'verticalflip') {state = 'flip'; }
-            parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
-                value: {operation: state, previousObj: this.transCurrObj, previousObjColl: this.transCurrObj.objColl,
-                    previousPointColl: this.transCurrObj.pointColl, previousSelPointColl: this.transCurrObj.selPointColl,
-                    previousCropObj: prevCropObj, previousText: null,
-                    currentText: null, previousFilter: null, isCircleCrop: null}});
-            this.transCurrObj = null;
         }
     }
 
@@ -1352,6 +1350,9 @@ export class Transform {
                         value: {x: zoomPoint.x, y: zoomPoint.y, type: type, isResize: null }});
                 }
             }
+            const actionArgs: EditCompleteEventArgs  = { action: value > 0 ? 'zoom-in' : 'zoom-out',
+                actionEventArgs: parent.editCompleteArgs };
+            parent.triggerEditCompleteEvent(actionArgs);
         }
     }
 
@@ -1393,7 +1394,7 @@ export class Transform {
     }
 
     private update(): void {
-        const parent: ImageEditor = this.parent; let toolbarHeight: number = 0; const isFrameToolbar: boolean = false;
+        const parent: ImageEditor = this.parent; let toolbarHeight: number = 0;
         let isActiveObj: boolean = false;  const freehandObj: Object = {bool: false };
         const straightenObj: Object = {bool: parent.isStraightening }; let cxtTbarHeight: number = 0;
         const ctToolbar: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_contextualToolbar');
@@ -1438,7 +1439,7 @@ export class Transform {
         if (canvasWrapper) {
             canvasWrapper.style.width = parent.element.offsetWidth - 2 + 'px';
         }
-        parent.lowerCanvas.width = parent.upperCanvas.width = parent.element.offsetWidth - 2;
+        parent.lowerCanvas.width = parent.upperCanvas.width = parent.maskCanvas.width = parent.element.offsetWidth - 2;
         if (parent.toolbarTemplate) {
             toolbarHeight = parent.element.querySelector('#' + parent.element.id + '_toolbarArea').clientHeight;
         } else if (parent.element.querySelector('#' + parent.element.id + '_toolbar')) {
@@ -1493,8 +1494,10 @@ export class Transform {
                 }
 
             }
-            parent.lowerCanvas.width = parent.upperCanvas.width = parseFloat(canvasWrapper.style.width);
-            parent.lowerCanvas.height = parent.upperCanvas.height = parseFloat(canvasWrapper.style.height);
+            parent.lowerCanvas.width = parent.upperCanvas.width = parent.maskCanvas.width =
+                parseFloat(canvasWrapper.style.width);
+            parent.lowerCanvas.height = parent.upperCanvas.height = parent.maskCanvas.height =
+                parseFloat(canvasWrapper.style.height);
             this.lowerContext.filter = tempFilter;
             const obj: Object = {width: 0, height: 0 };
             this.calcMaxDimension(parent.img.srcWidth, parent.img.srcHeight, obj);
@@ -1538,7 +1541,7 @@ export class Transform {
             if (obj1['defToolbarItems'] && obj1['defToolbarItems'].length > 0 && document.getElementById(parent.element.id + '_toolbar')) {
                 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 const toolbar: any = getComponent(parent.element.id + '_toolbar', 'toolbar') as Toolbar;
-                toolbar.refreshOverflow();
+                if (toolbar) {toolbar.refreshOverflow(); }
                 if (ctWrapper && !straightenObj['bool']) {
                     ctWrapper.classList.add('e-hide');
                 }
@@ -1572,9 +1575,7 @@ export class Transform {
             if (freehandObj['bool']) {
                 parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: true} });
             }
-            if (isFrameToolbar) {
-                parent.notify('toolbar', { prop: 'callFrameToolbar', onPropertyChange: false});
-            } else if (parent.isResize) {
+            if (parent.isResize) {
                 parent.aspectWidth = Math.ceil(parent.img.destWidth); parent.aspectHeight = Math.ceil(parent.img.destHeight);
                 parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
                     isApplyBtn: false, isCropping: false }});
@@ -1907,6 +1908,7 @@ export class Transform {
                 (isAspectRatio ? Math.ceil(parseFloat(aspectHeight)) : Math.ceil(parent.img.destHeight)),
             isAspectRatio: isAspectRatio ? isAspectRatio : false };
         parent.trigger('resizing', resizeEventArgs);
+        parent.editCompleteArgs = resizeEventArgs;
         if (!resizeEventArgs.cancel) {
             this.resizeEventHandler(resizeEventArgs);
         } else if (parent.aspectHeight && parent.aspectWidth) {
@@ -1918,8 +1920,6 @@ export class Transform {
         const parent: ImageEditor = this.parent; let isRotate: boolean;
         const aspectRatioWidth: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
         const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
-        const heightElem: HTMLInputElement = parent.element.querySelector('.e-ie-toolbar-e-resize-height-input .e-textbox');
-        const widthElem: HTMLInputElement = parent.element.querySelector('.e-ie-toolbar-e-resize-width-input .e-textbox');
         if (args.isAspectRatio) {
             if (this.resizedImgAngle == null || this.resizedImgAngle !== parent.transform.degree) {
                 this.resizedImgAngle = parent.transform.degree;
@@ -1946,20 +1946,6 @@ export class Transform {
                         const width: number = value % 1 >= 0.5 || value % 1 <= -0.5 ? Math.round(value) : (value < 0) ? Math.ceil(value) : Math.floor(value);
                         (getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).value = width;
                         (aspectRatioWidth as HTMLInputElement).value = width.toString() + ' px';
-                        parent.aspectWidth = width;
-                    }
-                } else if (heightElem) {
-                    let value: number = aspectRatioWidthValue / (originalWidth / originalHeight);
-                    // eslint-disable-next-line max-len
-                    const height: number = value % 1 >= 0.5 || value % 1 <= -0.5 ? Math.round(value) : (value < 0) ? Math.ceil(value) : Math.floor(value);
-                    heightElem.value = height.toString();
-                    parent.aspectHeight = height;
-                    if (widthElem && widthElem.value === '') {
-                        const aspectRatioHeightValue: number = parseFloat(heightElem.value === '' ? heightElem.placeholder : heightElem.value);
-                        value = aspectRatioHeightValue / (originalHeight / originalWidth);
-                        // eslint-disable-next-line max-len
-                        const width: number = value % 1 >= 0.5 || value % 1 <= -0.5 ? Math.round(value) : (value < 0) ? Math.ceil(value) : Math.floor(value);
-                        widthElem.value = width.toString();
                         parent.aspectWidth = width;
                     }
                 }

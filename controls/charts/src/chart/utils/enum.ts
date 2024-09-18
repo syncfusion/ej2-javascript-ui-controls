@@ -44,29 +44,29 @@ export type Segment =
  * Defines the unit of strip line size. They are:
  * * Auto - In numeric axis, it will consider a number and DateTime axis, it will consider as milliseconds.
  * * Pixel - The stripline gets their size in pixel.
- * * Year - The stipline size is based on year in the DateTime axis.
- * * Month - The stipline size is based on month in the DateTime axis.
- * * Day - The stipline size is based on day in the DateTime axis.
- * * Hour - The stipline size is based on hour in the DateTime axis.
- * * Minutes - The stipline size is based on minutes in the DateTime axis.
- * * Seconds - The stipline size is based on seconds in the DateTime axis.
+ * * Year - The stripline size is based on year in the DateTime axis.
+ * * Month - The stripline size is based on month in the DateTime axis.
+ * * Day - The stripline size is based on day in the DateTime axis.
+ * * Hour - The stripline size is based on hour in the DateTime axis.
+ * * Minutes - The stripline size is based on minutes in the DateTime axis.
+ * * Seconds - The stripline size is based on seconds in the DateTime axis.
  */
 export type SizeType =
     /**  Auto - In numeric axis, it will consider a number and DateTime axis, it will consider as milliseconds. */
     'Auto' |
     /**  Pixel - The stripline gets their size in pixel */
     'Pixel' |
-    /**  Years - The stipline size is based on year in the DateTime axis. */
+    /**  Years - The stripline size is based on year in the DateTime axis. */
     'Years' |
-    /**  Months - The stipline size is based on month in the DateTime axis. */
+    /**  Months - The stripline size is based on month in the DateTime axis. */
     'Months' |
-    /**  Days - The stipline size is based on day in the DateTime axis. */
+    /**  Days - The stripline size is based on day in the DateTime axis. */
     'Days' |
-    /**  Hours - The stipline size is based on hour in the DateTime axis. */
+    /**  Hours - The striplinee size is based on hour in the DateTime axis. */
     'Hours' |
-    /**  Minutes - The stipline size is based on minutes in the DateTime axis. */
+    /**  Minutes - The stripline size is based on minutes in the DateTime axis. */
     'Minutes' |
-    /**  Seconds - The stipline size is based on seconds in the DateTime axis. */
+    /**  Seconds - The stripline size is based on seconds in the DateTime axis. */
     'Seconds';
 
 /**
@@ -316,11 +316,18 @@ export type LineType =
     /** Shows the horizontal line. */
     'Horizontal';
 
+/**
+ * Defines the type of MACD indicator. The options are:
+ * * Line - Displays only the MACD line and signal line.
+ * * Histogram - Displays only the MACD histogram.
+ * * Both - Displays the MACD line, signal line, and histogram.
+ */
 export type MacdType =
+    /** Displays only the MACD line and signal line. */
     'Line' |
-
+    /** Displays only the MACD histogram. */
     'Histogram' |
-
+    /** Displays the MACD line, signal line, and histogram. */
     'Both';
 
 /**
@@ -557,7 +564,13 @@ export type BorderType =
     /** CurlyBrace */
     'CurlyBrace';
 
-
+/**
+ * Defines the mode of the legend in the chart. They are:
+ * * Series - Render legend items based on visible series.
+ * * Point - Render legend items based on points.
+ * * Range - Render legend items based on range color mapping conditions.
+ * * Gradient - Render legend items based on gradient color mapping conditions.
+ */
 export type LegendMode =
     /** Render legend items based on visible series */
     'Series' |

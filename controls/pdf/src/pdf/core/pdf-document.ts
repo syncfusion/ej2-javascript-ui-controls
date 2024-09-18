@@ -1,7 +1,7 @@
 import { _PdfStream } from './base-stream';
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { _Linearization } from './pdf-parser';
-import { _isWhiteSpace, FormatError, _decode } from './utils';
+import { _isWhiteSpace, FormatError, _decode, _emptyPdfData } from './utils';
 import { _PdfCatalog } from './pdf-catalog';
 import { _PdfDictionary, _PdfReference, _isName, _PdfName, _clearPrimitiveCaches } from './pdf-primitives';
 import { PdfDestination, PdfPage } from './pdf-page';
@@ -62,6 +62,25 @@ export class PdfDocument {
     _bookmarkHashTable: Map<PdfPage, PdfBookmarkBase[]>;
     _targetIndex: number;
     _isDuplicatePage: boolean = false;
+    /*
+     * An event triggered during the splitting process, providing access to split PDF data and split index.
+     *
+     * @returns Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * document.splitEvent = documentSplitEvent;
+     * // Split PDF document by fixed number of pages
+     * document.splitByFixedNumber(1);
+     * // Event to invoke while splitting PDF document data
+     * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
+     *   Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     * }
+     * // Destroy the document
+     * document.destroy();
+     */
+    splitEvent: Function;
     /**
      * Initializes a new instance of the `PdfDocument` class.
      *
@@ -1567,7 +1586,7 @@ export class PdfDocument {
     /**
      * Import the pages specified by the start and end index into the current document's pages collection.
      *
-     * @param {PdfDocument} document PDF document to get pages to import.
+     * @param {PdfDocument} sourceDocument PDF document to get pages to import.
      * @param {number} startIndex Start page index. The default value is 0.
      * @param {number} endIndex End page index. The default value is the index of the last page in the source document.
      * @remarks The source document must be disposed of after the destination document is saved during the import function.
@@ -1576,89 +1595,100 @@ export class PdfDocument {
      * // Load an existing PDF document
      * let destination: PdfDocument = new PdfDocument(data1);
      * // Load another existing PDF document
-     * let document: PdfDocument = new PdfDocument(data2);
+     * let sourceDocument: PdfDocument = new PdfDocument(data2);
      * // Import 5 pages from page index 2 to 6 into the destination document.
-     * destination.importPageRange(document, 2, 6);
+     * destination.importPageRange(sourceDocument, 2, 6);
      * // Save the output PDF
      * destination.save(‘Output.pdf’);
      * // Destroy the documents
      * destination.destroy();
-     * document.destroy();
+     * sourceDocument.destroy();
      * ```
      */
-    importPageRange(document: PdfDocument, startIndex: number, endIndex: number): void
+    importPageRange(sourceDocument: PdfDocument, startIndex: number, endIndex: number): void
     /**
      * Import the pages specified by start and end index into the current document's pages collection.
      *
-     * @param {PdfDocument} document PDF document to get pages to import.
+     * @param {PdfDocument} sourceDocument PDF document to get pages to import.
      * @param {number} startIndex Start page index. The default value is 0.
      * @param {number} endIndex End page index. The default value is the index of the last page in the source document.
-     * @param {number} targetIndex Target page index to import.
+     * @param {PdfPageImportOptions} options Options to customize the support of import PDF pages.
      * @remarks The source document must be disposed of after the destination document is saved during the import function.
      *
      * ```typescript
      * // Load an existing PDF document
      * let destination: PdfDocument = new PdfDocument(data1);
      * // Load another existing PDF document
-     * let document: PdfDocument = new PdfDocument(data2);
+     * let sourceDocument: PdfDocument = new PdfDocument(data2);
+     * // Options to customize the support of import PDF pages.
+     * let options: PdfPageImportOptions = new PdfPageImportOptions();
+     * // Sets the target page index to import
+     * options.targetIndex = 3;
      * // Import 5 pages from page index 2 to 6 into the destination document and insert them at index 3.
-     * destination.importPageRange(document, 2, 6, 3);
+     * destination.importPageRange(sourceDocument, 2, 6, options);
      * // Save the output PDF
      * destination.save(‘Output.pdf’);
      * // Destroy the documents
      * destination.destroy();
-     * document.destroy();
+     * sourceDocument.destroy();
      * ```
      */
-    importPageRange(document: PdfDocument, startIndex: number, endIndex: number, targetIndex: number): void
-    importPageRange(document: PdfDocument, startIndex: number, endIndex: number, targetIndex?: number): void {
-        if (startIndex > endIndex || startIndex >= document.pageCount) {
+    importPageRange(sourceDocument: PdfDocument, startIndex: number, endIndex: number, options?: PdfPageImportOptions): void
+    importPageRange(sourceDocument: PdfDocument, startIndex: number, endIndex: number, options?: PdfPageImportOptions): void {
+        if (startIndex > endIndex || startIndex >= sourceDocument.pageCount) {
             throw new Error('The start index is greater then the end index, which might indicate the error in the program.');
         }
-        if (typeof targetIndex !== 'undefined') {
-            if (targetIndex > this.pageCount) {
-                throw new Error('The target index is out of range.');
-            }
-            this._targetIndex = targetIndex;
-        }
-        this._importPages(document, startIndex, endIndex);
+        this._importPages(sourceDocument, startIndex, endIndex, options);
     }
-    _importPages(document: PdfDocument, startIndex: number, endIndex: number, options?: PdfPageImportOptions): void {
+    _importPages(sourceDocument: PdfDocument, startIndex: number, endIndex: number, options?: PdfPageImportOptions): void {
         let sourceOCProperties: _PdfDictionary;
         let correspondancePagecount: number = 0;
         let ocProperties : _PdfDictionary;
+        if (typeof options !== 'undefined' && typeof options.targetIndex === 'number') {
+            if (options.targetIndex > this.pageCount) {
+                throw new Error('The target index is out of range.');
+            }
+            this._targetIndex = options.targetIndex;
+        }
         const pageReference: Map<_PdfDictionary, PdfPage> = new Map<_PdfDictionary, PdfPage>();
         if (!this._isDuplicatePage) {
-            for (let index: number = 0; index < document.pageCount; index++) {
-                const sourcepage: PdfPage = document.getPage(index);
+            for (let index: number = 0; index < sourceDocument.pageCount; index++) {
+                const sourcepage: PdfPage = sourceDocument.getPage(index);
                 pageReference.set(sourcepage._pageDictionary, null);
             }
         }
-        const helper: _PdfMergeHelper = new _PdfMergeHelper(this._crossReference, this, pageReference, options);
+        const helper: _PdfMergeHelper = new _PdfMergeHelper(this._crossReference, this, sourceDocument, pageReference, options);
         let isLayersPresent: boolean = false;
-        if ((!this ._isDuplicatePage && document._catalog._catalogDictionary.has('OCProperties')) || (typeof options !== 'undefined' && !options.optimizeResources)) {
+        if ((!this ._isDuplicatePage && sourceDocument._catalog._catalogDictionary.has('OCProperties')) || (typeof options !== 'undefined' && !options.optimizeResources)) {
             isLayersPresent = true;
-            sourceOCProperties = document._catalog._catalogDictionary.get('OCProperties');
+            sourceOCProperties = sourceDocument._catalog._catalogDictionary.get('OCProperties');
             ocProperties = new _PdfDictionary(this._crossReference);
-            helper._writeObject(document, ocProperties, sourceOCProperties, sourceOCProperties, 'OCProperties', null, null);
+            helper._writeObject(sourceDocument, ocProperties, sourceOCProperties, sourceOCProperties, 'OCProperties', null, null);
             ocProperties._updated = true;
         }
         for (let i: number = startIndex; i <= endIndex; i++) {
-            const page: PdfPage = document.getPage(i);
-            document.form._doPostProcess(document.flatten, page);
+            const page: PdfPage = sourceDocument.getPage(i);
+            sourceDocument.form._doPostProcess(sourceDocument.flatten, page);
             if (page.annotations.count > 0) {
-                page.annotations._doPostProcess(document.flatten);
+                page.annotations._doPostProcess(sourceDocument.flatten);
+                if (sourceDocument.flatten) {
+                    if (page._pageDictionary.has('Annots')) {
+                        delete page._pageDictionary._map.Annots;
+                        page._pageDictionary._updated = true;
+                    }
+                    page.annotations._clear();
+                }
             }
-            helper._importPages(page, document, this._targetIndex, isLayersPresent, this._isDuplicatePage);
+            helper._importPages(page, this._targetIndex, isLayersPresent, this._isDuplicatePage);
             correspondancePagecount++;
-            if (typeof this._targetIndex !== 'undefined') {
+            if (typeof this._targetIndex === 'number') {
                 ++this._targetIndex;
             }
         }
         if (!this._isDuplicatePage) {
-            helper._fixDestinations(document);
+            helper._fixDestinations(sourceDocument);
         }
-        helper._exportBookmarks(document, correspondancePagecount);
+        helper._exportBookmarks(sourceDocument, correspondancePagecount);
         helper._mergeFormFieldsWithDocument();
         if ((isLayersPresent && !this._isDuplicatePage) || (typeof options !== 'undefined' && !options.optimizeResources)){
             helper._importLayers(ocProperties, true);
@@ -1673,13 +1703,13 @@ export class PdfDocument {
      *
      * ```typescript
      * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data1);
+     * let sourceDocument: PdfDocument = new PdfDocument(data1);
      * // Copy the second page and add it as third page
-     * document.importPage(1);
+     * sourceDocument.importPage(1);
      * // Save the output PDF
-     * document.save(‘Output.pdf’);
+     * sourceDocument.save(‘Output.pdf’);
      * // Destroy the documents
-     * document.destroy();
+     * sourceDocument.destroy();
      * ```
      */
     importPage(index: number): void
@@ -1691,7 +1721,7 @@ export class PdfDocument {
      *
      * ```typescript
      * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(readFromResources('PDF_Succinctly.pdf'));
+     * let sourceDocument: PdfDocument = new PdfDocument(readFromResources('PDF_Succinctly.pdf'));
      * // Options to customize the support of import PDF pages.
      * let options: PdfPageImportOptions = new PdfPageImportOptions();
      * // Sets the target page index to import
@@ -1699,12 +1729,12 @@ export class PdfDocument {
      * // Sets the rotation angle of the page to import
      * options.rotation = PdfRotationAngle.angle180;
      * // Copy the first page and add it as second page with page rotation
-     * document.importPage(0, options);
+     * sourceDocument.importPage(0, options);
      * // Save the output PDF
-     * let output = document.save();
+     * let output = sourceDocument.save();
      * write('863764-86.pdf', output);
      * // Destroy the documents
-     * document.destroy();
+     * sourceDocument.destroy();
      * ```
      */
     importPage(index: number, options: PdfPageImportOptions): void
@@ -1712,52 +1742,56 @@ export class PdfDocument {
      * Import the specified page into the current document pages collection as the last page
      *
      * @param {PdfPage} page Page to import.
-     * @param {PdfDocument} document PDF document to get pages to import.
+     * @param {PdfDocument} sourceDocument PDF document to get pages to import.
      * @remarks The source document must be disposed of after the destination document is saved during the import function.
      *
      * ```typescript
      * // Load an existing PDF document
      * let destination: PdfDocument = new PdfDocument(data1);
      * // Load another existing PDF document
-     * let document: PdfDocument = new PdfDocument(data2);
+     * let sourceDocument: PdfDocument = new PdfDocument(data2);
      * // Access first page of the source document
-     * let pageToImport: PdfPage = document.getPage(0);
+     * let pageToImport: PdfPage = sourceDocument.getPage(0);
      * // Import the page into the destination document as the last page.
-     * destination.importPage(pageToImport, document);
+     * destination.importPage(pageToImport, sourceDocument);
      * // Save the output PDF
      * destination.save(‘Output.pdf’);
      * // Destroy the documents
      * destination.destroy();
-     * document.destroy();
+     * sourceDocument.destroy();
      * ```
      */
-    importPage(page: PdfPage, document: PdfDocument): void
+    importPage(page: PdfPage, sourceDocument: PdfDocument): void
     /**
      * Create a new page with default settings and insert it into the collection at the specified page index.
      *
      * @param {PdfPage} page Page to import.
-     * @param {PdfDocument} document PDF document to get pages to import.
-     * @param {number} targetIndex Target page index to import.
+     * @param {PdfDocument} sourceDocument PDF document to get pages to import.
+     * @param {PdfPageImportOptions} options Options to customize the support of import PDF pages.
      * @remarks The source document must be disposed of after the destination document is saved during the import function.
      *
      * ```typescript
      * // Load an existing PDF document
      * let destination: PdfDocument = new PdfDocument(data1);
      * // Load another existing PDF document
-     * let document: PdfDocument = new PdfDocument(data2);
+     * let sourceDocument: PdfDocument = new PdfDocument(data2);
      * // Access first page of the source document
-     * let pageToImport: PdfPage = document.getPage(0);
+     * let pageToImport: PdfPage = sourceDocument.getPage(0);
+     * // Options to customize the support of import PDF pages.
+     * let options: PdfPageImportOptions = new PdfPageImportOptions();
+     * // Sets the target page index to import
+     * options.targetIndex = 5;
      * // Imports the page into destination document as 5th page
-     * destination.importPage(pageToImport, document, 5);
+     * destination.importPage(pageToImport, sourceDocument, options);
      * // Save the output PDF
      * destination.save(‘Output.pdf’);
      * // Destroy the documents
      * destination.destroy();
-     * document.destroy();
+     * sourceDocument.destroy();
      * ```
      */
-    importPage(page: PdfPage, document: PdfDocument, targetIndex: number): void
-    importPage(arg1?: PdfPage | number, arg2?: PdfDocument | PdfPageImportOptions, targetIndex?: number): void {
+    importPage(page: PdfPage, sourceDocument: PdfDocument, options?: PdfPageImportOptions): void
+    importPage(arg1?: PdfPage | number, arg2?: PdfDocument | PdfPageImportOptions, options?: PdfPageImportOptions): void {
         if (typeof arg1 === 'number') {
             this._isDuplicatePage = true;
             if (arg2 instanceof PdfPageImportOptions) {
@@ -1767,11 +1801,114 @@ export class PdfDocument {
             }
         } else if (arg1 instanceof PdfPage && arg2 instanceof PdfDocument) {
             const index: number = arg1._pageIndex;
-            if (typeof targetIndex !== 'undefined') {
-                this._targetIndex = targetIndex;
-            }
-            this.importPageRange(arg2, index, index);
+            this.importPageRange(arg2, index, index, options);
         }
+    }
+    /**
+     * Splitting a PDF file into individual pages.
+     *
+     * @returns {void} Nothing
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * document.splitEvent = documentSplitEvent;
+     * // Split PDF document into individual pages
+     * document.split();
+     * // Event to invoke while splitting PDF document data
+     * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
+     *   Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     * }
+     * // Destroy the document
+     * document.destroy();
+     */
+    split(): void {
+        this.splitByFixedNumber(1);
+    }
+    /**
+     * Splits the PDF document into parts, each containing a maximum number of pages specified.
+     *
+     * @param {number} fixedNumber specifies the maximum number of pages in each split PDF. The default value is 1.
+     * @returns {void} Nothing
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * document.splitEvent = documentSplitEvent;
+     * // Split PDF document by fixed number of pages
+     * document.splitByFixedNumber(1);
+     * // Event to invoke while splitting PDF document data
+     * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
+     *   Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     * }
+     * // Destroy the document
+     * document.destroy();
+     */
+    splitByFixedNumber(fixedNumber: number): void {
+        const pageCount: number = this.pageCount;
+        if (this.splitEvent && pageCount >= fixedNumber && fixedNumber > 0) {
+            let splitIndex: number = 0;
+            for (let tempValue: number = 0; tempValue < pageCount; tempValue += fixedNumber) {
+                const endIndex: number = Math.min(tempValue + fixedNumber - 1, pageCount - 1);
+                const pdfData: Uint8Array = this._importDocumentPages(tempValue, endIndex);
+                this._invokeSplitEvent(splitIndex, pdfData);
+                splitIndex++;
+            }
+        } else {
+            throw new Error('Invalid split number. Split number should be greater than zero and less than or equal to page count.');
+        }
+    }
+    /**
+     * Splits the PDF document into multiple parts based on the specified page ranges.
+     *
+     * @param {Array<number[]>} ranges The two dimensional number array specified for start and end page indexes to split PDF documents.
+     * @returns {void} Nothing
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * document.splitEvent = documentSplitEvent;
+     * // Split PDF document by page ranges specified
+     * document.splitByPageRanges([[0, 4], [5, 9]]);
+     * // Event to invoke while splitting PDF document data
+     * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
+     *   Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     * }
+     * // Destroy the document
+     * document.destroy();
+     */
+    splitByPageRanges(ranges: number[][]): void {
+        const pageCount: number = this.pageCount;
+        if (this.splitEvent) {
+            let splitIndex: number = 0;
+            for (let i: number = 0; i < ranges.length; i++) {
+                const range: number[] = ranges[Number.parseInt(i.toString(), 10)];
+                if (Array.isArray(range) && range.length < 2) {
+                    throw new Error('Invalid page range. Start and end page indexes should be specified.');
+                }
+                const start: number = range[0];
+                const end: number = range[1];
+                if (start < 0 || end < 0 || start >= pageCount || end >= pageCount || start > end) {
+                    throw new Error('Invalid page range: start (${start}) and end (${end}).');
+                }
+                const pdfData: Uint8Array = this._importDocumentPages(start, end);
+                this._invokeSplitEvent(splitIndex, pdfData);
+                splitIndex++;
+            }
+        }
+    }
+    private _importDocumentPages(startIndex: number, endIndex: number): Uint8Array {
+        const document: PdfDocument = new PdfDocument(_emptyPdfData);
+        for (let i: number = startIndex; i <= endIndex; i++) {
+            const page: PdfPage = this.getPage(i);
+            document.importPage(page, this);
+        }
+        document.removePage(0);
+        const result: Uint8Array = document.save();
+        document.destroy();
+        return result;
+    }
+    private _invokeSplitEvent(splitIndex: number, pdfData: Uint8Array): void {
+        const args: PdfDocumentSplitEventArgs = new PdfDocumentSplitEventArgs(splitIndex, pdfData);
+        this.splitEvent(this, args);
     }
 }
 /**
@@ -2574,5 +2711,90 @@ export class PdfMargins {
      */
     set bottom(value: number) {
         this._bottom = value;
+    }
+}
+/**
+ * Public class to provide data for the document split event, including the split index and PDF data.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * document.splitEvent = documentSplitEvent;
+ * // Split PDF document by fixed number of pages
+ * document.splitByFixedNumber(1);
+ * // Event to invoke while splitting PDF document data
+ * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
+ *  Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+ * }
+ * // Destroy the document
+ * document.destroy();
+ */
+export class PdfDocumentSplitEventArgs {
+    private _index: number;
+    private _pdfData: Uint8Array;
+    /*
+     * Initializes a new instance of the `PdfDocumentSplitEventArgs` class.
+     *
+     * @param {number} splitIndex The fixed number to split PDF document pages. The default value is 1.
+     * @param {Uint8Array} pdfData The byte array of the split PDF document data.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * document.splitEvent = documentSplitEvent;
+     * // Split PDF document by fixed number of pages
+     * document.splitByFixedNumber(1);
+     * // Event to invoke while splitting PDF document data
+     * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
+     *   Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     * }
+     * // Destroy the document
+     * document.destroy();
+     */
+    constructor(splitIndex: number, pdfData: Uint8Array) {
+        this._index = splitIndex;
+        this._pdfData = pdfData;
+    }
+    /*
+     * Gets the byte array of the PDF document data.
+     *
+     * @returns {Uint8Array} The byte array of the PDF document data.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * document.splitEvent = documentSplitEvent;
+     * // Split PDF document by fixed number of pages
+     * document.splitByFixedNumber(1);
+     * // Event to invoke while splitting PDF document data
+     * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
+     *  Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     * }
+     * // Destroy the document
+     * document.destroy();
+     */
+    get pdfData(): Uint8Array {
+        return this._pdfData;
+    }
+    /*
+     * Gets the split index of the PDF document.
+     *
+     * @returns {Uint8Array} The index that defines the number of event calls during the PDF document split.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * document.splitEvent = documentSplitEvent;
+     * // Split PDF document by fixed number of pages
+     * document.splitByFixedNumber(1);
+     * // Event to invoke while splitting PDF document data
+     * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
+     *  Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     * }
+     * // Destroy the document
+     * document.destroy();
+     */
+    get index(): number {
+        return this._index;
     }
 }

@@ -2420,7 +2420,31 @@ export class DocumentHelper {
         }
     };
 
-
+    private navigateToEndNote(inline: FootnoteElementBox, startPosition: TextPosition, endPosition: TextPosition): void {
+        let pageIndex: number = this.pages.length - 1;
+        let endnotes: FootNoteWidget;
+        // Loop through pages starting from the last page and move backwards
+        while (pageIndex >= 0) {
+            endnotes = this.pages[pageIndex].endnoteWidget;
+            // Break the loop if endnotes is null or undefined
+            if (isNullOrUndefined(endnotes)) {
+                break;
+            }
+            for (let i: number = 0; i < endnotes.bodyWidgets.length; i++) {
+                // check if the endNote reference isn't continued from the previous page
+                if (isNullOrUndefined(endnotes.bodyWidgets[i].previousSplitWidget)) {
+                    const endnoteText: FootnoteElementBox = (endnotes.bodyWidgets[i]).footNoteReference;
+                    if (inline.text === endnoteText.text) {
+                        startPosition.setPositionParagraph((endnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        endPosition.setPositionParagraph((endnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        this.selection.selectRange(startPosition, endPosition);
+                        break;
+                    }
+                }
+            }
+            pageIndex--;
+        }
+    }
 
     /**
      * Fired on double tap.
@@ -2490,19 +2514,7 @@ export class DocumentHelper {
                         endPosition.setPositionParagraph((footnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
                         this.selection.selectRange(startPosition, endPosition);
                     } else {
-                        const endnotes: FootNoteWidget = this.pages[this.pages.length - 1].endnoteWidget;
-                        let i: number;
-                        if (!isNullOrUndefined(endnotes)) {
-                            for (i = 0; i <= endnotes.childWidgets.length; i++) {
-                                const endnoteText: FootnoteElementBox = (endnotes.bodyWidgets[i]).footNoteReference;
-                                if (inline.text === endnoteText.text) {
-                                    break;
-                                }
-                            }
-                        }
-                        startPosition.setPositionParagraph((endnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
-                        endPosition.setPositionParagraph((endnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
-                        this.selection.selectRange(startPosition, endPosition);
+                        this.navigateToEndNote(inline, startPosition, endPosition);
                     }
                 } else {
                     if (inline instanceof TextElementBox && (this.selection.isinEndnote || this.selection.isinFootnote)) {
@@ -3344,11 +3356,14 @@ export class DocumentHelper {
             if (this.owner.commentReviewPane && this.owner.commentReviewPane.parentPaneElement) {
                 commentPane = this.getComputedWidth(this.owner.commentReviewPane.parentPaneElement);
             }
+            let xmlPaneRect: number = this.owner.xmlPaneModule && this.owner.xmlPaneModule.isXmlPaneShow ?
+                this.getComputedWidth(this.owner.xmlPaneModule.element) : undefined;
 
-            if (restrictPaneRect || optionsRect || commentPane) {
+            if (restrictPaneRect || optionsRect || commentPane || xmlPaneRect) {
                 let paneWidth: number = restrictPaneRect ? restrictPaneRect : 0;
                 paneWidth += optionsRect ? optionsRect : 0;
                 paneWidth += commentPane ? commentPane : 0;
+                paneWidth += xmlPaneRect ? xmlPaneRect : 0;
                 width = (rectWidth - paneWidth) > 0 ? (rectWidth - paneWidth) : 200;
             } else {
                 width = rectWidth > 0 ? rectWidth : 200;
@@ -3875,7 +3890,7 @@ export class DocumentHelper {
      * @private
      * @returns {void}
      */
-    public removeEmptyPages(): void {
+    public removeEmptyPages(skipEndLayout?: boolean): void {
         let scrollToLastPage: boolean = false;
         let isLayoutEndnote: boolean = false;
         let pageIndex: number = this.selection.startPage - 1;
@@ -3905,16 +3920,34 @@ export class DocumentHelper {
                         }
                         for (let k: number = 0; k < endnote.bodyWidgets.length; k++) {
                             let bodyWidget: BlockContainer = endnote.bodyWidgets[k];
-                            endnote.bodyWidgets.splice(k, 1);
-                            previousPage.endnoteWidget.bodyWidgets.push(bodyWidget);
-                            bodyWidget.containerWidget = previousPage.endnoteWidget;
-                            bodyWidget.page = previousPage;
+                            let isCombined: boolean = false;
+                            if (previousPage.endnoteWidget.bodyWidgets.length > 0) {
+                                const lastBodyWidget: BodyWidget = previousPage.endnoteWidget.bodyWidgets[previousPage.endnoteWidget.bodyWidgets.length - 1];
+                                if (bodyWidget.index === lastBodyWidget.index && bodyWidget.footNoteReference === lastBodyWidget.footNoteReference) {
+                                    lastBodyWidget.combineWidget(this.owner.viewer);
+                                    endnote.bodyWidgets.splice(k, 1);
+                                    isCombined = true;
+                                }
+                            }
+                            if (!isCombined) {
+                                endnote.bodyWidgets.splice(k, 1);
+                                bodyWidget.index = previousPage.endnoteWidget.bodyWidgets.length;
+                                previousPage.endnoteWidget.bodyWidgets.push(bodyWidget);
+                                bodyWidget.containerWidget = previousPage.endnoteWidget;
+                                bodyWidget.page = previousPage;
+                            }
                             k--;
                         }
+                        if (!isNullOrUndefined(page.endnoteWidget) && page.endnoteWidget.bodyWidgets.length === 0) {
+                            page.endnoteWidget = undefined;
+                        }
                         isLayoutEndnote = true;
+                        scrollToLastPage = false;
                     }
                 }
-                this.removePage(this.pages[j]);
+                if (!isNullOrUndefined(this.pages[j])) {
+                    this.removePage(this.pages[j]);
+                }
                 j--;
             }
             
@@ -3928,7 +3961,7 @@ export class DocumentHelper {
                 page.footerWidget.page = page;
             }
         }
-        if (isLayoutEndnote) {
+        if (isLayoutEndnote && !skipEndLayout) {
             this.layout.reLayoutEndnote();
         }
         if (scrollToLastPage) {
@@ -4465,9 +4498,10 @@ export class DocumentHelper {
         } else if (isCellResize) {
             div.style.cursor = 'col-resize';
         }
-        if (floatItemInfo.isInShapeBorder && !isInInline) {
-            div.style.cursor = 'all-scroll';
-        }
+        // currently we doesn't provide drag support for shapes, so we commented this line.
+        // if (floatItemInfo.isInShapeBorder && !isInInline) {
+        //     div.style.cursor = 'all-scroll';
+        // }
     }
     /**
      * @private
@@ -6319,16 +6353,22 @@ export class PageLayoutViewer extends LayoutViewer {
                 this.owner.spellCheckerModule.callSpellChecker(this.owner.spellCheckerModule.languageID, content, true, false, false, true).then((data: any) => {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     let jsonObject: any = JSON.parse(data);
-                    if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellCheckerModule)) {
-                        this.owner.spellCheckerModule.updateUniqueWords(jsonObject.SpellCollection);
+                    if (!isNullOrUndefined(this.owner)) {
+                        if (!isNullOrUndefined(this.owner.spellCheckerModule)) {
+                            this.owner.spellCheckerModule.updateUniqueWords(jsonObject.SpellCollection);
+                        }
+                        if (!isNullOrUndefined(page)) {
+                            page.allowNextPageRendering = true;
+                        }
+                        if (!isNullOrUndefined(this.documentHelper)) {
+                            this.documentHelper.triggerElementsOnLoading = true;
+                            this.documentHelper.triggerSpellCheck = true;
+                            this.documentHelper.triggerElementsOnLoading = true;
+                            this.renderPage(page, x, y, width, height);
+                            this.documentHelper.triggerSpellCheck = false;
+                            this.documentHelper.triggerElementsOnLoading = false;
+                        }
                     }
-                    page.allowNextPageRendering = true;
-                    this.documentHelper.triggerElementsOnLoading = true;
-                    this.documentHelper.triggerSpellCheck = true;
-                    this.documentHelper.triggerElementsOnLoading = true;
-                    this.renderPage(page, x, y, width, height);
-                    this.documentHelper.triggerSpellCheck = false;
-                    this.documentHelper.triggerElementsOnLoading = false;
                 });
             } else {
                 this.renderPage(page, x, y, width, height);
@@ -6354,7 +6394,11 @@ export class WebLayoutViewer extends LayoutViewer {
         this.owner = owner;
     }
     get documentHelper(): DocumentHelper {
+        try{
         return this.owner.documentHelper;
+        } catch{
+            return undefined;
+        }
     }
     /**
      * @private
@@ -6494,15 +6538,19 @@ export class WebLayoutViewer extends LayoutViewer {
                 this.owner.spellCheckerModule.callSpellChecker(this.owner.spellCheckerModule.languageID, contentlen, true, false, false, true).then((data: any) => {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     let jsonObj: any = JSON.parse(data);
-                    if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellCheckerModule)) {
-                        this.owner.spellCheckerModule.updateUniqueWords(jsonObj.SpellCollection);
+                    if (!isNullOrUndefined(this.owner)) {
+                        if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellCheckerModule)) {
+                            this.owner.spellCheckerModule.updateUniqueWords(jsonObj.SpellCollection);
+                        }
+                        page.allowNextPageRendering = true;
+                        if (!isNullOrUndefined(this.documentHelper)) {
+                            this.documentHelper.triggerSpellCheck = true;
+                            this.documentHelper.triggerElementsOnLoading = true;
+                            this.renderPage(page, x, y, width, height);
+                            this.documentHelper.triggerSpellCheck = false;
+                            this.documentHelper.triggerElementsOnLoading = false;
+                        }
                     }
-                    page.allowNextPageRendering = true;
-                    this.owner.documentHelper.triggerSpellCheck = true;
-                    this.owner.documentHelper.triggerElementsOnLoading = true;
-                    this.renderPage(page, x, y, width, height);
-                    this.owner.documentHelper.triggerSpellCheck = false;
-                    this.owner.documentHelper.triggerElementsOnLoading = false;
                 });
             } else {
                 this.renderPage(page, x, y, width, height);

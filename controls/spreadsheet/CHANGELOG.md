@@ -2,51 +2,6 @@
 
 ## [Unreleased]
 
-## 26.2.9 (2024-08-13)
-
-### Spreadsheet
-
-#### Bug fixes
-
-- `#I616139` - The script error that occurs while scrolling down and up in a sheet when a cell has filter icon and notes has been resolved.
-
-- `#I613155` - The notes in the spreadsheet are now scrollable when the content length is long.
-
-- `#I613687` - Issue with "text value is converted into date format when the cell text content contains the '-' character" has been resolved.
-
-## 26.2.7 (2024-07-30)
-
-### Spreadsheet
-
-#### Bug fixes
-
-- `#I577428` - The script error that occurred when attempting to open the context menu without an active cell in the spreadsheet will no longer be thrown.
-
-## 26.1.42 (2024-07-16)
-
-### Spreadsheet
-
-#### Bug fixes
-
-- `#I600955` - Issue with "hyperlink navigation action is not prevented when the `cancel` argument of the `beforeHyperlinkClick` event is set to `true`" has been resolved.
-- `#I600874` - Issue with "script error occurs when inserting rows using the `insertRow` method after inserting an image and freezing rows" has been resolved.
-
-## 26.1.41 (2024-07-09)
-
-### Spreadsheet
-
-#### Bug fixes
-
-- `#I605907` - The notes dialog box in the Spreadsheet will not appear outside the viewport when scrolling within the control.
-
-## 26.1.38 (2024-06-19)
-
-### Spreadsheet
-
-#### Bug fixes
-
-- Now, the notes can be edited using the `SHIFT` + `F2` keyboard shortcut.
-
 ## 26.1.35 (2024-06-11)
 
 ### Spreadsheet

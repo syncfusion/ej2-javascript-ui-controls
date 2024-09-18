@@ -136,7 +136,7 @@ export class TrackChangesPane {
         this.updateTrackChanges();
 
     }
-    
+
     /**
      * @private
      * @returns {void}

@@ -101,7 +101,8 @@ export class DetailsView {
             ctrlD: 'ctrl+d',
             f2: 'f2',
             ctrlA: 'ctrl+a',
-            enter: 'enter'
+            enter: 'enter',
+            back: 'backspace'
         };
     }
 
@@ -271,6 +272,10 @@ export class DetailsView {
         }
         for (let i: number = 0, len: number = columns.length; i < len; i++) {
             columns[i as number].disableHtmlEncode = !this.parent.enableHtmlSanitizer;
+        }
+        if (this.parent.enableRangeSelection) {
+            const HiddenName: ColumnModel = { field: 'name', visible: false, customAttributes: { class: 'e-drag-text' } };
+            columns.push(HiddenName);
         }
         return columns;
     }
@@ -599,7 +604,7 @@ export class DetailsView {
     private onPathChanged(args: ReadArgs): void {
         this.parent.isCut = false;
         const pathField: ColumnModel = this.parent.detailsViewSettings.columns.find((column: ColumnModel) => column.field === 'filterPath');
-        if ((this.parent.breadcrumbbarModule.searchObj.element.value.trim() === '' && this.gridObj) ||
+        if ((this.parent.breadcrumbbarModule.searchObj.element.value.trim() === '' && this.gridObj)  ||
         (!isNullOrUndefined(pathField) && !isNullOrUndefined(pathField.hideAtMedia) && pathField.hideAtMedia !== '')) {
             this.parent.searchedItems = [];
             if (!this.parent.isFiltered) {
@@ -1102,7 +1107,8 @@ export class DetailsView {
     private onpasteEnd(args: ReadArgs): void {
         if (this.parent.view === 'Details') {
             this.isPasteOperation = true;
-            if (this.parent.path === this.parent.destinationPath || this.parent.path === getDirectoryPath(this.parent, args) || this.parent.hasId) {
+            if (this.parent.path === this.parent.destinationPath ||
+                this.parent.path === getDirectoryPath(this.parent, args) || this.parent.hasId) {
                 this.onPathChanged(args);
             }
         }
@@ -1546,6 +1552,9 @@ export class DetailsView {
             lastItem = [getValue(this.parent.hasId ? 'id' : 'name', gridItems[gridLength - 1])];
             this.parent.setProperties({ selectedItems: lastItem }, true);
             this.selectRecords(lastItem);
+            break;
+        case 'back':
+            this.parent.traverseBackward();
             break;
         }
     }

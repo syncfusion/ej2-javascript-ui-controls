@@ -177,87 +177,8 @@ export function getBounds(element: DiagramElement): Rect {
     element.corners.height = bounds.height;
     return bounds;
 }
-/**
- * updateCloneProp method\
- *
- * @returns { Rect }    updateCloneProp method .\
- * @param {DiagramElement} properties - provide the template value.
- * @param {DiagramElement} obj - provide the template value.
- *
- * @private
- */
-function updateCloneProp(properties: string[], obj: Object): string[] {
-    let prop: string[] = [];
-    if (obj instanceof Node) {
-        prop = ['width', 'height', 'offsetX', 'offsetY', 'container', 'visible', 'horizontalAlignment', 'verticalAlignment',
-            'backgroundColor', 'borderColor', 'borderWidth', 'rotateAngle', 'minHeight', 'minWidth', 'maxHeight',
-            'maxWidth', 'pivot', 'margin', 'flip', 'wrapper', 'constraints', 'style', 'annotations', 'ports', 'isExpanded', 'expandIcon'];
-    } else if (obj instanceof Connector) {
-        prop = ['constraints', 'sourcePadding', 'targetPadding', 'cornerRadius', 'flip', 'type', 'targetDecorator', 'sourceDecorator',
-            'sourceID', 'shape', 'bridgeSpace', 'annotations', 'segments', 'hitPadding', 'tooltip', 'previewSize', 'dragSize', 'style',
-            'sourcePortID', 'targetID', 'targetPortID', 'visible'];
-    } else if (obj instanceof Decorator) {
-        prop = ['height', 'width', 'shape', 'style', 'pivot', 'pathData'];
-    } else if (obj instanceof Shape || obj instanceof IconShape) {
-        prop.push('shape');
-        if (obj instanceof BasicShape) {
-            prop.push('cornerRadius');
-        } else if (obj instanceof Text) {
-            prop.push('margin');
-        } else if (obj instanceof Image) {
-            prop.push('align');
-            prop.push('scale');
-        } else if (obj instanceof Native) {
-            prop.push('scale');
-        } else if (obj instanceof BpmnShape) {
-            prop.push('activity');
-            prop.push('annotations');
-        } else if (obj instanceof IconShape) {
-            prop.push('borderColor');
-            prop.push('borderWidth');
-            prop.push('cornerRadius');
-            prop.push('fill');
-        }
-    } else if (obj instanceof BpmnActivity) {
-        prop.push('subProcess');
-    } else if (obj instanceof BpmnTask) {
-        prop.push('call');
-        prop.push('compensation'); prop.push('loop');
-    } else if (obj instanceof BpmnSubProcess) {
-        prop.push('adhoc');
-        prop.push('boundary');
-        prop.push('compensation');
-        prop.push('loop');
-        prop.push('processes');
-    } else if (obj instanceof Port) {
-        prop.push('height');
-        prop.push('width');
-        prop.push('visibility');
-        prop.push('horizontalAlignment');
-        prop.push('verticalAlignment');
-        prop.push('shape');
-    } else if (obj instanceof Annotation) {
-        prop.push('constraints');
-        prop.push('height');
-        prop.push('horizontalAlignment');
-        prop.push('rotateAngle');
-        prop.push('template');
-        prop.push('verticalAlignment');
-        prop.push('visibility');
-        prop.push('width');
-        prop.push('margin');
-    } else if (obj instanceof Margin) {
-        prop.push('left'); prop.push('right'); prop.push('top'); prop.push('bottom');
-    } else if (obj instanceof TextStyle) {
-        prop = ['strokeWidth', 'strokeDashArray', 'opacity', 'gradient', 'fontSize', 'fontFamily', 'textOverflow',
-            'textDecoration', 'whiteSpace', 'textWrapping', 'textAlign', 'italic', 'bold'];
-    }
-    if (obj instanceof ShapeStyle) {
-        prop.push('strokeColor'); prop.push('color');
-    }
-    properties = properties.concat(prop);
-    return properties;
-}
+
+// Removed updateCloneProp method
 
 /**
  * cloneObject method\
@@ -292,9 +213,7 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
         }
         const internalProp: string[] = getInternalProperties(key);
         properties = properties.concat(internalProp);
-        if (cloneBlazorProp) {
-            properties = updateCloneProp(properties, obj);
-        }
+        //Removed blazor code
         for (const property of properties) {
             if (property !== 'historyManager') {
                 if (property !== 'wrapper') {

@@ -10,7 +10,9 @@ import { AccumulationLabelPosition } from '../model/enum';
 import { AccumulationBase } from './accumulation-base';
 
 /**
- * TriangularBase is used to calculate base functions for funnel/pyramid series.
+ * The `TriangularBase` module is used to calculate base functions for funnel and pyramid series.
+ *
+ * @private
  */
 export class TriangularBase extends AccumulationBase {
     /**
@@ -107,19 +109,109 @@ export class TriangularBase extends AccumulationBase {
     /**
      * Finds the path to connect the list of points.
      *
-     * @private
-     * @param {ChartLocation[]} locations - The set of points that form a pyramid/funnel segment.
-     * @returns {string} - The path to connect the points.
+     * @param {ChartLocation[]} locations - An array of ChartLocation objects representing the points to connect.
+     * @param {AccPoints} point - The current AccPoints object containing the data point information.
+     * @param {string} path - The initial path string to be modified.
+     * @param {number} firstIndex - The index of the first point in the path.
+     * @param {number} lastIndex - The index of the last point in the path.
+     * @param {AccumulationSeries} series - The series object of the Accumulation.
+     * @returns {string} - This string represent the path value of the D attribute.
+     * @Private
      */
-    protected findPath(locations: ChartLocation[]): string {
-        let path: string = 'M';
-        for (let i: number = 0; i < locations.length; i++) {
-            path += locations[i as number].x + ' ' + locations[i as number].y;
-            if (i !== locations.length - 1) {
-                path += ' L';
+    protected getPath(
+        locations: ChartLocation[],
+        point: AccPoints,
+        path: string,
+        firstIndex: number,
+        lastIndex: number,
+        series: AccumulationSeries
+    ): string {
+        const length: number = series.points.length;
+        let borderRadius: number = series.borderRadius;
+        const min: number = Math.min(point.region.width, point.region.height);
+        let funnelMinimum: number = Math.min(series.neckSize.height, series.neckSize.width);
+        if (funnelMinimum === 0) {
+            funnelMinimum = series.neckSize.height === 0 && series.neckSize.width === 0 ?
+                point.region.height : (series.neckSize.width === 0 ? series.neckSize.height : series.neckSize.width);
+        }
+        borderRadius = borderRadius > min / 2 ? min / 2 : borderRadius;
+        if (series.type === 'Funnel') {
+            borderRadius = (borderRadius > funnelMinimum / 2) ? funnelMinimum / 2 : borderRadius;
+        }
+        const angle: number = Math.atan2(locations[1].x - locations[2].x, locations[1].y - locations[2].y);
+        const temp: number = borderRadius;
+        if (series.type === 'Pyramid') {
+            borderRadius = (point.index === lastIndex && length !== 1 && firstIndex !== lastIndex) ? 0 : borderRadius;
+            path += (locations[0].x - (temp * Math.sin(-angle))) + ' ' + (locations[0].y + (-temp * Math.cos(angle))) + ' Q' + locations[0].x + ' ' + locations[0].y + ' '
+                + (locations[0].x + (borderRadius * Math.sin(-angle))) + ' ' + (locations[0].y + (-borderRadius * Math.cos(-angle)));
+            path += ' L' + (locations[1].x + (borderRadius * Math.sin(-angle))) + ' ' + (locations[1].y + (-borderRadius * Math.cos(angle)));
+            borderRadius = point.index === lastIndex ? temp : 0;
+            path += ' L' + (locations[2].x - (temp * Math.sin(-angle))) + ' ' + (locations[2].y - (-temp * Math.cos(angle))) + ' Q' + locations[2].x + ' ' + locations[2].y
+                + ' ' + (locations[2].x - borderRadius) + ' ' + locations[2].y;
+            path += ' L' + (locations[3].x + borderRadius) + ' ' + locations[3].y + ' Q' + locations[3].x + ' ' + locations[3].y + ' '
+                + (locations[3].x + (temp * Math.sin(-angle))) + ' ' + (locations[3].y - (-temp * Math.cos(angle)));
+        }
+        if (series.type === 'Funnel') {
+
+            borderRadius = (point.index === firstIndex && length !== 1 && firstIndex !== lastIndex) ? 0 : borderRadius;
+            path += locations[0].x + (-(borderRadius * Math.sin(-angle))) + ' ' + (locations[0].y + (-borderRadius * Math.cos(angle))) + ' Q' + locations[0].x
+                + ' ' + locations[0].y + ' ' + (locations[0].x + borderRadius) + ' ' + locations[0].y;
+            path += ' L' + (locations[1].x - borderRadius) + ' ' + locations[1].y + ' Q' + locations[1].x + ' '
+                + locations[1].y + ' ' + (locations[1].x - ((borderRadius * Math.sin(angle)))) + ' ' + (locations[1].y + (-borderRadius * Math.cos(angle)));
+            borderRadius = point.index === firstIndex ? temp : 0;
+            if (series.neckWidth === '0%') {
+                const middle: number = (locations[5].x + (locations[3].x - locations[5].x) / 2);
+                path += ' L' + (locations[2].x + (-borderRadius * Math.sin(-angle))) + ' ' + (locations[2].y - (-borderRadius * Math.cos(angle)))
+                    + ' Q' + middle + ' ' + locations[2].y + ' ' + (locations[5].x - (-borderRadius * Math.sin(-angle))) + ' ' + (locations[2].y - (-borderRadius * Math.cos(angle)));
+            }
+            else {
+                path = series.neckHeight !== '0%' && locations[2].y !== locations[3].y ? path += ' L' + locations[2].x + ' ' + (locations[2].y) : path;
+                const tempX: number = series.neckHeight === '0%' ? ((borderRadius * Math.sin(-angle))) : 0;
+                const tempY: number = series.neckHeight === '0%' ? (-borderRadius * Math.cos(angle)) : borderRadius;
+                path += ' L' + (locations[3].x - (tempX)) + ' ' + (locations[3].y - (tempY)) + ' Q' + locations[3].x + ' ' + locations[3].y + ' '
+                    + (locations[3].x - tempY) + ' ' + locations[3].y;
+                path += ' L' + (locations[4].x + tempY) + ' ' + locations[4].y + ' Q' + locations[4].x + ' ' + locations[4].y + ' '
+                    + (locations[4 + 1].x + tempX) + ' ' + (locations[4].y - tempY);
+                path = series.neckHeight !== '0%' && locations[4].y !== locations[5].y ? path += ' L' + locations[5].x + ' ' + (locations[5].y) : path;
             }
         }
-        return path + ' Z';
+        return path;
+    }
+
+    /**
+     * Creates a path to connect a list of points.
+     *
+     * @param {ChartLocation[]} locations - An array of ChartLocation objects representing the points to connect.
+     * @param {AccPoints} point - The current AccPoints object containing the data point information.
+     * @param {AccumulationSeries} series - The series object of the Accumulation.
+     * @returns {string} - This string represent the path value of the D attribute.
+     * @Private
+     */
+    protected findPath(locations: ChartLocation[], point?: AccPoints, series?: AccumulationSeries): string {
+        let path: string = 'M ';
+        let firstIndex: number = -1;
+        let lastIndex: number = -1;
+        for (let index: number = 0; index < series.points.length; index++) {
+            if (series.points[index as number].visible) {
+                if (firstIndex === -1) {
+                    firstIndex = index;
+                }
+                lastIndex = index;
+            }
+        }
+        if (series.borderRadius && (point.index === lastIndex || point.index === firstIndex)) {
+            path = this.getPath(locations, point, path, firstIndex, lastIndex, series);
+        }
+        else {
+            for (let i: number = 0; i < locations.length; i++) {
+                path += locations[i as number].x + ' ' + locations[i as number].y;
+                if (i !== locations.length - 1) {
+                    path += ' L ';
+                }
+            }
+        }
+        return path + ' Z ';
+
     }
 
     /**

@@ -1,4 +1,4 @@
-import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings, ResultData } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { isCollide, Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, FloatLabelType, Input } from '@syncfusion/ej2-inputs';import { attributes, setValue, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, prepend, Complex } from '@syncfusion/ej2-base';import { Search } from '../common/incremental-search';import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';import { DataManager, Query, Predicate, JsonAdaptor, DataOptions } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
+import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings, ResultData } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { isCollide, Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, FloatLabelType, Input } from '@syncfusion/ej2-inputs';import { attributes, setValue , getValue } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, prepend, Complex } from '@syncfusion/ej2-base';import { Search } from '../common/incremental-search';import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';import { DataManager, Query, Predicate, JsonAdaptor, DataOptions } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
 import {visualMode,MultiSelectChangeEventArgs,RemoveEventArgs,ISelectAllEventArgs,TaggingEventArgs,CustomValueEventArgs} from "./multi-select";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -92,7 +92,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
     enableHtmlSanitizer?: boolean;
 
     /**
-     * Defines whether to enable virtual scrolling in the component. 
+     * Defines whether to enable virtual scrolling in the component.
      *
      * @default false
      */
@@ -299,6 +299,13 @@ export interface MultiSelectModel extends DropDownBaseModel{
     allowFiltering?: boolean;
 
     /**
+     * Defines whether the popup opens in fullscreen mode on mobile devices when filtering is enabled. When set to false, the popup will display similarly on both mobile and desktop devices.
+     *
+     * @default true
+     */
+    isDeviceFullScreen?: boolean;
+
+    /**
      * By default, the multiselect component fires the change event while focus out the component.
      * If you want to fires the change event on every value selection and remove, then disable the changeOnBlur property.
      *
@@ -355,11 +362,11 @@ export interface MultiSelectModel extends DropDownBaseModel{
     value?: number[] | string[] | boolean[] | object[] | null ;
 
     /**
-    * Defines whether the object binding is allowed or not in the component.
-    *
-    * @default false
-    */
-    allowObjectBinding?: boolean; 
+     * Defines whether the object binding is allowed or not in the component.
+     *
+     * @default false
+     */
+    allowObjectBinding?: boolean;
 
     /**
      * Hides the selected item from the list item.
@@ -472,7 +479,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      *
      * @default false
      */
-    addTagOnBlur?: boolean; 
+    addTagOnBlur?: boolean;
 
     /**
      * Fires each time when selection changes happened in list items after model and input value get affected.

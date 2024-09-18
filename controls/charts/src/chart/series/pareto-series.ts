@@ -6,14 +6,15 @@ import { markerShapes } from './marker';
 import { getSeriesColor } from '../../common/model/theme';
 
 /**
- * `Pareto series` module used to render the pareto series.
+ * The `ParetoSeries` module is used to render the pareto series.
  */
 
 export class ParetoSeries extends ColumnBase {
     public paretoAxes: Axis[] = [];
     /**
      * Defines the Line initialization.
-     * 
+     *
+     * @private
      */
 
     public initSeries(targetSeries: Series, chart: Chart): void {
@@ -39,7 +40,8 @@ export class ParetoSeries extends ColumnBase {
     }
     /**
      * Defines the Axis initialization for Line.
-     * 
+     *
+     * @private
      */
 
     public initAxis(paretoSeries: Series, targetSeries: Series, chart: Chart): void {
@@ -83,6 +85,7 @@ export class ParetoSeries extends ColumnBase {
      * @param {Object} json - The JSON data to perform cumulative calculation on.
      * @param {Series} series - The series for which cumulative calculation is performed.
      * @returns {Object[]} - An array containing the result of the cumulative calculation.
+     * @private
      */
     public performCumulativeCalculation(json: Object, series: Series): Object[] {
         const data: Object[] = <Object[]>json;
@@ -103,6 +106,7 @@ export class ParetoSeries extends ColumnBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         this.animate(series);

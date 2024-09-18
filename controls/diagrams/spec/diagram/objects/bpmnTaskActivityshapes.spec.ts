@@ -117,7 +117,7 @@ describe('Diagram Control', () => {
                 (wrapper.children[2].visible === false) &&
                 (wrapper.children[3].actualSize.width === 12
                     && wrapper.children[3].actualSize.height === 8 &&
-                    wrapper.children[3].offsetX === 110 && wrapper.children[3].offsetY === 141) &&
+                    wrapper.children[3].offsetX === 108 && wrapper.children[3].offsetY === 141) &&
                 //compensation node
                 (wrapper.children[4].visible === false)
             ).toBe(true);
@@ -229,7 +229,7 @@ describe('Diagram Control', () => {
                 //compensation node
                 (wrapper.children[4].actualSize.width === 12
                     && wrapper.children[4].actualSize.height === 12 &&
-                    wrapper.children[4].offsetX === 110 && wrapper.children[4].offsetY === 339)
+                    wrapper.children[4].offsetX === 108 && wrapper.children[4].offsetY === 339)
             ).toBe(true);
             done();
         });
@@ -364,7 +364,7 @@ describe('Diagram Control', () => {
                 //fith node
                 (wrapper.children[5].actualSize.width === 12
                     && wrapper.children[5].actualSize.height === 12 &&
-                    wrapper.children[5].offsetX === 318 && wrapper.children[5].offsetY === 284)
+                    wrapper.children[5].offsetX === 316 && wrapper.children[5].offsetY === 284)
             ).toBe(true);
             done();
         });
@@ -389,7 +389,7 @@ describe('Diagram Control', () => {
                 //       fith node
                 (wrapper.children[6].actualSize.width === 12
                     && wrapper.children[6].actualSize.height === 12 &&
-                    wrapper.children[6].offsetX === 518 && wrapper.children[6].offsetY === 284)
+                    wrapper.children[6].offsetX === 516 && wrapper.children[6].offsetY === 284)
             ).toBe(true);
             done();
         });
@@ -438,6 +438,194 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
+    describe('BPMN subProcess Event size Change', function () {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(function () {
+            ele = createElement('div', { id: 'diagram1' });
+            document.body.appendChild(ele);
+            let nodea : NodeModel = {
+                id: 'nodea', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
+                constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                offsetX: 200, offsetY: 200,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: {
+                            collapsed: false, type: 'Transaction', events: [{ id: 'event', event: 'NonInterruptingStart', trigger: 'None' }],
+                        }
+                    },
+                },
+            };
+            diagram = new Diagram({
+                width: '74%', height: '600px', nodes: [nodea],
+            });
+            diagram.appendTo('#diagram1');
+        });
+        afterAll(function () {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Dynamically adding height for SubProcess event', function (done) {
+            (diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].height = 110;
+            diagram.dataBind();
+            expect((diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].height ==110).toBe(true);
+            done();
+        });
+        it('Dynamically adding width for SubProcess event', function (done) {
+            (diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].width = 50;
+            diagram.dataBind();
+            expect((diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].width ==50).toBe(true);
+            done();
+        });
+    });
+
+    describe('BPMN subProcess Event Change', function () {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(function () {
+            ele = createElement('div', { id: 'diagram1' });
+            document.body.appendChild(ele);
+            let node : NodeModel = {
+                id: 'node', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
+                constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                offsetX: 200, offsetY: 200,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: {
+                            collapsed: false, type: 'Transaction', events: [{ id: 'event', event: 'NonInterruptingStart', trigger: 'None' }],
+                        }
+                    },
+                },
+            };
+            diagram = new Diagram({
+                width: '74%', height: '600px', nodes: [node],
+            });
+            diagram.appendTo('#diagram1');
+        });
+        afterAll(function () {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('SubProcess event for Intermediate Case', function (done) {
+            (diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].event = "Intermediate";
+            diagram.dataBind();
+            expect((diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].event != undefined).toBe(true);
+            done();
+        });
+        it('SubProcess event for NonInterruptingIntermediate Case', function (done) {
+            (diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].event = "NonInterruptingIntermediate";
+            diagram.dataBind();
+            expect((diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].event != undefined).toBe(true);
+            done();
+        });
+        it('SubProcess event for Start Case', function (done) {
+            (diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].event = "Start";
+            diagram.dataBind();
+            expect((diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].event != undefined).toBe(true);
+            done();
+        });
+        it('SubProcess event for End Case', function (done) {
+            (diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].event = "End";
+            diagram.dataBind();
+            expect((diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].event != undefined).toBe(true);
+            done();
+        });
+        it('SubProcess event for ThrowingIntermediate Case', function (done) {
+            (diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].event = "ThrowingIntermediate";
+            diagram.dataBind();
+            expect((diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].event != undefined).toBe(true);
+            done();
+        });
+        
+    });
+
+    
+    describe('BPMN subProcess Event Change', function () {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(function () {
+            ele = createElement('div', { id: 'diagram1' });
+            document.body.appendChild(ele);
+            let node : NodeModel = {
+                id: 'node', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
+                constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                offsetX: 200, offsetY: 200,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: {
+                            collapsed: false, type: 'Transaction', events: [{ id: 'event', event: 'Start', trigger: 'None' }],
+                        }
+                    },
+                },
+            };
+            diagram = new Diagram({
+                width: '74%', height: '600px', nodes: [node,],
+            });
+            diagram.appendTo('#diagram1');
+        });
+        afterAll(function () {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('SubProcess event for NonInterruptingStart Case', function (done) {
+            (diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].event = "NonInterruptingStart";
+            diagram.dataBind();
+            expect((diagram.nodes[0].shape as BpmnShape).activity.subProcess.events[0].event != undefined).toBe(true);
+            done();
+        });
+        
+    });
+
+    describe('BPMN subProcess Boundary change', function () {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(function () {
+            ele = createElement('div', { id: 'diagram1' });
+            document.body.appendChild(ele);
+            let nodea : NodeModel = {
+                id: 'nodea', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
+                constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                offsetX: 200, offsetY: 200,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: { collapsed: true}
+                        }
+                    },
+            };
+            diagram = new Diagram({
+                width: '74%', height: '600px', nodes: [nodea],
+            });
+            diagram.appendTo('#diagram1');
+        });
+        afterAll(function () {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('SubProcess Boundary change for Default case', function (done) {
+            (diagram.nodes[0].shape as BpmnShape).activity.subProcess.boundary= "Default";
+            diagram.dataBind();
+            expect((diagram.nodes[0].shape as BpmnShape).activity.subProcess.boundary =="Default").toBe(true);
+            done();
+        });
+        it('SubProcess Boundary change for Event case', function (done) {
+            (diagram.nodes[0].shape as BpmnShape).activity.subProcess.boundary= "Event";
+            diagram.dataBind();
+            expect((diagram.nodes[0].shape as BpmnShape).activity.subProcess.boundary=="Event").toBe(true);
+            done();
+        });
+        it('SubProcess Boundary change for Call case', function (done) {
+            (diagram.nodes[0].shape as BpmnShape).activity.subProcess.boundary= "Call";
+            diagram.dataBind();
+            expect((diagram.nodes[0].shape as BpmnShape).activity.subProcess.boundary =="Call").toBe(true);
+            done();
+        });
+    });
+
     describe('BPMN transaction with its icon', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -568,6 +756,60 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let pathElement: HTMLElement = document.getElementById('node1_1_taskTypeService');
             expect(pathElement === null).toBe(true);
+            done();
+        });
+    });
+    describe('Diagram Control', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram_command3' });
+            document.body.appendChild(ele);
+            let selArray: (NodeModel)[] = [];
+            let nodes: NodeModel[] = [
+                {
+                  id: 'start',
+                  height: 50,
+                  width: 50,
+                  margin: { left: 50, top: 50 },
+                  shape: { type: 'Bpmn', shape: 'Event' },
+                },
+                {
+                  id: 'subProcess',
+                  width: 520,
+                  height: 250,
+                  offsetX: 355,
+                  offsetY: 230,
+                  constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                  shape: {
+                    shape: 'Activity',
+                    type: 'Bpmn',
+                    activity: {
+                      activity: 'SubProcess',
+                      subProcess: {
+                        collapsed: false,
+                        processes: ['start'],
+                      },
+                    },
+                  },
+                },
+              ];
+            diagram = new Diagram({
+                width: '900px', height: '700px', nodes: nodes,
+            });
+            diagram.appendTo('#diagram_command3');
+            selArray.push(diagram.nodes[0]);
+            diagram.select(selArray);
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Rotating selected node inside a BPMN subprocess', (done: Function) => {
+            // Select the node to be rotated
+            diagram.select([diagram.nodes[0]]);
+            diagram.rotate(diagram.selectedItems,45);
+            expect(diagram.nodes[0].rotateAngle).toBeGreaterThan(0);
             done();
         });
     });

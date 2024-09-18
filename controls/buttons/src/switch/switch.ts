@@ -180,9 +180,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         if (!this.disabled) {
             this.unWireEvents();
         }
-        if (this.getWrapper()) {
-            destroy(this, this.getWrapper() as Element, this.tagName);
-        }
+        destroy(this, this.getWrapper() as Element, this.tagName);
         if (this.refreshing) {
             ['e-control', 'e-switch', 'e-lib'].forEach((key: string) => {
                 this.element.classList.add(key);
@@ -500,16 +498,14 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     }
     private unWireEvents(): void {
         const wrapper: Element = this.getWrapper() as Element;
-        if (wrapper) {
-            EventHandler.remove(wrapper, 'click', this.clickHandler);
-            EventHandler.remove(this.element, 'focus', this.focusHandler);
-            EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-            EventHandler.remove(this.element, 'mouseup', this.delegateMouseUpHandler);
-            EventHandler.remove(this.element, 'keyup', this.delegateKeyUpHandler);
-            EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
-            EventHandler.remove(wrapper, 'mouseleave', this.mouseLeaveHandler);
-            EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
-        }
+        EventHandler.remove(wrapper, 'click', this.clickHandler);
+        EventHandler.remove(this.element, 'focus', this.focusHandler);
+        EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
+        EventHandler.remove(this.element, 'mouseup', this.delegateMouseUpHandler);
+        EventHandler.remove(this.element, 'keyup', this.delegateKeyUpHandler);
+        EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
+        EventHandler.remove(wrapper, 'mouseleave', this.mouseLeaveHandler);
+        EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }

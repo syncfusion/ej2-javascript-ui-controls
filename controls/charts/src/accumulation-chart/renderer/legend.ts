@@ -15,7 +15,7 @@ import { LegendTitlePosition } from '../../common/utils/enum';
 import { textWrap } from '../../common/utils/helper';
 import { legendClick } from '../../common/model/constants';
 /**
- * AccumulationLegend module used to render `Legend` for Accumulation chart.
+ * The `AccumulationLegend` module is used to render the `Legend` for the Accumulation chart.
  */
 export class AccumulationLegend extends BaseLegend {
     public titleRect: Rect;
@@ -61,22 +61,23 @@ export class AccumulationLegend extends BaseLegend {
      * @returns {void}
      */
     private mouseMove(e: MouseEvent): void {
-         if (this.chart.legendSettings.visible && !this.chart.isTouch) {
-             if ((<AccumulationChart>this.chart).accumulationHighlightModule && (<AccumulationChart>this.chart).highlightMode !== 'None') {
+        if (this.chart.legendSettings.visible && !this.chart.isTouch) {
+            if ((<AccumulationChart>this.chart).accumulationHighlightModule && (<AccumulationChart>this.chart).highlightMode !== 'None') {
                 if (!(<AccumulationChart>this.chart).legendSettings.toggleVisibility) { this.click(e); }
                 const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_marker_',
-                this.legendID + '_shape_', this.legendID + '_g_'];
+                    this.legendID + '_shape_', this.legendID + '_g_'];
                 const targetId: string = (<HTMLElement>e.target).id;
                 let index: number;
                 for (const id of legendItemsId) {
                     if (targetId.indexOf(id) > -1) {
                         index = parseInt(targetId.split(id)[1], 10);
-                        (<AccumulationChart>this.chart).accumulationHighlightModule.legendSelection((<AccumulationChart>this.chart), 0, index, e.target as Element, e.type);
+                        (<AccumulationChart>this.chart).accumulationHighlightModule.legendSelection((<AccumulationChart>this.chart),
+                                                                                                    0, index, e.target as Element, e.type);
                         break;
                     }
                 }
             }
-         }
+        }
     }
     /**
      * To handle mosue end for legend module.
@@ -300,6 +301,7 @@ export class AccumulationLegend extends BaseLegend {
      *
      * @param {string} legendText - The text of the legend item.
      * @returns {string} - Converts the entities to normal string.
+     * @private
      */
     public convertHtmlEntities(legendText: string): string {
         let text: string = (legendText).replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"').replace('&nbsp;', ' ').replace('&cent;', '¢').replace('&pound;', '£').replace('&yen;', '¥').replace('&euro;', '€').replace('&copy;', '©').replace('&reg;', '®');
@@ -509,6 +511,7 @@ export class AccumulationLegend extends BaseLegend {
      *
      * @param {Event} event - The click event.
      * @returns {void}
+     * @private
      */
     public click(event: Event): void {
         const targetId: string = (<HTMLElement>event.target).id.indexOf('_chart_legend_g_') > -1 ?
@@ -601,6 +604,7 @@ export class AccumulationLegend extends BaseLegend {
      * Get module name.
      *
      * @returns {string} - Return module name.
+     * @private
      */
     protected getModuleName(): string {
         return 'AccumulationLegend';

@@ -57,6 +57,8 @@ export type ProgressTheme =
     'Fluent2' |
     /** Fluent2Dark */
     'Fluent2Dark' |
+    /** Fluent2HighContrast */
+    'Fluent2HighContrast' |
     /** Material 3 */
     'Material3' |
     /** Material 3 dark */

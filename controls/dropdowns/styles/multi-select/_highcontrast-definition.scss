@@ -242,8 +242,7 @@ $ddl-closer-margin-top-bigger-small: -3.4em !default;
   }
   #{&}.e-popup {
     #{if(&, '&', '*')}.e-multi-select-list-wrapper {
-      #{if(&, '&', '*')}.e-ddl,
-      .e-bigger #{if(&, '&', '*')}.e-ddl {
+      #{if(&, '&', '*')}.e-ddl {
         #{if(&, '&', '*')}.e-checkbox .e-filter-parent .e-clear-icon {
           padding-left: 0;
         }

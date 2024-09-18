@@ -302,6 +302,7 @@ describe('Smithchart Series properties tesing', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_series0_points');
                 let color: string = element.getAttribute('stroke');
+                args.smithchart.setTabIndex(null, null);
                 expect(color).toEqual('red');
             };
             smithchart.theme = 'MaterialDark';

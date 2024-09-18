@@ -6,7 +6,9 @@ import { TechnicalIndicator } from './technical-indicator';
 import { Chart } from '../chart';
 import { BaseAttibutes, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 /**
- * `TechnicalAnalysis` is module helps to predict the market trend.
+ * The `TechnicalAnalysis` module helps predict market trends.
+ *
+ * @private
  */
 export class TechnicalAnalysis extends LineBase {
     /**
@@ -65,7 +67,7 @@ export class TechnicalAnalysis extends LineBase {
     /**
      * Creates elements for a technical indicator in the chart.
      *
-     * @public
+     * @private
      * @param {Chart} chart - The chart in which the indicator elements are to be created.
      * @param {TechnicalIndicator} indicator - The technical indicator for which elements are to be created.
      * @param {number} index - The index of the indicator.
@@ -94,8 +96,9 @@ export class TechnicalAnalysis extends LineBase {
             'transform': 'translate(' + clipRect.x + ',' + clipRect.y + ')',
             'clip-path': 'url(#' + chart.element.id + '_ChartIndicatorClipRect_' + index + ')'
         });
-
-        indicator.indicatorElement.appendChild(clipRectElement);
+        if (indicator.indicatorElement) {
+            indicator.indicatorElement.appendChild(clipRectElement);
+        }
 
         //Defines a group for each series in a technical indicator
         for (const series of indicator.targetSeries) {
@@ -104,10 +107,14 @@ export class TechnicalAnalysis extends LineBase {
                 'id': series.chart.element.id + '_Indicator_' +
                     indicator.index + '_' + series.name + '_Group'
             });
-            indicator.indicatorElement.appendChild(element);
+            if (indicator.indicatorElement) {
+                indicator.indicatorElement.appendChild(element);
+            }
             series.seriesElement = element;
         }
-        chart.indicatorElements.appendChild(indicator.indicatorElement);
+        if (chart.indicatorElements) {
+            chart.indicatorElements.appendChild(indicator.indicatorElement);
+        }
     }
 
     protected getDataPoint(

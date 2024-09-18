@@ -224,9 +224,3 @@ $upload-flat-btn-color: $secondary-text-color !default;
 $upload-btn-primary-bgcolor: $primary-bg-color !default;
 $upload-btn-primary-border-color: $primary-border-color !default;
 $upload-btn-primary-color: $primary-text-color !default;
-
-.e-upload .e-upload-actions,
-.e-bigger.e-small .e-upload .e-upload-actions {
-  background-color: $content-bg-color-alt1;
-  border-radius: 0 0 6px 6px;
-}

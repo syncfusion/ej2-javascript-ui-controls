@@ -1,0 +1,10 @@
+@include export-module('button-group-bigger') {
+  .e-bigger .e-btn-group,
+  .e-bigger.e-btn-group,
+  .e-bigger .e-css.e-btn-group,
+  .e-bigger.e-css.e-btn-group  {
+    .e-btn-icon {
+      font-size: $btn-grp-icon-font-size-bigger;
+    }
+  }
+}

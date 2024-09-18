@@ -1,15 +1,16 @@
 import { Spreadsheet } from '../base/index';
 import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, deleteNote, showNote } from '../common/index';
 import { createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, getDPRValue, createNoteIndicator } from '../common/index';
-import { removeAllChildren, isImported } from '../common/index';
+import { removeAllChildren } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
-import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol} from '../../workbook/base/index';
+import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, isImported } from '../../workbook/index';
 import { getRowHeight, setRowHeight, getCell, getColumnWidth, getSheet, setCell } from '../../workbook/base/index';
 import { addClass, attributes, extend, compile, isNullOrUndefined, detach, append } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, applyCF } from '../../workbook/common/index';
 import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes, updateView, skipHiddenIdx } from '../../workbook/index';
-import { checkIsFormula, ApplyCFArgs, NumberFormatArgs, ExtendedCellModel } from '../../workbook/common/index';
+import { checkIsFormula, ApplyCFArgs, NumberFormatArgs, ExtendedCellModel, calculateFormula } from '../../workbook/common/index';
+import { isInMultipleRange, addListValidationDropdown } from './../../workbook/common/index';
 /**
  * CellRenderer class which responsible for building cell content.
  *
@@ -26,7 +27,7 @@ export class CellRenderer implements ICellRenderer {
         this.th = this.parent.createElement('th', { className: 'e-header-cell' }) as HTMLTableCellElement;
         this.tableRow = parent.createElement('tr', { className: 'e-row' });
         this.parent.on(updateView, this.updateView, this);
-        this.parent.on('calculateFormula', this.calculateFormula, this);
+        this.parent.on(calculateFormula, this.calculateFormula, this);
     }
 
     public renderColHeader(index: number, row: Element, refChild?: Element): void {
@@ -175,10 +176,7 @@ export class CellRenderer implements ICellRenderer {
         if (args.cell) {
             this.parent.notify(getFormattedCellObject, formatArgs);
         }
-        this.parent.refreshNode(
-            args.td, { type: formatArgs.type, result: formatArgs.formattedText, curSymbol:
-                formatArgs.curSymbol, isRightAlign: formatArgs.isRightAlign, value:
-                <string>((formatArgs.value || formatArgs.value === 0) ? formatArgs.value : ''), isRowFill: formatArgs.isRowFill, rowIndex: args.rowIdx, colIndex: args.colIdx });
+        this.parent.refreshNode(args.td, formatArgs);
         let style: CellStyleModel = {};
         if (args.cell) {
             if (args.cell.style) {
@@ -215,10 +213,9 @@ export class CellRenderer implements ICellRenderer {
                 this.parent.notify(deleteNote, {rowIndex: args.rowIdx, columnIndex: args.colIdx});
             }
             if (args.cell.isNoteEditable) {
-                this.parent.notify(showNote, {
-                    rowIndex: args.rowIdx, columnIndex: args.colIdx,
-                    isNoteEditable: true, isScrollWithNote: true, cellElement: args.td
-                });
+                this.parent.notify(showNote,
+                                   {rowIndex: args.rowIdx, columnIndex: args.colIdx, isNoteEditable: true,
+                                       isScrollWithNote: true, cellElement: args.td});
             }
         }
         if (args.isRefresh && isNullOrUndefined(args.cell) && !isNullOrUndefined(args.td) && args.td.children.length > 0 && args.td.children[args.td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
@@ -254,11 +251,14 @@ export class CellRenderer implements ICellRenderer {
         }
         const validation: ValidationModel = (args.cell && args.cell.validation) || (sheet.columns && sheet.columns[args.colIdx] &&
             sheet.columns[args.colIdx].validation);
-        if (validation && validation.isHighlighted) {
-            this.parent.notify(addHighlight, { range: getRangeAddress([args.rowIdx, args.colIdx]), td: args.td });
-        }
-        if (args.cell && args.cell.validation && args.cell.validation.isHighlighted) {
-            this.parent.notify(addHighlight, { range: getRangeAddress([args.rowIdx, args.colIdx]), td: args.td });
+        if (validation && (!validation.address || isInMultipleRange(validation.address, args.rowIdx, args.colIdx))) {
+            if (validation.isHighlighted) {
+                this.parent.notify(addHighlight, { range: getRangeAddress([args.rowIdx, args.colIdx]), td: args.td });
+            }
+            if (validation.type === 'List' && !args.isRefresh && args.address === sheet.activeCell) {
+                args.validation = validation;
+                this.parent.notify(addListValidationDropdown, args);
+            }
         }
     }
     private applyStyle(args: CellRenderArgs, style: CellStyleModel): void {
@@ -310,8 +310,8 @@ export class CellRenderer implements ICellRenderer {
         args.cell.value = getCell(
             args.rowIdx, args.colIdx, isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() :
                 getSheet(this.parent, args.sheetIndex)).value;
-        if (args.cell.formula) {
-            args.cell.formula = args.cell.formula.indexOf('^+') > -1 || args.cell.formula.indexOf('&+') > -1 ? eventArgs.value as string : args.cell.formula; // for correcting the formulas 5^+3=>5^3 and 5&+3=>5&3 while rendering like Excel.
+        if (isFormula && (args.cell.formula.indexOf('^+') > -1 || args.cell.formula.indexOf('&+') > -1)) {
+            args.cell.formula = <string>eventArgs.value; // for correcting the formulas 5^+3=>5^3 and 5&+3=>5&3 while rendering like Excel.
         }
     }
     private checkMerged(args: CellRenderArgs): boolean {
@@ -630,11 +630,12 @@ export class CellRenderer implements ICellRenderer {
      * @param {boolean} checkCF - Specifies the check for conditional format.
      * @param {boolean} skipFormatCheck - Specifies whether to skip the format checking while applying the number format.
      * @param {boolean} checkFormulaAdded - Specifies whether to check the formula added or not.
+     * @param {boolean} isFromAutoFillOption - Specifies whether the value is from auto fill option or not.
      * @returns {void}
      */
     public refreshRange(
         range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean,
-        skipFormatCheck?: boolean, checkFormulaAdded?: boolean): void {
+        skipFormatCheck?: boolean, checkFormulaAdded?: boolean, isFromAutoFillOption?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cRange: number[] = range.slice(); let args: CellRenderArgs; let cell: HTMLTableCellElement;
         if (inView(this.parent, cRange, true)) {
@@ -646,7 +647,7 @@ export class CellRenderer implements ICellRenderer {
                     if (cell) {
                         args = { rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), isRefreshing: refreshing, lastCell: j ===
                             cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '', onActionUpdate:
-                            checkHeight, skipFormatCheck: skipFormatCheck };
+                            checkHeight, skipFormatCheck: skipFormatCheck, isFromAutoFillOption: isFromAutoFillOption };
                         if (checkFormulaAdded) {
                             args.address = getCellAddress(i, j);
                         }
@@ -730,7 +731,7 @@ export class CellRenderer implements ICellRenderer {
      */
     public destroy(): void {
         this.parent.off(updateView, this.updateView);
-        this.parent.off('calculateFormula', this.calculateFormula);
+        this.parent.off(calculateFormula, this.calculateFormula);
         if (this.element) { this.element.remove(); } this.element = null;
         if (this.th) { this.th.remove(); } this.th = null;
         if (this.tableRow) { this.tableRow.remove(); } this.tableRow = null;

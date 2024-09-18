@@ -120,8 +120,7 @@ export class DialogRenderer {
             this.deferUpdateCheckBox.isStringTemplate = true;
             this.deferUpdateCheckBox.appendTo(select('#' + this.parent.element.id + 'DeferUpdateCheckBox', fieldListWrappper) as HTMLElement);
             this.deferUpdateApplyButton = new Button({
-                cssClass: cls.DEFER_APPLY_BUTTON + ' ' + cls.DEFER_UPDATE_BUTTON + (this.parent.renderMode === 'Popup' ?
-                    (' ' + cls.BUTTON_FLAT_CLASS) : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+                cssClass: cls.DEFER_APPLY_BUTTON + ' ' + cls.DEFER_UPDATE_BUTTON + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                 content: this.parent.localeObj.getConstant('apply'),
                 enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale,
@@ -138,8 +137,7 @@ export class DialogRenderer {
                 this.onDeferUpdateClick.bind(this);
         }
         this.deferUpdateCancelButton = new Button({
-            cssClass: cls.DEFER_CANCEL_BUTTON + ' ' + cls.CANCEL_BUTTON_CLASS + (this.parent.renderMode === 'Popup' ?
-                (' ' + cls.BUTTON_FLAT_CLASS) : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+            cssClass: cls.DEFER_CANCEL_BUTTON + ' ' + cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             content: this.parent.allowDeferLayoutUpdate ? this.parent.localeObj.getConstant('cancel') :
                 this.parent.localeObj.getConstant('close'),
             enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate,
@@ -199,7 +197,7 @@ export class DialogRenderer {
     }
     private onCheckChange(args: ChangeEventArgs): void {
         if (args.checked) {
-            this.parent.clonedDataSource = extend({}, this.parent.dataSourceSettings, null, true) as IDataOptions;
+            this.parent.clonedDataSource = PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings);
             if (this.parent.dataType === 'olap') {
                 this.parent.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.parent.olapEngineModule.fieldListData);
             }
@@ -237,7 +235,7 @@ export class DialogRenderer {
         this.parent.updateDataSource(false);
         const parent: PivotFieldList = this.parent;
         parent.axisFieldModule.render();
-        parent.clonedDataSource = extend({}, parent.dataSourceSettings, null, true) as IDataOptions;
+        parent.clonedDataSource = PivotUtil.getClonedDataSourceSettings(parent.dataSourceSettings);
         if (this.parent.dataType === 'olap') {
             this.parent.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.parent.olapEngineModule.fieldListData);
         }
@@ -248,7 +246,7 @@ export class DialogRenderer {
             (this.parent.pivotGridModule && this.parent.pivotGridModule.actionObj.actionName !== '') || this.parent.actionObj.actionName !== '')) {
             this.parent.
                 setProperties({
-                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
+                    dataSourceSettings: this.parent.clonedDataSource
                 }, true);
             if (this.parent.dataType === 'olap') {
                 this.parent.olapEngineModule.fieldList = PivotUtil.getClonedFieldList(this.parent.clonedFieldList);
@@ -276,7 +274,7 @@ export class DialogRenderer {
             this.parent.pivotGridModule.engineModule = this.parent.engineModule;
             this.parent.pivotGridModule.olapEngineModule = this.parent.olapEngineModule;
             this.parent.pivotGridModule.setProperties({
-                dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
+                dataSourceSettings: this.parent.clonedDataSource
             }, true);
         }
         if (this.parent.allowDeferLayoutUpdate && this.parent.allowCalculatedField &&
@@ -321,6 +319,7 @@ export class DialogRenderer {
                 '</div></div>';
             const buttons: ButtonPropsModel[] = [{
                 click: this.showFieldListDialog.bind(this),
+                isFlat: false,
                 buttonModel: {
                     cssClass: cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS + ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
@@ -328,6 +327,7 @@ export class DialogRenderer {
                 }
             }, {
                 click: this.showCalculatedField.bind(this),
+                isFlat: false,
                 buttonModel: {
                     cssClass: cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS +
                         ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + ' ' + cls.ICON_DISABLE + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
@@ -620,7 +620,7 @@ export class DialogRenderer {
                 if (this.parent.isAdaptive) {
                     this.parent.axisFieldModule.render();
                 }
-                this.parent.clonedDataSource = extend({}, this.parent.dataSourceSettings, null, true) as IDataOptions;
+                this.parent.clonedDataSource = PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings);
                 if (this.parent.dataType === 'olap') {
                     this.parent.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.parent.olapEngineModule.fieldListData);
                 }

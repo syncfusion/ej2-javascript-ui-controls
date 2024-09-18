@@ -6,7 +6,7 @@ The Syncfusion [JavaScript PDF Viewer](https://www.syncfusion.com/javascript-ui-
 
 <p align="center">
     <a href="https://ej2.syncfusion.com/documentation/pdfviewer/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-pdf-viewer-npm">Getting started</a> . 
-    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-pdf-viewer-npm#/material/pdfviewer/default.html">Online demos</a> . 
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-pdf-viewer-npm#/fluent2/pdfviewer/default.html">Online demos</a> . 
     <a href="https://www.syncfusion.com/javascript-ui-controls/js-pdf-viewer?utm_source=npm&utm_medium=listing&utm_campaign=javascript-pdf-viewer-npm">Learn more</a>
 </p>
 
@@ -76,4 +76,4 @@ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-contr
 
 See [LICENSE FILE](https://github.com/syncfusion/ej2/blob/master/license?utm_source=npm&utm_medium=listing&utm_campaign=javascript-pdf-viewer-npm) for more info.
 
-&copy; Copyright 2022 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+&copy; Copyright 2024 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

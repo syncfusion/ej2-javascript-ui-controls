@@ -1620,4 +1620,138 @@ describe('Point color mapping chart highlight and selection', function () {
             chartObj.refresh();
         });
     });
+    describe('Chart Selection: Checking drag ', () => {
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        });
+        let id: string = 'ej2Container';
+        let selection: string = id + '_ej2_chart_selection_series_';
+        let chartObj: Chart;
+        let element: HTMLElement;
+        let selected: HTMLCollection;
+        let i: number = 0;
+        let j: number = 0;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let chartContainer: HTMLElement;
+        let draggedRectGroup: string = id + '_ej2_drag_rect';
+        let closeId: string = id + '_ej2_drag_close0';
+        beforeAll(() => {
+            chartContainer = createElement('div', { id: id });
+            document.body.appendChild(chartContainer);
+            document.body.appendChild(createElement('style', {
+                innerHTML: ' .selection { stroke-width: 5; fill: lime; stroke: red; opacity: 1; } '
+            }));
+            chartObj = new Chart({
+                series: seriesCollection,
+                primaryXAxis: { minimum: 2004, maximum: 2012 },
+            //    primaryYAxis: { rangePadding: 'None' },
+                height: '500',
+                width: '800',
+                loaded: loaded,
+                selectionMode: 'Point',
+                isMultiSelect: false
+            });
+            chartObj.appendTo('#' + id);
     
+        });
+        afterAll(() => {
+            chartObj.destroy();
+            chartContainer.remove();
+        });
+        it('Chart selesction:  checking multiselection', (done: Function) => {
+            loaded = () => {
+                trigger.draganddropEvent(chartContainer, 100, 100, 300, 300);
+                element = document.getElementById(draggedRectGroup);
+                expect (chartContainer !== null).toBe(true);
+                trigger.mouseupEvent(document.getElementById(closeId), 0, 0, 0, 0);
+                done();
+            };
+            chartObj.selectionMode = 'DragXY';
+            chartObj.loaded = loaded;
+            chartObj.selectionModule.selectedDataIndexes = [];
+            chartObj.allowMultiSelection = true;
+            chartObj.refresh();
+        });
+        it('Chart selesction: checking multiselection with lasso', (done: Function) => {
+            loaded = () => {
+                trigger.draganddropEvent(chartContainer, 100, 100, 300, 300);
+                element = document.getElementById(draggedRectGroup);
+                expect (chartContainer !== null).toBe(true);
+                done();
+            };
+            chartObj.selectionMode = 'Lasso';
+            chartObj.loaded = loaded;
+            chartObj.selectionModule.selectedDataIndexes = [];
+            chartObj.allowMultiSelection = false;
+            chartObj.refresh();
+        });
+        it('Chart selection:  checking multiselection with lasso and multi selection', (done: Function) => {
+            loaded = () => {
+                trigger.draganddropEvent(chartContainer, 100, 100, 300, 300);
+                element = document.getElementById(draggedRectGroup);
+                expect (chartContainer !== null).toBe(true);
+                done();
+            };
+            chartObj.selectionMode = 'Lasso';
+            chartObj.loaded = loaded;
+            chartObj.selectionModule.selectedDataIndexes = [];
+            chartObj.allowMultiSelection = true;
+            chartObj.refresh();
+        });
+        it('Chart selection checking index elements', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                args.chart.selectionModule.findElements( args.chart, args.chart.series[0], {series: 0, point:0}, 'element'  );
+                expect (chartContainer !== null).toBe(true);
+                done();
+            };
+            chartObj.selectionMode = 'Cluster';
+            chartObj.loaded = loaded;
+            chartObj.selectionModule.selectedDataIndexes = [];
+            chartObj.allowMultiSelection = true;
+            chartObj.refresh();
+        });
+        it('Chart selection checking slection target elements', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                args.chart.selectionModule.calculateSelectedElements(null, 'Click');
+                expect(chartContainer !== null).toBe(true);
+                done();
+            };
+            chartObj.selectionMode = 'Cluster';
+            chartObj.loaded = loaded;
+            chartObj.selectionModule.selectedDataIndexes = [];
+            chartObj.allowMultiSelection = true;
+            chartObj.refresh();
+        });
+        it('Chart selection checking slection target elements', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                args.chart.selectionModule.calculateSelectedElements(null, 'Click');
+                expect(chartContainer !== null).toBe(true);
+                done();
+            };
+            chartObj.selectionMode = 'Cluster';
+            chartObj.loaded = loaded;
+            chartObj.selectionModule.selectedDataIndexes = [];
+            chartObj.allowMultiSelection = true;
+            chartObj.refresh();
+        });
+        it('Chart selection checking perform selection', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                let element = document.getElementById('ej2Container_Series_0')
+                args.chart.selectionModule.performSelection({ series: 0, point: 0 }, args.chart, element);
+                expect(chartContainer !== null).toBe(true);
+                done();
+            };
+            chartObj.selectionMode = 'Point';
+            chartObj.loaded = loaded;
+            chartObj.series[0].type = 'Area';
+            chartObj.selectionModule.selectedDataIndexes = [];
+            chartObj.allowMultiSelection = true;
+            chartObj.refresh();
+        });
+    });

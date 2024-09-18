@@ -21,6 +21,9 @@
 
     & .e-switch-handle.e-switch-active {
       background-color: $switch-active-handle-bg;
+      @if $skin-name == 'bootstrap5.3' {
+        opacity: 1;
+      }
     }
 
     & .e-switch-inner.e-switch-active {
@@ -49,6 +52,15 @@
         @if $skin-name == 'FluentUI' {
           background-color: $switch-handle-on-disabled-bg-color;
         }
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          background-color: $content-bg-color;
+          @if $skin-name == 'bootstrap5.3' {
+            opacity: 1;
+          }
+          @else {
+            opacity: $switch-on-off-disabled-bg-color-opacity;
+          }
+        }
       }
 
       & .e-switch-handle:not(.e-switch-active) {
@@ -66,6 +78,12 @@
         @if $skin-name == 'bootstrap4' {
           background-color: $switch-inner-active-bg;
           border-color: $switch-inner-active-bg;
+        }
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          background-color: $primary;
+          @if $skin-name == 'bootstrap5' {
+            border-color: $primary;
+          }
         }
       }
 
@@ -108,8 +126,10 @@
         @else {
           background-color: $switch-on-off-disabled-bg-color;
         }
+        @if $skin-name != 'bootstrap5.3' {
+          opacity: $switch-on-off-disabled-bg-color-opacity;
+        }
         border-color: $switch-border-disabled-bg-color;
-        opacity: $switch-on-off-disabled-bg-color-opacity;
       }
 
       &:hover {
@@ -119,7 +139,9 @@
             border-color: $switch-inner-active-bg;
           }
           @else {
-            background-color: $switch-on-off-disabled-bg-color;
+            @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' {
+              background-color: $switch-on-off-disabled-bg-color;
+            }
             border-color: $switch-border-disabled-bg-color;
           }
         }
@@ -206,7 +228,9 @@
 
     &:not(.e-switch-disabled):hover {
       & .e-switch-handle:not(.e-switch-active) {
-        background-color: $switch-handle-off-hover-bg-color;
+        @if $skin-name != 'bootstrap5.3' {
+          background-color: $switch-handle-off-hover-bg-color;
+        }
       }
     }
 
@@ -280,7 +304,7 @@
           @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             background-color: $switch-on-hover-bg-color;
           }
-          @else {
+          @else if $skin-name != 'bootstrap5.3' {
             background-color: $switch-on-off-hover-bg-color;
           }
         }
@@ -469,5 +493,13 @@
         }
       }
     }
+  }
+}
+
+.e-switch-wrapper:focus .e-switch-handle:not(.e-switch-active),
+.e-switch-wrapper:active .e-switch-handle:not(.e-switch-active),
+.e-switch-wrapper.e-focus .e-switch-handle:not(.e-switch-active) {
+  @if $skin-name == 'bootstrap5.3' {
+    background-color: $primary-light;
   }
 }

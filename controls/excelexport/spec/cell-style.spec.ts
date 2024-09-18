@@ -11,7 +11,40 @@ describe('CellStyle', () => {
     //     while (curDate - date < millSecs);
     // }
     //Methods testcase
-    it('BUG_896899', (done) => {
+	it('BUG_896899_1', (done) => {
+        let book: Workbook = new Workbook({
+            /*Global Styles*/styles: [
+                /*Style ->3*/{ name: 'Date-1', fontName: 'Arial', fontSize: 18, wrapText: true, numberFormat: '$'},
+                /*Style ->4*/{ name: 'Date-2', fontName: 'Arial', fontSize: 16, wrapText: true, numberFormat: '$' },
+                /*Style ->4*/{ name: 'Date-3', fontName: 'Arial', fontSize: 16, wrapText: true, numberFormat: 'full' },
+                /*Style ->4*/{ name: 'Date-4', fontName: 'Arial', fontSize: 16, wrapText: true, numberFormat: 'long' },
+            ],
+            worksheets: [
+                {
+                    name: 'CellStyle',
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: new Date(), style: { name: 'Date-1' } }] },
+                        { index: 2, cells: [{ index: 1, value: new Date(), style: { name: 'Date-2' } }] },
+                        { index: 3, cells: [{ index: 1, value: new Date(), style: { name: 'Date-3' } }] },
+                        { index: 4, cells: [{ index: 1, value: new Date(), style: { name: 'Date-4' } }] },
+                    ],
+                }]
+        }, 'csv');
+        book.saveAsBlob('text/csv').then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'BUG_896899_1.csv');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
+    it('BUG_896899_2', (done) => {
         let book: Workbook = new Workbook({
             worksheets: [
                 {
@@ -23,7 +56,7 @@ describe('CellStyle', () => {
         }, 'csv');
         book.saveAsBlob('text/csv').then((csvBlob: { blobData: Blob }) => {
             if (Utils.isDownloadEnabled) {
-                Utils.download(csvBlob.blobData, 'BUG_896899.csv');
+                Utils.download(csvBlob.blobData, 'BUG_896899_2.csv');
             }
             let reader: FileReader = new FileReader();
             reader.readAsArrayBuffer(csvBlob.blobData);

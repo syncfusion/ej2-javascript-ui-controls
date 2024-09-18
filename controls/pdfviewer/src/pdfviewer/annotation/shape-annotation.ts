@@ -244,7 +244,7 @@ export class ShapeAnnotation {
                                 annotation.LabelSettings = annotation.LabelSettings ? annotation.LabelSettings :
                                     this.pdfViewer.shapeLabelSettings;
                             }
-                            const annotationSelectorSettings = typeof (annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
+                            const annotationSelectorSettings: any = typeof (annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
                             if (isNullOrUndefined(annotationSelectorSettings)) {
                                 this.pdfViewerBase.annotationSelectorSettingLoad(annotation);
                             }
@@ -580,7 +580,9 @@ export class ShapeAnnotation {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[parseInt(i.toString(), 10)].id) {
                     if (property === 'bounds') {
-                        this.pdfViewerBase.isBounds = this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds, annotationBase.wrapper.bounds);
+                        this.pdfViewerBase.isBounds =
+                        this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds,
+                                                             annotationBase.wrapper.bounds);
                         if (this.pdfViewerBase.isBounds) {
                             if (pageAnnotations[parseInt(i.toString(), 10)].shapeAnnotationType === 'Line') {
                                 pageAnnotations[parseInt(i.toString(), 10)].vertexPoints = annotationBase.vertexPoints;
@@ -824,7 +826,8 @@ export class ShapeAnnotation {
         if (annotationModel.subject === 'Line' && annotationModel.shapeAnnotationType === 'Polygon') {
             annotationModel.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', 'Polygon');
         } else {
-            annotationModel.author = annotationModel && annotationModel.author != "Guest" ? annotationModel.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationModel.subject);
+            // eslint-disable-next-line
+            annotationModel.author = annotationModel && annotationModel.author != 'Guest' ? annotationModel.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationModel.subject);
         }
         this.pdfViewer.annotation.stickyNotesAnnotationModule.addTextToComments(annotationName, annotationModel.notes);
         let borderDashArray: number = parseInt(annotationModel.borderDashArray, 10);

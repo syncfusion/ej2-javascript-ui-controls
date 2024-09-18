@@ -2,7 +2,31 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 27.1.48 (2024-09-18)
+
+### Tab
+
+#### Bug fixes
+
+- `#FB60693` - An issue where dynamically adding, removing, and then re-adding tabs caused an error when selecting the newly added tabs has been fixed.
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I899285` - The issue with "Context Menu was not opened while using `animationSettings` effect as none and open method" has been resolved.
+
+### TreeView
+
+#### New Features
+
+- `#I621087` - Provided support to prevent the check action of disabled child nodes using `checkDisabledChildren` API.
+
+#### Bug fixes
+
+- `#I626894` - The issue where the parent state was not updated properly when dynamically changing the checked nodes has been resolved.
+
+## 26.2.12 (2024-09-03)
 
 ### Stepper
 
@@ -46,7 +70,7 @@
 
 #### Bug fixes
 
-- `#I611332` - The issue with the TreeView checkbox template sample with autoCheck property in the TreeView component has been resolved.
+- `#I611332` - The issue with the TreeView checkbox template sample with `autoCheck` property in the TreeView component has been resolved.
 
 ## 26.1.41 (2024-07-09)
 
@@ -103,7 +127,7 @@
 
 #### Bug Fixes
 
-- Provide support to prevent the breadcrumb item re-rendering action while clicking breadcrumb items through the itemClick event.
+- Provide support to prevent the breadcrumb item re-rendering action while clicking breadcrumb items through the `itemClick` event.
 
 ## 26.1.35 (2024-06-11)
 

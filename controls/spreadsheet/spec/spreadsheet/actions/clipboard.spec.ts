@@ -393,6 +393,39 @@ describe('Clipboard ->', () => {
                 });
             });
         });
+        it('EJ2-904692, Check undo after copying and pasting an image.', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[12].image[0]).toBeUndefined();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[2].cells[3].image[0]).toBeUndefined();
+                    done();
+                });
+            });
+        });
+        it('EJ2-904692, Check Redo after copying and pasting an image.', (done: Function) => {
+            helper.click('#spreadsheet_redo');
+            setTimeout(() => {
+                let image: ImageModel = helper.getInstance().sheets[0].rows[2].cells[3].image[0];
+                expect(image.src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                expect(image.height).toBe(300);
+                expect(image.width).toBe(400);
+                expect(image.top).toBe(40);
+                expect(image.left).toBe(192);
+                helper.invoke('selectRange', ['M1']);
+                helper.click('#spreadsheet_redo');
+                setTimeout(() => {
+                    image = helper.getInstance().sheets[0].rows[0].cells[12].image[0];
+                    expect(image.src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                    expect(image.height).toBe(300);
+                    expect(image.width).toBe(400);
+                    expect(image.top).toBe(0);
+                    expect(image.left).toBe(768);
+                    done();
+                });
+            });
+        });
         it('Copy Chart and Paste->', (done: Function) => {
             helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5',  }]]);
             EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
@@ -1389,14 +1422,14 @@ describe('Clipboard ->', () => {
                 });
             });
         });
-    describe('EJ2-875893', () => {
+    describe('EJ2-875893, EJ2-875535', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{
                     ranges: [{
                         dataSource: defaultData
                     }]
-                }]
+                }, {}], activeSheetIndex: 0
             }, done)
         })
         afterAll(() => {
@@ -1436,6 +1469,22 @@ describe('Clipboard ->', () => {
                         });
                     });
                 });
+            });
+        });
+        it('Copy paste not working for data validation applied cells', function (done) {
+            helper.getInstance().addDataValidation({ type: 'List', value1: 'Loafers', ignoreBlank: true }, "D:D");
+            helper.invoke('selectRange', ['A1:H12']);
+            helper.invoke('copy').then(function () {
+                const args = { action: 'gotoSheet', eventArgs: { currentSheetIndex: 1, previousSheetIndex: 0 } };
+                helper.getInstance().updateAction(args);
+                setTimeout(function () {
+                    helper.invoke('selectRange', ['A1:H12']);
+                    helper.invoke('paste');
+                    helper.invoke('selectRange', ['D2']);
+                    const td: HTMLElement = helper.invoke('getCell', [1, 3]).children[0];
+                    expect(td.classList).toContain('e-validation-list');
+                    done();
+                }, 5);
             });
         });
     });

@@ -12,8 +12,9 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { rowsAdded } from '../../../src';
+import { Edit } from '../../../src/grid/actions/edit';
 
-Grid.Inject(Page, Sort);
+Grid.Inject(Page, Sort, Edit);
 
 describe('Paging module', () => {
     describe('Paging functionalities', () => {
@@ -36,7 +37,7 @@ describe('Paging module', () => {
                     allowPaging: true,
                     pageSettings: {
                         pageSize: 2, currentPage: 2, pageCount: 4,
-                        totalRecordsCount: 10,
+                        totalRecordsCount: 10
                     },
                     actionBegin: actionBegin,
                     actionComplete: actionComplete,
@@ -200,8 +201,8 @@ describe('Paging module', () => {
             gridObj.dataBind();
             expect(gridObj.element.querySelectorAll('.e-link.e-numericitem.e-spacing.e-pager-default').length).toBe(3);
         });
-        //  //check query string
-        //  it('Check enableQueryString', (done: Function) => {
+        // //check query string
+        // it('Check enableQueryString', (done: Function) => {
         //     let actionComplete = (args?: Object): void => {
         //         expect(document.location.href).toMatch('page=1');
         //         done();
@@ -993,6 +994,72 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
         afterAll(() => {
             destroy(gridObj);
             gridObj = actionComplete = null;
+        });
+    });
+
+    describe('code coverage - Page', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 7),
+                    pageSettings: { pageSizes: true, pageSize: 5 },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', isPrimaryKey: true },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                    ],
+                }, done);
+        });
+
+        it('Edit record', () => {
+            gridObj.editModule.editCell(0, 'Freight');
+            gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = '1';
+            (gridObj.pagerModule.pagerObj.element.querySelector('.e-dropdownlist') as any).ej2_instances[0].showPopup();
+        });
+
+        it('Set page size', () => {
+            (document.querySelectorAll('.e-list-item')[2] as HTMLElement).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('code coverage - Page - React', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 7),
+                    pageSettings: { pageSizes: true, pageSize: 5 },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
+                    allowPaging: true,
+                    pagerTemplate: () => {
+                        return '<div></div>';
+                    },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', isPrimaryKey: true },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                    ],
+                }, done);
+        });
+
+        it('Render pager template in React ', () => {
+            gridObj.isReact = true;
+            (gridObj.pagerModule as any).isInitialRender = true;
+            (gridObj.pagerModule as any).enableAfterRender({ module: 'pager', enable: true });
+
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
         });
     });
 });

@@ -10,11 +10,6 @@ import { PdfViewer, PdfViewerBase } from '../index';
 export class TextLayer {
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
-    private notifyDialog: Dialog;
-    /**
-     * @private
-     */
-    public isMessageBoxOpen: boolean;
     private textBoundsArray: any[] = [];
     /**
      * @private
@@ -44,6 +39,9 @@ export class TextLayer {
             textLayer = createElement('div', { id: this.pdfViewer.element.id + '_textLayer_' + pageNumber, className: 'e-pv-text-layer' });
             textLayer.style.width = pageWidth + 'px';
             textLayer.style.height = pageHeight + 'px';
+            if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
+                textLayer.classList.add('e-pv-text-selection-none');
+            }
             if (pageDiv){
                 pageDiv.appendChild(textLayer);
             }
@@ -168,6 +166,9 @@ export class TextLayer {
                         if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.pdfViewerBase.isTextSelectionDisabled && textDiv.className !== 'e-pdfviewer-formFields'
                             && textDiv.className !== 'e-pdfviewer-signatureformfields' && textDiv.className !== 'e-pdfviewer-signatureformfields-signature') {
                             textDiv.classList.add('e-pv-cursor');
+                        }
+                        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                            textDiv.classList.add('e-enable-text-selection');
                         }
                         idNumber++;
                     }
@@ -755,62 +756,4 @@ export class TextLayer {
             return false;
         }
     }
-
-    /**
-     * @param {string} text - The text.
-     * @returns {void}
-     * @private
-     */
-    public createNotificationPopup(text: string): void {
-        if (!this.isMessageBoxOpen) {
-            if (!isBlazor()) {
-                const popupElement: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_notify', className: 'e-pv-notification-popup' });
-                this.pdfViewerBase.viewerContainer.appendChild(popupElement);
-                this.notifyDialog = new Dialog({
-                    showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('PdfViewer'),
-                    buttons: [{
-                        buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true },
-                        click: this.closeNotification.bind(this)
-                    }],
-                    content: '<div class="e-pv-notification-popup-content" tabindex = "0">' + text + '</div>', target: this.pdfViewer.element,
-                    beforeClose: (): void => {
-                        this.notifyDialog.destroy();
-                        if (this.pdfViewer.element) {
-                            try {
-                                this.pdfViewer.element.removeChild(popupElement);
-                            } catch (error) {
-                                popupElement.parentElement.removeChild(popupElement);
-                            }
-                        }
-                        if (this.pdfViewer.textSearchModule) {
-                            this.pdfViewer.textSearch.isMessagePopupOpened = false;
-                        }
-                        this.isMessageBoxOpen = false;
-                    }
-                });
-                if (this.pdfViewer.enableRtl) {
-                    this.notifyDialog.enableRtl = true;
-                }
-                this.notifyDialog.appendTo(popupElement);
-                this.isMessageBoxOpen = true;
-            } else {
-                const notificationElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_notification_popup_content');
-                if (notificationElement) {
-                    notificationElement.textContent = text;
-                    notificationElement.innerHTML = text;
-                }
-                if (this.pdfViewer.textSearchModule) {
-                    this.pdfViewer.textSearch.isMessagePopupOpened = false;
-                }
-                this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenNotificationPopup', text);
-            }
-        }
-    }
-
-    /**
-     * @returns {void}
-     */
-    private closeNotification = (): void => {
-        this.notifyDialog.hide();
-    };
 }

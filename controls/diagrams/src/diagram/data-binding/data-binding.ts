@@ -1,15 +1,16 @@
-import { Node } from '../objects/node';
+import { BasicShape, Node } from '../objects/node';
 import { Connector } from '../objects/connector';
-import { NodeModel } from '../objects/node-model';
+import { BasicShapeModel, BpmnShapeModel, FlowShapeModel, NodeModel, PathModel } from '../objects/node-model';
 import { ConnectorModel } from '../objects/connector-model';
 import { DataSourceModel } from '../diagram/data-source-model';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Diagram } from '../diagram';
 import { randomId, getFunction } from '../utility/base-util';
-import { cloneBlazorObject } from '../utility/diagram-util';
+import { cloneBlazorObject, getConnectorArrowType } from '../utility/diagram-util';
 import { updateDefaultValues } from '../utility/diagram-util';
 import { isBlazor } from '@syncfusion/ej2-base';
-
+import { DecoratorShapes } from '../enum/enum';
+import { ShapeStyleModel, StrokeStyleModel } from '../core/appearance-model';
 /**
  * data source defines the basic unit of diagram
  */
@@ -137,7 +138,7 @@ export class DataBinding {
                 } else {
                     rootNodes = this.updateMultipleRootNodes(obj, rootNodes, mapper, data);
                 }
-                if (mapper.root && isNaN(mapper.root as any) && isNaN(obj[mapper.id])) {
+                if (mapper.root && isNaN(mapper.root as any) && obj[mapper.id] && isNaN(obj[mapper.id])) {
                     if ((mapper.root).toLowerCase() === obj[mapper.id].toLowerCase()) {
                         firstNode = { items: [obj] };
                     }
@@ -207,6 +208,14 @@ export class DataBinding {
                     rootNodes[`${parent}`] = { items: [obj] };
                 }
             }
+            else {
+                parent = parents[parseInt(i.toString(), 10)];
+                if (rootNodes[`${parent}`]) {
+                    rootNodes[`${parent}`].items.push(obj);
+                } else {
+                    rootNodes[`${parent}`] = { items: [obj] };
+                }
+            }
         }
         return rootNodes;
     }
@@ -227,6 +236,18 @@ export class DataBinding {
         const id: string = randomId();
         //const blazor: string = 'Blazor';
         const nodeModel: NodeModel = { id: id, data: item };
+        //Task 895538: Flow-chart layout support for EJ2 diagram.
+        //Added below code to set node shape and style based on the data.
+        if (diagram.layout.type === 'Flowchart'){
+            const shape: BasicShapeModel = this.getFlowChartNodeShape(item as FlowChartData) as BasicShapeModel;
+            const style: ShapeStyleModel = { fill: (item as FlowChartData).color ? (item as FlowChartData).color : 'white',
+                strokeColor: (item as FlowChartData).stroke ? (item as FlowChartData).stroke : 'black',
+                strokeWidth: (item as FlowChartData).strokeWidth ? (item as FlowChartData).strokeWidth : 1
+            };
+            nodeModel.shape = shape as BasicShapeModel | BpmnShapeModel | FlowShapeModel;
+            nodeModel.style = style;
+            nodeModel.annotations = [{ content: (item as FlowChartData).name ? (item as FlowChartData).name : '' }];
+        }
         // eslint-disable-next-line @typescript-eslint/ban-types
         const doBinding: Function = getFunction(mapper.doBinding);
         if (doBinding) {
@@ -276,13 +297,48 @@ export class DataBinding {
         if (!this.collectionContains(obj, diagram, mapper.id, mapper.parentId)) {
             return obj;
         } else {
-            if (isNaN(item[mapper.id])) {
+            if (item[mapper.id] && isNaN(item[mapper.id])) {
                 return this.dataTable[item[mapper.id].toLowerCase()];
             }
             else {
                 return this.dataTable[item[mapper.id]];
             }
         }
+    }
+    private getFlowChartNodeShape(data: FlowChartData): BasicShapeModel | FlowShapeModel | PathModel {
+        if (data.shape !== '') {
+            switch (data.shape) {
+            case 'Rectangle':
+                return { type: 'Basic', shape: 'Rectangle' };
+            case 'Decision':
+                return { type: 'Flow', shape: 'Decision' };
+            case 'Hexagon':
+                return {type: 'Path', data: 'M 0 0 L 2 -2 L 11 -2 L 13 0 L 11 2 L 2 2 L 0 0' };
+            case 'Ellipse':
+                return { type: 'Basic', shape: 'Ellipse' };
+            case 'Terminator':
+                return { type: 'Flow', shape: 'Terminator' };
+            case 'PredefinedProcess':
+                return { type: 'Flow', shape: 'PreDefinedProcess' };
+            case 'Parallelogram':
+                return {type: 'Basic', shape: 'Parallelogram' };
+            case 'ParallelogramAlt':
+                return {type: 'Path', data: 'M 0 0 L 12 0 L 14 2 L 2 2 L 0 0' };
+            case 'Trapezoid':
+                return {type: 'Path', data: 'M 0 0 L 1 -1 L 5 -1 L 6 0 L 0 0' };
+            case 'TrapezoidAlt':
+                return {type: 'Path', data: 'M 0 0 L 5 0 L 4 1 L 1 1 L 0 0' };
+            case 'DataSource':
+                return {type: 'Path', data: 'M 0 1 L 0 6 C 2 7 4 7 6 6 L 6 1 C 5 0 1 0 0 1 C 1 2 5 2 6 1' };
+            case 'Asymmetric':
+                return {type: 'Path', data: 'M 0 0 L 8 0 L 8 2 L 0 2 L 2 1 L 0 0' };
+            case 'DoubleCircle':
+                return {type: 'Path', data: 'M 0 0 A 1 1 0 0 0 7 0 A 1 1 0 0 0 0 0 M -1 0 A 1 1 0 0 0 8 0 A 1 1 0 0 0 -1 0' };
+            default:
+                return { type: 'Flow', shape: 'Process' };
+            }
+        }
+        return { type: 'Flow', shape: 'Process' };
     }
 
     private splitString(property: string): string[] {
@@ -300,10 +356,14 @@ export class DataBinding {
         let child: Object; let nextLevel: Object; let node: Node;
         for (let j: number = 0; j < (parent as DataItems).items.length; j++) {
             child = (parent as DataItems).items[parseInt(j.toString(), 10)];
+            if (!child[mapper.id]) {
+                continue;
+            }
+
             node = this.applyNodeTemplate(mapper, child, diagram);
             let canBreak: boolean = false;
             if (!this.collectionContains(node, diagram, mapper.id, mapper.parentId)) {
-                if (isNaN(child[mapper.id])) {
+                if (child[mapper.id] && isNaN(child[mapper.id])) {
                     this.dataTable[child[mapper.id].toLowerCase()] = node;
                 }
                 else {
@@ -317,7 +377,7 @@ export class DataBinding {
                 diagram.connectors.push(this.applyConnectorTemplate(value, node.id, diagram));
             }
             if (!canBreak) {
-                if (isNaN(node.data[mapper.id])) {
+                if (node.data[mapper.id] && isNaN(node.data[mapper.id])) {
                     nextLevel = rtNodes[node.data[mapper.id].toLowerCase()];
                 }
                 else {
@@ -352,12 +412,12 @@ export class DataBinding {
 
     private collectionContains(node: Node, diagram: Diagram, id: string, parentId: string): boolean {
         let obj: Node;
-            if (isNaN(node.data[`${id}`]) && node.data[`${id}`]) {
-                obj = this.dataTable[node.data[`${id}`].toLowerCase()] as Node;
-            }
-            else {
-                obj = this.dataTable[node.data[`${id}`]] as Node;
-            }
+        if (isNaN(node.data[`${id}`]) && node.data[`${id}`]) {
+            obj = this.dataTable[node.data[`${id}`].toLowerCase()] as Node;
+        }
+        else {
+            obj = this.dataTable[node.data[`${id}`]] as Node;
+        }
         if (obj !== undefined && obj.data[`${id}`] === node.data[`${id}`] && obj.data[`${parentId}`] === node.data[`${parentId}`]) {
             return true;
         } else {
@@ -379,13 +439,55 @@ export class DataBinding {
         const connModel: ConnectorModel = {
             id: randomId(), sourceID: sNode, targetID: tNode
         };
+        let arrowType: ArrowStyle;
+        //Task 895538: Flow-chart layout support for EJ2 diagram.
+        //Added below code to set connector annotation and style based on the data.
+        if (diagram.layout.type === 'Flowchart'){
+            const targetNode: NodeModel = diagram.nodes.find((node: Node) => node.id === tNode) as Node;
+
+            if (typeof (targetNode.data as FlowChartData).label === 'string'){
+                connModel.annotations = [{content: (targetNode.data as FlowChartData).label as string}];
+            }else if (Array.isArray((targetNode.data as FlowChartData).label)){
+                const inConnectors: ConnectorModel[] = diagram.connectors.filter((connector: Connector) => connector.targetID === tNode);
+                let index: number = 0;
+                if (inConnectors.length > 0){
+                    index = inConnectors.length;
+                }
+                connModel.annotations = [{content: (targetNode.data as FlowChartData).label[parseInt(index.toString(), 10)]}];
+            }
+            arrowType = getConnectorArrowType(targetNode.data as FlowChartData) as ArrowStyle;
+        }
         const obj: Connector = new Connector(diagram, 'connectors', connModel, true);
+        if (arrowType){
+            obj.style.strokeWidth = arrowType.strokeWidth ? arrowType.strokeWidth : 1;
+            obj.targetDecorator.shape = arrowType.targetDecorator ? arrowType.targetDecorator as DecoratorShapes : 'Arrow' as DecoratorShapes;
+            obj.style.strokeDashArray = arrowType.strokeDashArray ? arrowType.strokeDashArray : '';
+            obj.style.opacity = arrowType.opacity !== undefined ? arrowType.opacity : 1;
+        }
         updateDefaultValues(obj, connModel, diagram.connectorDefaults);
         return obj;
     }
+
 }
 
 
 interface DataItems {
     items: Object[];
+}
+export interface ArrowStyle{
+    targetDecorator: string;
+    strokeWidth: number;
+    strokeDashArray?: string;
+    opacity?: number;
+}
+export interface FlowChartData{
+    id: string;
+    name: string;
+    shape: BasicShapeModel | FlowShapeModel | PathModel | string;
+    color: string;
+    label: string[] | string;
+    parentId: string[] | number[] | null;
+    arrowType: string;
+    stroke: string;
+    strokeWidth: number;
 }

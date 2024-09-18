@@ -164,7 +164,7 @@ export class PathOption extends CustomizeOption {
  * @returns {any} templateFunction -  returns the size
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createLabelTemplate(template: string | Function, heatMap: HeatMap, labelTemplate: HTMLElement, rectPosition: any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     xLabels: any, yLabels: any, index: number): HTMLElement {

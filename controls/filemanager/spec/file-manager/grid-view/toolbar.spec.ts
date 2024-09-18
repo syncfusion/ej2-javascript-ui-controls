@@ -705,7 +705,7 @@ describe('FileManager control Grid view', () => {
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
                 expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 expect(dialogObj.visible).toBe(true);
-                (<HTMLElement>document.getElementById('file_dialog').querySelector(".e-footer-content .e-primary.e-flat")).onkeyup({ keyCode: 13, key: 'Enter' } as any);
+                (<HTMLElement>document.getElementById('file_dialog').querySelector(".e-footer-content .e-primary")).onkeyup({ keyCode: 13, key: 'Enter' } as any);
                 dialogObj = (document.getElementById("file_dialog") as any).ej2_instances[0];
                 expect(dialogObj.visible).toBe(false);
                 expect(document.getElementById('file_tb_download').parentElement.classList.contains('e-hidden')).toBe(true);
@@ -713,7 +713,7 @@ describe('FileManager control Grid view', () => {
                 expect(document.getElementById('file_tb_download').parentElement.classList.contains('e-hidden')).toBe(false);
                 document.getElementById('file_tb_download').onkeyup({ keyCode: 13, key: 'Enter', target: document.getElementById('file_tb_download') } as any);
                 expect(dialogObj.visible).toBe(true);
-                (<HTMLElement>document.getElementById('file_dialog').querySelector(".e-footer-content .e-primary.e-flat")).onkeyup({ keyCode: 13, key: 'Enter' } as any);
+                (<HTMLElement>document.getElementById('file_dialog').querySelector(".e-footer-content .e-primary")).onkeyup({ keyCode: 13, key: 'Enter' } as any);
                 expect(dialogObj.visible).toBe(false);
                 feObj.detailsviewModule.gridObj.selectRow(1);
                 let keyboardEventArgs: any = {

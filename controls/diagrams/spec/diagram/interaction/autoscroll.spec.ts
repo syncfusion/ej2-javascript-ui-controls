@@ -27,7 +27,7 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: '1000px', height: '600px',
                 nodes: [node1, node2, node3, node4],
-                scrollSettings: { canAutoScroll: true, scrollLimit: 'Infinity' },
+                scrollSettings: { canAutoScroll: true, scrollLimit: 'Infinity', autoScrollFrequency: 9 },
                 snapSettings: { constraints: SnapConstraints.None }
             });
             diagram.appendTo('#diagram');
@@ -379,23 +379,24 @@ describe('Diagram Control', () => {
             diagram.destroy();
             ele.remove();
         });
-        it('checking initial rendering and zooming in', (done: Function) => {
+        it('checking initial rendering and zooming', (done: Function) => {
             let nodes = document.getElementById('diagram_diagramLayer');
             expect(nodes.childNodes.length === 6).toBe(true);
             diagram.zoom(1.5);
-            let nodes1 = document.getElementById('diagram_diagramLayer');
-            console.log(nodes1.childNodes.length)
-            expect(nodes1.childNodes.length === 6).toBe(true);
-            done();
-        });
-        it('checking initial rendering and zooming out', (done: Function) => {
-            let nodes = document.getElementById('diagram_diagramLayer');
-            expect(nodes.childNodes.length === 6).toBe(true);
-            diagram.zoom(.5);
-            let nodes1 = document.getElementById('diagram_diagramLayer');
-            console.log(nodes1.childNodes.length)
-            expect(nodes1.childNodes.length === 9).toBe(true);
-            done();
+            setTimeout(function () {
+                let nodes1 = document.getElementById('diagram_diagramLayer');
+                expect(nodes1.childNodes.length === 4).toBe(true);
+
+                done();
+            }, 100);
+            setTimeout(function () {
+                diagram.zoom(.5);
+                let nodes1 = document.getElementById('diagram_diagramLayer');
+                expect(nodes1.childNodes.length === 9).toBe(true);
+                done();
+            }, 120);
+
+
         });
         it('Checking Autoscroll right', (done: Function) => {
             var diagramCanvas = document.getElementById(diagram.element.id + 'content');
@@ -528,6 +529,21 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseUpEvent(diagramCanvas, center.x , center.y + 50 + 25 + 10 + 10);
                 }, 110);
         });
+        it('Check node resizing at bottom', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[3]]);
+            let bounds: any = document.getElementById('resizeSouthWest').getBoundingClientRect();
+            let center: PointModel = { x: bounds.x, y: bounds.y };
+            mouseEvents.mouseDownEvent(diagramCanvas, center.x, center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y + 50);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y + 50 + 25);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y + 50 + 25 + 10);
+            setTimeout(() => {
+                expect(Math.ceil(diagram.scroller.verticalOffset) === 280).toBe(true);
+                done();
+                mouseEvents.mouseUpEvent(diagramCanvas, center.x , center.y + 50 + 25 + 10 + 10);
+                }, 110);
+        });
     });
 
     describe('AutoScroll Node resizing - Top', () => {
@@ -574,6 +590,21 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y - 50 - 25 - 10);
             setTimeout(() => {
                 expect(Math.ceil(diagram.scroller.verticalOffset) === 310).toBe(true);
+                done();
+                mouseEvents.mouseUpEvent(diagramCanvas, center.x , center.y - 50 - 25 - 10 - 10);
+            }, 110);
+        });
+        it('Check node resizing at top', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[1]]);
+            let bounds: any = document.getElementById('resizeNorthWest').getBoundingClientRect();
+            let center: PointModel = { x: bounds.x, y: bounds.y };
+            mouseEvents.mouseDownEvent(diagramCanvas, center.x, center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y - 50);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y - 50 - 25);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y - 50 - 25 - 10);
+            setTimeout(() => {
+                expect(Math.ceil(diagram.scroller.verticalOffset) === 320).toBe(true);
                 done();
                 mouseEvents.mouseUpEvent(diagramCanvas, center.x , center.y - 50 - 25 - 10 - 10);
             }, 110);

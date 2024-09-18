@@ -20,7 +20,7 @@ describe('Audio Module', () => {
                 quickToolbarSettings: {
                     showOnRightClick: false
                 },
-                value: `<div id='rte'><p><b>Syncfusion</b> Software</p><span id='audTag' class="e-audio-wrap" contenteditable="false" title="horse.mp3"><figure><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></figure></span><br>`
+                value: `<div id='rte'><p><b>Syncfusion</b> Software</p><span id='audTag' class="e-audio-wrap" contenteditable="false" title="horse.mp3"><figure><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></figure></span><br>`
             });
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 2);
@@ -106,7 +106,7 @@ describe('Audio Module', () => {
             let range: any = new NodeSelection().getRange(document);
             let save: any = new NodeSelection().save(range, document);
             let args: any = {
-                item: { url: window.origin + '/base/spec/content/audio/horse.mp3', selection: save },
+                item: { url: window.origin + '/base/spec/content/audio/RTE-Audio.mp3', selection: save },
                 preventDefault: function () { }
             };
             (<any>rteObj).formatter.editorManager.audioObj.createAudio(args);
@@ -188,7 +188,7 @@ describe('Audio Module', () => {
             let range: any = new NodeSelection().getRange(document);
             let save: any = new NodeSelection().save(range, document);
             let args: any = {
-                item: { url: window.origin + '/base/spec/content/audio/horse.mp3', selection: save },
+                item: { url: window.origin + '/base/spec/content/audio/RTE-Audio.mp3', selection: save },
                 preventDefault: function () { }
             };
             (<any>rteObj).formatter.editorManager.audioObj.createAudio(args);
@@ -233,7 +233,7 @@ describe('Audio Module', () => {
             let range: any = new NodeSelection().getRange(document);
             let save: any = new NodeSelection().save(range, document);
             let args: any = {
-                item: { url: window.origin + '/base/spec/content/audio/horse.mp3', selection: save },
+                item: { url: window.origin + '/base/spec/content/audio/RTE-Audio.mp3', selection: save },
                 preventDefault: function () { }
             };
             (<any>rteObj).formatter.editorManager.audioObj.createAudio(args);
@@ -271,7 +271,7 @@ describe('Audio Module', () => {
             let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             let fileObj: File = new File(["Nice One"], "sample.mp3", { lastModified: 0, type: "overide/mimetype" });
@@ -366,7 +366,7 @@ describe('Audio Module', () => {
             action: ''
         };
         let innerHTML1: string = `
-            <p>testing&nbsp;<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>
+            <p>testing&nbsp;<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p>
             `;
         beforeAll(() => {
             rteObj = renderRTE({
@@ -456,7 +456,7 @@ describe('Audio Module', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
         let innerHTML1: string = `testing
-        <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span>testing`;
+        <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span>testing`;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -487,7 +487,7 @@ describe('Audio Module', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
         let innerHTML1: string = `testing
-        <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br>testing`;
+        <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br>testing`;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -517,7 +517,7 @@ describe('Audio Module', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
-        let innerHTML1: string = `testing<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br>testing`;
+        let innerHTML1: string = `testing<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br>testing`;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -548,7 +548,7 @@ describe('Audio Module', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
-        let innerHTML1: string = `testing<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br>testing`;
+        let innerHTML1: string = `testing<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br>testing`;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -592,7 +592,7 @@ describe('Audio Module', () => {
             action: ''
         };
         let innerHTML1: string = `
-            <p>testing&nbsp;<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>
+            <p>testing&nbsp;<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p>
             `;
         beforeAll(() => {
             rteObj = renderRTE({
@@ -650,7 +650,7 @@ describe('Audio Module', () => {
              action: ''
          };
          let innerHTML1: string = `
-             <p>testing&nbsp;<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>
+             <p>testing&nbsp;<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p>
              `;
          beforeAll(() => {
              rteObj = renderRTE({
@@ -755,7 +755,7 @@ describe('Audio Module', () => {
          let rteObj: RichTextEditor;
          beforeEach((done: Function) => {
              rteObj = renderRTE({
-                 value: `<p>Hi audio is<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br>`,
+                 value: `<p>Hi audio is<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br>`,
                  quickToolbarSettings: {
                      enable: true,
                      showOnRightClick: true
@@ -790,7 +790,7 @@ describe('Audio Module', () => {
                  value: `<p><span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`,
                  inlineMode: {
                     enable: true
-                }
+                 }
              });
              controlId = rteObj.element.id;
              done();
@@ -828,7 +828,7 @@ describe('Audio Module', () => {
          let actionCompleteCalled: boolean = true;
          beforeEach((done: Function) => {
              rteObj = renderRTE({
-                 value: `<p><span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`,
+                 value: `<p><span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p>`,
                  actionComplete: actionCompleteFun
              });
              function actionCompleteFun(args: any): void {
@@ -922,7 +922,7 @@ describe('Audio Module', () => {
              let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = '/base/spec/content/audio/horse.mp34';
+             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = '/base/spec/content/audio/RTE-Audio.mp34';
              let fileObj: File = new File(["Horse"], "horse.mp34", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
              (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
@@ -998,7 +998,7 @@ describe('Audio Module', () => {
              item.click();
              setTimeout(() => {
                  let dialogEle: any = rteObj.element.querySelector('.e-dialog');
-                 (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+                 (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
                  (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).dispatchEvent(new Event("input"));
                  expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
                  (document.querySelector('.e-insertAudio.e-primary') as HTMLElement).click();
@@ -1017,7 +1017,7 @@ describe('Audio Module', () => {
                      showOnRightClick: false
                  },
                  value: `<p id='aud-container'>
-                     <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br>
+                     <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br>
                  </p>`
              });
              ele = rteObj.element;
@@ -1042,7 +1042,7 @@ describe('Audio Module', () => {
                      showOnRightClick: false
                  },
                  value: `<p id='aud-container'>
-                     <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br>
+                     <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br>
                  </p>`
              });
              ele = rteObj.element;
@@ -1067,7 +1067,7 @@ describe('Audio Module', () => {
                      showOnRightClick: false
                  },
                  value: `<p id='aud-container'>
-                     <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br>
+                     <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br>
                  </p>`
              });
              ele = rteObj.element;
@@ -1094,7 +1094,7 @@ describe('Audio Module', () => {
                      showOnRightClick: true
                  },
                  value: `<p id='aud-container'>
-                     <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br>
+                     <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br>
                  </p>`
              });
              ele = rteObj.element;
@@ -1120,7 +1120,7 @@ describe('Audio Module', () => {
                      showOnRightClick: true
                  },
                  value: `<p id='aud-container'>
-                     <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br>
+                     <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br>
                  </p>`
              });
              ele = rteObj.element;
@@ -1217,7 +1217,7 @@ describe('Audio Module', () => {
              let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
              (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).dispatchEvent(new Event("input"));
              let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -1227,7 +1227,6 @@ describe('Audio Module', () => {
                  expect(rteObj.getContent().querySelector(".e-rte-audio.e-audio-inline source").getAttribute("src").indexOf("blob") == -1).toBe(true);
                  evnArg.selectNode = [rteObj.element];
                  (<any>rteObj).audioModule.deleteAudio(evnArg);
-                //  (<any>rteObj).audioModule.uploadObj.upload((<any>rteObj).audioModule.uploadObj.filesData[0]);
                  done();
              }, 100);
          });
@@ -1259,7 +1258,7 @@ describe('Audio Module', () => {
              let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
              (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).dispatchEvent(new Event("input"));
              let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -1269,7 +1268,6 @@ describe('Audio Module', () => {
                  expect(rteObj.getContent().querySelector(".e-rte-audio.e-audio-inline source").getAttribute("src").indexOf("base64") == -1).toBe(true);
                  evnArg.selectNode = [rteObj.element];
                  (<any>rteObj).audioModule.deleteAudio(evnArg);
-                //  (<any>rteObj).audioModule.uploadObj.upload((<any>rteObj).audioModule.uploadObj.filesData[0]);
                  done();
              }, 100);
          });
@@ -1369,7 +1367,7 @@ describe('Audio Module', () => {
              let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
              let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
              (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
@@ -1407,7 +1405,7 @@ describe('Audio Module', () => {
              let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
              let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
              (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
@@ -1452,7 +1450,7 @@ describe('Audio Module', () => {
              let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
              let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
              (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
@@ -1493,7 +1491,7 @@ describe('Audio Module', () => {
              let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
              let fileObj: File = new File(["Horse"], "horse.m4a", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
              (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
@@ -1532,7 +1530,7 @@ describe('Audio Module', () => {
              let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
              let fileObj: File = new File(["Header"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
              (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
@@ -1610,7 +1608,7 @@ describe('Audio Module', () => {
                  toolbarSettings: {
                      items: ['Audio']
                  },
-                 value: `<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br>`
+                 value: `<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br>`
              });
              rteEle = rteObj.element;
          });
@@ -1637,7 +1635,7 @@ describe('Audio Module', () => {
                  toolbarSettings: {
                      items: ['Audio'],
                  },
-                 value: '<p>Sample Text</p> <p><span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p><p><span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span></p>'
+                 value: '<p>Sample Text</p> <p><span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p><p><span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span></p>'
              });
              QTBarModule = getQTBarModule(rteObj);
              done();
@@ -1694,7 +1692,7 @@ describe('Audio Module', () => {
                  toolbarSettings: {
                      items: ['Audio'],
                  },
-                 value: '<p>Sample Text</p> <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br><span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span>'
+                 value: '<p>Sample Text</p> <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br><span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span>'
              });
              QTBarModule = getQTBarModule(rteObj);
              done();
@@ -1792,7 +1790,7 @@ describe('Audio Module', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
-        let innerHTML1: string = `testing<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br>testing`;
+        let innerHTML1: string = `testing<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br>testing`;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -1834,7 +1832,7 @@ describe('Audio Module', () => {
             keyCode: 13,
             action: 'enter'
         };
-        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p>`;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -1879,7 +1877,7 @@ describe('Audio Module', () => {
             keyCode: 13,
             action: 'enter'
         };
-        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p>`;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -1917,7 +1915,7 @@ describe('Audio Module', () => {
     describe('836851 - check the audio quick toolbar hide', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p>`;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -1982,7 +1980,7 @@ describe('Audio Module', () => {
     describe('836851 - iOS device interaction', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p>`;
         beforeAll(() => {
             Browser.userAgent = iPhoneUA;
             rteObj = renderRTE({
@@ -2020,7 +2018,7 @@ describe('Audio Module', () => {
     describe('836851 - Remove the audio using audio quick toolbar ', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p>`;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -2061,7 +2059,7 @@ describe('Audio Module', () => {
         let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
         let defaultUA: string = navigator.userAgent;
-        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p>`;
         beforeAll(() => {
             Browser.userAgent = mobileUA;
             rteObj = renderRTE({
@@ -2169,11 +2167,11 @@ describe('Audio Module', () => {
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.audioUrl .e-input.e-audio-url')as HTMLElement).click();
-            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
             (dialogEle.querySelector('.e-audio-url') as HTMLElement).dispatchEvent(new Event("input"));
             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = '';
             (dialogEle.querySelector('.e-audio-url') as HTMLElement).dispatchEvent(new Event("input"));
-            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
             (dialogEle.querySelector('.e-audio-url') as HTMLElement).dispatchEvent(new Event("input"));
             (dialogEle.querySelector('.e-insertAudio')as HTMLElement).click();
             expect(!isNullOrUndefined(document.querySelector('.e-audio-wrap'))).toBe(true);
@@ -2243,7 +2241,7 @@ describe('Audio Module', () => {
             (rteEle.querySelectorAll('.e-toolbar-item')[0]as HTMLElement).click()
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.audioUrl .e-input.e-audio-url')as HTMLElement).click();
-            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
             (dialogEle.querySelector('.e-audio-url') as HTMLElement).dispatchEvent(new Event("input"));
             (document.querySelector('.e-insertAudio.e-primary')as HTMLElement).click();
             expect(!isNullOrUndefined(document.querySelector('.e-rte-audio'))).toBe(true)
@@ -2253,7 +2251,7 @@ describe('Audio Module', () => {
     describe('836851 - Audio keyup', function () {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
-        let innerHTML: string = `testing<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/horse.mp3" type="audio/mp3"></audio></span></span><br>testing`;
+        let innerHTML: string = `testing<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br>testing`;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -2356,7 +2354,7 @@ describe('Audio Module', () => {
         let controlId: string;
         beforeEach(function (done) {
             rteObj = renderRTE({
-                value: "<p><span class=\"e-audio-wrap\" contenteditable=\"false\" title=\"horse.mp3\"><span class=\"e-clickElem\"><audio class=\"e-rte-audio e-audio-inline\" controls=\"\"><source src=\"/base/spec/content/audio/horse.mp3\" type=\"audio/mp3\"></audio></span></span><br></p>"
+                value: "<p><span class=\"e-audio-wrap\" contenteditable=\"false\" title=\"horse.mp3\"><span class=\"e-clickElem\"><audio class=\"e-rte-audio e-audio-inline\" controls=\"\"><source src=\"/base/spec/content/audio/RTE-Audio.mp3\" type=\"audio/mp3\"></audio></span></span><br></p>"
             });
             controlId = rteObj.element.id;
             done();
@@ -2409,7 +2407,7 @@ describe('Audio Module', () => {
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
             setTimeout(function () {
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/horse.mp3';
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -2421,5 +2419,43 @@ describe('Audio Module', () => {
             }, 100);
         });
     });
+
+    describe('907730 - After media delete not triggered after backspace and delete action of video', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let removeSuccess: boolean = false;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let innerHTML1: string = `testing
+        <span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span>testing`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML1,
+                afterMediaDelete: (e: any) => {
+                    removeSuccess = true;
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Audio delete action checking using backspace key', (done: Function) => {
+            let node: any = (rteObj as any).inputElement.childNodes[0].lastChild;
+            setCursorPoint(node, 0);
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (rteObj as any).keyDown(keyBoardEvent);
+            (<any>rteObj).audioModule.onKeyUp();
+            setTimeout(() => {
+                expect(removeSuccess).toBe(true);
+            },100);
+            done();
+        });
+     });
+
  });
  

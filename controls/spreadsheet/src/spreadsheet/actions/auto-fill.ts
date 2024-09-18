@@ -120,7 +120,7 @@ export class AutoFill {
         this.refreshAutoFillOption(l10n.getConstant(args.type));
         const evtArgs: { [key: string]: string | object | boolean } = { isUndo: true, isPublic: true, preventReSelect: true,
             preventEvt: args.type === 'FillWithoutFormatting',
-            setCollection: args.type === 'FillFormattingOnly' || args.type === 'FillWithoutFormatting' };
+            setCollection: args.type === 'FillFormattingOnly' || args.type === 'FillWithoutFormatting', isFromAutoFillOption: true };
         this.parent.notify(performUndoRedo, evtArgs);
         const eventArgs: { dataRange: string, fillRange: string, direction: AutoFillDirection, fillType: AutoFillType,
             isFillOptClick: boolean } = { dataRange: sheet.name + '!' + getRangeAddress(dataRange), fillRange:
@@ -208,13 +208,15 @@ export class AutoFill {
                 }
                 if (this.autoFillElement) {
                     this.autoFillCell = { rowIndex: rowIdx, colIndex: colIdx };
-                    const element: Element = this.parent.element.querySelectorAll('.e-autofill')[0];
-                    if (element) {
-                        const clientRect: ClientRect = element.getBoundingClientRect();
+                    const autoFillHandles: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.e-autofill');
+                    if (autoFillHandles.length) {
+                        const clientRect: ClientRect = autoFillHandles[0].getBoundingClientRect();
                         this.autoFillElementPosition = {
                             left: clientRect.left, top: clientRect.top
                         };
-
+                        [].slice.call(autoFillHandles).forEach((autoFillElem: Element) => {
+                            removeClass([autoFillElem], 'e-hide');
+                        });
                     }
                 }
             }

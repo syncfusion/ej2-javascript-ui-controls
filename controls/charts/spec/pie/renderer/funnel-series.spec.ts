@@ -6,13 +6,13 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { FunnelSeries } from '../../../src/accumulation-chart/renderer/funnel-series';
 import { AccumulationChart } from '../../../src/accumulation-chart/accumulation';
 import { AccumulationLegend } from '../../../src/accumulation-chart/renderer/legend';
-import { AccPoints } from '../../../src/accumulation-chart/model/acc-base';
+import { AccPoints, AccumulationSeries } from '../../../src/accumulation-chart/model/acc-base';
 import { getElement, removeElement } from '../../../src/common/utils/helper';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { AccumulationDataLabel } from '../../../src/accumulation-chart/renderer/dataLabel';
 import { AccumulationSelection } from '../../../src/accumulation-chart/user-interaction/selection';
 import { AccumulationTooltip } from '../../../src/accumulation-chart/user-interaction/tooltip';
-
+import { piedata} from '../../chart/base/data.spec';
 import { SliceOption } from '../base/util.spec';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { IAccLoadedEventArgs, IAccTooltipRenderEventArgs,
@@ -892,6 +892,157 @@ describe('Funnel Series checking', () => {
         chart.refresh();
     });
 });
+describe('CornerRadius', () => {
+    let ele: HTMLElement;
+
+    let id: string = 'ej2container'; let seriesId: string = id + '_Series_0';
+
+    let chart: AccumulationChart;
+
+    beforeAll((): void => {
+        ele = createElement('div', { id: id });
+        document.body.appendChild(ele);
+        chart = new AccumulationChart({
+            series: [
+                {
+                    type: 'Funnel',
+                    borderRadius: 30
+                }
+            ], width: '600', height: '400', legendSettings: { visible: false }
+        });
+        chart.appendTo('#' + id);
+    });
+
+    afterAll((): void => {
+        chart.loaded = null;
+        chart.destroy();
+        remove(getElement(id));
+    });
+    it('Bottom', (done: Function) => {
+        chart.loaded = () => {
+
+            let group: Element = getElement("ej2container_Series_0_Point_0");
+            expect(group.getAttribute('d')).toBe( 'M 242 316.4192926045016 Q242 316.4192926045016 242 316.4192926045016 L358 316.4192926045016 Q358 316.4192926045016 358 316.4192926045016 L358 334.2096463022508 Q358 352 340.2096463022508 352 L259.7903536977492 352 Q242 352 242 334.2096463022508 Z ');
+            done();
+
+        };
+        chart.series[0].dataSource = data;
+        chart.series[0].xName = 'x';
+        chart.series[0].yName = 'y';
+        chart.refresh();
+    })
+    it('Top', (done: Function) => {
+        chart.loaded = () => {
+
+            let group: Element = getElement("ej2container_Series_0_Point_4");
+            expect(group.getAttribute('d')).toBe( 'M 86.20019958050571 71.84853738135233 Q68 48 98 48 L502 48 Q532 48 513.7998004194943 71.84853738135233 L382.80385852090035 243.4983922829582 Q382.80385852090035 243.4983922829582 382.80385852090035 243.4983922829582 L217.19614147909968 243.4983922829582 Q217.19614147909968 243.4983922829582 217.19614147909968 243.4983922829582 Z ');
+            done();
+
+        };
+        chart.series[0].dataSource = data;
+        chart.series[0].xName = 'x';
+        chart.series[0].yName = 'y';
+        chart.refresh();
+    })
+
+    it('OnePoint', (done: Function) => {
+        chart.loaded = () => {
+
+            let group: Element = getElement("ej2container_Series_0_Point_0");
+            expect(group.getAttribute('d')).toBe( 'M 86.20019958050572 71.84853738135232 Q68 48 98 48 L502 48 Q532 48 513.7998004194943 71.84853738135232 L358 276 L358 321.99999999999994 Q358 351.99999999999994 328 351.99999999999994 L272 351.99999999999994 Q242 351.99999999999994 242 321.99999999999994 L242 276 Z ');
+            done();
+
+        };
+        chart.series[0].dataSource = [{ x: 'Renewed', y: 18.2, text: '18.20%' }];
+
+        chart.series[0].xName = 'x';
+        chart.series[0].yName = 'y';
+        chart.refresh();
+    })
+
+    it('IfNeckBottom', (done: Function) => {
+        chart.loaded = () => {
+
+            let group: Element = getElement("ej2container_Series_0_Point_0");
+            expect(group.getAttribute('d')).toBe( 'M 135.9780047132757 137.07462686567163 Q135.9780047132757 137.07462686567163 135.9780047132757 137.07462686567163 L464.0219952867243 137.07462686567163 Q464.0219952867243 137.07462686567163 464.0219952867243 137.07462686567163 L358 276 L358 321.99999999999994 Q358 351.99999999999994 328 351.99999999999994 L272 351.99999999999994 Q242 351.99999999999994 242 321.99999999999994 L242 276 Z ');
+            done();
+
+        };
+        chart.series[0].dataSource = [{ x: 'English', y: 100, text: '18.20%' },
+        { x: 'Sanskrit', y: 27.3, text: '27.3%' }
+        ]
+        chart.series[0].xName = 'x';
+        chart.series[0].yName = 'y';
+        chart.series[0].gapRatio = 0.10;
+        chart.refresh();
+    })
+})
+describe('Funnel Series - Checking animation on data changes.', () => {
+    let ele: HTMLElement;
+    let pie: AccumulationChart;
+    let id: string = 'ej2container';
+    beforeAll((): void => {
+        ele = createElement('div', { id: id });
+        document.body.appendChild(ele);
+
+        pie = new AccumulationChart({
+            series: [
+                {
+                    type: 'Funnel',
+                    dataLabel: { visible: true, name: 'text' },
+                    dataSource: piedata, animation: { enable: false }, xName: 'x', yName: 'y'
+
+                }
+            ], width: '450', height: '400', legendSettings: { visible: true }
+        });
+            pie.appendTo('#' + id);
+    });
+
+    afterAll((): void => {
+        pie.loaded = null;
+        pie.destroy();
+        removeElement(id);
+    });
+
+    it('checking funnel series with setdata', (done: Function) => {
+        pie.loaded = (args: Object): void => {
+            pie.loaded = null;
+            let element: Element = document.getElementById('ej2container_Series_0_Point_1');
+            expect(element.getAttribute('d') !== '').toBe(true);
+            console.log('funnel');
+            done();
+        };
+        (pie.series[0] as AccumulationSeries).setData([{ y: 18, x: 1, name: 'Bald Eagle', text: 'Bald Eagle : 18', radius: '50%' }, { y: 23, x: 2, name: 'Bison', text: 'Bison : 23', radius: '60%' },
+        { y: 30, x: 3, name: 'Brown Bear', text: 'Brown Bear : 30', radius: '70%' }, { y: 44, x: 4, name: 'Elk', text: 'Elk : 44', radius: '100%' },
+        { y: 52, x: 10, name: 'Pronghorn', text: 'Pronghorn : 52', radius: '80%' }, { y: 62, x: 6, name: 'Turkey', text: 'Turkey : 62', radius: '80%' },
+        { y: 74, x: 7, name: 'Alligator', text: 'Alligator : 74', radius: '80%' }, { y: 85, x: 8, name: 'Prairie Dog', text: 'Prairie Dog : 85', radius: '80%' },
+        { y: 96, x: 15, name: 'Mountain Lion', text: 'Mountain Lion : 96', radius: '80%' }, { y: 102, x: 10, name: 'Beaver', text: 'Beaver : 102', radius: '80%' }])
+        pie.refresh();
+    });
+
+    it('checking funnel series with addPoint', (done: Function) => {
+        pie.loaded = (args: Object): void => {
+            pie.loaded = null;
+            let element: Element = document.getElementById('ej2container_Series_0_Point_1');
+            expect(element.getAttribute('d') !== '').toBe(true);
+            done();
+        };
+        (pie.series[0] as AccumulationSeries).addPoint({ x: "Dog", y: 15, text: '15%'  });
+        pie.refresh();
+    });
+
+    it('checking funnel series with removePoint', (done: Function) => {
+        pie.loaded = (args: Object): void => {
+            pie.loaded = null;
+            let element: Element = document.getElementById('ej2container_Series_0_Point_1');
+            expect(element.getAttribute('d') !== '').toBe(true);
+            done();
+        };
+        (pie.series[0] as AccumulationSeries).removePoint(0);
+        pie.refresh();
+    });
+
+    });
 it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

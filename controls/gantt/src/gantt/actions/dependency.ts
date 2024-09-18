@@ -321,17 +321,17 @@ export class Dependency {
             this.parent.editModule.cellEditModule.isCellEdit) {
             this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1]['connectedRecords'] = parentRecords;
         }
-        let creatCollection: IPredecessor[] = [];
-        collection.map((data) => {
-            let from = data.from;
-            let to = data.to;
-            let checkColloction: IPredecessor[] = []
-            checkColloction = collection.filter((fdata) => fdata.from === from && fdata.to === to);
+        const creatCollection: IPredecessor[] = [];
+        collection.map((data: IPredecessor) => {
+            const from: string = data.from;
+            const to: string = data.to;
+            let checkColloction: IPredecessor[] = [];
+            checkColloction = collection.filter((fdata: IPredecessor) => fdata.from === from && fdata.to === to);
             if (creatCollection.indexOf(checkColloction[checkColloction.length - 1]) === -1) {
-                creatCollection.push(checkColloction[checkColloction.length - 1])
+                creatCollection.push(checkColloction[checkColloction.length - 1]);
             }
 
-        })
+        });
         return creatCollection;
     }
 
@@ -505,7 +505,7 @@ export class Dependency {
      * @private
      */
     public updatedRecordsDateByPredecessor(): void {
-        if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand
+        if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand
             && this.parent.taskFields.hasChildMapping)) {
             return;
         }
@@ -528,7 +528,7 @@ export class Dependency {
                     && this.parent.allowParentDependency) {
                     this.updateChildItems(flatData[count as number]);
                 }
-                if (flatData[count as number].parentItem && !this.parent.isLoad) {
+                if (flatData[count as number].parentItem) {
                     const recordId: string = flatData[count as number].parentItem.taskId;
                     this.traverseParents(this.parent.getRecordByID(recordId));
                 }
@@ -574,6 +574,9 @@ export class Dependency {
             for (count = 0; count < predecessors.length; count++) {
                 const predecessor: IPredecessor = predecessors[count as number];
                 parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
+                if (this.parent.allowParentDependency && parentGanttRecord.hasChildRecords) {
+                    this.parent.dataOperation.updateParentItems(parentGanttRecord);
+                }
                 record = this.parent.connectorLineModule.getRecordByID(predecessor.to);
                 if (this.parent.viewType === 'ProjectView' && this.parent.allowTaskbarDragAndDrop) {
                     let index: number;
@@ -717,12 +720,14 @@ export class Dependency {
                 tempDate = this.updateDateByOffset(tempDate, predecessor, ganttProperty);
             }
             if (!ganttProperty.isMilestone) {
-                let date = new Date(tempDate);
+                const date: Date = new Date(tempDate);
                 date.setDate(date.getDate() - 1);
                 tempDate = this.dateValidateModule.checkEndDate(tempDate, ganttProperty);
             }
             if (ganttProperty.segments && ganttProperty.segments.length !== 0) {
-                const duration = this.dateValidateModule.getDuration(ganttProperty.startDate, ganttProperty.endDate, ganttProperty.durationUnit, ganttProperty.isAutoSchedule, ganttProperty.isMilestone)
+                const duration: number = this.dateValidateModule.getDuration(ganttProperty.startDate, ganttProperty.endDate,
+                                                                             ganttProperty.durationUnit, ganttProperty.isAutoSchedule,
+                                                                             ganttProperty.isMilestone);
                 returnStartDate = this.dateValidateModule.getStartDate(
                     tempDate, duration, ganttProperty.durationUnit, ganttProperty);
             } else {
@@ -755,7 +760,7 @@ export class Dependency {
         let resultDate: Date;
         const offsetValue: number = predecessor.offset;
         const durationUnit: string = predecessor.offsetUnit;
-        if (offsetValue < 0 && !isNullOrUndefined(date)) {
+        if (offsetValue < 0  && !isNullOrUndefined(date)) {
             resultDate = this.dateValidateModule.getStartDate(
                 this.dateValidateModule.checkEndDate(date, record), (offsetValue * -1), durationUnit, record, true);
         } else {
@@ -1094,7 +1099,7 @@ export class Dependency {
     private updateChildItems(ganttRecord: IGanttData): void {
         if (ganttRecord.childRecords.length > 0 && this.validatedChildItems.length > 0) {
             let isPresent: boolean = true;
-            isPresent = !ganttRecord.childRecords.some((record: any) => {
+            isPresent = !ganttRecord.childRecords.some((record: IGanttData) => {
                 return this.validatedChildItems['includes'](record as Object);
             });
             if (!isPresent) {

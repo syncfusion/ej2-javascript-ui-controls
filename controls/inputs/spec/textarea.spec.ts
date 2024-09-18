@@ -1672,4 +1672,194 @@ describe('TextArea Component', () => {
             expect(textareaObj.element.getAttribute('cols')).toBe('10');
         });
     });
+    describe('Null or undefined value testing', function (){
+        let textareaObj: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'textarea'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            document.body.innerHTML = '';
+        });
+        it('cols',function() {
+            textareaObj = new TextArea({ 
+                cols: null
+            },'#textarea');
+            expect(textareaObj.cols).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                cols: undefined
+            },'#textarea');
+            expect(textareaObj.cols).toBe(null);
+            textareaObj.destroy();
+        });
+        it('cssClass',function() {
+            textareaObj = new TextArea({ 
+                cssClass: null
+            },'#textarea');
+            expect(textareaObj.cssClass).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                cssClass: undefined
+            },'#textarea');
+            expect(textareaObj.cssClass).toBe('');
+            textareaObj.destroy();
+         });
+         it('enablePersistence',function() {
+            textareaObj = new TextArea({ 
+                enablePersistence: null
+            },'#textarea');
+            expect(textareaObj.enablePersistence).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                enablePersistence: undefined
+            },'#textarea');
+            expect(textareaObj.enablePersistence).toBe(false);
+            textareaObj.destroy();
+         });
+         it('enableRtl',function() {
+            textareaObj = new TextArea({ 
+                enableRtl: null
+            },'#textarea');
+            expect(textareaObj.enableRtl).toBe(false);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                enableRtl: undefined
+            },'#textarea');
+            expect(textareaObj.enableRtl).toBe(false);
+            textareaObj.destroy();
+         });
+         it('enabled',function() {
+            textareaObj = new TextArea({ 
+                enabled: null
+            },'#textarea');
+            expect(textareaObj.enabled).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                enabled: undefined
+            },'#textarea');
+            expect(textareaObj.enabled).toBe(false);
+            textareaObj.destroy();
+         });
+         it('floatLabelType',function() {
+            textareaObj = new TextArea({ 
+                floatLabelType: null
+            },'#textarea');
+            expect(textareaObj.floatLabelType).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                floatLabelType: undefined
+            },'#textarea');
+            expect(textareaObj.floatLabelType).toBe('Never');
+            textareaObj.destroy();
+         });
+         it('htmlAttributes',function() {
+            textareaObj = new TextArea({ 
+                htmlAttributes: null
+            },'#textarea');
+            expect(textareaObj.htmlAttributes).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                htmlAttributes: undefined
+            },'#textarea');
+            expect(JSON.stringify(textareaObj.htmlAttributes)).toBe('{}');
+            textareaObj.destroy();
+         });
+         it('maxLength',function() {
+            textareaObj = new TextArea({ 
+                maxLength: null
+            },'#textarea');
+            expect(textareaObj.maxLength).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                maxLength: undefined
+            },'#textarea');
+            expect(textareaObj.maxLength).toBe(null);
+            textareaObj.destroy();
+         });
+         it('placeholder',function() {
+            textareaObj = new TextArea({ 
+                placeholder: null
+            },'#textarea');
+            expect(textareaObj.placeholder).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                placeholder: undefined
+            },'#textarea');
+            expect(textareaObj.placeholder).toBe(null);
+            textareaObj.destroy();
+         });
+         it('readonly',function() {
+            textareaObj = new TextArea({ 
+                readonly: null
+            },'#textarea');
+            expect(textareaObj.readonly).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                readonly: undefined
+            },'#textarea');
+            expect(textareaObj.readonly).toBe(false);
+            textareaObj.destroy();
+         });
+         it('resizeMode',function() {
+            textareaObj = new TextArea({ 
+                resizeMode: null
+            },'#textarea');
+            expect(textareaObj.resizeMode).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                resizeMode: undefined
+            },'#textarea');
+            expect(textareaObj.resizeMode).toBe('Both');
+            textareaObj.destroy();
+         });
+         it('showClearButton',function() {
+            textareaObj = new TextArea({ 
+                showClearButton: null
+            },'#textarea');
+            expect(textareaObj.showClearButton).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                showClearButton: undefined
+            },'#textarea');
+            expect(textareaObj.showClearButton).toBe(false);
+            textareaObj.destroy();
+         });
+         it('rows',function() {
+            textareaObj = new TextArea({ 
+                rows: null
+            },'#textarea');
+            expect(textareaObj.rows).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                rows: undefined
+            },'#textarea');
+            expect(textareaObj.rows).toBe(null);
+            textareaObj.destroy();
+         });
+         it('value',function() {
+            textareaObj = new TextArea({ 
+                value: null
+            },'#textarea');
+            expect(textareaObj.value).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                value: undefined
+            },'#textarea');
+            expect(textareaObj.value).toBe(null);
+            textareaObj.destroy();
+         });
+         it('width',function() {
+            textareaObj = new TextArea({ 
+                width: null
+            },'#textarea');
+            expect(textareaObj.width).toBe(null);
+            textareaObj.destroy();
+            textareaObj = new TextArea({ 
+                width: undefined
+            },'#textarea');
+            expect(textareaObj.width).toBe(null);
+            textareaObj.destroy();
+         });
+    });
 });

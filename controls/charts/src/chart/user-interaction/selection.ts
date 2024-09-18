@@ -13,13 +13,14 @@ import { SelectionMode, HighlightMode } from '../../common/utils/enum';
 import { Chart } from '../chart';
 import { Series, Points } from '../series/chart-series';
 import { SeriesModel } from '../series/chart-series-model';
-import { Indexes, Index } from '../../common/model/base';
+import { Index } from '../../common/model/base';
 import { IDragCompleteEventArgs, ISelectionCompleteEventArgs } from '../../chart/model/chart-interface';
 import { dragComplete, selectionComplete } from '../../common/model/constants';
 import { BaseSelection } from '../../common/user-interaction/selection';
+import { Indexes } from '../../common/model/base';
 
 /**
- * `Selection` module handles the selection for chart.
+ * The `Selection` module handles the selection of chart elements.
  *
  * @private
  */
@@ -329,9 +330,9 @@ export class Selection extends BaseSelection {
 
     private mouseClick(event: Event): void {
         this.calculateSelectedElements(event.target as HTMLElement, event.type);
-        if (this.chart.isTouch && Browser.isDevice && this.chart.highlightModule && this.chart.highlightModule.highlightDataIndexes
+        if (this.chart.highlightModule && this.chart.highlightModule.highlightDataIndexes
             && this.chart.highlightModule.highlightDataIndexes.length > 0 && (<Element>event.target).id.indexOf('_chart_legend_') === -1
-            && (<Element>event.target).id.indexOf('_Series_') === -1) {
+            && (<Element>event.target).id.indexOf('_Series_') === -1 && this.chart.isTouch && Browser.isDevice) {
             this.removeLegendHighlightStyles();
         }
     }
@@ -556,7 +557,8 @@ export class Selection extends BaseSelection {
                 }
             }
             let isAdd: boolean;
-            const className: string = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
+            let className: string = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
+            className = className.replace('e-chart-focused', '').trim();
             const pClassName: string = selectedElements[0].parentNode &&
                 ((<Element>selectedElements[0].parentNode).getAttribute('class') || '');
             if (className !== '' && this.currentMode !== 'Cluster') {
@@ -971,12 +973,14 @@ export class Selection extends BaseSelection {
                     }
                 }
                 else {
-                    seriesElements = this.getSeriesElements(chart.visibleSeries[series as number]);
-                    for (const seriesElement of seriesElements) {
-                        if (isNullOrUndefined(seriesElement)) {
-                            return;
+                    if (chart.visibleSeries[series as number].visible) {
+                        seriesElements = this.getSeriesElements(chart.visibleSeries[series as number]);
+                        for (const seriesElement of seriesElements) {
+                            if (isNullOrUndefined(seriesElement)) {
+                                return;
+                            }
+                            this.checkSelectionElements(seriesElement, seriesStyle, false, true, series);
                         }
-                        this.checkSelectionElements(seriesElement,  seriesStyle, false, true, series);
                     }
                 }
                 this.isSeriesMode = true;

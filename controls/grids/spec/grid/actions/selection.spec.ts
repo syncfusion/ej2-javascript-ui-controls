@@ -6975,6 +6975,168 @@ describe('EJ2-891988 - SelectRow method with toggle set to true does not selects
     });
 });
 
+describe('Code Coverage - selection - enableAutoFill setScrollPosition', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                selectionSettings: {
+                    mode: 'Cell',
+                    type: 'Multiple'
+                },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                enableAutoFill: true,
+                pageSettings: { pageSize: 5 },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                frozenRows: 1,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', visible: false, textAlign: 'Right', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 150 },
+                    { field: 'ShipName', headerText: 'Ship Name', visible: false, width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit', width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' }, },
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } } },
+                    { field: 'ShipAddress', headerText: 'Ship Address', width: 150 },
+                    { field: 'ShipRegion', headerText: 'Ship Region', width: 150 },
+                ],
+            }, done);
+    });
+
+    it('for coverage - 1', () => {
+        (gridObj.getCellFromIndex(3, 2) as HTMLElement).click();
+        (<any>gridObj.selectionModule).startDIndex = 2;
+        (<any>gridObj.selectionModule).startDCellIndex = 2;
+        (<any>gridObj.selectionModule).startAFCell = gridObj.getCellFromIndex(3, 2);
+    });
+
+    it('for coverage - 2', () => {
+        (<any>gridObj.selectionModule).isAutoFillSel = true;
+        (<any>gridObj.selectionModule).startCell = gridObj.getCellFromIndex(2, 2);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'up', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'down', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'left', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'right', null);
+    });
+
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+
+
+//code coverage improvement
+describe('coverage for selection file.', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    let rows: Element[];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0,5),
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'ShipCountry', headerText: 'Ship Country' }
+                ],
+            }, done);
+    });
+
+    it('selection file code coverage - 1', () => {
+        gridObj.selectionSettings.type = 'Multiple';
+        (gridObj.selectionModule as any).isMultiCtrlRequest = true;
+        (gridObj.selectionModule as any).isMultiShiftRequest = true;
+        (gridObj.selectionModule as any).headerSelectionHandler(1);
+        (gridObj.selectionModule as any).prevColIndex = 1,
+        (gridObj.selectionModule as any).headerSelectionHandler(2);
+        (gridObj.selectionModule as any).isMultiShiftRequest = false;
+        (gridObj.selectionModule as any).headerSelectionHandler(1);
+        (gridObj.selectionModule as any).updateColSelection(null, 10);
+        (gridObj.selectionModule as any).selectColumnWithExisting(10);
+        gridObj.selectionSettings.type = 'Single';
+        (gridObj.selectionModule as any).selectColumnWithExisting(1);
+        (gridObj.selectionModule as any).selectColumns(1);
+        (gridObj.selectionModule as any).selectColumnsByRange(10, 9);
+        (gridObj.selectionModule as any).selectColumnsByRange(1);
+        (gridObj.selectionModule as any).selectColumn(10);
+        (gridObj.selectionModule as any).applyUpDown(-2);
+    });
+
+    it('selection file code coverage - 2', () => {
+        (gridObj.selectionModule as any).selectionSettings.enableSimpleMultiRowSelection = true;
+        (gridObj.selectionModule as any).showPopup();
+        (gridObj.selectionModule as any).selectionSettings.enableSimpleMultiRowSelection = false;
+        (gridObj.selectionModule as any).isCancelDeSelect = true;
+        gridObj.checkAllRows = 'Uncheck';
+        (gridObj.selectionModule as any).clearRowCallBack();
+        (gridObj.selectionModule as any).toogle = true;
+        (gridObj.selectionModule as any).disableUI = true;
+        (gridObj.selectionModule as any).clearSelectedRow(1);
+        (gridObj.selectionModule as any).createAFBorders();
+        (gridObj.selectionModule as any).hideAFBorders();
+        (gridObj.selectionModule as any).updateStartCellsIndex();
+        (gridObj.selectionModule as any).beforeFragAppend( { requestType : 'virtualscroll'} );
+        (gridObj.selectionModule as any).selectedRowIndexes = [1];
+        (gridObj.selectionModule as any).initialEnd();
+        (gridObj.selectionModule as any).selectedRowIndexes = [];
+    });
+
+    it('selection file code coverage - 3', () => {
+        (gridObj.selectionModule as any).keyUpHandler({ keyCode: 93 });
+        (gridObj.selectionModule as any).keyUpHandler({ });
+        (gridObj.selectionModule as any).keyDownHandler({ target: gridObj.element });
+        (gridObj.selectionModule as any).keyDownHandler({ keyCode: 93, target: gridObj.element });
+        let target: Element = gridObj.element.querySelector('.e-rowcell');
+        target.classList.add('e-gridchkbox');
+        gridObj.allowKeyboard = false;
+        (gridObj.selectionModule as any).keyDownHandler({ keyCode: 32, target: target, preventDefault: preventDefault });
+        target = gridObj.element.querySelector('.e-headercell');
+        target.children[0].classList.add('e-headerchkcelldiv');
+        (gridObj.selectionModule as any).keyDownHandler({ keyCode: 32, target: target, preventDefault: preventDefault });
+        (gridObj.selectionModule as any).ctrlPlusA();
+        (gridObj.selectionModule as any).isColumnSelected = true;
+        (gridObj.selectionModule as any).clearColumnSelection([]);
+        (gridObj.selectionModule as any).isPartialSelection = true;
+        gridObj.getRowsObject()[0].isSelectable = false;
+        (gridObj.selectionModule as any).selectRow(0);
+        (gridObj.selectionModule as any).addRowsToSelection([0]);
+    });
+
+    it('selection file code coverage - 4', () => {
+        (gridObj.selectionModule as any).toggle = true;
+        (gridObj.selectionModule as any).disableUI = false;
+        (gridObj.selectionModule as any).clearSelectedRow(0);
+        (gridObj.selectionModule as any).cellDeselect();
+        (gridObj.selectionModule as any).bdrElement = document.createElement('div');
+        (gridObj.selectionModule as any).createBorders();
+        (gridObj.selectionModule as any).startCell = false;
+        (gridObj.selectionModule as any).positionAFBorders();
+        (gridObj.selectionModule as any).bdrAFLeft = document.createElement('div');
+        (gridObj.selectionModule as any).createAFBorders();
+        (gridObj.selectionModule as any).bdrAFLeft = null;
+        (gridObj.selectionModule as any).hideAFBorders();
+        (gridObj.selectionModule as any).isCheckedOnAdd = true;
+        (gridObj.selectionModule as any).actionComplete( { selectedRow: 0, requestType : 'save', action: 'add' } );
+    });
+
+    it('selection file code coverage - 5', () => {
+        gridObj.element.classList.add('e-gridcell-read');
+        (gridObj.selectionModule as any).applyUpDown(1);
+        (gridObj.selectionModule as any).selectionSettings.allowColumnSelection = true;
+        (gridObj.selectionModule as any).needColumnSelection = true;
+        (gridObj.selectionModule as any).applyRightLeftKey(1, 1); 
+        (gridObj.selectionModule as any).applyRightLeftKey(2, 2);
+        (gridObj.selectionModule as any).shiftDownKey();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
 
 describe('EJ2-898361 - SelectedRowIndex property is not reset before rowDeselected event', () =>{
     let gridObj: Grid;
@@ -7000,5 +7162,9 @@ describe('EJ2-898361 - SelectedRowIndex property is not reset before rowDeselect
        gridObj.selectRow(0, true);
        expect(count).toBe(1);
     });
-});
 
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

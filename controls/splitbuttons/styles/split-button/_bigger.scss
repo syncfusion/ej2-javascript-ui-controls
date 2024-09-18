@@ -1,0 +1,149 @@
+@include export-module('split-button-bigger') {
+  .e-bigger .e-split-btn-wrapper,
+  .e-bigger.e-split-btn-wrapper {
+    @if $skin-name == 'Material3' {
+      border-radius: 4px;
+      box-shadow: $btn-box-shadow;
+    }
+    .e-split-btn {
+      @if $skin-name == 'Material3' {
+        border-radius: 4px;
+        box-shadow: none;
+      }
+      @if $skin-name == 'bootstrap4'or $skin-name == 'FluentUI' {
+        padding-left: $split-btn-icon-btn-padding-bigger;
+        padding-right: $split-btn-icon-btn-padding-bigger;
+      }
+      @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      @else {
+        padding-left: 12px;
+        padding-right: 6px;
+      }
+
+      &.e-top-icon-btn {
+        padding-bottom: 12px;
+        padding-top: 12px;
+      }
+
+      .e-btn-icon {
+        font-size: $drop-down-btn-icon-font-size-bigger;
+        margin-left: 0;
+        @if $skin-name == 'FluentUI' {
+          padding-right: 8px;
+        }
+        @else {
+          padding-right: 10px;
+        }
+        width: auto;
+        @if $skin-name == 'Material3' {
+          border-radius: 4px;
+        }
+      }
+
+      .e-icon-top {
+        padding-bottom: 6px;
+        padding-right: 0;
+      }
+
+      &.e-icon-btn {
+        padding-left: $split-btn-icon-btn-padding-bigger;
+        padding-right: $split-btn-icon-btn-padding-bigger;
+
+        .e-btn-icon {
+          padding-right: 0;
+        }
+      }
+    }
+
+    .e-dropdown-btn {
+      @if $skin-name == 'bootstrap4' {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      @else {
+        padding-left: 4px;
+        padding-right: 4px;
+      }
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        z-index: 1;
+      }
+    }
+
+    &.e-rtl {
+      .e-split-btn {
+        @if $skin-name == 'bootstrap4' {
+          padding-left: $split-btn-icon-btn-padding-bigger;
+          padding-right: $split-btn-icon-btn-padding-bigger;
+        }
+        @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+        @else {
+          padding-left: 6px;
+          padding-right: 12px;
+        }
+
+        .e-btn-icon {
+          @if $skin-name == 'FluentUI' {
+            padding-left: 8px;
+          }
+          @else {
+            padding-left: 10px;
+          }
+          padding-right: 0;
+          @if $skin-name == 'Material3' {
+            border-radius: 4px;
+          }
+        }
+
+        .e-icon-top {
+          padding-left: 0;
+        }
+
+        &.e-icon-btn {
+          padding-left: $split-btn-icon-btn-padding-bigger;
+          padding-right: $split-btn-icon-btn-padding-bigger;
+
+          .e-btn-icon {
+            padding-left: 0;
+          }
+        }
+      }
+    }
+
+    &.e-vertical {
+      .e-split-btn {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' {
+          padding-bottom: $split-btn-icon-btn-padding-bigger;
+          padding-right: $split-btn-icon-btn-padding-bigger;
+        }
+        @else {
+          padding-bottom: 6px;
+          padding-right: 12px;
+        }
+      }
+
+      .e-dropdown-btn {
+        @if $skin-name == 'bootstrap4' {
+          padding-bottom: $split-btn-icon-btn-padding-bigger;
+          padding-top: $split-btn-icon-btn-padding-bigger;
+        }
+        @else {
+          padding-bottom: 4px;
+          padding-top: 4px;
+        }
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          z-index: 1;
+        }
+
+        .e-icon-bottom {
+          padding-top: 0;
+        }
+      }
+    }
+  }
+}

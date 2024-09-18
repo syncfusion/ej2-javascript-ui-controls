@@ -30,13 +30,13 @@
           @if $spreadsheet-ribbon-skin == 'fabric' or $spreadsheet-ribbon-skin == 'highcontrast' {
             border-color: $spreadsheet-ribbon-focused-wrap-focus-border-color;
           }
-          @if $spreadsheet-ribbon-skin == 'bootstrap5' {
+          @if $spreadsheet-ribbon-skin == 'bootstrap5' or $spreadsheet-ribbon-skin == 'bootstrap5.3'{
             border: 1px solid $spreadsheet-ribbon-focused-wrap-focus-border-color;
           }
           @if $spreadsheet-ribbon-skin == 'highcontrast' {
             border-style: solid;
           }
-          @if $spreadsheet-ribbon-skin == 'bootstrap5' or $spreadsheet-ribbon-skin == 'FluentUI' {
+          @if $spreadsheet-ribbon-skin == 'bootstrap5' or $spreadsheet-ribbon-skin == 'bootstrap5.3' or $spreadsheet-ribbon-skin == 'FluentUI' {
             .e-tab-icon {
               color: $spreadsheet-ribbon-comb-icon-color;
             }
@@ -45,7 +45,7 @@
 
         .e-tab-wrap:focus .e-tab-icon,
         .e-tab-wrap:focus .e-tab-text {
-          @if $skin-name != 'Material3' {
+          @if $skin-name != 'Material3' and $skin-name != 'bootstrap5.3' {
             color: $spreadsheet-ribbon-focus-text-color;
           }
         }
@@ -80,7 +80,7 @@
         box-shadow: none;
       }
     }
-    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
       & .e-tab {
         & .e-tab-header .e-toolbar-item {
           &.e-active {
@@ -102,13 +102,13 @@
 
     & .e-menu-wrapper {
       background-color: transparent;
-      @if $skin-name == 'fluent2' {
+      @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
         &.e-file-menu .e-menu {
           & .e-menu-item.e-selected {
             background: $spreadsheet-file-menu-press-background;
             color: $spreadsheet-file-menu-press-font-color;
             & .e-caret {
-              color: $spreadsheet-file-menu-press-font-color;
+              color: $spreadsheet-file-menu-press-icon-color;
             }
           }
         }
@@ -128,7 +128,7 @@
         }
       }
     }
-    @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+    @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5-dark' {
       & .e-tab,
       & .e-tab.e-focused {
         & .e-tab-header .e-toolbar-item {

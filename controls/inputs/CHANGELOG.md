@@ -2,73 +2,37 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 27.1.48 (2024-09-18)
 
-### Uploader
-
-- `#I619977` - Fixed an issue where the ActionComplete event did not return file data properly.
-
-## 26.2.11 (2024-08-27)
-
-### Uploader
-
-- `#FB60158` - Fixed an issue where the ActionComplete event was not triggered after a file upload.
-
-## 26.2.10 (2024-08-20)
-
-### MaskedTextBox
+### ColorPicker
 
 #### Bug Fixes
 
-- `#I617472` - Fixed an issue where dynamic masking led to incorrect value updates in the MaskedTextBox.
+- `#I904686` - Issue with "Color picker component was not properly read in accessibility tool" has been resolved.
 
-## 26.2.4 (2024-07-24)
-
-### TextBox
+### Slider
 
 #### Bug Fixes
 
-- `#I609281` - Fixed issue where the aria-label attribute was not set properly.
-
-## 26.1.41 (2024-07-09)
-
-### FormValidator
-
-#### Bug Fixes
-
-- `#F58905` - Fixed an issue where the min and max validation rules were not functioning correctly.
-
-### Uploader
-
-#### Bug Fixes
-
-- `#I605386` - Fixed an issue where removing invalid files in a form did not trigger the select event again in the file upload.
-
-## 26.1.40 (2024-07-02)
-
-### Uploader
-
-#### Bug Fixes
-
-- `#I601231` - Fixed issue where change event would return all uploaded files instead of single file when multiple is set to false.
-
-- `#I602694` - Added aria labels to buttons on the Uploader for improved accessibility.
-
-### Input
-
-#### Bug Fixes
-
-- `#I603191` - Fixed console error on component rendering when using float label with outline cssClass property.
-
-## 26.1.38 (2024-06-19)
-
-### NumericTextBox
-
-#### Bug Fixes
-
-- `#I586498` - Fixed an issue where the numerictextbox component in different culture was causing incorrect appending of pasted values.
+- `#I624218` - An issue with Slider ticks in material theme has been resolved.
 
 ## 26.1.35 (2024-06-11)
+
+### OTP Input `Preview`
+
+The JavaScript OTP input is a form control that is used to input one-time passwords (OTP) during multi-factor authentication
+processes. It provides extensive customization options, allowing users to change input types, placeholders, separators, and more
+to suit their specific needs.
+
+Explore the demo [here](https://ej2.syncfusion.com/demos/#/fluent2/otp-input/default.html)
+
+**Key features**
+
+- **Input types**: Allow specifying the input type as text, number, or password for the OTP input.
+- **Styling modes**: Offer built-in styling options such as underline, outline, or fill.
+- **Placeholders**: Allow setting a hint character for each input field, indicating the expected value.
+- **Separators**: Specify a character to be placed between the input fields.
+- **Customization**: Allows customizing the default appearance, including input field styling, input length and more.
 
 ### Signature
 

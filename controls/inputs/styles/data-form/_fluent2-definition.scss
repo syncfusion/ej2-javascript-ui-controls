@@ -26,7 +26,8 @@ $form-group-title-border-height: 1px !default;
 $form-group-title-border-bottom-style: 1px solid $group-title-border-color !default;
 
 //tooltip styles
-$form-tooltip-background-color: $danger-light !default;
+$form-tooltip-background-color: $tooltip-bg-color !default;
+$form-tooltip-border-color: $tooltip-border !default;
 $form-tooltip-color: $danger !default;
 $form-validation-message-font-size: 12px;
 

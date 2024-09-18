@@ -136,31 +136,41 @@ export interface ContentControlInfo {
     /**
      * Specifies the title of the content control.
      */
-    title: string;
+    title: string
     /**
      * Specifies the tag associated with the content control.
      */
-    tag: string;
+    tag: string
     /**
      * Specifies the value of the content control.
      */
-    value: string;
+    value: string
     /**
      * Specifies whether the content control can be deleted.
      */
-    canDelete: boolean;
+    canDelete: boolean
     /**
      * Specifies whether the content control can be edited.
      */
-    canEdit: boolean;
+    canEdit: boolean
     /**
      * Specifies items for the content control, applicable if the type is combobox or dropdownlist.
      */
-    items?: string[];
+    items?: string[]
     /**
      * Specifies the type of content control.
      */
     type: ContentControlType
+    /**
+     * Specifies the XML string used for data binding.
+     * This string represents the XML content to be mapped within the content control.
+     */
+    xmlString?: string
+    /**
+     * Specifies the XPath expression for XML mapping.
+     * This path identifies the specific part of the XML data to bind to the content control.
+     */
+    xmlPath?: string
 }
 /**
  * This event arguments provides the necessary information about documentChange event.

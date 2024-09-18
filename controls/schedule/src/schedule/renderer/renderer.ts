@@ -158,7 +158,7 @@ export class Render {
         if (view === 'Year') {
             this.parent.element.setAttribute('aria-label', this.parent.activeView.getLabelText(view));
         } else {
-            this.parent.element.setAttribute('aria-labelledby', this.parent.element.id + '_table');
+            this.parent.element.setAttribute('aria-labelledby', this.parent.element.id + '_table' );
         }
     }
 

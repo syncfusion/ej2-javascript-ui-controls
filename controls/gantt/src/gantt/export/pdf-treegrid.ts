@@ -1,12 +1,12 @@
 import { PdfGanttCellStyle, IGanttStyle } from './../base/interface';
 import {
-    PdfTreeGridColumnCollection, PdfTreeGridCell, PdfTreeGridRow, PdfTreeGridHeaderCollection, PdfTreeGridRowCollection
+    PdfTreeGridColumnCollection, PdfTreeGridRow, PdfTreeGridHeaderCollection, PdfTreeGridRowCollection
 } from './pdf-base/index';
 import { PdfTreeGridStyle, PdfBorders, PdfTreeGridLayouter, PdfTreeGridLayoutResult, PdfTreeGridLayoutFormat
 } from './pdf-base/index';
 import {
     PdfLayoutElement, PdfLayoutParams, RectangleF, PdfLayoutFormat, PdfPage, PointF, PdfLayoutResult,
-    SizeF, PdfGridBeginCellDrawEventArgs, PdfGridEndCellDrawEventArgs
+    SizeF
 } from '@syncfusion/ej2-pdf-export';
 
 /**
@@ -47,20 +47,20 @@ export class PdfTreeGrid extends PdfLayoutElement {
      * @returns {boolean} .
      * @private
      */
-    public get raiseBeginCellDraw(): boolean {
-        // eslint-disable-next-line
-        return (typeof this.beginCellDraw !== 'undefined' && typeof this.beginCellDraw !== null);
-    }
+    // public get raiseBeginCellDraw(): boolean {
+    //     // eslint-disable-next-line
+    //     return (typeof this.beginCellDraw !== 'undefined' && typeof this.beginCellDraw !== null);
+    // }
     /**
      * Gets a value indicating whether the `end cell layout event` should be raised.
      *
      * @returns {boolean} .
      * @private
      */
-    public get raiseEndCellDraw(): boolean {
-        // eslint-disable-next-line
-        return (typeof this.endCellDraw !== 'undefined' && typeof this.endCellDraw !== null);
-    }
+    // public get raiseEndCellDraw(): boolean {
+    //     // eslint-disable-next-line
+    //     return (typeof this.endCellDraw !== 'undefined' && typeof this.endCellDraw !== null);
+    // }
     public get size(): SizeF {
         if ((this.treeGridSize.width === 0 && this.treeGridSize.height === 0)) {
             this.treeGridSize = this.calculateTreeGridSize();
@@ -240,170 +240,170 @@ export class PdfTreeGrid extends PdfLayoutElement {
                 }
             }
         }
-        this.setSpan();
+        //  this.setSpan();
         this.layouter = new PdfTreeGridLayouter(this);
         const result: PdfTreeGridLayoutResult = this.layouter.layoutInternal(param);
         return result;
     }
 
-    public onBeginCellDraw(args: PdfGridBeginCellDrawEventArgs): void {
-        if (this.raiseBeginCellDraw) {
-            this.beginCellDraw(this, args);
-        }
-    }
-    public onEndCellDraw(args: PdfGridEndCellDrawEventArgs): void {
-        if (this.raiseEndCellDraw) {
-            this.endCellDraw(this, args);
-        }
-    }
-    public setSpan(): void {
-        let colSpan: number = 1;
-        let rowSpan: number = 1;
-        let currentCellIndex: number = 0;
-        let currentRowIndex: number = 0;
-        let maxSpan: number = 0;
-        let rowCount: number = this.headers.count;
-        for (let i: number = 0; i < rowCount; i++) {
-            const row: PdfTreeGridRow = this.headers.getHeader(i);
-            maxSpan = 0;
-            const colCount: number = row.cells.count;
-            for (let j: number = 0; j < colCount; j++) {
-                const cell: PdfTreeGridCell = row.cells.getCell(j);
-                maxSpan = Math.max(maxSpan, cell.rowSpan);
-                //Skip setting span map for already coverted rows/columns.
-                if (!cell.isCellMergeContinue && !cell.isRowMergeContinue && (cell.columnSpan > 1 || cell.rowSpan > 1)) {
-                    if (cell.columnSpan + j > row.cells.count) {
-                        throw new Error('Invalid span specified at row ' + j.toString() + ' column ' + i.toString());
-                    }
-                    if (cell.rowSpan + i > this.headers.count) {
-                        throw new Error('Invalid span specified at Header ' + j.toString() + ' column ' + i.toString());
-                    }
+    // public onBeginCellDraw(args: PdfGridBeginCellDrawEventArgs): void {
+    //     if (this.raiseBeginCellDraw) {
+    //         this.beginCellDraw(this, args);
+    //     }
+    // }
+    // public onEndCellDraw(args: PdfGridEndCellDrawEventArgs): void {
+    //     if (this.raiseEndCellDraw) {
+    //         this.endCellDraw(this, args);
+    //     }
+    // }
+    // public setSpan(): void {
+    //     let colSpan: number = 1;
+    //     let rowSpan: number = 1;
+    //     let currentCellIndex: number = 0;
+    //     let currentRowIndex: number = 0;
+    //     let maxSpan: number = 0;
+    // let rowCount: number = this.headers.count;
+    // for (let i: number = 0; i < rowCount; i++) {
+    //     const row: PdfTreeGridRow = this.headers.getHeader(i);
+    //     maxSpan = 0;
+    //     const colCount: number = row.cells.count;
+    //     for (let j: number = 0; j < colCount; j++) {
+    //         const cell: PdfTreeGridCell = row.cells.getCell(j);
+    //         maxSpan = Math.max(maxSpan, cell.rowSpan);
+    //         //Skip setting span map for already coverted rows/columns.
+    //         if (!cell.isCellMergeContinue && !cell.isRowMergeContinue && (cell.columnSpan > 1 || cell.rowSpan > 1)) {
+    //             if (cell.columnSpan + j > row.cells.count) {
+    //                 throw new Error('Invalid span specified at row ' + j.toString() + ' column ' + i.toString());
+    //             }
+    //             if (cell.rowSpan + i > this.headers.count) {
+    //                 throw new Error('Invalid span specified at Header ' + j.toString() + ' column ' + i.toString());
+    //             }
 
-                    if (cell.columnSpan > 1 && cell.rowSpan > 1) {
-                        colSpan = cell.columnSpan;
-                        rowSpan = cell.rowSpan;
-                        currentCellIndex = j;
-                        currentRowIndex = i;
-                        cell.isCellMergeStart = true;
-                        cell.isRowMergeStart = true;
-                        //Set Column merges for first row
-                        while (colSpan > 1) {
-                            currentCellIndex++;
-                            row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
-                            row.cells.getCell(currentCellIndex).isRowMergeContinue = true;
-                            row.cells.getCell(currentCellIndex).rowSpan = rowSpan;
-                            colSpan--;
-                        }
-                        currentCellIndex = j;
-                        colSpan = cell.columnSpan;
-                        //Set Row Merges and column merges foreach subsequent rows.
-                        while (rowSpan > 1) {
-                            currentRowIndex++;
-                            this.headers.getHeader(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
-                            this.headers.getHeader(currentRowIndex).cells.getCell(currentCellIndex).isRowMergeContinue = true;
-                            rowSpan--;
-                            while (colSpan > 1) {
-                                currentCellIndex++;
-                                this.headers.getHeader(currentRowIndex).cells.getCell(currentCellIndex).isCellMergeContinue = true;
-                                this.headers.getHeader(currentRowIndex).cells.getCell(currentCellIndex).isRowMergeContinue = true;
-                                colSpan--;
-                            }
-                            colSpan = cell.columnSpan;
-                            currentCellIndex = j;
-                        }
-                    } else if (cell.columnSpan > 1 && cell.rowSpan === 1) {
-                        colSpan = cell.columnSpan;
-                        currentCellIndex = j;
-                        cell.isCellMergeStart = true;
-                        let totalColumnWidth: number = this.columns.columns[currentCellIndex as number].width;
-                        //Set Column merges.
-                        while (colSpan > 1) {
-                            currentCellIndex++;
-                            row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
-                            colSpan--;
-                            totalColumnWidth += this.columns.columns[currentCellIndex as number].width;
-                        }
-                        cell.width = totalColumnWidth;
-                    } else if (cell.columnSpan === 1 && cell.rowSpan > 1) {
-                        rowSpan = cell.rowSpan;
-                        currentRowIndex = i;
-                        //Set row Merges.
-                        while (rowSpan > 1) {
-                            currentRowIndex++;
-                            this.headers.getHeader(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
-                            rowSpan--;
-                        }
-                    }
-                }
-            }
-            row.maximumRowSpan = maxSpan;
-        }
-        colSpan = rowSpan = 1;
-        currentCellIndex = currentRowIndex = 0;
-        rowCount = this.rows.count;
-        for (let i: number = 0; i < rowCount; i++) {
-            const row: PdfTreeGridRow = this.rows.getRow(i);
-            const colcount: number = row.cells.count;
-            for (let j: number = 0; j < colcount; j++) {
-                const cell: PdfTreeGridCell = row.cells.getCell(j);
-                //Skip setting span map for already coverted rows/columns.
-                if (!cell.isCellMergeContinue && !cell.isRowMergeContinue && (cell.columnSpan > 1 || cell.rowSpan > 1)) {
-                    if (cell.columnSpan + j > row.cells.count) {
-                        throw new Error('Invalid span specified at row {0} column {1} ' + j.toString());
-                    }
-                    if (cell.rowSpan + i > this.rows.count) {
-                        throw new Error('Invalid span specified at row {0} column {1} ' + j.toString());
-                    }
-                    if (cell.columnSpan > 1 && cell.rowSpan > 1) {
-                        colSpan = cell.columnSpan;
-                        rowSpan = cell.rowSpan;
-                        currentCellIndex = j;
-                        currentRowIndex = i;
-                        cell.isCellMergeStart = true;
-                        cell.isRowMergeStart = true;
-                        //set Column merges for first row.
-                        while (colSpan > 1) {
-                            currentCellIndex++;
-                            row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
-                            colSpan--;
-                        }
-                        currentCellIndex = j;
-                        colSpan = cell.columnSpan;
-                        // Set row merges and column merges for each subsequentt rows.
-                        while (rowSpan > 1) {
-                            currentRowIndex++;
-                            this.rows.getRow(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
-                            rowSpan--;
-                            while (colSpan > 1) {
-                                currentCellIndex++;
-                                this.rows.getRow(currentRowIndex).cells.getCell(currentCellIndex).isCellMergeContinue = true;
-                                colSpan--;
-                            }
-                            colSpan = cell.columnSpan;
-                            currentCellIndex = j;
-                        }
-                    } else if (cell.columnSpan > 1 && cell.rowSpan === 1) {
-                        colSpan = cell.columnSpan;
-                        currentCellIndex = j;
-                        cell.isCellMergeStart = true;
-                        //set Column merges.
-                        while (colSpan > 1) {
-                            currentCellIndex++;
-                            row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
-                            colSpan--;
-                        }
-                    } else if (cell.columnSpan === 1 && cell.rowSpan > 1) {
-                        rowSpan = cell.rowSpan;
-                        currentRowIndex = i;
-                        //set row merges.
-                        while (rowSpan > 1) {
-                            currentRowIndex++;
-                            this.rows.getRow(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
-                            rowSpan--;
-                        }
-                    }
-                }
-            }
-        }
-    }
+    //             if (cell.columnSpan > 1 && cell.rowSpan > 1) {
+    //                 colSpan = cell.columnSpan;
+    //                 rowSpan = cell.rowSpan;
+    //                 currentCellIndex = j;
+    //                 currentRowIndex = i;
+    //                 cell.isCellMergeStart = true;
+    //                 cell.isRowMergeStart = true;
+    //                 //Set Column merges for first row
+    //                 while (colSpan > 1) {
+    //                     currentCellIndex++;
+    //                     row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
+    //                     row.cells.getCell(currentCellIndex).isRowMergeContinue = true;
+    //                     row.cells.getCell(currentCellIndex).rowSpan = rowSpan;
+    //                     colSpan--;
+    //                 }
+    //                 currentCellIndex = j;
+    //                 colSpan = cell.columnSpan;
+    //                 //Set Row Merges and column merges foreach subsequent rows.
+    //                 while (rowSpan > 1) {
+    //                     currentRowIndex++;
+    //                     this.headers.getHeader(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
+    //                     this.headers.getHeader(currentRowIndex).cells.getCell(currentCellIndex).isRowMergeContinue = true;
+    //                     rowSpan--;
+    //                     while (colSpan > 1) {
+    //                         currentCellIndex++;
+    //                         this.headers.getHeader(currentRowIndex).cells.getCell(currentCellIndex).isCellMergeContinue = true;
+    //                         this.headers.getHeader(currentRowIndex).cells.getCell(currentCellIndex).isRowMergeContinue = true;
+    //                         colSpan--;
+    //                     }
+    //                     colSpan = cell.columnSpan;
+    //                     currentCellIndex = j;
+    //                 }
+    //             } else if (cell.columnSpan > 1 && cell.rowSpan === 1) {
+    //                 colSpan = cell.columnSpan;
+    //                 currentCellIndex = j;
+    //                 cell.isCellMergeStart = true;
+    //                 let totalColumnWidth: number = this.columns.columns[currentCellIndex as number].width;
+    //                 //Set Column merges.
+    //                 while (colSpan > 1) {
+    //                     currentCellIndex++;
+    //                     row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
+    //                     colSpan--;
+    //                     totalColumnWidth += this.columns.columns[currentCellIndex as number].width;
+    //                 }
+    //                 cell.width = totalColumnWidth;
+    //             } else if (cell.columnSpan === 1 && cell.rowSpan > 1) {
+    //                 rowSpan = cell.rowSpan;
+    //                 currentRowIndex = i;
+    //                 //Set row Merges.
+    //                 while (rowSpan > 1) {
+    //                     currentRowIndex++;
+    //                     this.headers.getHeader(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
+    //                     rowSpan--;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     row.maximumRowSpan = maxSpan;
+    // }
+    // colSpan = rowSpan = 1;
+    // currentCellIndex = currentRowIndex = 0;
+    // rowCount = this.rows.count;
+    // for (let i: number = 0; i < rowCount; i++) {
+    //     const row: PdfTreeGridRow = this.rows.getRow(i);
+    //     const colcount: number = row.cells.count;
+    //     for (let j: number = 0; j < colcount; j++) {
+    //         const cell: PdfTreeGridCell = row.cells.getCell(j);
+    //         //Skip setting span map for already coverted rows/columns.
+    //         if (!cell.isCellMergeContinue && !cell.isRowMergeContinue && (cell.columnSpan > 1 || cell.rowSpan > 1)) {
+    //             if (cell.columnSpan + j > row.cells.count) {
+    //                 throw new Error('Invalid span specified at row {0} column {1} ' + j.toString());
+    //             }
+    //             if (cell.rowSpan + i > this.rows.count) {
+    //                 throw new Error('Invalid span specified at row {0} column {1} ' + j.toString());
+    //             }
+    //             if (cell.columnSpan > 1 && cell.rowSpan > 1) {
+    //                 colSpan = cell.columnSpan;
+    //                 rowSpan = cell.rowSpan;
+    //                 currentCellIndex = j;
+    //                 currentRowIndex = i;
+    //                 cell.isCellMergeStart = true;
+    //                 cell.isRowMergeStart = true;
+    //                 //set Column merges for first row.
+    //                 while (colSpan > 1) {
+    //                     currentCellIndex++;
+    //                     row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
+    //                     colSpan--;
+    //                 }
+    //                 currentCellIndex = j;
+    //                 colSpan = cell.columnSpan;
+    //                 // Set row merges and column merges for each subsequentt rows.
+    //                 while (rowSpan > 1) {
+    //                     currentRowIndex++;
+    //                     this.rows.getRow(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
+    //                     rowSpan--;
+    //                     while (colSpan > 1) {
+    //                         currentCellIndex++;
+    //                         this.rows.getRow(currentRowIndex).cells.getCell(currentCellIndex).isCellMergeContinue = true;
+    //                         colSpan--;
+    //                     }
+    //                     colSpan = cell.columnSpan;
+    //                     currentCellIndex = j;
+    //                 }
+    //             } else if (cell.columnSpan > 1 && cell.rowSpan === 1) {
+    //                 colSpan = cell.columnSpan;
+    //                 currentCellIndex = j;
+    //                 cell.isCellMergeStart = true;
+    //                 //set Column merges.
+    //                 while (colSpan > 1) {
+    //                     currentCellIndex++;
+    //                     row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
+    //                     colSpan--;
+    //                 }
+    //             } else if (cell.columnSpan === 1 && cell.rowSpan > 1) {
+    //                 rowSpan = cell.rowSpan;
+    //                 currentRowIndex = i;
+    //                 //set row merges.
+    //                 while (rowSpan > 1) {
+    //                     currentRowIndex++;
+    //                     this.rows.getRow(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
+    //                     rowSpan--;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    // }
 }

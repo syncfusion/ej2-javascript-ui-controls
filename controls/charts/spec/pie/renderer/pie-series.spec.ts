@@ -15,7 +15,9 @@ import { MouseEvents } from '../../chart/base/events.spec';
 import { IAccLoadedEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
-AccumulationChart.Inject(PieSeries, AccumulationLegend, AccumulationDataLabel);
+import { AccumulationSeries } from '../../../src/accumulation-chart/model/acc-base';
+import { AccumulationAnnotation } from '../../../src/accumulation-chart/annotation/annotation';
+AccumulationChart.Inject(PieSeries,AccumulationAnnotation, AccumulationLegend, AccumulationDataLabel);
 
 describe('Accumulation Chart Control', () => {
     beforeAll(() => {
@@ -818,4 +820,286 @@ it('memory leak', () => {
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
 })
+//test suite for border radius feature
+
+describe('Pie Series Corner Radius Feature  checking', () => {
+    let ele: HTMLElement;
+    let pie: AccumulationChart; let points: AccPoints[];
+    let id: string = 'ej2container';
+    let trigger: MouseEvents = new MouseEvents();
+    let slice: Element;
+    let loaded: EmitType<IAccLoadedEventArgs>;
+    let pieGroupId: string = id + 'SeriesGroup0';
+    let sliceid: string = id + '_Series_0' + '_Point_';
+    let slicepath: SliceOption;
+
+
+    beforeAll((): void => {
+        ele = createElement('div', { id: id });
+        document.body.appendChild(ele);
+        
+        pie = new AccumulationChart({
+            series: [
+                {
+                    type: 'Pie',
+                    dataLabel: { visible: false, name: 'text' },
+                    dataSource: piedata, animation: { enable: false }, xName: 'x', yName: 'y',
+                    borderRadius : 10
+                
+                }
+            ], width: '600', height: '400', legendSettings: { visible: false}
+        });
+        pie.appendTo('#' + id);
+    });
+
+    afterAll((): void => {
+        pie.loaded = null;
+        pie.destroy();
+        removeElement(id);
+    });
+    it('checking pie series with corner radius', (done: Function) => {
+    
+      
+        pie.loaded = () => {
+            slice = getElement(sliceid + 0);
+            expect(slice.getAttribute('d')).toBe('M 300 200 L 300 52.668929010238884 A 4.668929010238883 4.668929010238883 0 0 1 304.66892901023886 48 A 152 152 0 0 1 324.5717233643358 49.9265869348964 A 4.668929010238883 4.668929010238883 0 0 1 328.2584551301858 55.404342414285104 Z') 
+            done();
+        }
+            pie.refresh();
+
+        });
+
+
+        it('checking dougnut series with corner radius', (done: Function) => {
+            pie.loaded = () => {
+                slice = getElement(sliceid + 0);
+                expect(slice.getAttribute('d')).toBe('M 300 49.86757160409555 A 1.867571604095553 1.867571604095553 0 0 1 301.86757160409553 48 A 152 152 0 0 1 327.3210695379074 50.46389404895801 A 1.867571604095553 1.867571604095553 0 0 1 328.7957622442474 52.654996240713494 L 312.0197915374898 138.49594206761856 A 1.867571604095553 1.867571604095553 0 0 1 309.82868934573435 139.97063477395858 A 60.8 60.8 0 0 0 301.86757160409553 139.2 A 1.867571604095553 1.867571604095553 0 0 1 300 137.33242839590443 Z') 
+                done()
+            }
+            pie.series[0].innerRadius = '40%'
+            pie.refresh();
+    
+        });
+        it('checking pie series with corner radius for single slice', (done: Function) => {
+    
+            pie.series[0].innerRadius = '0'
+            pie.loaded = () => {
+                slice = getElement(sliceid + 0);
+                expect(slice.getAttribute('d')).toBe('M 300 200 L 300 48 A 0 0 0 0 1 300 48 A 152 152 0 1 1 299.99734709953714 48.00000002315093 A 0 0 0 0 1 299.99734709953714 48.00000002315093 Z') 
+                done()
+            }
+            pie.series[0].dataSource = [{ y: 18, x: 1, name: 'Bald Eagle', text: 'Bald Eagle : 18', radius: '50%' }]
+            pie.refresh();
+    
+        });
+        it('checking doughnut series with corner radius for single slice', (done: Function) => {
+    
+            
+            pie.loaded = () => {
+                slice = getElement(sliceid + 0);
+                expect(slice.getAttribute('d')).toBe('M 300 48 A 0 0 0 0 1 300 48 A 152 152 0 1 1 299.99734709953714 48.00000002315093 A 0 0 0 0 1 299.99734709953714 48.00000002315093 L 299.99893883981485 139.20000000926038 A 0 0 0 0 1 299.99893883981485 139.20000000926038 A 60.8 60.8 0 1 0 300 139.2 A 0 0 0 0 1 300 139.2 Z') 
+                done()
+            }
+            pie.series[0].dataSource = [{ y: 18, x: 1, name: 'Bald Eagle', text: 'Bald Eagle : 18', radius: '50%' }]
+            pie.series[0].innerRadius = '40%'
+        
+            pie.refresh();
+        });
+        it('checking pie series border with corner radius', (done: Function) => {
+            pie.loaded = (args: IAccLoadedEventArgs) => {
+                let pointEle: Element = getElement(sliceid + 0);
+                trigger.mousemoveEvent(pointEle, 0, 0, 200, 200);
+                let seriousGroup: Element = getElement(pie.element.id + '_Series_' + 0);
+                let borderId: string = pie.element.id + 'PointHover_Border';
+                expect(seriousGroup.lastElementChild.getAttribute('opacity') === '1').toBe(true);
+                expect(seriousGroup.lastElementChild.getAttribute('id') === borderId).toBe(true);
+                expect(seriousGroup.lastElementChild.getAttribute('d')).toBe('M 304.82251220136516 45 A 155 155 0 0 1 324.99639890938687 46.95282862628556 L 325.3800037381626 44.989961505123254 A 157 157 0 0 0 304.82251220136516 43 Z');
+             
+                done();
+            }
+            pie.series[0].dataSource = piedata
+            pie.series[0].innerRadius = '0'
+            pie.refresh();
+    
+        });
+
+        it('checking pie series border with corner radius for one slice', (done: Function) => {
+            pie.loaded = (args: IAccLoadedEventArgs) => {
+                let pointEle: Element = getElement(sliceid + 0);
+                trigger.mousemoveEvent(pointEle, 0, 0, 200, 200);
+                let seriousGroup: Element = getElement(pie.element.id + '_Series_' + 0);
+                let borderId: string = pie.element.id + 'PointHover_Border';
+                expect(seriousGroup.lastElementChild.getAttribute('opacity') === '1').toBe(true);
+                expect(seriousGroup.lastElementChild.getAttribute('id') === borderId).toBe(true);
+                expect(seriousGroup.lastElementChild.getAttribute('d')).toBe('M 299.99999999999994 45 A 155 155 0 1 1 299.99729473965954 45.00000002360784 L 299.9972598330745 43.00000002391246 A 157 157 0 1 0 299.99999999999994 43 Z');
+                done();
+            }
+            pie.series[0].dataSource = [{ y: 18, x: 1, name: 'Bald Eagle', text: 'Bald Eagle : 18', radius: '50%' }]
+            pie.refresh();
+        });
+
+        it('checking doughnut series border with corner radius', (done: Function) => {
+            pie.loaded = (args: IAccLoadedEventArgs) => {
+                let pointEle: Element = getElement(sliceid + 0);
+                trigger.mousemoveEvent(pointEle, 0, 0, 200, 200);
+                let seriousGroup: Element = getElement(pie.element.id + '_Series_' + 0);
+                let borderId: string = pie.element.id + 'PointHover_Border';
+                expect(seriousGroup.lastElementChild.getAttribute('opacity') === '1').toBe(true);
+                expect(seriousGroup.lastElementChild.getAttribute('id') === borderId).toBe(true);
+                expect(seriousGroup.lastElementChild.getAttribute('d')).toBe('M 301.7139884129693 142.2 A 57.8 57.8 0 0 1 309.4040138006832 142.9443930825694 L 309.02040897190744 144.90726020373168 A 55.8 55.8 0 0 0 301.7139884129693 144.2 Z');
+                done();
+            }
+            pie.series[0].dataSource = piedata
+            pie.series[0].innerRadius = '40%'
+            pie.refresh();
+        });
+        it('checking doughnut series border with corner radius for one slice', (done: Function) => {
+            pie.loaded = (args: IAccLoadedEventArgs) => {
+                let pointEle: Element = getElement(sliceid + 0);
+                trigger.mousemoveEvent(pointEle, 0, 0, 200, 200);
+                let seriousGroup: Element = getElement(pie.element.id + '_Series_' + 0);
+                let borderId: string = pie.element.id + 'PointHover_Border';
+                expect(seriousGroup.lastElementChild.getAttribute('opacity') === '1').toBe(true);
+                expect(seriousGroup.lastElementChild.getAttribute('id') === borderId).toBe(true);
+                expect(seriousGroup.lastElementChild.getAttribute('d')).toBe('M 300 142.2 A 57.8 57.8 0 1 1 299.9989911996924 142.20000000880344 L 299.9990261062774 144.20000000849882 A 55.8 55.8 0 1 0 300 144.2 Z');
+                done();
+            }
+            pie.series[0].dataSource = [{ y: 18, x: 1, name: 'Bald Eagle', text: 'Bald Eagle : 18', radius: '50%' }]
+            pie.refresh();
+        });
 });
+
+describe('Pie Series - Checking animation on data changes.', () => {
+    let ele: HTMLElement;
+    let pie: AccumulationChart;
+    let id: string = 'ej2container';
+    beforeAll((): void => {
+        ele = createElement('div', { id: id });
+        document.body.appendChild(ele);
+
+        pie = new AccumulationChart({
+            series: [
+                {
+                    type: 'Pie',
+                    dataLabel: { visible: true, name: 'text' },
+                    dataSource: piedata, animation: { enable: false }, xName: 'x', yName: 'y'
+
+                }
+            ], width: '450', height: '400', legendSettings: { visible: true }, annotations:[{
+                content: 'Annotation',
+                x: '50%',
+                y: '50%'
+            }]
+        });
+            pie.appendTo('#' + id);
+    });
+
+    afterAll((): void => {
+        pie.loaded = null;
+        pie.destroy();
+        removeElement(id);
+    });
+
+    it('checking pie series with setdata', (done: Function) => {
+        pie.loaded = (args: Object): void => {
+            pie.loaded = null;
+            let element: Element = document.getElementById('ej2container_Series_0_Point_1');
+            expect(element.getAttribute('d') !== '').toBe(true);
+            done();
+        };
+        (pie.series[0] as AccumulationSeries).setData([{ y: 18, x: 1, name: 'Bald Eagle', text: 'Bald Eagle : 18', radius: '50%' }, { y: 23, x: 2, name: 'Bison', text: 'Bison : 23', radius: '60%' },
+        { y: 30, x: 3, name: 'Brown Bear', text: 'Brown Bear : 30', radius: '70%' }, { y: 44, x: 4, name: 'Elk', text: 'Elk : 44', radius: '100%' },
+        { y: 52, x: 10, name: 'Pronghorn', text: 'Pronghorn : 52', radius: '80%' }, { y: 62, x: 6, name: 'Turkey', text: 'Turkey : 62', radius: '80%' },
+        { y: 74, x: 7, name: 'Alligator', text: 'Alligator : 74', radius: '80%' }, { y: 85, x: 8, name: 'Prairie Dog', text: 'Prairie Dog : 85', radius: '80%' },
+        { y: 96, x: 15, name: 'Mountain Lion', text: 'Mountain Lion : 96', radius: '80%' }, { y: 102, x: 10, name: 'Beaver', text: 'Beaver : 102', radius: '80%' }])
+        pie.refresh();
+    });
+
+    it('checking pie series with addPoint', (done: Function) => {
+        pie.loaded = (args: Object): void => {
+            pie.loaded = null;
+            let element: Element = document.getElementById('ej2container_Series_0_Point_1');
+            expect(element.getAttribute('d') !== '').toBe(true);
+            console.log('pie');
+            done();
+        };
+        (pie.series[0] as AccumulationSeries).addPoint({ x: "Dog", y: 15, text: '15%'  });
+        pie.refresh();
+    });
+
+    it('checking pie series with removePoint', (done: Function) => {
+        pie.loaded = (args: Object): void => {
+            pie.loaded = null;
+            let element: Element = document.getElementById('ej2container_Series_0_Point_1');
+            expect(element.getAttribute('d') !== '').toBe(true);
+            console.log('pie1');
+            done();
+        };
+        pie.series[0].borderRadius = 5;
+        (pie.series[0] as AccumulationSeries).removePoint(0, 600);
+        pie.refresh();
+    });
+
+    it('checking pie series with centerLabel', (done: Function) => {
+        pie.loaded = (args: Object): void => {
+            pie.loaded = null;
+            let element: Element = document.getElementById('ej2container_Series_0_Point_1');
+            expect(element.getAttribute('d') !== '').toBe(true);
+            console.log('pie2');
+            done();
+        };
+        pie.centerLabel.text = "Animal Park";
+        pie.refresh();
+        (pie.series[0] as AccumulationSeries).addPoint({ x: "Rabbit", y: 15, text: '15%' });
+   
+    });
+    it('checking pie series with legend', function (done) {
+        pie.loaded = (args: Object): void => {
+            pie.loaded = null;
+            let element: Element = document.getElementById('ej2container_Series_0_Point_1');
+            expect(element.getAttribute('d') !== '').toBe(true);
+            console.log('pie3');
+            done();
+        };
+        pie.centerLabel.text = null;
+        pie.subTitle = null;
+        pie.legendSettings.position = "Bottom";
+        pie.refresh();
+        (pie.series[0] as AccumulationSeries).addPoint({ x: "Rabbit2", y: 15, text: '15%' });
+    
+    });
+    it('checking pie series with dataLabel as outside', function (done) {
+        pie.loaded = (args: Object): void => {
+            pie.loaded = null;
+            let element: Element = document.getElementById('ej2container_Series_0_Point_1');
+            expect(element.getAttribute('d') !== '').toBe(true);
+            console.log('pie3');
+            done();
+        };
+        pie.centerLabel.text = null;
+        pie.subTitle = null;
+        pie.title = "Accumulation";
+        pie.series[0].dataLabel.position = "Outside";
+        pie.refresh();
+        (pie.series[0] as AccumulationSeries).addPoint({ x: "Rabbit2", y: 15, text: '15%' });
+    
+    });
+    it('checking pie series with long dataLabel', (done: Function) => {
+        pie.loaded = (args: Object): void => {
+            pie.loaded = null;
+            let element: Element = document.getElementById('ej2container_Series_0_Point_1');
+            expect(element.getAttribute('d') !== '').toBe(true);
+            console.log('pie4');
+            done();
+        };
+        pie.series[0].borderRadius = 5;
+        pie.legendSettings.position = "Right";
+        pie.refresh();
+        (pie.series[0] as AccumulationSeries).addPoint({ x: "chrysanthemum", y: 16, text: 'Ant: chrysanthemum: 15%' }, 600);
+        
+    });
+
+    });
+
+});
+

@@ -678,7 +678,7 @@ describe('CheckBox', () => {
             enableRipple(false);
         })
 
-        it('RadioButton with checked state', () => {
+        it('CheckBox with checked state', () => {
             enableRipple(true);
             checkbox = new CheckBox({ checked: true }, '#checkbox');
             expect(checkbox.checked).toEqual(true);
@@ -686,5 +686,53 @@ describe('CheckBox', () => {
             expect(checkbox.checked).toEqual(false);
             enableRipple(false);
         });
+
+        it('CheckBox indeterminate with ripple state', () => {
+            enableRipple(true);
+            checkbox = new CheckBox({ indeterminate: true }, '#checkbox');
+            enableRipple(false);
+        });
+
+        it('CheckBox indeterminate with ripple state', () => {
+            enableRipple(true);
+            checkbox = new CheckBox({ indeterminate: true, labelPosition: 'Before' }, '#checkbox');
+            enableRipple(false);
+        });
+
+        it('CheckBox with indeterminate state', () => {
+            checkbox = new CheckBox({ indeterminate: true }, '#checkbox');
+            expect(element.parentElement.children[1].classList.contains('e-stop')).toEqual(true);
+            element.parentElement.click();
+            expect(element.parentElement.children[1].classList.contains('e-stop')).toEqual(false);
+            checkbox.checked = true;
+            checkbox.dataBind();
+            checkbox.indeterminate = true;
+            checkbox.dataBind();
+            checkbox.isVue = true;
+            element.parentElement.click();
+            expect(element.parentElement.children[1].classList.contains('e-check')).toEqual(true);
+            checkbox = new CheckBox({ indeterminate: true });
+            (checkbox as any).isVue = true;
+            checkbox.appendTo('#checkbox')
+            element.parentElement.click();
+            element.parentElement.click();
+        });
+
+        it('CheckBox with object value', () => {
+            checkbox = new CheckBox({ value: 'volleyball' }, '#checkbox');
+            (checkbox as any).isVue = true;
+            (checkbox.value as Object) = {'games': 'volleyball'};
+            checkbox.appendTo('#checkbox');
+        });
+
+        it('Vue CheckBox with indeterminate', function () {
+            checkbox = new CheckBox({ indeterminate: null });
+            checkbox.isVue = true;
+            checkbox.value = true;
+            checkbox.getWrapper();
+            checkbox.getLabel();
+            checkbox.appendTo('#checkbox');
+        });
+        
     });
 });

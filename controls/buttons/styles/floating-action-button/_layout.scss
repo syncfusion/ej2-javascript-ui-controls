@@ -108,14 +108,4 @@
   .e-small .e-fab.e-btn {
     @include fab-button-styles($fab-small-border-radius, $fab-small-min-height, $fab-small-min-width, $fab-small-padding, $fab-small-icon-font-size);
   }
-  .e-bigger.e-fab.e-btn,
-  .e-bigger .e-fab.e-btn {
-    @include fab-button-styles($fab-bigger-border-radius, $fab-bigger-min-height, $fab-bigger-min-width, $fab-bigger-padding, $fab-bigger-icon-font-size);
-  }
-  .e-bigger.e-small.e-fab.e-btn,
-  .e-bigger.e-small .e-fab.e-btn,
-  .e-bigger .e-small.e-fab.e-btn,
-  .e-small .e-bigger.e-fab.e-btn {
-    @include fab-button-styles($fab-bigger-small-border-radius, $fab-bigger-small-min-height, $fab-bigger-small-min-width, $fab-bigger-small-padding, $fab-bigger-small-icon-font-size);
-  }
 }

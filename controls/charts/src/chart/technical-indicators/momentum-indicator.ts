@@ -4,7 +4,7 @@ import { TechnicalAnalysis } from './indicator-base';
 import { Chart } from '../chart';
 
 /**
- * `MomentumIndicator` module is used to render momentum indicator.
+ * The `MomentumIndicator` module is used to render the Momentum indicator.
  */
 export class MomentumIndicator extends TechnicalAnalysis {
     /**

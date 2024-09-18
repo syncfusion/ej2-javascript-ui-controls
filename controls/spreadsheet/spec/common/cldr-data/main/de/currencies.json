@@ -1,0 +1,30 @@
+{
+  "main": {
+    "de": {
+      "identity": {
+        "version": {
+          "_cldrVersion": "36"
+        },
+        "language": "de"
+      },
+      "numbers": {
+        "currencies": {
+          "EUR": {
+            "displayName": "Euro",
+            "displayName-count-one": "Euro",
+            "displayName-count-other": "Euro",
+            "symbol": "€",
+            "symbol-alt-narrow": "€"
+          },
+          "USD": {
+            "displayName": "US-Dollar",
+            "displayName-count-one": "US-Dollar",
+            "displayName-count-other": "US-Dollar",
+            "symbol": "$",
+            "symbol-alt-narrow": "$"
+          }
+        }
+      }
+    }
+  }
+}

@@ -41,9 +41,12 @@ export class DatePickerDialog {
         const calendar: Calendar = new Calendar({
             change: this.valueChange.bind(this)
         });
+        if (this.documentHelper.owner.editor.dateValue){
+            calendar.value = new Date(this.documentHelper.owner.editor.dateValue);
+        }
         calendar.appendTo(parentDiv);
-        if(this.documentHelper.owner.editor.dateValue){
-            calendar.value=new Date(this.documentHelper.owner.editor.dateValue);
+        if (this.documentHelper.owner.editor.dateValue){
+            calendar.value = new Date(this.documentHelper.owner.editor.dateValue);
         }
         //parentDiv.append(calendar);
 

@@ -94,7 +94,7 @@
 
       .e-grid td.e-active {
         background: $gantt-active-background;
-        opacity: $gantt-active-color-opacity;
+        opacity: 1;
       }
 
       .e-grid{
@@ -156,6 +156,13 @@
         border-top-color: $gantt-grid-line-color;
       }
 
+      @if ($theme-name == 'fluent2-highcontrast') {
+        .e-chart-row.e-active .e-chart-row-cell,
+        .e-chart-row-hover .e-chart-row:not(.e-active):hover .e-chart-row-cell {
+          color: $gantt-active-color;
+        }
+      }
+      
       .e-chart-row-cell {
         color: $gantt-content-color;
       }
@@ -519,6 +526,22 @@
     .e-grid .e-icons:not(.e-stop):not(.e-check):not(.e-icon-left):not(.e-date-icon) {
       color: $gantt-context-menu-icon-color !important; /* stylelint-disable-line declaration-no-important */
     }
+    @if $skin-name == 'fluent2'{
+      .e-rowcell.e-active,
+      .e-menu-item.e-focused,
+      .e-menu-item.e-selected {
+        .e-icons:not(.e-stop):not(.e-check):not(.e-icon-left):not(.e-date-icon) {
+          color: $gantt-context-menu-click-color !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+    }
+    @if $skin-name == 'bootstrap5.3'{
+      .e-menu-item.e-selected {
+        .e-icons:not(.e-stop):not(.e-check):not(.e-icon-left):not(.e-date-icon) {
+          color: $gantt-context-menu-click-color !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+    }
   }
 
   .e-gantt-dialog {
@@ -540,7 +563,9 @@
     }
 
     .e-dlg-header-content {
-      background: $gantt-dialog-tab-background;
+      @if $skin-name !='bootstrap5.3'{
+        background: $gantt-dialog-tab-background;
+      }
     }
 
     .e-icon-dlg-close {
@@ -557,17 +582,29 @@
     .e-tab {
 
       .e-tab-header {
-        background: $gantt-dialog-tab-background;
+        @if $skin-name !='bootstrap5.3'{
+          background: $gantt-dialog-tab-background;
+        }
 
         .e-indicator {
-          background: $gantt-tab-selection-indicator-color;
+          @if $skin-name !='bootstrap5.3'{
+            background: $gantt-tab-selection-indicator-color;
+          }
         }
 
         .e-toolbar-item.e-active {
           background-color: $gantt-dialog-active-tab-background;
+
           .e-tab-wrap {
-            .e-tab-text {
-              color: $gantt-tab-header-active-font-color;
+            @if $skin-name =='bootstrap5.3'{
+              .e-tab-text {
+                color: $gantt-tab-header-hover-font-color !important; /* stylelint-disable-line declaration-no-important */
+              }
+            }
+            @else{
+              .e-tab-text {
+                color: $gantt-tab-header-active-font-color;
+              }
             }
           }
         }
@@ -577,7 +614,12 @@
             border-color: $gantt-dialog-tab-header-border-no-color;
 
             .e-tab-text {
-              color: $gantt-tab-header-font-color;
+              @if $skin-name =='bootstrap5.3'{
+                color: $gantt-tab-header-active-font-color !important; /* stylelint-disable-line declaration-no-important */
+              }
+              @else{
+                color: $gantt-tab-header-font-color;
+              }
             }
           }
         }

@@ -22,7 +22,8 @@ export class RangeSelector {
 
     public initializeRangeNavigator(): void {
         const stockChart: StockChart = this.stockChart;
-        const padding: number = stockChart.chart.axisCollections[1].labelPadding + stockChart.chart.axisCollections[1].lineStyle.width * 0.5;
+        const padding: number = stockChart.chart.axisCollections[1].labelPadding +
+            stockChart.chart.axisCollections[1].lineStyle.width * 0.5;
         if (!stockChart.selectorObject) {
             stockChart.selectorObject = stockChart.renderer.createGroup({
                 id: stockChart.element.id + '_stockChart_rangeSelector',
@@ -102,7 +103,7 @@ export class RangeSelector {
         for (let i: number = 0, len: number = series.length; i < len; i++) {
             chartSeries.push(<RangeNavigatorSeriesModel>series[i as number]);
             chartSeries[i as number].xName = series[i as number].xName;
-            chartSeries[i as number].yName = series[i as number].yName === '' ? series[i as number].close :  series[i as number].yName;
+            chartSeries[i as number].yName = series[i as number].yName;
         }
         return chartSeries;
     }

@@ -195,10 +195,12 @@ export class DataBind {
                             usedRange.colIndex = totalCols < args.sheet.colCount ? totalCols : args.sheet.colCount - 1;
                         }
                         if (args.sheet.usedRange.rowIndex < usedRange.rowIndex) {
-                            args.sheet.usedRange.rowIndex = usedRange.rowIndex;
+                            this.parent.setSheetPropertyOnMute(
+                                args.sheet, 'usedRange', { rowIndex: usedRange.rowIndex, colIndex: args.sheet.usedRange.colIndex });
                         }
                         if (args.sheet.usedRange.colIndex < usedRange.colIndex) {
-                            args.sheet.usedRange.colIndex = usedRange.colIndex;
+                            this.parent.setSheetPropertyOnMute(
+                                args.sheet, 'usedRange', { rowIndex: args.sheet.usedRange.rowIndex, colIndex: usedRange.colIndex });
                         }
                         if (insertRowCount) {
                             loadedInfo = this.getLoadedInfo(sRange, eRange, range);

@@ -14,7 +14,7 @@ export interface QRCodeGeneratorModel extends ComponentModel{
     height?: string | number;
 
     /**
-     * Specifies the logo overlay configuration for the QR code. 
+     * Specifies the logo overlay configuration for the QR code.
      *
      * @default ''
      */

@@ -1,7 +1,7 @@
 /**
  * Paste CleanUp spec
  */
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { EditorManager } from "../../../src/editor-manager/index";
 import { RichTextEditor, PasteCleanup,actionComplete, beforePasteCleanup, PasteCleanupArgs } from "../../../src/rich-text-editor/index";
 import {
@@ -70,6 +70,9 @@ describe("paste cleanup testing", () => {
       items: []
     };
     setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+    const deniedTags = rteObj.pasteCleanupSettings.deniedTags;
+    (rteObj as any).pasteCleanupSettings.deniedTags = null;
+    (rteObj as any).pasteCleanupSettings.deniedTags = undefined;
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -81,6 +84,7 @@ describe("paste cleanup testing", () => {
       }
       let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll("*");
       let expected: boolean = true;
+      (rteObj as any).pasteCleanupSettings.deniedTags = deniedTags;
       for (let i: number = 0; i < allElem.length; i++) {
         for (let j: number = 0; j < rteObj.pasteCleanupSettings.deniedTags.length; j++) {
           if (allElem[i].tagName.toLowerCase() === rteObj.pasteCleanupSettings.deniedTags[j]) {
@@ -1110,6 +1114,7 @@ describe("To test image uploading", () => {
       },
       items: []
     };
+    Browser.userAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; AS; rv:11.0) like Gecko";
     let file: any = (pasteCleanupObj as any).base64ToFile(base64, fileName);
     setTimeout(() => {
       expect(file.name === 'SynfusionTestImage.png').toBe(true);
@@ -3489,6 +3494,141 @@ describe('850189 - Border lines are appeared on the images while copy paste the 
     });
 });
 
+describe('850189 - code coverage', () => {
+    let editor: RichTextEditor;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    };
+    beforeAll(() => {
+        editor = renderRTE({
+            pasteCleanupSettings : {
+                keepFormat : true
+            }
+        });
+    });
+    afterAll((done: DoneFn) => {
+        destroy(editor);
+        done();
+    });
+    it ('code coverage.', (done: DoneFn) => {
+        editor.focusIn();
+        Browser.userAgent = "Firefox";
+        editor.isDestroyed = true;
+        (editor as any).pasteCleanupModule.addEventListener();
+        editor.isDestroyed = false;
+        let clipBoardData = '';
+        editor.pasteCleanupSettings.prompt = true;
+        const dataTransfer = new DataTransfer();
+        dataTransfer.setData('text/html', clipBoardData);
+        let pasteEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+        (editor as any).pasteCleanupModule.pasteClean({ name: "pasteClean", args: pasteEvent});
+        expect((document.querySelector('#'+ editor.element.id +'_rte-edit-view') as HTMLElement).innerText == '\n').toBe(true);
+        dataTransfer.setData('text/html', 'sa');
+        pasteEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+        (editor as any).pasteCleanupModule.pasteClean({ name: "pasteClean", args: pasteEvent});
+        expect((document.querySelector('#'+ editor.element.id +'_rte-edit-view') as HTMLElement).innerText == '\n').toBe(true);
+        editor.pasteCleanupSettings.prompt = false;
+        Browser.userAgent = '';
+        //(editor as any).pasteCleanupModule.fireFoxImageUpload();
+        expect((document.querySelector('#' + editor.element.id + '_rte-edit-view') as HTMLElement).innerText == '\n').toBe(true);
+        (editor as any).pasteCleanupModule.parent.inlineMode.enable = true;
+        (editor as any).pasteCleanupModule.toolbarEnableDisable(false);
+        expect((editor as any).pasteCleanupModule.parent.toolbarModule.baseToolbar.toolbarObj.element.classList.contains('e-overlay')).toBe(false);
+        (editor as any).pasteCleanupModule.parent.inlineMode.enable = false;
+        expect((editor as any).pasteCleanupModule.findDetachEmptyElem(null)).toBeNull();
+        var div = document.createElement('div');
+        div.innerHTML = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td></tr><tr><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td></tr><tr><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td></tr></tbody></table><p><br/></p>`;
+        expect((editor as any).pasteCleanupModule.addTableClass(div, null) === div).toBe(true);
+        div = document.createElement('div');
+        div.innerHTML = `<img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" class="e-rte-image e-imginline e-img-cropped" style=" border: 0px; vertical-align: bottom; cursor: pointer; display: inline-block; float: none; margin: auto 5px; max-width: 100%; position: relative; padding: 1px; color: rgb(36, 36, 36); font-family: &quot;Segoe UI&quot;, -apple-system, blinkMacSystemfont, Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(250, 250, 250); width: 440px;" />`;
+        (editor as any).pasteCleanupModule.convertBlobToBase64(div);
+        expect(div.querySelector('img').src === 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png').toBe(true);
+        (editor as any).pasteCleanupModule.cropImageHandler(div);
+        expect(div.querySelector('img').classList.contains('e-img-cropped')).toBe(true);
+        div = document.createElement('div');
+        div.innerHTML = `<picture><source srcset="http/images/Facebook-GrayScale.webp" type="image/webp"><img class="ocArticleFooterImage pasteContent_Img" src="https://support.microsoft.com/images/Facebook-GrayScale.png" alt="Facebook" ms.cmpgrp="content" ms.pgarea="Body" loading="lazy"><span>&nbsp;</span></picture>`;
+        (editor as any).pasteCleanupModule.processPictureElement(div);
+        expect(div.querySelector('source').getAttribute('srcset') === "http/images/Facebook-GrayScale.webp").toBe(true);
+        div.querySelector('source').srcset = '';
+        (editor as any).pasteCleanupModule.processPictureElement(div);
+        expect(div.querySelector('source').srcset === '').toBe(true);
+        div.querySelector('img').src = '';
+        (editor as any).pasteCleanupModule.processPictureElement(div);
+        expect( div.querySelector('img').src !== '').toBe(true);
+        div = document.createElement('div');
+        div.innerHTML = '<div></div>';
+        (editor as any).pasteCleanupModule.removeEmptyElements(div);
+        div = document.createElement('div');
+        div.innerHTML = '<ol level="1" style="list-style: decimal"><p>One Node-1</p><li></li><li><p>Two Node-1</p></li><li><p>Three Node-1</p></li></ol>';
+        (editor as any).pasteCleanupModule.getTextContent(div);
+        expect(div.innerHTML !== '<ol level="1" style="list-style: decimal"><p>One Node-1</p><li></li><li><p>Two Node-1</p></li><li><p>Three Node-1</p></li></ol>').toBe(true);
+        div = document.createElement('div');
+        div.innerHTML = '<br><div class="pasteContent" style="display:inline;"><span class="pasteContent_RTE">This\nis a test <span>Hi</span></span>\n\n<p class="pasteContent_RTE">This is a test</p></div>';
+        expect((editor as any).pasteCleanupModule.reframeToBrContent(div) !== div.innerHTML).toBe(true);
+        div = document.createElement('div');
+        div.innerText = "hello!";
+        expect((editor as any).pasteCleanupModule.reframeToBrContent(div) !== div.innerHTML).toBe(true);
+        let myObj: any = {
+            oldCssClass: 'imageOldClass',
+            cssClass: 'imageOldClass_imageNewClass',
+            setProperties: function (value: any) {
+              this.oldCssClass = value.cssClass;
+            }
+        };
+        (editor as any).pasteCleanupModule.updateCss(myObj, { oldCssClass: 'imageOldClass', cssClass: 'imageUpdatedClass'});
+        expect(myObj.oldCssClass === '_imageNewClass imageUpdatedClass').toBe(true);
+        (editor as any).pasteCleanupModule.updateCss(myObj, { oldCssClass: null, cssClass: 'imageUpdatedClass'});
+        expect(myObj.oldCssClass === 'imageOldClass_imageNewClass imageUpdatedClass').toBe(true);
+        (editor as any).pasteCleanupModule.popupObj = editor;
+        (editor as any).pasteCleanupModule.setCssClass ({ oldCssClass: 'imageOldClass', cssClass: 'imageUpdatedClass'});
+        expect((editor as any).element.classList.contains('imageUpdatedClass')).toBe(true);
+        (editor as any).pasteCleanupModule.setCssClass ({ oldCssClass: null, cssClass: 'imageUpdatedClassNew'});
+        expect((editor as any).element.classList.contains('imageUpdatedClassNew')).toBe(true);
+        (editor as any).pasteCleanupModule.popupObj = null;
+        div = document.createElement('div');
+        (editor as any).pasteCleanupModule.parent.pasteCleanupSettings.keepFormat = false;
+        (editor as any).pasteCleanupModule.imageFormatting( {}, { elements: [div] });
+        (editor as any).pasteCleanupModule.refreshPopup(div, null);
+        (editor as any).pasteCleanupModule.uploadFailure(div, null, null, {});
+        (editor as any).pasteCleanupModule.isNotFromHtml = true;
+        (editor as any).pasteCleanupModule.containsHtml = true;
+        (editor as any).pasteCleanupModule.parent.pasteCleanupSettings.allowedStyleProps = null;
+        (editor as any).pasteCleanupModule.formatting('', false, {});
+        keyBoardEvent.clipboardData = {
+            getData: (e: any) => {
+              if (e === "text/plain") {
+                return 'www.ej2.syncfusion.com';
+              } else {
+                return '';
+              }
+            },
+            items: []
+          };
+          (editor as any).value = '<p>13</p>';
+          (editor as any).pasteCleanupSettings.prompt = false;
+          (editor as any).pasteCleanupSettings.plainText = false;
+          (editor as any).pasteCleanupSettings.keepFormat = true;
+          (editor as any).dataBind();
+          (editor as any).inputElement.focus();
+          setCursorPoint((editor as any).inputElement.firstElementChild, 0);
+          (editor as any).onPaste(keyBoardEvent);
+          setTimeout(() => {
+            let pastedElm: any = (editor as any).inputElement.firstElementChild;
+            expect(pastedElm.children[0].tagName.toLowerCase() === 'a').toBe(true);
+            expect(pastedElm.children[0].getAttribute('href') === 'www.ej2.syncfusion.com').toBe(true);
+            done();
+        }, 100);
+        done();
+    });
+})
+
 describe("853350 - pasting content from online Excel sheet doesn't remove the styles from the content - ", () => {
     let rteObj: RichTextEditor;
     let editorObj: EditorManager;
@@ -3896,6 +4036,40 @@ describe('282270 - Need to prevent paste action, when edit image dialog open cas
     });
 });
 
+describe('Bug 890400: Table is not fully visible when copy paste from loop website', () => {
+    let editor: RichTextEditor;
+    beforeEach((done: DoneFn) => {
+        editor = renderRTE({
+            pasteCleanupSettings : {
+                keepFormat : true
+            }
+        });
+        done();
+    });
+    afterEach((done: DoneFn) => {
+        destroy(editor);
+        done();
+    });
+    it ('Some columns are not visible when copy past from loop website', (done: DoneFn) => {
+        editor.focusIn();
+        const clipBoardData: string = '\n\n\x3C!--StartFragment--><div fluid-config-type="Tabular"><div></div><table dir="ltr" style="border-collapse: collapse;"><thead><tr><td style="border: 1px solid;"><div fluid-data-type="IRichTextData" table-column-properties="{&quot;id&quot;:&quot;d15da6d7-0671-469c-a522-94dbeb399fb9&quot;,&quot;width&quot;:170,&quot;widthRatio&quot;:1,&quot;minWidth&quot;:56,&quot;titleType&quot;:&quot;IRichTextData&quot;,&quot;type&quot;:&quot;IRichTextData&quot;,&quot;dataTypeProps&quot;:{&quot;initialConfig&quot;:{&quot;isTextBoxMode&quot;:true,&quot;disableGuestComponents&quot;:true,&quot;richTextServicesConfiguration&quot;:{&quot;presetName&quot;:&quot;RichTextCell&quot;}}},&quot;titleDataTypeProps&quot;:{&quot;initialConfig&quot;:{&quot;isTextBoxMode&quot;:true,&quot;disableGuestComponents&quot;:true,&quot;richTextServicesConfiguration&quot;:{&quot;presetName&quot;:&quot;TableHeaderCell&quot;}}}}"><div>\x3C!--ScriptorStartFragment--><div class="scriptor-paragraph"><span attribution="{&quot;id&quot;:&quot;hariprasath.chinnadurai@syncfusion.com&quot;,&quot;name&quot;:&quot;Hariprasath Chinnadurai&quot;,&quot;email&quot;:&quot;hariprasath.chinnadurai@syncfusion.com&quot;,&quot;oid&quot;:&quot;5e6fbd09-02ae-4a88-aff0-cb5b4e8a4578&quot;,&quot;timestamp&quot;:1716267000000,&quot;dataSource&quot;:0}">Reporter\x3C!--ScriptorEndFragment--></span></div></div></div></td><td style="border: 1px solid;"><div fluid-data-type="IRichTextData" table-column-properties="{&quot;id&quot;:&quot;a9f245e0-91d0-4443-b9e1-4f7a91fddd89&quot;,&quot;width&quot;:170,&quot;widthRatio&quot;:1,&quot;minWidth&quot;:56,&quot;titleType&quot;:&quot;IRichTextData&quot;,&quot;type&quot;:&quot;IRichTextData&quot;,&quot;dataTypeProps&quot;:{&quot;initialConfig&quot;:{&quot;isTextBoxMode&quot;:true,&quot;disableGuestComponents&quot;:true,&quot;richTextServicesConfiguration&quot;:{&quot;presetName&quot;:&quot;RichTextCell&quot;}}},&quot;titleDataTypeProps&quot;:{&quot;initialConfig&quot;:{&quot;isTextBoxMode&quot;:true,&quot;disableGuestComponents&quot;:true,&quot;richTextServicesConfiguration&quot;:{&quot;presetName&quot;:&quot;TableHeaderCell&quot;}}}}"><div>\x3C!--ScriptorStartFragment--><div class="scriptor-paragraph"><span attribution="{&quot;id&quot;:&quot;vinothkumar.y@syncfusion.com&quot;,&quot;name&quot;:&quot;Vinothkumar Yuvaraj&quot;,&quot;email&quot;:&quot;vinothkumar.y@syncfusion.com&quot;,&quot;oid&quot;:&quot;6a1ab3bb-9c8d-4f72-aaba-11f0d26a84e0&quot;,&quot;timestamp&quot;:1716797100000,&quot;dataSource&quot;:0}">Task\x3C!--ScriptorEndFragment--></span></div></div></div></td></tr></thead><tbody><tr><td style="border: 1px solid;"><div fluid-data-type="IRichTextData"><div>\x3C!--ScriptorStartFragment--><div class="scriptor-paragraph"><span attribution="{&quot;id&quot;:&quot;nandhine.babu@syncfusion.com&quot;,&quot;name&quot;:&quot;Nandhine Babu&quot;,&quot;email&quot;:&quot;nandhine.babu@syncfusion.com&quot;,&quot;oid&quot;:&quot;8b692c56-76d7-4830-9887-75967bc88e7a&quot;,&quot;timestamp&quot;:1717587000000,&quot;dataSource&quot;:0}">Nandhine\x3C!--ScriptorEndFragment--></span></div></div></div></td><td style="border: 1px solid;"><div fluid-data-type="IRichTextData"><span>\x3C!--ScriptorEndFragment--></span></div></td></tr></tbody></table></div>\x3C!--EndFragment-->\n\n';
+        const dataTransfer: DataTransfer = new DataTransfer();
+        dataTransfer.setData('text/html', clipBoardData);
+        const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+        editor.onPaste(pasteEvent);
+        setTimeout(() => {
+            let pastedElm = editor.inputElement.innerHTML;
+            let expected = true;
+            var expectedElem = '<div fluid-config-type="Tabular"><table dir="ltr" class="e-rte-paste-table"><thead><tr><td style="border: 1px solid;"><div fluid-data-type="IRichTextData" table-column-properties="{&quot;id&quot;:&quot;d15da6d7-0671-469c-a522-94dbeb399fb9&quot;,&quot;width&quot;:170,&quot;widthRatio&quot;:1,&quot;minWidth&quot;:56,&quot;titleType&quot;:&quot;IRichTextData&quot;,&quot;type&quot;:&quot;IRichTextData&quot;,&quot;dataTypeProps&quot;:{&quot;initialConfig&quot;:{&quot;isTextBoxMode&quot;:true,&quot;disableGuestComponents&quot;:true,&quot;richTextServicesConfiguration&quot;:{&quot;presetName&quot;:&quot;RichTextCell&quot;}}},&quot;titleDataTypeProps&quot;:{&quot;initialConfig&quot;:{&quot;isTextBoxMode&quot;:true,&quot;disableGuestComponents&quot;:true,&quot;richTextServicesConfiguration&quot;:{&quot;presetName&quot;:&quot;TableHeaderCell&quot;}}}}"><div><div class="scriptor-paragraph"><span attribution="{&quot;id&quot;:&quot;hariprasath.chinnadurai@syncfusion.com&quot;,&quot;name&quot;:&quot;Hariprasath Chinnadurai&quot;,&quot;email&quot;:&quot;hariprasath.chinnadurai@syncfusion.com&quot;,&quot;oid&quot;:&quot;5e6fbd09-02ae-4a88-aff0-cb5b4e8a4578&quot;,&quot;timestamp&quot;:1716267000000,&quot;dataSource&quot;:0}">Reporter</span></div></div></div></td><td style="border: 1px solid;"><div fluid-data-type="IRichTextData" table-column-properties="{&quot;id&quot;:&quot;a9f245e0-91d0-4443-b9e1-4f7a91fddd89&quot;,&quot;width&quot;:170,&quot;widthRatio&quot;:1,&quot;minWidth&quot;:56,&quot;titleType&quot;:&quot;IRichTextData&quot;,&quot;type&quot;:&quot;IRichTextData&quot;,&quot;dataTypeProps&quot;:{&quot;initialConfig&quot;:{&quot;isTextBoxMode&quot;:true,&quot;disableGuestComponents&quot;:true,&quot;richTextServicesConfiguration&quot;:{&quot;presetName&quot;:&quot;RichTextCell&quot;}}},&quot;titleDataTypeProps&quot;:{&quot;initialConfig&quot;:{&quot;isTextBoxMode&quot;:true,&quot;disableGuestComponents&quot;:true,&quot;richTextServicesConfiguration&quot;:{&quot;presetName&quot;:&quot;TableHeaderCell&quot;}}}}"><div><div class="scriptor-paragraph"><span attribution="{&quot;id&quot;:&quot;vinothkumar.y@syncfusion.com&quot;,&quot;name&quot;:&quot;Vinothkumar Yuvaraj&quot;,&quot;email&quot;:&quot;vinothkumar.y@syncfusion.com&quot;,&quot;oid&quot;:&quot;6a1ab3bb-9c8d-4f72-aaba-11f0d26a84e0&quot;,&quot;timestamp&quot;:1716797100000,&quot;dataSource&quot;:0}">Task</span></div></div></div></td></tr></thead><tbody><tr><td style="border: 1px solid;"><div fluid-data-type="IRichTextData"><div><div class="scriptor-paragraph"><span attribution="{&quot;id&quot;:&quot;nandhine.babu@syncfusion.com&quot;,&quot;name&quot;:&quot;Nandhine Babu&quot;,&quot;email&quot;:&quot;nandhine.babu@syncfusion.com&quot;,&quot;oid&quot;:&quot;8b692c56-76d7-4830-9887-75967bc88e7a&quot;,&quot;timestamp&quot;:1717587000000,&quot;dataSource&quot;:0}">Nandhine</span></div></div></div></td><td style="border: 1px solid;"></td></tr></tbody></table></div>';
+            if (pastedElm !== expectedElem) {
+                expected = false;
+            }
+            expect(expected).toBe(true);
+            done();
+        }, 100);
+    });
+});
+
 describe("896253 - ImageRemoving event not get triggered when we delete the pasted image from popup in the RichTextEditor", () => {
     let rteObj: RichTextEditor;
     let imgSize: number;
@@ -3922,7 +4096,7 @@ describe("896253 - ImageRemoving event not get triggered when we delete the past
                 if (rteObj.toolbarModule.baseToolbar.toolbarObj.element.className.indexOf('e-overlay') > 0) {
                     toolbarDisabled = true;
                 }
-
+                
             }
         });
         done();
@@ -3949,3 +4123,467 @@ describe("896253 - ImageRemoving event not get triggered when we delete the past
         done();
     });
 });
+
+    describe(' - pasting otd format not working in safari browser.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: "keydown",
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ""
+          };
+        let innerHTML: string = `<ol><li id="li1"><br></li><li id="li2">hello</li></ol>`;
+        let copied: string = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
+xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><head><style class="WebKit-mso-list-quirks-style">
+<!--
+/* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-unhide:no;
+	mso-style-qformat:yes;
+	mso-style-parent:"";
+	margin:0in;
+	mso-pagination:none;
+	mso-hyphenate:none;
+	text-autospace:ideograph-other;
+	font-size:12.0pt;
+	font-family:"Times New Roman",serif;
+	mso-fareast-font-family:"Lucida Sans Unicode";
+	mso-bidi-font-family:Tahoma;
+	mso-font-kerning:1.5pt;
+	mso-fareast-language:#1000;
+	mso-bidi-language:#1000;}
+h1
+	{mso-style-priority:9;
+	mso-style-unhide:no;
+	mso-style-qformat:yes;
+	mso-style-link:"Heading 1 Char";
+	mso-style-next:"Text body";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	mso-pagination:none;
+	page-break-after:avoid;
+	mso-outline-level:1;
+	mso-hyphenate:none;
+	text-autospace:ideograph-other;
+	font-size:14.0pt;
+	font-family:"Arial",sans-serif;
+	mso-bidi-font-family:Tahoma;
+	mso-font-kerning:1.5pt;
+	mso-fareast-language:#1000;
+	mso-bidi-language:#1000;}
+p.MsoFooter, li.MsoFooter, div.MsoFooter
+	{mso-style-unhide:no;
+	mso-style-link:"Footer Char";
+	margin:0in;
+	mso-pagination:no-line-numbers;
+	mso-hyphenate:none;
+	tab-stops:center 3.25in right 6.5in;
+	text-autospace:ideograph-other;
+	font-size:12.0pt;
+	font-family:"Times New Roman",serif;
+	mso-fareast-font-family:"Lucida Sans Unicode";
+	mso-bidi-font-family:Tahoma;
+	mso-font-kerning:1.5pt;
+	mso-fareast-language:#1000;
+	mso-bidi-language:#1000;}
+span.Heading1Char
+	{mso-style-name:"Heading 1 Char";
+	mso-style-priority:9;
+	mso-style-unhide:no;
+	mso-style-locked:yes;
+	mso-style-link:"Heading 1";
+	mso-ansi-font-size:14.0pt;
+	mso-bidi-font-size:14.0pt;
+	font-family:"Arial",sans-serif;
+	mso-ascii-font-family:Arial;
+	mso-hansi-font-family:Arial;
+	font-weight:bold;}
+p.Textbody, li.Textbody, div.Textbody
+	{mso-style-name:"Text body";
+	mso-style-unhide:no;
+	margin-top:4.3pt;
+	margin-right:0in;
+	margin-bottom:4.3pt;
+	margin-left:0in;
+	mso-pagination:none;
+	mso-hyphenate:none;
+	text-autospace:ideograph-other;
+	font-size:12.0pt;
+	font-family:"Times New Roman",serif;
+	mso-fareast-font-family:"Lucida Sans Unicode";
+	mso-bidi-font-family:Tahoma;
+	mso-font-kerning:1.5pt;
+	mso-fareast-language:#1000;
+	mso-bidi-language:#1000;}
+span.FooterChar
+	{mso-style-name:"Footer Char";
+	mso-style-unhide:no;
+	mso-style-locked:yes;
+	mso-style-link:Footer;}
+p.Firstparagraph, li.Firstparagraph, div.Firstparagraph
+	{mso-style-name:"First paragraph";
+	mso-style-unhide:no;
+	mso-style-parent:"Text body";
+	mso-style-next:"Text body";
+	margin-top:4.3pt;
+	margin-right:0in;
+	margin-bottom:4.3pt;
+	margin-left:0in;
+	mso-pagination:none;
+	mso-hyphenate:none;
+	text-autospace:ideograph-other;
+	font-size:12.0pt;
+	font-family:"Times New Roman",serif;
+	mso-fareast-font-family:"Lucida Sans Unicode";
+	mso-bidi-font-family:Tahoma;
+	mso-font-kerning:1.5pt;
+	mso-fareast-language:#1000;
+	mso-bidi-language:#1000;}
+.MsoChpDefault
+	{mso-style-type:export-only;
+	mso-default-props:yes;
+	mso-fareast-font-family:"Lucida Sans Unicode";
+	mso-bidi-font-family:Tahoma;
+	mso-font-kerning:1.5pt;
+	mso-ligatures:none;
+	mso-fareast-language:#1000;
+	mso-bidi-language:#1000;}
+.MsoPapDefault
+	{mso-style-type:export-only;
+	mso-pagination:none;
+	mso-hyphenate:none;
+	text-autospace:ideograph-other;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.4in 1.0in;
+	mso-header-margin:.5in;
+	mso-footer-margin:1.0in;
+	mso-paper-source:0;}
+div.WordSection1
+	{page:WordSection1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:1776050925;
+	mso-list-template-ids:-119131588;}
+@list l0:level1
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:•;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l0:level2
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:◦;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:.75in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l0:level3
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:▪;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:1.0in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l0:level4
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:•;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:1.25in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l0:level5
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:◦;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:1.5in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l0:level6
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:▪;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:1.75in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l0:level7
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:•;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:2.0in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l0:level8
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:◦;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:2.25in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l0:level9
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:▪;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:2.5in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l1
+	{mso-list-id:2140025293;
+	mso-list-template-ids:1941582488;}
+@list l1:level1
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:•;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l1:level2
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:◦;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:.75in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l1:level3
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:▪;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:1.0in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l1:level4
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:•;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:1.25in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l1:level5
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:◦;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:1.5in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l1:level6
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:▪;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:1.75in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l1:level7
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:•;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:2.0in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l1:level8
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:◦;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:2.25in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+@list l1:level9
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:▪;
+	mso-level-tab-stop:none;
+	mso-level-number-position:right;
+	margin-left:2.5in;
+	text-indent:-.25in;
+	mso-ansi-font-size:9.0pt;
+	mso-bidi-font-size:9.0pt;
+	mso-ascii-font-family:StarSymbol;
+	mso-fareast-font-family:StarSymbol;
+	mso-hansi-font-family:StarSymbol;
+	mso-bidi-font-family:StarSymbol;}
+
+-->
+</style></head><h1 style="margin: 12pt 0in 6pt; break-after: avoid; font-size: 14pt; font-family: Arial, sans-serif; caret-color: rgb(0, 0, 0); color: rgb(0, 0, 0); font-style: normal; font-variant-caps: normal; letter-spacing: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: none;"><a name="same-ticket-content-assigned-to-several-">Same ticket content assigned to several agents as separate tickets</a><o:p></o:p></h1><p class="Textbody" style="margin-left:.5in;text-indent:-.5in;mso-text-indent-alt:
+-.25in;mso-list:l1 level1 lfo1"><!--[if !supportLists]--><span style="font-size:
+9.0pt;font-family:StarSymbol;mso-fareast-font-family:StarSymbol;mso-bidi-font-family:
+StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times New Roman&quot;">      <span class="Apple-converted-space"> </span></span>•<span style="font:7.0pt &quot;Times New Roman&quot;">        <span class="Apple-converted-space"> </span></span></span></span><!--[endif]-->Use case is described in detail below.<o:p></o:p></p><p class="Textbody" style="margin-left:.5in;text-indent:-.5in;mso-text-indent-alt:
+-.25in;mso-list:l1 level1 lfo1"><!--[if !supportLists]--><span style="font-size:
+9.0pt;font-family:StarSymbol;mso-fareast-font-family:StarSymbol;mso-bidi-font-family:
+StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times New Roman&quot;">      <span class="Apple-converted-space"> </span></span>•<span style="font:7.0pt &quot;Times New Roman&quot;">        <span class="Apple-converted-space"> </span></span></span></span><!--[endif]-->This is very helpful when we have to notify a group of people internally about a policy change or cause some action to be taken.<o:p></o:p></p><p class="Textbody" style="margin-left:.5in;text-indent:-.5in;mso-text-indent-alt:
+-.25in;mso-list:l1 level1 lfo1"><!--[if !supportLists]--><span style="font-size:
+9.0pt;font-family:StarSymbol;mso-fareast-font-family:StarSymbol;mso-bidi-font-family:
+StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times New Roman&quot;">      <span class="Apple-converted-space"> </span></span>•<span style="font:7.0pt &quot;Times New Roman&quot;">        <span class="Apple-converted-space"> </span></span></span></span><!--[endif]-->For instance if there is a new pricing table for Essential Studio, this can be used to notify all reps and managers.<o:p></o:p></p><h1 style="margin: 12pt 0in 6pt; break-after: avoid; font-size: 14pt; font-family: Arial, sans-serif; caret-color: rgb(0, 0, 0); color: rgb(0, 0, 0); font-style: normal; font-variant-caps: normal; letter-spacing: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: none;"><a name="part-1---create-groups-suitable-for-assi">Part 1 - create groups suitable for assignment</a><o:p></o:p></h1><p class="Textbody" style="margin-left:.5in;text-indent:-.5in;mso-text-indent-alt:
+-.25in;mso-list:l0 level1 lfo2"><!--[if !supportLists]--><span style="font-size:
+9.0pt;font-family:StarSymbol;mso-fareast-font-family:StarSymbol;mso-bidi-font-family:
+StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times New Roman&quot;">      <span class="Apple-converted-space"> </span></span>•<span style="font:7.0pt &quot;Times New Roman&quot;">        <span class="Apple-converted-space"> </span></span></span></span><!--[endif]-->This can be created by the admin or by individual agents.<o:p></o:p></p><p class="Textbody" style="margin-left:.5in;text-indent:-.5in;mso-text-indent-alt:
+-.25in;mso-list:l0 level1 lfo2"><!--[if !supportLists]--><span style="font-size:
+9.0pt;font-family:StarSymbol;mso-fareast-font-family:StarSymbol;mso-bidi-font-family:
+StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times New Roman&quot;">      <span class="Apple-converted-space"> </span></span>•<span style="font:7.0pt &quot;Times New Roman&quot;">        <span class="Apple-converted-space"> </span></span></span></span><!--[endif]-->Agents can share groups with others as permissions allow.<o:p></o:p></p><p class="Textbody" style="margin-left:.5in;text-indent:-.5in;mso-text-indent-alt:
+-.25in;mso-list:l0 level1 lfo2"><!--[if !supportLists]--><span style="font-size:
+9.0pt;font-family:StarSymbol;mso-fareast-font-family:StarSymbol;mso-bidi-font-family:
+StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times New Roman&quot;">      <span class="Apple-converted-space"> </span></span>•<span style="font:7.0pt &quot;Times New Roman&quot;">        <span class="Apple-converted-space"> </span></span></span></span><!--[endif]-->Each group will simply be a list of agents. For instance NLR agents can be a group that contains NLR agents.<o:p></o:p></p><p class="Textbody" style="margin-left:.5in;text-indent:-.5in;mso-text-indent-alt:
+-.25in;mso-list:l0 level1 lfo2"><!--[if !supportLists]--><span style="font-size:
+9.0pt;font-family:StarSymbol;mso-fareast-font-family:StarSymbol;mso-bidi-font-family:
+StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times New Roman&quot;">      <span class="Apple-converted-space"> </span></span>•<span style="font:7.0pt &quot;Times New Roman&quot;">        <span class="Apple-converted-space"> </span></span></span></span><!--[endif]-->Maybe an existing group implementation can be reused for this.<o:p></o:p></p><h1 style="margin: 12pt 0in 6pt; break-after: avoid; font-size: 14pt; font-family: Arial, sans-serif; caret-color: rgb(0, 0, 0); color: rgb(0, 0, 0); font-style: normal; font-variant-caps: normal; letter-spacing: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: none;"><a name="part-2---create-and-assign-ticket-to-a-g">Part 2 - Create and assign ticket to a group</a><o:p></o:p></h1><p class="Firstparagraph" style="margin: 4.3pt 0in; font-size: medium; font-family: &quot;Times New Roman&quot;, serif; caret-color: rgb(0, 0, 0); color: rgb(0, 0, 0); font-style: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: none;"><img width="499" height="214" src="blob:null/9c4dab55-038a-47b5-8be4-90c44e391017" align="left" hspace="12" v:shapes="img1"><o:p></o:p></p><p class="Textbody" style="margin: 4.3pt 0in; font-size: medium; font-family: &quot;Times New Roman&quot;, serif; caret-color: rgb(0, 0, 0); color: rgb(0, 0, 0); font-style: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: none;"><o:p> </o:p></p></html>`;
+        let defaultUserAgent= navigator.userAgent;
+        beforeEach((done: Function) => {
+            Browser.userAgent="Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Mobile Safari/537.36"
+            "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Mobile Safari/537.36";
+            rteObj = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: false
+                },
+                toolbarSettings: {
+                    items: ['FontColor', 'BackgroundColor', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+        it(' Check the fontColor and backgroundColor ', (done) => {
+            rteObj.dataBind();
+            keyBoardEvent.clipboardData = {
+                getData: () => {
+                    return copied;
+                },
+                items: []
+            };
+            setCursorPoint(rteObj.inputElement.firstChild as HTMLElement, 0);
+            rteObj.onPaste(keyBoardEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelector('img').alt !=='Unsupported file format').toBe(true);
+                done();
+            }, 200);
+        });
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            Browser.userAgent =defaultUserAgent;
+            done();
+        });
+    });

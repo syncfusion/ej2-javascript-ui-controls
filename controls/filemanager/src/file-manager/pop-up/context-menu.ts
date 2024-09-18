@@ -421,8 +421,11 @@ export class ContextMenu {
                     if (this.menuType === 'folder') {
                         if (this.parent.activeModule === 'navigationpane') {
                             this.parent.navigationpaneModule.openFileOnContextMenuClick(closest(this.targetNodeElement, 'li') as HTMLLIElement);
+                            this.parent.folderPath = this.parent.path;
                         }
-                        this.parent.folderPath = getFullPath(this.parent, this.menuItemData, this.parent.path);
+                        else {
+                            this.parent.folderPath = getFullPath(this.parent, this.menuItemData, this.parent.path);
+                        }
                     } else {
                         this.parent.folderPath = '';
                     }

@@ -266,3 +266,15 @@ export enum FrameLineStyle {
     /** Represents a dotted line. */
     Dotted = 'Dotted'
 }
+
+/**
+ * An enumeration representing the type of redaction to be added in the image editor.
+ *
+ * @enum {string}
+ */
+export enum RedactType {
+    /** Represents a blur redaction. */
+    Blur = 'Blur',
+    /** Represents a pixelate redaction. */
+    Pixelate = 'Pixelate'
+}

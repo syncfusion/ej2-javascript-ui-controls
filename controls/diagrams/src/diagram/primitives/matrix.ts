@@ -128,16 +128,7 @@ export function scaleMatrix(
  * @private
  */
 export function translateMatrix(matrix: Matrix, offsetX: number, offsetY: number): void {
-    if (matrix.type & MatrixTypes.Identity) {
-        matrix.type = MatrixTypes.Translation;
-        setMatrix(matrix, 1.0, 0.0, 0.0, 1.0, offsetX, offsetY);
-        return;
-    }
-    if (matrix.type & MatrixTypes.Unknown) {
-        matrix.offsetX += offsetX;
-        matrix.offsetY += offsetY;
-        return;
-    }
+    //Removed identity and unknown matrix type checking
     matrix.offsetX += offsetX;
     matrix.offsetY += offsetY;
     matrix.type |= MatrixTypes.Translation;
@@ -195,15 +186,7 @@ function createRotationRadians(angle: number, centerX: number, centerY: number):
  */
 function multiplyPoint(matrix: Matrix, x: number, y: number): PointModel {
     switch (matrix.type) {
-    case MatrixTypes.Identity: break;
-    case MatrixTypes.Translation:
-        x += matrix.offsetX;
-        y += matrix.offsetY;
-        break;
-    case MatrixTypes.Scaling:
-        x *= matrix.m11;
-        y *= matrix.m22;
-        break;
+    //Removed identity and translation and scaling matrix type checking
     case MatrixTypes.Translation | MatrixTypes.Scaling:
         x *= matrix.m11;
         x += matrix.offsetX;
@@ -237,64 +220,38 @@ function multiplyPoint(matrix: Matrix, x: number, y: number): PointModel {
 export function multiplyMatrix(matrix1: Matrix, matrix2: Matrix): void {
     const type: MatrixTypes = matrix1.type;
     const type2: MatrixTypes = matrix2.type;
-    if (type2 === MatrixTypes.Identity) {
-        return;
-    }
+    //Removed identity matrix type checking
     if (type === MatrixTypes.Identity) {
         assignMatrix(matrix1, matrix2);
         matrix1.type = matrix2.type;
         return;
     }
-    if (type2 === MatrixTypes.Translation) {
-        matrix1.offsetX += matrix2.offsetX;
-        matrix1.offsetY += matrix2.offsetY;
-        if (type !== MatrixTypes.Unknown) {
-            matrix1.type |= MatrixTypes.Translation;
-        }
-        return;
-    }
+    //Removed translation matrix type checking
     if (type !== MatrixTypes.Translation) {
         const num: number = type << 4 | type2;
+        //Removed num 34,35,36
         switch (num) {
-        case 34:
+        case 50:
             matrix1.m11 *= matrix2.m11;
             matrix1.m22 *= matrix2.m22;
+            matrix1.offsetX *= matrix2.m11;
+            matrix1.offsetY *= matrix2.m22;
             return;
-        case 35:
+        case 51:
             matrix1.m11 *= matrix2.m11;
             matrix1.m22 *= matrix2.m22;
-            matrix1.offsetX = matrix2.offsetX;
-            matrix1.offsetY = matrix2.offsetY;
-            matrix1.type = (MatrixTypes.Translation | MatrixTypes.Scaling);
+            matrix1.offsetX = matrix2.m11 * matrix1.offsetX + matrix2.offsetX;
+            matrix1.offsetY = matrix2.m22 * matrix1.offsetY + matrix2.offsetY;
             return;
-        case 36: break;
+        case 52: break;
         default:
-        {
             switch (num) {
-            case 50:
-                matrix1.m11 *= matrix2.m11;
-                matrix1.m22 *= matrix2.m22;
-                matrix1.offsetX *= matrix2.m11;
-                matrix1.offsetY *= matrix2.m22;
-                return;
-            case 51:
-                matrix1.m11 *= matrix2.m11;
-                matrix1.m22 *= matrix2.m22;
-                matrix1.offsetX = matrix2.m11 * matrix1.offsetX + matrix2.offsetX;
-                matrix1.offsetY = matrix2.m22 * matrix1.offsetY + matrix2.offsetY;
-                return;
-            case 52: break;
-            default:
-                switch (num) {
-                case 66:
-                case 67:
-                case 68: break;
-                default: return;
-                }
-                break;
+            case 66:
+            case 67:
+            case 68: break;
+            default: return;
             }
             break;
-        }
         }
         const result: Matrix = identityMatrix();
         const m11New: number = matrix1.m11 * matrix2.m11 + matrix1.m12 * matrix2.m21;

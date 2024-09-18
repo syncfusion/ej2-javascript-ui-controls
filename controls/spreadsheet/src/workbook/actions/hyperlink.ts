@@ -38,7 +38,10 @@ export class WorkbookHyperlink {
         }
     }
 
-    public setLinkHandler(args: { hyperlink: string | HyperlinkModel, cell: string, displayText: string, triggerEvt?: boolean }): void {
+    public setLinkHandler(args: {
+        hyperlink: string | HyperlinkModel, cell: string, displayText: string, triggerEvt?: boolean,
+        isUndoRedo?: boolean
+    }): void {
         let hyperlink: string | HyperlinkModel = args.hyperlink;
         let cellAddr: string = args.cell;
         let sheet: SheetModel;
@@ -75,13 +78,15 @@ export class WorkbookHyperlink {
                     continue;
                 }
                 cellModel = { hyperlink: hyperlink };
-                if (!isNullOrUndefined(args.displayText) && rIdx === activeCell[0] && cIdx === activeCell[1]) {
-                    if (args.triggerEvt) {
+                if (!isNullOrUndefined(args.displayText)) {
+                    if (args.triggerEvt || args.isUndoRedo) {
                         if (rIdx === activeCell[0] && cIdx === activeCell[1]) {
                             cellModel.value = args.displayText;
+                            delete cellModel.formattedText;
                         }
-                    } else if (isNullOrUndefined(getCell(rIdx, cIdx, sheet, false, true).value)) {
+                    } else {
                         cellModel.value = args.displayText;
+                        delete cellModel.formattedText;
                     }
                 }
                 cellModel.style = { textDecoration: 'underline', color: '#00e' };

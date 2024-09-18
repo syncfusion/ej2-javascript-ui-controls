@@ -21,7 +21,7 @@ import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
 import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';
 import { getAnnotationPosition, alignLabelOnSegments, updateConnector, checkPortRestriction, updatePortEdges, getPortsPosition, getPathOffset } from '../utility/diagram-util';
-import { setUMLActivityDefaults, initfixedUserHandlesSymbol } from '../utility/diagram-util';
+import { setUMLActivityDefaults, initFixedUserHandlesSymbol } from '../utility/diagram-util';
 import { findDistance, findPath, updatePathElement, setConnectorDefaults } from '../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
 import { flipConnector } from './../utility/diagram-util';
@@ -44,7 +44,7 @@ import { OrthogonalSegmentModel, StraightSegmentModel, BezierSegmentModel, Conne
 import { RelationShipModel, ClassifierMultiplicityModel, MultiplicityLabelModel } from './connector-model';
 import { DiagramHtmlElement } from '../core/elements/html-element';
 import { DiagramConnectorSegmentModel } from './connector-model';
-import { getTemplateContent } from '../utility/dom-util';
+import { getTemplateContent, getContent } from '../utility/dom-util';
 import { SymbolSizeModel } from './preview-model';
 import { SymbolSize } from './preview';
 import { ConnectorFixedUserHandle } from './fixed-user-handle';
@@ -72,7 +72,7 @@ const getConnectorType: Function = (obj: ConnectorShape): Object => {
 const getSegmentType: Function = (obj: Connector): Object => {
 
     if (obj) {
-        //Removed isBlazor code 
+        //Removed isBlazor code
         switch (obj.type) {
         case 'Straight':
             return StraightSegment;
@@ -1258,6 +1258,14 @@ export class Connector extends NodeBase implements IElement {
      */
     @Property('Circle')
     public segmentThumbShape: SegmentThumbShapes;
+
+    /**
+     * Specifies the size of the segment thumb for individual connector. When not set, it defaults to matching the underlying path data
+     *
+     * @default 10
+     */
+    @Property(10)
+    public segmentThumbSize: number;
     /**
      * Sets the corner radius of the connector
      *
@@ -1500,7 +1508,7 @@ export class Connector extends NodeBase implements IElement {
             break;
         case 'UmlActivity':
             // eslint-disable-next-line no-case-declarations
-            const activityFlow: UmlActivityFlows = 
+            const activityFlow: UmlActivityFlows =
                 (this.shape as ActivityFlow).flow;
             switch (activityFlow) {
             case 'Object':
@@ -1556,8 +1564,8 @@ export class Connector extends NodeBase implements IElement {
         }
         for (let i: number = 0; this.fixedUserHandles !== undefined, i < this.fixedUserHandles.length; i++) {
             container.children.push(
-                this.getfixedUserHandle(this.fixedUserHandles[parseInt(i.toString(), 10)] as ConnectorFixedUserHandle,
-                                        this.intermediatePoints, bounds));
+                this.getFixedUserHandle(this.fixedUserHandles[parseInt(i.toString(), 10)] as ConnectorFixedUserHandle,
+                                        this.intermediatePoints, bounds, diagram.fixedUserHandleTemplate, diagram.element.id));
         }
         // Feature 826644: Support to add ports to the connector.
         this.initPorts(getDescription, container, bounds);
@@ -1648,6 +1656,7 @@ export class Connector extends NodeBase implements IElement {
             portContent = updatePortEdges(portContent, 'None', ports);
         }
         portContent.float = true;
+        portContent.connectionDirection = ports.connectionDirection;
         portContent.setOffsetWithRespectToBounds(pivotPoint.x, pivotPoint.y, 'Absolute');
         portContent.relativeMode = 'Point';
         portContent.visible = checkPortRestriction(ports, PortVisibility.Visible) &&
@@ -1800,15 +1809,30 @@ export class Connector extends NodeBase implements IElement {
 
         }
     }
-
+    // 882378 - Added below code to provide template support for fixedUserHandles in connectors
     /** @private */
-    public getfixedUserHandle(fixedUserHandle: ConnectorFixedUserHandle, points: PointModel[], bounds: Rect): Canvas {
-        const fixedUserHandleContainer: Canvas = new Canvas();
+    public getFixedUserHandle(fixedUserHandle: ConnectorFixedUserHandle, points: PointModel[], bounds: Rect,
+                              fixedUserHandleTemplate: string | Function, diagramId: string): Canvas | DiagramHtmlElement {
+        let fixedUserHandleContainer: DiagramHtmlElement | Canvas;
+        if (fixedUserHandle.pathData === '' && fixedUserHandleTemplate)
+        {
+            fixedUserHandleContainer = new DiagramHtmlElement(this.id, diagramId, undefined, (fixedUserHandleTemplate as string));
+            fixedUserHandleContainer.isTemplate = true;
+            fixedUserHandleContainer.template =  getContent(fixedUserHandleContainer, true, fixedUserHandle)  as HTMLElement;
+            fixedUserHandle.id = fixedUserHandle.id || randomId();
+            fixedUserHandleContainer.id = this.id + '_' + fixedUserHandle.id;
+        }
+        else
+        {
+            fixedUserHandleContainer = new Canvas();
+            const children: DiagramElement[] = [];
+            fixedUserHandleContainer.children = children;
+            fixedUserHandle.id = fixedUserHandle.id || randomId();
+            fixedUserHandleContainer.id = this.id + '_' + fixedUserHandle.id;
+            const symbolIcon: DiagramElement = initFixedUserHandlesSymbol(fixedUserHandle, fixedUserHandleContainer);
+            fixedUserHandleContainer.children.push(symbolIcon);
+        }
         fixedUserHandleContainer.float = true;
-        const children: DiagramElement[] = [];
-        fixedUserHandle.id = fixedUserHandle.id || randomId();
-        fixedUserHandleContainer.id = this.id + '_' + fixedUserHandle.id;
-        fixedUserHandleContainer.children = children;
         fixedUserHandleContainer.visible = fixedUserHandle.visibility;
         fixedUserHandleContainer.width = fixedUserHandle.width;
         fixedUserHandleContainer.height = fixedUserHandle.height;
@@ -1817,12 +1841,9 @@ export class Connector extends NodeBase implements IElement {
         fixedUserHandleContainer.style.strokeColor = fixedUserHandle.handleStrokeColor;
         fixedUserHandleContainer.cornerRadius = fixedUserHandle.cornerRadius;
         this.updateAnnotation(fixedUserHandle, points, bounds, fixedUserHandleContainer);
-        const symbolIcon: DiagramElement = initfixedUserHandlesSymbol(fixedUserHandle, fixedUserHandleContainer);
-        fixedUserHandleContainer.children.push(symbolIcon);
         fixedUserHandleContainer.description = fixedUserHandleContainer.id;
         return fixedUserHandleContainer;
     }
-
     private getBpmnMessageFlow(): PathElement {
         const segmentMessage: PathElement = new PathElement();
         this.targetDecorator.shape = 'Arrow';
@@ -1870,6 +1891,10 @@ export class Connector extends NodeBase implements IElement {
             if (annotation.template && typeof annotation.template === 'function' && (diagram as IReactDiagram).isReact){
                 (textele as any).templateFn = baseTemplateCompiler(annotation.template);
                 textele.isTemplate = true;
+            }
+            //908155-Annotation template update wrongly while do interaction for connector
+            if (annotation.height === undefined && annotation.annotationType === 'String' && (annotation.template || annotation.content === '')) {
+                annotation.height = bounds.height;
             }
             textele = getTemplateContent(textele, annotation, annotationTemplate, diagram);
         } else {

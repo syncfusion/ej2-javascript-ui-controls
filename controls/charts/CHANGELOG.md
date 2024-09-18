@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 27.1.48 (2024-09-18)
+
+### Chart
+
+#### Features
+
+- `#I539415`- Provided support for smooth data transitions with animation effects when sorting data in the chart.
+- `#I539415`- Provided support for smooth animation transitions when zooming the chart.
+- Added support to disable risers in the step line series for enhanced customization.
+
+### Accumulation chart
+
+#### Features
+
+- `#I539415`- Provided support for animations when adding, removing, or updating data for series, data labels, and legends.
+- Added support for rounded corners in pie, donut, pyramid, and funnel charts.
+- Provided pattern support for data points in accumulation charts.
+
+## 26.2.13 (2024-09-10)
 
 ### Chart
 

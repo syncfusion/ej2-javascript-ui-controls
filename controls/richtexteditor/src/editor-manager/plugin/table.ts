@@ -521,6 +521,13 @@ export class TableCommand {
 
         const firstCell: Node = selectedCells[0];
         const rowSelectedCells: NodeListOf<HTMLElement> = firstCell.parentElement.querySelectorAll('.e-cell-select');
+        let maxHeight: number = 0;
+        for (let j: number = 0; j < rowSelectedCells.length; j++) {
+            const cellHeight: number = rowSelectedCells[j as number].offsetHeight;
+            if (cellHeight > maxHeight) {
+                maxHeight = cellHeight;
+            }
+        }
         if (minMaxIndexes.startColumn < minMaxIndexes.endColumn) {
             (firstCell as HTMLElement).setAttribute('colspan', (minMaxIndexes.endColumn - minMaxIndexes.startColumn + 1).toString());
         }
@@ -544,6 +551,7 @@ export class TableCommand {
             }
         }
         (firstCell as HTMLElement).style.width = totalWidth + unit;
+        (firstCell as HTMLElement).style.height = maxHeight + 'px';
 
         for (let i: number = 1; i <= selectedCells.length - 1; i++) {
             detach(selectedCells[i as number]);

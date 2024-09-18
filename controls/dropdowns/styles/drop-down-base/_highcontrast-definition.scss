@@ -71,11 +71,6 @@ $ddl-bigger-small-list-header-font-size: 14px !default;
       #{if(&, '&', '*')} .e-list-icon {
         padding: 0 10px 0 0;
       }
-      .e-bigger #{if(&, '&', '*')} {
-        #{if(&, '&', '*')} .e-list-icon {
-          padding: 0 12px 0 0;
-        }
-      }
       #{if(&, '&', '*')}:not(.e-active) {
         #{if(&, '&', '*')}.e-hover {
           border: 2px solid $hover-border;
@@ -97,9 +92,5 @@ $ddl-bigger-small-list-header-font-size: 14px !default;
 
   .e-small .e-dropdownbase .e-list-item .e-list-icon {
     padding: 0 8px 0 0;
-  }
-
-  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
-    padding: 0 12px 0 0;
   }
 }

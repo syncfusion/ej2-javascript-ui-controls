@@ -924,7 +924,106 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('Spline Series - Checking animation on data changes.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let seriesData: object[] = [
+            { x: "Jan", y: 54.481, text: "54.48%" },
+            { x: "Feb", y: 50.56382, text: "50.56%" },
+            { x: "Mar", y: 53.68715, text: "53.69%" },
+            { x: "Apr", y: 49.143363, text: "49.14%" },
+            { x: "May", y: 57.423575, text: "57.42%" },
+            { x: "Jun", y: 55.959774, text: "55.96%" },
+            { x: "Jul", y: 52.360737, text: "52.36%" },
+            { x: "Aug", y: 56.654956, text: "56.65%" },
+            { x: "Sep", y: 51.387971, text: "51.39%" },
+            { x: "Oct", y: 53.137774, text: "53.14%" },
+            { x: "Nov", y: 54.889794, text: "54.89%" }];
+        let chartContainerDiv: Element;
+        chartContainerDiv = createElement('div', { id: 'SplineContainer', styles: 'height:250px;width:590px;float: left;' });
+        beforeAll(() => {
+            document.body.appendChild(chartContainerDiv);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category' },
+                    series: [
+                        {
+                            dataSource: seriesData, xName: 'x', yName: 'y', type: 'Spline', fill: 'red',
+                            animation: { enable: false }, name: 'series1', legendShape: 'Circle',
+                            marker: {
+                                visible: true,
+                                dataLabel: {
+                                    visible: true,
+                                    position: 'Outer',
+                                    font: { color: 'red', size: '12px' }
+                                }
+                            }
+                        }
+                    ],
 
+                });
+            chartObj.appendTo('#SplineContainer');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            chartContainerDiv.remove();
+        });
+
+        it('Checking spline series updated direction', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('SplineContainer_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            let dataSource: object[] = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 50.56382, text: "50.56%" },
+                { x: "Mar", y: 51.68715, text: "53.69%" },
+                { x: "Apr", y: 49.143363, text: "49.14%" },
+                { x: "May", y: 57.423575, text: "57.42%" },
+                { x: "Jun", y: 55.959774, text: "55.96%" },
+                { x: "Jul", y: 52.360737, text: "52.36%" },
+                { x: "Aug", y: 56.654956, text: "56.65%" },
+                { x: "Sep", y: 51.387971, text: "51.39%" },
+                { x: "Oct", y: 53.137774, text: "53.14%" },
+                { x: "Nov", y: 52.889794, text: "54.89%" },
+            ];
+            chartObj.series[0].setData(dataSource);
+            chartObj.refresh();
+        });
+        it('Checking spline series - addPoint', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('SplineContainer_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.series[0].addPoint({ x: "Dec", y: 56.760399, text: "56.76%" });
+            chartObj.refresh();
+        });
+        it('Checking spline series - removePoint', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('SplineContainer_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.series[0].removePoint(0);
+            chartObj.refresh();
+        });
+        it('Spline series - checking remove point method', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('SplineContainer_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.series[0].removePoint(0); chartObj.series[0].removePoint(1); chartObj.series[0].removePoint(2);
+            chartObj.series[0].removePoint(3); chartObj.series[0].removePoint(4); chartObj.series[0].removePoint(5);
+            chartObj.series[0].removePoint(6); chartObj.series[0].removePoint(7); chartObj.series[0].removePoint(8);
+            chartObj.series[0].removePoint(9); chartObj.series[0].removePoint(10);
+            chartObj.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

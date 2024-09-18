@@ -82,8 +82,8 @@ describe('Chart Control', () => {
         it('Checking Xaxis title default position', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-0');
-                expect(parseInt(area.getAttribute('y'))).toBe(439);
-                expect(parseInt(area.getAttribute('x'))).toBe(397);
+                expect(parseInt(area.getAttribute('y'))).toBe(438);
+                expect(parseInt(area.getAttribute('x'))).toBe(396);
                 done();
             };
             chartObj.loaded = loaded;
@@ -93,8 +93,8 @@ describe('Chart Control', () => {
         it('Checking Yaxis title default position', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-1');
-                expect(parseInt(area.getAttribute('y'))).toBe(209);
-                expect(parseInt(area.getAttribute('x'))).toBe(21);
+                expect(parseInt(area.getAttribute('y'))).toBe(208);
+                expect(parseInt(area.getAttribute('x'))).toBe(23);
                 done();
             };
             chartObj.loaded = loaded;
@@ -104,8 +104,8 @@ describe('Chart Control', () => {
         it('Checking Xaxis title default styles', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-0');
-                expect(area.getAttribute('font-size') == '14px').toBe(true);
-                expect(area.getAttribute('font-weight') == '600').toBe(true);
+                expect(area.getAttribute('font-size') == '16px').toBe(true);
+                expect(area.getAttribute('font-weight') == '700').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -114,8 +114,8 @@ describe('Chart Control', () => {
         it('Checking Yaxis title default styles', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-1');
-                expect(area.getAttribute('font-size') == '14px').toBe(true);
-                expect(area.getAttribute('font-weight') == '600').toBe(true);
+                expect(area.getAttribute('font-size') == '16px').toBe(true);
+                expect(area.getAttribute('font-weight') == '700').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -126,7 +126,7 @@ describe('Chart Control', () => {
                 let label = document.getElementById('chartContainer-1-axis-label-0');
                 let content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(409);
+                expect(parseInt(label.getAttribute('y'))).toBe(407);
                 expect(content == '0').toBe(true);
                 label = document.getElementById('chartContainer-1-axis-label-11');
                 content = label.textContent;
@@ -141,7 +141,7 @@ describe('Chart Control', () => {
         it('Checking Xaxis title Rotation', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-0');
-                expect(area.getAttribute('transform')).toBe('rotate(90,408.0363214837712,430.9428129829984)');
+                expect(area.getAttribute('transform')).toBe('rotate(90,408.0363214837712,428.86652941460585)');
                 done();
             };
             chartObj.loaded = loaded;
@@ -152,7 +152,7 @@ describe('Chart Control', () => {
         it('Checking Yaxis title Rotation', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-1');
-                expect(area.getAttribute('transform')).toBe('rotate(90,12.82225656877898,200.97333848531682)');
+                expect(area.getAttribute('transform')).toBe('rotate(90,13.802936630602783,198.89705491692425)');
                 done();
             };
             chartObj.loaded = loaded;
@@ -282,6 +282,13 @@ describe('Chart Control', () => {
                             height: '50%'
                         }
                     ],
+                    columns:[
+                        {
+                            width: '50%'
+                        },{
+                            width: '50%'
+                        }
+                    ],
                     axes: [
                         {
                             majorGridLines: { width: 0 },
@@ -289,6 +296,11 @@ describe('Chart Control', () => {
                             minimum: 24, maximum: 36, interval: 4,
                             name: 'yAxis', title: 'Temperature (Celsius)',
                             labelFormat: '{value}°C'
+                        },
+                        {
+                            title: 'Axes - 2',
+                            valueType: 'Category',
+                            majorGridLines: { width: 0 }, columnIndex: -1, name: 'xAxis'
                         }
                     ],
                     series: [{
@@ -319,6 +331,56 @@ describe('Chart Control', () => {
                 expect(tick1 !== null).toBe( true);
                 done();
             };
+            chartObj.refresh();
+        });
+        it('Checking axis with multiple row', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let tick: Element = document.getElementById('chartContainer-1-axis-label-5');
+                expect(tick !== null).toBe( true);
+                done();
+            };
+            chartObj.axes[0].rowIndex = -1
+            chartObj.refresh();
+        });
+        it('Checking axis with multiple columns', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let tick: Element = document.getElementById('chartContainer-1-axis-label-5');
+                expect(tick !== null).toBe( true);
+                done();
+            };
+            chartObj.series[1].xAxisName = 'xAxis',
+            chartObj.refresh();
+        });
+        it('Checking axis with multiple columns', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let tick: Element = document.getElementById('chartContainer-1-axis-label-5');
+                expect(tick !== null).toBe( true);
+                done();
+            };
+            chartObj.axes[1].columnIndex = 3;
+            chartObj.refresh();
+        });
+        it('Checking axis label with plotOffsetTop', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let tick1: Element = document.getElementById('chartContainer-2-axis-label-0');
+                expect(tick1 !== null).toBe( true);
+                chartObj.chartAxisLayoutPanel.measureAxis(chartObj.initialClipRect);
+                done();
+            };
+            chartObj.primaryYAxis.plotOffsetTop = 2;
+            chartObj.refresh();
+        });
+        it('Checking axis label with plotOffsetTop', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let tick1: Element = document.getElementById('chartContainer-2-axis-label-0');
+                expect(tick1 !== null).toBe( true);
+                chartObj.chartAxisLayoutPanel.measureAxis(chartObj.initialClipRect);
+                done();
+            };
+            chartObj.primaryYAxis.opposedPosition = true;
+            chartObj.primaryXAxis.opposedPosition = true;
+            chartObj.axes[0].opposedPosition = true;
+            chartObj.axes[1].opposedPosition = true;
             chartObj.refresh();
         });
     });

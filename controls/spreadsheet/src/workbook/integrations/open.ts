@@ -9,6 +9,7 @@ import { WorkbookModel, Workbook, initSheet, SheetModel, RangeModel, getSheet } 
 
 export class WorkbookOpen {
     private parent: Workbook;
+    public preventFormatCheck: boolean;
     constructor(parent: Workbook) {
         this.parent = parent;
         this.addEventListener();
@@ -189,6 +190,12 @@ export class WorkbookOpen {
         });
     }
 
+    private sheetsDestroyHandler(args: { sheetIndex?: number }): void {
+        if (isNullOrUndefined(args.sheetIndex)) {
+            this.preventFormatCheck = null;
+        }
+    }
+
     /**
      * Adding event listener for workbook open.
      *
@@ -196,6 +203,7 @@ export class WorkbookOpen {
      */
     private addEventListener(): void {
         this.parent.on(workbookOpen, this.open.bind(this));
+        this.parent.on(sheetsDestroyed, this.sheetsDestroyHandler, this);
     }
 
     /**
@@ -206,6 +214,7 @@ export class WorkbookOpen {
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(workbookOpen, this.open.bind(this));
+            this.parent.off(sheetsDestroyed, this.sheetsDestroyHandler);
         }
     }
 
@@ -216,6 +225,9 @@ export class WorkbookOpen {
      */
     public destroy(): void {
         this.removeEventListener();
+        if (!(this.parent as unknown as { refreshing?: boolean }).refreshing) {
+            this.preventFormatCheck = null;
+        }
         this.parent = null;
     }
 

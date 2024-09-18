@@ -82,6 +82,7 @@ export interface IToolbarStatus {
     blockquote?: boolean
     numberFormatList?: string | boolean
     bulletFormatList?: string | boolean
+    InlineCode?: boolean
 }
 /**
  * @deprecated

@@ -96,7 +96,6 @@ describe('Diagram Control', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
-            console.log(average);
             expect(average).toBeLessThan(10);
             let memory: any = inMB(getMemoryProfile())
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated

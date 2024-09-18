@@ -373,6 +373,20 @@ export class DateTimePicker extends DatePicker {
     @Property(new Date(2099, 11, 31))
     public max: Date;
     /**
+     * Gets or sets the minimum time that can be selected in the time popup of the DateTimePicker.
+     *
+     * @default null
+     */
+    @Property(null)
+    public minTime: Date;
+    /**
+     * Gets or sets the maximum time that can be selected in the time popup of the DateTimePicker.
+     *
+     * @default null
+     */
+    @Property(null)
+    public maxTime: Date;
+    /**
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
      *
      * @default 0
@@ -620,7 +634,6 @@ export class DateTimePicker extends DatePicker {
         if (this.showClearButton) {
             this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
         }
-        this.hide(null);
         if (this.popupObject && this.popupObject.element.classList.contains(POPUP)) {
             this.popupObject.destroy();
             detach(this.dateTimeWrapper);
@@ -695,6 +708,14 @@ export class DateTimePicker extends DatePicker {
         {
             this.max = this.checkDateValue(new Date((this as any).max));
         }
+        if (typeof (this.minTime) === 'string')
+        {
+            this.minTime = this.checkDateValue(new Date((this as any).minTime));
+        }
+        if (typeof (this.maxTime) === 'string')
+        {
+            this.maxTime = this.checkDateValue(new Date((this as any).maxTime));
+        }
         if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
             this.enabled = false;
         }
@@ -763,7 +784,7 @@ export class DateTimePicker extends DatePicker {
     private checkValidState(value: Date): void {
         this.isValidState = true;
         if (!this.strictMode) {
-            if ((+(value) > +(this.max)) || (+(value) < +(this.min))) {
+            if ((+(value) > +(this.max)) || (+(value) < +(this.min)) || !this.isValidTime(value)) {
                 this.isValidState = false;
             }
         }
@@ -778,6 +799,74 @@ export class DateTimePicker extends DatePicker {
         }
         attributes(this.inputElement, { 'aria-invalid': this.isValidState ? 'false' : 'true' });
     }
+
+    protected isValidTime(value: Date): boolean {
+        if (value != null && (this.minTime || this.maxTime)) {
+            let minTimeValue: number;
+            let maxTimeValue: number;
+            let maxValue: number;
+            let minValue: number;
+
+            const valueTime: number = value.getHours() * 3600000 + value.getMinutes() * 60000 +
+                value.getSeconds() * 1000 + value.getMilliseconds();
+
+            if (this.minTime) {
+                minTimeValue = this.minTime.getHours() * 3600000 + this.minTime.getMinutes() * 60000 +
+                    this.minTime.getSeconds() * 1000 + this.minTime.getMilliseconds();
+            }
+            if (this.maxTime) {
+                maxTimeValue = this.maxTime.getHours() * 3600000 + this.maxTime.getMinutes() * 60000 +
+                    this.maxTime.getSeconds() * 1000 + this.maxTime.getMilliseconds();
+            }
+            if (this.min && (+value.getDate() === +this.min.getDate() && +value.getMonth() === +this.min.getMonth() &&
+                +value.getFullYear() === +this.min.getFullYear())) {
+                minValue = this.min.getHours() * 3600000 + this.min.getMinutes() * 60000 +
+                    this.min.getSeconds() * 1000 + this.min.getMilliseconds();
+                minTimeValue = minTimeValue < minValue ? minValue : minTimeValue;
+            }
+            if (this.max && (+value.getDate() === +this.max.getDate() && +value.getMonth() === +this.max.getMonth() &&
+                +this.max.getFullYear() === +this.max.getFullYear())) {
+                maxValue = this.max.getHours() * 3600000 + this.max.getMinutes() * 60000 +
+                    this.max.getSeconds() * 1000 + this.max.getMilliseconds();
+                maxTimeValue = maxTimeValue > maxValue ? maxValue : maxTimeValue;
+            }
+            if (this.strictMode) {
+                let newValue: Date;
+                if (minTimeValue && valueTime < minTimeValue) {
+                    newValue = new Date(
+                        value.getFullYear(),
+                        value.getMonth(),
+                        value.getDate(),
+                        this.minTime.getHours(),
+                        this.minTime.getMinutes(),
+                        this.minTime.getSeconds(),
+                        this.minTime.getMilliseconds()
+                    );
+                    this.setProperties({ value: newValue }, true);
+                    this.changedArgs = { value: this.value };
+                }
+                else if (maxTimeValue && valueTime > maxTimeValue) {
+                    newValue = new Date(
+                        value.getFullYear(),
+                        value.getMonth(),
+                        value.getDate(),
+                        this.maxTime.getHours(),
+                        this.maxTime.getMinutes(),
+                        this.maxTime.getSeconds(),
+                        this.maxTime.getMilliseconds()
+                    );
+                    this.setProperties({ value: newValue }, true);
+                    this.changedArgs = { value: this.value };
+                }
+                return true;
+            }
+            else {
+                return !((minTimeValue && valueTime < minTimeValue) || (maxTimeValue && valueTime > maxTimeValue));
+            }
+        }
+        return true;
+    }
+
     private validateValue(value: Date): Date {
         let dateVal: Date = value;
         if (this.strictMode) {
@@ -1116,7 +1205,7 @@ export class DateTimePicker extends DatePicker {
             this.timeModal.style.display = 'block';
             document.body.appendChild(this.timeModal);
         }
-        if(Browser.isDevice){
+        if (Browser.isDevice){
             this.modelWrapper = createElement('div', { className: 'e-datetime-mob-popup-wrap' });
             this.modelWrapper.appendChild(this.dateTimeWrapper);
             const dlgOverlay: HTMLElement = createElement('div', { className: 'e-dlg-overlay'});
@@ -1153,8 +1242,8 @@ export class DateTimePicker extends DatePicker {
                 remove(this.popupObject.element);
                 this.popupObject.destroy();
                 this.dateTimeWrapper.innerHTML = '';
-                if(this.modelWrapper){
-                    remove(this.modelWrapper); 
+                if (this.modelWrapper) {
+                    remove(this.modelWrapper);
                 }
                 this.listWrapper = this.dateTimeWrapper = undefined;
                 if (this.inputEvent) {
@@ -1454,18 +1543,43 @@ export class DateTimePicker extends DatePicker {
         let tempStartValue: Date;
         let start: boolean;
         const tempMin: Date = this.min;
+        const tempMax: Date = this.max;
         const value: Date = date === null ? new Date() : date;
-        if ((+value.getDate() === +tempMin.getDate() && +value.getMonth() === +tempMin.getMonth() &&
-            +value.getFullYear() === +tempMin.getFullYear()) || ((+new Date(value.getFullYear(), value.getMonth(), value.getDate())) <=
+        let isModified: boolean = false;
+        let startValue: Date;
+        if (this.minTime) {
+            startValue = new Date(
+                value.getFullYear(),
+                value.getMonth(),
+                value.getDate(),
+                this.minTime.getHours(),
+                this.minTime.getMinutes(),
+                this.minTime.getSeconds(),
+                this.minTime.getMilliseconds()
+            );
+            isModified = true;
+        } else {
+            startValue = value;
+        }
+        if ((+startValue.getDate() === +tempMin.getDate() && +startValue.getMonth() === +tempMin.getMonth() &&
+                +startValue.getFullYear() === +tempMin.getFullYear()) ||
+                ((+new Date(startValue.getFullYear(), startValue.getMonth(), startValue.getDate())) <=
                 +new Date(tempMin.getFullYear(), tempMin.getMonth(), tempMin.getDate()))) {
             start = false;
-            tempStartValue = this.min;
-        } else if (+value < +this.max && +value > +this.min) {
+            tempStartValue = tempMin;
+            if (isModified && ((+new Date(startValue.getFullYear(), startValue.getMonth(), startValue.getDate(), startValue.getHours(),
+                                          startValue.getMinutes(), startValue.getSeconds(), startValue.getMilliseconds())) >=
+                +new Date(tempMin.getFullYear(), tempMin.getMonth(), tempMin.getDate(), tempMin.getHours(),
+                          tempMin.getMinutes(), tempMin.getSeconds(), tempMin.getMilliseconds()))) {
+                tempStartValue.setHours(startValue.getHours(), startValue.getMinutes(), startValue.getSeconds(),
+                                        startValue.getMilliseconds());
+            }
+        } else if (+startValue < +tempMax && +startValue > +tempMin) {
+            start = !isModified;
+            tempStartValue = startValue;
+        } else if (+startValue >= +tempMax) {
             start = true;
-            tempStartValue = value;
-        } else if (+value >= +this.max) {
-            start = true;
-            tempStartValue = this.max;
+            tempStartValue = tempMax;
         }
         return this.calculateStartEnd(tempStartValue, start, 'starttime');
     }
@@ -1517,15 +1631,38 @@ export class DateTimePicker extends DatePicker {
         let end: boolean;
         const tempMax: Date = this.max;
         const value: Date = date === null ? new Date() : date;
-        if ((+value.getDate() === +tempMax.getDate() && +value.getMonth() === +tempMax.getMonth() &&
-            +value.getFullYear() === +tempMax.getFullYear()) || (+new Date(value.getUTCFullYear(), value.getMonth(), value.getDate()) >=
+        let isModified: boolean = false;
+        let endValue: Date;
+        if (this.maxTime) {
+            endValue = new Date(
+                value.getFullYear(),
+                value.getMonth(),
+                value.getDate(),
+                this.maxTime.getHours(),
+                this.maxTime.getMinutes(),
+                this.maxTime.getSeconds(),
+                this.maxTime.getMilliseconds()
+            );
+            isModified = true;
+        } else {
+            endValue = value;
+        }
+        if ((+endValue.getDate() === +tempMax.getDate() && +endValue.getMonth() === +tempMax.getMonth() &&
+            +endValue.getFullYear() === +tempMax.getFullYear()) ||
+                (+new Date(endValue.getUTCFullYear(), endValue.getMonth(), endValue.getDate()) >=
                 +new Date(tempMax.getFullYear(), tempMax.getMonth(), tempMax.getDate()))) {
             end = false;
             tempEndValue = this.max;
-        } else if (+value < +this.max && +value > +this.min) {
-            end = true;
-            tempEndValue = value;
-        } else if (+value <= +this.min) {
+            if (isModified && (+new Date(endValue.getUTCFullYear(), endValue.getMonth(), endValue.getDate(), endValue.getHours(),
+                                         endValue.getMinutes(), endValue.getSeconds(), endValue.getMilliseconds()) <=
+                +new Date(tempMax.getFullYear(), tempMax.getMonth(), tempMax.getDate(), tempMax.getHours(),
+                          tempMax.getMinutes(), tempMax.getSeconds(), tempMax.getMilliseconds()))) {
+                tempEndValue.setHours(endValue.getHours(), endValue.getMinutes(), endValue.getSeconds(), endValue.getMilliseconds());
+            }
+        } else if (+endValue < +this.max && +endValue > +this.min) {
+            end = !isModified;
+            tempEndValue = endValue;
+        } else if (+endValue <= +this.min) {
             end = true;
             tempEndValue = this.min;
         }
@@ -1898,7 +2035,7 @@ export class DateTimePicker extends DatePicker {
      */
     public onPropertyChanged(newProp: DateTimePickerModel, oldProp: DateTimePickerModel): void {
         for (const prop of Object.keys(newProp)) {
-            const openPopup = ['blur', 'change', 'cleared', 'close', 'created', 'destroyed', 'focus', 'navigated', 'open', 'renderDayCell'];
+            const openPopup: string[] = ['blur', 'change', 'cleared', 'close', 'created', 'destroyed', 'focus', 'navigated', 'open', 'renderDayCell'];
             if (openPopup.indexOf(prop) > 0 && this.isReact) {
                 this.isDynamicValueChanged = true;
             }

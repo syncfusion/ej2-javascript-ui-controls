@@ -603,7 +603,7 @@ export class SvgRenderer implements IRenderer {
         }
         const imageObj: HTMLImageElement = new Image();
         imageObj.src = obj.source;
-        let scale: string = obj.scale !== 'None' ? obj.scale : '';
+        const scale: string = obj.scale !== 'None' ? obj.scale : '';
         //Removed isBlazor code
         const imgAlign: string = obj.alignment;
         let aspectRatio: string = imgAlign.charAt(0).toLowerCase() + imgAlign.slice(1);
@@ -655,22 +655,19 @@ export class SvgRenderer implements IRenderer {
                 'class': 'foreign-object'
             };
             htmlElement = createHtmlElement('div', attr);
-            const diagram : any = (document.getElementById(element.diagramId) as any).ej2_instances[0];
+            const diagram: any = (document.getElementById(element.diagramId) as any).ej2_instances[0];
             let isOverviewLayer: boolean = false;
             if (canvas.parentNode && canvas.parentNode.parentNode && canvas.parentNode.parentNode.parentNode && (canvas.parentNode.parentNode.parentNode as any).classList.contains('e-overview')) {
                 isOverviewLayer = true;
             }
             if (isOverviewLayer) {
                 //893685: HTML node with node Template not shown in Overview in React.
-                if (diagram.isReact)
-                {
-                    diagram.renderReactTemplates(()=>
-                    {
+                if (diagram.isReact) {
+                    diagram.renderReactTemplates(() => {
                         htmlElement.appendChild(element.template.cloneNode(true));
                     });
                 }
-                else
-                {
+                else {
                     htmlElement.appendChild(element.template.cloneNode(true));
                 }
             } else {
@@ -688,7 +685,7 @@ export class SvgRenderer implements IRenderer {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 // 883335-Exception Throws When Loading Data Without Defining Node Template at Application Level
                 if (element.isTemplate && element.template) {
-                    htmlElement.appendChild(element.template)
+                    htmlElement.appendChild(element.template);
                 } else if (element.template) {
                     htmlElement.appendChild(element.template.cloneNode(true));
                 }

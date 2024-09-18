@@ -236,7 +236,7 @@ export class ColumnMenu implements IAction {
 
     private keyPressHandler(e: KeyboardEventArgs): void {
         const gObj: IGrid = this.parent;
-        if (e.action === 'altDownArrow') {
+        if (e.action === 'altDownArrow' && !this.parent.enableAdaptiveUI) {
             const element: HTMLElement = gObj.focusModule.currentInfo.element;
             if (element && element.classList.contains('e-headercell')) {
                 const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('e-mappinguid'));
@@ -264,7 +264,7 @@ export class ColumnMenu implements IAction {
         this.element.setAttribute('aria-label', this.l10n.getConstant('ColumnMenuDialogARIA'));
         this.parent.element.appendChild(this.element);
         this.columnMenu = new Menu({
-            cssClass: this.parent.cssClass ? 'e-grid-menu' + ' ' + this.parent.cssClass : 'e-grid-menu',
+            cssClass: this.parent.cssClass ? 'e-grid-menu e-grid-column-menu' + ' ' + this.parent.cssClass : 'e-grid-menu e-grid-column-menu',
             enableRtl: this.parent.enableRtl,
             enablePersistence: this.parent.enablePersistence,
             locale: this.parent.locale,
@@ -690,7 +690,8 @@ export class ColumnMenu implements IAction {
         if (!isNullOrUndefined(this.targetColumn) && this.parent.filterSettings.type === 'Menu' && Browser.isDevice) {
             return document.getElementById(this.targetColumn.uid + '-flmdlg');
         }
-        return this.parent.element.querySelector('.' + this.POP) as HTMLElement;
+        return this.parent.element.querySelector('.' + this.POP) as HTMLElement ||
+            (document.getElementById(this.parent.element.id + '_e-popup') && document.getElementById(this.parent.element.id + '_e-popup').querySelector('.' + this.POP));
     }
 
     private isFilterItemAdded(): boolean {

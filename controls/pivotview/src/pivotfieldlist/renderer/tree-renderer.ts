@@ -318,11 +318,13 @@ export class TreeViewRenderer implements IAction {
             position: { X: 'center', Y: 'center' },
             buttons: [{
                 click: this.closeTreeDialog.bind(this),
+                isFlat: false,
                 buttonModel: {
                     cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel')
                 }
             }, {
                 click: this.onFieldAdd.bind(this),
+                isFlat: false,
                 buttonModel: {
                     cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('add'),
                     isPrimary: true

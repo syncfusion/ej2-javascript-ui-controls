@@ -485,6 +485,68 @@ describe('DDList_Virtualization', () => {
         });
     });
 
+    describe('coverage', function () {
+        let keyEventArgs: any = { preventDefault: function () { }, action: 'home', keyCode: 36 };
+        let element: HTMLElement = createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        beforeAll(function () {
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, fields: { text: 'text', value: 'id' }
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(function (done) {
+            listObj.destroy();
+            element.remove();
+            done();
+        });
+        it('', function () {
+            (<any>listObj).removeHover();
+            listObj.showPopup();
+            (<any>listObj).isPopupOpen = true;
+            (<any>listObj).windowResize();
+            (<any>listObj).resetHandler(keyEventArgs);
+            (<any>listObj).isSelected = true;
+            (<any>listObj).onFocusOut();
+            keyEventArgs.action = 'end';
+            (<any>listObj).isPopupOpen = false;
+            (<any>listObj).updateHomeEndAction(keyEventArgs, true);
+            keyEventArgs.charCode = 32;
+            (<any>listObj).onSearch(keyEventArgs);
+        });
+        it('dropdownlist', function () {
+            listObj.showPopup();
+            keyEventArgs = { preventDefault: function () { }, action: 'home', keyCode: 36 };
+            (<any>listObj).isPopupOpen = false;
+            (<any>listObj).viewPortInfo.startIndex = 1;
+            (<any>listObj).activeIndex = 0;
+            (<any>listObj).updateHomeEndAction(keyEventArgs, true);
+            (<any>listObj).updateIncrementalItemIndex(0, 1);
+        });
+        it('Incremental search', function () {
+            listObj.showPopup();
+            keyEventArgs = { preventDefault: function () { }, action: 'up', charCode: 38 };
+            (<any>listObj).incrementalSearch(keyEventArgs);
+            (<any>listObj).isDocumentClick = true;
+            (<any>listObj).activeStateChange();
+            keyEventArgs = { preventDefault: function () { }, action: 'home', keyCode: 36 };
+            (<any>listObj).handleVirtualKeyboardActions(keyEventArgs, 1);
+            keyEventArgs = { preventDefault: function () { }, action: 'end'};
+            (<any>listObj).handleVirtualKeyboardActions(keyEventArgs, 1);
+        });
+        it('set selection', function () {
+            listObj.showPopup();
+            (<any>listObj).setSelectionData('val1', 'val2', 'text');
+            (<any>listObj).updateListValues();
+            (<any>listObj).setSelectionData('val1', 'val2', 'value');
+            (<any>listObj).updateListValues();
+            (<any>listObj).setSelectionData('val1', 'val2', 'index');
+            (<any>listObj).updateListValues();
+            (<any>listObj).beforePopupOpen = true;
+            (<any>listObj).updatePopupState();
+        });
+    });
 });
 
 function done() {

@@ -14,6 +14,7 @@ import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { DocumentHelper } from '../viewer';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
+// eslint-disable-next-line valid-jsdoc
 /**
  * The Style dialog is used to create or modify styles.
  */
@@ -37,7 +38,7 @@ export class StyleDialog {
     private fontSize: ComboBox = undefined;
     private characterFormat: WCharacterFormat = undefined;
     private paragraphFormat: WParagraphFormat = undefined;
-    private textAlignment : TextAlignment = undefined; 
+    private textAlignment : TextAlignment = undefined;
     private lineSpacing: number = undefined;
     private leftIndent: number = undefined;
     private beforeSpacing: number = undefined;

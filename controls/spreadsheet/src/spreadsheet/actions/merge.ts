@@ -1,8 +1,8 @@
 import { Spreadsheet } from '../base/index';
 import { applyMerge, activeCellMergedRange, MergeArgs, skipHiddenIdx } from '../../workbook/common/index';
-import { ICellRenderer, hiddenMerge, CellRenderArgs, isImported } from '../common/index';
+import { ICellRenderer, hiddenMerge, CellRenderArgs } from '../common/index';
 import { checkPrevMerge, checkMerge } from '../common/index';
-import { CellModel, getCell, SheetModel, isHiddenCol, isHiddenRow } from '../../workbook/index';
+import { CellModel, getCell, SheetModel, isHiddenCol, isHiddenRow, isImported } from '../../workbook/index';
 
 /**
  * The `Merge` module is used to to merge the range of cells.

@@ -5,7 +5,7 @@ import { ColumnSeries } from './column-series';
 import { animationMode } from '@syncfusion/ej2-base';
 
 /**
- * `HistogramSeries` module is used to render the histogram series.
+ * The `HistogramSeries` module is used to render the histogram series.
  */
 export class HistogramSeries extends ColumnSeries {
     /**
@@ -47,6 +47,7 @@ export class HistogramSeries extends ColumnSeries {
      * @param {Object[]} data - The internal data to be processed.
      * @param {Series} series - The series for which the internal data is processed.
      * @returns {Object[]} - The processed internal data.
+     * @private
      */
     public processInternalData(data: Object[], series: Series): Object[] {
         const updatedData: Object[] = [];
@@ -159,13 +160,14 @@ export class HistogramSeries extends ColumnSeries {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         super.doAnimation(series);
         if (series.showNormalDistribution) {
             templateAnimate(
                 series.seriesElement.lastElementChild,
-                ((series.animation.duration === 0 && animationMode === 'Enable') ? 1000 : series.animation.duration), 500, 'FadeIn'
+                ((series.animation.duration === 0) ? 1000 : series.animation.duration), 500, 'FadeIn'
             );
         }
     }
@@ -175,6 +177,7 @@ export class HistogramSeries extends ColumnSeries {
      *
      * @param {Series} series - The series to be rendered.
      * @returns {void}
+     * @private
      */
     public updateDirection(series: Series): void {
         this.render(series);

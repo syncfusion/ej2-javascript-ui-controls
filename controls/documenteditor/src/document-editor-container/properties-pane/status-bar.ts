@@ -9,22 +9,87 @@ import { Button } from '@syncfusion/ej2-buttons';
  * @private
  */
 export class StatusBar {
-    private container: DocumentEditorContainer;
-    private statusBarDiv: HTMLElement;
-    private pageCount: HTMLElement;
+    //EJ2 Components
     private zoom: DropDownButton;
-    private pageNumberInput: HTMLInputElement;
-    private editablePageNumber: HTMLElement;
-    public startPage: number = 1;
-    public localObj: L10n;
     private spellCheckButton: DropDownButton;
-    private currentLanguage: number;
-    private allowSuggestion: boolean;
-    private pageButton: HTMLButtonElement;
-    private webButton: HTMLButtonElement;
     private pageBtn : Button;
     private webBtn: Button;
+    //HTML Elements
+    private pageNumDiv: HTMLElement;
+    private statusBarDiv: HTMLElement;
+    private pageCount: HTMLElement;
+    private pageLabel: HTMLElement;
+    private pageNumberInput: HTMLInputElement;
+    private editablePageNumber: HTMLElement;
+    private ofLabel: HTMLElement;
+    private zoomBtn: HTMLButtonElement;
+    private pageButton: HTMLButtonElement;
+    private webButton: HTMLButtonElement;
+    private verticalLine: HTMLElement;
+    private spellCheckBtn: HTMLButtonElement;
 
+    //Private Variables
+    private container: DocumentEditorContainer;
+    public startPage: number = 1;
+    public localObj: L10n;
+    private currentLanguage: number;
+    private allowSuggestion: boolean;
+    //Event Handler
+    private onPageLayoutClickHandler: EventListenerOrEventListenerObject = this.onPageLayoutClick.bind(this);
+    private onWebLayoutClickHandler: EventListenerOrEventListenerObject = this.onWebLayoutClick.bind(this);
+    private onPageNumberKeyDownHandler: EventListenerOrEventListenerObject = this.onPageNumberKeyDown.bind(this);
+    private onPageNumberKeyUpHandler: EventListenerOrEventListenerObject = this.onPageNumberKeyUp.bind(this);
+    private onPageNumberBlurHandler: EventListenerOrEventListenerObject = this.onPageNumberBlur.bind(this);
+    private onPageNumberFocusHandler: EventListenerOrEventListenerObject = this.onPageNumberFocus.bind(this);
+    //Event Handler Methods
+    private onPageLayoutClick(): void {
+        this.documentEditor.layoutType = 'Pages';
+        this.addRemoveClass(this.pageButton, this.webButton);
+        this.documentEditor.focusIn();
+    }
+    private onWebLayoutClick(): void {
+        this.documentEditor.layoutType = 'Continuous';
+        this.addRemoveClass(this.webButton, this.pageButton);
+        this.documentEditor.focusIn();
+    }
+    private onPageNumberKeyDown(e: KeyboardEventArgs): void {
+        if (e.which === 13) {
+            e.preventDefault();
+            const pageNumber: number = parseInt(this.pageNumberInput.value, 10);
+            if (pageNumber > this.editorPageCount) {
+                this.updatePageNumber();
+            } else {
+                if (this.documentEditor.selectionModule) {
+                    this.documentEditor.selectionModule.goToPage(parseInt(this.pageNumberInput.value, 10));
+                    this.documentEditor.focusIn();
+                } else {
+                    this.documentEditor.scrollToPage(parseInt(this.pageNumberInput.value, 10));
+                }
+            }
+            this.pageNumberInput.contentEditable = 'false';
+            if (this.pageNumberInput.value === '') {
+                this.updatePageNumber();
+            }
+        }
+        if (e.which > 64) {
+            e.preventDefault();
+        }
+    }
+    private onPageNumberKeyUp(): void {
+        this.updatePageNumberWidth();
+    }
+    private onPageNumberBlur(): void {
+        if (this.pageNumberInput.value === '' || parseInt(this.pageNumberInput.value, 10) > this.editorPageCount) {
+            this.updatePageNumber();
+        }
+        this.pageNumberInput.contentEditable = 'false';
+    }
+    private onPageNumberFocus(): void {
+        this.pageNumberInput.select();
+    }
+    //Public Methods
+
+    //Properties
     private get documentEditor(): DocumentEditor {
         return this.container ? this.container.documentEditor : undefined;
     }
@@ -42,56 +107,48 @@ export class StatusBar {
         this.documentEditor.enableSpellCheck = (this.container.enableSpellCheck) ? true : false;
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         const styles: string = isRtl ? 'padding-right:16px' : 'padding-left:16px';
-        const div: HTMLElement = createElement('div', { className: (this.container.enableSpellCheck) ? 'e-de-ctnr-pg-no' : 'e-de-ctnr-pg-no-spellout', styles: styles });
-        this.statusBarDiv.appendChild(div);
-        const label: HTMLElement = createElement('span');
-        label.textContent = this.localObj.getConstant('Page') + ' ';
-        div.appendChild(label);
+        this.pageNumDiv = createElement('div', { className: (this.container.enableSpellCheck) ? 'e-de-ctnr-pg-no' : 'e-de-ctnr-pg-no-spellout', styles: styles });
+        this.statusBarDiv.appendChild(this.pageNumDiv);
+        this.pageLabel = createElement('span');
+        this.pageLabel.textContent = this.localObj.getConstant('Page') + ' ';
+        this.pageNumDiv.appendChild(this.pageLabel);
         this.pageNumberInput = createElement('input', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text', attrs: { type: 'text', 'aria-label' : this.localObj.getConstant('Current Page Number') }, className: 'e-de-pagenumber-input' }) as HTMLInputElement;
         this.editablePageNumber = createElement('div', { styles: 'display: inline-flex', className: 'e-input e-de-pagenumber-text' });
         this.editablePageNumber.appendChild(this.pageNumberInput);
         let pageNumberOfLabelStyle: string = '';
         if (isRtl) {
-            label.style.marginLeft = '6px';
+            this.pageLabel.style.marginLeft = '6px';
             this.editablePageNumber.style.marginLeft = '6px';
             pageNumberOfLabelStyle = 'padding-left:5px';
         } else {
-            label.style.marginRight = '6px';
+            this.pageLabel.style.marginRight = '6px';
             this.editablePageNumber.style.marginRight = '6px';
             pageNumberOfLabelStyle = 'padding-right:5px';
         }
         this.updatePageNumber();
-        div.appendChild(this.editablePageNumber);
+        this.pageNumDiv.appendChild(this.editablePageNumber);
         this.editablePageNumber.setAttribute('title', this.localObj.getConstant('Current Page Number'));
-        const label1: HTMLElement = createElement('span', { styles: pageNumberOfLabelStyle });
-        label1.textContent = ' ' + this.localObj.getConstant('of') + ' ';
-        div.appendChild(label1);
+        this.ofLabel = createElement('span', { styles: pageNumberOfLabelStyle });
+        this.ofLabel.textContent = ' ' + this.localObj.getConstant('of') + ' ';
+        this.pageNumDiv.appendChild(this.ofLabel);
         this.pageCount = createElement('span');
-        div.appendChild(this.pageCount);
+        this.pageNumDiv.appendChild(this.pageCount);
         this.updatePageCount();
         if (this.documentEditor.enableSpellCheck) {
-            const verticalLine: HTMLElement = createElement('div', { className: 'e-de-statusbar-separator' });
-            this.statusBarDiv.appendChild(verticalLine);
-            const spellCheckBtn: HTMLButtonElement = this.addSpellCheckElement();
-            this.spellCheckButton.appendTo(spellCheckBtn);
+            this.verticalLine = createElement('div', { className: 'e-de-statusbar-separator' });
+            this.statusBarDiv.appendChild(this.verticalLine);
+            this.spellCheckBtn = this.addSpellCheckElement();
+            this.spellCheckButton.appendTo(this.spellCheckBtn);
         }
         this.pageButton = this.createButtonTemplate((this.container.enableSpellCheck) ? 'e-de-statusbar-pageweb e-btn-pageweb-spellcheck' : 'e-de-statusbar-pageweb', 'e-de-printlayout e-icons', 'Print layout', this.statusBarDiv, this.pageButton, (this.documentEditor.layoutType === 'Pages') ? true : false);
         this.webButton = this.createButtonTemplate('e-de-statusbar-pageweb', 'e-de-weblayout e-icons', 'Web layout', this.statusBarDiv, this.webButton, (this.documentEditor.layoutType === 'Continuous') ? true : false);
-        this.pageButton.addEventListener('click', (): void => {
-            this.documentEditor.layoutType = 'Pages';
-            this.addRemoveClass(this.pageButton, this.webButton);
-            this.documentEditor.focusIn();
-        });
-        this.webButton.addEventListener('click', (): void => {
-            this.documentEditor.layoutType = 'Continuous';
-            this.addRemoveClass(this.webButton, this.pageButton);
-            this.documentEditor.focusIn();
-        });
-        const zoomBtn: HTMLButtonElement = createElement('button', {
+        this.pageButton.addEventListener('click', this.onPageLayoutClickHandler);
+        this.webButton.addEventListener('click', this.onWebLayoutClickHandler);
+        this.zoomBtn = createElement('button', {
             className: 'e-de-statusbar-zoom', attrs: { type: 'button' }
         }) as HTMLButtonElement;
-        this.statusBarDiv.appendChild(zoomBtn);
-        zoomBtn.setAttribute('title', this.localObj.getConstant('ZoomLevelTooltip'));
+        this.statusBarDiv.appendChild(this.zoomBtn);
+        this.zoomBtn.setAttribute('title', this.localObj.getConstant('ZoomLevelTooltip'));
         const items: ItemModel[] = [
             {
                 text: '200%'
@@ -129,7 +186,7 @@ export class StatusBar {
         ];
         this.zoom = new DropDownButton({ content: '100%', items: items, enableRtl: this.container.enableRtl, select: this.onZoom.bind(this) });
         this.zoom.isStringTemplate = true;
-        this.zoom.appendTo(zoomBtn);
+        this.zoom.appendTo(this.zoomBtn);
     }
     private addSpellCheckElement(): HTMLButtonElement {
         const spellCheckBtn: HTMLButtonElement = createElement('button', {
@@ -236,41 +293,18 @@ export class StatusBar {
         this.updatePageCount();
     }
     private wireEvents(): void {
-        this.pageNumberInput.addEventListener('keydown', (e: KeyboardEventArgs) => {
-            if (e.which === 13) {
-                e.preventDefault();
-                const pageNumber: number = parseInt(this.pageNumberInput.value, 10);
-                if (pageNumber > this.editorPageCount) {
-                    this.updatePageNumber();
-                } else {
-                    if (this.documentEditor.selectionModule) {
-                        this.documentEditor.selectionModule.goToPage(parseInt(this.pageNumberInput.value, 10));
-                        this.documentEditor.focusIn();
-                    } else {
-                        this.documentEditor.scrollToPage(parseInt(this.pageNumberInput.value, 10));
-                    }
-                }
-                this.pageNumberInput.contentEditable = 'false';
-                if (this.pageNumberInput.value === '') {
-                    this.updatePageNumber();
-                }
-            }
-            if (e.which > 64) {
-                e.preventDefault();
-            }
-        });
-        this.pageNumberInput.addEventListener('keyup', () => {
-            this.updatePageNumberWidth();
-        });
-        this.pageNumberInput.addEventListener('blur', (): void => {
-            if (this.pageNumberInput.value === '' || parseInt(this.pageNumberInput.value, 10) > this.editorPageCount) {
-                this.updatePageNumber();
-            }
-            this.pageNumberInput.contentEditable = 'false';
-        });
-        this.pageNumberInput.addEventListener('focus', (): void => {
-            this.pageNumberInput.select();
-        });
+        this.pageNumberInput.addEventListener('keydown', this.onPageNumberKeyDownHandler);
+        this.pageNumberInput.addEventListener('keyup', this.onPageNumberKeyUpHandler);
+        this.pageNumberInput.addEventListener('blur', this.onPageNumberBlurHandler);
+        this.pageNumberInput.addEventListener('focus', this.onPageNumberFocusHandler);
+    }
+    private unWireEvents(): void {
+        this.pageButton.removeEventListener('click', this.onPageLayoutClickHandler);
+        this.webButton.removeEventListener('click', this.onWebLayoutClickHandler);
+        this.pageNumberInput.removeEventListener('keydown', this.onPageNumberKeyDownHandler);
+        this.pageNumberInput.removeEventListener('keyup', this.onPageNumberKeyUpHandler);
+        this.pageNumberInput.removeEventListener('blur', this.onPageNumberBlurHandler);
+        this.pageNumberInput.removeEventListener('focus', this.onPageNumberFocusHandler);
     }
     private updatePageNumberWidth(): void {
         if (this.pageNumberInput) {
@@ -322,6 +356,19 @@ export class StatusBar {
      * @returns {void}
      */
     public destroy(): void {
+        this.unWireEvents();
+        this.removeHTMLDom();
+        this.dependentComponentsDestroy();
+        this.pageButton = undefined;
+        this.webButton = undefined;
+        this.pageNumberInput = undefined;
+        this.statusBarDiv = undefined;
+        this.pageCount = undefined;
+        this.editablePageNumber = undefined;
+        this.localObj = undefined;
+        this.container = undefined;
+    }
+    private dependentComponentsDestroy(): void{
         if (this.zoom) {
             this.zoom.destroy();
             this.zoom = undefined;
@@ -338,13 +385,23 @@ export class StatusBar {
             this.webBtn.destroy();
             this.webBtn = undefined;
         }
-        this.pageButton = undefined;
-        this.webButton = undefined;
-        this.pageNumberInput = undefined;
-        this.statusBarDiv = undefined;
-        this.pageCount = undefined;
-        this.editablePageNumber = undefined;
-        this.localObj = undefined;
-        this.container = undefined;
+    }
+    private removeHTMLDom(): void {
+        this.pageNumDiv.remove();
+        this.statusBarDiv.remove();
+        this.pageCount.remove();
+        this.pageLabel.remove();
+        this.pageNumberInput.remove();
+        this.editablePageNumber.remove();
+        this.ofLabel.remove();
+        this.zoomBtn.remove();
+        this.pageButton.remove();
+        this.webButton.remove();
+        if (!isNullOrUndefined(this.verticalLine)) {
+            this.verticalLine.remove();
+        }
+        if (!isNullOrUndefined(this.spellCheckBtn)) {
+            this.spellCheckBtn.remove();
+        }
     }
 }

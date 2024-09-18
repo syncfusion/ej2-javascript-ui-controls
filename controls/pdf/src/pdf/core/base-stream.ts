@@ -5,6 +5,7 @@ export abstract class _PdfBaseStream {
     dictionary: _PdfDictionary;
     reference: _PdfReference;
     _isCompress: boolean = true;
+    _isImage: boolean = false;
     getByte(): number {
         return null;
     }

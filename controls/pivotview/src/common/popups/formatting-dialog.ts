@@ -69,12 +69,14 @@ export class NumberFormatting implements IAction {
             buttons: [
                 {
                     click: this.updateFormatting.bind(this),
+                    isFlat: false,
                     buttonModel: { cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('apply'), isPrimary: true }
                 },
                 {
                     click: () => {
                         this.dialog.hide();
                     },
+                    isFlat: false,
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],

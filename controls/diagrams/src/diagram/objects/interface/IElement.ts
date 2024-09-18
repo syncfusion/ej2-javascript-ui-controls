@@ -1127,3 +1127,12 @@ export interface ILoadEventArgs {
     /** Returns the diagram instance. */
     diagram?: Diagram;
 }
+/**
+ * ILoadedEventArgs - ILoadedEventArgs defines the event arguments after the diagram elements finished loading using loadDiagram method.
+ */
+export interface ILoadedEventArgs {
+    /** Returns the event name . */
+    name?: string
+    /** Returns the diagram model properties. */
+    diagram?: Diagram;
+}

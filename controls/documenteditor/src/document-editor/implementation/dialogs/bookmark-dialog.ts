@@ -158,8 +158,8 @@ export class BookmarkDialog {
     };
     private enableOrDisableButton(): void {
         // Regex pattern for valid characters (alphanumeric and underscore)
-        const validRegex = /^[_a-zA-Z0-9]+$/;
-        const text = (this.textBoxInput as HTMLInputElement).value.trim();
+        const validRegex: RegExp = /^[_a-zA-Z0-9]+$/;
+        const text: string = (this.textBoxInput as HTMLInputElement).value.trim();
         if (!isNullOrUndefined(this.addButton)) {
             this.addButton.disabled = !validRegex.test(text);
         }

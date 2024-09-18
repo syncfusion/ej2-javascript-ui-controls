@@ -13,7 +13,10 @@ import { CylinderSeriesOption } from './column-series';
 import { SeriesModel } from './chart-series-model';
 
 /**
- * Column Series Base
+ * Base class for column series.
+ * This class provides common properties and methods for column series in the chart.
+ *
+ * @private
  */
 
 export class ColumnBase {
@@ -624,6 +627,10 @@ export class ColumnBase {
                     }
                 },
                 end: () => {
+                    const annotations: HTMLElement = <HTMLElement>document.getElementById(series.chart.element.id + '_Annotation_Collections');
+                    if (annotations) {
+                        annotations.style.visibility = 'visible';
+                    }
                     element.setAttribute('transform', 'translate(0,0)');
                     const seriesElement: Element = series.seriesElement;
                     if (element === seriesElement.lastElementChild || point.index === series.points.length - 1 ||

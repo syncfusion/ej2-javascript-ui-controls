@@ -37,6 +37,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     private initialCheckedValue: boolean;
     private angularValue: string;
     private wrapper: Element;
+    private type: string = 'radio';
 
     /**
      * Event trigger when the RadioButton state has been changed by user interaction.

@@ -136,4 +136,12 @@ export interface CellModel {
      */
     isReadOnly?: boolean;
 
+    /**
+     * It allows to set the formatted value.
+     *
+     * @default ''
+     * @hidden
+     */
+    formattedText?: string;
+
 }

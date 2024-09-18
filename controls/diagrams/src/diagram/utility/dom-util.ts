@@ -18,7 +18,7 @@ import { Annotation, PathAnnotation } from '../objects/annotation';
 import { templateCompiler } from '../utility/base-util';
 import { SelectorModel } from '../objects/node-model';
 import { UserHandleModel } from '../interaction/selector-model';
-
+import { ConnectorFixedUserHandle, NodeFixedUserHandle } from '../objects/fixed-user-handle';
 
 /**
  * Defines the functionalities that need to access DOM
@@ -103,6 +103,7 @@ export function getChildNode(node: SVGElement): SVGElement[] | HTMLCollection {
  */
 export function translatePoints(element: PathElement, points: PointModel[]): PointModel[] {
     const translatedPts: PointModel[] = [];
+    //895069: Update Connector docking position in node after flipping the node
     const left: number = element.offsetX - element.actualSize.width * element.pivot.x;
     const top: number = element.offsetY - element.actualSize.height * element.pivot.y;
     for (const point of points) {
@@ -111,19 +112,20 @@ export function translatePoints(element: PathElement, points: PointModel[]): Poi
         const baseY: number = top + point.y;
         const flipX: number = left + element.actualSize.width - point.x;
         const flipY: number = top + element.actualSize.height - point.y;
+        // 895069: Updating the node and connector's docking point for node's fliped position
         switch (element.flip) {
-            case 'Both':
-                pt1 = { x: flipX, y: flipY };
-                break;
-            case 'Horizontal':
-                pt1 = { x: flipX, y: baseY };
-                break;
-            case 'Vertical':
-                pt1 = { x: baseX, y: flipY };
-                break;
-            default:
-                pt1 = { x: baseX, y: baseY };
-                break;
+        case 'Both':
+            pt1 = { x: flipX, y: flipY };
+            break;
+        case 'Horizontal':
+            pt1 = { x: flipX, y: baseY };
+            break;
+        case 'Vertical':
+            pt1 = { x: baseX, y: flipY };
+            break;
+        default:
+            pt1 = { x: baseX, y: baseY };
+            break;
         }
         let matrix: Matrix;
         const angle: number = element.rotateAngle + element.parentTransform;
@@ -270,7 +272,7 @@ function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: numb
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[parseInt(i.toString(), 10)];
             //Bug 885842: Position of annotation inside the node is not aligned center.
             //Extra space is added when we have single word as annotation text and due to this the width of the text is increased.
-            if (words[i + 1]) {
+            if (words[i + 1]){
                 newText = txtValue + ' ' + (words[i + 1]);
             }else{
                 newText = txtValue;
@@ -303,7 +305,7 @@ function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: numb
  * @private
  */
 function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): TextBounds {
-    let wrapBounds: TextBounds = { x: 0, width: 0 };
+    const wrapBounds: TextBounds = { x: 0, width: 0 };
     let k: number = 0; let txtWidth: number;
     let width: number;
     for (k = 0; k < childNodes.length; k++) {
@@ -325,15 +327,8 @@ function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): T
         }
         childNodes[parseInt(k.toString(), 10)].dy = text.fontSize * 1.2;
         childNodes[parseInt(k.toString(), 10)].x = txtWidth;
-        if (!wrapBounds) {
-            wrapBounds = {
-                x: txtWidth,
-                width: width
-            };
-        } else {
-            wrapBounds.x = Math.min(wrapBounds.x, txtWidth);
-            wrapBounds.width = Math.max(wrapBounds.width, width);
-        }
+        wrapBounds.x = Math.min(wrapBounds.x, txtWidth);
+        wrapBounds.width = Math.max(wrapBounds.width, width);
     }
     return wrapBounds;
 }
@@ -962,12 +957,12 @@ export function removeElement(elementId: string, contentId?: string): void {
  * @returns {void} getContent method .\
  * @param { DiagramHtmlElement | DiagramNativeElement } element - provide the elementId  value.
  * @param { boolean } isHtml - provide the boolean  value.
- * @param { Node | Annotation | PathAnnotation } nodeObject - provide the nodeObject  value.
+ * @param { Node | Annotation | PathAnnotation | NodeFixedUserHandle | ConnectorFixedUserHandle } nodeObject - provide the nodeObject  value.
  * @private
  */
 export function getContent(
     element: DiagramHtmlElement | DiagramNativeElement, isHtml: boolean,
-    nodeObject?: Node | Annotation | PathAnnotation): HTMLElement | SVGElement {
+    nodeObject?: Node | Annotation | PathAnnotation | NodeFixedUserHandle | ConnectorFixedUserHandle ): HTMLElement | SVGElement {
     let div: SVGElement | HTMLElement;
     /* eslint-disable */
     if (isHtml) {
@@ -1071,7 +1066,9 @@ export function getContent(
             }
         }
     } else {
-        div.appendChild(element.content as HTMLElement);
+        if (element.content && (element.content as any).outerHTML) {
+            div.appendChild(element.content as HTMLElement);
+        }
     }
     return (element as DiagramHtmlElement).isTemplate ?
         div : (isHtml ? div.cloneNode(true) as HTMLElement : div.cloneNode(true) as SVGElement);

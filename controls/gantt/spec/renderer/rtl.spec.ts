@@ -114,7 +114,7 @@ describe('Gantt - Render with Enable RTL', () => {
             SD.value = new Date('07/20/2022');
             let name: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
             name.value = '2 days';
-            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
         });
         afterAll(function () {
@@ -479,7 +479,7 @@ describe('Gantt - Render with Enable RTL', () => {
             let resourceCheckbox2: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
             triggerMouseEvent(resourceCheckbox1, 'click')
             triggerMouseEvent(resourceCheckbox2, 'click')
-            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
         });  
         afterAll(() => {
@@ -553,7 +553,7 @@ describe('Gantt - Render with Enable RTL', () => {
         });
 
         it('Adding task under unassigned task', () => {
-            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
             expect(ganttObj.currentViewData[9].ganttProperties.resourceNames).toBe('');
         });
@@ -671,6 +671,8 @@ describe('Gantt - Render with Enable RTL', () => {
             triggerMouseEvent(dragElement, 'mouseup');
         });
         it('Deleting the record', () => {
+            let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancelRecord, 'click');
             ganttObj.selectRow(2);
             let deleteRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_delete') as HTMLElement;
             triggerMouseEvent(deleteRecord, 'click');
@@ -813,7 +815,7 @@ describe('Gantt - Render with Enable RTL', () => {
             let resourceCheckbox2: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
             triggerMouseEvent(resourceCheckbox1, 'click')
             triggerMouseEvent(resourceCheckbox2, 'click')
-            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
             // expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(16);
         });

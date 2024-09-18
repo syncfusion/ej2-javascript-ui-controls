@@ -9,13 +9,14 @@ import { Page } from '../../../src/grid/actions/page';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Group } from '../../../src/grid/actions/group';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
-import { data } from '../base/datasource.spec';
+import { data, filterData } from '../base/datasource.spec';
 import { ToolbarItem } from '../../../src/grid/base/enum';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { Sort } from '../../../src/grid/actions/sort';
 
-Grid.Inject(Page, Group, Selection, Toolbar);
+Grid.Inject(Page, Group, Selection, Toolbar, Sort);
 
 function getEventObject(eventType: string, eventName: string): Object {
     let tempEvent: any = document.createEvent(eventType);
@@ -270,6 +271,107 @@ describe('Toolbar functionalities', () => {
 
 });
 
+describe('code coverage - Toolbar - Adaptive UI', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 24),
+                allowPaging: true,
+                rowRenderingMode: 'Vertical',
+                enableAdaptiveUI: true,
+                height: '100%',
+                width: 600,
+                toolbar: ['Print'],
+                showColumnChooser: true,
+                searchSettings: { fields: ['CustomerID'], operator: 'contains', key: 'VINET', ignoreCase: true, ignoreAccent: true },
+                pageSettings: { pageSize: 12, pageSizes: true },
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', validationRules: { required: true }, width: 140 },
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2' },
+                ],
+            }, done);
+    });
+
+    it('Render search, filter and sort', function () {
+        gridObj.setProperties({ toolbar: ['Search'], allowSorting: true });
+    });
+
+    it('Click search wrapper', function () {
+        (gridObj.element.querySelector('.e-search-wrapper') as HTMLElement).click();
+    });
+
+    it('Clear search', function () {
+        const clear: HTMLElement = gridObj.element.querySelector('#' + gridObj.element.id + '_clearbutton') as HTMLElement;
+        clear.classList.add('e-clear-icon');
+        clear.click();
+    });
+
+    it('Back search wrapper', function () {
+        (gridObj.element.querySelector('#' + gridObj.element.id + '_responsiveback') as HTMLElement).click();
+    });
+
+    it('Click sort', function () {
+        (gridObj.element.querySelector('#' + gridObj.element.id + '_responsivesort') as HTMLElement).click();
+    });
+
+    it('React render and destroy', function () {
+        gridObj.toolbarModule.toolbar.element = null;
+        gridObj.toolbarModule.element = { parentNode: null } as any;
+        gridObj.toolbarModule.destroy();
+        gridObj.isReact = true;
+        gridObj.portals = [];
+        (gridObj.toolbarModule as any).addReactToolbarPortals([{}]);
+        gridObj.toolbarModule.destroy();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Code Coverage - childGrid - toolbarTemplate and emptyRecordTemplate => ', () => {
+    let gridObj: Grid;
+    let template: HTMLElement = createElement('div', { id: 'template' });
+    let element: HTMLElement = createElement('div');
+    element.innerText = 'template';
+    beforeAll((done: Function) => {
+        template.appendChild(element);
+        document.body.appendChild(template);
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 10),
+                height: 400,
+                columns: [
+                    { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                    { field: 'CustomerID', width: 120, minWidth: '100', headerText: "Customer ID" },
+                    { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                ],
+                childGrid: {
+                    dataSource: [],
+                    queryString: 'EmployeeID',
+                    allowPaging: true,
+                    toolbarTemplate: '#template',
+                    emptyRecordTemplate: '#template',
+                    columns: [
+                        { field: 'FirstName', headerText: 'First Name', width: 120 },
+                        { field: 'Region', headerText: 'Region', width: 120 },
+                    ],
+                }
+            }, done);
+    });
+
+    it('Case 1', () => {
+        (gridObj.getContentTable().querySelector('.e-dtdiagonalright') as HTMLElement).click();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
 describe('EJ2-899326 => Script error occurs on selecting records in Adaptive UI when the toolbar have template elements => ', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {

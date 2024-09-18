@@ -3,7 +3,7 @@ import { createElement, remove, Ajax } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { Zoom, Bubble, Marker, Annotations } from '../../../src/maps/index';
 import { DataManager, UrlAdaptor } from '@syncfusion/ej2-data';
-import { World_Map } from '../data/data.spec';
+import { World_Map, internetUsers, topPopulation, dafaultData } from '../data/data.spec';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Maps.Inject(Zoom, Marker, Bubble, Annotations);
 
@@ -88,7 +88,7 @@ describe('Remote Data testing', () => {
                 }
             ];
             map.refresh();
-        });
+        });        
 
         it('Checking with ajax support for getting data', () => {
             map.loaded = (args: ILoadedEventArgs) => {
@@ -174,6 +174,90 @@ describe('Remote Data testing', () => {
                 }]
             }];
             map.zoomSettings.enable = true;
+            map.refresh();
+        });
+        it('Checking with data manager support for dataSource', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = <Element>document.getElementById(map.element.id + '_LayerIndex_0_Polygon_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.layers = [
+                {
+                    shapeData: World_Map,
+                    shapePropertyPath: 'continent',
+                    shapeDataPath: 'continent',                    
+                    dataSource: new DataManager(dafaultData),
+                    shapeSettings: {
+                        colorValuePath: 'color',
+                    },                
+                }
+            ];
+            map.refresh();
+        });
+        it('Checking with data manager support for Marker datasource', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = <Element>document.getElementById(map.element.id + '_Markers_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(25);
+            };
+            map.layers = [
+                {
+                    shapeData: World_Map,
+                    dataSource: topPopulation,
+                    shapeSettings: {
+                        fill: '#C3E6ED'
+                    },
+                    markerSettings: [
+                        {
+                            dataSource: new DataManager(topPopulation),
+                            visible: true,
+                            animationDuration: 0,
+                            shape: 'Circle',
+                            fill: 'white',
+                            width: 10,
+                            border: { width: 2, color: '#285255' },
+                            tooltipSettings: {
+                                template: '#template',
+                                visible: true,
+                                valuePath: 'population',
+                            }
+                        },
+                    ]
+                }
+            ];
+            map.refresh();
+        });
+        it('Checking with data manager support for Bubble datasource', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = <Element>document.getElementById(map.element.id + '_LayerIndex_0_bubble_Group_0');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(30);
+            };
+            map.layers = [
+                {
+                    shapeDataPath: 'name',
+                    shapePropertyPath: 'name',
+                    shapeData: World_Map,
+                    shapeSettings: {
+                        fill: '#E5E5E5'
+                    },
+                    bubbleSettings: [
+                        {
+                            visible: true,
+                            valuePath: 'value',
+                            colorValuePath: 'color',
+                            animationDuration:0,
+                            minRadius: 3,
+                            maxRadius: 70,
+                            opacity: 0.8,
+                            dataSource: new DataManager(internetUsers),
+                            tooltipSettings: {
+                                visible: true,
+                                valuePath: 'population',
+                                template: '#template'
+                            },
+                        }
+                    ]
+                }
+            ];
             map.refresh();
         });
     });

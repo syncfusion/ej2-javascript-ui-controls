@@ -6,8 +6,8 @@ import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-ba
 export interface ChartAnnotationSettingsModel {
 
     /**
-     * if set coordinateUnit as `Pixel` X specifies the axis value
-     * else is specifies pixel or percentage of coordinate
+     * If `coordinateUnit` is set to `Pixel`, x specifies the pixel value.
+     * If `coordinateUnit` is set to `Point`, x specifies the axis value.
      *
      * @default '0'
      * @aspType object
@@ -15,25 +15,26 @@ export interface ChartAnnotationSettingsModel {
     x?: string | Date | number;
 
     /**
-     * if set coordinateUnit as `Pixel` Y specifies the axis value
-     * else is specifies pixel or percentage of coordinate
+     * If `coordinateUnit` is set to `Pixel`, y specifies the pixel value.
+     * If `coordinateUnit` is set to `Point`, y specifies the axis value.
      *
      * @default '0'
      */
     y?: string | number;
 
     /**
-     * Content of the annotation, which accepts the id of the custom element.
+     * The content of the annotation, which also accepts the ID of the custom element.
      *
      * @default null
      */
     content?: string;
 
     /**
-     * Specifies the alignment of the annotation. They are
-     * * Near - Align the annotation element as left side.
-     * * Far - Align the annotation element as right side.
-     * * Center - Align the annotation element as mid point.
+     * Specifies the alignment of the annotation.
+     * The options are:
+     * * Near - Aligns the annotation element to the left side.
+     * * Far - Aligns the annotation element to the right side.
+     * * Center - Aligns the annotation element to the midpoint.
      *
      * @default 'Center'
      * @deprecated
@@ -42,9 +43,10 @@ export interface ChartAnnotationSettingsModel {
     horizontalAlignment?: Alignment;
 
     /**
-     * Specifies the coordinate units of the annotation. They are
-     * * Pixel - Annotation renders based on x and y pixel value.
-     * * Point - Annotation renders based on x and y axis value.
+     * Specifies the coordinate units of the annotation.
+     * The options are:
+     * * Pixel - Renders the annotation based on x and y pixel values.
+     * * Point - Renders the annotation based on x and y axis values.
      *
      * @default 'Pixel'
      */
@@ -52,9 +54,10 @@ export interface ChartAnnotationSettingsModel {
     coordinateUnits?: Units;
 
     /**
-     * Specifies the regions of the annotation. They are
-     * * Chart - Annotation renders based on chart coordinates.
-     * * Series - Annotation renders based on series coordinates.
+     * Specifies the regions of the annotation.
+     * The options are:
+     * * Chart - Renders the annotation based on chart coordinates.
+     * * Series - Renders the annotation based on series coordinates.
      *
      * @default 'Chart'
      */
@@ -62,10 +65,11 @@ export interface ChartAnnotationSettingsModel {
     region?: Regions;
 
     /**
-     * Specifies the position of the annotation. They are
-     * * Top - Align the annotation element as top side.
-     * * Bottom - Align the annotation element as bottom side.
-     * * Middle - Align the annotation element as mid point.
+     * Specifies the position of the annotation.
+     * The options are
+     * * Top - Aligns the annotation element to the top side.
+     * * Bottom - Aligns the annotation element to the bottom side.
+     * * Middle - Aligns the annotation element to the midpoint.
      *
      * @default 'Middle'
      * @deprecated
@@ -74,8 +78,8 @@ export interface ChartAnnotationSettingsModel {
     verticalAlignment?: Position;
 
     /**
-     * The name of horizontal axis associated with the annotation.
-     * It requires `axes` of chart.
+     * The name of the horizontal axis associated with the annotation.
+     * Requires the `axes` of the chart.
      *
      * @default null
      */
@@ -83,8 +87,8 @@ export interface ChartAnnotationSettingsModel {
     xAxisName?: string;
 
     /**
-     * The name of vertical axis associated with the annotation.
-     * It requires `axes` of chart.
+     * The name of the vertical axis associated with the annotation.
+     * Requires the `axes` of the chart.
      *
      * @default null
      */
@@ -92,7 +96,7 @@ export interface ChartAnnotationSettingsModel {
     yAxisName?: string;
 
     /**
-     * Information about annotation for assistive technology.
+     * A description for the annotation that provides additional information about its content for screen readers.
      *
      * @default null
      */
@@ -106,27 +110,28 @@ export interface ChartAnnotationSettingsModel {
 export interface LabelBorderModel {
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * The color of the border, which accepts values in hex and rgba as valid CSS color strings.
      *
      * @default ''
      */
     color?: string;
 
     /**
-     * The width of the border in pixels.
+     * The `width` property specifies the thickness of the border in pixels.
      *
      * @default 1
      */
     width?: number;
 
     /**
-     * Border type for labels
+     * Specifies the border type for the labels.
+     * The available types include:
      * * Rectangle
      * * Without Top Border
-     * * Without Top and BottomBorder
+     * * Without Top and Bottom Border
      * * Without Border
      * * Brace
-     * * CurlyBrace
+     * * Curly Brace
      *
      * @default 'Rectangle'
      */
@@ -140,7 +145,7 @@ export interface LabelBorderModel {
 export interface MultiLevelCategoriesModel {
 
     /**
-     * Start value of the multi level labels.
+     * Specifies the starting value for the multi-level labels.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -148,7 +153,7 @@ export interface MultiLevelCategoriesModel {
     start?: number | Date | string;
 
     /**
-     * End value of the multi-level labels.
+     * Specifies the end value for the multi-level labels.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -156,14 +161,14 @@ export interface MultiLevelCategoriesModel {
     end?: number | Date | string;
 
     /**
-     * Multi level labels text.
+     * Specifies the text to be displayed for the multi-level labels.
      *
      * @default ''
      */
     text?: string;
 
     /**
-     * Maximum width of the text for multi-level labels.
+     * Specifies the maximum width of the text for multi-level labels.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -171,14 +176,15 @@ export interface MultiLevelCategoriesModel {
     maximumTextWidth?: number;
 
     /**
-     * Custom data for multi-level labels.
+     * Allows adding custom data for multi-level labels.
      *
      * @default null
      */
     customAttributes?: object;
 
     /**
-     * Border type for labels
+     * Specifies the type of border for labels.
+     * Available border types:
      * * Rectangle
      * * Without Top Border
      * * Without Top and Bottom Border
@@ -200,21 +206,21 @@ export interface MultiLevelCategoriesModel {
 export interface StripLineSettingsModel {
 
     /**
-     * If set true, strip line for axis renders.
+     * If set to true, the strip line on the axis will render.
      *
      * @default true
      */
     visible?: boolean;
 
     /**
-     *  If set true, strip line get render from axis origin.
+     * If set to true, the strip line is rendered from the axis origin.
      *
      *  @default false
      */
     startFromAxis?: boolean;
 
     /**
-     * Start value of the strip line.
+     * Specifies the starting value of the strip line.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -222,7 +228,7 @@ export interface StripLineSettingsModel {
     start?: Object | number | Date;
 
     /**
-     * End value of the strip line.
+     * Specifies the ending value of the strip line.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -230,7 +236,7 @@ export interface StripLineSettingsModel {
     end?: Object | number | Date;
 
     /**
-     * Size of the strip line, when it starts from the origin.
+     * Specifies the size of the strip line when starting from the origin.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -238,14 +244,14 @@ export interface StripLineSettingsModel {
     size?: number;
 
     /**
-     * Specifies the color of the strip line.
+     * The `color` property specifies the color of the strip line.
      *
      * @default '#808080'
      */
     color?: string;
 
     /**
-     * Dash array of the strip line.
+     * Specifies the pattern of dashes and gaps used to render the strip line.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -253,14 +259,14 @@ export interface StripLineSettingsModel {
     dashArray?: string;
 
     /**
-     * Size type of the strip line.
+     * The `sizeType` property specifies how the size of the strip line is determined.
      *
      * @default Auto
      */
     sizeType?: SizeType;
 
     /**
-     * Specifies whether the strip line is repeated.
+     * Specifies whether the strip line is repeated at regular intervals along the axis.
      *
      * @default false
      * @aspDefaultValueIgnore
@@ -268,7 +274,7 @@ export interface StripLineSettingsModel {
     isRepeat?: boolean;
 
     /**
-     * repeatEvery value of the strip line.
+     * Specifies the interval at which the strip line is repeated.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -276,7 +282,7 @@ export interface StripLineSettingsModel {
     repeatEvery?: Object | number | Date;
 
     /**
-     * repeatUntil value of the strip line.
+     * Specifies the maximum value of the interval at which the strip line is repeated.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -292,7 +298,7 @@ export interface StripLineSettingsModel {
     isSegmented?: boolean;
 
     /**
-     * segmentStart value of the strip line.
+     * Specifies where a new segment of the strip line on the axis begins.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -300,7 +306,7 @@ export interface StripLineSettingsModel {
     segmentStart?: Object | number | Date;
 
     /**
-     * segmentEnd value of the strip line.
+     * Specifies where a new segment of the strip line on the axis ends.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -308,7 +314,7 @@ export interface StripLineSettingsModel {
     segmentEnd?: Object | number | Date;
 
     /**
-     * segmentAxisName of the strip line.
+     * The name of the axis where the strip line segment is applied.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -316,19 +322,20 @@ export interface StripLineSettingsModel {
     segmentAxisName?: string;
 
     /**
-     * Border of the strip line.
+     * The `border` property allows customization of the border for the strip line.
+     * It includes options to set the color and width of the border.
      */
     border?: BorderModel;
 
     /**
-     * Strip line text.
+     * Defines the text to be displayed on the strip line.
      *
      * @default ''
      */
     text?: string;
 
     /**
-     * The angle to which the strip line text gets rotated.
+     * Defines the degree of rotation applied to the text on the strip line.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -336,7 +343,8 @@ export interface StripLineSettingsModel {
     rotation?: number;
 
     /**
-     * Defines the position of the strip line text horizontally. They are,
+     * Defines the position of the strip line text horizontally.
+     * Available options are:
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
@@ -346,7 +354,8 @@ export interface StripLineSettingsModel {
     horizontalAlignment?: Anchor;
 
     /**
-     * Defines the position of the strip line text vertically. They are,
+     * Defines the position of the strip line text vertically.
+     * Available options are:
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
@@ -356,12 +365,13 @@ export interface StripLineSettingsModel {
     verticalAlignment?: Anchor;
 
     /**
-     * Options to customize the strip line text.
+     * The `textStyle` property enables customization of the text appearance on the strip line.
      */
     textStyle?: FontModel;
 
     /**
-     * Specifies the order of the strip line. They are,
+     * Specifies the order of the strip line.
+     * The options are:
      * * Behind: Places the strip line behind the series elements.
      * * Over: Places the strip line over the series elements.
      *
@@ -370,14 +380,14 @@ export interface StripLineSettingsModel {
     zIndex?: ZIndex;
 
     /**
-     * Strip line Opacity.
+     * Specifies the opacity for the strip line.
      *
      * @default 1
      */
     opacity?: number;
 
     /**
-     * The URL of the background image for the strip line.
+     * Specifies the URL of the background image for the strip line. The image will be displayed as the background.
      *
      * @default ''
      */
@@ -391,20 +401,22 @@ export interface StripLineSettingsModel {
 export interface MultiLevelLabelsModel {
 
     /**
-     * Defines the position of the multi level labels. The available options are,
-     * * Near: Places the multi-level labels near.
-     * * Center: Places the multi-level label in the center.
-     * * Far: Places the multi-level labels far.
+     * Defines the position of the multi-level labels.
+     * The available options are:
+     * * Near: Places the multi-level labels close to the chart elements.
+     * * Center: Positions the multi-level labels in the center of the chart elements.
+     * * Far: Places the multi-level labels further from the chart elements.
      *
      * @default 'Center'
      */
     alignment?: Alignment;
 
     /**
-     * Defines the textOverFlow for multi level labels. They are,
-     * * Trim: Trim textOverflow for multi level labels.
-     * * Wrap: Wrap textOverflow for multi level labels.
-     * * none: None textOverflow for multi level labels.
+     * Defines the text overflow behavior for multi-level labels.
+     * The available options are:
+     * * Trim: Trims the text that overflows for multi-level labels.
+     * * Wrap: Wraps the text that overflows for multi-level labels.
+     * * None: No text overflow handling for multi-level labels.
      *
      * @default 'Wrap'
      */
@@ -416,12 +428,13 @@ export interface MultiLevelLabelsModel {
     textStyle?: FontModel;
 
     /**
-     * Border of the multi-level labels.
+     * The `border` property allows customization of the border for multi-level labels.
+     * It includes options to set the color, width, and type of the border.
      */
     border?: LabelBorderModel;
 
     /**
-     * Multi level categories for multi-level labels.
+     * Configures multi-level categories for multi-level labels.
      */
     categories?: MultiLevelCategoriesModel[];
 
@@ -441,7 +454,7 @@ export interface ScrollbarSettingsRangeModel {
     minimum?: Date | string | number;
 
     /**
-     * Specifies the maximum range of an scrollbar.
+     * Specifies the maximum range of a scrollbar.
      *
      * @default null
      */
@@ -456,7 +469,8 @@ export interface ScrollbarSettingsRangeModel {
 export interface ScrollbarSettingsModel {
 
     /**
-     * Enables the scrollbar for lazy loading.
+     * If set to true, activates the scrollbar for lazy loading in charts.
+     * If set to false, the scrollbar is disabled.
      *
      * @default false
      */
@@ -470,26 +484,26 @@ export interface ScrollbarSettingsModel {
     pointsLength?: number;
 
     /**
-     * Specifies the range for date time values alone.
+     * Specifies the range for date-time values only.
      */
     range?: ScrollbarSettingsRangeModel;
 
     /**
-     * Defines the color of the back track.
+     * Specifies the color used for the background of the track area in the scrollbar.
      *
      * @default null
      */
     trackColor?: string;
 
     /**
-     * Defines the border radius for the scroll bar.
+     * Defines the border radius for the scrollbar.
      *
      * @default 0
      */
     scrollbarRadius?: number;
 
     /**
-     * Defines the color for the scroll bar.
+     * Defines the color for the scrollbar.
      *
      * @default null
      */
@@ -503,21 +517,21 @@ export interface ScrollbarSettingsModel {
     trackRadius?: number;
 
     /**
-     * Defines the color for thumb grip.
+     * The `gripColor` property specifies the color of the thumb grip of the scrollbar.
      *
      * @default null
      */
     gripColor?: string;
 
     /**
-     * Defines the height of the back rect and scroll bar.
+     * Defines the height of the scrollbar.
      *
      * @default 16
      */
     height?: number;
 
     /**
-     * Specifies whether zooming by scroll bar is enabled or disabled.
+     * Specifies whether zooming by scrollbar is enabled or disabled.
      *
      * @default true
      */

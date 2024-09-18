@@ -1,7 +1,7 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
-import { RangeModel, SheetModel } from '../../workbook/base/sheet-model';
-import { CellModel, ColumnModel, NumberFormatArgs, PrintOptions, RowModel } from '../../workbook';
+import { RangeModel, SheetModel, RowModel } from '../../workbook/index';
+import { CellModel, checkIsFormula, ColumnModel, NumberFormatArgs, PrintOptions, workbookFormulaOperation } from '../../workbook/index';
 import { getColumnHeaderText, getIndexesFromAddress, updateSheetFromDataSource, getCellAddress } from '../../workbook/index';
 
 /**
@@ -340,17 +340,15 @@ export class Print {
                                     !isNullOrUndefined(cell.hyperlink)) {
                                     let position: string;
                                     if (cell.formula && cell.format) {
-                                        this.parent.workbookFormulaModule.refreshCalculate(
-                                            { rowIndex: j, colIndex: k, value: cell.formula, isFormula: true, sheetIndex: sheetIndex,
-                                                isRefreshing: false });
+                                        this.parent.notify(
+                                            workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: j, colIndex: k,
+                                                value: cell.formula, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIndex });
                                         const numberFormatArgs: NumberFormatArgs = {
                                             value: cell.value, format: cell.format,
                                             rowIndex: j, colIndex: k, sheetIndex: this.parent.activeSheetIndex as number,
                                             cell: cell, refresh: true
                                         };
-                                        cellText = cell.format ?
-                                            this.parent.workbookNumberFormatModule.getFormattedCell(numberFormatArgs) :
-                                            cell.value;
+                                        cellText = this.parent.workbookNumberFormatModule.getFormattedCell(numberFormatArgs);
                                         position = `${textAlign ? textAlign : numberFormatArgs.isRightAlign ? 'Right' : 'Left'}`;
                                     } else if (cell.format) {
                                         const numberFormatArgs: NumberFormatArgs = {
@@ -358,19 +356,20 @@ export class Print {
                                             rowIndex: j, colIndex: k, sheetIndex: this.parent.activeSheetIndex as number,
                                             cell: cell, refresh: true
                                         };
-                                        cellText = cell.format ?
-                                            this.parent.workbookNumberFormatModule.getFormattedCell(numberFormatArgs) : cell.value;
+                                        cellText = this.parent.workbookNumberFormatModule.getFormattedCell(numberFormatArgs);
                                         position = `${textAlign ? textAlign : numberFormatArgs.isRightAlign ? 'Right' : 'Left'}`;
                                     } else if (cell.formula) {
-                                        this.parent.workbookFormulaModule.refreshCalculate(
-                                            { rowIndex: j, colIndex: k, value: cell.formula, isFormula: true, sheetIndex: sheetIndex,
-                                                isRefreshing: false });
+                                        this.parent.notify(
+                                            workbookFormulaOperation, { action: 'refreshCalculate',  rowIndex: j, colIndex: k,
+                                                value: cell.formula, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIndex });
                                         cellText = cell.value;
                                         position = `${textAlign ? textAlign : 'Left'}`;
                                     } else {
                                         if (!isNullOrUndefined(cell.hyperlink)) {
                                             if (isNullOrUndefined(cell.value)) {
-                                                cell.value = cell.hyperlink || cell.hyperlink['address'];
+                                                cell.value = (!isNullOrUndefined(cell.hyperlink) && typeof cell.hyperlink === 'object') ? cell.hyperlink['address'] : cell.hyperlink || cell.hyperlink['address'];
+                                            } else if (isNullOrUndefined(cell.value) || cell.value === '') {
+                                                cell.value = typeof cell.hyperlink === 'object' ? cell.hyperlink['address'] : cell.hyperlink;
                                             }
                                             color = cell.style ? cell.style.color || '#00e' : '#00e';
                                         }

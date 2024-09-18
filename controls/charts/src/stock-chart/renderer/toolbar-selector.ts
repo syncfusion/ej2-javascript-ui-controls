@@ -1,5 +1,5 @@
 import { StockChart } from '../stock-chart';
-import { PeriodsModel, FontModel } from '../../common/model/base-model';
+import { FontModel, PeriodsModel } from '../../common/model/base-model';
 import { titlePositionX, textElement, appendChildElement, getElement, RectOption } from '../../common/utils/helper';
 import { ExportType } from '../../common/utils/enum';
 import { TrendlineTypes, ChartSeriesType, TechnicalIndicators } from '../../chart/utils/enum';
@@ -372,7 +372,15 @@ export class ToolBarSelector {
         return defaultPeriods;
     }
 
-    private findRange(min: number, max: number): PeriodsModel[] {
+    /**
+     * Finds the range of periods between the specified minimum and maximum values.
+     *
+     * @param {number} min - The minimum value of the range.
+     * @param {number} max - The maximum value of the range.
+     * @returns {PeriodsModel[]} - An array of PeriodsModel objects that fall within the specified range.
+     * @private
+     */
+    public findRange(min: number, max: number): PeriodsModel[] {
         const defaultPeriods: PeriodsModel[] = [];
         if (((max - min) / 3.154e+10) >= 1) {
             defaultPeriods.push(

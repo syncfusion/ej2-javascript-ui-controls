@@ -108,7 +108,7 @@
         background-color: $cpicker-handler-tooltip-color;
         color: $gray-700;
       }
-      @else if $skin-name == 'bootstrap5' {
+      @else if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
         background-color: transparent;
         color: $cpicker-split-btn-icon-color;
       }
@@ -120,8 +120,8 @@
           background-color: $gray-600;
           color: $cpicker-handler-tooltip-color;
         }
-        @else if $skin-name == 'bootstrap5' {
-          background-color: $btn-hover-bgcolor;
+        @else if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          background-color: $btn-hover-bgcolor !important; /* stylelint-disable-line declaration-no-important */
           color: $cpicker-handler-tooltip-color;
         }
       }
@@ -134,7 +134,7 @@
           box-shadow: 0 0 0 .2rem $color-rgba;
           color: $gray-700;
         }
-        @else if $skin-name == 'bootstrap5' {
+        @else if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
           background-color: $btn-focus-bgcolor;
           border-color: $btn-focus-border-color;
           box-shadow: $btn-active-box-shadow;
@@ -149,7 +149,7 @@
           box-shadow: 0 0 0 .2rem $color-rgba;
           color: $cpicker-handler-tooltip-color;
         }
-        @else if $skin-name == 'bootstrap5' {
+        @else if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
           background-color: $btn-active-bgcolor;
           box-shadow: $btn-active-box-shadow;
           color: $btn-active-color;

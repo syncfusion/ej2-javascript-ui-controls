@@ -4,7 +4,7 @@ import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
 
 /**
- * `TmaIndicator` module is used to render TMA indicator.
+ * The `TmaIndicator` module is used to render the Triangular Moving Average indicator.
  */
 export class TmaIndicator extends TechnicalAnalysis {
 

@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 26.1.35 (2024-06-11)
+## 27.1.48 (2024-09-18)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- `#I626363` - When `Iframe` is enabled in Blazor, DropDownButton is not `closing` while clicking inside the editor has been resolved.
 
 ### DropDownButton
 

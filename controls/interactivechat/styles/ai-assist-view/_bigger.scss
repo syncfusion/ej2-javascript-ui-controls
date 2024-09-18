@@ -1,0 +1,75 @@
+@include export-module('aiassistview-bigger') {
+  .e-bigger.e-aiassistview,
+  .e-bigger .e-aiassistview {
+    .e-view-header {
+      height: $aiassist-bigger-header-height;
+    }
+    .e-view-content {
+      height: calc(100% - $aiassist-bigger-header-height);
+    }
+    .e-views {
+      .e-prompt-icon {
+        min-height: $aiassist-bigger-icon-height;
+      }
+      .e-output-icon {
+        height: $aiassist-bigger-icon-height;
+      }
+      .e-prompt-icon,
+      .e-output-icon {
+        min-width: $aiassist-bigger-icon-width;
+      }
+      .e-loading-body,
+      .e-content-body,
+      .e-loading-footer {
+        padding: 2px 0 0 10px;
+      }
+      .e-content-container {
+        font-size: 16px;
+        .e-prompt-text {
+          padding: $prompt-text-bigger-padding;
+          line-height: 22px;
+        }
+      }
+      .e-suggestions {
+        &.e-suggestion-item-template ul li {
+          padding: 0;
+        }
+        .e-suggestion-header {
+          font-size: 16px;
+          font-weight: $suggesstions-header-bigger-font-weight;
+          margin-bottom: 15px;
+        }
+        ul {
+          li {
+            line-height: 22px;
+            font-weight: $suggesstions-bigger-font-weight;
+            padding: $suggesstions-bigger-list-padding;
+            margin: $suggesstions-bigger-list-margin;
+          }
+        }
+      }
+    }
+    .e-footer {
+      .e-assist-send {
+        font-size: $send-icon-size-bigger;
+      }
+    }
+    .e-stop-response.e-btn-active {
+      height: $response-stopper-bigger-height;
+      margin-bottom: 20px;
+      padding: $response-stopper-bigger-padding;
+      line-height: $response-stopper-bigger-line-height;
+      font-weight: $response-stopper-bigger-font-weight;
+      font-size: $response-stopper-bigger-font-size;
+    }
+    &.e-rtl {
+      .e-views {
+        .e-suggestions {
+          li {
+            margin: $suggesstions-bigger-list-margin-rtl;
+          }
+        }
+      }
+    }
+  }
+}

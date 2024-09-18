@@ -1334,6 +1334,35 @@ describe('DropDown Tree control hierarchical datasource', () => {
         });
 
         /**
+         * valueTemplate
+         */
+        it('for valueTemplate support with string', (done: Function) => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData1, value: "nodeId", text: "nodeText", child: "nodeChild", expanded: 'nodeExpanded1' }, value: ['01'], valueTemplate: '${if(nodeChild == undefined)}<b>${nodeText} template</b>${else}<i>${nodeText} template</i>${/if}' }, '#ddtree');
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                ddtreeObj.showPopup();
+                let value: Element = <Element & NodeListOf<Element>>ddtreeObj.element.parentElement.querySelector('.e-input-value');
+                expect(value.textContent).toBe("Music template");
+                ddtreeObj.hidePopup();
+                done();
+            }, 450);
+        });
+        it('for valueTemplate support with script', (done: Function) => {
+            let template: Element = createElement('div', { id: 'template' });
+            template.innerHTML = '${if(nodeChild == undefined)}<b>${nodeText} template</b>${else}<i>${nodeText} template</i>${/if}';
+            document.body.appendChild(template);
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData1, value: "nodeId", text: "nodeText", child: "nodeChild", expanded: 'nodeExpanded1' }, value: ['01'], valueTemplate: '#template' }, '#ddtree');
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                ddtreeObj.showPopup();
+                let value: Element = <Element & NodeListOf<Element>>ddtreeObj.element.parentElement.querySelector('.e-input-value');
+                expect(value.textContent).toBe("Music template");
+                ddtreeObj.hidePopup();
+                done();
+            }, 450);
+        });
+
+        /**
          * loadOnDemand true
          */
 

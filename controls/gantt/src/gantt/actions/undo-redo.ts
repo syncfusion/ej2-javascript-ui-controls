@@ -74,12 +74,7 @@ export class UndoRedo {
                         rowItems.push(this.parent.getRecordByID(updateAction['beforeDrop'][i as number]['data'].ganttProperties.taskId));
                     }
                     else {
-                        if (updateAction['beforeDrop'][i as number]['data']['ganttProperties'].hasChildRecords) {
-                            rowItems.push(this.parent.flatData[this.parent.taskIds.indexOf('R' + updateAction['beforeDrop'][i as number]['data'].ganttProperties.taskId.toString())]);
-                        }
-                        else {
-                            rowItems.push(this.parent.flatData[this.parent.taskIds.indexOf('T' + updateAction['beforeDrop'][i as number]['data'].ganttProperties.taskId.toString())]);
-                        }
+                        rowItems.push(this.parent.flatData[this.parent.taskIds.indexOf('T' + updateAction['beforeDrop'][i as number]['data'].ganttProperties.taskId.toString())]);
                     }
                 }
                 previousActions['action'] = updateAction['action'];
@@ -178,10 +173,7 @@ export class UndoRedo {
             else if (updateAction['action'] === 'Filtering') {
                 this.isFromUndoRedo = true;
                 for (let i: number = this.getUndoCollection.length - 1; i >= 0; i--) {
-                    if (!this.getUndoCollection[i as number]['filteredColumns']) {
-                        break;
-                    }
-                    else {
+                    if (this.getUndoCollection[i as number]['filteredColumns']) {
                         const columnsArray: string[] = [];
                         for (let j: number = 0; j < this.getUndoCollection[i as number]['filteredColumns'].length; j++) {
                             columnsArray.push(this.getUndoCollection[i as number]['filteredColumns'][j as number].field);
@@ -224,12 +216,7 @@ export class UndoRedo {
                         toIndex = this.parent.ids.indexOf(updateAction['beforeDrop'][i as number]['id'].toString());
                     }
                     else {
-                        if (updateAction['beforeDrop'][i as number].data['ganttProperties'].hasChildRecords) {
-                            fromIndex = this.parent.ids.indexOf('R' + (updateAction['beforeDrop'][i as number].data as IGanttData).ganttProperties.taskId.toString());
-                        }
-                        else {
-                            fromIndex = this.parent.ids.indexOf('T' + (updateAction['beforeDrop'][i as number].data as IGanttData).ganttProperties.taskId.toString());
-                        }
+                        fromIndex = this.parent.ids.indexOf('T' + (updateAction['beforeDrop'][i as number].data as IGanttData).ganttProperties.taskId.toString());
                         toIndex = this.parent.taskIds.indexOf(updateAction['beforeDrop'][i as number]['id'].toString());
                     }
                     this.parent.reorderRows([fromIndex], toIndex, updateAction['beforeDrop'][i as number].position);
@@ -373,25 +360,25 @@ export class UndoRedo {
                         rowItems.push(this.parent.getRecordByID(updateAction['beforeDrop'][i as number]['data'].ganttProperties.taskId));
                     }
                     else {
-                        if (updateAction['beforeDrop'][i as number]['data']['ganttProperties'].hasChildRecords) {
-                            rowItems.push(this.parent.flatData[this.parent.taskIds.indexOf('R' + updateAction['beforeDrop'][i as number]['data'].ganttProperties.taskId.toString())]);
-                        }
-                        else {
-                            rowItems.push(this.parent.flatData[this.parent.taskIds.indexOf('T' + updateAction['beforeDrop'][i as number]['data'].ganttProperties.taskId.toString())]);
-                        }
+                        rowItems.push(this.parent.flatData[this.parent.taskIds.indexOf('T' + updateAction['beforeDrop'][i as number]['data'].ganttProperties.taskId.toString())]);
                     }
                 }
                 previousActions['action'] = updateAction['action'];
                 previousActions['beforeDrop'] = [];
                 const previousDetails: Object = {};
-                const dropRecord: IGanttData = extend([], [], [this.parent.getRecordByID(updateAction['afterDrop'].dropRecord.ganttProperties.taskId)], true)[0];
+                let dropRecord: IGanttData;
+                if (updateAction['afterDrop'].dropRecord) {
+                    dropRecord = extend([], [], [this.parent.getRecordByID(updateAction['afterDrop'].dropRecord.ganttProperties.taskId)], true)[0];
+                }
                 previousDetails['data'] = [];
                 for (let i: number = 0; i < updateAction['afterDrop'].data.length; i++) {
                     if (this.parent.viewType === 'ProjectView') {
                         previousDetails['data'].push(extend([], [], [this.parent.getRecordByID(updateAction['afterDrop'].data[i as number].ganttProperties.taskId)], true)[0]);
                     }
                     else {
-                        previousDetails['data'].push(extend([], [], this.parent.flatData[this.parent.taskIds.indexOf('T' + updateAction['afterDrop'].data[i as number].ganttProperties.taskId)], true)[0]);
+                        if (updateAction['afterDrop'].data[i as number] !== undefined) {
+                            previousDetails['data'].push(extend([], [], this.parent.flatData[this.parent.taskIds.indexOf('T' + updateAction['afterDrop'].data[i as number].ganttProperties.taskId)], true)[0]);
+                        }
                     }
                 }
                 previousDetails['dropRecord'] = extend([], [], [dropRecord], true)[0];
@@ -511,13 +498,7 @@ export class UndoRedo {
                         toIndex = this.parent.ids.indexOf(updateAction['beforeDrop'][i as number]['id'].toString());
                     }
                     else {
-
-                        if (updateAction['beforeDrop'][i as number].data['ganttProperties'].hasChildRecords) {
-                            fromIndex = this.parent.ids.indexOf('R' + (updateAction['beforeDrop'][i as number].data as IGanttData).ganttProperties.taskId.toString());
-                        }
-                        else {
-                            fromIndex = this.parent.ids.indexOf('T' + (updateAction['beforeDrop'][i as number].data as IGanttData).ganttProperties.taskId.toString());
-                        }
+                        fromIndex = this.parent.ids.indexOf('T' + (updateAction['beforeDrop'][i as number].data as IGanttData).ganttProperties.taskId.toString());
                         toIndex = this.parent.taskIds.indexOf(updateAction['beforeDrop'][i as number]['id'].toString());
                     }
                     this.parent.reorderRows([fromIndex], toIndex, updateAction['beforeDrop'][i as number].position);
@@ -533,18 +514,6 @@ export class UndoRedo {
                 }
             }
             else if (updateAction['action'] === 'Delete') {
-                if (this.parent.viewType === 'ResourceView') {
-                    for (let i: number = 0; i < updateAction['deleteRecords'].length; i++) {
-                        if (updateAction['deleteRecords'][i as number].parentItem) {
-                            if (!this.parent.getParentTask(updateAction['deleteRecords'][i as number].parentItem)) {
-                                const parentTask: IGanttData = this.parent.flatData[updateAction['deleteRecords'][i as number].parentItem.index];
-                                updateAction['deleteRecords'][i as number].parentItem.uniqueID = parentTask.uniqueID;
-                                updateAction['deleteRecords'][i as number].parentItem.taskId = parentTask.ganttProperties.rowUniqueID;
-                                updateAction['deleteRecords'][i as number].parentItem.expanded = parentTask.expanded;
-                            }
-                        }
-                    }
-                }
                 const isShowDeleteConfirmDialog: boolean = extend([], [this.parent.editSettings.showDeleteConfirmDialog], [], true)[0];
                 this.parent.editSettings.showDeleteConfirmDialog = false;
                 this.parent.deleteRecord(updateAction['deleteRecords']);
@@ -584,14 +553,12 @@ export class UndoRedo {
                 this.parent.updateRecordByID(updateAction['modifiedRecords'][0]);
             }
             this.isUndoRedoPerformed = false;
-            if (this.getRedoCollection.length === 0) {
-                this.redoEnabled = false;
-            }
             if (this.getUndoCollection.length > 0 && this.parent.toolbarModule) {
                 this.parent.toolbarModule.enableItems([this.parent.controlId + '_undo'], true);
             }
             this.getRedoCollection.splice(this.getRedoCollection.length - 1, 1);
             if (this.getRedoCollection.length === 0 && this.parent.toolbarModule) {
+                this.redoEnabled = false;
                 this.parent.toolbarModule.enableItems([this.parent.controlId + '_redo'], false);
             }
         }

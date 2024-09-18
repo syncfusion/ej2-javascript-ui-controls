@@ -72,6 +72,7 @@ describe('Excel Filter =>', () => {
                     dataSource: filterData,
                     allowFiltering: true,
                     allowPaging: false,
+                    cssClass: 'e-grid',
                     filterSettings: {
                         type: 'Excel',
                         columns: [
@@ -1559,5 +1560,68 @@ describe('Excel Filter on demand load and selection maintain for filter', () => 
 
     afterAll(() => {
         destroy(gridObj);
+    });
+});
+
+
+
+describe('code coverage for excel filter file - 1 => ', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                filterSettings: { type: 'Excel' },
+                height: 500,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'EmployeeID', headerText: 'EmployeeID', width: 150, },
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+    
+    it('excel filter open code coverage', (done: Function) => {
+        gridObj.actionComplete = actionComplete = (args?: any): void => {
+            if (args.requestType === "filterchoicerequest") {
+                done();
+            }
+        }
+        gridObj.actionComplete = actionComplete;
+        (gridObj.element.getElementsByClassName('e-filtermenudiv')[1] as any).click();
+    });
+
+    it('excel filter file method and fucntion code coverage', () => {
+        (gridObj.filterModule as any).filterModule.excelFilterBase.selectHandler({});
+        (gridObj.filterModule as any).filterModule.excelFilterBase.excelSetFocus();
+        (gridObj.filterModule as any).filterModule.excelFilterBase.keyDown({});
+        (gridObj.filterModule as any).filterModule.excelFilterBase.focusNextOrPrevElement({}, [], []);
+        (gridObj.filterModule as any).filterModule.excelFilterBase.keyDown({ key: 'ArrowDown', preventDefault: preventDefault });
+        (gridObj.filterModule as any).filterModule.excelFilterBase.cmenu.appendChild(gridObj.createElement('div', { className: 'e-excel' }));
+        (gridObj.filterModule as any).filterModule.excelFilterBase.excelSetFocus(gridObj.element, 'e-excel');
+        (gridObj.filterModule as any).filterModule.excelFilterBase.options.isResponsiveFilter = true;
+        (gridObj.filterModule as any).filterModule.excelFilterBase.hoverHandler( { type:'mouseover' });
+        (gridObj.filterModule as any).filterModule.excelFilterBase.options.isResponsiveFilter = false;
+        (gridObj.filterModule as any).filterModule.excelFilterBase.keyUp({});
+        (gridObj.filterModule as any).filterModule.excelFilterBase.keyUp({ shiftKey: true, key:'Tab', target: document.querySelector('.e-chk-hidden') });
+        (gridObj.filterModule as any).filterModule.excelFilterBase.keyUp({ shiftKey: true, key:'Tab', target: document.querySelector('.e-menu-item') });
+        (gridObj.filterModule as any).filterModule.excelFilterBase.keyUp({ shiftKey: true, key:'ArrowDown', target: document.querySelector('.e-menu-item'), preventDefault: preventDefault });
+        (gridObj.filterModule as any).filterModule.excelFilterBase.keyUp({ shiftKey: true, code:'ArrowRight', target:  document.querySelector('.e-submenu.e-menu-item'), preventDefault: preventDefault });
+        (gridObj.filterModule as any).filterModule.excelFilterBase.contextKeyDownHandler({});
+        (gridObj.filterModule as any).filterModule.excelFilterBase.contextKeyDownHandler({ shiftKey: true, key:'Tab', preventDefault :preventDefault });
+        (gridObj.filterModule as any).filterModule.excelFilterBase.contextKeyDownHandler({ shiftKey: true, key:'Escape', preventDefault :preventDefault });
+        (gridObj.filterModule as any).filterModule.excelFilterBase.dropDownOpen({ popup: { element: gridObj.element.querySelector('.e-dialog')} })
+        gridObj.isDestroyed = true;
+        (gridObj.filterModule as any).filterModule.excelFilterBase.removeObjects([gridObj]);
+        gridObj.isDestroyed = false;
+        (gridObj.filterModule as any).filterModule.excelFilterBase.clickExHandler({target: document.querySelector('.e-excl-filter-icon')});
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = preventDefault = null;
     });
 });

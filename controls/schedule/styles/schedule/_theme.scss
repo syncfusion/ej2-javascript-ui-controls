@@ -1,5 +1,5 @@
 @mixin schedule-select-cell-focus-styles {
-  @if ($theme-name == 'fluent2') {
+  @if $skin-name == 'fluent2' {
     &:focus {
       background: $content-bg-color-focus;
     }
@@ -7,6 +7,25 @@
     &:focus-visible {
       background: $schedule-select-focus-bg-color;
       box-shadow: $schedule-select-focus-box-shadow;
+    }
+  }
+  
+  @if $skin-name == 'bootstrap5.3' {
+    &:focus {
+      background: $schedule-select-focus-bg-color;
+    }
+
+    &:focus-visible {
+      background: $schedule-workhour-bg-color;
+      box-shadow: $schedule-select-focus-box-shadow;
+    }
+  }
+}
+
+@mixin more-indicator-hover-styles {
+  @if $skin-name =='fluent2' {
+    .e-more-indicator {
+      color: $schedule-hover-font-color;
     }
   }
 }
@@ -45,6 +64,7 @@
 
           &:hover {
             background: $schedule-hover-bg-color;
+            @include more-indicator-hover-styles;
           }
         }
       }
@@ -142,6 +162,7 @@
         &.e-selected-cell {
           background: $schedule-select-bg-color;
           color: $schedule-hover-font-color;
+          @include more-indicator-hover-styles;
 
           &:hover {
             background: $schedule-select-bg-color;
@@ -220,6 +241,7 @@
         &:hover {
           background: $schedule-hover-bg-color;
           color: $schedule-work-cell-hover-color;
+          @include more-indicator-hover-styles;
         }
       }
 

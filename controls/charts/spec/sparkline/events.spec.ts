@@ -2,6 +2,15 @@
  * To create mouse events for spec
  */
 export class MouseEvents {
+    public keyboardEvent(element: Element, eventType: string, key: string, code: string): void {
+        let keyboardEvent = new KeyboardEvent(eventType, {
+            key: key,
+            code: code,
+            bubbles: true,
+            cancelable: true
+        });
+        element.dispatchEvent(keyboardEvent);
+    }
     public mousemoveEvent(element: Element, sx: number, sy: number, cx: number, cy: number): void {
         let mousemove: MouseEvent = document.createEvent('MouseEvent');
         mousemove.initMouseEvent('mousemove', true, false, window, 1, sx, sy, cx, cy, false, false, false, false, 0, null);

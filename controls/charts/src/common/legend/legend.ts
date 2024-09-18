@@ -2,8 +2,8 @@ import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
 import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart, ILegendRegions } from '../../chart';
 import { LegendSettingsModel } from './legend-model';
-import { Font, Border, Margin, ContainerPadding, Location } from '../model/base';
-import { MarginModel, FontModel, BorderModel, ContainerPaddingModel, LocationModel } from '../model/base-model';
+import { Font, Border, Margin, Location, ContainerPadding } from '../model/base';
+import { MarginModel, FontModel, BorderModel, LocationModel, ContainerPaddingModel } from '../model/base-model';
 import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim, getTextAnchor } from '../utils/helper';
 import { RectOption, textElement, stringToNumber } from '../utils/helper';
 import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';
@@ -24,7 +24,7 @@ import { Chart3DLegendSettingsModel } from '../../chart3d/legend/legend-model';
 import { CircularChartLegend3D } from '../../circularchart3d/legend/legend';
 import { CircularChart3D } from '../../circularchart3d';
 /**
- * Configures the legends in charts.
+ * Configures the appearance and behavior of legends in charts.
  */
 export class LegendSettings extends ChildProperty<LegendSettings> {
 
@@ -38,7 +38,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public visible: boolean;
 
     /**
-     * The height of the legend in pixels.
+     * Specifies the height of the legend in pixels.
      *
      * @default null
      */
@@ -47,7 +47,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public height: string;
 
     /**
-     * The width of the legend in pixels.
+     * Specifies the width of the legend in pixels.
      *
      * @default null
      */
@@ -56,8 +56,9 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public width: string;
 
     /**
-     * Specifies the location of the legend, relative to the chart.
-     * If x is 20, legend moves by 20 pixels to the right of the chart. It requires the `position` to be `Custom`.
+     * Specifies the location of the legend relative to the chart.
+     * If x is 20, the legend moves 20 pixels to the right of the chart.
+     > Note that the `position` must be set to `Custom` for this feature to work.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -65,10 +66,10 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * let chart: Chart = new Chart({
      * ...
      *   legendSettings: {
-     *     visible: true,
-     *     position: 'Custom',
-     *     location: { x: 100, y: 150 },
-     *   },
+     *           visible: true,
+     *           position: 'Custom',
+     *           location: { x: 100, y: 150 }
+     *   }
      * ...
      * });
      * chart.appendTo('#Chart');
@@ -79,13 +80,14 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public location: LocationModel;
 
     /**
-     * Position of the legend in the chart. Available options include:
-     * * Auto: Places the legend based on the area type.
-     * * Top: Displays the legend at the top of the chart.
-     * * Left: Displays the legend at the left of the chart.
-     * * Bottom: Displays the legend at the bottom of the chart.
-     * * Right: Displays the legend at the right of the chart.
-     * * Custom: Displays the legend based on the given x and y values.
+     * Sets the position of the legend in the chart.
+     * Available options include:
+     * * Auto - Places the legend according to the area type.
+     * * Top - Displays the legend at the top of the chart.
+     * * Left - Displays the legend on the left side of the chart.
+     * * Bottom - Displays the legend at the bottom of the chart.
+     * * Right - Displays the legend to the right of the chart.
+     * * Custom - Displays the legend according to the given x and y position values.
      *
      * @default 'Auto'
      */
@@ -94,12 +96,12 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public position: LegendPosition;
 
     /**
-     * Mode of legend items.
-     * * Series: Legend items generated based on series count.
-     * * Point: Legend items generated based on unique data points.
-     * * Range: Legend items generated based on range color mapping property.
-     * * Gradient: Single linear bar generated based on range color mapping property.
-     * This property is applicable for chart component only.
+     * Defines the mode for displaying legend items.
+     * * Series - Legend items are generated based on the count of series.
+     * * Point - Legend items are created according to each unique data point.
+     * * Range - Legend items are generated based on the range color mapping property.
+     * * Gradient - Displays a single linear bar that represents the range color mapping property.
+     > Note that this property is applicable only for the chart component.
      */
     @Property('Series')
     public mode: LegendMode;
@@ -123,10 +125,11 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public itemPadding: number;
 
     /**
-     * Legend in chart can be aligned as follows:
-     * * Near: Aligns the legend to the left of the chart.
-     * * Center: Aligns the legend to the center of the chart.
-     * * Far: Aligns the legend to the right of the chart.
+     * Defines the alignment of the legend in the chart.
+     * The options are:
+     * * Near - Aligns the legend to the left of the chart.
+     * * Center - Aligns the legend to the center of the chart.
+     * * Far - Aligns the legend to the right of the chart.
      *
      * @default 'Center'
      */
@@ -135,14 +138,14 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public alignment: Alignment;
 
     /**
-     * Options to customize the legend text.
+     * The `textStyle` property provides options to customize the appearance of the text in the legend, including the font family, size, style, weight, and color.
      */
 
     @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public textStyle: FontModel;
 
     /**
-     * Shape height of the legend in pixels.
+     * Specify the height of the legend in pixels.
      *
      * @default 10
      */
@@ -151,7 +154,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public shapeHeight: number;
 
     /**
-     * Shape width of the legend in pixels.
+     * Specify the width of the legend in pixels.
      *
      * @default 10
      */
@@ -160,21 +163,21 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public shapeWidth: number;
 
     /**
-     * Options to customize the border of the legend.
+     * Options for customizing the border of the legend.
      */
 
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
 
     /**
-     *  Options to customize left, right, top and bottom margins of the chart.
+     * Options for customizing the left, right, top, and bottom margins of the chart.
      */
 
     @Complex<MarginModel>({left: 0, right: 0, top: 0, bottom: 0}, Margin)
     public margin: MarginModel;
 
     /**
-     *  Options to customize left, right, top and bottom padding for legend container of the chart.
+     * Options to customize the left, right, top, and bottom padding for the chart legend container.
      */
 
     @Complex<ContainerPaddingModel>({ left: 0, right: 0, top: 0, bottom: 0 }, ContainerPadding)
@@ -190,7 +193,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public shapePadding: number;
 
     /**
-     * The background color of the legend that accepts value in hex and rgba as a valid CSS color string.
+     * The background color of the legend, which accepts values in hex and rgba as valid CSS color strings.
      *
      * @default 'transparent'
      */
@@ -199,7 +202,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public background: string;
 
     /**
-     * Opacity of the legend.
+     * Customizes the opacity of the legend.
      *
      * @default 1
      */
@@ -208,7 +211,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public opacity: number;
 
     /**
-     * If set to true, series visibility collapses based on the legend visibility.
+     * If set to true, the series visibility will collapse based on the legend's visibility.
      *
      * @default true
      */
@@ -217,15 +220,16 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public toggleVisibility: boolean;
 
     /**
-     * If set to true, the series get highlighted, while hovering the legend.
+     * If set to true, the series will be highlighted when hovering over the legend.
      *
      * @default false
      */
 
     @Property(false)
     public enableHighlight: boolean;
+
     /**
-     * Description for legends.
+     * A description of the legend that provides additional information for screen readers.
      *
      * @default null
      */
@@ -234,7 +238,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public description: string;
 
     /**
-     * TabIndex value for the legend.
+     * The `tabIndex` property determines the order in which the legend receives focus when navigating through elements with the keyboard.
      *
      * @default 3
      */
@@ -243,7 +247,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public tabIndex: number;
 
     /**
-     * Title for legends.
+     * Specifies the title of the legend.
      *
      * @default null
      */
@@ -252,14 +256,18 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public title: string;
 
     /**
-     * Options to customize the legend title.
+     * The `titleStyle` property configures the font settings for the legend title, including font family, size, style, weight, and color.
      */
 
     @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public titleStyle: FontModel;
 
     /**
-     * Legend title position.
+     * The `titlePosition` property specifies the position of the legend title.
+     * Available options are:
+     * * Top - Aligns the title to the top of the legend.
+     * * Left - Aligns the title to the left of the legend.
+     * * Right - Aligns the title to the right of the legend.
      *
      * @default 'Top'
      */
@@ -268,10 +276,11 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public titlePosition: LegendTitlePosition;
 
     /**
-     * Defines the text wrap behavior to employ when the individual legend text overflows.
-     * * `Normal` -  Specifies to break words only at allowed break points.
-     * * `Wrap` - Specifies to break a word once it is too long to fit on a line by itself.
-     * * `AnyWhere` - Specifies to break a word at any point if there are no otherwise-acceptable break points in the line.
+     * Defines the text wrap behavior for the legend text when it overflows.
+     * Available options are:
+     * * `Normal` - Specifies that words should only break at allowed break points.
+     * * `Wrap` - Specifies that a word should break if it is too long to fit on a line by itself.
+     * * `AnyWhere` - Specifies to break a word at any point if there are no acceptable break points in the line.
      *
      * @default 'Normal'
      */
@@ -280,9 +289,9 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public textWrap : TextWrap;
 
     /**
-     * Defines the text overflow behavior to employ when the individual legend text overflows.
-     * * `Clip` -  Specifies the text is clipped and not accessible.
-     * * `Ellipsis` -  Specifies an ellipsis (“...”) to the clipped text.
+     * Defines the behavior for handling the overflow of legend text.
+     * * `Clip` - Specifies that the text is clipped and not accessible.
+     * * `Ellipsis` - Specifies an ellipsis (“...”) for the clipped text.
      *
      * @default 'Ellipsis'
      */
@@ -291,7 +300,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public textOverflow  : LabelOverflow;
 
     /**
-     * Maximum width for the legend title.
+     * Specifies the maximum width of the legend title.
      *
      * @default 100
      */
@@ -300,7 +309,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public maximumTitleWidth: number;
 
     /**
-     * Maximum label width for the legend text.
+     * Specifies the maximum width of the legend text labels.
      *
      * @default null
      */
@@ -309,7 +318,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public maximumLabelWidth : number;
 
     /**
-     * If set to true, legend will be visible using pages.
+     * If set to true, the legend will be displayed using pages.
      *
      * @default true
      */
@@ -318,7 +327,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public enablePages: boolean;
 
     /**
-     * If `isInversed` set to true, then it inverses legend item content (image and text).
+     * If `isInversed` is set to true, it inverses the legend item content (image and text).
      *
      * @default false.
      */
@@ -327,7 +336,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public isInversed: boolean;
 
     /**
-     * If `reverse` is set to true, it reverses the order of legend items.
+     * If `reverse` is set to true, it reverses the order of the legend items.
      *
      * @default false
      */
@@ -440,7 +449,8 @@ export class BaseLegend {
      * @private
      */
 
-    public calculateLegendBounds(rect: Rect, availableSize: Size, maxLabelSize: Size): void {
+    public calculateLegendBounds(rect: Rect, availableSize: Size, maxLabelSize: Size,
+                                 previousLegendBounds?: Rect, pointAnimation?: boolean): void {
         const legend: LegendSettingsModel = this.legend;
         const defaultValue: string = (this.isBulletChartControl) ? '40%' : '20%';
         this.getPosition(legend.position, availableSize);
@@ -465,7 +475,8 @@ export class BaseLegend {
             this.legendBounds.width += (this.legend.containerPadding.left + this.legend.containerPadding.right);
             this.legendBounds.height += (this.legend.containerPadding.top + this.legend.containerPadding.bottom);
         }
-        this.getLocation(this.position, legend.alignment, this.legendBounds, rect, availableSize, maxLabelSize);
+        this.getLocation(this.position, legend.alignment, this.legendBounds, rect, availableSize,
+                         maxLabelSize, previousLegendBounds, pointAnimation);
     }
     /**
      * To find legend position based on available size for chart and accumulation chart
@@ -582,8 +593,8 @@ export class BaseLegend {
      */
 
     private getLocation(
-        position: LegendPosition, alignment: Alignment, legendBounds: Rect, rect: Rect, availableSize: Size, maxLabelSize: Size
-    ): void {
+        position: LegendPosition, alignment: Alignment, legendBounds: Rect, rect: Rect, availableSize: Size,
+        maxLabelSize: Size, previousLegendBounds?: Rect, pointAnimation?: boolean): void {
         const padding: number = this.legend.border.width;
         const isBulletChart: boolean = this.isBulletChartControl;
         const bulletChart: BulletChart =  this.bulletChart;
@@ -597,36 +608,44 @@ export class BaseLegend {
         let legendWidth: number = legendBounds.width + padding + this.legend.margin.left + this.legend.margin.right ;
         if (position === 'Bottom') {
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
-            legendBounds.y = rect.y + (rect.height - legendHeight) + padding + this.legend.margin.top;
+            legendBounds.y = (previousLegendBounds && (legendBounds.height === previousLegendBounds.height || (this.chart as AccumulationChart).series[0].type !== 'Pie')) ? previousLegendBounds.y : rect.y + (rect.height - legendHeight) + padding + this.legend.margin.top;
             legendBounds.y += (isBulletChart && !bulletChart.opposedPosition && !labelIns && !ticklIns
             && !isVertical) ? bulletChart.majorTickLines.height + marginBottom + this.legend.border.width + padding * 2 :
                 (isVertical && bulletChart.categoryField !== '')  ? maxLabelSize.height + padding * 2 : 0;
-            subtractThickness(rect, new Thickness(0, 0, 0, legendHeight));
+            if ((!pointAnimation || (legendBounds.height !== previousLegendBounds.height))) {
+                {subtractThickness(rect, new Thickness(0, 0, 0, legendHeight)); }
+            }
         } else if (position === 'Top') {
             let axisTextSize: Size;
             if (this.isChartControl) { axisTextSize = measureText('100', (this.chart as Chart).verticalAxes[0].labelStyle, this.chart.themeStyle.legendLabelFont); }
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
-            legendBounds.y = rect.y + padding + this.legend.margin.top;
+            legendBounds.y = (previousLegendBounds && (legendBounds.height === previousLegendBounds.height || (this.chart as AccumulationChart).series[0].type !== 'Pie')) ? previousLegendBounds.y : rect.y + padding + this.legend.margin.top;
             legendBounds.y -= (isBulletChart && bulletChart.opposedPosition && !labelIns && !ticklIns &&
             !isVertical) ? bulletChart.majorTickLines.height + this.chart.margin.top : 0;
             legendHeight -= (isBulletChart) ? -padding * 2 : (this.isChartControl ? -padding * 2 - axisTextSize.height / 2 : 0);
-            subtractThickness(rect, new Thickness(0, 0, legendHeight, 0));
+            if (!pointAnimation || (legendBounds.height !== previousLegendBounds.height)) {
+                subtractThickness(rect, new Thickness(0, 0, legendHeight, 0));
+            }
         } else if (position === 'Right') {
-            legendBounds.x = rect.x + (rect.width - legendBounds.width) - this.legend.margin.right;
+            legendBounds.x = (previousLegendBounds && (legendBounds.width === previousLegendBounds.width || (this.chart as AccumulationChart).series[0].type !== 'Pie')) ? previousLegendBounds.x : rect.x + (rect.width - legendBounds.width) - this.legend.margin.right;
             legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom),
                                                        legendBounds.height, alignment);
             legendWidth += (isBulletChart && bulletChart.opposedPosition && !labelIns && !ticklIns &&
             isVertical) ? (
                     this.chart.margin.left + this.chart.margin.right + bulletChart.majorTickLines.height) : 0;
-            subtractThickness(rect, new Thickness(0, legendWidth, 0, 0));
+            if (!pointAnimation || (legendBounds.width !== previousLegendBounds.width)) {
+                subtractThickness(rect, new Thickness(0, legendWidth, 0, 0));
+            }
         } else if (position === 'Left') {
-            legendBounds.x = legendBounds.x + this.legend.margin.left;
+            legendBounds.x = (previousLegendBounds && (legendBounds.width === previousLegendBounds.width || (this.chart as AccumulationChart).series[0].type !== 'Pie')) ? previousLegendBounds.x : legendBounds.x + this.legend.margin.left;
             legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom),
                                                        legendBounds.height, alignment);
             legendWidth += (isBulletChart && !bulletChart.opposedPosition && !labelIns && !ticklIns  &&
             isVertical) ?  (legendBounds.x - this.chart.margin.left + padding + bulletChart.majorTickLines.height) :
                 (bulletChart.orientation !== 'Vertical' && bulletChart.categoryField !== '')  ?  categoryFieldValue : 0;
-            subtractThickness(rect, new Thickness(legendWidth, 0, 0, 0));
+            if (!pointAnimation || (legendBounds.width !== previousLegendBounds.width)) {
+                subtractThickness(rect, new Thickness(legendWidth, 0, 0, 0));
+            }
         } else {
             legendBounds.x = this.legend.location.x;
             legendBounds.y = this.legend.location.y;
@@ -692,10 +711,16 @@ export class BaseLegend {
 
     public renderLegend(
         chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D | CircularChart3D, legend: LegendSettingsModel,
-        legendBounds: Rect, redraw?: boolean): void {
+        legendBounds: Rect, redraw?: boolean, pointAnimation?: boolean): void {
         let titleHeight: number = 0; let titlePlusArrowWidth: number = 0;
         let pagingLegendBounds: Rect = new Rect(0, 0, 0, 0);
         let requireLegendBounds: Rect = new Rect(0, 0, 0, 0);
+        let xValue: string;
+        let yValue: string;
+        if (pointAnimation) {
+            xValue = getElement(this.legendID + '_element').getAttribute('x');
+            yValue = getElement(this.legendID + '_element').getAttribute('y');
+        }
         const firstLegend: number = this.findFirstLegendPosition(this.legendCollections);
         const padding: number = legend.padding;
         this.itemPadding = this.isBulletChartControl ? legend.padding : this.itemPadding;
@@ -831,7 +856,19 @@ export class BaseLegend {
                 this.totalPages = 1;
             }
         }
-        appendChildElement((chart as Chart).enableCanvas, chart.svgObject, legendGroup, redraw);
+        if (pointAnimation) {
+            const translateX: string = `translate(${this.rowCount > 1 ? 0 : Math.round(Number(xValue)) - Math.round(this.legendBounds.x)} 
+              + ',' + ${Math.round(Number(yValue)) - Math.round(this.legendBounds.y)})`;
+            const translateY: string =  `translate(${Math.round(Number(xValue)) - Math.round(this.legendBounds.x)}, ${Math.round(Number(yValue)) - Math.round(this.legendBounds.y)})`;
+
+            appendChildElement((chart as Chart).enableCanvas, chart.svgObject, legendGroup, redraw, true,
+                               'x', 'y', undefined, undefined, undefined, undefined, undefined, (chart as Chart).duration,
+                               undefined, undefined, new ChartLocation(0, 0),
+                               this.position === 'Top' || this.position === 'Bottom' ? translateX : translateY);
+        }
+        else {
+            appendChildElement((chart as Chart).enableCanvas, chart.svgObject, legendGroup, redraw);
+        }
     }
 
     /**
@@ -1177,8 +1214,9 @@ export class BaseLegend {
                        symbolOption, this.accessbilityText, this.chart.renderer,
                        this.currentPageNumber ? new Rect(0, regionPadding, 0, 0) : null, this.isBulletChartControl, control);
             this.legendRegions.push({
-                rect: new Rect(legendOption.location.x, legendOption.location.y,
-                               this.legend.shapeWidth, this.legend.shapeHeight + regionPadding), index: legendIndex
+                rect: new Rect(legendOption.location.x - this.legend.shapeWidth, legendOption.location.y,
+                               this.legend.shapeWidth + this.legend.shapePadding, this.legend.shapeHeight + regionPadding),
+                index: legendIndex
             });
         }
         if (shape === 'Line' && legendOption.markerVisibility && legendOption.markerShape !== 'Image' ||

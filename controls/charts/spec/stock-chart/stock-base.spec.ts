@@ -2,12 +2,13 @@
  * Stock chart test cases
  */
 import { createElement } from '@syncfusion/ej2-base';
-import { CandleSeries, DateTime, getElement, Tooltip, RangeTooltip, Zoom, Axis, VisibleRangeModel, DateTimeCategory, LineSeries, IChangedEventArgs } from '../../src/index';
-import { StockChart } from '../../src/stock-chart/index';
+import { CandleSeries, DateTime, getElement, Tooltip, RangeTooltip, Zoom, Axis, DateTimeCategory, LineSeries, IChangedEventArgs } from '../../src/index';
+import { IPointEventArgs, StockChart } from '../../src/stock-chart/index';
 import { chartData, stockData,googl,goog } from './indicatordata.spec';
 import { IStockChartEventArgs, IRangeChangeEventArgs } from '../../src/stock-chart/model/base';
 import { MouseEvents } from '../chart/base/events.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { VisibleRangeModel } from '../../src/common/model/interface';
 StockChart.Inject(CandleSeries, DateTime, Tooltip, RangeTooltip, Zoom, DateTimeCategory, LineSeries);
 
 describe('Stock Chart', () => {
@@ -611,6 +612,7 @@ describe('default stock chart', () => {
                 expect(chart.periodSelector.selectedIndex).toEqual(4);
                 done();
             };
+            chart.isChartDrag = true
             chart.enableSelector = false;
             chart.periods = [{ intervalType: 'Months', interval: 1, text: '1M' },
                 { intervalType: 'Months', interval: 3, text: '3M' },
@@ -633,7 +635,248 @@ describe('default stock chart', () => {
                 { text: 'All', selected: true }];
             chart.refresh();
         });
+        it('checked with title', (done: Function) => {
+            chart.loaded = (args: IStockChartEventArgs) => {
+                element = getElement('stock_stockChart_Title');
+                expect(element).not.toEqual(null);
+                done();
+            };
+            chart.series =  [{
+                xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
+                dataSource: chartData, type: 'Candle', yName: 'close'
+            }];
+            chart.title = 'Stock chart';
+            chart.titleStyle = { color: 'red', textAlignment: 'Far'};
+            chart.refresh();
+        });
+        it('checked with title and alignment as Near', (done: Function) => {
+            chart.loaded = (args: IStockChartEventArgs) => {
+                element = getElement('stock_stockChart_Title');
+                expect(element).not.toEqual(null);
+                done();
+            };
+            chart.series =  [{
+                xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
+                dataSource: chartData, type: 'Candle', yName: 'close'
+            }];
+            chart.title = 'Stock chart';
+            chart.themeStyle.chartTitleFont.color = 'red';
+            chart.titleStyle = { color: 'red', textAlignment: 'Near'};
+            chart.refresh();
+        });
+        it('checked with title with default color in HighContrast theme', (done: Function) => {
+            chart.loaded = (args: IStockChartEventArgs) => {
+                element = getElement('stock_stockChart_Title');
+                expect(element).not.toEqual(null);
+                chart.seriesXMax = chart.seriesXMax + chart.seriesXMax;
+                trigger.mousemoveEvent(element,0,0,100,100);
+                done();
+            };
+            chart.series =  [{
+                xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
+                dataSource: chartData, type: 'Candle', yName: 'close'
+            }];
+            chart.allowPan = true;
+            chart.mouseDownXPoint = 260;
+            chart.theme = 'HighContrast';
+            chart.title = 'Stock chart';
+            chart.titleStyle = {textAlignment: 'Near'};
+            chart.refresh();
+        });
+        it('checked with title with default color', (done: Function) => {
+            chart.loaded = (args: IStockChartEventArgs) => {
+                element = getElement('stock_stockChart_Title');
+                element.setAttribute('id','');
+                expect(element).not.toEqual(null);
+                trigger.mouseleavetEvent(element,100,100);
+                trigger.mousemoveEvent(element,0,0,100,100);
+                trigger.mouseleavetEvent(element,100,100);
+                trigger.clickEvent(element);
+                done();
+            };
+            chart.series =  [{
+                xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
+                dataSource: chartData, type: 'RangeArea', yName: 'close'
+            }];
+            chart.startMove = true;
+            chart.allowPan = true;
+            chart.findCurrentData(chartData,'x');
+            chart.tooltip = { enable: true, shared: true, header: '${point.x}', format: '${point.x}' };
+            chart.theme = 'HighContrast';
+            chart.title = 'Stock chart';
+            chart.titleStyle = {textAlignment: 'Near'};
+            chart.rangeChanged(23,25);
+            chart.onPanning = false;
+            window.dispatchEvent(new Event('resize'));
+            chart.refresh();
+        });
     });
+    describe('checking stock chart', () => {
+        let chart: StockChart;
+        let chartElement: Element = createElement('div', { id: 'stock' });
+        let trigger: MouseEvents = new MouseEvents();
+        let element: Element;
+        let prevent: Function = (): void => {
+        };
+        beforeAll(() => {
+            document.body.appendChild(chartElement);
+            chart = new StockChart({
+                primaryYAxis: {
+                    lineStyle: { color: 'transparent' },
+                    majorTickLines: { color: 'transparent', width: 0 },
+                    crosshairTooltip: { enable: false, fill: 'green' },
+                    labelPosition: 'Outside'
+                },
+                primaryXAxis: {
+                    majorGridLines: { color: 'transparent' },
+                    crosshairTooltip: { enable: false, fill: 'green' },
+                    valueType: 'DateTimeCategory',
+                    zoomFactor: 0.8, labelPosition: 'Outside'
+                },
+                series: [
+                    { dataSource: [{
+                            x: new Date( '2012-04-02' ),
+                            open : 85.9757,
+                            high : 90.6657,
+                            low : 85.7685,
+                            close : 90.5257,
+                            volume : 660187068
+                          },
+                          {
+                            x: new Date( '2012-04-09' ),
+                            open : 89.4471,
+                            high : 92,
+                            low : 86.2157,
+                            close : 86.4614,
+                            volume : 912634864
+                          },
+                          {
+                            x: new Date( '2012-04-16' ),
+                            open : 87.1514,
+                            high : 87.1514,
+                            low : 81.8543,
+                            close : 81.8543,
+                            volume : 1221746066
+                          },
+                          {
+                            x: new Date( '2012-04-23' ),
+                            open : 81.5157,
+                            high : 88.2857,
+                            low : 79.2857,
+                            close : 86.1428,
+                            volume : 965935749
+                          },
+                          {
+                            x: new Date( '2012-04-30' ),
+                            open : 85.4,
+                            high : 85.4857,
+                            low : 80.7385,
+                            close : 80.75,
+                            volume : 615249365
+                          },
+                          {
+                            x: new Date( '2012-05-07' ),
+                            open : 80.2143,
+                            high : 78.2685,
+                            low : 79.8185,
+                            close : 80.9585,
+                            volume : 541742692
+                          },],
+                        xName: 'x' }
+                ],
+                title: 'AAPL Stock Price',
+                crosshair: {
+                    enable: false,
+                    line: { width: 2, color: 'green' }
+                },
+                zoomSettings: {enableSelectionZooming: true}
+            });
+            chart.appendTo('#stock');
+        });
+        afterAll((): void => {
+            chart.destroy();
+            chartElement.remove();
+        });
+        it('Checking default label position category', (done: Function) => {
+            chart.loaded = (args: Object): void => {
+                element = document.getElementById('stock_stockChart_chartAxisLabels0');
+                expect(element.childNodes[1].firstChild.textContent === '1/30/2017' ||
+                element.childNodes[1].firstChild.textContent).toBe('4/16/2012');
+                done();
+            };
+            chart.refresh();
+        });
+        it('Checking point click and point move', (done: Function) => {
+            chart.loaded = (args: Object): void => {
+                setTimeout(() => {
+                    element = document.getElementById('stock_stockChart_chart_Series_0_Point_2');
+                    trigger.mousemovetEvent(element, 30, 30);
+                    trigger.mousemoveEvent(element,0,0,10,10);
+                    trigger.clickEvent(element);
+                    trigger.clickEvent(element);
+                    expect(element !== null).toBe(true);
+                    done();
+                }, 501);
+            };
+            chart.series[0].animation.duration = 300;
+            chart.pointMove = (args: IPointEventArgs) => { args.cancel = false; };
+            chart.refresh();
+        });
+        it('Checking point', (done: Function) => {
+            chart.loaded = (args: Object): void => {
+                element = document.getElementById('stock_stockChart_chartAxisLabels0');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.enablePeriodSelector  = false;
+            chart.enableSelector = false;
+            chart.findCurrentData(chartData,'x');
+            chart.refresh();
+        });
+        it('Checking stock chart events', (done: Function) => {
+            chart.loaded = (args: IStockChartEventArgs): void => {
+                chart.loaded = null;
+                args.stockChart.chart.trigger('pointClick', {
+                    series: null,
+                    point: null,
+                    seriesIndex: null, pointIndex: null,
+                    x: null, y: null, pageX: null, pageY: null
+                });
+                args.stockChart.chart.trigger('pointMove', {
+                    series: null,
+                    point: null,
+                    seriesIndex: null, pointIndex: null,
+                    x: null, y: null, pageX: null, pageY: null
+                });
+                element = document.getElementById('stock');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.refresh();
+        });
+        // it('Checking stock chart event export button', (done: Function) => {
+        //     chart.loaded = (args: IStockChartEventArgs): void => {
+        //         chart.loaded = null;
+        //         element = document.getElementById('stock');
+        //         expect(element !== null).toBe(true);
+        //         element = document.getElementById('stock_export');
+        //         if (element) {
+        //             trigger.clickEvent(element);
+        //         }
+        //         element = document.getElementById('e-dropdown-btn-item_176');
+        //         if (element) {
+        //             trigger.clickEvent(element);
+        //         }
+        //         element = document.getElementsByClassName('e-item')[0];
+        //         if (element) {
+        //             trigger.clickEvent(element);
+        //         }
+        //         done();
+        //     };
+        //     chart.enablePeriodSelector = true;
+        //     chart.refresh();
+        // });
+    })
 it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

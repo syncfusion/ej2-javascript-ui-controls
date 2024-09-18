@@ -24,7 +24,7 @@ export class FormFields {
     /**
      * @private
      */
-    public paddingDifferenceValue : number = 10;
+    public  paddingDifferenceValue : number = 10;
     private indicatorPaddingValue : number = 4;
     private isKeyDownCheck: boolean = false;
     private signatureFontSizeConstent: number = 1.35;
@@ -79,6 +79,9 @@ export class FormFields {
         }
         if (this.data) {
             this.formFieldsData = JSON.parse(this.data);
+            if (this.formFieldsData[0] === '[') {
+                this.formFieldsData = JSON.parse(this.formFieldsData);
+            }
             const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
             const canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageIndex);
             let count : number;
@@ -172,9 +175,9 @@ export class FormFields {
                                     elementValue = currentData['Text'];
                                 }
                                 const fieldProperties: any = {
-                                    bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'] ? currentData['ActualFieldName']  : currentData['FieldName'] , tooltip: currentData['ToolTip'],
+                                    bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'] ? currentData['ActualFieldName'] : currentData['FieldName'], tooltip: currentData['ToolTip'],
                                     value: elementValue, insertSpaces: currentData['InsertSpaces'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline, rotateAngle: rotateFieldAngle,
-                                    isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible  === 1 ? 'hidden' : 'visible', font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }, isTransparent: currentData.IsTransparent, customData: !isNullOrUndefined(currentData.CustomData) || !isNullOrUndefined(currentData.customData) ? (this.pdfViewerBase.clientSideRendering ? currentData.CustomData ? currentData.CustomData : currentData.customData : JSON.parse(currentData.CustomData)) : ""
+                                    isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible  === 1 ? 'hidden' : 'visible', font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }, isTransparent: currentData.IsTransparent, customData: !isNullOrUndefined(currentData.CustomData) || !isNullOrUndefined(currentData.customData) ? (this.pdfViewerBase.clientSideRendering ? currentData.CustomData ? currentData.CustomData : currentData.customData : JSON.parse(currentData.CustomData)) : ''
                                 };
                                 if (!currentData.id && this.pdfViewer.formFieldCollections[parseInt(i.toString(), 10)] && !isNullOrUndefined(currentData['ActualFieldName'])) {
                                     fieldProperties.id = this.pdfViewer.formFieldCollections[parseInt(i.toString(), 10)].id;
@@ -211,7 +214,7 @@ export class FormFields {
                                 }
                                 if (currentData.ActualFieldName == null && !isNullOrUndefined(currentData.FieldName) && this.formFieldsData.filter((item: any) => !isNullOrUndefined(item.FieldName) && item.FieldName.includes(currentData.FieldName.replace(/_\d$/, ''))).filter((value: any) => value.Name !== 'ink').length === 0) {
                                     this.renderExistingAnnnot(currentData, parseFloat(currentData['PageIndex']) + 1, null, isFieldRotated);
-                                    this.pdfViewerBase.signatureModule.storeSignatureData( pageIndex, currentData);
+                                    this.pdfViewerBase.signatureModule.storeSignatureData(pageIndex, currentData);
                                     this.isSignatureRendered = true;
                                     count++;
                                 }
@@ -815,7 +818,7 @@ export class FormFields {
                     }
                     if (currentData.CheckboxIndex && currentData.Selected) {
                         fieldDatas = {isSelected: currentData.CheckboxIndex, isReadOnly: currentData.IsReadonly,
-                            fieldValue: !isNullOrUndefined(currentData.Value) ? currentData.Value : ""};
+                            fieldValue: !isNullOrUndefined(currentData.Value) ? currentData.Value : ''};
                         datas[currentData.GroupName] = fieldDatas;
                     } else if (datas[currentData.GroupName] === undefined || datas[currentData.GroupName] === null) {
                         fieldDatas = {isSelected: currentData.Selected, isReadOnly: currentData.IsReadonly, fieldValue: currentData.Value};
@@ -1004,8 +1007,8 @@ export class FormFields {
                         }
                     }
                     let currentValue: string = value ? value : this.pdfViewerBase.signatureModule.outputString;
-                    if (signatureType === 'Path') {
-                        if (value && this.pdfViewerBase.signatureModule.outputString === "") {
+                    if (signatureType === 'Path' && !this.pdfViewer.drawing.isPasted) {
+                        if (value && this.pdfViewerBase.signatureModule.outputString === '') {
                             const parsenew: Object[] = JSON.parse(currentValue);
                             const newArray: Object[] = splitArrayCollection(parsenew);
                             currentValue = getPathString(newArray);
@@ -1099,7 +1102,7 @@ export class FormFields {
                         annot.id = signatureField.id + '_content';
                         const obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         if (signatureField.wrapper.children[1] && obj.wrapper.id === signatureField.wrapper.children[1].id) {
-                            if (!isNullOrUndefined(signatureField.wrapper.children[1]) && signatureField.wrapper.children[1].relativeMode === "Point") {
+                            if (!isNullOrUndefined(signatureField.wrapper.children[1]) && signatureField.wrapper.children[1].relativeMode === 'Point') {
                                 signatureField.wrapper.children.splice(1, 1);
                             }
                         }
@@ -1187,7 +1190,7 @@ export class FormFields {
             annot.id = signatureField.id + '_content';
             const obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
             if (signatureField.wrapper.children[1] && obj.wrapper.id === signatureField.wrapper.children[1].id) {
-                if (!isNullOrUndefined(signatureField.wrapper.children[1]) && signatureField.wrapper.children[1].relativeMode === "Point") {
+                if (!isNullOrUndefined(signatureField.wrapper.children[1]) && signatureField.wrapper.children[1].relativeMode === 'Point') {
                     signatureField.wrapper.children.splice(1, 1);
                 }
             }
@@ -1235,9 +1238,9 @@ export class FormFields {
                     const formFieldIndex: number = this.pdfViewer.formFieldCollection.findIndex((el: any) => el.id === formFieldsData[parseInt(i.toString(), 10)].FormField.id.split('_')[0]);
                     if (annot.shapeAnnotationType === 'SignatureText') {
                         formFieldsData[parseInt(i.toString(), 10)].FormField.signatureType = 'Text';
+                        (this.pdfViewer.nameTable as any)[`${key}`.split('_')[0]].signatureType = 'Text';
                         this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField.signatureType = 'Text';
                         (this.pdfViewer.nameTable as any)[`${key}`].signatureType = 'Text';
-                        (this.pdfViewer.nameTable as any)[`${key}`.split('_')[0]].signatureType = 'Text';
                         formFieldsData[parseInt(i.toString(), 10)].FormField.fontFamily = annot.fontFamily === 'TimesRoman' ? 'Times New Roman' : annot.fontFamily;
                         this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField.fontFamily = annot.fontFamily;
                         (this.pdfViewer.nameTable as any)[`${key}`].fontFamily = annot.fontFamily;
@@ -1292,6 +1295,9 @@ export class FormFields {
                     this.pdfViewer.formDesigner.updateFormFieldCollections(formFieldsData[parseInt(i.toString(), 10)].FormField);
                     this.pdfViewer.formDesigner.updateFormFieldPropertiesChanges('formFieldPropertiesChange', formFieldsData[parseInt(i.toString(), 10)].FormField, true, false, false,
                                                                                  false, false, false, false, false, false, false, false, false, false, false, false, false,  '', formFieldsData[parseInt(i.toString(), 10)].FormField.value);
+                }
+                if (formFieldsData[parseInt(i.toString(), 10)].Key === annot.id) {
+                    formFieldsData[parseInt(i.toString(), 10)].FormField.signatureBound = annot.bounds;
                 }
             }
         }
@@ -2137,7 +2143,10 @@ export class FormFields {
         this.isSignatureField = false;
         const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
         if (data) {
-            const formFieldsData: any = JSON.parse(data);
+            let formFieldsData: any = JSON.parse(data);
+            if (!formFieldsData[0].ActualFieldName) {
+                formFieldsData = JSON.parse(formFieldsData);
+            }
             for (let m: number = 0; m < formFieldsData.length; m++) {
                 const currentData: any = formFieldsData[parseInt(m.toString(), 10)];
                 if (currentData.ActualFieldName === null && count && (currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && (this.pdfViewer.formDesigner ? ((currentData.FieldName.split('_')[0] ) === (signData.ActualFieldName) || (currentData.FieldName.split('_')[0]) === (signData.FieldName)) : ((currentData.FieldName.split('_')[0] === (signData.FieldName )) && !isNullOrUndefined(signData.ActualFieldName)) && currentData.Value && currentData.Value !== '')) {
@@ -2342,7 +2351,10 @@ export class FormFields {
                 this.updateSignatureDataInSession(annot, annot.id);
             }
             const canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
-            this.pdfViewer.renderDrawing(canvass as any, currentPage);
+            const obj: any = this.pdfViewer.formFieldCollection.filter((field: any) => { return annot.id.split('_')[0] === field.id; });
+            if (obj.length > 0 && obj[0].visibility !== 'hidden') {
+                this.pdfViewer.renderDrawing(canvass as any, currentPage);
+            }
         }
     }
 

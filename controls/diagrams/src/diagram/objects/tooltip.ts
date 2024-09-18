@@ -1,6 +1,5 @@
 import { Property, ChildProperty, isBlazor, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Tooltip, AnimationModel, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
-import { BlazorTooltip } from '../blazor-tooltip/blazor-Tooltip';
 import { TooltipRelativeMode, TooltipMode } from '../enum/enum';
 import { Diagram } from '../diagram';
 import { NodeModel } from './node-model';
@@ -115,28 +114,22 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
 /**
  * initTooltip method \
  *
- * @returns { Tooltip | BlazorTooltip } initTooltip method .\
+ * @returns { Tooltip } initTooltip method .\
  * @param {Diagram} diagram - provide the points value.
  *
  * @private
  */
-export function initTooltip(diagram: Diagram): Tooltip | BlazorTooltip {
-    let tooltip: Tooltip | BlazorTooltip;
-    if (!isBlazor()) {
-        let tooltipOption: Tooltip = new Tooltip;
-        tooltipOption = updateTooltipContent(diagram.tooltip, tooltipOption) as Tooltip;
-        tooltip = new Tooltip(tooltipOption);
-        tooltip.beforeCollision = beforeCollision;
-        tooltip.beforeOpen = beforeOpen;
-        tooltip.cssClass = 'e-diagram-tooltip';
-        tooltip.opensOn = 'custom';
-        tooltip.appendTo('#' + diagram.element.id);
-        tooltip.close();
-    } else {
-        tooltip = new BlazorTooltip(diagram);
-        tooltip = updateTooltipContent(diagram.tooltip, tooltip)as BlazorTooltip;
-    }
-    return tooltip ;
+export function initTooltip(diagram: Diagram): Tooltip {
+    let tooltipOption: Tooltip = new Tooltip;
+    tooltipOption = updateTooltipContent(diagram.tooltip, tooltipOption) as Tooltip;
+    const tooltip: Tooltip = new Tooltip(tooltipOption);
+    tooltip.beforeCollision = beforeCollision;
+    tooltip.beforeOpen = beforeOpen;
+    tooltip.cssClass = 'e-diagram-tooltip';
+    tooltip.opensOn = 'custom';
+    tooltip.appendTo('#' + diagram.element.id);
+    tooltip.close();
+    return tooltip;
 }
 
 /**
@@ -187,13 +180,13 @@ export function updateTooltip(diagram: Diagram, node?: NodeModel | ConnectorMode
 /**
  * updateTooltipContent method \
  *
- * @returns { Tooltip | BlazorTooltip } updateTooltipContent method .\
+ * @returns { Tooltip } updateTooltipContent method .\
  * @param {DiagramTooltipModel} tooltip - provide the points value.
- * @param {Tooltip | BlazorTooltip} tooltipObject - provide the points value.
+ * @param {Tooltip} tooltipObject - provide the points value.
  *
  * @private
  */
-function updateTooltipContent(tooltip: DiagramTooltipModel, tooltipObject: Tooltip | BlazorTooltip): Tooltip | BlazorTooltip {
+function updateTooltipContent(tooltip: DiagramTooltipModel, tooltipObject: Tooltip): Tooltip {
     if (tooltip.content) {
         tooltipObject.content = tooltip.content;
         //Task 834121: Content-Security-Policy support for diagram

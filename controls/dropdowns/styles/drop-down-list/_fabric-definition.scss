@@ -58,67 +58,11 @@ $ddl-bigger-small-list-font-size: 14px !default;
     border-right-width: 0;
   }
 
-  .e-bigger #{&}.e-popup.e-ddl-device-filter {
-    margin-top: 0;
-  }
-
-  .e-bigger .e-ddl#{&}.e-popup {
-    @at-root {
-      #{if(&, '&', '*')} .e-list-item,
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
-        font-size: 15px;
-        line-height: 45px;
-        padding-left: 0;
-        text-indent: 16px;
-      }
-
-      #{if(&, '&', '*')} .e-dd-group .e-list-item {
-        padding-left: 4px;
-      }
-
-      #{if(&, '&', '*')} .e-input-group {
-        padding: 4px 0;
-      }
-
-      #{if(&, '&', '*')} .e-input-group input,
-      #{if(&, '&', '*')} .e-input-group input.e-input {
-        height: 38px;
-      }
-    }
-  }
-
   .e-input-group:not(.e-disabled) .e-control#{&}.e-dropdownlist ~ .e-ddl-icon:active,
   .e-input-group:not(.e-disabled) .e-control#{&}.e-dropdownlist ~ .e-ddl-icon:hover,
   .e-ddl#{&}.e-popup .e-input-group:not(.e-disabled) .e-clear-icon:active,
   .e-ddl#{&}.e-popup .e-input-group:not(.e-disabled) .e-clear-icon:hover {
     background: transparent;
     color: $ddl-list-icon-color;
-  }
-
-  .e-bigger.e-small .e-ddl#{&}.e-popup {
-    @at-root {
-      #{if(&, '&', '*')} .e-list-item,
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
-        font-size: 14px;
-        line-height: 40px;
-        padding-left: 0;
-        text-indent: 16px;
-      }
-
-      #{if(&, '&', '*')} .e-dd-group .e-list-item {
-        padding-left: 4px;
-      }
-
-      #{if(&, '&', '*')} .e-input-group {
-        padding: 0;
-      }
-
-      #{if(&, '&', '*')} .e-input-group input,
-      #{if(&, '&', '*')} .e-input-group input.e-input {
-        height: 34px;
-      }
-    }
   }
 }

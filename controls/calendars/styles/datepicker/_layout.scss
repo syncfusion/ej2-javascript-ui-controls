@@ -13,15 +13,6 @@
     }
   }
 
-  #{&}.e-datepicker.e-bigger,
-  .e-bigger #{&}.e-datepicker {
-    #{if(&, '&', '*')}.e-popup-wrapper {
-      @if $skin-name == 'tailwind' {
-        margin-top: $datepicker-popup-bigger-margin-top;
-      }
-    }
-  }
-
   #{&}.e-datepicker {
     #{if(&, '&', '*')} .e-calendar {
 
@@ -70,6 +61,9 @@
         font-weight: $modal-year-font-weight;
         line-height: $modal-year-line-height;
         margin: 0;
+        @if $skin-name == 'bootstrap5.3' {
+          color: $modal-year-font-color;
+        }
       }
     }
 
@@ -79,6 +73,9 @@
       font-weight: $modal-month-font-weight;
       line-height: $modal-month-line-height;
       margin: 0;
+      @if $skin-name == 'bootstrap5.3' {
+        color: $modal-year-font-color;
+      }
     }
   }
 }
@@ -116,12 +113,6 @@
 .e-content-placeholder.e-datepicker.e-placeholder-datepicker {
   background-size: 250px 33px;
   min-height: 33px;
-}
-
-.e-bigger .e-content-placeholder.e-datepicker.e-placeholder-datepicker,
-.e-bigger.e-content-placeholder.e-datepicker.e-placeholder-datepicker {
-  background-size: 250px 40px;
-  min-height: 40px;
 }
 
 @media screen and (orientation: landscape) {
@@ -176,7 +167,7 @@
       #{if(&, '&', '*')} .e-today.e-flat.e-primary {
         color: $modal-today-text-color;
         float: $modal-portrait-today-float-style;
-        @if $skin-name == 'bootstrap5' {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
           background-color: transparent;
         }
         @if $skin-name == 'fluent2' {
@@ -213,12 +204,14 @@
         line-height: $modal-month-header-line-height;
 
         #{if(&, '&', '*')} .e-title {
+          @if $skin-name != 'bootstrap5.3' {
+            position: $modal-portrait-header-title-position;
+            line-height: $modal-month-header-title-line-height;
+          }
           margin-left: $modal-portrait-header-title-margin;
-          position: $modal-portrait-header-title-position;
           text-align: $modal-portrait-header-title-text;
           vertical-align: $modal-portrait-month-header-vertical-align;
           width: $modal-portrait-header-title-width;
-          line-height: $modal-month-header-title-line-height;
           @media (min-device-width: 768px) {
             font-size: $modal-tablet-font-size;
           }
@@ -230,11 +223,23 @@
         #{if(&, '&', '*')} .e-prev {
           margin-right: $modal-portrait-prev-icon-margin;
           vertical-align: inherit;
-          height: 35px;
-          width: 35px;
+          @if $skin-name == 'bootstrap5.3' {
+            height: 46px;
+            width: 46px;
+          }
+          @else {
+            height: 35px;
+            width: 35px;
+          }
           @media (min-device-width: 768px) {
-            height: 55px;
-            width: 55px;
+            @if $skin-name == 'bootstrap5.3' {
+              height: 70px;
+              width: 70px;
+            }
+            @else {
+              height: 55px;
+              width: 55px;
+            }
           }
 
           #{if(&, '&', '*')} .e-icons {
@@ -248,11 +253,23 @@
         #{if(&, '&', '*')} .e-next {
           margin-right: $modal-portrait-next-icon-margin;
           vertical-align: inherit;
-          height: 35px;
-          width:35px;
+          @if $skin-name == 'bootstrap5.3' {
+            height: 46px;
+            width: 46px;
+          }
+          @else {
+            height: 35px;
+            width: 35px;
+          }
           @media (min-device-width: 768px) {
-            height: 55px;
-            width: 55px;
+            @if $skin-name == 'bootstrap5.3' {
+              height: 70px;
+              width: 70px;
+            }
+            @else {
+              height: 55px;
+              width: 55px;
+            }
           }
 
           #{if(&, '&', '*')} .e-icons {

@@ -1,0 +1,518 @@
+@mixin size($height, $width) {
+  height: $height;
+  width: $width;
+}
+
+@mixin alignment($size, $pos, $type) {
+  @if $type == 'horizontal' {
+    height: $size;
+    top: $pos;
+  }
+  @else {
+    width: $size;
+    left: $pos;
+  }
+}
+
+@include export-module('slider-bigger') {
+  .e-bigger {
+    @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+      .e-slider-tooltip.e-tooltip-wrap.e-popup {
+        .e-tip-content {
+          padding: $slider-tooltip-padding;
+        }
+      }
+    }
+    @else {
+      &.e-slider-tooltip.e-tooltip-wrap.e-popup {
+        .e-tip-content {
+          font-size: 11px;
+          line-height: 16px;
+        }
+      }
+    }
+  }
+    
+  .e-bigger .e-control-wrapper.e-slider-container,
+  .e-control-wrapper.e-slider-container.e-bigger {
+    @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+      .e-slider {
+        .e-handle {
+          @include size($slider-handle-mobile-height, $slider-handle-mobile-width);
+        }
+      }
+
+      @if ($skin-name == 'FluentUI') {
+        .e-slider-button {
+          @include size(20px, 20px);
+        }
+
+        &.e-horizontal {
+          .e-first-button,
+          .e-second-button {
+            margin-top: $slider-touch-btn-center-align;
+
+            .e-button-icon::before {
+              font-size: 17px;
+            }
+          }
+        }
+
+        &.e-vertical {
+          .e-first-button,
+          .e-second-button {
+            margin-right: $slider-touch-btn-center-align;
+
+            .e-button-icon::before {
+              font-size: 17px;
+            }
+          }
+        }
+      }
+
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
+        .e-slider-button {
+          @include size(18px, 18px);
+        }
+
+        &.e-vertical {
+          &.e-slider-btn {
+            @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+              padding: 36px 0;
+            }
+            @else {
+              padding: 34px 0;
+            }
+          }
+
+          .e-first-button,
+          .e-second-button {
+            @if ($skin-name == 'bootstrap5' or $skin-name == 'Material3' or $skin-name == 'bootstrap5.3') {
+              margin-right: -12px;
+            }
+            @else {
+              margin-right: -9px;
+            }
+          }
+
+          .e-slider {
+            .e-slider-track {
+              @include alignment(8px, calc(50% - 4px), 'vertical');
+              @if $skin-name == 'fluent2' {
+                border-radius: 8px;
+              }
+            }
+
+            @if $skin-name == 'fluent2' {
+              &.e-scale {
+                margin-top: $slider-touch-center-align;
+              }
+              &.e-v-scale {
+                left: calc(50% - 14px);
+              }
+            }
+
+            .e-range {
+              @include alignment(8px, calc(50% - 4px), 'vertical');
+            }
+          }
+        }
+
+        &.e-horizontal .e-slider {
+          .e-limits {
+            @include alignment(8px, calc(50% - 4px), 'horizontal');
+            @if ($skin-name == 'bootstrap5' and $skin-name == 'FluentUI' or $skin-name == 'bootstrap5.3') {
+              border-radius: $slider-range-border-radius;
+            }
+          }
+        }
+
+        &.e-vertical .e-slider {
+          .e-limits {
+            @include alignment(8px, calc(50% - 4px), 'vertical');
+            @if ($skin-name == 'bootstrap5' and $skin-name == 'FluentUI' or $skin-name == 'bootstrap5.3') {
+              border-radius: $slider-range-border-radius;
+            }
+          }
+        }
+      }
+
+      @if ($skin-name == 'bootstrap5' or $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3') {
+
+        &.e-horizontal,
+        &.e-vertical {
+          .e-slider-button.e-first-button,
+          .e-slider-button.e-second-button {
+            border-radius: 12px;
+            @include size(24px, 24px);
+            @if $skin-name == 'Material3' {
+              padding: 0;
+            }
+
+            .e-button-icon::before {
+              font-size: 14px;
+            }
+          }
+        }
+
+        &.e-horizontal {
+
+          .e-slider-button.e-first-button,
+          .e-slider-button.e-second-button {
+            margin-top: -12px;
+          }
+
+          .e-tick-both {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  @include alignment(24px, -14px, 'horizontal');
+                }
+
+                .e-large {
+                  @if $skin-name == 'fluent2' {
+                    @include alignment(32px, -6px, 'horizontal');
+                  }
+                  @else {
+                    @include alignment(32px, -10px, 'horizontal');
+                  }
+                }
+              }
+            }
+          }
+
+          .e-tick-before {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  @include alignment($tick-after-mobile-height, $tick-before-mobile-top, 'horizontal');
+                }
+
+                .e-large {
+                  @include alignment($largetick-before-mobile-height, $tick-before-mobile-top, 'horizontal');
+                }
+              }
+            }
+          }
+
+          .e-tick-after {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  @include alignment($tick-after-mobile-height, $tick-after-mobile-top, 'horizontal');
+                }
+
+                .e-large {
+                  @include alignment($largetick-before-mobile-height, $largetick-after-mobile-top, 'horizontal');
+                }
+              }
+            }
+          }
+        }
+
+        &.e-vertical {
+
+          .e-tick-both {
+            &.e-scale {
+              .e-tick {
+                @include alignment(24px, 2px, 'vertical');
+              }
+
+              .e-large {
+                @include alignment(32px, -2px, 'vertical');
+              }
+            }
+          }
+
+          .e-tick-before {
+
+            &.e-scale {
+              &.e-v-scale {
+                .e-tick {
+                  @include alignment($tick-after-mobile-height, $tick-before-mobile-left, 'vertical');
+                }
+
+                .e-large {
+                  @include alignment($largetick-before-mobile-height, $largetick-before-mobile-left, 'vertical');
+                }
+              }
+            }
+          }
+
+          .e-tick-after {
+
+            &.e-scale {
+              &.e-v-scale {
+                .e-tick {
+                  @include alignment($tick-after-mobile-height, $tick-after-mobile-left, 'vertical');
+                }
+
+                .e-large {
+                  @include alignment($largetick-before-mobile-height, $tick-after-mobile-left, 'vertical');
+                }
+              }
+            }
+          }
+        }
+      }
+
+      @if ($skin-name == 'tailwind') {
+        .e-scale.e-h-scale {
+          &.e-tick-after {
+            top: 7px;
+          }
+        }
+
+        &.e-horizontal,
+        &.e-vertical {
+          .e-slider-button.e-first-button,
+          .e-slider-button.e-second-button {
+            border-radius: 12px;
+            @include size(24px, 24px);
+
+            .e-button-icon::before {
+              font-size: 22px;
+            }
+          }
+        }
+
+        &.e-horizontal {
+
+          &.e-scale-both .e-range,
+          .e-limits {
+            height: 6px;
+          }
+
+          .e-slider-track {
+            @if ($skin-name == 'bootstrap5.3') {
+              border-radius: 4px;
+            }
+            @else {
+              border-radius: 6px;
+            }
+          }
+
+          .e-first-button,
+          .e-second-button {
+            margin-top: -14px;
+          }
+
+          .e-tick-both {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  @include alignment(22px, -19px, 'horizontal');
+                }
+
+                .e-large {
+                  @include alignment(30px, -16px, 'horizontal');
+                }
+              }
+            }
+          }
+
+          .e-tick-before,
+          .e-tick-after {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  height: $tick-after-mobile-height;
+                }
+
+                .e-large {
+                  height: $largetick-before-mobile-height;
+                }
+              }
+            }
+          }
+
+          &.e-scale-both {
+            .e-scale {
+              top: 17px;
+            }
+          }
+
+          &.e-slider-btn {
+            padding: $slider-button-horizon-mobile-padding;
+          }
+        }
+
+        &.e-vertical {
+
+          &.e-scale-both .e-range,
+          .e-range {
+            width: 6px;
+          }
+
+          .e-slider-track {
+            @if ($skin-name == 'bootstrap5.3') {
+              border-radius: 4px;
+            }
+            @else {
+              border-radius: 6px;
+            }
+          }
+
+          &.e-slider-btn {
+            padding: $slider-button-vertical-mobile-padding;
+          }
+
+          .e-slider-button {
+            margin-right: -15px;
+          }
+
+          .e-tick-both {
+            &.e-scale {
+              &.e-v-scale {
+                .e-tick {
+                  @include alignment(22px, 4px, 'vertical');
+                }
+
+                .e-large {
+                  @include alignment(30px, -0, 'vertical');
+                }
+              }
+            }
+          }
+
+          .e-tick-before,
+          .e-tick-after {
+
+            &.e-scale {
+              &.e-v-scale {
+                .e-tick {
+                  width: $tick-after-mobile-height;
+                }
+
+                .e-large {
+                  width: $largetick-before-mobile-height;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      &.e-horizontal {
+        @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+          &.e-slider-btn {
+            padding: 0 36px;
+          }
+        }
+        @if ($skin-name == 'bootstrap4') {
+          &.e-slider-btn {
+            padding: 0 34px;
+          }
+
+          .e-slider-button {
+            @include size($slider-handle-mobile-buttons-height, $slider-handle-mobile-buttons-width);
+            margin-top: -9px;
+          }
+        }
+
+        @if ($skin-name == 'tailwind') {
+          .e-slider-track,
+          .e-range {
+            height: 6px;
+          }
+        }
+
+        .e-slider {
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3'  or $skin-name == 'fluent2') {
+            .e-slider-track,
+            .e-range {
+              @include alignment(8px, calc(50% - 4px), 'horizontal');
+            }
+          }
+
+          .e-handle {
+            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
+              margin-left: $slider-handle-mobile-margin-left;
+              top: $slider-handle-mobile-handle-top;
+            }
+            @else {
+              margin-left: -9px;
+              top: calc(50% - 9px);
+            }
+          }
+        }
+
+        &.e-scale-both {
+          .e-slider {
+            .e-handle {
+              @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+                margin-left: -9px;
+                top: calc(50% - 8px);
+              }
+            }
+          }
+        }
+      }
+
+      &.e-vertical {
+        .e-slider {
+          .e-handle {
+            @if ($skin-name == 'tailwind') {
+              left: calc(50% - 5px);
+            }
+            @else if $skin-name == 'Material3' {
+              left: calc(50% - 14px);
+            }
+            @else {
+              left: calc(50% - 9px);
+            }
+            margin-bottom: -9px;
+            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
+              left: calc(50% - 8px);
+              margin-bottom: -8px;
+            }
+          }
+
+          @if ($skin-name == 'tailwind') {
+            .e-range {
+              width: 6px;
+            }
+          }
+        }
+
+        &.e-scale-both {
+          .e-slider {
+            .e-handle {
+              @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+                left: calc(50% - 10px);
+                margin-bottom: -9px;
+              }
+              @if $skin-name == 'bootstrap4' {
+                left: calc(50% - 8px);
+                margin-bottom: -8px;
+              }
+            }
+          }
+        }
+
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+          .e-slider-track,
+          .e-range {
+            width: 6px;
+          }
+        }
+      }
+
+      &.e-rtl {
+        &.e-horizontal {
+          .e-slider {
+            .e-handle {
+              @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+                margin: 0 -8px 0 0;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .e-scale .e-tick .e-tick-value {
+      font-size: $slider-mobile-scale-font-size;
+    }
+  }
+}

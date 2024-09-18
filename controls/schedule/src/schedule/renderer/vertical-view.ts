@@ -684,19 +684,13 @@ export class VerticalView extends ViewBase implements IRenderer {
         const rows: Element[] = [];
         const tr: Element = createElement('tr');
         const td: Element = createElement('td', { attrs: { 'aria-selected': 'false' } });
-        let existingGroupIndices: Set<number> = new Set();
-        if (this.parent.virtualScrollModule && this.parent.activeViewOptions.group.resources.length > 0 &&
-            this.parent.virtualScrollModule.existingDataCollection.length > 0
-        ) {
-            existingGroupIndices = new Set(this.parent.virtualScrollModule.existingDataCollection.map((data: TdData) => data.groupIndex));
-        }
-
+        const existingGroupIndices: number[] = this.getGroupIndices();
         const handler: CallbackFunction = (r: TimeSlotData): TimeSlotData => {
             const ntr: Element = tr.cloneNode() as Element;
             for (const tdData of this.colLevels[this.colLevels.length - 1]) {
                 let isAllowTdCreation: boolean = true;
                 if (this.parent.virtualScrollModule && this.parent.activeViewOptions.group.resources.length > 0) {
-                    if (existingGroupIndices.has(tdData.groupIndex)) {
+                    if (existingGroupIndices.indexOf(tdData.groupIndex) > -1) {
                         isAllowTdCreation = false;
                     }
                 }

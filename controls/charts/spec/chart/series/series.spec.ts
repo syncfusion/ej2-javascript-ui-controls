@@ -902,6 +902,8 @@ describe('Chart Control', () => {
                 done();
             };
             chart.loaded = loaded;
+            chart.series[0].addPoint([{ y: 18, x: 1 }],0)
+            chart.series[0].removePoint(7,0);
             chart.series[0].marker.dataLabel.labelIntersectAction = 'None';
             chart.series[1].marker.dataLabel.labelIntersectAction = 'None';
             chart.refresh();

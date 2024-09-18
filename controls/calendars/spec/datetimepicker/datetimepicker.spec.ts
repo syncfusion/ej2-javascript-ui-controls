@@ -4337,5 +4337,659 @@ describe('EJ2-59142', () => {
         expect(datetimepicker.element.selectionEnd === 10).toBe(true);
     });
 });
+describe('Masked date time code coverage improvements ', () => {
+    let mouseEventArgs: any = {
+        preventDefault: function () { },
+        stopPropagation: (): void => { /** NO Code */ },
+        target: null,
+        e: {
+            key: "ARROWLEFT"
+        },
+    };
+    let date: DateTimePicker;
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'date' });
+        document.body.appendChild(ele);
+
+    });
+    afterEach(() => {
+        if (date) {
+            date.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Create Mask', () => {
+        datetimepicker = new DateTimePicker({
+            value: new Date('5/6/2017 10:30 AM'),
+            enableMask: true,
+        });
+        let mask : MaskedDateTime = new MaskedDateTime(datetimepicker);
+        (<any>mask).parent = datetimepicker;
+        datetimepicker.appendTo('#date');
+        (<any>mask).getCUltureMaskFormat();
+        (<any>mask).validCharacterCheck();
+        (<any>mask).setDynamicValue();
+        (<any>mask).isPersist();
+        (<any>mask).differenceCheck();
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        (<any>mask).formatCheck();
+        (<any>mask).maskInputHandler();
+        (<any>mask).navigateSelection();
+        (<any>mask).zeroCheck();
+        (<any>mask).handleDeletion();
+        (<any>mask).dateAlteration();
+        (<any>mask).getCulturedFormat();
+        (<any>mask).clearHandler();
+        (<any>mask).updateValue();
+        datetimepicker.createMask();
+        (<any>mask).destroy();
+        datetimepicker.destroy();
+    });
+    it('maskKeydownHandler', () => {
+        datetimepicker = new DateTimePicker({
+            value: new Date('5/6/2017 10:30 AM'),
+            enableMask: true,
+        });
+        let mask : MaskedDateTime = new MaskedDateTime(datetimepicker);
+        (<any>mask).parent = datetimepicker;
+        datetimepicker.appendTo('#date');
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        mouseEventArgs.e.key = 'Delete';
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        mouseEventArgs.e.key = "ArrowUp";
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        datetimepicker.destroy();
+    });
+    it('setSelection', () => {
+        datetimepicker = new DateTimePicker({
+            value: new Date('5/6/2017 10:30 AM'),
+            enableMask: true,
+        });
+        let mask : MaskedDateTime = new MaskedDateTime(datetimepicker);
+        (<any>mask).parent = datetimepicker;
+        datetimepicker.appendTo('#date');
+        datetimepicker.setSelection();
+        datetimepicker.destroy();
+    });
+});
+describe('Time Restriction ', () => {
+    let mouseEventArgs: any = {
+        preventDefault: function () { },
+        stopPropagation: (): void => { /** NO Code */ },
+        target: null
+    };
+    let date: DateTimePicker;
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'date' });
+        document.body.appendChild(ele);
+
+    });
+    afterEach(() => {
+        if (date) {
+            date.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('minTime and maxTime lesser then min and max', () => {
+        datetimepicker = new DateTimePicker({
+            min: new Date('5/4/2017 10:00 AM'),
+            max: new Date('5/17/2017 04:00 PM'),
+            value: new Date('5/6/2017 10:30 AM'),
+            minTime: new Date('5/4/2017 11:00 AM'),
+            maxTime: new Date('5/17/2017 03:00 PM'),
+        });
+        datetimepicker.appendTo('#date');
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+    });
+    it('minTime and maxTime greater then min and max', () => {
+        datetimepicker = new DateTimePicker({
+            min: new Date('5/4/2017 10:00 AM'),
+            max: new Date('5/17/2017 04:00 PM'),
+            value: new Date('5/6/2017 08:30 AM'),
+            minTime: new Date('5/4/2017 09:00 AM'),
+            maxTime: new Date('5/17/2017 05:00 PM'),
+        });
+        datetimepicker.appendTo('#date');
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+    });
+    it('minTime greater then min', () => {
+        datetimepicker = new DateTimePicker({
+            min: new Date('5/4/2017 10:00 AM'),
+            max: new Date('5/17/2017 04:00 PM'),
+            value: new Date('5/6/2017 08:30 AM'),
+            minTime: new Date('5/4/2017 09:00 AM'),
+            maxTime: new Date('5/17/2017 03:00 PM'),
+        });
+        datetimepicker.appendTo('#date');
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+    });
+    it('minTime less then min', () => {
+        datetimepicker = new DateTimePicker({
+            min: new Date('5/4/2017 10:00 AM'),
+            max: new Date('5/17/2017 04:00 PM'),
+            value: new Date('5/6/2017 09:30 AM'),
+            minTime: new Date('5/4/2017 11:00 AM'),
+            maxTime: new Date('5/17/2017 03:00 PM'),
+        });
+        datetimepicker.appendTo('#date');
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+    });
+    it('maxTime greater then max', () => {
+        datetimepicker = new DateTimePicker({
+            min: new Date('5/4/2017 10:00 AM'),
+            max: new Date('5/17/2017 04:00 PM'),
+            value: new Date('5/6/2017 06:30 PM'),
+            minTime: new Date('5/4/2017 09:00 AM'),
+            maxTime: new Date('5/17/2017 05:00 PM'),
+        });
+        datetimepicker.appendTo('#date');
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+    });
+    it('maxTime less then max', () => {
+        datetimepicker = new DateTimePicker({
+            min: new Date('5/4/2017 10:00 AM'),
+            max: new Date('5/17/2017 04:00 PM'),
+            value: new Date('5/6/2017 06:30 PM'),
+            minTime: new Date('5/4/2017 11:00 AM'),
+            maxTime: new Date('5/17/2017 03:00 PM'),
+        });
+        datetimepicker.appendTo('#date');
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+    });
+});
+describe('Time Restriction with StrictMode', () => {
+    let mouseEventArgs: any = {
+        preventDefault: function () { },
+        stopPropagation: (): void => { /** NO Code */ },
+        target: null
+    };
+    let date: DateTimePicker;
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'date' });
+        document.body.appendChild(ele);
+
+    });
+    afterEach(() => {
+        if (date) {
+            date.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('input value time lesser than minTime', () => {
+        datetimepicker = new DateTimePicker({
+            min: new Date('5/4/2017 10:00 AM'),
+            max: new Date('5/17/2017 04:00 PM'),
+            value: new Date('5/6/2017 10:30 AM'),
+            minTime: new Date('5/4/2017 11:00 AM'),
+            maxTime: new Date('5/17/2017 03:00 PM'),
+            strictMode: true,
+        });
+        datetimepicker.appendTo('#date');
+        expect(datetimepicker.element.value).toBe('5/6/2017 11:00 AM');
+    });
+    it('input value time greater than minTime', () => {
+        datetimepicker = new DateTimePicker({
+            min: new Date('5/4/2017 10:00 AM'),
+            max: new Date('5/17/2017 04:00 PM'),
+            value: new Date('5/6/2017 04:30 PM'),
+            minTime: new Date('5/4/2017 11:00 AM'),
+            maxTime: new Date('5/17/2017 03:00 PM'),
+            strictMode: true,
+        });
+        datetimepicker.appendTo('#date');
+        expect(datetimepicker.element.value).toBe('5/6/2017 3:00 PM');
+    });
+});
+describe('Null or undefined value testing', () => {
+    let datetimepickerObj : any;
+    beforeEach(()=>{
+        let ele : HTMLElement = createElement('div', { id : 'datetimepicker'});
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+    it('allowEdit', () => {
+        datetimepickerObj = new DateTimePicker({
+            allowEdit: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.allowEdit).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            allowEdit: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.allowEdit).toBe(true);
+        datetimepickerObj.destroy();
+    });
+    it('calendarMode', () => {
+        datetimepickerObj = new DateTimePicker({
+            calendarMode: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.calendarMode).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            calendarMode: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.calendarMode).toBe('Gregorian');
+        datetimepickerObj.destroy();
+    });
+    it('cssClass', () => {
+        datetimepickerObj = new DateTimePicker({
+            cssClass: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.cssClass).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            cssClass: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.cssClass).toBe(null);
+        datetimepickerObj.destroy();
+    });
+    it('dayHeaderFormat', () => {
+        datetimepickerObj = new DateTimePicker({
+            dayHeaderFormat: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.dayHeaderFormat).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            dayHeaderFormat: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.dayHeaderFormat).toBe('Short');
+        datetimepickerObj.destroy();
+    });
+    it('depth', () => {
+        datetimepickerObj = new DateTimePicker({
+            depth: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.depth).toBe('Month');
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            depth: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.depth).toBe('Month');
+        datetimepickerObj.destroy();
+    });
+    it('enableMask', () => {
+        datetimepickerObj = new DateTimePicker({
+            enableMask: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.enableMask).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            enableMask: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.enableMask).toBe(false);
+        datetimepickerObj.destroy();
+    });
+    it('enablePersistence', () => {
+        datetimepickerObj = new DateTimePicker({
+            enablePersistence: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.enablePersistence).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            enablePersistence: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.enablePersistence).toBe(false);
+        datetimepickerObj.destroy();
+    });
+    it('enableRtl', () => {
+        datetimepickerObj = new DateTimePicker({
+            enableRtl: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.enableRtl).toBe(false);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            enableRtl: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.enableRtl).toBe(false);
+        datetimepickerObj.destroy();
+    });
+    it('enabled', () => {
+        datetimepickerObj = new DateTimePicker({
+            enabled: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.enabled).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            enabled: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.enabled).toBe(true);
+        datetimepickerObj.destroy();
+    });
+    it('firstDayOfWeek', () => {
+        datetimepickerObj = new DateTimePicker({
+            firstDayOfWeek: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.firstDayOfWeek).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            firstDayOfWeek: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.firstDayOfWeek).toBe(null);
+        datetimepickerObj.destroy();
+    });
+    it('floatLabelType', () => {
+        datetimepickerObj = new DateTimePicker({
+            floatLabelType: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.floatLabelType).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            floatLabelType: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.floatLabelType).toBe('Never');
+        datetimepickerObj.destroy();
+    });
+    it('format', () => {
+        datetimepickerObj = new DateTimePicker({
+            format: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.format).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            format: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.format).toBe(null);
+        datetimepickerObj.destroy();
+    });
+    it('fullScreenMode', () => {
+        datetimepickerObj = new DateTimePicker({
+            fullScreenMode: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.fullScreenMode).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            fullScreenMode: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.fullScreenMode).toBe(false);
+        datetimepickerObj.destroy();
+    });
+    it('htmlAttributes', () => {
+        datetimepickerObj = new DateTimePicker({
+            htmlAttributes: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.htmlAttributes).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            htmlAttributes: undefined
+        },'#datetimepicker');
+        expect(JSON.stringify(datetimepickerObj.htmlAttributes)).toBe('{}');
+        datetimepickerObj.destroy();
+    });
+    it('keyConfigs', () => {
+        datetimepickerObj = new DateTimePicker({
+            keyConfigs: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.keyConfigs).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            keyConfigs: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.keyConfigs).toBe(null);
+        datetimepickerObj.destroy();
+    });
+    it('locale', () => {
+        datetimepickerObj = new DateTimePicker({
+            locale: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.locale).toBe('en-US');
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            locale: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.locale).toBe('en-US');
+        datetimepickerObj.destroy();
+    });
+    it('maskPlaceholder', () => {
+        datetimepickerObj = new DateTimePicker({
+            maskPlaceholder: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.maskPlaceholder).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            maskPlaceholder: undefined
+        },'#datetimepicker');
+        expect(JSON.stringify(datetimepickerObj.maskPlaceholder)).toBe('{"day":"day","month":"month","year":"year","hour":"hour","minute":"minute","second":"second","dayOfTheWeek":"day of the week"}');
+        datetimepickerObj.destroy();
+    });
+    it('max', () => {
+        datetimepickerObj = new DateTimePicker({
+            max: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.max).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            max: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.max.valueOf()).toBe(new Date(2099, 11, 31).valueOf());
+        datetimepickerObj.destroy();
+    });
+    it('min', () => {
+        datetimepickerObj = new DateTimePicker({
+            min: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.min).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            min: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.min.valueOf()).toBe(new Date(1900, 0, 1).valueOf());
+        datetimepickerObj.destroy();
+    });
+    it('openOnFocus', () => {
+        datetimepickerObj = new DateTimePicker({
+            openOnFocus: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.openOnFocus).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            openOnFocus: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.openOnFocus).toBe(false);
+        datetimepickerObj.destroy();
+    });
+    it('placeholder', () => {
+        datetimepickerObj = new DateTimePicker({
+            placeholder: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.placeholder).toBe('');
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            placeholder: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.placeholder).toBe('');
+        datetimepickerObj.destroy();
+    });
+    it('readonly', () => {
+        datetimepickerObj = new DateTimePicker({
+            readonly: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.readonly).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            readonly: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.readonly).toBe(false);
+        datetimepickerObj.destroy();
+    });
+    it('scrollTo', () => {
+        datetimepickerObj = new DateTimePicker({
+            scrollTo: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.scrollTo).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            scrollTo: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.scrollTo).toBe(null);
+        datetimepickerObj.destroy();
+    });
+    it('serverTimezoneOffset', () => {
+        datetimepickerObj = new DateTimePicker({
+            serverTimezoneOffset: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.serverTimezoneOffset).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            serverTimezoneOffset: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.serverTimezoneOffset).toBe(null);
+        datetimepickerObj.destroy();
+    });
+    it('showClearButton', () => {
+        datetimepickerObj = new DateTimePicker({
+            showClearButton: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.showClearButton).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            showClearButton: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.showClearButton).toBe(true);
+        datetimepickerObj.destroy();
+    });
+    it('showTodayButton', () => {
+        datetimepickerObj = new DateTimePicker({
+            showTodayButton: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.showTodayButton).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            showTodayButton: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.showTodayButton).toBe(true);
+        datetimepickerObj.destroy();
+    });
+    it('start', () => {
+        datetimepickerObj = new DateTimePicker({
+            start: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.start).toBe('Month');
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            start: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.start).toBe('Month');
+        datetimepickerObj.destroy();
+    });
+    it('step', () => {
+        datetimepickerObj = new DateTimePicker({
+            step: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.step).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            step: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.step).toBe(30);
+        datetimepickerObj.destroy();
+    });
+    it('strictMode', () => {
+        datetimepickerObj = new DateTimePicker({
+            strictMode: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.strictMode).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            strictMode: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.strictMode).toBe(false);
+        datetimepickerObj.destroy();
+    });
+    it('timeFormat', () => {
+        datetimepickerObj = new DateTimePicker({
+            timeFormat: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.timeFormat).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            timeFormat: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.timeFormat).toBe(null);
+        datetimepickerObj.destroy();
+    });
+    it('value', () => {
+        datetimepickerObj = new DateTimePicker({
+            value: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.value).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            value: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.value).toBe(null);
+        datetimepickerObj.destroy();
+    });
+    it('weekNumber', () => {
+        datetimepickerObj = new DateTimePicker({
+            weekNumber: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.weekNumber).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            weekNumber: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.weekNumber).toBe(false);
+        datetimepickerObj.destroy();
+    });
+    it('weekRule', () => {
+        datetimepickerObj = new DateTimePicker({
+            weekRule: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.weekRule).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            weekRule: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.weekRule).toBe('FirstDay');
+        datetimepickerObj.destroy();
+    });
+    it('width', () => {
+        datetimepickerObj = new DateTimePicker({
+            width: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.width).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            width: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.width).toBe(null);
+        datetimepickerObj.destroy();
+    });
+    it('zIndex', () => {
+        datetimepickerObj = new DateTimePicker({
+            zIndex: null
+        },'#datetimepicker');
+        expect(datetimepickerObj.zIndex).toBe(null);
+        datetimepickerObj.destroy();
+        datetimepickerObj = new DateTimePicker({
+            zIndex: undefined
+        },'#datetimepicker');
+        expect(datetimepickerObj.zIndex).toBe(1000);
+        datetimepickerObj.destroy();
+    });
+});
 });
 

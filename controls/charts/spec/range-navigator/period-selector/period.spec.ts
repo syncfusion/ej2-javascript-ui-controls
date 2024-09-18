@@ -377,6 +377,29 @@ describe('Range navigator', () => {
             };
             range.refresh();
         });
+
+        it('checking with click with custom range', (done: Function) => {
+            range.loaded = (args: Object) => {
+                element = document.getElementById('containercustomRange');
+                expect(element).not.toEqual(null);
+                trigger.clickEvent(element);
+                let list = document.getElementsByClassName('e-day')[44];
+                trigger.clickEvent(list);
+                list = document.getElementsByClassName('e-day')[60];
+                trigger.clickEvent(list);
+                list = document.getElementsByClassName('e-footer')[0].getElementsByClassName('e-apply')[0];
+                trigger.clickEvent(list);
+                done();
+            };
+            range.changed = (args: IChangedEventArgs) => {
+                if (isCheck) {
+                    expect(args.start !== null).toBe(true);
+                    isCheck = false;
+                }
+                done();
+            };
+            range.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

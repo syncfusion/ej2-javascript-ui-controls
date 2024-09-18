@@ -3,9 +3,10 @@
  */
 import { Sparkline, ISparklineLoadedEventArgs, SparklineTooltip } from '../../src/sparkline/index';
 import { removeElement, getIdElement, Rect } from '../../src/sparkline/utils/helper';
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EmitType, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { MouseEvents } from './events.spec';
+import { ILoadedEventArgs } from '../../src';
 Sparkline.Inject(SparklineTooltip);
 describe('Sparkline tooltip and tracker checking Spec', () => {
     beforeAll(() => {
@@ -124,6 +125,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
         let ele: Element;
         let rect: Rect;
         let d: string[];
+        let loaded: EmitType<ILoadedEventArgs>;
         beforeAll(() => {
             element = createElement('div', { id: id });
             document.body.appendChild(element);
@@ -176,6 +178,21 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 expect(ele.getAttribute('stroke-width')).toBe('1');
             };
             sparkline.appendTo('#' + id);
+        });
+        it('chart tooltip format checking with keyboard navigation', function (done) {
+            sparkline.loaded = function (args) {
+                ele = document.getElementById(id + '_sparkline_column_1');
+                trigger.keyboardEvent(ele, 'keydown', 'Space', 'Space');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowUp', 'ArrowUp');
+                trigger.keyboardEvent(ele, 'keydown', 'Escape', 'Escape');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowDown', 'ArrowDown');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowLeft', 'ArrowLeft');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowRight', 'ArrowRight');
+                trigger.keyboardEvent(ele, 'keyup', 'Tab', 'Tab');
+                expect(ele !== null).toBe(true);
+                done();
+            };
+            sparkline.refresh();
         });
         it('Sparkline tooltip moving same point checking', () => {
             sparkline.markerSettings.visible = [];
@@ -245,6 +262,64 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
             expect(ele.textContent).toBe('50-60$');
             ele = getIdElement(id + '_sparkline_tooltip_div');
             expect(ele.children[0].innerHTML.indexOf('<div style="border: 2px solid green;background: #a0e99680">50<br>-60$</div>') > -1).toBe(true);
+        });
+        it('chart series marker checking with keyboard navigation', function (done) {
+            sparkline.loaded = function (args) {
+                ele = document.getElementById(id + '_sparkline_line');
+                trigger.keyboardEvent(ele, 'keydown', 'Space', 'Space');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowUp', 'ArrowUp');
+                trigger.keyboardEvent(ele, 'keydown', 'Escape', 'Escape');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowDown', 'ArrowDown');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowLeft', 'ArrowLeft');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowRight', 'ArrowRight');
+                trigger.keyboardEvent(ele, 'keyup', 'Tab', 'Tab');
+                expect(ele !== null).toBe(true);
+                done();
+            };
+            sparkline.height= '200px';
+            sparkline.width='350px';
+            sparkline.type = 'Line';
+            sparkline.markerSettings.visible = ['All'];
+            sparkline.tooltipSettings.visible = false;
+            sparkline.refresh();
+        });
+        it('chart windloss checking with keyboard navigation', function (done) {
+            sparkline.loaded = function (args) {
+                ele = document.getElementById(id + '_sparkline_winloss_0');
+                trigger.keyboardEvent(ele, 'keydown', 'Space', 'Space');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowUp', 'ArrowUp');
+                trigger.keyboardEvent(ele, 'keydown', 'Escape', 'Escape');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowDown', 'ArrowDown');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowLeft', 'ArrowLeft');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowRight', 'ArrowRight');
+                trigger.keyboardEvent(ele, 'keyup', 'Tab', 'Tab');
+                expect(ele !== null).toBe(true);
+                done();
+            };
+            sparkline.height= '200px';
+            sparkline.width='350px';
+            sparkline.type = 'WinLoss';
+            sparkline.tooltipSettings.visible = false;
+            sparkline.refresh();
+        });
+        it('chart pie series checking with keyboard navigation', function (done) {
+            sparkline.loaded = function (args) {
+                ele = document.getElementById(id + '_sparkline_pie_0');
+                trigger.keyboardEvent(ele, 'keydown', 'Space', 'Space');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowUp', 'ArrowUp');
+                trigger.keyboardEvent(ele, 'keydown', 'Escape', 'Escape');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowDown', 'ArrowDown');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowLeft', 'ArrowLeft');
+                trigger.keyboardEvent(ele, 'keyup', 'ArrowRight', 'ArrowRight');
+                trigger.keyboardEvent(ele, 'keyup', 'Tab', 'Tab');
+                expect(ele !== null).toBe(true);
+                done();
+            };
+            sparkline.height= '200px';
+            sparkline.width='350px';
+            sparkline.type = 'Pie';
+            sparkline.tooltipSettings.visible = false;
+            sparkline.refresh();
         });
     });
     it('memory leak', () => {

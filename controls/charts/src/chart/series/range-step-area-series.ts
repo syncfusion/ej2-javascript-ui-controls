@@ -5,7 +5,7 @@ import { LineBase } from './line-base';
 import { AnimationModel } from '../../common/model/base-model';
 import { Axis } from '../../chart/axis/axis';
 /**
- * `RangeStepAreaSeries` module is used to render the range step area series.
+ * The `RangeStepAreaSeries` module is used to render the range step area series.
  */
 export class RangeStepAreaSeries extends LineBase {
     private borderDirection: string = '';
@@ -21,6 +21,7 @@ export class RangeStepAreaSeries extends LineBase {
      * @param {boolean} pointAnimate - Specifies whether to animate the series point.
      * @param {boolean} pointUpdate - Specifies whether to update the previous point.
      * @returns {void}
+     * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean, pointAnimate: boolean, pointUpdate?: boolean): void {
         this.prevPoint = null;
@@ -81,8 +82,8 @@ export class RangeStepAreaSeries extends LineBase {
                         : (point.low as number), xAxis, yAxis, isInverted);
                     secondPoint = getPoint(this.prevPoint.xValue, this.prevPoint.high > this.prevPoint.low ? (this.prevPoint.high as number)
                         : (this.prevPoint.low as number), xAxis, yAxis, isInverted);
-                    direction += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, command));
-                    this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, command));
+                    direction += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, command, series, false));
+                    this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, command, series, true));
                 }
                 else if (series.emptyPointSettings.mode === 'Gap') {
                     currentPoint = getPoint(point.xValue, point.high > point.low ? (point.high as number)
@@ -171,12 +172,12 @@ export class RangeStepAreaSeries extends LineBase {
                         : (point.high as number), xAxis, yAxis, isInverted);
                     secondPoint = getPoint(this.prevPoint.xValue, this.prevPoint.low < this.prevPoint.high ? (this.prevPoint.low as number)
                         : (this.prevPoint.high as number), xAxis, yAxis, isInverted);
-                    direction += (this.GetStepLineDirection(currentPoint, secondPoint, series.step === 'Right' ? 'Left' : (series.step === 'Left' ? 'Right' : series.step)));
+                    direction += (this.GetStepLineDirection(currentPoint, secondPoint, series.step === 'Right' ? 'Left' : (series.step === 'Left' ? 'Right' : series.step), 'L', series, false));
                     if (j === i) {
-                        this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step === 'Right' ? 'Left' : (series.step === 'Left' ? 'Right' : series.step), 'M'));
+                        this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step === 'Right' ? 'Left' : (series.step === 'Left' ? 'Right' : series.step), 'M', series, true));
                     }
                     else {
-                        this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step === 'Right' ? 'Left' : (series.step === 'Left' ? 'Right' : series.step), 'L'));
+                        this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step === 'Right' ? 'Left' : (series.step === 'Left' ? 'Right' : series.step), 'L', series, true));
                     }
                 }
 
@@ -201,16 +202,14 @@ export class RangeStepAreaSeries extends LineBase {
         this.render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, false, true);
         for (let i: number = 0; i < point.length; i++) {
             if (series.marker && series.marker.visible) {
-                series.chart.markerRender.renderMarker(series, series.points[point[i as number]],
-                                                       series.points[point[i as number]].symbolLocations[0], null, true);
+                series.points[point[i as number]].symbolLocations.map(function (location: ChartLocation, index: number): void {
+                    series.chart.markerRender.renderMarker(series, series.points[point[i as number]], location, index, true);
+                });
             }
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -253,6 +252,7 @@ export class RangeStepAreaSeries extends LineBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         const option: AnimationModel = series.animation;

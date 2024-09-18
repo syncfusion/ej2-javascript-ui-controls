@@ -1059,7 +1059,39 @@ export type ContextType =
     /**
      * Current context is in table of contents.
      */
-    'TableOfContents';
+    'TableOfContents' |
+    /**
+     * Current context is in xml Mapping.
+     */
+    'XMLMapping'|
+    /**
+     * Current context is in Rich text Content control.
+     */
+    'RichTextContentControl' |
+    /**
+     * Current context is in Plain text Content control.
+     */
+    'PlainTextContentControl' |
+    /**
+     * Current context is in Picture content control.
+     */
+    'PictureContentControl' |
+    /**
+     * Current context is in Date picker content control.
+     */
+    'DatePickerContentControl' |
+    /**
+     * Current context is in Dropdown list content control.
+     */
+    'DropDownListContentControl' |
+    /**
+     * Current context is in Combobox content control.
+     */
+    'ComboBoxContentControl' |
+    /**
+     * Current context is in Checkbox content control.
+     */
+    'CheckBoxContentControl';
 
 /**
  * Specifies the border type to be applied.
@@ -1329,6 +1361,11 @@ export type PasteOptions =
     'KeepTextOnly';
 
 /**
+ * Specifies the paste options for table
+ *
+ * @private
+ */
+/**
  * Represents the available options for pasting content into a table.
  *
  * - 'InsertAsRows': Insert the content as new rows.
@@ -1420,6 +1457,10 @@ export type ToolbarItem =
      */
     'Footer' |
     /**
+     * xml mapping option in the toolbar item.
+     */
+    'XML Mapping' |
+    /**
      * PageSetup option in the toolbar item.
      */
     'PageSetup' |
@@ -1492,7 +1533,7 @@ export type VerticalOrigin = 'Margin' | 'Page' | 'Paragraph' | 'Line' | 'TopMarg
  *
  * @private
  */
-export type VerticalAlignment = 'None' | 'Top' | 'Center' | 'Bottom' | 'Inline' | 'Inside' | 'Outside';
+export type VerticalAlignment = 'None' | 'Top' | 'Bottom' | 'Inline' | 'Inside' | 'Outside'|'Center'|'Middle';
 /**
  * Specifies the type of HorizontalOrigin
  *
@@ -1523,7 +1564,19 @@ export type LineDashing = 'Solid' | 'Dash' | 'Dot' | 'DashDot' | 'DashDotDot' | 
  *
  * @private
  */
-export type AutoShapeType = 'Rectangle' | 'RoundedRectangle' | 'StraightConnector' | 'Oval';
+export type AutoShapeType = 'Rectangle' | 'RoundedRectangle' | 'StraightConnector' | 'Oval' | 'IsoscelesTriangle' | 'RightTriangle' | 'Parallelogram' | 'Trapezoid' | 'Diamond' |'RegularPentagon'|'Hexagon'| 'Heptagon'|'Octagon'|'Decagon'|'Dodecagon'| 'Chord'|'Teardrop'|'Frame'|'HalfFrame'|'L_Shape'|'Pie'|'DiagonalStripe'|'Cross'|'Plaque'|'Can'|'Cube'|'Bevel'|'Donut'|'NoSymbol'|'BlockArc'|'FoldedCorner'|'SmileyFace'|'Heart'|'LightningBolt'|'Sun'|'Moon'|'Cloud'|'Arc'|'DoubleBracket'|'DoubleBrace'|'LeftBracket'|'RightBracket'|'LeftBrace'|'RightBrace'| 'FlowChartProcess'|'FlowChartAlternateProcess'| 'FlowChartDecision'|'FlowChartData'|'FlowChartPredefinedProcess'|'FlowChartInternalStorage'|'FlowChartDocument'|'FlowChartMultiDocument'|'FlowChartTerminator'|'FlowChartPreparation'|'FlowChartManualInput'|'FlowChartManualOperation'|'FlowChartConnector'|'FlowChartOffPageConnector'|'FlowChartCard'|'FlowChartPunchedTape'|'FlowChartSummingJunction'|'FlowChartOr'|'FlowChartCollate'|'FlowChartSort'|'FlowChartExtract'|'FlowChartMerge'|'FlowChartStoredData'|'FlowChartDelay'|'FlowChartSequentialAccessStorage'|'FlowChartMagneticDisk'|'FlowChartDirectAccessStorage'|'FlowChartDisplay'|'RightArrow'|'LeftArrow'|'UpArrow'|'DownArrow'|'LeftRightArrow'|'UpDownArrow'|'QuadArrow'|'LeftRightUpArrow'|'BentArrow'|'UTurnArrow'|'LeftUpArrow'|'BentUpArrow'|'CurvedRightArrow'|'CurvedLeftArrow'|'CurvedUpArrow'|'CurvedDownArrow'|'StripedRightArrow'|'NotchedRightArrow'|'Pentagon'|'Chevron'|'RightArrowCallout'|'DownArrowCallout'|'LeftArrowCallout'|'UpArrowCallout'|'LeftRightArrowCallout'|'QuadArrowCallout'|'CircularArrow'|'MathPlus'|'MathMinus'|'MathMultiply'|'MathDivision'|'MathEqual'|'MathNotEqual'|'Explosion1'|'Explosion2'|'Star4Point'|'Star5Point'|'Star6Point'|'Star7Point'|'Star8Point'|'Star10Point'|'Star12Point'|'Star16Point'|'Star24Point'|'Star32Point'|'UpRibbon'|'DownRibbon'|'CurvedUpRibbon'|'CurvedDownRibbon'|'VerticalScroll'|'HorizontalScroll'|'Wave'|'DoubleWave'|'SnipSingleCornerRectangle'|'SnipSameSideCornerRectangle'|'SnipDiagonalCornerRectangle'|'SnipAndRoundSingleCornerRectangle'|'RoundSingleCornerRectangle'|'RoundSameSideCornerRectangle'|'RoundDiagonalCornerRectangle' | 'Unknown'| 'ElbowConnector'| 'CurvedConnector';
+/**
+ * Specifies the Export type of Auto Shape Type
+ *
+ * @private
+ */
+export type ExportAutoShapeType = 'roundRect'|'rect'|'straightConnector1'|'ellipse'|'triangle'|'rtTriangle'|'parallelogram'|'diamond'|'pentagon'|'hexagon'|'heptagon'|'octagon'|'decagon'|'dodecagon'|'pie'|'chord'|'teardrop'|'trapezoid'|'halfFrame'|'frame'|'corner'|'diagStripe'|'plus'|'plaque'|'can'|'cube'|'bevel'|'donut'|'noSmoking'|'blockArc'|'foldedCorner'|'smileyFace'|'heart'|'lightningBolt'|'sun'|'moon'|'cloud'|'bracketPair'|'arc'|'bracePair'|'leftBracket'|'rightBracket'|'leftBrace'|'rightBrace'|'rightArrow'|'leftArrow'|'upArrow'|'downArrow'|'leftRightArrow'|'upDownArrow'|'quadArrow'|'leftRightUpArrow'|'bentArrow'|'uturnArrow'|'leftUpArrow'|'bentUpArrow'|'curvedRightArrow'|'curvedLeftArrow'|'curvedUpArrow'|'curvedDownArrow'|'stripedRightArrow'|'homePlate'|'chevron'|'rightArrowCallout'|'downArrowCallout'|'leftArrowCallout'|'upArrowCallout'|'leftRightArrowCallout'|'quadArrowCallout'|'circularArrow'|'snip1Rect'|'snip2SameRect'|'snip2DiagRect'|'snipRoundRect'|'round1Rect'|'round2SameRect'|'round2DiagRect'|'notchedRightArrow'| 'flowChartDisplay'| 'flowChartMagneticDrum'| 'flowChartMagneticDisk'| 'flowChartMagneticTape'|
+'flowChartDelay'| 'flowChartOnlineStorage'| 'flowChartMerge'| 'flowChartExtract'| 'flowChartSort'| 'flowChartCollate'| 'flowChartSummingJunction'|
+'flowChartPunchedTape'| 'flowChartPunchedCard'| 'flowChartOffpageConnector'| 'flowChartOr' |'flowChartConnector'| 'flowChartManualOperation'| 'flowChartManualInput'|
+'flowChartPreparation'| 'flowChartTerminator'| 'flowChartMultidocument'| 'flowChartDocument'| 'flowChartInternalStorage'| 'flowChartPredefinedProcess'|
+'flowChartInputOutput'| 'flowChartDecision'| 'flowChartAlternateProcess'| 'flowChartProcess' | 'mathNotEqual'| 'mathEqual'| 'mathDivide'| 'mathMultiply'|
+'mathMinus'| 'mathPlus'| 'doubleWave'| 'wave'| 'horizontalScroll'| 'verticalScroll'| 'ellipseRibbon'| 'ellipseRibbon2'| 'ribbon'| 'ribbon2'| 'star32'|
+'star24'| 'star16'| 'star12'| 'star10'| 'star8'| 'star7'| 'star6'| 'star5'| 'star4'| 'irregularSeal2'| 'irregularSeal1'|'curvedConnector3'|'bentConnector3'|'textNoShape';
 /**
  * Wrapping style
  *

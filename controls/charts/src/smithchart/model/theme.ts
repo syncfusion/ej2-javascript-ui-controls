@@ -46,13 +46,9 @@ export function getSeriesColor(theme: SmithchartTheme): string[] {
         palette = ['#8B5CF6', '#22D3EE', '#F87171', '#4ADE80', '#E879F9',
             '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
         break;
-    case 'Bootstrap5':
-        palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
-            '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
-        break;
     case 'Bootstrap5Dark':
-        palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
-            '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
+    case 'Bootstrap5':
+        palette = ['#FD7E14', '#6610F2', '#6F42C1', '#D63384', '#DC3545', '#FFC107', '#198754', '#0DCAF0'];
         break;
     case 'Fluent':
         palette = ['#1AC9E6', '#DA4CB2', '#EDBB40', '#AF4BCF', '#FF7266',
@@ -67,6 +63,10 @@ export function getSeriesColor(theme: SmithchartTheme): string[] {
             '#0364DE', '#66CD15', '#F3A93C', '#107C10', '#C19C00'];
         break;
     case 'Fluent2Dark':
+        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
+            '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
+        break;
+    case 'Fluent2HighContrast':
         palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
             '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
         break;
@@ -299,85 +299,85 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
         break;
     case 'Bootstrap5':
         style = {
-            axisLabel: '#495057',
-            axisLine: '#D1D5DB',
-            majorGridLine: '#E5E7EB',
-            minorGridLine: '#E5E7EB',
-            chartTitle: '#343A40',
-            legendLabel: '#343A40',
-            background: 'rgba(255, 255, 255, 0.0)',
-            areaBorder: ' #DEE2E6',
-            tooltipFill: '#212529',
-            dataLabel: '#D1D5DB',
-            tooltipBoldLabel: '#F9FAFB',
-            tooltipLightLabel: '#F9FAFB',
-            tooltipHeaderLine: '#6B7280',
+            axisLabel: '#21252980',
+            axisLine: '#DEE2E6',
+            majorGridLine: '#DEE2E6',
+            minorGridLine: '#DEE2E6',
+            chartTitle: '#212529',
+            legendLabel: '#212529BF',
+            background: '#FFFFFF',
+            areaBorder: '#E9ECEF',
+            tooltipFill: '#000000E5',
+            dataLabel: '#212529',
+            tooltipBoldLabel: '#FFFFFF',
+            tooltipLightLabel: '#FFFFFF',
+            tooltipHeaderLine: '#FFFFFF',
             tooltipFontSize: '12px',
             tabColor: '#0D6EFD',
-            fontFamily: 'Helvetica',
+            fontFamily: 'Segoe UI',
             fontSize: '14px',
-            labelFontFamily: 'Helvetica',
+            labelFontFamily: 'Segoe UI',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
             smithchartTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#212529', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529BF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#343A40', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             dataLabelFont: {
-                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#21252980', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             smithchartSubtitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             }
         };
         break;
     case 'Bootstrap5Dark':
         style = {
-            axisLabel: '#CED4DA',
+            axisLabel: '#DEE2E680',
             axisLine: '#495057',
             majorGridLine: '#495057',
             minorGridLine: '#495057',
-            chartTitle: '#E9ECEF',
-            legendLabel: '#E9ECEF',
+            chartTitle: '#DEE2E6',
+            legendLabel: '#DEE2E6BF',
             background: '#212529',
-            areaBorder: ' #495057',
-            tooltipFill: '#E9ECEF',
-            dataLabel: '#D1D5DB',
+            areaBorder: '#343A40',
+            tooltipFill: '#FFFFFFE5',
+            dataLabel: '#DEE2E6',
             tooltipBoldLabel: '#212529',
             tooltipLightLabel: '#212529',
-            tooltipHeaderLine: '#6B7280',
+            tooltipHeaderLine: '#212529',
             tooltipFontSize: '12px',
             tabColor: '#0D6EFD',
-            fontFamily: 'Helvetica',
+            fontFamily: 'Segoe UI',
             fontSize: '14px',
-            labelFontFamily: 'Helvetica',
+            labelFontFamily: 'Segoe UI',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
             smithchartTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6BF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Roboto', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             dataLabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#E9ECEF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#CED4DA', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E680', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             smithchartSubtitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             }
         };
         break;
@@ -473,7 +473,7 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
             minorGridLine: '#FAFAFA',
             chartTitle: '#242424',
             legendLabel: '#424242',
-            background: 'transparent',
+            background: '#FFFFFF',
             areaBorder: '#EDEBE9',
             tooltipFill: '#FFFFFF',
             dataLabel: '#242424',
@@ -515,7 +515,7 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
             minorGridLine: '#3B3A39',
             chartTitle: '#FFFFFF',
             legendLabel: '#D6D6D6',
-            background: 'transparent',
+            background: '#292929',
             areaBorder: '#292827',
             tooltipFill: '#292929',
             dataLabel: '#FFFFFF',
@@ -543,6 +543,48 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
             },
             axisLabelFont: {
                 color: '#ADADAD', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            smithchartSubtitleFont: {
+                color: '#ADADAD', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            }
+        };
+        break;
+    case 'Fluent2HighContrast':
+        style = {
+            axisLabel: '#FFFFFF',
+            axisLine: '#3B3A39',
+            majorGridLine: '#3B3A39',
+            minorGridLine: '#3B3A39',
+            chartTitle: '#FFFFFF',
+            legendLabel: '#FFFFFF',
+            background: '#1c1b1f',
+            areaBorder: '#292827',
+            tooltipFill: '#000000',
+            dataLabel: '#FFFFFF',
+            tooltipBoldLabel: '#FFFFFF',
+            tooltipLightLabel: '#FFFFFF',
+            tooltipHeaderLine: '#3B3A39',
+            tooltipFontSize: '12px',
+            tabColor: '#0078D4',
+            fontFamily: 'Segoe UI',
+            fontSize: '14px',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            smithchartTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            legendLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            legendTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            dataLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            axisLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             smithchartSubtitleFont: {
                 color: '#ADADAD', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'

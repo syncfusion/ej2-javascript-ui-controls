@@ -10,56 +10,7 @@ import { TabJustification } from '../../base/types';
 import { TableWidget, TableRowWidget, TableCellWidget, IWidget } from '../viewer/page';
 import { TextPosition } from '../selection';
 import { WColumnFormat, WSectionFormat } from '../format';
-/**
- * Size defines and processes the size(width/height) of the objects
- *
- * @private
- */
-export class Size {
-
-    /**
-     * Sets the height of an object
-     *
-     * @default 0
-     */
-    public height: number;
-
-    /**
-     * Sets the width of an object
-     *
-     * @default 0
-     */
-    public width: number;
-
-    constructor(width?: number, height?: number) {
-        this.width = width;
-        this.height = height;
-    }
-
-
-    /**
-     * isEmpty method \
-     *
-     * @returns { boolean } isEmpty method .\
-     *
-     * @private
-     */
-    public isEmpty(): boolean {
-        return this.height === 0 && this.width === 0;
-    }
-
-    /**
-     * clone method \
-     *
-     * @returns { Size } clone method .\
-     *
-     * @private
-     */
-    public clone(): Size {
-        return new Size(this.width, this.height);
-    }
-}
-
+import { Size } from './size';
 /* eslint-disable */
 /**
  * defines the helper methods for the ruler

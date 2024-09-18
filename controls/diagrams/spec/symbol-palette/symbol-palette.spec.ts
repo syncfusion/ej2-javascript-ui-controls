@@ -141,7 +141,7 @@ describe('Symbol Palette', () => {
 
         beforeAll((): void => {
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
-            ele.appendChild(createElement('div', { id: 'symbolpalette', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'symbolpalette1', styles: 'width:25%;float:left;' }));
             ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:74%;height:500px;float:left;' }));
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -206,7 +206,7 @@ describe('Symbol Palette', () => {
                 ], enableAnimation: false, enableSearch: true,
                 symbolMargin: { top: 5, bottom: 5, left: 5, right: 5 }
             });
-            palette.appendTo('#symbolpalette');
+            palette.appendTo('#symbolpalette1');
         });
 
         afterAll((): void => {
@@ -1155,7 +1155,7 @@ describe('Symbol Palette', () => {
 
         beforeAll((): void => {
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
-            ele.appendChild(createElement('div', { id: 'symbolpalette', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'symbolpalette2', styles: 'width:25%;float:left;' }));
             ele.appendChild(createElement('div', { id: 'diagramIssue', styles: 'width:50%;height:500px;float:left;' }));
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -1170,7 +1170,7 @@ describe('Symbol Palette', () => {
                 ], enableAnimation: false, enableSearch: true,
                 symbolMargin: { top: 5, bottom: 5, left: 5, right: 5 }
             });
-            palette.appendTo('#symbolpalette');
+            palette.appendTo('#symbolpalette2');
 
         });
         afterAll((): void => {
@@ -1988,7 +1988,7 @@ describe('Symbol Palette', () => {
 
         beforeAll((): void => {
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
-            ele.appendChild(createElement('div', { id: 'symbolpalette', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'symbolpalette3', styles: 'width:25%;float:left;' }));
             ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:74%;height:500px;float:left;' }));
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -2025,7 +2025,7 @@ describe('Symbol Palette', () => {
                 ], enableAnimation: false, enableSearch: true,
                 symbolMargin: { top: 5, bottom: 5, left: 5, right: 5 }
             });
-            palette.appendTo('#symbolpalette');
+            palette.appendTo('#symbolpalette3');
         });
 
         afterAll((): void => {
@@ -2091,9 +2091,9 @@ describe('Symbol Palette', () => {
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
             ele = createElement('div');
-            ele.appendChild(createElement('div', { id: 'symbolpalette', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'symbolpalette4', styles: 'width:25%;float:left;' }));
             document.body.appendChild(ele);
-            let palette = new SymbolPalette({
+            palette = new SymbolPalette({
                 expandMode: 'Multiple',
                 palettes: [
                     {
@@ -2128,7 +2128,7 @@ describe('Symbol Palette', () => {
                     bottom: 5
                 }
             });
-            palette.appendTo('#symbolpalette');
+            palette.appendTo('#symbolpalette4');
         });
 
         afterAll((): void => {
@@ -2219,7 +2219,7 @@ describe('Symbol Palette', () => {
         let clickedPalette: boolean;
         beforeAll((): void => {
             ele = createElement('div');
-            ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'symbolPalette5', styles: 'width:25%;float:left;' }));
             document.body.appendChild(ele);
             symbolPalette = new SymbolPalette({
                 palettes: [
@@ -2256,7 +2256,7 @@ describe('Symbol Palette', () => {
                     args.cancel = true;
                 }
             });
-            symbolPalette.appendTo('#symbolPalette');
+            symbolPalette.appendTo('#symbolPalette5');
         });
         afterAll((): void => {
             symbolPalette.destroy();
@@ -2279,7 +2279,7 @@ describe('Symbol Palette', () => {
         let clickedPalette: boolean;
         beforeAll((): void => {
             ele = createElement('div');
-            ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'symbolPalette6', styles: 'width:25%;float:left;' }));
             document.body.appendChild(ele);
             let basicShapes: NodeModel[] = [{
                 id: 'node2', style: { fill: 'none' },
@@ -2324,7 +2324,7 @@ describe('Symbol Palette', () => {
                 width: '100%',
                 allowDrag: false
             });
-            symbolPalette.appendTo('#symbolPalette');
+            symbolPalette.appendTo('#symbolPalette6');
             symbolPalette.allowDrag = true;
             symbolPalette.dataBind();
         });
@@ -2713,7 +2713,7 @@ describe('Checking swimalne drag and without drop on canvas', () => {
     let ele: HTMLElement;
     beforeAll((): void => {
         ele = createElement('div', { styles: 'width:100%;height:500px;' });
-        ele.appendChild(createElement('div', { id: 'symbolpalette', styles: 'width:25%;float:left;' }));
+        ele.appendChild(createElement('div', { id: 'symbolpalette7', styles: 'width:25%;float:left;' }));
         ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:74%;height:500px;float:left;' }));
         document.body.appendChild(ele);
 
@@ -2756,7 +2756,7 @@ describe('Checking swimalne drag and without drop on canvas', () => {
             symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
 
         });
-        palette.appendTo('#symbolpalette');
+        palette.appendTo('#symbolpalette7');
     });
     afterAll((): void => {
         diagram.destroy();
@@ -3566,7 +3566,7 @@ describe('Checking description for HTML node', () => {
                 id: 'terminator',
                 addInfo: { text: 'Flow node' },
                 shape: { type: 'Flow', shape: 'Terminator' },
-                tooltip: { content: 'symbol', isSticky: true },
+                tooltip: { content: 'symbol'},
                 constraints: NodeConstraints.Default | NodeConstraints.Tooltip
             },
         ]
@@ -3633,7 +3633,7 @@ describe('Add and Remove palette', () => {
                 id: 'terminator',
                 addInfo: { text: 'Flow node' },
                 shape: { type: 'Flow', shape: 'Terminator' },
-                tooltip: { content: 'symbol', isSticky: true },
+                tooltip: { content: 'symbol' },
                 constraints: NodeConstraints.Default | NodeConstraints.Tooltip
             }
         ]
@@ -3728,7 +3728,6 @@ describe('Add and Remove palette', () => {
     });
 
 });
-
 describe('892454: Check BPMN Activity shapes Fill color for smaller size ', () => {
     let diagram: Diagram;
     let palette: SymbolPalette;
@@ -3802,7 +3801,7 @@ describe('892454: Check BPMN Activity shapes Fill color for smaller size ', () =
             getNodeDefaults:setPaletteNodeDefaults,
             symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
             symbolHeight: 50, symbolWidth: 50,
-           
+
         });
         palette.appendTo('#symbolpaletteBPMN2');
         function setPaletteNodeDefaults(node: any) {
@@ -3812,7 +3811,7 @@ describe('892454: Check BPMN Activity shapes Fill color for smaller size ', () =
         }
     });
     afterAll((): void => {
-        diagram.destroy();
+        // diagram.destroy();
         palette.destroy();
         ele.remove();
     });

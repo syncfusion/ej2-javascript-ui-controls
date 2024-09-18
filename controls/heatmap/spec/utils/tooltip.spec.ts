@@ -408,7 +408,7 @@ describe('Heatmap Control', () => {
         it('Check tooltip visibility of Bootstrap5 Theme', () => {
             tempElement = document.getElementById('container_HeatMapRect_0');
             trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
-            expect(document.getElementById('containerCelltooltipcontainer_text').getAttribute('font-family') == 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"').toBe(true);
+            expect(document.getElementById('containerCelltooltipcontainer_text').getAttribute('font-family') == 'Segoe UI').toBe(true);
         });
     });
 
@@ -456,7 +456,7 @@ describe('Heatmap Control', () => {
         it('Check tooltip visibility of Bootstrap5Dark Theme', () => {
             tempElement = document.getElementById('container_HeatMapRect_0');
             trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
-            expect(document.getElementById('containerCelltooltipcontainer_text').getAttribute('font-family') == 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"').toBe(true);
+            expect(document.getElementById('containerCelltooltipcontainer_text').getAttribute('font-family') == 'Segoe UI').toBe(true);
         });
     });
 

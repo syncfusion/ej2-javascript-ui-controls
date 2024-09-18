@@ -15,7 +15,7 @@ export interface QRCodeLogoModel {
     /**
      * Sets the width of the logo in pixels. If not specified, the logo's width will default to 30% of the QR code's dimensions. If the specified width exceeds 30% of the QR code's dimensions, the width will be restricted to 30%.
      * Depending on the size of the overlay, you might need to raise the errorCorrectionLevel to "High".
-     * 
+     *
      * @default 0
      */
     width?: number;
@@ -23,7 +23,7 @@ export interface QRCodeLogoModel {
     /**
      * Sets the height of the logo in pixels. If not specified, the logo's height will default to 30% of the QR code's dimensions. If the specified height exceeds 30% of the QR code's dimensions, the height will be restricted to 30%.
      * Depending on the size of the overlay, you might need to raise the errorCorrectionLevel to "High".
-     * 
+     *
      * @default 0
      */
     height?: number;

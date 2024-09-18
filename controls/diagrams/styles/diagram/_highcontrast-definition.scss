@@ -1,6 +1,5 @@
 @import 'definition.scss';
 
-$skin-name: 'highcontrast';
 $hc-theme-primary: #ffd939;
 $hc-theme-dark-font: #fff;
 $hc-theme-dark: rgb(0, 90, 158);
@@ -19,15 +18,15 @@ $diagram-resize-handle-color: $selection-bg;
 $diagram-resize-handle-stroke: $selection-bg;
 $diagram-border-stroke: $selection-bg;
 
-$diagram-resize-handle-disable-color: $disable;
-$diagram-resize-handle-disable-stroke: $disable;
-$diagram-border-stroke-disabled: $disable;
+$diagram-resize-handle-disable-color: $bg-base-75;
+$diagram-resize-handle-disable-stroke: $content-font;
+$diagram-border-stroke-disabled: $bg-base-75;
 
 $diagram-rotate-handle-color: $selection-bg;
 
 $diagram-bezier-handle-color: $content-font;
 $diagram-bezier-line-color: $selection-bg;
-
+$diagram-overview-resizer-color:$selection-bg;
 $diagram-highlighter-stroke: $selection-bg;
 $diagram-selected-region-stroke: $selection-bg;
 $diagram-pivot-line-stroke: $selection-bg;
@@ -37,23 +36,21 @@ $diagram-helper-stroke: $selection-bg;
 $diagram-text-edit-selection-color: $selection-font;
 $diagram-text-edit-selection-background: $selection-bg;
 
-$diagram-symbolpalette-hover: $bg-base-0;
-$diagram-symbolpalette-shape-radius: 00px;/* stylelint-disable-line length-zero-no-unit */
+$diagram-symbolpalette-hover: $bg-base-100;
+$diagram-symbolpalette-shape-radius: 4px;/* stylelint-disable-line length-zero-no-unit */
 $diagram-symbolpalette-selected: $selection-bg;
 
 $diagram-tooltip: none;
 
-$diagram-ruler-color: $border-fg-alt;
+$diagram-ruler-color: $bg-base-75;
 $diagram-ruler-font-size: 10px;
 $diagram-ruler-marker-stroke: $hc-theme-primary;
-$diagram-ruler-marker-background-color: $bg-base-0;
-$diagram-ruler-label-fill:  $content-font;
-$diagram-ruler-tick-stroke: $content-font;
+$diagram-ruler-marker-background-color: $bg-base-20;
+$diagram-ruler-label-fill:  $bg-base-75;
+$diagram-ruler-tick-stroke: $bg-base-75;
 
-$palette-background-color: darken($bg-base-100, 20%);
-
-$diagram-background-color: #fff;
-
+$palette-background-color: $bg-base-75;
+$diagram-background-color:$bg-base-100;
 $diagram-editbox-background: #fff;
 $diagram-editbox-fontcolor: $selection-font;
 $diagram-border-stroke-width: 2;
@@ -74,33 +71,8 @@ $diagram-multiselect-stroke: $diagram-resize-handle-stroke;
 }
 
 @include export-module('diagram-highcontrast-icons') {
-  .e-diagram-menu {
-    .e-bringforward::before{ content: '\e5a1'; }
-    .e-bringfront::before{ content: '\e5a2'; }
-    .e-sendback::before{ content: '\e5a3'; }
-    .e-sendbackward::before{ content: '\e5a4'; }
-    .e-delete::before{ content: '\eb00'; }
-    .e-ungroup::before{ content: '\e5a6'; }
-    .e-group::before{ content: '\e5a7'; }
-    .e-undo::before{ content: '\e341'; }
-    .e-cut::before{ content: '\e33b'; }
-    .e-save::before{ content: '\e954'; }
-    .e-paste::before{ content: '\e355'; }
-    .e-copy::before{ content: '\e33d'; }
-    .e-redo::before{ content: '\e354'; }
-    .e-zoomin::before{ content: '\e349'; }
-    .e-italic::before{ content: '\e35a'; }
-    .e-close::before{ content: '\e7fc'; }
-    .e-pan::before{ content: '\ebf3'; }
-    .e-bold::before{ content: '\eb77'; }
-    .e-underline::before{ content: '\e343'; }
-    .e-zoomout::before{ content: '\e351'; }
-    .e-export::before{ content: '\e70f'; }
-    .e-print::before{ content: '\e34b'; }
-    .e-order::before{ content: '\e4a4'; }
-  }
-
+  
   .e-symbolpalette {
-    .e-clear-searchtext::before{ content: '\e7fc'; }
+    .e-clear-searchtext::before{ content: '\e7a7'; }
   }
 }

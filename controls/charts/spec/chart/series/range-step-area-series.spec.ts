@@ -1087,7 +1087,80 @@ describe('Chart', () => {
             chartObj.refresh();
         });
     });
+    describe('Range step area series - animation on data changes', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let animate: EmitType<IAnimationCompleteEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let element2: Element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element2);
+            chartObj = new Chart({
+                primaryXAxis: {
+                    title: 'Month',
+                },
+                primaryYAxis: {
+                    title: 'Temperature(Celsius)'
+                },
+                series: [{
+                    dataSource: [
+                        { x: 1, low: -12, high: 0 }, { x: 2, low: 12, high: 10 },
+                        { x: 3, low: 23, high: 10 }, { x: 4, low: 202, high: 43 },
+                        { x: 5, low: 0, high: 10 }, { x: 6, low: -22, high: 34 },
+                        { x: 7, low: -12, high: 23 }, { x: 8, low: 12, high: 40 }],
+                    xName: 'x', low: 'low', high: 'high',
+                    animation: { enable: false },
+                    name: 'India',
+                    type: 'RangeStepArea', marker: { visible: true, dataLabel: { visible: true } },
+                }],
+                width: '800',
+                title: 'Chart TS Title', legendSettings: { visible: true }
+            });
+            chartObj.appendTo('#container');
 
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+        it('Checking range step area series -set Data method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0');
+                expect(svg != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            let chartstepSeriesData = [
+                { x: 1, low: -12, high: 0 }, { x: 2, low: 14, high: 10 },
+                { x: 3, low: 23, high: 10 }, { x: 4, low: 202, high: 43 },
+                { x: 5, low: 0, high: 10 }, { x: 6, low: -22, high: 34 },
+                { x: 7, low: -12, high: 27 }, { x: 8, low: 12, high: 40 }];
+            chartObj.series[0].setData(chartstepSeriesData);
+            chartObj.refresh();
+        });
+        it('Checking range step area series - addPoint method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0');
+                expect(svg != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].addPoint({x: 7, low: -12, high: 27});
+            chartObj.refresh();
+        });
+        it('Checking range step area series - remove point method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0');
+                expect(svg != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].removePoint(0);
+            chartObj.refresh();
+        });
+
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -1097,4 +1170,75 @@ describe('Chart', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+    describe('Range Step Area Series withoutRiser', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let animate: EmitType<IAnimationCompleteEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+
+        beforeAll(() => {
+            element = createElement('div', { id: 'container' });
+            document.body.appendChild(element);
+            chartObj = new Chart({
+                primaryXAxis: {
+                    title: 'Years',
+                },
+                primaryYAxis: {
+                    title: 'Production (Billion as kWh)'
+                },
+                series: [{
+
+                    dataSource: doubleData, xName: 'x', high: 'high', low: 'low', fill: 'red', opacity: 0.5, border: { width: 1, color: 'green' },
+                    name: 'series1', type: 'RangeStepArea',
+                    animation: { enable: false },
+                    marker: { visible: true },
+                    noRisers : true
+                }],
+                width: '800',
+                title: 'Electricity- Production', loaded: loaded, legendSettings: { visible: true }
+            });
+            chartObj.appendTo('#container');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+        it('Checking with step as Right', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_border_0');
+                expect(element.getAttribute('d')).toBe('M 0 269.66249999999997 M 0 269.66249999999997 M 0 237.9375 L 104.35714285714285 237.9375 M 104.35714285714285 240.05249999999998 L 208.7142857142857 240.05249999999998 M 208.7142857142857 50.76000000000001 L 313.07142857142856 50.76000000000001 M 313.07142857142856 243.225 L 417.4285714285714 243.225 M 417.4285714285714 241.11 L 521.7857142857143 241.11 M 521.7857142857143 247.455 L 626.1428571428571 247.455 M 626.1428571428571 244.2825 L 730.5 244.2825 M 730.5 251.685 M 730.5 251.685 L 626.1428571428571 251.685 M 626.1428571428571 251.685 L 521.7857142857143 251.685 M 521.7857142857143 289.755 L 417.4285714285714 289.755 M 417.4285714285714 285.52500000000003 L 313.07142857142856 285.52500000000003 M 313.07142857142856 248.5125 L 208.7142857142857 248.5125 M 208.7142857142857 253.8 L 104.35714285714285 253.8 M 104.35714285714285 253.8 L 0 253.8 M 0 284.46750000000003 ')
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Right'
+            chartObj.refresh();
+        });
+
+        it('Checking with step as Left', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_border_0');
+                expect(element.getAttribute('d')).toBe('M 0 269.66249999999997 M 0 269.66249999999997  L 104.35714285714285 269.66249999999997 M 104.35714285714285 237.9375  L 208.7142857142857 237.9375 M 208.7142857142857 240.05249999999998  L 313.07142857142856 240.05249999999998 M 313.07142857142856 50.76000000000001  L 417.4285714285714 50.76000000000001 M 417.4285714285714 243.225  L 521.7857142857143 243.225 M 521.7857142857143 241.11  L 626.1428571428571 241.11 M 626.1428571428571 247.455  L 730.5 247.455 M 730.5 244.2825 M 730.5 251.685 L 730.5 251.685 M 730.5 251.685 L 626.1428571428571 251.685 M 626.1428571428571 289.755 L 521.7857142857143 289.755 M 521.7857142857143 285.52500000000003 L 417.4285714285714 285.52500000000003 M 417.4285714285714 248.5125 L 313.07142857142856 248.5125 M 313.07142857142856 253.8 L 208.7142857142857 253.8 M 208.7142857142857 253.8 L 104.35714285714285 253.8 M 104.35714285714285 284.46750000000003 L 0 284.46750000000003 ')
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Left'
+            chartObj.refresh();
+        });
+
+        it('Checking with step as Center', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_border_0');
+                expect(element.getAttribute('d')).toBe('M 0 269.66249999999997 M 0 269.66249999999997  L 52.17857142857142 269.66249999999997 M 52.17857142857142 237.9375 L 104.35714285714285 237.9375  L 156.53571428571428 237.9375 M 156.53571428571428 240.05249999999998 L 208.7142857142857 240.05249999999998  L 260.8928571428571 240.05249999999998 M 260.8928571428571 50.76000000000001 L 313.07142857142856 50.76000000000001  L 365.25 50.76000000000001 M 365.25 243.225 L 417.4285714285714 243.225  L 469.6071428571429 243.225 M 469.6071428571429 241.11 L 521.7857142857143 241.11  L 573.9642857142858 241.11 M 573.9642857142858 247.455 L 626.1428571428571 247.455  L 678.3214285714286 247.455 M 678.3214285714286 244.2825 L 730.5 244.2825 M 730.5 251.685 M 730.5 251.685 L 730.5 251.685 L 678.3214285714286 251.685 M 678.3214285714286 251.685 L 626.1428571428571 251.685 L 573.9642857142858 251.685 M 573.9642857142858 289.755 L 521.7857142857143 289.755 L 469.6071428571429 289.755 M 469.6071428571429 285.52500000000003 L 417.4285714285714 285.52500000000003 L 365.25 285.52500000000003 M 365.25 248.5125 L 313.07142857142856 248.5125 L 260.8928571428571 248.5125 M 260.8928571428571 253.8 L 208.7142857142857 253.8 L 156.53571428571428 253.8 M 156.53571428571428 253.8 L 104.35714285714285 253.8 L 52.17857142857142 253.8 M 52.17857142857142 284.46750000000003 L 0 284.46750000000003 ')
+                done();
+            };
+            chartObj.loaded = loaded;
+
+            chartObj.series[0].step = 'Center'
+            chartObj.refresh();
+        });
+
+    })
+
 });

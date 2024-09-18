@@ -165,6 +165,22 @@ describe('smithChart component Spec', () => {
                 };
                 smithChart.refresh();
         });
+        it('Checking a JPEG export', (): void => {
+            smithChart.loaded = (args: Object): void => {
+                const element: Element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            smithChart.export('JPEG', 'smithChart');
+            smithChart.refresh();
+        });
+        it('Checking a SVG export', (): void => {
+            smithChart.loaded = (args: Object): void => {
+                const element: Element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            smithChart.export('SVG', 'smithChart', 0);
+            smithChart.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

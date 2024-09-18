@@ -153,11 +153,12 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     }
 
     private setHTMLProperties(): void {
+        // eslint-disable-next-line max-len
         if (this.element.height === 150 && this.element.width === 300 && this.element.offsetHeight !== 0 && this.element.offsetWidth !== 0) {
             this.element.height = this.element.offsetHeight;
             this.element.width = this.element.offsetWidth;
             this.isResponsive = true;
-        } else if ((this.element.height !== this.element.offsetHeight - 1 || this.element.width !== this.element.offsetWidth - 1) 
+        } else if ((this.element.height !== this.element.offsetHeight - 1 || this.element.width !== this.element.offsetWidth - 1)
             && this.element.offsetHeight !== 0 && this.element.offsetWidth !== 0) {
             this.element.height = this.element.offsetHeight;
             this.element.width = this.element.offsetWidth;
@@ -178,7 +179,6 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
         }
     }
 
-    // eslint-disable-next-line
     protected mouseDownHandler(e : MouseEvent & TouchEvent): void {
         if (e.buttons === 1 || e.buttons === 2 || e.type === 'touchstart') {
             if (e.type === 'touchstart') {
@@ -264,7 +264,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
             const pointSize: number = (this.minStrokeWidth + this.maxStrokeWidth) / 2;
             for (let i: number = 0; i < this.signRatioPointsColl.length; i++) {
                 this.arcDraw((this.signRatioPointsColl[i as number].x * this.canvasContext.canvas.width),
-                            (this.signRatioPointsColl[i as number].y * this.canvasContext.canvas.height), pointSize);
+                             (this.signRatioPointsColl[i as number].y * this.canvasContext.canvas.height), pointSize);
             }
             this.signPointsColl = [];
             this.canvasContext.closePath();
@@ -366,7 +366,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     }
 
     private endDraw(): void {
-        if (isNullOrUndefined(this.pointColl)) { return };
+        if (isNullOrUndefined(this.pointColl)) { return; }
         const canDrawCurve: boolean = this.pointColl.length > 2; const point: Point = this.pointColl[0];
         if (!canDrawCurve && point) {
             this.strokeDraw(point);
@@ -521,7 +521,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
         const imageObj: HTMLImageElement = new Image();
         imageObj.crossOrigin = 'anonymous';
         imageObj.src = imageSrc;
-        if (type == 'temp') {
+        if (type === 'temp') {
             imageObj.onload = () => {
                 proxy.tempContext.globalCompositeOperation = 'source-over';
                 proxy.tempContext.drawImage(imageObj, 0, 0, proxy.element.width, proxy.element.height);
@@ -534,7 +534,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
                 proxy.saveBackground(true);
             };
             this.canvasContext.clearRect( 0, 0, this.canvasContext.canvas.width, this.canvasContext.canvas.height);
-        }   
+        }
     }
 
     private setBackgroundColor(color: string): void {
@@ -756,8 +756,8 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
             this.canvasContext.textAlign = 'center';
             this.canvasContext.textBaseline = 'middle';
         } else {
-            startX = isNullOrUndefined(x)? startX : x; 
-            startY = isNullOrUndefined(y)? startY + fontSize / 2 : (y + fontSize / 2);
+            startX = isNullOrUndefined(x) ? startX : x;
+            startY = isNullOrUndefined(y) ? startY + fontSize / 2 : (y + fontSize / 2);
         }
         this.canvasContext.fillText(text, startX, startY);
         this.updateSnapCollection();
@@ -850,7 +850,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
             this.saveBackground(false);
         } else if (type === 'Svg') {
             fileName = fileName || 'Signature';
-            this.toSVG(fileName);
+            this.toSVG(fileName, this.canvasContext.canvas.toDataURL('image/png'));
         } else if (type === 'Jpeg') {
             fileName = fileName || 'Signature';
             if (!this.saveWithBackground || this.saveWithBackground && !(this.backgroundImage || this.backgroundColor)) {
@@ -951,7 +951,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
             this.tempContext.fillStyle = this.backgroundColor;
             this.tempContext.fillRect(0, 0, this.canvasContext.canvas.width, this.canvasContext.canvas.height);
         } else if (!this.backgroundColor && !this.backgroundImage && type === 'Jpeg') {
-            this.tempContext.fillStyle = "#fff";
+            this.tempContext.fillStyle = '#fff';
             this.tempContext.fillRect(0, 0, this.canvasContext.canvas.width, this.canvasContext.canvas.height);
         }
         this.tempContext.drawImage(this.element, 0, 0);

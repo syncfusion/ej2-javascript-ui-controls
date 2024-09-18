@@ -5,11 +5,16 @@
     & .e-contextual-toolbar-wrapper {
       background: $image-editor-contextual-toolbar;
 
-      & .e-toolbar-item:hover .filterwrapper,
-      & .e-toolbar-item.e-selected .filterwrapper,
-      & .e-toolbar-item:hover .filter-wrapper,
-      & .e-toolbar-item.e-selected .filter-wrapper {
-        border-color: $btn-active-bgcolor;
+      & .e-toolbar-item:hover .filterwrapper canvas,
+      & .e-toolbar-item.e-selected .filterwrapper canvas,
+      & .e-toolbar-item:hover .filter-wrapper canvas,
+      & .e-toolbar-item.e-selected .filter-wrapper canvas {
+        border-color: $btn-active-bgcolor !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      & .e-toolbar-item.e-selected .filterwrapper:focus canvas,
+      & .e-toolbar-item.e-selected .filter-wrapper:focus canvas {
+        border-color: $btn-active-bgcolor !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
@@ -17,7 +22,7 @@
       & .e-toolbar-items {
         & .e-tbar-btn.e-btn {
           & .e-icons {
-            @if $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5-dark' {
+            @if $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'bootstrap5-dark' and $skin-name != 'fluent2' {
               color: $image-editor-toolbar-icon-color;
             }
           }
@@ -25,7 +30,7 @@
           &.e-selected-btn {
             background: $image-editor-icon-sel-bg-color !important; /* stylelint-disable-line declaration-no-important */
             & .e-icons {
-              @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+              @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5-dark' {
                 color: $secondary-text-color-focus;
               }
             }
@@ -36,7 +41,7 @@
           background: inherit;
           border: none;
           margin-top: $image-editor-ddbtn-margin-top;
-          @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+          @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5-dark' {
             background: $tbar-default-bg;
             color: $tbar-default-icon-color;
           }
@@ -54,7 +59,12 @@
           &:hover {
             background: $tbar-hover-bg;
             box-shadow: none;
-            color: $tbar-hover-font;
+            @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+              color: $secondary-text-color;
+            }
+            @else {
+              color: $tbar-hover-font;
+            }
           }
 
           &:focus {
@@ -126,6 +136,17 @@
           background: transparent url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iNnB4IiBoZWlnaHQ9IjZweCIgdmlld0JveD0iMCAwIDYgNiIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICAgIDwhLS0gR2VuZXJhdG9yOiBTa2V0Y2ggNTAgKDU0OTgzKSAtIGh0dHA6Ly93d3cuYm9oZW1pYW5jb2RpbmcuY29tL3NrZXRjaCAtLT4KICAgIDx0aXRsZT5Hcm91cCA5PC90aXRsZT4KICAgIDxkZXNjPkNyZWF0ZWQgd2l0aCBTa2V0Y2guPC9kZXNjPgogICAgPGRlZnM+PC9kZWZzPgogICAgPGcgaWQ9IlBhZ2UtMSIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICAgICAgPGcgaWQ9Ikdyb3VwLTkiPgogICAgICAgICAgICA8cmVjdCBpZD0iUmVjdGFuZ2xlLTExIiBmaWxsPSIjRTBFMEUwIiB4PSIwIiB5PSIwIiB3aWR0aD0iMyIgaGVpZ2h0PSIzIj48L3JlY3Q+CiAgICAgICAgICAgIDxyZWN0IGlkPSJSZWN0YW5nbGUtMTEtQ29weS0yIiBmaWxsPSIjRkZGRkZGIiB4PSIwIiB5PSIzIiB3aWR0aD0iMyIgaGVpZ2h0PSIzIj48L3JlY3Q+CiAgICAgICAgICAgIDxyZWN0IGlkPSJSZWN0YW5nbGUtMTEtQ29weSIgZmlsbD0iI0ZGRkZGRiIgeD0iMyIgeT0iMCIgd2lkdGg9IjMiIGhlaWdodD0iMyI+PC9yZWN0PgogICAgICAgICAgICA8cmVjdCBpZD0iUmVjdGFuZ2xlLTExLUNvcHktMyIgZmlsbD0iI0UwRTBFMCIgeD0iMyIgeT0iMyIgd2lkdGg9IjMiIGhlaWdodD0iMyI+PC9yZWN0PgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+') !important; /* stylelint-disable-line declaration-no-important */
           background-size: 8px !important; /* stylelint-disable-line declaration-no-important */
         }
+
+        & .e-toolbar-item.e-overlay .e-btn {
+          box-shadow: none !important; /* stylelint-disable-line declaration-no-important */
+          @if $skin-name == 'fluent2' {
+            background: $content-bg-color-alt1 !important; /* stylelint-disable-line declaration-no-important */
+
+            &:focus .e-icons {
+              color: $icon-color-disabled !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+        }
       }
     }
   }
@@ -133,7 +154,7 @@
 
 .e-dropdown-popup {
   & .e-selected-btn {
-    @if $skin-name != 'highcontrast' {
+    @if $skin-name != 'highcontrast' and $theme-name != 'bootstrap5.3' and $theme-name != 'bootstrap5.3-dark' {
       background: $image-editor-icon-sel-bg-color !important; /* stylelint-disable-line declaration-no-important */
     }
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
@@ -143,11 +164,27 @@
       color: $drop-down-btn-selected-color !important; /* stylelint-disable-line declaration-no-important */
     }
   }
+
+  & .e-item.e-selected-btn {
+    @if $skin-name == 'fluent2' {
+      color: $flyout-text-color-selected;
+    }
+    @if $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
+      background-color: $content-bg-color-selected !important; /* stylelint-disable-line declaration-no-important */
+      color: $content-text-color-selected !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
 }
 
 .e-ie-filter-canvas:focus,
 .filter-wrapper:focus .e-ie-filter-canvas,
 .filter-wrapper:focus canvas,
 .filter-wrapper canvas:focus {
-  border: $image-editor-filter-canvas-focus;
+  border-color: $image-editor-filter-canvas-focus !important; /* stylelint-disable-line declaration-no-important */
+}
+
+@if $skin-name == 'fluent2' {
+  .e-image-editor .e-toolbar .e-toolbar-items .e-dropdown-btn.e-active {
+    background-color: $secondary-bg-color-pressed !important; /* stylelint-disable-line declaration-no-important */
+  }
 }

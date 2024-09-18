@@ -111,6 +111,8 @@ export class Gantt extends Component<HTMLElement>
     public previousZoomingLevel: Object;
     private totalUndoAction: number = 0;
     public previousFlatData: IGanttData[] = [];
+    private isExpandPerformed: boolean = false;
+    private oldRecords: IGanttData[] = [];
     /** @hidden */
     public topBottomHeader: number;
     /** @hidden */
@@ -134,7 +136,7 @@ export class Gantt extends Component<HTMLElement>
     public splitterModule: Splitter;
     /** @hidden */
     public isCancelled: boolean = false;
-     /** @hidden */
+    /** @hidden */
     public isCollapseAll : boolean = false;
     /** @hidden */
     public treeGrid: TreeGrid;
@@ -467,9 +469,9 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Gets or sets whether to load child record on demand in remote data binding. Initially parent records are rendered in collapsed state.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public loadChildOnDemand: boolean;
 
     /**
@@ -562,9 +564,9 @@ export class Gantt extends Component<HTMLElement>
     /**
      * `undoRedoActions` Defines action items that retain for undo and redo operation.
      *
-     * @default ['Sorting','Add','ColumnReorder','ColumnResize','ColumnState','Delete','Edit','Filtering','Indent','Outdent','NextTimeSpan','PreviousTimeSpan','RowDragAndDrop','Search']
+     * @default ['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'TaskbarDragAndDrop', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit']
      */
-    @Property(['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'Search'])
+    @Property(['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'TaskbarDragAndDrop', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit'])
     public undoRedoActions: GanttAction[];
 
     /**
@@ -1788,11 +1790,8 @@ export class Gantt extends Component<HTMLElement>
         case 5:
             startTime = this.fridayDefaultStartTime;
             break;
-        case 6:
-            startTime = this.saturdayDefaultStartTime;
-            break;
         default:
-            startTime = this.defaultStartTime;
+            startTime = this.saturdayDefaultStartTime;
             break;
         }
         return startTime;
@@ -1819,11 +1818,8 @@ export class Gantt extends Component<HTMLElement>
         case 5:
             endTime = this.fridayDefaultEndTime;
             break;
-        case 6:
-            endTime = this.saturdayDefaultEndTime;
-            break;
         default:
-            endTime = this.defaultStartTime;
+            endTime = this.saturdayDefaultEndTime;
             break;
         }
         return endTime;
@@ -1850,11 +1846,8 @@ export class Gantt extends Component<HTMLElement>
         case 5:
             nonWorkingTimeRange = this.fridayNonWorkingTimeRanges;
             break;
-        case 6:
-            nonWorkingTimeRange = this.saturdayNonWorkingTimeRanges;
-            break;
         default:
-            nonWorkingTimeRange = this.nonWorkingTimeRanges;
+            nonWorkingTimeRange = this.saturdayNonWorkingTimeRanges;
             break;
         }
         return nonWorkingTimeRange;
@@ -1881,11 +1874,8 @@ export class Gantt extends Component<HTMLElement>
         case 5:
             workingTimeRanges = this.fridayWorkingTimeRanges;
             break;
-        case 6:
-            workingTimeRanges = this.saturdayWorkingTimeRanges;
-            break;
         default:
-            workingTimeRanges = this.workingTimeRanges;
+            workingTimeRanges = this.saturdayWorkingTimeRanges;
             break;
         }
         return workingTimeRanges;
@@ -2211,7 +2201,7 @@ export class Gantt extends Component<HTMLElement>
         const lettersRegex: RegExp = /^[a-zA-Z\s/]+$/;
         let allPropertiesNull: boolean = true;
         const fields: TaskFieldsModel = this.taskFields['properties'];
-        let shouldBreak = false;
+        let shouldBreak: boolean = false;
         Object.keys(fields).forEach((key: string) => {
             if (fields[key as string] !== null) {
                 allPropertiesNull = false;
@@ -2693,6 +2683,10 @@ export class Gantt extends Component<HTMLElement>
         if (isChange) {
             this.isFromOnPropertyChange = isChange;
         }
+        if (this.enableValidation) {
+            this.dataOperation.calculateProjectDates();
+            this.timelineModule.validateTimelineProp();
+        }
         if (this.allowParentDependency) {
             this.predecessorModule.updateParentPredecessor();
         }
@@ -2810,8 +2804,8 @@ export class Gantt extends Component<HTMLElement>
                 }, 0);
             }
         }
-        if (this.dayMarkersModule && this.dayMarkersModule["eventMarkerRender"]) {
-            this.dayMarkersModule["eventMarkerRender"].updateContainerHeight();
+        if (this.dayMarkersModule && this.dayMarkersModule['eventMarkerRender']) {
+            this.dayMarkersModule['eventMarkerRender'].updateContainerHeight();
         }
         if (this.enableTimelineVirtualization) {
             this.timelineModule.refreshTimeline();
@@ -2868,7 +2862,7 @@ export class Gantt extends Component<HTMLElement>
     }
     private updateCurrentViewData(): void {
         this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
-        if (!this.loadChildOnDemand && this.taskFields.hasChildMapping && this.currentViewData.length > 0) {
+        if (this.currentViewData.length > 0 && this.loadChildOnDemand && this.taskFields.hasChildMapping) {
             this.isLoad = true;
             this.flatData = [];
             this.dataOperation.taskIds = [];
@@ -3260,6 +3254,10 @@ export class Gantt extends Component<HTMLElement>
             if (!this.enableVirtualization) {
                 this.updateContentHeight();
             }
+            else if (this.virtualScrollModule && this.enableVirtualization) {
+                this.ganttChartModule.virtualRender.adjustTable();
+                this.ganttChartModule.scrollObject.updateTopPosition();
+            }
             if (!this.isTreeGridRendered) {
                 this.isTreeGridRendered = true;
                 // let toolbarHeight: number = 0;
@@ -3287,7 +3285,7 @@ export class Gantt extends Component<HTMLElement>
         } else {
             this.getCurrentRecords(args);
         }
-        if (!this.loadChildOnDemand && this.taskFields.hasChildMapping) {
+        if (this.loadChildOnDemand && this.taskFields.hasChildMapping) {
             this.updateContentHeight();
         }
         if (this.enableCriticalPath && this.criticalPathModule) {
@@ -3310,7 +3308,8 @@ export class Gantt extends Component<HTMLElement>
         }
         this.initialChartRowElements = this.ganttChartModule.getChartRows();
         this.isLoad = false;
-        if (this.undoRedoModule) {
+        this.isExpandPerformed = !this.enableVirtualization ? false : this.isExpandPerformed;
+        if (!this.isExpandPerformed) {
             this.previousFlatData = extend([], this.flatData, [], true) as IGanttData[];
         }
         this.trigger('dataBound', args);
@@ -3681,7 +3680,7 @@ export class Gantt extends Component<HTMLElement>
         if (this.splitterModule) {
             this.splitterModule['destroy']();
         }
-        if (this.toolbarModule) {
+        if (this.toolbarModule && this.toolbarModule.toolbar) {
             this.toolbarModule.toolbar.destroy();
         }
         if (!isNullOrUndefined(this.dayMarkersModule) && !isNullOrUndefined(this.dayMarkersModule['eventMarkerRender']) && !isNullOrUndefined(this.dayMarkersModule['eventMarkerRender'].eventMarkersContainer)) {
@@ -3960,6 +3959,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * To update height of the Grid lines in the Gantt chart side.
      *
+     * @param {boolean} currentProp - Update current property change in the Gantt chart.
      * @returns {void} .
      * @private
      */
@@ -3991,7 +3991,7 @@ export class Gantt extends Component<HTMLElement>
                 eventMarkersContainer.style.height =  this.ganttHeight + 'px';
             }
         }
-        if (currentProp === "width") {
+        if (currentProp === 'width') {
             this.splitterModule.splitterObject.width = this.ganttWidth.toString();
         }
         this.ganttChartModule.scrollObject.
@@ -4028,7 +4028,7 @@ export class Gantt extends Component<HTMLElement>
             thWidth = (thElements[n as number] as HTMLElement).style.width;
             const divElement: HTMLElement = createElement('div', {
                 className: 'e-line-container-cell',
-                styles: (this.enableRtl ? 'right:' + (leftPos + 1) : 'left:' + (leftPos != -1 ? (leftPos + 0.3) : leftPos)) + 'px'
+                styles: (this.enableRtl ? 'right:' + (leftPos + 1) : 'left:' + (leftPos !== -1 ? (leftPos + 0.3) : leftPos)) + 'px'
             });
             containerDiv.appendChild(divElement);
         }
@@ -4152,10 +4152,10 @@ export class Gantt extends Component<HTMLElement>
             mergeTask: 'Merge Task',
             left: 'Left',
             right: 'Right',
-            FF: "FF",
-            FS: "FS",
-            SF: "SF",
-            SS: "SS"
+            FF: 'FF',
+            FS: 'FS',
+            SF: 'SF',
+            SS: 'SS'
         };
         return ganttLocale;
     }
@@ -4238,12 +4238,12 @@ export class Gantt extends Component<HTMLElement>
         }
         if (!this.autoCalculateDateScheduling && this.dataMap && this.dataMap.size > 0 && !this.taskFields.hasChildMapping &&
             this.isLoad) {
-            const parent = this.dataMap.get(cloneParent.uniqueID);
+            const parent: IGanttData = this.dataMap.get(cloneParent.uniqueID);
             if (parent) {
                 return parent;
             }
         } else {
-            const parent = this.flatData.find((val: IGanttData) => cloneParent.uniqueID === val.uniqueID);
+            const parent: IGanttData = this.flatData.find((val: IGanttData) => cloneParent.uniqueID === val.uniqueID);
             if (parent) {
                 return parent;
             }
@@ -4707,6 +4707,9 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public expandByID(id: number | string): void {
+        if (this.enableVirtualization) {
+            this.isExpandPerformed = true;
+        }
         const args: object = this.contructExpandCollapseArgs(id);
         this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.expandGanttRow(args);
@@ -4770,7 +4773,7 @@ export class Gantt extends Component<HTMLElement>
                             break;
                         }
                     }
-                    if (parentTask && parentTask.childRecords.length || parentTask.level === 0) {
+                    if (parentTask && (parentTask.level === 0 || parentTask.childRecords.length)) {
                         const dropChildRecord: IGanttData = parentTask.childRecords[rowIndex as number];
                         if (this.viewType === 'ResourceView' &&  this.undoRedoModule && this.undoRedoModule['isUndoRedoPerformed']) {
                             this.editModule.addRecord(data, rowPosition, rowIndex);
@@ -5128,7 +5131,7 @@ export class Gantt extends Component<HTMLElement>
         let chartRow: Element;
         let record: IGanttData;
         let rowIndex: number;
-        if (isNullOrUndefined(index)) {
+        if (isNullOrUndefined(index) && id) {
             record = this.getRecordByID(id.toString());
             chartRow = this.getRowByID(id);
             if (!isNullOrUndefined(chartRow)) {
@@ -5170,11 +5173,11 @@ export class Gantt extends Component<HTMLElement>
     public getRowByID(id: string | number): HTMLElement {
         const record: IGanttData = this.getRecordByID(id.toString());
         let index: number;
-        if (!this.loadChildOnDemand && this.taskFields.hasChildMapping) {
+        if (this.loadChildOnDemand && this.taskFields.hasChildMapping) {
             index = this.updatedRecords.map((item: IGanttData) => item[this.taskFields.id]).indexOf(record.ganttProperties.taskId);
         }
         else {
-            index = this.updatedRecords.indexOf(record);
+            index = this.enableVirtualization ? this.currentViewData.indexOf(record) : this.updatedRecords.indexOf(record);
         }
         if (index !== -1) {
             return this.getRowByIndex(index);

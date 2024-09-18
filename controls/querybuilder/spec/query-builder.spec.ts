@@ -6,13 +6,12 @@ import { createElement, remove, closest, select, selectAll, detach, getComponent
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownButton, ItemModel } from '@syncfusion/ej2-splitbuttons';
-import { DropDownList, MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
+import { DropDownList, MultiSelect, CheckBoxSelection, DropDownTree } from '@syncfusion/ej2-dropdowns';
 import { Slider } from '@syncfusion/ej2-inputs';
 import { DatePicker, DateRangePicker, TimePicker } from '@syncfusion/ej2-calendars';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
 
-QueryBuilder.Inject(QueryLibrary);
 MultiSelect.Inject(CheckBoxSelection);
 
 /**
@@ -20,8 +19,8 @@ MultiSelect.Inject(CheckBoxSelection);
  * @param  {} function(
  */
 
-let intl = new Internationalization();
-let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+const intl = new Internationalization();
+const clickEvent: MouseEvent = document.createEvent('MouseEvents');
 clickEvent.initEvent('mousedown', true, true);
 
 describe('QueryBuilder', () => {
@@ -34,13 +33,8 @@ describe('QueryBuilder', () => {
         }
     });
 
-    beforeEach((): void => {
-        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
-        Browser.userAgent = Chromebrowser;
-    });
-
     let queryBuilder: any;
-    let complexBindingData: Object[] = [{
+    const complexBindingData: Object[] = [{
         'Employee': {
             'ID': 1001,
             'DOB': new Date(1996, 4, 23),
@@ -56,7 +50,7 @@ describe('QueryBuilder', () => {
         'Country': {
             'State': {
                 'City': 'San diego',
-                'Zipcode': 22434,
+                'Zipcode': 22434
             },
             'Region': 'Pacific',
             'Name': 'USA'
@@ -81,7 +75,7 @@ describe('QueryBuilder', () => {
                 'Zipcode': 77001
             },
             'Region': 'South central',
-            'Name': 'USA'    
+            'Name': 'USA'
         }
     },
     {
@@ -107,7 +101,7 @@ describe('QueryBuilder', () => {
         }
     }];
 
-    let complexData: object[] = [{
+    const complexData: object[] = [{
         'EmployeeID': 1,
         'FirstName': 'Nancy',
         'Height': 5.5,
@@ -116,10 +110,10 @@ describe('QueryBuilder', () => {
             'City': 'Seattle',
             'Region': 'WA',
             'PostalCode': 98.122,
-            'Country': 'USA'  
+            'Country': 'USA'
         }
-      },
-      {
+    },
+    {
         'EmployeeID': 2,
         'FirstName': 'Andrew',
         'Height': 5.6,
@@ -128,10 +122,10 @@ describe('QueryBuilder', () => {
             'City': 'Tacoma',
             'Region': 'WA',
             'PostalCode': 98.401,
-            'Country': 'USA',
+            'Country': 'USA'
         }
-      },
-      {
+    },
+    {
         'EmployeeID': 3,
         'FirstName': 'Janet',
         'Height': 5.7,
@@ -140,12 +134,12 @@ describe('QueryBuilder', () => {
             'City': 'Kirkland',
             'Region': 'WA',
             'PostalCode': 98.033,
-            'Country': 'USA',
+            'Country': 'USA'
         }
-      }
+    }
     ];
 
-    let employeeData: Object[] = [{
+    const employeeData: Object[] = [{
         'EmployeeID': 1,
         'LastName': 'Davolio',
         'FirstName': 'Nancy',
@@ -196,31 +190,31 @@ describe('QueryBuilder', () => {
         'Extension': '3355',
         'Photo': { 'Length': 21722 }
     },
-	{
-		'EmployeeID': 5,
-		'LastName': 'Buchanan',
-		'FirstName': 'Steven',
-		'Title': 'Sales Manager',
-		'TitleOfCourtesy': 'Mr.',
-		'Age': 34,
-		'BirthDate': new Date(-468010800000),
-		'HireDate': new Date(750830400000),
-		'Address': '14 - Garrett Hill',
-		'City': 'London',
-		'Region': null,
-		'PostalCode': 'SW1 8JR',
-		'Country': 'UK',
-		'HomePhone': '(71) 555-4848',
-		'Extension': '3453',
-		'Photo': { 'Length': 21626 },
-		'Notes': 'Steven Buchanan graduated from St. Andrews University, Scotland, with a BSC degree in 1976.',
-		'ReportsTo': 2,
-		'PhotoPath': 'http://accweb/emmployees/buchanan.bmp'
-	}];
-    let mouseEvent: MouseEvent = document.createEvent('MouseEvents');
-    let mouseEvent2: MouseEvent = document.createEvent('MouseEvents');
+    {
+        'EmployeeID': 5,
+        'LastName': 'Buchanan',
+        'FirstName': 'Steven',
+        'Title': 'Sales Manager',
+        'TitleOfCourtesy': 'Mr.',
+        'Age': 34,
+        'BirthDate': new Date(-468010800000),
+        'HireDate': new Date(750830400000),
+        'Address': '14 - Garrett Hill',
+        'City': 'London',
+        'Region': null,
+        'PostalCode': 'SW1 8JR',
+        'Country': 'UK',
+        'HomePhone': '(71) 555-4848',
+        'Extension': '3453',
+        'Photo': { 'Length': 21626 },
+        'Notes': 'Steven Buchanan graduated from St. Andrews University, Scotland, with a BSC degree in 1976.',
+        'ReportsTo': 2,
+        'PhotoPath': 'http://accweb/emmployees/buchanan.bmp'
+    }];
+    const mouseEvent: MouseEvent = document.createEvent('MouseEvents');
+    const mouseEvent2: MouseEvent = document.createEvent('MouseEvents');
 
-    let columnData: ColumnsModel[] = [
+    const columnData: ColumnsModel[] = [
         {
             field: 'EmployeeName', label: 'Employee Name', type: 'string', operators: [{ key: 'equal', value: 'equal' }],
             values: ['Vinet'], format: '', step: 1, validation: { isRequired: true, min: 5, max: 10 }
@@ -254,7 +248,7 @@ describe('QueryBuilder', () => {
         }
     ];
 
-    let importRules: RuleModel = {
+    const importRules: RuleModel = {
         'condition': 'and',
         'rules': [{
             'label': 'EmployeeID',
@@ -305,10 +299,10 @@ describe('QueryBuilder', () => {
             'value': [4, 5]
         }]
     };
-    let columnData1: ColumnsModel[] = [
+    const columnData1: ColumnsModel[] = [
         {
             field: 'TaskID', label: 'Task ID', type: 'number', operators: [{ key: 'equal', value: 'equal' },
-            { key: 'greaterthan', value: 'greaterthan' }, { key: 'lessthan', value: 'lessthan' }]
+                { key: 'greaterthan', value: 'greaterthan' }, { key: 'lessthan', value: 'lessthan' }]
         },
         { field: 'Name', label: 'Name', type: 'string' },
         { field: 'Category', label: 'Category', type: 'string' },
@@ -316,10 +310,10 @@ describe('QueryBuilder', () => {
         { field: 'InvoiceNo', label: 'Invoice No', type: 'string' },
         { field: 'Status', label: 'Status', type: 'string' }
     ];
-    let columnData2: ColumnsModel[] = [
+    const columnData2: ColumnsModel[] = [
         {
             field: 'TaskID', label: 'Task ID', type: 'number', operators: [{ key: 'equal', value: 'equal' },
-            { key: 'greaterthan', value: 'greaterthan' }, { key: 'lessthan', value: 'lessthan' }]
+                { key: 'greaterthan', value: 'greaterthan' }, { key: 'lessthan', value: 'lessthan' }]
         },
         { field: 'Name', label: 'Name', type: 'string' },
         { field: 'Category', label: 'Category', type: 'string' },
@@ -329,19 +323,19 @@ describe('QueryBuilder', () => {
         { field: 'Date', label: 'Date', type: 'date', operators: [{key: 'between', value: 'between'}] },
         { field: 'Order No', label: 'Order No', type: 'string'}
     ];
-    let boolData: ColumnsModel[] = [
+    const boolData: ColumnsModel[] = [
         { field: 'TaskID', label: 'Task ID', type: 'number' },
         { field: 'Name', label: 'Name', type: 'string' },
         { field: 'Category', label: 'Category', type: 'string' },
         { field: 'Status', label: 'Status', type: 'boolean' },
         { field: 'Date', label: 'Date', type: 'date', operators: [{key: 'equal', value: 'equal'}, {key: 'between', value: 'between'}] }
     ];
-    let dateFormatData: ColumnsModel[] = [
+    const dateFormatData: ColumnsModel[] = [
         { field: 'TaskID', label: 'Task ID', type: 'number' },
         { field: 'Name', label: 'Name', type: 'string' },
         { field: 'Date', label: 'Date', type: 'date', format: 'dd/MM/yyyy', operators: [{key: 'equal', value: 'equal'}, {key: 'notequal', value: 'notequal'}] }
     ];
-    let eData: ColumnsModel[] = [
+    const eData: ColumnsModel[] = [
         {
             field: 'EmployeeID', label: 'Employee ID', type: 'number'
         },
@@ -352,7 +346,7 @@ describe('QueryBuilder', () => {
         { field: 'Country', label: 'Country', type: 'string' },
         { field: 'City', label: 'City', type: 'string' }
     ];
-    let fieldData: ColumnsModel[] = [
+    const fieldData: ColumnsModel[] = [
         { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
         { field: 'FirstName', label: 'First Name', type: 'string' },
         { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
@@ -361,7 +355,7 @@ describe('QueryBuilder', () => {
         { field: 'Country', label: 'Country', type: 'string' },
         { field: 'City', label: 'City', type: 'string' }
     ];
-    let buttonData: ColumnsModel[] = [
+    const buttonData: ColumnsModel[] = [
         {
             field: 'EmployeeID', label: 'Employee ID'
         },
@@ -376,7 +370,7 @@ describe('QueryBuilder', () => {
     let dropDownObj: DropDownList;
     let boxObj: CheckBox;
     let multiSelectObj: MultiSelect;
-    let filter: ColumnsModel[] = [
+    const filter: ColumnsModel[] = [
         {
             field: 'Category', label: 'Category', type: 'string', template: {
                 create: () => {
@@ -412,7 +406,7 @@ describe('QueryBuilder', () => {
                     (getComponent(document.getElementById(args.elementId), 'dropdownlist') as DropDownList).destroy();
                 },
                 write: (args: { elements: Element, values: string }) => {
-                    let ds: string[] = ['Cash', 'Debit Card', 'Credit Card', 'Net Banking', 'Wallet'];
+                    const ds: string[] = ['Cash', 'Debit Card', 'Credit Card', 'Net Banking', 'Wallet'];
                     dropDownObj = new DropDownList({
                         dataSource: ds,
                         value: args.values ? args.values : ds[0],
@@ -429,7 +423,7 @@ describe('QueryBuilder', () => {
                 { key: 'Starts With', value: 'startswith' },
                 { key: 'Ends With', value: 'endswith' },
                 { key: 'Contains', value: 'contains' }
-            ],
+            ]
         },
         {
             field: 'TransactionType', label: 'Transaction Type', type: 'boolean', template: {
@@ -454,54 +448,54 @@ describe('QueryBuilder', () => {
             },
             operators: [
                 { key: 'Equal', value: 'equal' },
-                { key: 'Not Equal', value: 'notequal' }],
+                { key: 'Not Equal', value: 'notequal' }]
         },
         { field: 'Description', label: 'Description', type: 'string' },
         { field: 'Date', label: 'Date', type: 'date', template: {
-                create: () => {
-                    var parentElem = [];
-                    parentElem.push(document.createElement("input"));
-                    parentElem.push(document.createElement("input"));
-                    return parentElem;
-                },
-                destroy: (args: {elements: NodeListOf<Element>}) => {
-                    for (let i = 0, len = args.elements.length; i < len; i++) {
-                        let date: TimePicker = getComponent(args.elements[i] as HTMLElement, "timepicker") as TimePicker;
-                        if (date) {
-                          date.destroy();
-                        }
-                    }
-                },
-                write: (args: {elements: Element, values: string, operator: string}) => {
-                    let format = { type: "dateTime", skeleton: "hm" };
-                    if (args.operator.indexOf("between") > -1) {
-                        let dateArr: any = args.values ? args.values : [];
-                        let dateRangeObj1 = new TimePicker({
-                            placeholder: "Select Time",
-                            min: new Date("3/8/2017 0:00 AM"),
-                            max: new Date("3/8/2017 2:00 AM"),
-                            change: e => {
-                                dateArr[0] = e.value ? intl.formatDate(e.value, format) : null;
-                                queryBuilder.notifyChange(dateArr, e.element);
-                            }
-                        });
-                        let dateRangeObj2 = new TimePicker({
-                            placeholder: "Select Time",
-                            min: new Date("3/8/2017 0:00 AM"),
-                            max: new Date("3/8/2017 2:00 AM"),
-                            change: e => {
-                                dateArr[1] = e.value ? intl.formatDate(e.value, format) : null;
-                                queryBuilder.notifyChange(dateArr, e.element);
-                            }
-                        });
-                        dateRangeObj1.appendTo("#" + args.elements[0].id);
-                        dateRangeObj2.appendTo("#" + args.elements[1].id);
+            create: () => {
+                const parentElem = [];
+                parentElem.push(document.createElement('input'));
+                parentElem.push(document.createElement('input'));
+                return parentElem;
+            },
+            destroy: (args: {elements: NodeListOf<Element>}) => {
+                for (let i = 0, len = args.elements.length; i < len; i++) {
+                    const date: TimePicker = getComponent(args.elements[i] as HTMLElement, 'timepicker') as TimePicker;
+                    if (date) {
+                        date.destroy();
                     }
                 }
             },
-            operators: [
-                { key: 'Between', value: 'between' }
-            ]
+            write: (args: {elements: Element, values: string, operator: string}) => {
+                const format = { type: 'dateTime', skeleton: 'hm' };
+                if (args.operator.indexOf('between') > -1) {
+                    const dateArr: any = args.values ? args.values : [];
+                    const dateRangeObj1 = new TimePicker({
+                        placeholder: 'Select Time',
+                        min: new Date('3/8/2017 0:00 AM'),
+                        max: new Date('3/8/2017 2:00 AM'),
+                        change: e => {
+                            dateArr[0] = e.value ? intl.formatDate(e.value, format) : null;
+                            queryBuilder.notifyChange(dateArr, e.element);
+                        }
+                    });
+                    const dateRangeObj2 = new TimePicker({
+                        placeholder: 'Select Time',
+                        min: new Date('3/8/2017 0:00 AM'),
+                        max: new Date('3/8/2017 2:00 AM'),
+                        change: e => {
+                            dateArr[1] = e.value ? intl.formatDate(e.value, format) : null;
+                            queryBuilder.notifyChange(dateArr, e.element);
+                        }
+                    });
+                    dateRangeObj1.appendTo('#' + args.elements[0].id);
+                    dateRangeObj2.appendTo('#' + args.elements[1].id);
+                }
+            }
+        },
+        operators: [
+            { key: 'Between', value: 'between' }
+        ]
         },
         {
             field: 'Amount', label: 'Amount', type: 'number', template: {
@@ -514,7 +508,7 @@ describe('QueryBuilder', () => {
                     (getComponent(document.getElementById(args.elementId), 'slider') as Slider).destroy();
                 },
                 write: (args: { elements: Element, values: string }) => {
-                    let slider: Slider = new Slider({
+                    const slider: Slider = new Slider({
                         value: 30,
                         min: 0,
                         max: 100,
@@ -534,10 +528,10 @@ describe('QueryBuilder', () => {
                 { key: 'Less than', value: 'lessthan' },
                 { key: 'Less than or equal', value: 'lessthanorequal' },
                 { key: 'Greater than or equal', value: 'greaterthanorequal' }
-            ],
+            ]
         }
     ];
-    let tempRules: RuleModel = {
+    const tempRules: RuleModel = {
         'condition': 'and',
         'rules': [{
             'label': 'Category',
@@ -562,7 +556,7 @@ describe('QueryBuilder', () => {
                 'operator': 'equal',
                 'value': 'Cash'
             }]
-        }, 
+        },
         {
             'label': 'Amount',
             'field': 'Amount',
@@ -579,7 +573,7 @@ describe('QueryBuilder', () => {
         }]
     };
 
-    let importRules1: RuleModel = {
+    const importRules1: RuleModel = {
         'condition': 'or',
         'rules': [{
             'label': 'Category',
@@ -589,7 +583,7 @@ describe('QueryBuilder', () => {
             'value': 'Laptop'
         }]
     };
-    let sqlRules: RuleModel = {
+    const sqlRules: RuleModel = {
         'condition': 'or',
         'not': true,
         'rules': [{
@@ -607,7 +601,7 @@ describe('QueryBuilder', () => {
             'value': 'Lap'
         }]
     };
-    let dateRules: RuleModel = {
+    const dateRules: RuleModel = {
         'condition': 'or',
         'rules': [{
             'label': 'DOB',
@@ -617,16 +611,7 @@ describe('QueryBuilder', () => {
             'value': '12/12/2001'
         }]
     };
-    let noValue: RuleModel = {
-        'condition': 'or',
-        'rules': [{
-            'label': 'DOB',
-            'field': 'DOB',
-            'type': 'date',
-            'operator': 'equal'
-        }]
-    };
-    let eRules: RuleModel = {
+    const eRules: RuleModel = {
         'condition': 'and',
         'rules': [{
             'label': 'EmployeeID',
@@ -644,7 +629,7 @@ describe('QueryBuilder', () => {
         }]
     };
 
-    let fieldRules: RuleModel = {
+    const fieldRules: RuleModel = {
         'condition': 'and',
         'rules': [{
             'label': 'EmployeeID',
@@ -662,7 +647,7 @@ describe('QueryBuilder', () => {
         }]
     };
 
-    let operatorRules: RuleModel = {
+    const operatorRules: RuleModel = {
         'condition': 'and',
         'rules': [{
             'label': 'EmployeeID',
@@ -688,7 +673,7 @@ describe('QueryBuilder', () => {
     };
 
 
-    let dataRules: RuleModel = {
+    const dataRules: RuleModel = {
         'condition': 'and',
         'rules': [{
             'label': 'EmployeeID',
@@ -700,23 +685,21 @@ describe('QueryBuilder', () => {
         {
             'condition': 'or',
             'rules': [{
-            'label': 'Title',
-            'field': 'Title',
-            'type': 'string',
-            'operator': 'equal',
-            'value': 'Sales Manager'
-        }] 
-    }]
+                'label': 'Title',
+                'field': 'Title',
+                'type': 'string',
+                'operator': 'equal',
+                'value': 'Sales Manager'
+            }]
+        }]
     };
     describe('DOM', () => {
         beforeEach((): void => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));
         });
         afterEach(() => {
-            remove(queryBuilder.element.nextElementSibling);
-            remove(queryBuilder.element);
-            // queryBuilder = null;
             queryBuilder.destroy();
+            remove(queryBuilder.element);
         });
         it('Default testing', () => {
             queryBuilder = new QueryBuilder({
@@ -743,7 +726,7 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.element.firstElementChild.classList.contains('e-group-container')).toBeTruthy();
             let childContent: Element = queryBuilder.element.firstElementChild.children[0];
             expect(childContent.classList.contains('e-group-header')).toBeTruthy();
-            let addBtn: HTMLElement = select('.e-add-btn', childContent) as HTMLElement;
+            const addBtn: HTMLElement = select('.e-add-btn', childContent) as HTMLElement;
             addBtn.click();
             // Selecting add group
             (selectAll('.e-item', queryBuilder.element.nextElementSibling)[0] as HTMLElement).click();
@@ -756,39 +739,83 @@ describe('QueryBuilder', () => {
             // Selecting add condition
             (selectAll('.e-item', queryBuilder.element.nextElementSibling)[1] as HTMLElement).click();
             expect(childContent.children[1].classList.contains('e-group-container')).toBeTruthy();
-	    let cloneBtn: HTMLElement = document.getElementsByClassName('e-clone-grp-btn')[0] as HTMLElement;
+	        const cloneBtn: HTMLElement = document.getElementsByClassName('e-clone-grp-btn')[0] as HTMLElement;
             cloneBtn.click();
-	    queryBuilder.enableSeparateConnector = true;
+	        queryBuilder.enableSeparateConnector = true;
             cloneBtn.click();
         });
 
         it('QueryBuilder with cloneGroup', () => {
-            let empField: ColumnsModel[] = [
+            const empField: ColumnsModel[] = [
                 {field: 'EmployeeID', label: 'Employee ID', type: 'number', values: [1, 2, 3, 4, 5]},
                 {field: 'Name', label: 'Name', type: 'string'}
             ];
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'rules': [
                     {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1] },
+                    {
+                        'condition': 'and',
+                        'rules': [
+                            {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1] }
+                        ]
+                    }
                 ]
             };
             queryBuilder = new QueryBuilder({
                 columns: empField,
                 rule: valRule,
-                showButtons: { lockGroup: true, cloneGroup: true, lockRule: true, cloneRule: true },
+                showButtons: { lockGroup: true, cloneGroup: true, lockRule: true, cloneRule: true }
             }, '#querybuilder');
-            let cloneBtn: HTMLElement = document.getElementsByClassName('e-clone-rule-btn')[0] as HTMLElement;
+            const cloneBtn: HTMLElement = document.getElementsByClassName('e-clone-rule-btn')[0] as HTMLElement;
             cloneBtn.click();
-            let lockRule: HTMLElement = document.getElementsByClassName('e-lock-rule-btn')[0] as HTMLElement;
+            const lockRule: HTMLElement = document.getElementsByClassName('e-lock-rule-btn')[0] as HTMLElement;
             lockRule.click();
             lockRule.click();
             lockRule.click();
-            let lockGroup: HTMLElement = document.getElementsByClassName('e-lock-grp-btn')[0] as HTMLElement;
+            const lockGroup: HTMLElement = document.getElementsByClassName('e-lock-grp-btn')[0] as HTMLElement;
+            const childLockGroup: HTMLElement = document.getElementsByClassName('e-lock-grp-btn')[1] as HTMLElement;
+            childLockGroup.click();
             lockGroup.click();
             lockGroup.click();
         });
-	
+
+        it('QueryBuilder with cloneGroup - separate connector', () => {
+            const empField: ColumnsModel[] = [
+                {field: 'EmployeeID', label: 'Employee ID', type: 'number', values: [1, 2, 3, 4, 5]},
+                {field: 'Name', label: 'Name', type: 'string'}
+            ];
+            const valRule: RuleModel = {
+                'condition': 'and',
+                'rules': [
+                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1] },
+                    {
+                        'condition': 'and',
+                        'rules': [
+                            {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1] }
+                        ]
+                    }
+                ]
+            };
+            queryBuilder = new QueryBuilder({
+                columns: empField,
+                enableSeparateConnector: true,
+                enableNotCondition: true,
+                rule: valRule,
+                showButtons: { lockGroup: true, cloneGroup: true, lockRule: true, cloneRule: true }
+            }, '#querybuilder');
+            const cloneBtn: HTMLElement = document.getElementsByClassName('e-clone-rule-btn')[0] as HTMLElement;
+            cloneBtn.click();
+            const lockRule: HTMLElement = document.getElementsByClassName('e-lock-rule-btn')[0] as HTMLElement;
+            lockRule.click();
+            lockRule.click();
+            lockRule.click();
+            const lockGroup: HTMLElement = document.getElementsByClassName('e-lock-grp-btn')[0] as HTMLElement;
+            const childLockGroup: HTMLElement = document.getElementsByClassName('e-lock-grp-btn')[1] as HTMLElement;
+            childLockGroup.click();
+            lockGroup.click();
+            lockGroup.click();
+        });
     });
 
     describe('Property', () => {
@@ -799,15 +826,15 @@ describe('QueryBuilder', () => {
             queryBuilder.destroy();
             detach(queryBuilder.element);
         });
-	it('QueryBuilder cloneGroup with Separate Connector', () => {
-            let empField: ColumnsModel[] = [
+        it('QueryBuilder cloneGroup with Separate Connector', () => {
+            const empField: ColumnsModel[] = [
                 {field: 'EmployeeID', label: 'Employee ID', type: 'number', values: [1, 2, 3, 4, 5]},
                 {field: 'Name', label: 'Name', type: 'string'}
             ];
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'rules': [
-                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1] },
+                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1] }
                 ]
             };
             queryBuilder = new QueryBuilder({
@@ -816,7 +843,7 @@ describe('QueryBuilder', () => {
                 showButtons: { lockGroup: true, cloneGroup: true, lockRule: true, cloneRule: true },
                 enableSeparateConnector: true
             }, '#querybuilder');
-            let cloneBtn: HTMLElement = document.getElementsByClassName('e-clone-rule-btn')[0] as HTMLElement;
+            const cloneBtn: HTMLElement = document.getElementsByClassName('e-clone-rule-btn')[0] as HTMLElement;
             cloneBtn.click();
         });
         it('displayMode testing Vertical', () => {
@@ -915,20 +942,20 @@ describe('QueryBuilder', () => {
         });
         it('enable RTL testing', () => {
             queryBuilder = new QueryBuilder({
-                enableRtl: true,
+                enableRtl: true
             }, '#querybuilder');
             expect(queryBuilder.element.classList.contains('e-rtl')).toBeTruthy();
         });
 
         it('disable RTL testing', () => {
             queryBuilder = new QueryBuilder({
-                enableRtl: false,
+                enableRtl: false
             }, '#querybuilder');
             expect(queryBuilder.element.classList.contains('e-rtl')).toBeFalsy();
         });
         it('enable summaryView testing', () => {
             queryBuilder = new QueryBuilder({
-                summaryView: false,
+                summaryView: false
             }, '#querybuilder');
             queryBuilder.summaryView = true;
             queryBuilder.dataBind();
@@ -941,7 +968,7 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.element.querySelector('.e-summary-content').style.display).toEqual('block');
             queryBuilder = new QueryBuilder({
                 rule: importRules,
-                summaryView: true,
+                summaryView: true
             }, '#querybuilder');
             expect(queryBuilder.element.querySelector('.e-summary-content').style.display).toEqual('block');
             queryBuilder = new QueryBuilder({
@@ -951,21 +978,21 @@ describe('QueryBuilder', () => {
         });
         it('enable/disable summaryView testing', () => {
             queryBuilder = new QueryBuilder({
-                summaryView: true,
+                summaryView: true
             }, '#querybuilder');
             queryBuilder.element.querySelector('.e-collapse-rule').click();
         });
         it('disable summaryView testing', () => {
-            let dataColl: object[] = [
+            const dataColl: object[] = [
                 {'Name': 'A', 'Designation': 'Software', 'DOB': '1/1/2018', 'DOJ': '1/1/2021'},
                 {'Name': 'B', 'Designation': 'Software', 'DOB': '1/1/2018', 'DOJ': '1/1/2021'},
                 {'Name': 'C', 'Designation': 'Software', 'DOB': '1/1/2018', 'DOJ': '1/1/2021'}
             ];
-            let columnDataColl: ColumnsModel[] = [
+            const columnDataColl: ColumnsModel[] = [
                 { field: 'Name', label: 'Name', type: 'string' },
                 { field: 'Designation', label: 'Designation', type: 'string' },
-                { field: 'DOB', label: 'DOB', type: 'date', category:'Date' },
-                { field: 'DOJ', label: 'DOJ', type: 'date', category:'Date' },
+                { field: 'DOB', label: 'DOB', type: 'date', category: 'Date' },
+                { field: 'DOJ', label: 'DOJ', type: 'date', category: 'Date' }
             ];
             queryBuilder = new QueryBuilder({
                 dataSource: dataColl,
@@ -974,7 +1001,7 @@ describe('QueryBuilder', () => {
             }, '#querybuilder');
             expect(queryBuilder.element.querySelectorAll('.e-collapse-rule').length).toBe(0);
             queryBuilder.addRules([{ 'label': 'Name', 'field': 'Name', 'type': 'string', 'operator': 'in', 'value': ['Nancy'] }], 'group0');
-            let multiObj: MultiSelect = queryBuilder.element.querySelector('.e-control.e-multiselect').ej2_instances;
+            const multiObj: MultiSelect = queryBuilder.element.querySelector('.e-control.e-multiselect').ej2_instances;
             multiObj[0].value = ['A', 'B'];
             multiObj[0].dataBind();
             (<HTMLElement>queryBuilder.element.querySelector('.e-control.e-multiselect')).click();
@@ -1008,7 +1035,7 @@ describe('QueryBuilder', () => {
                 rule: eRules
             }, '#querybuilder');
             queryBuilder.element.querySelector('.e-rule-operator.e-operator span').click();
-            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            const filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
             let selectedColumn: ColumnsModel = filterElem.dataSource[0];
             expect(filterElem.value).toEqual('EmployeeID');
             expect(selectedColumn.type).toEqual('number');
@@ -1019,34 +1046,34 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.rule.rules[0].value).toEqual(1);
             //increase the numerixtextbox value
             let ele: Element = valueElem[0].spinUp;
-            mouseEvent.initEvent("mousedown", true, true);
+            mouseEvent.initEvent('mousedown', true, true);
             ele.dispatchEvent(mouseEvent);
-            mouseEvent2.initEvent("mouseup", true, true);
+            mouseEvent2.initEvent('mouseup', true, true);
             ele.dispatchEvent(mouseEvent2);
             expect(valueElem[0].value).toEqual(2);
             expect(queryBuilder.rule.rules[0].value).toEqual(2);
-            //Change the operator 
+            //Change the operator
             operatorElem[0].showPopup();
-           let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
-           items[3].click();
+            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            items[3].click();
             expect(operatorElem[0].value).toEqual('between');
             expect(queryBuilder.rule.rules[0].operator).toEqual('between');
             expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control').length).toBe(3);
-            //Change the numeric textbox value 
+            //Change the numeric textbox value
             valueElem = queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].ej2_instances;
             ele = valueElem[0].spinUp;
-            mouseEvent.initEvent("mousedown", true, true);
+            mouseEvent.initEvent('mousedown', true, true);
             ele.dispatchEvent(mouseEvent);
-            mouseEvent2.initEvent("mouseup", true, true);
+            mouseEvent2.initEvent('mouseup', true, true);
             ele.dispatchEvent(mouseEvent2);
             expect(valueElem[0].value).toEqual(1);
             expect(queryBuilder.rule.rules[0].value[0]).toEqual(1);
 
             valueElem = queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[1].ej2_instances;
             ele = valueElem[0].spinUp;
-            mouseEvent.initEvent("mousedown", true, true);
+            mouseEvent.initEvent('mousedown', true, true);
             ele.dispatchEvent(mouseEvent);
-            mouseEvent2.initEvent("mouseup", true, true);
+            mouseEvent2.initEvent('mouseup', true, true);
             ele.dispatchEvent(mouseEvent2);
             expect(valueElem[0].value).toEqual(1);
             expect(queryBuilder.rule.rules[0].value[1]).toEqual(1);
@@ -1069,7 +1096,7 @@ describe('QueryBuilder', () => {
             expect(filterElem.value).toEqual('FirstName');
             expect(selectedColumn.type).toEqual('string');
 
-           expect(operatorElem[0].value).toEqual('in');
+            expect(operatorElem[0].value).toEqual('in');
             expect(queryBuilder.rule.rules[0].operator).toEqual('in');
             expect(queryBuilder.element.querySelector('.e-rule-value .e-control').classList.contains('e-multiselect')).toBeTruthy();
 
@@ -1192,9 +1219,9 @@ describe('QueryBuilder', () => {
             queryBuilder.dataBind();
 	    queryBuilder.showButtons = { lockGroup: false, cloneGroup: false, lockRule: false, cloneRule: false };
             queryBuilder.dataBind();
-	    queryBuilder.allowDragAndDrop = true; 
+	    queryBuilder.allowDragAndDrop = true;
             queryBuilder.dataBind();
-	    queryBuilder.enableSeparateConnector = true; 
+	    queryBuilder.enableSeparateConnector = true;
             queryBuilder.dataBind();
         });
         it('Set Models', () => {
@@ -1214,7 +1241,7 @@ describe('QueryBuilder', () => {
             // setmodel enablePersistence
             queryBuilder.enablePersistence = true;
             queryBuilder.dataBind();
-           
+
             queryBuilder.locale = 'de-DE';
             queryBuilder.dataBind();
 
@@ -1232,9 +1259,9 @@ describe('QueryBuilder', () => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));
         });
         afterEach(() => {
-	    if (queryBuilder.element.nextElementSibling) {
-		    remove(queryBuilder.element.nextElementSibling);
-	    }
+            if (queryBuilder.element.nextElementSibling) {
+                remove(queryBuilder.element.nextElementSibling);
+            }
             remove(queryBuilder.element);
             queryBuilder.destroy();
         });
@@ -1250,7 +1277,7 @@ describe('QueryBuilder', () => {
             queryBuilder.summaryView = true;
             queryBuilder.dataBind();
             expect(selectAll('.e-summary-content', queryBuilder.element).length).toBe(1);
-            expect(document.getElementsByClassName('e-summary-content')[0].querySelector('textarea').value).toEqual("EmployeeID = 1 OR Title = 'Sales Manager'");
+            expect(document.getElementsByClassName('e-summary-content')[0].querySelector('textarea').value).toEqual('EmployeeID = 1 OR Title = \'Sales Manager\'');
             (document.getElementsByClassName('e-edit-rule')[0] as HTMLElement).click();
             expect(queryBuilder.element.querySelector('.e-summary-content').style.display).toEqual('none');
 
@@ -1275,18 +1302,54 @@ describe('QueryBuilder', () => {
             document.getElementsByClassName('e-group-container')[0].remove();
             (document.getElementsByClassName('e-edit-rule')[0] as HTMLElement).click();
         });
-
-	it('Button changes with enableSeparateConnector', () => {
+        it('Button changes - Separate Connector', () => {
+            queryBuilder = null;
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 columns: buttonData,
                 enableSeparateConnector: true,
-                rule: eRules,
+                enableNotCondition: true,
+                rule: eRules
+            }, '#querybuilder');
+            queryBuilder.rule.rules[0].custom = { type: 'question' };
+            queryBuilder.rule.rules[1].custom = { type: 'answer' };
+            const rule: any = queryBuilder.getValidRules();
+            let args: any = { groupID: 'group0', cancel: false, type: 'field', value: 'EmployeeID', 'not': false };
+            (queryBuilder as any).beforeSuccessCallBack(args, queryBuilder.element.querySelector('.e-rule-filter .e-input-group'));
+            args = { groupID: 'group0', cancel: false, type: 'condition', value: 'and', 'not': false };
+            (queryBuilder as any).beforeSuccessCallBack(args, queryBuilder.element.querySelector('.e-add-condition-btn'));
+            args = { groupID: 'group0', cancel: false, type: 'condition', value: 'and', 'not': false };
+            (queryBuilder as any).beforeSuccessCallBack(args, queryBuilder.element.querySelector('.e-qb-toggle-btn'));
+        });
+
+        it('Button changes with angular', () => {
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: buttonData,
+                rule: eRules
+            }, '#querybuilder');
+            (document.getElementsByClassName('e-btngroup-or-lbl')[0] as HTMLElement).click();
+            queryBuilder.summaryView = true;
+            queryBuilder.dataBind();
+            (document.getElementsByClassName('e-edit-rule')[0] as HTMLElement).click();
+            (document.getElementsByClassName('e-dropdown-btn')[0] as HTMLElement).click();
+            document.getElementsByClassName('e-addgroup')[0].parentElement.click();
+            (document.getElementsByClassName('e-dropdown-btn')[1] as HTMLElement).click();
+            document.getElementsByClassName('e-addrule')[0].parentElement.click();
+            queryBuilder.isAngular = true;
+            (document.getElementsByClassName('e-deletegroup')[0] as HTMLElement).click();
+        });
+
+	    it('Button changes with enableSeparateConnector', () => {
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: buttonData,
+                enableSeparateConnector: true,
+                rule: eRules
             }, '#querybuilder');
             (document.getElementsByClassName('e-btngroup-or-lbl')[0] as HTMLElement).click();
             expect(queryBuilder.rule.condition).toEqual('and');
         });
-	
     });
 
     describe('Template support', () => {
@@ -1315,69 +1378,69 @@ describe('QueryBuilder', () => {
             expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('date');
             expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-timepicker')).toBeTruthy();
 
-             // Field change
-             filterElem[0].showPopup();
-             itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
-             itemsCln[1].click();
-             expect(filterElem[0].value).toEqual('PaymentMode');
-             expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
-             expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-dropdownlist')).toBeTruthy();
+            // Field change
+            filterElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[1].click();
+            expect(filterElem[0].value).toEqual('PaymentMode');
+            expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
+            expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-dropdownlist')).toBeTruthy();
 
-          // Field change
-          filterElem[0].showPopup();
-          itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
-          itemsCln[2].click();
-          expect(filterElem[0].value).toEqual('TransactionType');
-          expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('boolean');
-          expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-checkbox')).toBeTruthy();
+            // Field change
+            filterElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[2].click();
+            expect(filterElem[0].value).toEqual('TransactionType');
+            expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('boolean');
+            expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-checkbox')).toBeTruthy();
 
-          // Field change
-          filterElem[0].showPopup();
-          itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
-             itemsCln[5].click();
-          expect(filterElem[0].value).toEqual('Amount');
-          expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('number');
-          expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-slider')).toBeTruthy();
+            // Field change
+            filterElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[5].click();
+            expect(filterElem[0].value).toEqual('Amount');
+            expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('number');
+            expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-slider')).toBeTruthy();
 
-           // Field change
-           filterElem[0].showPopup();
-           itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
-             itemsCln[3].click();
-           expect(filterElem[0].value).toEqual('Description');
-           expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
-           expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-textbox')).toBeTruthy();
+            // Field change
+            filterElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[3].click();
+            expect(filterElem[0].value).toEqual('Description');
+            expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
+            expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-textbox')).toBeTruthy();
 
-           //Operator change
-           let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
-           operatorElem[0].showPopup();
-           itemsCln = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
-           itemsCln[8].click();
-           expect(operatorElem[0].value).toEqual('in');
-           expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-multiselect')).toBeTruthy();
+            //Operator change
+            const operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
+            operatorElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            itemsCln[8].click();
+            expect(operatorElem[0].value).toEqual('in');
+            expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-multiselect')).toBeTruthy();
 
-          //Multiple select
-          filterElem = queryBuilder.element.querySelector('.e-rule-operator input.e-control').ej2_instances;
-          filterElem[0].showPopup();
-          itemsCln = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
-          itemsCln[5].click();
-          queryBuilder.allowValidation = true;
-          queryBuilder.validateFields();
-          expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
-          let msObj: MultiSelect = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
-          queryBuilder.updateRules(msObj[0].element, ['US'], 0);
-          expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(0);
-          filterElem = queryBuilder.element.querySelectorAll('.e-rule-filter .e-control')[3].ej2_instances;
-          filterElem[0].showPopup();
-          itemsCln = document.getElementById('querybuilder_group0_rule3_filterkey_options').querySelectorAll('li');
-          itemsCln[0].click();
-          filterElem = queryBuilder.element.querySelectorAll('.e-rule-filter .e-control')[0].ej2_instances;
-          filterElem[0].showPopup();
-          itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
-          itemsCln[0].click();
-          filterElem = queryBuilder.element.querySelectorAll('.e-rule-operator .e-control')[0].ej2_instances;
-          filterElem[0].showPopup();
-          itemsCln = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
-          itemsCln[4].click();
+            //Multiple select
+            filterElem = queryBuilder.element.querySelector('.e-rule-operator input.e-control').ej2_instances;
+            filterElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            itemsCln[5].click();
+            queryBuilder.allowValidation = true;
+            queryBuilder.validateFields();
+            expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
+            const msObj: MultiSelect = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
+            queryBuilder.updateRules(msObj[0].element, ['US'], 0);
+            expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(0);
+            filterElem = queryBuilder.element.querySelectorAll('.e-rule-filter .e-control')[3].ej2_instances;
+            filterElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule3_filterkey_options').querySelectorAll('li');
+            itemsCln[0].click();
+            filterElem = queryBuilder.element.querySelectorAll('.e-rule-filter .e-control')[0].ej2_instances;
+            filterElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[0].click();
+            filterElem = queryBuilder.element.querySelectorAll('.e-rule-operator .e-control')[0].ej2_instances;
+            filterElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            itemsCln[4].click();
 
         });
     });
@@ -1403,7 +1466,7 @@ describe('QueryBuilder', () => {
         });
 
         it('getsql from rules testing', () => {
-            let sqlMultipleRules: RuleModel = {
+            const sqlMultipleRules: RuleModel = {
                 'condition': 'or', 'not': true, 'rules': [
                     { 'label': 'Category', 'field': 'Category', 'type': 'string', 'operator': 'endswith', 'value': 'Laptop' },
                     { 'label': 'Category', 'field': 'Category', 'type': 'string', 'operator': 'contains', 'value': 'Lap' },
@@ -1413,23 +1476,23 @@ describe('QueryBuilder', () => {
                     ]}
                 ]
             };
-            let simpleRule: RuleModel = {
+            const simpleRule: RuleModel = {
                 'condition': 'or', 'not': false, 'rules': [
                     { 'label': 'Category', 'field': 'Category', 'type': 'string', 'operator': 'endswith', 'value': 'Laptop' }
                 ]
             };
-            let simpleRule1: RuleModel = {
+            const simpleRule1: RuleModel = {
                 'condition': 'or', 'not': false, 'rules': [
                     { 'label': 'Category', 'field': 'Category', 'type': 'string', 'operator': 'isnull', 'value': null }
                 ]
             };
-            let simpleRule2: RuleModel = {
+            const simpleRule2: RuleModel = {
                 'condition': 'or', 'not': false, 'rules': [
                     { 'label': 'Category', 'field': 'Category', 'type': 'string', 'operator': 'in', 'value': ['a', 'b'] },
                     { 'label': 'Task ID', 'field': 'TaskID', 'type': 'number', 'operator': 'in', 'value': [1, 2] }
                 ]
             };
-            let simpleRule3: RuleModel = {
+            const simpleRule3: RuleModel = {
                 'condition': 'or', 'not': false, 'rules': [
                     { 'label': 'Order No', 'field': 'Order No', 'type': 'string', 'operator': 'equal', 'value': 'a' }
                 ]
@@ -1439,26 +1502,26 @@ describe('QueryBuilder', () => {
                 rule: sqlRules,
                 enableNotCondition: true
             }, '#querybuilder');
-            let fieldElem: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances;
+            const fieldElem: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances;
             fieldElem[0].showPopup();
-            var itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            const itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             itemsCln[6].click();
             expect(queryBuilder.getSqlFromRules()).toContain('Date');
             queryBuilder.setRules(sqlRules);
-            expect(queryBuilder.getSqlFromRules()).toEqual("NOT (Category LIKE ('%Laptop') OR Category LIKE ('%Lap%'))");
+            expect(queryBuilder.getSqlFromRules()).toEqual('NOT (Category LIKE (\'%Laptop\') OR Category LIKE (\'%Lap%\'))');
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(2);
             queryBuilder.setRules(sqlMultipleRules);
-            let sqlString: string = "NOT (Category LIKE ('%Laptop') OR Category LIKE ('%Lap%') OR ( NOT (Category LIKE ('%Laptop') OR Category LIKE ('%Lap%'))))";
+            const sqlString: string = 'NOT (Category LIKE (\'%Laptop\') OR Category LIKE (\'%Lap%\') OR ( NOT (Category LIKE (\'%Laptop\') OR Category LIKE (\'%Lap%\'))))';
             expect(queryBuilder.getSqlFromRules()).toEqual(sqlString);
             queryBuilder.setRules(simpleRule);
-            expect(queryBuilder.getSqlFromRules(simpleRule, true)).toEqual("`Category` LIKE ('%Laptop')");
+            expect(queryBuilder.getSqlFromRules(simpleRule, true)).toEqual('`Category` LIKE (\'%Laptop\')');
             queryBuilder.setRules(simpleRule1);
-            expect(queryBuilder.getSqlFromRules(simpleRule1, true)).toEqual("`Category` IS NULL");
+            expect(queryBuilder.getSqlFromRules(simpleRule1, true)).toEqual('`Category` IS NULL');
             queryBuilder.setRules(simpleRule2);
-            expect(queryBuilder.getSqlFromRules(simpleRule2)).toEqual("Category IN ('a','b') OR TaskID IN (1,2)");
+            expect(queryBuilder.getSqlFromRules(simpleRule2)).toEqual('Category IN (\'a\',\'b\') OR TaskID IN (1,2)');
             queryBuilder.setRules(simpleRule3);
-            let sql: string = queryBuilder.getSqlFromRules(queryBuilder.rule);
+            const sql: string = queryBuilder.getSqlFromRules(queryBuilder.rule);
             queryBuilder.setRulesFromSql(sql);
         });
 
@@ -1467,37 +1530,37 @@ describe('QueryBuilder', () => {
                 columns: boolData,
                 enableNotCondition: true
             }, '#querybuilder');
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("Category LIKE ('%Laptop')"));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('Category LIKE (\'%Laptop\')'));
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(1);
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("Status = true"));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('Status = true'));
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(1);
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("Category = null"));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('Category = null'));
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(1);
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("TaskID = -10"));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('TaskID = -10'));
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(1);
             queryBuilder.setRules(queryBuilder.getRulesFromSql('Category = "Nancy"'));
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(1);
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("Category LIKE ('%Nancy%')"));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('Category LIKE (\'%Nancy%\')'));
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(1);
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("Category IS NULL"));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('Category IS NULL'));
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("TaskID IN (1, 2)"));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('TaskID IN (1, 2)'));
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("Category IN ('a', 'b')"));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('Category IN (\'a\', \'b\')'));
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("Category LIKE ('')"));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('Category LIKE (\'\')'));
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("Category NOT LIKE ('')"));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('Category NOT LIKE (\'\')'));
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("Category LIKE ('%Laptop') AND (NOT (Category LIKE ('%L')))"));
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("Date BETWEEN '1/6/2020' AND '1/8/2020'"));
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("Category LIKE ('%Laptop') AND (NOT (Category IS NULL))"));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('Category LIKE (\'%Laptop\') AND (NOT (Category LIKE (\'%L\')))'));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('Date BETWEEN \'1/6/2020\' AND \'1/8/2020\''));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql('Category LIKE (\'%Laptop\') AND (NOT (Category IS NULL))'));
         });
 
         it('getDataManagerQuery', () => {
@@ -1535,7 +1598,7 @@ describe('QueryBuilder', () => {
         });
 
         it('addGroups and deleteGroups testing', () => {
-            let rule: RuleModel = {
+            const rule: RuleModel = {
                 'condition': 'and',
                 'rules': [{
                     'label': 'EmployeeID',
@@ -1631,7 +1694,7 @@ describe('QueryBuilder', () => {
                 }]
             }], 'group0');
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(2);
-            let rules: RuleModel = queryBuilder.getRules();
+            const rules: RuleModel = queryBuilder.getRules();
             expect(rules.rules.length).toBe(2);
             expect(rules.rules[1].rules.length).toBe(1);
         });
@@ -1646,36 +1709,52 @@ describe('QueryBuilder', () => {
             expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
             filterElem[0].showPopup();
             let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
-           items[3].click();
-           expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
-           expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(0);
-           queryBuilder.validateFields();
-           filterElem = queryBuilder.element.querySelector('.e-rule-operator input.e-control').ej2_instances;
-           expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
-           filterElem[0].showPopup();
-           items = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
-          items[3].click();
-          expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
-          expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
-          filterElem = queryBuilder.element.querySelector('.e-rule-operator input.e-control').ej2_instances;
-          filterElem[0].showPopup();
-          items = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
-          items[9].click();
-          queryBuilder.validateFields();
-          let textBoxObj: TextBox = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
-          textBoxObj[0].element.dispatchEvent(new Event('focus'));
-          textBoxObj[0].element.dispatchEvent(new KeyboardEvent('keypress', {'key': 'c'}));
-          textBoxObj[0].dataBind();
-          queryBuilder.updateRules(textBoxObj[0].element, 'US', 0);
-          expect(textBoxObj[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
-          expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(0);
+            items[3].click();
+            expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
+            expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(0);
+            queryBuilder.validateFields();
+            filterElem = queryBuilder.element.querySelector('.e-rule-operator input.e-control').ej2_instances;
+            expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
+            filterElem[0].showPopup();
+            items = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            items[3].click();
+            expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
+            expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
+            filterElem = queryBuilder.element.querySelector('.e-rule-operator input.e-control').ej2_instances;
+            filterElem[0].showPopup();
+            items = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            items[9].click();
+            queryBuilder.validateFields();
+            const textBoxObj: TextBox = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
+            textBoxObj[0].element.dispatchEvent(new Event('focus'));
+            textBoxObj[0].element.dispatchEvent(new KeyboardEvent('keypress', {'key': 'c'}));
+            textBoxObj[0].dataBind();
+            queryBuilder.updateRules(textBoxObj[0].element, 'US', 0);
+            expect(textBoxObj[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
+            expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(0);
+        });
+        it('Validation - Empty Operator', () => {
+            queryBuilder = new QueryBuilder({
+                columns: columnData,
+                allowValidation: true
+            }, '#querybuilder');
+            queryBuilder.setRules({condition: 'and', rules: [{field: 'EmployeeName', operator: 'equal', value: 'a'}]});
+            queryBuilder.rule.rules[0].operator = null;
+            queryBuilder.validateFields();
+            queryBuilder.setRules({condition: 'and', rules: [{field: 'JoiningDate', type: 'date', operator: 'equal', value: null}]});
+            queryBuilder.validateFields();
+            queryBuilder.setRules({condition: 'and', rules: [{field: 'JoiningDate', type: 'date', operator: 'isnull', value: '22/11/2024'}]});
+            queryBuilder.validateFields();
+            queryBuilder.setRules({condition: 'and', rules: [{field: 'JoiningDate', type: 'date', operator: 'between', value: ['19/11/2024', '22/11/2024']}]});
+            queryBuilder.rule.rules[0].value = [null, '22/11/2024'];
+            queryBuilder.validateFields();
         });
         it('Date Value changes', () => {
             queryBuilder = new QueryBuilder({
                 columns: columnData,
-                rule: dateRules,
+                rule: dateRules
             }, '#querybuilder');
-            let cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
+            const cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
             cObj[0].value = new Date('02/10/2021');
             cObj[0].dataBind();
             expect(queryBuilder.rule.rules[0].value).toEqual('2/10/2021');
@@ -1689,13 +1768,13 @@ describe('QueryBuilder', () => {
             queryBuilder.element.querySelector('.e-rule-delete').click();
             queryBuilder.addRules([{ 'label': 'DOB', 'field': 'DOB', 'type': 'date', 'operator': 'lessthanorequal', 'value': '2/10/2021' }], 'group0');
             expect(queryBuilder.getPredicate(queryBuilder.rule).value.toDateString()).toEqual('Wed Feb 10 2021');
-            let datePObj: DatePicker = queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].ej2_instances;
+            const datePObj: DatePicker = queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].ej2_instances;
             datePObj[0].show();
             (<HTMLElement>document.querySelectorAll('.e-datepicker.e-popup .e-cell')[5]).click();
         });
 
-	it('Date Value changes notequal operator', () => {
-            let dateRule: RuleModel = {
+        it('Date Value changes notequal operator', () => {
+            const dateRule: RuleModel = {
                 'condition': 'or',
                 'rules': [{
                     'label': 'DOB',
@@ -1707,9 +1786,9 @@ describe('QueryBuilder', () => {
             };
             queryBuilder = new QueryBuilder({
                 columns: columnData,
-                rule: dateRule,
+                rule: dateRule
             }, '#querybuilder');
-            let cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
+            const cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
             cObj[0].value = new Date('02/10/2021');
             cObj[0].dataBind();
             expect(queryBuilder.rule.rules[0].value).toEqual('2/10/2021');
@@ -1717,7 +1796,7 @@ describe('QueryBuilder', () => {
         });
 
         it('Date Value changes greaterthan operator', () => {
-            let dateRule: RuleModel = {
+            const dateRule: RuleModel = {
                 'condition': 'or',
                 'rules': [{
                     'label': 'DOB',
@@ -1729,9 +1808,9 @@ describe('QueryBuilder', () => {
             };
             queryBuilder = new QueryBuilder({
                 columns: columnData,
-                rule: dateRule,
+                rule: dateRule
             }, '#querybuilder');
-            let cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
+            const cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
             cObj[0].value = new Date('02/10/2021');
             cObj[0].dataBind();
             expect(queryBuilder.rule.rules[0].value).toEqual('2/10/2021');
@@ -1739,7 +1818,7 @@ describe('QueryBuilder', () => {
         });
 
         it('Date Value changes greaterthanorequal operator', () => {
-            let dateRule: RuleModel = {
+            const dateRule: RuleModel = {
                 'condition': 'or',
                 'rules': [{
                     'label': 'DOB',
@@ -1751,9 +1830,9 @@ describe('QueryBuilder', () => {
             };
             queryBuilder = new QueryBuilder({
                 columns: columnData,
-                rule: dateRule,
+                rule: dateRule
             }, '#querybuilder');
-            let cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
+            const cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
             cObj[0].value = new Date('02/10/2021');
             cObj[0].dataBind();
             expect(queryBuilder.rule.rules[0].value).toEqual('2/10/2021');
@@ -1761,7 +1840,7 @@ describe('QueryBuilder', () => {
         });
 
         it('Date Value changes lessthan operator', () => {
-            let dateRule: RuleModel = {
+            const dateRule: RuleModel = {
                 'condition': 'or',
                 'rules': [{
                     'label': 'DOB',
@@ -1773,9 +1852,9 @@ describe('QueryBuilder', () => {
             };
             queryBuilder = new QueryBuilder({
                 columns: columnData,
-                rule: dateRule,
+                rule: dateRule
             }, '#querybuilder');
-            let cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
+            const cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
             cObj[0].value = new Date('02/10/2021');
             cObj[0].dataBind();
             expect(queryBuilder.rule.rules[0].value).toEqual('2/10/2021');
@@ -1783,7 +1862,7 @@ describe('QueryBuilder', () => {
         });
 
         it('Date Value changes lessthanorequal operator', () => {
-            let dateRule: RuleModel = {
+            const dateRule: RuleModel = {
                 'condition': 'or',
                 'rules': [{
                     'label': 'DOB',
@@ -1795,9 +1874,9 @@ describe('QueryBuilder', () => {
             };
             queryBuilder = new QueryBuilder({
                 columns: columnData,
-                rule: dateRule,
+                rule: dateRule
             }, '#querybuilder');
-            let cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
+            const cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
             cObj[0].value = new Date('02/10/2021');
             cObj[0].dataBind();
             expect(queryBuilder.rule.rules[0].value).toEqual('2/10/2021');
@@ -1810,28 +1889,28 @@ describe('QueryBuilder', () => {
                 columns: fieldData,
                 rule: fieldRules
             }, '#querybuilder');
-           
+
             // Field change
-            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
+            const filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
             filterElem[0].showPopup();
             let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             itemsCln[2].click();
             expect(filterElem[0].value).toEqual('TitleOfCourtesy');
             expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('boolean');
-    
-             //operator change
-             let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
-             operatorElem[0].showPopup();
-             itemsCln = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
-             itemsCln[0].click();
-             expect(operatorElem[0].value).toEqual('equal');
-             expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-radio')).toBeTruthy();
 
-             filterElem[0].showPopup();
-             itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
-             itemsCln[1].click();
-             expect(filterElem[0].value).toEqual('FirstName');
-             expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
+            //operator change
+            const operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
+            operatorElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            itemsCln[0].click();
+            expect(operatorElem[0].value).toEqual('equal');
+            expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-radio')).toBeTruthy();
+
+            filterElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[1].click();
+            expect(filterElem[0].value).toEqual('FirstName');
+            expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
         });
         it(' in Operator Checking', () => {
             queryBuilder = new QueryBuilder({
@@ -1840,9 +1919,9 @@ describe('QueryBuilder', () => {
                 rule: operatorRules
             }, '#querybuilder');
             queryBuilder.getFilteredRecords(queryBuilder.rule);
-            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("EmployeeID BETWEEN 4 AND 5 AND Title IN ('Sales Manager') AND City LIKE ('u%')");
+            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual('EmployeeID BETWEEN 4 AND 5 AND Title IN (\'Sales Manager\') AND City LIKE (\'u%\')');
 	    queryBuilder.getOperator(queryBuilder.getSqlFromRules(queryBuilder.rule), 'NOT LIKE', true);
-            queryBuilder.getRulesFromSql("EmployeeID BETWEEN 4 AND 5 and Title IN ('Sales Manager') and City LIKE ('u%')");
+            queryBuilder.getRulesFromSql('EmployeeID BETWEEN 4 AND 5 and Title IN (\'Sales Manager\') and City LIKE (\'u%\')');
             let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
             let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
@@ -1854,22 +1933,22 @@ describe('QueryBuilder', () => {
             itemsCln[9].click();
             expect(operatorElem[0].value).toEqual('notin');
             queryBuilder.getFilteredRecords(queryBuilder.rule);
-            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("EmployeeID NOT BETWEEN 0 AND 0 AND Title NOT IN ('Sales Manager') AND City LIKE ('u%')");
+            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual('EmployeeID NOT BETWEEN 0 AND 0 AND Title NOT IN (\'Sales Manager\') AND City LIKE (\'u%\')');
             queryBuilder.reset();
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(0);
-            queryBuilder.setRulesFromSql("EmployeeID BETWEEN 0 AND 0 and Title IN ('Sales Manager') and City LIKE ('u%')");
-            expect(JSON.stringify(queryBuilder.getRulesFromSql("EmployeeID BETWEEN 0 AND 0 and Title IN ('Sales Manager') and City LIKE ('u%')").rules)).toEqual('[{"label":"Employee ID","field":"EmployeeID","operator":"between","type":"number","value":[0,0]},{"label":"Title","field":"Title","operator":"in","type":"string","value":["Sales Manager"]},{"label":"City","field":"City","operator":"startswith","value":"u","type":"string"}]');
+            queryBuilder.setRulesFromSql('EmployeeID BETWEEN 0 AND 0 and Title IN (\'Sales Manager\') and City LIKE (\'u%\')');
+            expect(JSON.stringify(queryBuilder.getRulesFromSql('EmployeeID BETWEEN 0 AND 0 and Title IN (\'Sales Manager\') and City LIKE (\'u%\')').rules)).toEqual('[{"label":"Employee ID","field":"EmployeeID","operator":"between","type":"number","value":[0,0]},{"label":"Title","field":"Title","operator":"in","type":"string","value":["Sales Manager"]},{"label":"City","field":"City","operator":"startswith","value":"u","type":"string"}]');
         });
         it(' Multiple value in textbox  Checking', () => {
-            let valRule: RuleModel = {'condition': 'and',
-            'rules': [{
-                'label': 'First Name',
-                'field': 'FirstName',
-                'type': 'string',
-                'operator': 'equal',
-                'value': ['Nancy', 'Andrew', 'Janet']
-            }] };
+            const valRule: RuleModel = {'condition': 'and',
+                'rules': [{
+                    'label': 'First Name',
+                    'field': 'FirstName',
+                    'type': 'string',
+                    'operator': 'equal',
+                    'value': ['Nancy', 'Andrew', 'Janet']
+                }] };
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 columns: fieldData,
@@ -1883,41 +1962,41 @@ describe('QueryBuilder', () => {
                 'value': 'US,45,45,4'
             }], 'group0');
             queryBuilder.updateRules(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0], 'US,45,45,4', 0);
-           
+
         });
         it('Custom Operator Checking', () => {
-            let operators: { [key: string]: Object }[] = [
+            const operators: { [key: string]: Object }[] = [
                 {value: 'equal', key: 'Equal', sqlOperator: '='},
                 {value: 'notequal', key: 'Not Equal', sqlOperator: '<>'}
             ];
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string', operators: operators }
             ];
-            let valRule: RuleModel = {'condition': 'and',
+            const valRule: RuleModel = {'condition': 'and',
                 'rules': [{
                     'label': 'First Name',
                     'field': 'FirstName',
                     'type': 'string',
                     'operator': 'notequal',
                     'value': 'Nancy'
-                }] 
+                }]
             };
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 columns: customFieldData,
                 rule: valRule
             }, '#querybuilder');
-            expect(queryBuilder.getSqlFromRules(valRule)).toEqual("FirstName <> 'Nancy'");
+            expect(queryBuilder.getSqlFromRules(valRule)).toEqual('FirstName <> \'Nancy\'');
         });
         it('Not Condition Checking', () => {
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'not': true,
                 'rules': [
                     {'label': 'First Name', 'field': 'FirstName', 'type': 'string', 'operator': 'notequal', 'value': 'Nancy'},
                     {'label': 'Employee ID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'equal', 'value': 1 }
-                ] 
+                ]
             };
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
@@ -1938,14 +2017,54 @@ describe('QueryBuilder', () => {
             (<HTMLElement>queryBuilder.element.querySelector('.e-btngroup-and-lbl')).click();
         });
         it('Readonly Checking', () => {
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'not': true,
                 'rules': [
                     {'label': 'First Name', 'field': 'FirstName', 'type': 'string', 'operator': 'notequal', 'value': 'Nancy'},
                     {'label': 'Employee ID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'equal', 'value': 1 },
                     {'label': 'Employee ID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1, 2] },
-                    {'condition':'or', 'not': false, rules: [
+                    {'condition': 'or', 'not': false, rules: [
+                        {'label': 'Title Of Courtesy', 'field': 'TitleOfCourtesy', 'type': 'boolean', 'operator': 'equal', 'value': 'Mr' },
+                        {'label': 'Hire Date', 'field': 'HireDate', 'type': 'date', 'operator': 'equal', 'value': '02/10/2021' }
+                    ]},
+                    { 'condition': 'or', 'not': true, rules: [
+                        { 'label': 'Title Of Courtesy', 'field': 'TitleOfCourtesy', 'type': 'boolean', 'operator': 'equal', 'value': 'Mr' },
+                        { 'label': 'Hire Date', 'field': 'HireDate', 'type': 'date', 'operator': 'equal', 'value': '02/10/2021' }
+                    ]},
+                    { 'condition': 'and', 'not': false, rules: [
+                        { 'label': 'Title Of Courtesy', 'field': 'TitleOfCourtesy', 'type': 'boolean', 'operator': 'equal', 'value': 'Mr' },
+                        { 'label': 'Hire Date', 'field': 'HireDate', 'type': 'date', 'operator': 'equal', 'value': '02/10/2021' }
+                    ]}
+                ]
+            };
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: fieldData,
+                rule: valRule,
+                enableNotCondition: true,
+                readonly: true
+            }, '#querybuilder');
+            expect(queryBuilder.element.querySelector('.e-btngroup-or-lbl').classList.contains('e-readonly')).toBeTruthy();
+            queryBuilder.readonly = false;
+            queryBuilder.dataBind();
+            queryBuilder.readonly = true;
+            queryBuilder.dataBind();
+            const inputObj: any = queryBuilder.element.querySelector('.e-filter-input');
+            const keyEvent: any = document.createEvent('KeyboardEvents');
+            keyEvent.initKeyboardEvent('keydown', true, true, null, false, false, false, false, 40, 40);
+            Object.defineProperties(keyEvent, { keyCode: {value: 40} });
+            inputObj.dispatchEvent(keyEvent);
+        });
+        it('Keyboard event Checking', () => {
+            const valRule: RuleModel = {
+                'condition': 'and',
+                'not': true,
+                'rules': [
+                    {'label': 'First Name', 'field': 'FirstName', 'type': 'string', 'operator': 'notequal', 'value': 'Nancy'},
+                    {'label': 'Employee ID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'equal', 'value': 1 },
+                    {'label': 'Employee ID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1, 2] },
+                    {'condition': 'or', 'not': false, rules: [
                         {'label': 'Title Of Courtesy', 'field': 'TitleOfCourtesy', 'type': 'boolean', 'operator': 'equal', 'value': 'Mr' },
                         {'label': 'Hire Date', 'field': 'HireDate', 'type': 'date', 'operator': 'equal', 'value': '02/10/2021' }
                     ]},
@@ -1965,33 +2084,34 @@ describe('QueryBuilder', () => {
                 rule: valRule,
                 enableNotCondition: true,
                 readonly: true,
+                allowDragAndDrop: true
             }, '#querybuilder');
             expect(queryBuilder.element.querySelector('.e-btngroup-or-lbl').classList.contains('e-readonly')).toBeTruthy();
             queryBuilder.readonly = false;
             queryBuilder.dataBind();
             queryBuilder.readonly = true;
             queryBuilder.dataBind();
-            let inputObj: any = queryBuilder.element.querySelector('.e-filter-input');
-            let keyEvent: any = document.createEvent('KeyboardEvents');
-            keyEvent.initKeyboardEvent("keydown", true, true, null, false, false, false, false, 40, 40);
-            Object.defineProperties(keyEvent, { keyCode: {value: 40} });
+            const inputObj: any = queryBuilder.element.querySelector('.e-filter-input');
+            const keyEvent: any = document.createEvent('KeyboardEvents');
+            keyEvent.initKeyboardEvent('keydown', true, true, null, false, false, false, false, 40, 40);
+            Object.defineProperties(keyEvent, { code: {value: 'Escape'} });
             inputObj.dispatchEvent(keyEvent);
         });
         it('Value Checking', () => {
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'not': true,
                 'rules': [
-                    {'label': 'Task ID', 'field': 'TaskID', 'type': 'number', 'operator': 'in', 'value': [1] },
+                    {'label': 'Task ID', 'field': 'TaskID', 'type': 'number', 'operator': 'in', 'value': [1] }
                 ]
             };
             queryBuilder = new QueryBuilder({
                 columns: boolData,
-                rule: valRule,
+                rule: valRule
             }, '#querybuilder');
             expect(queryBuilder.element.querySelector('.e-rule-value .e-control.e-input').classList.contains('e-textbox')).toBeTruthy();
             let inputObj: any = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances[0];
-            inputObj.element.value = "10";
+            inputObj.element.value = '10';
             let keyEvent = document.createEvent('KeyboardEvents');
             Object.defineProperty(keyEvent, 'target', {writable: false, value: inputObj.element});
             inputObj.inputHandler(keyEvent);
@@ -2000,7 +2120,7 @@ describe('QueryBuilder', () => {
             queryBuilder.addRules([{ 'label': 'Name', 'field': 'Name', 'type': 'string', 'operator': 'in', 'value': ['Nancy'] }], 'group0');
             expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control.e-input')[1].classList.contains('e-textbox')).toBeTruthy();
             inputObj = queryBuilder.element.querySelectorAll('.e-rule-value input.e-control')[1].ej2_instances[0];
-            inputObj.element.value = "Software";
+            inputObj.element.value = 'Software';
             keyEvent = document.createEvent('KeyboardEvents');
             Object.defineProperty(keyEvent, 'target', {writable: false, value: inputObj.element});
             inputObj.inputHandler(keyEvent);
@@ -2023,35 +2143,35 @@ describe('QueryBuilder', () => {
 
         });
         it('Multiselect Checking', (done: Function) => {
-            let empData: Object[] = [
+            const empData: Object[] = [
                 {'EmployeeID': '1', 'Name': 'A'},
                 {'EmployeeID': '2', 'Name': 'B'},
                 {'EmployeeID': '3', 'Name': 'C'},
                 {'EmployeeID': '4', 'Name': 'D'},
                 {'EmployeeID': '5', 'Name': 'E'}
             ];
-            let empField: ColumnsModel[] = [
+            const empField: ColumnsModel[] = [
                 {field: 'EmployeeID', label: 'Employee ID', type: 'number'},
                 {field: 'Name', label: 'Name', type: 'string'}
             ];
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'not': true,
                 'rules': [
-                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': ['1'] },
+                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': ['1'] }
                 ]
             };
             queryBuilder = new QueryBuilder({
                 dataSource: empData,
                 columns: empField,
-                rule: valRule,
+                rule: valRule
             }, '#querybuilder');
-            let listObj: any = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances[0];
+            const listObj: any = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances[0];
             (<any>listObj).inputElement.focus();
             listObj.showPopup();
-            let listWarapper: HTMLElement = (<any>listObj).popupObj.element;
+            const listWarapper: HTMLElement = (<any>listObj).popupObj.element;
             if (listWarapper) {
-                let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_valuekey0_popup').querySelectorAll('li');
+                const items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_valuekey0_popup').querySelectorAll('li');
                 items[1].click();
                 document.getElementById('querybuilder').click();
                 expect(queryBuilder.rule.rules[0].value[0]).toEqual(1);
@@ -2060,112 +2180,112 @@ describe('QueryBuilder', () => {
             done();
         });
         it('Operator Checking', () => {
-            let empData: Object[] = [
+            const empData: Object[] = [
                 {'EmployeeID': '1', 'Name': 'A'},
                 {'EmployeeID': '2', 'Name': 'B'},
                 {'EmployeeID': '3', 'Name': 'C'},
                 {'EmployeeID': '4', 'Name': 'D'},
                 {'EmployeeID': '5', 'Name': 'E'}
             ];
-            let empField: ColumnsModel[] = [
+            const empField: ColumnsModel[] = [
                 {field: 'EmployeeID', label: 'Employee ID', type: 'number'},
                 {field: 'Name', label: 'Name', type: 'string'}
             ];
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'not': true,
                 'rules': [
-                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': ['1'] },
+                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': ['1'] }
                 ]
             };
             queryBuilder = new QueryBuilder({
                 dataSource: empData,
                 columns: empField,
-                rule: valRule,
+                rule: valRule
             }, '#querybuilder');
-            let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
+            const operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
-            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
-            items[1].click(); 
+            const items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            items[1].click();
         });
         it('Multiselect without datasource Checking', () => {
-            let empField: ColumnsModel[] = [
+            const empField: ColumnsModel[] = [
                 {field: 'EmployeeID', label: 'Employee ID', type: 'number', values: [1, 2, 3, 4, 5]},
                 {field: 'Name', label: 'Name', type: 'string'}
             ];
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'rules': [
-                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1] },
+                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1] }
                 ]
             };
             queryBuilder = new QueryBuilder({
                 columns: empField,
-                rule: valRule,
+                rule: valRule
             }, '#querybuilder');
-            let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
+            const operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
-            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
-            items[1].click(); 
+            const items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            items[1].click();
         });
         it('In operator with textbox Checking', () => {
-            let empField: ColumnsModel[] = [
+            const empField: ColumnsModel[] = [
                 {field: 'EmployeeID', label: 'Employee ID', type: 'number'},
                 {field: 'Name', label: 'Name', type: 'string'}
             ];
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'rules': [
-                    {'label': 'Name', 'field': 'Name', 'type': 'string', 'operator': 'in', 'value': ['A', 'B'] },
+                    {'label': 'Name', 'field': 'Name', 'type': 'string', 'operator': 'in', 'value': ['A', 'B'] }
                 ]
             };
             queryBuilder = new QueryBuilder({
                 columns: empField,
-                rule: valRule,
+                rule: valRule
             }, '#querybuilder');
-            let inputObj: any = queryBuilder.element.querySelectorAll('.e-rule-value input.e-control')[0].ej2_instances[0];
-            inputObj.element.value = "A, B, C";
-            let keyEvent = document.createEvent('KeyboardEvents');
+            const inputObj: any = queryBuilder.element.querySelectorAll('.e-rule-value input.e-control')[0].ej2_instances[0];
+            inputObj.element.value = 'A, B, C';
+            const keyEvent = document.createEvent('KeyboardEvents');
             Object.defineProperty(keyEvent, 'target', {writable: false, value: inputObj.element});
             inputObj.inputHandler(keyEvent);
         });
         it('Date value Checking', () => {
-            let empField: ColumnsModel[] = [
+            const empField: ColumnsModel[] = [
                 {field: 'EmployeeID', label: 'Employee ID', type: 'number'},
                 {field: 'Name', label: 'Name', type: 'string'},
                 {field: 'Date', label: 'Date', type: 'date'}
             ];
-            let arrRule: RuleModel = {
+            const arrRule: RuleModel = {
                 'condition': 'and',
                 'not': true,
                 'rules': [
                     {'label': 'Date', 'field': 'Date', 'type': 'date', 'operator': 'between', 'value': ['12/2/2021', '12/3/2021'] }
                 ]
-            }
-            let arrRule1: RuleModel = {
+            };
+            const arrRule1: RuleModel = {
                 'condition': 'and',
                 'not': true,
                 'rules': [
                     {'label': 'Date', 'field': 'Date', 'type': 'date', 'operator': 'between', 'value': '12/2/2021' }
                 ]
-            }
-            let valRule: RuleModel = {
+            };
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'not': true,
                 'rules': [
-                    {'label': 'Date', 'field': 'Date', 'type': 'date', 'operator': 'equal', 'value': '12/2/2021' },
+                    {'label': 'Date', 'field': 'Date', 'type': 'date', 'operator': 'equal', 'value': '12/2/2021' }
                 ]
             };
-            let betweenRule: RuleModel = {
+            const betweenRule: RuleModel = {
                 'condition': 'and',
                 'not': true,
                 'rules': [
-                    {'label': 'Date', 'field': 'Date', 'type': 'date', 'operator': 'between', 'value': '12/2/2021' },
+                    {'label': 'Date', 'field': 'Date', 'type': 'date', 'operator': 'between', 'value': '12/2/2021' }
                 ]
             };
             queryBuilder = new QueryBuilder({
                 columns: empField,
-                rule: valRule,
+                rule: valRule
             }, '#querybuilder');
             (<HTMLInputElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
             (<HTMLInputElement>document.getElementsByClassName('e-clear-icon')[0]).dispatchEvent(clickEvent);
@@ -2179,21 +2299,21 @@ describe('QueryBuilder', () => {
             (<HTMLInputElement>document.getElementsByClassName('e-clear-icon')[0]).dispatchEvent(clickEvent);
             expect(queryBuilder.rule.rules[0].value[0]).toEqual(null);
             queryBuilder.setRules(betweenRule);
-            let inputObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value .e-control').ej2_instances;
+            const inputObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value .e-control').ej2_instances;
             inputObj[0].value = new Date();
             inputObj[0].dataBind();
         });
         it('Date with Format Checking', () => {
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'not': true,
                 'rules': [
-                    {'label': 'Task ID', 'field': 'TaskID', 'type': 'number', 'operator': 'isnull', 'value': null },
+                    {'label': 'Task ID', 'field': 'TaskID', 'type': 'number', 'operator': 'isnull', 'value': null }
                 ]
             };
             queryBuilder = new QueryBuilder({
                 columns: dateFormatData,
-                rule: valRule,
+                rule: valRule
             }, '#querybuilder');
             let fieldElem: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances;
             fieldElem[0].showPopup();
@@ -2207,16 +2327,16 @@ describe('QueryBuilder', () => {
             itemsCln[1].click();
         });
         it('Predicate Checking', () => {
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'not': true,
                 'rules': [
-                    {'label': 'Task ID', 'field': 'TaskID', 'type': 'number', 'operator': 'isnull', 'value': null },
+                    {'label': 'Task ID', 'field': 'TaskID', 'type': 'number', 'operator': 'isnull', 'value': null }
                 ]
             };
             queryBuilder = new QueryBuilder({
                 columns: boolData,
-                rule: valRule,
+                rule: valRule
             }, '#querybuilder');
             expect(queryBuilder.getPredicate(queryBuilder.rule).operator).toEqual('isnull');
             let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
@@ -2228,64 +2348,64 @@ describe('QueryBuilder', () => {
             queryBuilder.addRules([{ 'label': 'Name', 'field': 'Name', 'type': 'string', 'operator': 'in', 'value': ['Nancy'] }], 'group0');
             operatorElem = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
-            itemsCln= document.getElementById('querybuilder_group0_rule1_operatorkey_options').querySelectorAll('li');
+            itemsCln = document.getElementById('querybuilder_group0_rule1_operatorkey_options').querySelectorAll('li');
             itemsCln[10].click();
             expect(queryBuilder.getPredicate(queryBuilder.rule).operator).toEqual('equal');
             operatorElem[0].showPopup();
-            itemsCln= document.getElementById('querybuilder_group0_rule1_operatorkey_options').querySelectorAll('li');
+            itemsCln = document.getElementById('querybuilder_group0_rule1_operatorkey_options').querySelectorAll('li');
             itemsCln[11].click();
             expect(queryBuilder.getPredicate(queryBuilder.rule).operator).toEqual('notequal');
-            queryBuilder.setRulesFromSql("Date BETWEEN '1/12/2021' AND '2/12/2021'");
+            queryBuilder.setRulesFromSql('Date BETWEEN \'1/12/2021\' AND \'2/12/2021\'');
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].operator).toEqual('greaterthanorequal');
-            queryBuilder.setRulesFromSql("Date NOT BETWEEN '1/12/2021' AND '2/12/2021'");
+            queryBuilder.setRulesFromSql('Date NOT BETWEEN \'1/12/2021\' AND \'2/12/2021\'');
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].operator).toEqual('lessthan');
-            queryBuilder.setRulesFromSql("Category IN('S', 'R')");
+            queryBuilder.setRulesFromSql('Category IN(\'S\', \'R\')');
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].operator).toEqual('equal');
-            queryBuilder.setRulesFromSql("Category NOT IN('S', 'R')");
+            queryBuilder.setRulesFromSql('Category NOT IN(\'S\', \'R\')');
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].operator).toEqual('notequal');
-            queryBuilder.setRulesFromSql("Date BETWEEN '1/12/2021' AND '2/12/2021' OR Date = '1/12/2021'");
-            expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].predicates[0].operator).toEqual('greaterthanorequal');  
-            queryBuilder.setRulesFromSql("Category IN('S', 'R') OR Category IN('S', 'R')");
+            queryBuilder.setRulesFromSql('Date BETWEEN \'1/12/2021\' AND \'2/12/2021\' OR Date = \'1/12/2021\'');
+            expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].predicates[0].operator).toEqual('greaterthanorequal');
+            queryBuilder.setRulesFromSql('Category IN(\'S\', \'R\') OR Category IN(\'S\', \'R\')');
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].predicates[0].operator).toEqual('equal');
-            queryBuilder.setRulesFromSql("Date = '1/12/2021' AND Date = '3/12/2021'");
+            queryBuilder.setRulesFromSql('Date = \'1/12/2021\' AND Date = \'3/12/2021\'');
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].predicates[0].operator).toEqual('greaterthanorequal');
-            queryBuilder.setRulesFromSql("Date = '1/12/2021' OR Date = '3/12/2021'");
+            queryBuilder.setRulesFromSql('Date = \'1/12/2021\' OR Date = \'3/12/2021\'');
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].predicates[0].operator).toEqual('greaterthanorequal');
-            queryBuilder.setRulesFromSql("TaskID IN (4,5) OR (Category LIKE ('ALFKI%'))");
+            queryBuilder.setRulesFromSql('TaskID IN (4,5) OR (Category LIKE (\'ALFKI%\'))');
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[1].operator).toEqual('startswith');
-            queryBuilder.setRulesFromSql("(Category LIKE ('ALFKI%')) OR (TaskID = 0)");
+            queryBuilder.setRulesFromSql('(Category LIKE (\'ALFKI%\')) OR (TaskID = 0)');
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].operator).toEqual('startswith');
-            queryBuilder.setRulesFromSql("(Date = null)");
+            queryBuilder.setRulesFromSql('(Date = null)');
             expect(queryBuilder.getPredicate(queryBuilder.rule).operator).toEqual('equal');
-            queryBuilder.setRulesFromSql("Category NOT LIKE ('%ALFKI%') OR Category NOT LIKE ('%ALFKI%')");
+            queryBuilder.setRulesFromSql('Category NOT LIKE (\'%ALFKI%\') OR Category NOT LIKE (\'%ALFKI%\')');
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].operator).toEqual('doesnotcontain');
-            queryBuilder.setRulesFromSql("Category LIKE ('ALFKI%') OR TaskID = 0");
+            queryBuilder.setRulesFromSql('Category LIKE (\'ALFKI%\') OR TaskID = 0');
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].operator).toEqual('startswith');
-            queryBuilder.setRulesFromSql("() AND Category LIKE ('sda%')");
+            queryBuilder.setRulesFromSql('() AND Category LIKE (\'sda%\')');
             expect(queryBuilder.getPredicate(queryBuilder.rule).operator).toEqual('startswith');
-            queryBuilder.setRulesFromSql("() OR Category LIKE ('sda%')");
+            queryBuilder.setRulesFromSql('() OR Category LIKE (\'sda%\')');
             expect(queryBuilder.getPredicate(queryBuilder.rule).operator).toEqual('startswith');
         });
         it('Default Value Checking', () => {
-            let formatObj: FormatObject = {skeleton: 'yMd'}
-            let valRule: RuleModel = {
+            const formatObj: FormatObject = {skeleton: 'yMd'};
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'not': true,
                 'rules': [
                     {'label': 'First Name', 'field': 'FirstName', 'type': 'string', 'operator': 'in', 'value': ['Nancy']},
                     {'label': 'Employee ID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [5] },
                     {'label': 'Employee ID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'equal', 'value': 1 }
-                ] 
+                ]
             };
-            let filterColl: ColumnsModel[] = [
+            const filterColl: ColumnsModel[] = [
                 {field: 'FirstName', label: 'First Name', type: 'string', value: 'Nancy'},
                 {field: 'EmployeeID', label: 'Employee ID', type: 'number', value: 1},
                 {field: 'LastName', label: 'Last Name', type: 'string', value: ['Davolio']},
-                {field: 'BirthDate', label: 'BirthDate', type:'date', format:'short', value: '02/17/2021'},
-                {field: 'HireDate', label: 'HireDate', type:'date', format: formatObj, value: new Date(704692800000)},
-                {field: 'Status', label: 'Status', type:'boolean', value: true},
-                {field: 'ValueStatus', label: 'ValueStatus', type:'boolean', value: 'true', values: ['true', 'false']},
-                {field: 'FalseStatus', label: 'FalseStatus', type:'boolean', value: false}
+                {field: 'BirthDate', label: 'BirthDate', type: 'date', format: 'short', value: '02/17/2021'},
+                {field: 'HireDate', label: 'HireDate', type: 'date', format: formatObj, value: new Date(704692800000)},
+                {field: 'Status', label: 'Status', type: 'boolean', value: true},
+                {field: 'ValueStatus', label: 'ValueStatus', type: 'boolean', value: 'true', values: ['true', 'false']},
+                {field: 'FalseStatus', label: 'FalseStatus', type: 'boolean', value: false}
             ];
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
@@ -2321,13 +2441,13 @@ describe('QueryBuilder', () => {
             queryBuilder.addRules([{ 'label': 'ValueStatus', 'field': 'ValueStatus', 'type': undefined, 'operator': 'equal', 'value': true }], 'group0');
         });
         it('Is Empty Checking', () => {
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'rules': [
                     {'label': 'First Name', 'field': 'FirstName', 'type': 'string', 'operator': 'isempty', 'value': ''}
                 ]
             };
-            let filterColl: ColumnsModel[] = [
+            const filterColl: ColumnsModel[] = [
                 {field: 'FirstName', label: 'First Name', type: 'string'},
                 {field: 'EmployeeID', label: 'Employee ID', type: 'number'},
                 {field: 'LastName', label: 'Last Name', type: 'string'}
@@ -2337,19 +2457,23 @@ describe('QueryBuilder', () => {
                 columns: filterColl,
                 rule: valRule
             }, '#querybuilder');
-            let filterElem: DropDownList = queryBuilder.element.querySelectorAll('.e-rule-filter .e-control')[0].ej2_instances;
+            const filterElem: DropDownList = queryBuilder.element.querySelectorAll('.e-rule-filter .e-control')[0].ej2_instances;
             filterElem[0].showPopup();
-            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            const itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             itemsCln[2].click();
         });
     });
     describe('Platform Specific Column Template', () => {
         beforeEach((): void => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));
-            let template: Element = createElement('script', { id: 'template' });
+            const template: Element = createElement('script', { id: 'template' });
             template.setAttribute('type', 'text/x-template');
             template.innerHTML = '<div class="e-slider-value"><div id = ${ruleID}_valuekey0 class="ticks_slider e-template"></div></div>';
             document.body.appendChild(template);
+            const boolTemplate: Element = createElement('script', { id: 'boolTemplate' });
+            boolTemplate.setAttribute('type', 'text/x-template');
+            boolTemplate.innerHTML = '<div class="e-booean-value"><input id = ${ruleID}_valuekey0 class="e-template"></div></div>';
+            document.body.appendChild(boolTemplate);
         });
         afterEach(() => {
             remove(queryBuilder.element.nextElementSibling);
@@ -2357,47 +2481,69 @@ describe('QueryBuilder', () => {
             queryBuilder.destroy();
         });
         it('Template Checking', () => {
-            let customFieldData: ColumnsModel[] = [
-                { field: 'EmployeeID', label: 'Employee ID', type: 'number', template:'#template' },
-                { field: 'FirstName', label: 'First Name', type: 'string' }
+            const customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number', template: '#template' },
+                { field: 'FirstName', label: 'First Name', type: 'string' },
+                { field: 'IsHeader', label: 'IsHeader', type: 'boolean', template: '#boolTemplate' }
             ];
-            let valRule: RuleModel = {'condition': 'and',
+            const valRule: RuleModel = {'condition': 'and',
                 'rules': [{
                     'label': 'Employee ID',
                     'field': 'EmployeeID',
                     'type': 'number',
                     'operator': 'equal',
                     'value': 32
-                }] 
+                },
+                {
+                    'label': 'IsHeader',
+                    'field': 'IsHeader',
+                    'type': 'boolean',
+                    'operator': 'equal',
+                    'value': true
+                }]
             };
-            
+
             let valueObj: Slider;
+            let checkObj: CheckBox;
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 columns: customFieldData,
                 rule: valRule,
                 actionBegin: (args: any) => {
-                    if (args.requestType === 'value-template-create') {     
-                        let defaultNumber: number = 31;
-                        if (args.rule.value === '') {
-                            args.rule.value = defaultNumber;
-                        }
-                        valueObj = new Slider({
-                            value: args.rule.value as number, min: 30, max: 50,
-                            ticks: { placement: 'Before', largeStep: 5, smallStep: 1 },
-                            change: (e: any) => {
-                                let elem: HTMLElement = valueObj.element;
-                                queryBuilder.notifyChange(e.value, elem, 'value');
+                    if (args.requestType === 'value-template-create') {
+                        if (args.rule.field === 'EmployeeID') {
+                            const defaultNumber: number = 31;
+                            if (args.rule.value === '') {
+                                args.rule.value = defaultNumber;
                             }
-                        });
-                        valueObj.appendTo('#' + args.ruleID + '_valuekey0');
+                            valueObj = new Slider({
+                                value: args.rule.value as number, min: 30, max: 50,
+                                ticks: { placement: 'Before', largeStep: 5, smallStep: 1 },
+                                change: (e: any) => {
+                                    const elem: HTMLElement = valueObj.element;
+                                    queryBuilder.notifyChange(e.value, elem, 'value');
+                                }
+                            });
+                            valueObj.appendTo('#' + args.ruleID + '_valuekey0');
+                        } else {
+                            checkObj = new CheckBox({
+                                checked: args.rule.value as boolean,
+                                change: (e: any) => {
+                                    const elem: HTMLElement = valueObj.element;
+                                    queryBuilder.notifyChange(e.value, elem, 'value');
+                                }
+                            });
+                            checkObj.appendTo('#' + args.ruleID + '_valuekey0');
+                        }
                     }
                 }
             }, '#querybuilder');
-            let slider: Slider = queryBuilder.element.querySelector('.e-control.e-slider').ej2_instances[0];
+            queryBuilder.lockGroup('group0');
+            queryBuilder.lockGroup('group0');
+            const slider: Slider = queryBuilder.element.querySelector('.e-control.e-slider').ej2_instances[0];
             slider.value = 30; slider.dataBind();
             expect(queryBuilder.rule.rules[0].value).toEqual(30);
-            let filterElem:DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
+            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
             filterElem[0].showPopup();
             let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             itemsCln[1].click();
@@ -2405,6 +2551,93 @@ describe('QueryBuilder', () => {
             filterElem[0].showPopup();
             itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             itemsCln[0].click();
+            queryBuilder.destroy();
+        });
+        it('Template Checking - Other Platforms', () => {
+            const customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number', template: '#template' },
+                { field: 'FirstName', label: 'First Name', type: 'string' },
+                { field: 'IsHeader', label: 'IsHeader', type: 'boolean', template: '#boolTemplate' }
+            ];
+            const valRule: RuleModel = {'condition': 'and',
+                'rules': [{
+                    'label': 'Employee ID',
+                    'field': 'EmployeeID',
+                    'type': 'number',
+                    'operator': 'equal',
+                    'value': 32
+                },
+                {
+                    'label': 'IsHeader',
+                    'field': 'IsHeader',
+                    'type': 'boolean',
+                    'operator': 'equal',
+                    'value': true
+                }]
+            };
+
+            let valueObj: Slider;
+            let checkObj: CheckBox;
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: customFieldData,
+                rule: valRule,
+                actionBegin: (args: any) => {
+                    if (args.requestType === 'value-template-create') {
+                        if (args.rule.field === 'EmployeeID') {
+                            const defaultNumber: number = 31;
+                            if (args.rule.value === '') {
+                                args.rule.value = defaultNumber;
+                            }
+                            valueObj = new Slider({
+                                value: args.rule.value as number, min: 30, max: 50,
+                                ticks: { placement: 'Before', largeStep: 5, smallStep: 1 },
+                                change: (e: any) => {
+                                    const elem: HTMLElement = valueObj.element;
+                                    queryBuilder.notifyChange(e.value, elem, 'value');
+                                }
+                            });
+                            valueObj.appendTo('#' + args.ruleID + '_valuekey0');
+                        } else {
+                            checkObj = new CheckBox({
+                                checked: args.rule.value as boolean,
+                                change: (e: any) => {
+                                    const elem: HTMLElement = valueObj.element;
+                                    queryBuilder.notifyChange(e.value, elem, 'value');
+                                }
+                            });
+                            checkObj.appendTo('#' + args.ruleID + '_valuekey0');
+                        }
+                    }
+                }
+            }, '#querybuilder');
+            queryBuilder.lockGroup('group0');
+            queryBuilder.lockGroup('group0');
+            const slider: Slider = queryBuilder.element.querySelector('.e-control.e-slider').ej2_instances[0];
+            slider.value = 30; slider.dataBind();
+            expect(queryBuilder.rule.rules[0].value).toEqual(30);
+            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
+            filterElem[0].showPopup();
+            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[1].click();
+            filterElem = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
+            filterElem[0].showPopup();
+            (queryBuilder as any).isReact = true;
+            itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[0].click();
+            (queryBuilder as any).isReact = false;
+            filterElem = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
+            filterElem[0].showPopup();
+            (queryBuilder as any).isAngular = true;
+            itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[0].click();
+            (queryBuilder as any).isAngular = false;
+            filterElem = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
+            filterElem[0].showPopup();
+            (queryBuilder as any).isVue3 = true;
+            itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[0].click();
+            (queryBuilder as any).isVue3 = false;
             queryBuilder.destroy();
         });
     });
@@ -2427,19 +2660,19 @@ describe('QueryBuilder', () => {
             queryBuilder.destroy();
         });
         it('Template Checking', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' },
                 { field: 'Date', label: 'Date', type: 'date', operators: [{key: 'equal', value: 'equal'}, {key: 'between', value: 'between'}], template: '#template' },
                 { field: 'BirthDate', label: 'BirthDate', type: 'date', operators: [{ key: 'between', value: 'between' }], template: '#betweentemplate' }
             ];
-            let valRule: RuleModel = {'condition': 'and',
+            const valRule: RuleModel = {'condition': 'and',
                 'rules': [
                     {'label': 'Employee ID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'equal', 'value': 32 },
                     {'label': 'Date', 'field': 'Date', 'type': 'date', 'operator': 'equal', 'value': '12/10/2021' },
                     {'label': 'Date', 'field': 'Date', 'type': 'date', 'operator': 'between', 'value': ['12/10/2021', '12/11/2021'] },
                     { 'label': 'BirthDate', 'field': 'BirthDate', 'type': 'date', 'operator': 'between', 'value': ['12/10/2021', '12/11/2021'] }
-                ] 
+                ]
             };
             let dateRangeObj: DateRangePicker;
             let dateObj: DatePicker;
@@ -2453,38 +2686,38 @@ describe('QueryBuilder', () => {
                         if (args.rule.field === 'Date') {
                             if (args.rule.operator === 'between') {
                                 dateRangeObj = new DateRangePicker({
-                                    placeholder:"Select Range",
+                                    placeholder: 'Select Range',
                                     change: (e: any) => {
-                                        let elem: HTMLElement = dateRangeObj.element;
+                                        const elem: HTMLElement = dateRangeObj.element;
                                         queryBuilder.notifyChange(e.value as Date[], elem, 'value');
                                     }
                                 });
                                 dateRangeObj.appendTo('#' + args.ruleID + '_valuekey0');
                             } else {
                                 dateObj = new DatePicker({
-                                    placeholder:"Select Range",
+                                    placeholder: 'Select Range',
                                     change: (e: any) => {
-                                        let elem: HTMLElement = dateObj.element;
+                                        const elem: HTMLElement = dateObj.element;
                                         queryBuilder.notifyChange(e.value as Date, elem, 'value');
                                     }
                                 });
                                 dateObj.appendTo('#' + args.ruleID + '_valuekey0');
                             }
                         } else {
-                            var dateArr = [];
+                            let dateArr = [];
                             dateObj = new DatePicker({
-                                placeholder:"Select Range",
+                                placeholder: 'Select Range',
                                 change: (e: any) => {
-                                    let elem: HTMLElement = dateObj.element;
+                                    const elem: HTMLElement = dateObj.element;
                                     dateArr = [];
                                     dateArr.push(e.value); dateArr.push(dateObj2.value);
                                     queryBuilder.notifyChange(dateArr, elem, 'value');
                                 }
                             });
                             dateObj2 = new DatePicker({
-                                placeholder:"Select Range",
+                                placeholder: 'Select Range',
                                 change: (e: any) => {
-                                    let elem: HTMLElement = dateObj.element;
+                                    const elem: HTMLElement = dateObj.element;
                                     dateArr = [];
                                     dateArr.push(dateObj.value); dateArr.push(e.value);
                                     queryBuilder.notifyChange(dateArr, elem, 'value');
@@ -2499,7 +2732,7 @@ describe('QueryBuilder', () => {
             let datePObj: DatePicker = queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[1].ej2_instances;
             datePObj[0].value = new Date('02/10/2021');
             datePObj[0].dataBind();
-            let dateRngObj: DateRangePicker = queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[2].ej2_instances;
+            const dateRngObj: DateRangePicker = queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[2].ej2_instances;
             dateRngObj[0].value = [new Date('02/10/2021'), new Date('02/11/2021')];
             dateRngObj[0].dataBind();
             datePObj = queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[3].ej2_instances;
@@ -2511,7 +2744,7 @@ describe('QueryBuilder', () => {
     describe('Platform Specific Rule Template', () => {
         beforeEach((): void => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));
-            let template: Element = createElement('script', { id: 'template' });
+            const template: Element = createElement('script', { id: 'template' });
             template.setAttribute('type', 'text/x-template');
             template.innerHTML = '<div class="e-rule e-rule-template"><div class="e-rule-filter"><input id = ${ruleID}_filterkey class="e-filter-input"></div><div class="e-rule-operator e-operator"><input id = ${ruleID}_operatorkey class="e-operator-input"></div><div class="e-value e-rule-value e-slider-value"><div id = ${ruleID}_valuekey0 class="ticks_slider"></div></div><div class="e-rule-btn"><button class="e-removerule e-rule-delete e-css e-btn e-small e-round"><span class="e-btn-icon e-icons e-delete-icon"/></button></div></div>';
             document.body.appendChild(template);
@@ -2522,14 +2755,14 @@ describe('QueryBuilder', () => {
             queryBuilder.destroy();
         });
         it('Rule Template Checking', () => {
-            let customFieldData: ColumnsModel[] = [
-                { field: 'EmployeeID', label: 'Employee ID', type: 'number', ruleTemplate:'#template' },
+            const customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number', ruleTemplate: '#template' },
                 { field: 'FirstName', label: 'First Name', type: 'string' },
                 { field: 'City', label: 'City', type: 'string' },
                 {
                     field: 'Amount', label: 'Amount', type: 'number', template: {
                         create: () => {
-                            let elem: Element = document.createElement('div');
+                            const elem: Element = document.createElement('div');
                             elem.setAttribute('class', 'ticks_slider');
                             return elem;
                         },
@@ -2537,7 +2770,7 @@ describe('QueryBuilder', () => {
                             (getComponent(document.getElementById(args.elementId), 'slider') as Slider).destroy();
                         },
                         write: (args: { elements: Element, values: string }) => {
-                            let slider: Slider = new Slider({
+                            const slider: Slider = new Slider({
                                 value: 30,
                                 min: 0,
                                 max: 100,
@@ -2551,30 +2784,30 @@ describe('QueryBuilder', () => {
                         }
                     }
                 },
-                { 
+                {
                     field: 'Stock', label: 'Stock', type: 'boolean', template: {
                         create: () => {
-                            return createElement("input", { attrs: { type: "checkbox" } });
+                            return createElement('input', { attrs: { type: 'checkbox' } });
                         },
                         destroy: (args: { elementId: string }) => {
-                            (getComponent(document.getElementById(args.elementId),"checkbox") as CheckBox).destroy();
+                            (getComponent(document.getElementById(args.elementId), 'checkbox') as CheckBox).destroy();
                         },
                         write: (args: { elements: Element; values: string }) => {
-                            let checked: boolean = args.values === "Yes" ? true : false;
+                            const checked: boolean = args.values === 'Yes' ? true : false;
                             const boxObj: CheckBox = new CheckBox({
-                                label: "In Stock",
+                                label: 'In Stock',
                                 checked: checked,
-                                value: args.values === "Yes" ? "Yes": "No",
+                                value: args.values === 'Yes' ? 'Yes' : 'No',
                                 change: (e: any) => {
-                                    queryBuilder.notifyChange(e.checked ? "Yes" : "No", e.event.target);
+                                    queryBuilder.notifyChange(e.checked ? 'Yes' : 'No', e.event.target);
                                 }
                             });
-                            boxObj.appendTo("#" + args.elements.id);
+                            boxObj.appendTo('#' + args.elements.id);
                         }
                     }
                 }
             ];
-            let valRule: RuleModel = {'condition': 'and',
+            const valRule: RuleModel = {'condition': 'and',
                 'rules': [{
                     'label': 'Employee ID',
                     'field': 'EmployeeID',
@@ -2626,13 +2859,13 @@ describe('QueryBuilder', () => {
                 dataSource: complexData,
                 columns: customFieldData,
                 rule: valRule,
-		showButtons: { lockGroup: true, cloneGroup: true, lockRule: true, cloneRule: true },
-		enableSeparateConnector: true,
+                showButtons: { lockGroup: true, cloneGroup: true, lockRule: true, cloneRule: true },
+                enableSeparateConnector: true,
                 separator: '.',
                 actionBegin: (args: any) => {
                     if (args.requestType === 'template-create') {
-                        let defaultNumber: number = 31;    
-                        let fieldObj: DropDownList = new DropDownList({
+                        const defaultNumber: number = 31;
+                        const fieldObj: DropDownList = new DropDownList({
                             dataSource: queryBuilder.columns, // tslint:disable-line
                             fields: args.fields,
                             value: args.rule.field,
@@ -2640,7 +2873,7 @@ describe('QueryBuilder', () => {
                                 queryBuilder.notifyChange(e.value, e.element, 'field');
                             }
                         });
-                        let operatorObj: DropDownList = new DropDownList({
+                        const operatorObj: DropDownList = new DropDownList({
                             dataSource: [{key: 'equal', value: 'equal'}, {key:'between', value:'between'}, {key:'notbetween', value:'notbetween'}], // tslint:disable-line
                             fields: { text: 'key', value: 'value' },
                             value: args.rule.operator,
@@ -2655,7 +2888,7 @@ describe('QueryBuilder', () => {
                             value: args.rule.value as number, min: 30, max: 50,
                             ticks: { placement: 'Before', largeStep: 5, smallStep: 1 },
                             change: (e: any) => {
-                                let elem: HTMLElement = document.querySelector('.e-rule-value .e-control.e-slider');
+                                const elem: HTMLElement = document.querySelector('.e-rule-value .e-control.e-slider');
                                 queryBuilder.notifyChange(e.value, elem, 'value');
                             }
                         });
@@ -2668,16 +2901,18 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.getRule('group0_rule0').field).toEqual('EmployeeID');
             expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).field).toEqual('EmployeeID');
             expect(queryBuilder.getGroup(document.getElementById('querybuilder_group0')).condition).toEqual('and');
-            let slider: Slider = queryBuilder.element.querySelector('.e-control.e-slider').ej2_instances[0];
+            const slider: Slider = queryBuilder.element.querySelector('.e-control.e-slider').ej2_instances[0];
             slider.value = 30; slider.dataBind();
             expect(queryBuilder.rule.rules[0].value).toEqual(30);
             let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
             let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            queryBuilder.isAngular = true;
             itemsCln[1].click();
             operatorElem = queryBuilder.element.querySelector('.e-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
             itemsCln = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            queryBuilder.isReact = true;
             itemsCln[0].click();
             let fieldElem: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances;
             fieldElem[0].showPopup();
@@ -2695,7 +2930,8 @@ describe('QueryBuilder', () => {
             fieldElem = queryBuilder.element.querySelectorAll('.e-filter-input.e-control')[1].ej2_instances;
             fieldElem[0].showPopup();
             itemsCln = document.getElementById('querybuilder_group0_rule1_filterkey_options').querySelectorAll('li');
-            itemsCln[0].click();
+            queryBuilder.isReact = false;
+            queryBuilder.isAngular = false;
             fieldElem = queryBuilder.element.querySelectorAll('.e-filter-input.e-control')[3].ej2_instances;
             fieldElem[0].showPopup();
             itemsCln = document.getElementById('querybuilder_group0_rule3_filterkey_options').querySelectorAll('li');
@@ -2717,12 +2953,20 @@ describe('QueryBuilder', () => {
             itemsCln = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             itemsCln[0].click();
             queryBuilder.deleteRules(['group0_rule0']);
+            fieldElem = queryBuilder.element.querySelectorAll('.e-filter-input.e-control')[1].ej2_instances;
+            fieldElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group1_rule2_filterkey_options').querySelectorAll('li');
+            queryBuilder.isReact = false;
+            queryBuilder.isAngular = false;
+            queryBuilder.isVue3 = true;
+            itemsCln[0].click();
+            queryBuilder.isVue3 = false;
         });
     });
     describe('Platform Specific Header Template', () => {
         beforeEach((): void => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));
-            let template: Element = createElement('script', { id: 'headerTemplate' });
+            const template: Element = createElement('script', { id: 'headerTemplate' });
             template.setAttribute('type', 'text/x-template');
             template.innerHTML = '<div class="e-groupheader">${if(notCondition !== undefined)}<input type="checkbox" class="e-not" id="${ruleID}_notoption">${/if}<input type="text" class= "e-custom-group-btn" id="${ruleID}_cndtnbtn"><button id = "${ruleID}_addbtn" class="e-add-btn"></button>${if(ruleID !== "querybuilder_group0")}<button id="dltbtn" class="e-btn e-delete-btn e-small e-round e-icon-btn"><span class = "e-btn-icon e-icons e-delete-icon"></span></button>${/if}</div>';
             document.body.appendChild(template);
@@ -2733,18 +2977,18 @@ describe('QueryBuilder', () => {
             queryBuilder.destroy();
         });
         it('Template Checking', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
-            let valRule: RuleModel = {'condition': 'and',
+            const valRule: RuleModel = {'condition': 'and',
                 'rules': [{
                     'label': 'Employee ID',
                     'field': 'EmployeeID',
                     'type': 'number',
                     'operator': 'equal',
                     'value': 32
-                }] 
+                }]
             };
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
@@ -2754,15 +2998,15 @@ describe('QueryBuilder', () => {
                 headerTemplate: '#headerTemplate',
                 actionBegin: (args: any) => {
                     if (args.requestType === 'header-template-create') {
-                        let checkBoxObj: CheckBox = new CheckBox({ 
+                        const checkBoxObj: CheckBox = new CheckBox({
                             label: 'NOT', checked: args.notCondition,
-                            change: function(e:any){
-                                queryBuilder.notifyChange(e.checked,e.event.target, 'not')
+                            change: function(e: any){
+                                queryBuilder.notifyChange(e.checked, e.event.target, 'not');
                             }
-                         });
+                        });
                         checkBoxObj.appendTo('#' + args.ruleID + '_notoption');
-                        let ds: { [key: string]: Object }[] = [{'key': 'AND', 'value': 'and'},{'key': 'OR', 'value': 'or'}];
-                        let btnObj: DropDownList= new DropDownList({
+                        const ds: { [key: string]: Object }[] = [{'key': 'AND', 'value': 'and'}, {'key': 'OR', 'value': 'or'}];
+                        const btnObj: DropDownList = new DropDownList({
                             dataSource: ds, fields: { text: 'key', value: 'value' },
                             value: args.condition, cssClass: 'e-custom-group-btn e-active-toggle',
                             change: (e: any) => {
@@ -2770,16 +3014,16 @@ describe('QueryBuilder', () => {
                             }
                         });
                         btnObj.appendTo('#' + args.ruleID + '_cndtnbtn');
-                        let ddbitems: ItemModel[] = [
+                        const ddbitems: ItemModel[] = [
                             { text: 'AddGroup', iconCss: 'e-icons e-add-icon e-addgroup' },
                             { text: 'AddCondition', iconCss: 'e-icons e-add-icon e-addrule' }
                         ];
-                        let addbtn: DropDownButton = new DropDownButton({
+                        const addbtn: DropDownButton = new DropDownButton({
                             items: ddbitems,
                             cssClass: 'e-round e-small e-caret-hide e-addrulegroup',
                             iconCss: 'e-icons e-add-icon',
                             select: function(event: any) {
-                                let addbtn: Element = closest(event.element,'.e-dropdown-popup');  let ddb: string[]= addbtn.id.split('_');
+                                const addbtn: Element = closest(event.element, '.e-dropdown-popup');  const ddb: string[] = addbtn.id.split('_');
                                 if (event.item.text === 'AddGroup') {
                                     queryBuilder.addGroups([{condition: 'and', 'rules': [{}], not: false}], ddb[1]);
                                 } else if (event.item.text === 'AddCondition') {
@@ -2788,11 +3032,11 @@ describe('QueryBuilder', () => {
                             }
                         });
                         addbtn.appendTo('#' + args.ruleID + '_addbtn');
-                        let deleteGroup: Element =  document.getElementById(args.ruleID).querySelector('.e-delete-btn');
+                        const deleteGroup: Element =  document.getElementById(args.ruleID).querySelector('.e-delete-btn');
                         if (deleteGroup) {
-                            (deleteGroup as HTMLElement).onclick = function (e:any) {
+                            (deleteGroup as HTMLElement).onclick = function (e: any) {
                                 queryBuilder.deleteGroup(closest(e.target.offsetParent, '.e-group-container'));
-                            }
+                            };
                         }
                     }
                 }
@@ -2801,7 +3045,83 @@ describe('QueryBuilder', () => {
             let itemCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_addbtn-popup').querySelectorAll('li');
             itemCln[0].click();
             (<HTMLElement>document.querySelector('#querybuilder_group0_notoption')).click();
-            let condtion: DropDownList = queryBuilder.element.querySelector('#querybuilder_group0_cndtnbtn').ej2_instances[0];
+            const condtion: DropDownList = queryBuilder.element.querySelector('#querybuilder_group0_cndtnbtn').ej2_instances[0];
+            condtion.showPopup();
+            itemCln = document.getElementById('querybuilder_group0_cndtnbtn_popup').querySelectorAll('li');
+            itemCln[1].click();
+        });
+
+        it('Template Checking with seperate connector', () => {
+            const customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'FirstName', label: 'First Name', type: 'string' }
+            ];
+            const valRule: RuleModel = {'condition': 'and',
+                'rules': [{
+                    'label': 'Employee ID',
+                    'field': 'EmployeeID',
+                    'type': 'number',
+                    'operator': 'equal',
+                    'value': 32
+                }]
+            };
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                enableNotCondition: true,
+                columns: customFieldData,
+                enableSeparateConnector: true,
+                rule: valRule,
+                headerTemplate: '#headerTemplate',
+                actionBegin: (args: any) => {
+                    if (args.requestType === 'header-template-create') {
+                        const checkBoxObj: CheckBox = new CheckBox({
+                            label: 'NOT', checked: args.notCondition,
+                            change: function(e: any){
+                                queryBuilder.notifyChange(e.checked, e.event.target, 'not');
+                            }
+                        });
+                        checkBoxObj.appendTo('#' + args.ruleID + '_notoption');
+                        const ds: { [key: string]: Object }[] = [{'key': 'AND', 'value': 'and'}, {'key': 'OR', 'value': 'or'}];
+                        const btnObj: DropDownList = new DropDownList({
+                            dataSource: ds, fields: { text: 'key', value: 'value' },
+                            value: args.condition, cssClass: 'e-custom-group-btn e-active-toggle',
+                            change: (e: any) => {
+                                queryBuilder.notifyChange(e.value, e.element, 'condition');
+                            }
+                        });
+                        btnObj.appendTo('#' + args.ruleID + '_cndtnbtn');
+                        const ddbitems: ItemModel[] = [
+                            { text: 'AddGroup', iconCss: 'e-icons e-add-icon e-addgroup' },
+                            { text: 'AddCondition', iconCss: 'e-icons e-add-icon e-addrule' }
+                        ];
+                        const addbtn: DropDownButton = new DropDownButton({
+                            items: ddbitems,
+                            cssClass: 'e-round e-small e-caret-hide e-addrulegroup',
+                            iconCss: 'e-icons e-add-icon',
+                            select: function(event: any) {
+                                const addbtn: Element = closest(event.element, '.e-dropdown-popup');  const ddb: string[] = addbtn.id.split('_');
+                                if (event.item.text === 'AddGroup') {
+                                    queryBuilder.addGroups([{condition: 'and', 'rules': [{}], not: false}], ddb[1]);
+                                } else if (event.item.text === 'AddCondition') {
+                                    queryBuilder.addRules([{}], ddb[1]);
+                                }
+                            }
+                        });
+                        addbtn.appendTo('#' + args.ruleID + '_addbtn');
+                        const deleteGroup: Element =  document.getElementById(args.ruleID).querySelector('.e-delete-btn');
+                        if (deleteGroup) {
+                            (deleteGroup as HTMLElement).onclick = function (e: any) {
+                                queryBuilder.deleteGroup(closest(e.target.offsetParent, '.e-group-container'));
+                            };
+                        }
+                    }
+                }
+            }, '#querybuilder');
+            document.getElementById('querybuilder_group0_addbtn').click();
+            let itemCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_addbtn-popup').querySelectorAll('li');
+            itemCln[0].click();
+            (<HTMLElement>document.querySelector('#querybuilder_group0_notoption')).click();
+            const condtion: DropDownList = queryBuilder.element.querySelector('#querybuilder_group0_cndtnbtn').ej2_instances[0];
             condtion.showPopup();
             itemCln = document.getElementById('querybuilder_group0_cndtnbtn_popup').querySelectorAll('li');
             itemCln[1].click();
@@ -2812,29 +3132,30 @@ describe('QueryBuilder', () => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));
         });
         afterEach(() => {
-            remove(queryBuilder.element.nextElementSibling);
-            remove(queryBuilder.element);
-            queryBuilder.destroy();
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+            remove(document.getElementById('querybuilder'));
         });
         it('Model Binding with DataSource', () => {
-            let cData: ColumnsModel [] = [
+            const cData: ColumnsModel [] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number', value: 101 },
                 { field: 'FirstName', label: 'FirstName', type: 'string', value: 'Mohan'},
                 { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'], value: 'Mrs.' },
                 { field: 'Title', label: 'Title', type: 'string', value: 'MMM'},
                 { field: 'HireDate', label: 'HireDate', type: 'date', format: 'dd/MM/yyyy', value: '2/07/1991' },
-                { field: 'Country', label: 'Country', type: 'string' , value: 'India'},
+                { field: 'Country', label: 'Country', type: 'string' , value: 'India'}
             ];
-            let iRules: RuleModel = {
+            const iRules: RuleModel = {
                 'condition': 'and',
-                    'rules': [
-                        {'label': 'Title Of Courtesy', 'field': 'TitleOfCourtesy', 'type': 'boolean', 'operator': 'equal', 'value': 'Mr.'},
-                        {'label': 'FirstName', 'field': 'FirstName', 'type': 'string', 'operator': 'equal', 'value': 'Nancy'},
-                        {'label': 'FirstName', 'field': 'FirstName', 'type': 'string', 'operator': 'in', 'value': ['Nancy']},
-                        {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'equal', 'value': 1},
-                        {'label': 'HireDate', 'field': 'HireDate', 'type': 'date', 'operator': 'equal', 'value': '1/1/2021'}
-                    ]
-                };
+                'rules': [
+                    {'label': 'Title Of Courtesy', 'field': 'TitleOfCourtesy', 'type': 'boolean', 'operator': 'equal', 'value': 'Mr.'},
+                    {'label': 'FirstName', 'field': 'FirstName', 'type': 'string', 'operator': 'equal', 'value': 'Nancy'},
+                    {'label': 'FirstName', 'field': 'FirstName', 'type': 'string', 'operator': 'in', 'value': ['Nancy']},
+                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'equal', 'value': 1},
+                    {'label': 'HireDate', 'field': 'HireDate', 'type': 'date', 'operator': 'equal', 'value': '1/1/2021'}
+                ]
+            };
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 columns: cData,
@@ -2865,26 +3186,26 @@ describe('QueryBuilder', () => {
             }, '#querybuilder');
         });
         it('Model Binding without DataSource', () => {
-            let cData: ColumnsModel [] = [
+            const cData: ColumnsModel [] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number', value: 101 },
                 { field: 'FirstName', label: 'FirstName', type: 'string', value: 'Mohan'},
                 { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'], value: 'Mrs.' },
                 { field: 'Title', label: 'Title', type: 'string', value: 'MMM'},
                 { field: 'HireDate', label: 'HireDate', type: 'date', value: '2/07/1991' },
                 { field: 'Date', label: 'Date', type: 'date', format: 'short', value: '2/07/1991' },
-                { field: 'Country', label: 'Country', type: 'string' , value: 'India'},
+                { field: 'Country', label: 'Country', type: 'string' , value: 'India'}
             ];
-            let iRules: RuleModel = {
+            const iRules: RuleModel = {
                 'condition': 'and',
-                    'rules': [
-                        {'label': 'Title Of Courtesy', 'field': 'TitleOfCourtesy', 'type': 'boolean', 'operator': 'equal', 'value': 'Mr.'},
-                        {'label': 'FirstName', 'field': 'FirstName', 'type': 'string', 'operator': 'equal', 'value': 'Nancy'},
-                        {'label': 'FirstName', 'field': 'FirstName', 'type': 'string', 'operator': 'in', 'value': ['Nancy']},
-                        {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1, 2, 3]},
-                        {'label': 'HireDate', 'field': 'HireDate', 'type': 'date', 'operator': 'equal', 'value': '1/1/2021'},
-                        {'label': 'Date', 'field': 'Date', 'type': 'date', 'operator': 'equal', 'value': '1/1/2021'}
-                    ]
-                };
+                'rules': [
+                    {'label': 'Title Of Courtesy', 'field': 'TitleOfCourtesy', 'type': 'boolean', 'operator': 'equal', 'value': 'Mr.'},
+                    {'label': 'FirstName', 'field': 'FirstName', 'type': 'string', 'operator': 'equal', 'value': 'Nancy'},
+                    {'label': 'FirstName', 'field': 'FirstName', 'type': 'string', 'operator': 'in', 'value': ['Nancy']},
+                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1, 2, 3]},
+                    {'label': 'HireDate', 'field': 'HireDate', 'type': 'date', 'operator': 'equal', 'value': '1/1/2021'},
+                    {'label': 'Date', 'field': 'Date', 'type': 'date', 'operator': 'equal', 'value': '1/1/2021'}
+                ]
+            };
             queryBuilder = new QueryBuilder({
                 columns: cData,
                 rule: iRules,
@@ -2914,7 +3235,7 @@ describe('QueryBuilder', () => {
             }, '#querybuilder');
         });
         it('Complex Databinding Support with datasource', () => {
-            let importRules: RuleModel = {
+            const importRules: RuleModel = {
                 condition: 'and',
                 rules: [
                     { label: 'ID', field: 'Employee.ID', type: 'string', operator: 'equal', value: 0 },
@@ -2926,7 +3247,7 @@ describe('QueryBuilder', () => {
                     ]}
                 ]
             };
-            let columns: ColumnsModel[] = [
+            const columns: ColumnsModel[] = [
                 {field: 'Employee', label: 'Employee', columns: [
                     { field: 'ID', label: 'ID', type: 'number'},
                     { field: 'DOB', label: 'Date of birth', type: 'date'},
@@ -2936,12 +3257,12 @@ describe('QueryBuilder', () => {
                     { field: 'Title', label: 'Title', type: 'string'}
                 ]},
                 {field: 'Name', label: 'Name', columns: [
-                    { field: 'FirstName', label: 'First Name', type: 'string'}, 
+                    { field: 'FirstName', label: 'First Name', type: 'string'},
                     { field: 'LastName', label: 'Last Name', type: 'string'}
                 ]},
                 {field: 'Country', label: 'Country', columns : [
                     { field: 'State', label: 'State', columns : [
-                        { field: 'City', label: 'City', type: 'string'}, 
+                        { field: 'City', label: 'City', type: 'string'},
                         { field: 'Zipcode', label: 'Zip Code', type: 'number'}] },
                     { field: 'Region', label: 'Region', type: 'string'},
                     { field: 'Name', label: 'Name', type: 'string'}
@@ -2952,19 +3273,19 @@ describe('QueryBuilder', () => {
                 separator: '.',
                 columns: columns,
                 rule: importRules,
-                enableNotCondition: true,
+                enableNotCondition: true
             }, '#querybuilder');
-            let filter: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances[0];
+            const filter: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances[0];
             filter.showPopup();
-            let itemCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            const itemCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             itemCln[1].click();
             queryBuilder.reset();
-            queryBuilder.setRulesFromSql("Employee.ID = 0 AND Name.LastName LIKE ('%malan%') AND (Country.State.City LIKE ('U%') AND Country.Region LIKE ('%c') AND Country.Name IS NOT EMPTY)");
+            queryBuilder.setRulesFromSql('Employee.ID = 0 AND Name.LastName LIKE (\'%malan%\') AND (Country.State.City LIKE (\'U%\') AND Country.Region LIKE (\'%c\') AND Country.Name IS NOT EMPTY)');
             queryBuilder.reset();
             queryBuilder.setRules(importRules);
         });
         it('Complex Databinding Support without datasource', () => {
-            let importRules: RuleModel = {
+            const importRules: RuleModel = {
                 condition: 'and',
                 rules: [
                     { label: 'ID', field: 'Employee.ID', type: 'string', operator: 'equal', value: 0 },
@@ -2976,7 +3297,7 @@ describe('QueryBuilder', () => {
                     ]}
                 ]
             };
-            let columns: ColumnsModel[] = [
+            const columns: ColumnsModel[] = [
                 {field: 'Employee', label: 'Employee', columns: [
                     { field: 'ID', label: 'ID', type: 'number'},
                     { field: 'DOB', label: 'Date of birth', type: 'date'},
@@ -2986,12 +3307,12 @@ describe('QueryBuilder', () => {
                     { field: 'Title', label: 'Title', type: 'string'}
                 ]},
                 {field: 'Name', label: 'Name', columns: [
-                    { field: 'FirstName', label: 'First Name', type: 'string'}, 
+                    { field: 'FirstName', label: 'First Name', type: 'string'},
                     { field: 'LastName', label: 'Last Name', type: 'string'}
                 ]},
                 {field: 'Country', label: 'Country', columns : [
                     { field: 'State', label: 'State', columns : [
-                        { field: 'City', label: 'City', type: 'string'}, 
+                        { field: 'City', label: 'City', type: 'string'},
                         { field: 'Zipcode', label: 'Zip Code', type: 'number'}] },
                     { field: 'Region', label: 'Region', type: 'string'},
                     { field: 'Name', label: 'Name', type: 'string'}
@@ -3001,11 +3322,31 @@ describe('QueryBuilder', () => {
                 separator: '.',
                 columns: columns,
                 rule: importRules,
-                enableNotCondition: true,
+                enableNotCondition: true
             }, '#querybuilder');
         });
         it('Complex Databinding Support without columns', () => {
-            let importRules: RuleModel = {
+            const importRules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    { label: 'ID', field: 'Employee.ID', type: 'string', operator: 'equal', value: 0 },
+                    { label: 'Last Name', field: 'Name.LastName', type: 'string', operator: 'contains', value: 'malan' },
+                    { condition: 'or', rules: [
+                        { label: 'City', field: 'Country.State.City', operator: 'startswith', type: 'string', value: 'U' },
+                        { label: 'Region', field: 'Country.Region', operator: 'endswith', type: 'string', value: 'c' },
+                        { label: 'Name', field: 'Country.Name', operator: 'isnotempty' }
+                    ]}
+                ]
+            };
+            queryBuilder = new QueryBuilder({
+                dataSource: complexBindingData,
+                separator: '.',
+                rule: importRules,
+                enableNotCondition: true
+            }, '#querybuilder');
+        });
+        it('Complex Databinding Support - Dropdown Tree', () => {
+            const importRules: RuleModel = {
                 condition: 'and',
                 rules: [
                     { label: 'ID', field: 'Employee.ID', type: 'string', operator: 'equal', value: 0 },
@@ -3022,17 +3363,21 @@ describe('QueryBuilder', () => {
                 separator: '.',
                 rule: importRules,
                 enableNotCondition: true,
+                readonly: true,
+                fieldMode: 'DropdownTree'
             }, '#querybuilder');
+            const inpElem: HTMLElement = document.getElementById('querybuilder_group0_rule0_filterkey');
+            (queryBuilder as any).changeField({ element: inpElem, e: null, isInteracted: true, name: 'change', oldValue: ['Employee.ID'], value: ['Employee.DOB']});
         });
     });
     describe('Customer_Bugs', () => {
         beforeEach((): void => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));
-            let template: Element = createElement('script', { id: 'headerTemplate' });
+            const template: Element = createElement('script', { id: 'headerTemplate' });
             template.setAttribute('type', 'text/x-template');
             template.innerHTML = '<div class="e-groupheader">${if(notCondition !== undefined)}<input type="checkbox" class="e-not" id="${ruleID}_notoption">${/if}<input type="text" class= "e-custom-group-btn" id="${ruleID}_cndtnbtn"><button id = "${ruleID}_addbtn" class="e-add-btn"></button>${if(ruleID !== "querybuilder_group0")}<button id="dltbtn" class="e-btn e-delete-btn e-small e-round e-icon-btn"><span class = "e-btn-icon e-icons e-delete-icon"></span></button>${/if}</div>';
             document.body.appendChild(template);
-            let ageTemplate: Element = createElement('script', { id: 'ageTemplate' });
+            const ageTemplate: Element = createElement('script', { id: 'ageTemplate' });
             ageTemplate.setAttribute('type', 'text/x-template');
             ageTemplate.innerHTML = '<div class="e-rule e-rule-template"><div class="e-rule-filter"><input id = ${ruleID}_filterkey class="e-filter-input"></div><div class="e-rule-subfilter"><input id = ${ruleID}_subfilterkey class="e-sub-filter-input"></div><div class="e-value e-rule-value e-slider-value"><div id = ${ruleID}_valuekey0 class="ticks_slider"></div></div><div class="e-rule-btn"><button class="e-removerule e-rule-delete e-css e-btn e-small e-round"><span class="e-btn-icon e-icons e-delete-icon"/></button></div></div>';
             document.body.appendChild(ageTemplate);
@@ -3043,94 +3388,94 @@ describe('QueryBuilder', () => {
             queryBuilder.destroy();
         });
         it('EJ2-26551-Selected value not maintained properly for field checkbox in querybuilder', () => {
-            let cData: ColumnsModel [] = [
+            const cData: ColumnsModel [] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number', value: 101 },
                 { field: 'FirstName', label: 'FirstName', type: 'string', value: 'Mohan'},
                 { field: 'Title Of Courtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'], value: 'Mrs.' },
                 { field: 'Title', label: 'Title', type: 'string', value: 'MMM'},
                 { field: 'HireDate', label: 'HireDate', type: 'date', format: 'dd/MM/yyyy', value: '2/07/1991' },
                 { field: 'Country', label: 'Country', type: 'string' , value: 'India'},
-                { field: 'City', label: 'City', type: 'string' , value: 'MS'},
+                { field: 'City', label: 'City', type: 'string' , value: 'MS'}
             ];
-            let iRules: RuleModel = {
+            const iRules: RuleModel = {
                 'condition': 'and',
-                    'rules': [{
-                        'label': 'Title Of Courtesy',
-                        'field': 'Title Of Courtesy',
-                        'type': 'boolean',
-                        'operator': 'equal',
-                        'value': ['Mr.']
-                    }]
-                };
+                'rules': [{
+                    'label': 'Title Of Courtesy',
+                    'field': 'Title Of Courtesy',
+                    'type': 'boolean',
+                    'operator': 'equal',
+                    'value': ['Mr.']
+                }]
+            };
             queryBuilder = new QueryBuilder({
                 columns: cData,
                 rule: iRules
             }, '#querybuilder');
             expect(queryBuilder.rule.rules[0].value).toEqual('Mr.');
             //Operator change
-           let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
-           operatorElem[0].showPopup();
-           let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
-           itemsCln[1].click();
-           expect(operatorElem[0].value).toEqual('notequal');
-           expect(queryBuilder.rule.rules[0].operator).toEqual('notequal');
-           expect(queryBuilder.rule.rules[0].value).toEqual('Mr.');
-           let radioBtnCln: NodeListOf<HTMLElement> = document.querySelectorAll('.e-radio');
-           radioBtnCln[1].click();
-           expect(queryBuilder.rule.rules[0].value).toEqual('Mrs.');
-           itemsCln[0].click();
-           expect(operatorElem[0].value).toEqual('equal');
-           expect(queryBuilder.rule.rules[0].operator).toEqual('equal');
-           expect(queryBuilder.rule.rules[0].value).toEqual('Mrs.');
+            const operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
+            operatorElem[0].showPopup();
+            const itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            itemsCln[1].click();
+            expect(operatorElem[0].value).toEqual('notequal');
+            expect(queryBuilder.rule.rules[0].operator).toEqual('notequal');
+            expect(queryBuilder.rule.rules[0].value).toEqual('Mr.');
+            const radioBtnCln: NodeListOf<HTMLElement> = document.querySelectorAll('.e-radio');
+            radioBtnCln[1].click();
+            expect(queryBuilder.rule.rules[0].value).toEqual('Mrs.');
+            itemsCln[0].click();
+            expect(operatorElem[0].value).toEqual('equal');
+            expect(queryBuilder.rule.rules[0].operator).toEqual('equal');
+            expect(queryBuilder.rule.rules[0].value).toEqual('Mrs.');
 
-           // repeat 
-           radioBtnCln[0].click();
-           expect(queryBuilder.rule.rules[0].value).toEqual('Mr.');
-           itemsCln[1].click();
-           expect(operatorElem[0].value).toEqual('notequal');
-           expect(queryBuilder.rule.rules[0].operator).toEqual('notequal');
-           expect(queryBuilder.rule.rules[0].value).toEqual('Mr.');
+            // repeat
+            radioBtnCln[0].click();
+            expect(queryBuilder.rule.rules[0].value).toEqual('Mr.');
+            itemsCln[1].click();
+            expect(operatorElem[0].value).toEqual('notequal');
+            expect(queryBuilder.rule.rules[0].operator).toEqual('notequal');
+            expect(queryBuilder.rule.rules[0].value).toEqual('Mr.');
         });
 
         it('EJ2-25995-To enable groupBy support for column field', () => {
-            let cData: ColumnsModel [] = [
+            const cData: ColumnsModel [] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number', value: 101, category: 'Employee Details' },
                 { field: 'FirstName', label: 'FirstName', type: 'string', value: 'Mohan', category: 'Employee Details'},
                 { field: 'Title Of Courtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'], value: 'Mrs.', category: 'Title Details' },
                 { field: 'Title', label: 'Title', type: 'string', value: 'MMM', category: 'Title Details'},
                 { field: 'HireDate', label: 'HireDate', type: 'date', format: 'dd/MM/yyyy', value: '2/07/1991', category: 'Title Details' },
                 { field: 'Country', label: 'Country', type: 'string' , value: 'India'},
-                { field: 'City', label: 'City', type: 'string' , value: 'MS'},
+                { field: 'City', label: 'City', type: 'string' , value: 'MS'}
             ];
-            let iRules: RuleModel = {
+            const iRules: RuleModel = {
                 'condition': 'and',
-                    'rules': [{
-                        'label': 'Title Of Courtesy',
-                        'field': 'Title Of Courtesy',
-                        'type': 'boolean',
-                        'operator': 'equal',
-                        'value': ['Mr.']
-                    }]
-                };
+                'rules': [{
+                    'label': 'Title Of Courtesy',
+                    'field': 'Title Of Courtesy',
+                    'type': 'boolean',
+                    'operator': 'equal',
+                    'value': ['Mr.']
+                }]
+            };
             queryBuilder = new QueryBuilder({
                 columns: cData,
                 rule: iRules
             }, '#querybuilder');
-             //Change the field
-			let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            //Change the field
+            const filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
             filterElem.showPopup();
-            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            const items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             expect(items[0].textContent).toEqual('Employee Details');
             expect(items[3].textContent).toEqual('Title Details');
-            expect(items[7].textContent).toEqual('Other Fields'); 
+            expect(items[7].textContent).toEqual('Other Fields');
         });
 
         it('EJ2-50725 - setRules not works for header template', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
-            let valRule: RuleModel = {'condition': 'or', 'not': true,
+            const valRule: RuleModel = {'condition': 'or', 'not': true,
                 'rules': [{
                     'label': 'Employee ID',
                     'field': 'EmployeeID',
@@ -3146,15 +3491,15 @@ describe('QueryBuilder', () => {
                     'value': 'vinit'
                 },
                 {
-                'condition': 'and', 
-                'rules': [{
-                    'label': 'Employee ID',
-                    'field': 'EmployeeID',
-                    'type': 'number',
-                    'operator': 'equal',
-                    'value': 32
+                    'condition': 'and',
+                    'rules': [{
+                        'label': 'Employee ID',
+                        'field': 'EmployeeID',
+                        'type': 'number',
+                        'operator': 'equal',
+                        'value': 32
+                    }]
                 }]
-            }] 
             };
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
@@ -3163,15 +3508,15 @@ describe('QueryBuilder', () => {
                 headerTemplate: '#headerTemplate',
                 actionBegin: (args: any) => {
                     if (args.requestType === 'header-template-create') {
-                        let checkBoxObj: CheckBox = new CheckBox({ 
+                        const checkBoxObj: CheckBox = new CheckBox({
                             label: 'NOT', checked: args.notCondition,
-                            change: function(e:any){
-                                queryBuilder.notifyChange(e.checked,e.event.target, 'not')
+                            change: function(e: any){
+                                queryBuilder.notifyChange(e.checked, e.event.target, 'not');
                             }
-                         });
+                        });
                         checkBoxObj.appendTo('#' + args.ruleID + '_notoption');
-                        let ds: { [key: string]: Object }[] = [{'key': 'AND', 'value': 'and'},{'key': 'OR', 'value': 'or'}];
-                        let btnObj: DropDownList= new DropDownList({
+                        const ds: { [key: string]: Object }[] = [{'key': 'AND', 'value': 'and'}, {'key': 'OR', 'value': 'or'}];
+                        const btnObj: DropDownList = new DropDownList({
                             dataSource: ds, fields: { text: 'key', value: 'value' },
                             value: args.condition, cssClass: 'e-custom-group-btn e-active-toggle',
                             change: (e: any) => {
@@ -3179,16 +3524,16 @@ describe('QueryBuilder', () => {
                             }
                         });
                         btnObj.appendTo('#' + args.ruleID + '_cndtnbtn');
-                        let ddbitems: ItemModel[] = [
+                        const ddbitems: ItemModel[] = [
                             { text: 'AddGroup', iconCss: 'e-icons e-add-icon e-addgroup' },
                             { text: 'AddCondition', iconCss: 'e-icons e-add-icon e-addrule' }
                         ];
-                        let addbtn: DropDownButton = new DropDownButton({
+                        const addbtn: DropDownButton = new DropDownButton({
                             items: ddbitems,
                             cssClass: 'e-round e-small e-caret-hide e-addrulegroup',
                             iconCss: 'e-icons e-add-icon',
                             select: function(event: any) {
-                                let addbtn: Element = closest(event.element,'.e-dropdown-popup');  let ddb: string[]= addbtn.id.split('_');
+                                const addbtn: Element = closest(event.element, '.e-dropdown-popup');  const ddb: string[] = addbtn.id.split('_');
                                 if (event.item.text === 'AddGroup') {
                                     queryBuilder.addGroups([{condition: 'and', 'rules': [{}], not: false}], ddb[1]);
                                 } else if (event.item.text === 'AddCondition') {
@@ -3197,11 +3542,11 @@ describe('QueryBuilder', () => {
                             }
                         });
                         addbtn.appendTo('#' + args.ruleID + '_addbtn');
-                        let deleteGroup: Element =  document.getElementById(args.ruleID).querySelector('.e-delete-btn');
+                        const deleteGroup: Element =  document.getElementById(args.ruleID).querySelector('.e-delete-btn');
                         if (deleteGroup) {
-                            (deleteGroup as HTMLElement).onclick = function (e:any) {
+                            (deleteGroup as HTMLElement).onclick = function (e: any) {
                                 queryBuilder.deleteGroup(closest(e.target.offsetParent, '.e-group-container'));
-                            }
+                            };
                         }
                     }
                 }
@@ -3209,22 +3554,33 @@ describe('QueryBuilder', () => {
             queryBuilder.setRules(valRule);
             expect(document.querySelector('#querybuilder_group0_notoption').nextElementSibling.classList.contains('e-check')).toEqual(true);
             expect(queryBuilder.element.querySelector('#querybuilder_group0_cndtnbtn').value).toEqual('OR');
+            queryBuilder.enableSeparateConnector = true;
+            queryBuilder.isReact = true;
+            queryBuilder.setRules(valRule);
+            queryBuilder.isReact = false;
+            queryBuilder.isAngular = true;
+            queryBuilder.setRules(valRule);
+            queryBuilder.isAngular = false;
+            queryBuilder.isVue3 = true;
+            queryBuilder.setRules(valRule);
+            queryBuilder.isVue3 = false;
+            queryBuilder.setRules(valRule);
         });
 
         it('EJ2-50550 - Rtl class not added for dropdown button popup', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
-            let iRules: RuleModel = {
+            const iRules: RuleModel = {
                 'condition': 'and',
-                    'rules': [{
-                        'label': 'FirstName',
-                        'field': 'FirstName',
-                        'type': 'string',
-                        'operator': 'in'
-                    }]
-                };
+                'rules': [{
+                    'label': 'FirstName',
+                    'field': 'FirstName',
+                    'type': 'string',
+                    'operator': 'in'
+                }]
+            };
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 enableRtl: true,
@@ -3234,180 +3590,180 @@ describe('QueryBuilder', () => {
             (document.getElementsByClassName('e-dropdown-btn')[0] as HTMLElement).click();
             expect(document.getElementsByClassName('e-item')[0].parentElement.classList.contains('e-rtl')).toBeTruthy();
             (document.getElementsByClassName('e-dropdown-btn')[0] as HTMLElement).click();
-            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            const filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
             filterElem.showPopup();
-            let ddlItems = document.getElementById('querybuilder_group0_rule0_filterkey_options').parentElement;
+            const ddlItems = document.getElementById('querybuilder_group0_rule0_filterkey_options').parentElement;
             expect(ddlItems.parentElement.classList.contains('e-rtl')).toBeTruthy();
-            let multiObj: MultiSelect = queryBuilder.element.querySelector('.e-control.e-multiselect').ej2_instances[0];
+            const multiObj: MultiSelect = queryBuilder.element.querySelector('.e-control.e-multiselect').ej2_instances[0];
             multiObj.showPopup();
-            let msItems = document.getElementById('querybuilder_group0_rule0_valuekey0_options').parentElement;
+            const msItems = document.getElementById('querybuilder_group0_rule0_valuekey0_options').parentElement;
             expect(msItems.parentElement.classList.contains('e-rtl')).toBeTruthy();
         });
 
         it('EJ2-51636 - Tooltip not destroyed while applying reset after validation', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
-            
+
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 enableRtl: true,
                 columns: customFieldData
-                
+
             }, '#querybuilder');
             queryBuilder.validateFields();
-            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter input.e-control').ej2_instances;
-            queryBuilder.reset();  
+            const filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter input.e-control').ej2_instances;
+            queryBuilder.reset();
             expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
         });
 
         it('EJ2-62285 - Date type Between value not render properly while use setRulesFromSql method', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'EmployeeID', type: 'number' },
                 { field: 'FirstName', label: 'FirstName', type: 'string' },
                 { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
                 { field: 'Title', label: 'Title', type: 'string' },
-                { 
+                {
                     field: 'HireDate', label: 'HireDate',
                     operators: [
-                      {
-                        key: 'Greater Than',
-                        value: 'greaterthan',
-                      },
-                      {
-                        key: 'Greater Than Or Equal',
-                        value: 'greaterthanorequal',
-                      },
-                      {
-                        key: 'Less Than',
-                        value: 'lessthan',
-                      },
-                      {
-                        key: 'Less Than Or Equal',
-                        value: 'lessthanorequal',
-                      },
-                      {
-                        key: 'Between',
-                        value: 'between',
-                      },
-                    ] ,type: 'date', format: 'dd/MM/yyyy' 
+                        {
+                            key: 'Greater Than',
+                            value: 'greaterthan'
+                        },
+                        {
+                            key: 'Greater Than Or Equal',
+                            value: 'greaterthanorequal'
+                        },
+                        {
+                            key: 'Less Than',
+                            value: 'lessthan'
+                        },
+                        {
+                            key: 'Less Than Or Equal',
+                            value: 'lessthanorequal'
+                        },
+                        {
+                            key: 'Between',
+                            value: 'between'
+                        }
+                    ] , type: 'date', format: 'dd/MM/yyyy'
                 },
                 { field: 'Country', label: 'Country', type: 'string' },
                 { field: 'City', label: 'City', type: 'string' }
             ];
-            
+
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 enableRtl: true,
                 columns: customFieldData
             }, '#querybuilder');
-            queryBuilder.setRulesFromSql("FirstName = 'Keerthi' AND HireDate BETWEEN '01/08/2022' AND '05/08/2022' AND Country = 'Erode'");
+            queryBuilder.setRulesFromSql('FirstName = \'Keerthi\' AND HireDate BETWEEN \'01/08/2022\' AND \'05/08/2022\' AND Country = \'Erode\'');
             expect(queryBuilder.rule.rules[1].value).toEqual(['01/08/2022', '05/08/2022']);
         });
-        
+
         it('EJ2-61503 - Value template not destroy properly when we use complex data source', () => {
-            let dateTemplate: TemplateColumn = {
+            const dateTemplate: TemplateColumn = {
                 create: () => {
-                  return document.createElement('div');
+                    return document.createElement('div');
                 },
                 destroy: (args: { elementId: string }) => {
-                    let dropDownList: DropDownList = getComponent(
-                      document.getElementById(args.elementId),
-                      'dropdownlist'
+                    const dropDownList: DropDownList = getComponent(
+                        document.getElementById(args.elementId),
+                        'dropdownlist'
                     ) as DropDownList;
                     if (dropDownList) {
-                      dropDownList.destroy();
+                        dropDownList.destroy();
                     }
-                  },
-                  write: (args: {
+                },
+                write: (args: {
                     elements: Element;
                     values: string[] | string;
                     operator: string;
-                  }) => {
-                    let ds: string[] = ['Cash', 'Debit Card', 'Credit Card', 'Net Banking', 'Wallet'];
-                    let dropdownlistObj: DropDownList = new DropDownList({
-                      dataSource: ds,
-                      value: ds[1],
-                      change: (e: any) => {
-                          queryBuilder.notifyChange(e.itemData.value, e.element);
-                      },
+                }) => {
+                    const ds: string[] = ['Cash', 'Debit Card', 'Credit Card', 'Net Banking', 'Wallet'];
+                    const dropdownlistObj: DropDownList = new DropDownList({
+                        dataSource: ds,
+                        value: ds[1],
+                        change: (e: any) => {
+                            queryBuilder.notifyChange(e.itemData.value, e.element);
+                        }
                     });
                     dropdownlistObj.appendTo('#' + args.elements.id);
-                },
-              };
-            let customFieldData: ColumnsModel[] = [
+                }
+            };
+            const customFieldData: ColumnsModel[] = [
                 {
-                  label: 'general',
-                  field: 'general',
-                  columns: [
-                    {
-                      label: 'date',
-                      field: 'date',
-                      type: 'date',
-                      step: 0,
-                      template: dateTemplate,
-                    },
-                    {
-                      label: 'title',
-                      field: 'title',
-                      type: 'string',
-                      step: 0,
-                    },
-                    {
-                      label: 'code',
-                      field: 'code',
-                      type: 'string',
-                      step: 0,
-                    },
-                  ],
+                    label: 'general',
+                    field: 'general',
+                    columns: [
+                        {
+                            label: 'date',
+                            field: 'date',
+                            type: 'date',
+                            step: 0,
+                            template: dateTemplate
+                        },
+                        {
+                            label: 'title',
+                            field: 'title',
+                            type: 'string',
+                            step: 0
+                        },
+                        {
+                            label: 'code',
+                            field: 'code',
+                            type: 'string',
+                            step: 0
+                        }
+                    ]
                 },
                 {
-                  label: 'custom',
-                  field: 'custom',
-                  columns: [
-                    {
-                      label: 'custom_code',
-                      field: 'custom_code',
-                      type: 'string',
-                      step: 1,
-                    },
-                    {
-                      label: 'custom_title',
-                      field: 'custom_title',
-                      type: 'string',
-                      step: 1,
-                    },
-                    {
-                      label: 'custom_date',
-                      field: 'custom_date',
-                      type: 'date',
-                      step: 1,
-                      template: dateTemplate,
-                    },
-                  ],
-                },
-              ];
+                    label: 'custom',
+                    field: 'custom',
+                    columns: [
+                        {
+                            label: 'custom_code',
+                            field: 'custom_code',
+                            type: 'string',
+                            step: 1
+                        },
+                        {
+                            label: 'custom_title',
+                            field: 'custom_title',
+                            type: 'string',
+                            step: 1
+                        },
+                        {
+                            label: 'custom_date',
+                            field: 'custom_date',
+                            type: 'date',
+                            step: 1,
+                            template: dateTemplate
+                        }
+                    ]
+                }
+            ];
             queryBuilder = new QueryBuilder({
                 dataSource: complexData,
                 separator: '.',
                 columns: customFieldData
             }, '#querybuilder');
-            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            const filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
             filterElem.showPopup();
-            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            const items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             items[0].click();
-            queryBuilder.rule.rules[0].value = 'Football'
+            queryBuilder.rule.rules[0].value = 'Football';
             items[1].click();
-            expect(queryBuilder.rule.rules[0].value).toEqual("");
+            expect(queryBuilder.rule.rules[0].value).toEqual('');
         });
 
         it('EJ2-62916 - Custom operator not set properly when we set one field is a prefix of other field as number', () => {
-            var customField = [
+            const customField = [
                 {
                     field: '1',
                     label: 'Number field',
-                    type: 'number',
+                    type: 'number'
                 },
                 {
                     field: '12',
@@ -3415,30 +3771,30 @@ describe('QueryBuilder', () => {
                     type: 'string',
                     operators: [
                         { value: 'in', key: 'In' },
-                        { value: 'notin', key: 'Not In' },
-                    ],
-                },
+                        { value: 'notin', key: 'Not In' }
+                    ]
+                }
             ];
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 columns: customField
             }, '#querybuilder');
-            var filterElem = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            const filterElem = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
             filterElem.showPopup();
-            var items = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            const items = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             items[1].click();
-            var filterElem1 = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances[0];
+            const filterElem1 = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances[0];
             filterElem1.showPopup();
-            var items1 = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            const items1 = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
             expect(items1.length).toEqual(2);
             expect(queryBuilder.rule.rules[0].operator).toEqual('in');
         });
-        
+
         it('EJ2-62949 - Rule template rendering issue when add group/condition', () => {
-            let customFieldData: ColumnsModel[] = [
-                { field: 'EmployeeID', label: 'Employee ID', type: 'number', ruleTemplate:'#template' },
+            const customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number', ruleTemplate: '#template' },
                 { field: 'FirstName', label: 'First Name', type: 'string' },
-                { field: 'City', label: 'City', type: 'string' },
+                { field: 'City', label: 'City', type: 'string' }
             ];
             let valueObj: Slider;
             queryBuilder = new QueryBuilder({
@@ -3447,8 +3803,8 @@ describe('QueryBuilder', () => {
                 separator: '.',
                 actionBegin: (args: any) => {
                     if (args.requestType === 'template-create') {
-                        let defaultNumber: number = 31;    
-                        let fieldObj: DropDownList = new DropDownList({
+                        const defaultNumber: number = 31;
+                        const fieldObj: DropDownList = new DropDownList({
                             dataSource: queryBuilder.columns, // tslint:disable-line
                             fields: args.fields,
                             value: args.rule.field,
@@ -3456,7 +3812,7 @@ describe('QueryBuilder', () => {
                                 queryBuilder.notifyChange(e.value, e.element, 'field');
                             }
                         });
-                        let operatorObj: DropDownList = new DropDownList({
+                        const operatorObj: DropDownList = new DropDownList({
                             dataSource: [{key: 'equal', value: 'equal'}, {key:'between', value:'between'}, {key:'notbetween', value:'notbetween'}], // tslint:disable-line
                             fields: { text: 'key', value: 'value' },
                             value: args.rule.operator,
@@ -3471,7 +3827,7 @@ describe('QueryBuilder', () => {
                             value: args.rule.value as number, min: 30, max: 50,
                             ticks: { placement: 'Before', largeStep: 5, smallStep: 1 },
                             change: (e: any) => {
-                                let elem: HTMLElement = document.querySelector('.e-rule-value .e-control.e-slider');
+                                const elem: HTMLElement = document.querySelector('.e-rule-value .e-control.e-slider');
                                 queryBuilder.notifyChange(e.value, elem, 'value');
                             }
                         });
@@ -3482,30 +3838,30 @@ describe('QueryBuilder', () => {
                 }
             }, '#querybuilder');
             expect(queryBuilder.rule.rules[0].field).toEqual('');
-            queryBuilder.addGroups([{condition: 'and', 'rules': [{}], not: false}], "group0");
+            queryBuilder.addGroups([{condition: 'and', 'rules': [{}], not: false}], 'group0');
             expect(queryBuilder.rule.rules[0].field).toEqual('');
         });
 
         it('EJ2-66222 - GetValidRules method of query builder returns empty group', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 columns: customFieldData
-                
+
             }, '#querybuilder');
-            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            const filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
             filterElem.showPopup();
-            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            const items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             items[0].click();
-            queryBuilder.addGroups([{condition: 'and', 'rules': [{}] }], "group0");
+            queryBuilder.addGroups([{condition: 'and', 'rules': [{}] }], 'group0');
             expect(queryBuilder.getValidRules().rules.length).toEqual(1);
         });
 
         it('EJ2-68596 - Value template issue with complex data binding of query builder', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 {field: 'Employee', label: 'Employee', columns: [
                     { field: 'ID', label: 'ID', type: 'number', ruleTemplate: '#ageTemplate'},
                     { field: 'DOB', label: 'Date of birth', type: 'date'},
@@ -3514,26 +3870,26 @@ describe('QueryBuilder', () => {
                     { field: 'Age', label: 'Age', type: 'number'},
                     { field: 'Title', label: 'Title', type: 'string'}
                 ]},
-                {field: 'Name', label: 'Name',operators: [
+                {field: 'Name', label: 'Name', operators: [
                     {
-                      key: 'Equal',
-                      value: 'equal',
+                        key: 'Equal',
+                        value: 'equal'
                     },
                     {
-                      key: 'Not Equal',
-                      value: 'equal',
+                        key: 'Not Equal',
+                        value: 'equal'
                     }], columns: [
-                    { field: 'FirstName', label: 'First Name', type: 'string'}, 
+                    { field: 'FirstName', label: 'First Name', type: 'string'},
                     { field: 'LastName', label: 'Last Name', type: 'string'}
                 ]},
                 {field: 'Country', label: 'Country', columns : [
                     { field: 'State', label: 'State', columns : [
-                        { field: 'City', label: 'City', type: 'string'}, 
+                        { field: 'City', label: 'City', type: 'string'},
                         { field: 'Zipcode', label: 'Zip Code', type: 'number'}] },
                     { field: 'Region', label: 'Region', type: 'string'},
                     { field: 'Name', label: 'Name', type: 'string'}
                 ]}
-            ]
+            ];
             let valueObj: Slider;
             queryBuilder = new QueryBuilder({
                 dataSource: complexData,
@@ -3542,8 +3898,8 @@ describe('QueryBuilder', () => {
                 actionBegin: (args: any) => {
                     if (args.requestType === 'template-create') {
                         args.rule.operator = 'between';
-                        let defaultNumber: number = 31;    
-                        let fieldObj: DropDownList = new DropDownList({
+                        const defaultNumber: number = 31;
+                        const fieldObj: DropDownList = new DropDownList({
                             dataSource: queryBuilder.columns as any, // tslint:disable-line
                             fields: args.fields,
                             value: 'Employee',
@@ -3551,7 +3907,7 @@ describe('QueryBuilder', () => {
                                 queryBuilder.notifyChange(e.value, e.element, 'field');
                             }
                         });
-                        let fieldObj1: DropDownList = new DropDownList({
+                        const fieldObj1: DropDownList = new DropDownList({
                             dataSource: queryBuilder.columns[0].columns, // eslint-disable-line
                             fields: args.fields,
                             value: args.rule.field,
@@ -3566,7 +3922,7 @@ describe('QueryBuilder', () => {
                             value: args.rule.value as number, min: 30, max: 50,
                             ticks: { placement: 'Before', largeStep: 5, smallStep: 1 },
                             change: (e: any) => {
-                                let elem: HTMLElement = document.querySelector('.e-rule-value .e-control.e-slider');
+                                const elem: HTMLElement = document.querySelector('.e-rule-value .e-control.e-slider');
                                 queryBuilder.notifyChange(e.value, elem, 'value');
                             }
                         });
@@ -3577,22 +3933,22 @@ describe('QueryBuilder', () => {
                 }
             }, '#querybuilder');
             expect(queryBuilder.rule.rules[0].field).toEqual('');
-            let filter: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances[0];
+            const filter: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances[0];
             filter.showPopup();
-            let itemCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            const itemCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             itemCln[0].click();
-            let slider: Slider = queryBuilder.element.querySelector('.e-control.e-slider').ej2_instances[0];
+            const slider: Slider = queryBuilder.element.querySelector('.e-control.e-slider').ej2_instances[0];
             slider.value = 40; slider.dataBind();
             expect(queryBuilder.rule.rules[0].value).toEqual(40);
-            let filter1: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances[0];
+            const filter1: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances[0];
             filter1.showPopup();
-            let itemCln1: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            const itemCln1: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             itemCln1[1].click();
             expect(queryBuilder.rule.rules[0].field).toEqual('Name.FirstName');
         });
 
         it('EJ2-68260 - Provided special character in SQL string support to query builder', () => {
-            let columns: ColumnsModel[] = [
+            const columns: ColumnsModel[] = [
                 {field: 'Employee', label: 'Employee', columns: [
                     { field: 'ID', label: 'ID', type: 'number'},
                     { field: 'DOB', label: 'Date of birth', type: 'date'},
@@ -3602,73 +3958,63 @@ describe('QueryBuilder', () => {
                     { field: 'Title', label: 'Title', type: 'string'}
                 ]},
                 {field: 'Name', label: 'Name', columns: [
-                    { field: 'FirstName', label: 'First Name', type: 'string'}, 
+                    { field: 'FirstName', label: 'First Name', type: 'string'},
                     { field: 'LastName', label: 'Last Name', type: 'string'}
                 ]},
                 {field: 'Country', label: 'Country', columns : [
                     { field: 'State', label: 'State', columns : [
-                        { field: 'City', label: 'City', type: 'string'}, 
+                        { field: 'City', label: 'City', type: 'string'},
                         { field: 'Zipcode', label: 'Zip Code', type: 'number'}] },
                     { field: 'Region', label: 'Region', type: 'string'},
                     { field: 'Name', label: 'Name', type: 'string'}
                 ]}
-            ]
+            ];
 
             queryBuilder = new QueryBuilder({
                 dataSource: complexData,
                 separator: '.',
                 columns: columns,
                 enableNotCondition: true,
-                fieldMode: 'DropdownTree',
+                fieldMode: 'DropdownTree'
             }, '#querybuilder');
-            queryBuilder.setRulesFromSql("Name.FirstName LIKE ('Date.parse('yyyy-MM-dd','1980-05-24')%')");
-            expect(queryBuilder.rule.rules[0].value).toEqual("Date.parse('yyyy-MM-dd','1980-05-24')");
+            queryBuilder.setRulesFromSql('Name.FirstName LIKE (\'Date.parse(\'yyyy-MM-dd\',\'1980-05-24\')%\')');
+            expect(queryBuilder.rule.rules[0].value).toEqual('Date.parse(\'yyyy-MM-dd\',\'1980-05-24\')');
         });
 
         it('EJ2-863630 - GetValidRules method of query builder returns empty array for in operator rule', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 columns: customFieldData
-                
+
             }, '#querybuilder');
-            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            const filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
             filterElem.showPopup();
-            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            const items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             items[0].click();
-            let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances[0];
+            const operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances[0];
             operatorElem.showPopup();
-            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            const itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
             itemsCln[8].click();
             expect(operatorElem.value).toEqual('in');
             expect(queryBuilder.getValidRules()).toEqual({});
         });
 
-        it("EJ2-876239 - SetRulesFromSql method is not working while using a field name like Name = '|_fn { keyword ' kFinishedProduct '}_|'", () => {
-            let column: ColumnsModel [] = [
+        it('EJ2-876239 - SetRulesFromSql method is not working while using a field name like Name = \'|_fn { keyword \' kFinishedProduct \'}_|\'', () => {
+            const column: ColumnsModel [] = [
                 { field: 'Name', label: 'Name', type: 'string'},
-                { field: 'ID', label: '3', type: 'number'},
+                { field: 'ID', label: '3', type: 'number'}
             ];
             queryBuilder = new QueryBuilder({
                 columns: column
             }, '#querybuilder');
-            queryBuilder.setRulesFromSql("Name = '|_fn { keyword ' kFinishedProduct '}_|' OR ID = 8")
-            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("Name = '|_fn { keyword ' kFinishedProduct '}_|' OR ID = 8");
+            queryBuilder.setRulesFromSql('Name = \'|_fn { keyword \' kFinishedProduct \'}_|\' OR ID = 8');
+            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual('Name = \'|_fn { keyword \' kFinishedProduct \'}_|\' OR ID = 8');
         });
 
-        it('EJ2 - 898205 - While setting rule.value as an empty string the rule was not created in QueryBuilder', () => {
-            queryBuilder = new QueryBuilder({
-                columns: columnData,
-                rule: noValue,
-            }, '#querybuilder');
-            expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).field).toEqual('DOB');
-            expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).label).toEqual('DOB');
-            expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).operator).toEqual('equal');
-            expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).value).toEqual(null);
-        });
         it('EJ2 - 896995 - Operator is not set properly when using the addRules method', () => {
             queryBuilder = new QueryBuilder({
                 columns: columnData,
@@ -3682,18 +4028,18 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.getPredicate(queryBuilder.rule).operator).toEqual('lessthanorequal');
         });
 
-	it("field name with number literal", () => {
-            let column: ColumnsModel [] = [
-                { field: 'Name', label: 'Name', type:'number'},
-                { field: 'ID', label: '3', type: 'number'},
+        it('field name with number literal', () => {
+            const column: ColumnsModel [] = [
+                { field: 'Name', label: 'Name', type: 'number'},
+                { field: 'ID', label: '3', type: 'number'}
             ];
             queryBuilder = new QueryBuilder({
                 columns: column
             }, '#querybuilder');
-            queryBuilder.setRulesFromSql("Name = 9 OR ID = 8")
-            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("Name = 9 OR ID = 8");
+            queryBuilder.setRulesFromSql('Name = 9 OR ID = 8');
+            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual('Name = 9 OR ID = 8');
         });
-        
+
     });
 
     describe('Coverge Improvement', () => {
@@ -3701,13 +4047,13 @@ describe('QueryBuilder', () => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));
         });
         afterEach(() => {
-            remove(queryBuilder.element.nextElementSibling);
-            remove(queryBuilder.element);
-            // queryBuilder = null;
-            queryBuilder.destroy();
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+            remove(document.getElementById('querybuilder'));
         });
 
-        let rules: RuleModel = {
+        const rules: RuleModel = {
             'condition': 'and',
             'rules': [{
                 'label': 'Employee ID',
@@ -3724,17 +4070,17 @@ describe('QueryBuilder', () => {
                 'value': 'Sales Manager'
             },
             {
-                condition: "or", rules: [
+                condition: 'or', rules: [
                     { 'label': 'Title',
-                    'field': 'Title',
-                    'type': 'string',
-                    'operator': 'equal',
-                    'value': 'Engineer' }
+                        'field': 'Title',
+                        'type': 'string',
+                        'operator': 'equal',
+                        'value': 'Engineer' }
                 ]
             }
-          ]
+            ]
         };
-        let columnData: ColumnsModel[] = [
+        const columnData: ColumnsModel[] = [
             {
                 field: 'EmployeeID', label: 'Employee ID', type: 'number'
             },
@@ -3745,49 +4091,57 @@ describe('QueryBuilder', () => {
             { field: 'Country', label: 'Country', type: 'string' },
             { field: 'City', label: 'City', type: 'string' }
         ];
-        it('QueryBuilder methods cloneGroup, lockGroup', () => {
-            queryBuilder = new QueryBuilder({
-                showButtons: { ruleDelete: true , groupInsert: true, groupDelete: true, cloneGroup: false, cloneRule: false},
-                columns: columnData,
-                rule: rules
-            }, '#querybuilder');
-            queryBuilder.cloneGroup("querybuilder_group0", "querybuilder_group1", 1);
-            queryBuilder.cloneRule("querybuilder_group0_rule0", "querybuilder_group0", 1);
-            queryBuilder.lockGroup("querybuilder_group0");
-            queryBuilder.lockRule("querybuilder_group0_rule0");
+
+        it('QueryBuilder with allowDragAndDrop dragstart', () => {
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+            const dragSpan: Element = queryBuilder.element.querySelector('.e-rule-field .e-drag-qb-rule');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder' , className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
         });
-    });
-
-    describe('Events', () => {
-        afterEach(() => {
-            queryBuilder.destroy();
-        });
-    });
-
-
-    describe('notify property changes of', () => {
-        afterEach(() => {
-            queryBuilder.destroy();
+        it('QueryBuilder with allowDragAndDrop draghandler', () => {
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+            const dragSpan: Element = queryBuilder.element.querySelector('.e-rule-field .e-drag-qb-rule');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder' , className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            queryBuilder.dragHandler({target: dragSpan, event: { clientY: 300}, dragElement: cloneElem });
+            let ruleElem: Element[] = queryBuilder.element.querySelectorAll('.e-rule-container');
+            let eventObj: any = { event: { clientY: 100} , target: ruleElem[1], dragElement: cloneElem };
+            queryBuilder.dragHandler(eventObj);
+            ruleElem = queryBuilder.element.querySelectorAll('.e-group-container');
+            eventObj = { event: { clientY: 200} , target: ruleElem[0], dragElement: cloneElem };
+            queryBuilder.dragHandler(eventObj);
         });
     });
 
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange);
+        const average: any = inMB(profile.averageChange);
         // check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
+        const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 
     describe('Null or undefined Property testing', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+        afterEach(() => {
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+            remove(document.getElementById('querybuilder'));
+        });
         it('QueryBuilder with enableRtl', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
-            
+
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 enableRtl: null,
@@ -3815,7 +4169,7 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with cssClass', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -3835,7 +4189,7 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with dataSource', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -3853,7 +4207,7 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with displayMode', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -3862,18 +4216,16 @@ describe('QueryBuilder', () => {
                 columns: customFieldData,
                 displayMode: null
             }, '#querybuilder');
-            expect(queryBuilder.displayMode).toEqual(null);
             queryBuilder.destroy();
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 columns: customFieldData,
                 displayMode: undefined
             }, '#querybuilder');
-            expect(queryBuilder.displayMode).toEqual('Horizontal');
         });
 
         it('QueryBuilder with enableNotCondition', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -3893,7 +4245,7 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with enablePersistence', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -3913,7 +4265,7 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with fieldMode', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -3933,7 +4285,7 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with fieldModel', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -3942,7 +4294,7 @@ describe('QueryBuilder', () => {
                 columns: customFieldData,
                 fieldModel: {
                     allowFiltering: null
-                },
+                }
             }, '#querybuilder');
             expect(queryBuilder.fieldModel.allowFiltering).toEqual(null);
             queryBuilder.destroy();
@@ -3951,13 +4303,13 @@ describe('QueryBuilder', () => {
                 columns: customFieldData,
                 fieldModel: {
                     allowFiltering: undefined
-                },
+                }
             }, '#querybuilder');
             expect(queryBuilder.fieldModel.allowFiltering).toEqual(undefined);
         });
 
         it('QueryBuilder with operatorModel', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -3977,7 +4329,7 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with readonly', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -3997,7 +4349,7 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with locale', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -4017,7 +4369,7 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with width', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -4037,7 +4389,7 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with height', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -4057,7 +4409,7 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with immediateModeDelay', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -4077,13 +4429,13 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with separator', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
             queryBuilder = new QueryBuilder({
                 columns: customFieldData,
-                separator: null,
+                separator: null
             }, '#querybuilder');
             expect(queryBuilder.separator).toEqual(null);
             queryBuilder = new QueryBuilder({
@@ -4094,7 +4446,7 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with summaryView', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
@@ -4111,13 +4463,13 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with addRuleToNewGroups', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
             queryBuilder = new QueryBuilder({
                 columns: customFieldData,
-                addRuleToNewGroups: null,
+                addRuleToNewGroups: null
             }, '#querybuilder');
             expect(queryBuilder.addRuleToNewGroups).toEqual(null);
             queryBuilder = new QueryBuilder({
@@ -4128,21 +4480,21 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with showButtons', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
             queryBuilder = new QueryBuilder({
                 columns: customFieldData,
                 showButtons: { ruleDelete: null, groupInsert: null, groupDelete: null},
-                rule: importRules,
+                rule: importRules
             }, '#querybuilder');
             expect(queryBuilder.showButtons.ruleDelete).toEqual(null);
             expect(queryBuilder.showButtons.groupInsert).toEqual(null);
             expect(queryBuilder.showButtons.groupDelete).toEqual(null);
             queryBuilder = new QueryBuilder({
                 columns: customFieldData,
-                showButtons: { ruleDelete: undefined, groupInsert: undefined, groupDelete: undefined},
+                showButtons: { ruleDelete: undefined, groupInsert: undefined, groupDelete: undefined}
             }, '#querybuilder');
             expect(queryBuilder.showButtons.ruleDelete).toEqual(true);
             expect(queryBuilder.showButtons.groupInsert).toEqual(true);
@@ -4150,156 +4502,102 @@ describe('QueryBuilder', () => {
         });
 
         it('QueryBuilder with autoSelectOperator', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
             queryBuilder = new QueryBuilder({
                 columns: customFieldData,
-                autoSelectOperator: null,
+                autoSelectOperator: null
             }, '#querybuilder');
             expect(queryBuilder.autoSelectOperator).toEqual(null);
             queryBuilder = new QueryBuilder({
                 columns: customFieldData,
-                autoSelectOperator: undefined,
+                autoSelectOperator: undefined
             }, '#querybuilder');
             expect(queryBuilder.autoSelectOperator).toEqual(true);
         });
 
         it('QueryBuilder with sortDirection', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
             queryBuilder = new QueryBuilder({
                 columns: customFieldData,
-                sortDirection: null,
+                sortDirection: null
             }, '#querybuilder');
             expect(queryBuilder.sortDirection).toEqual(null);
             queryBuilder = new QueryBuilder({
                 columns: customFieldData,
-                sortDirection: undefined,
+                sortDirection: undefined
             }, '#querybuilder');
             expect(queryBuilder.sortDirection).toEqual('Default');
         });
 
         it('QueryBuilder with maxGroupCount', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
             queryBuilder = new QueryBuilder({
                 columns: customFieldData,
-                maxGroupCount: null,
+                maxGroupCount: null
             }, '#querybuilder');
             expect(queryBuilder.maxGroupCount).toEqual(null);
             queryBuilder = new QueryBuilder({
                 columns: customFieldData,
-                maxGroupCount: undefined,
+                maxGroupCount: undefined
             }, '#querybuilder');
             expect(queryBuilder.maxGroupCount).toEqual(5);
         });
 
         it('QueryBuilder with valueModel', () => {
-            let customFieldData: ColumnsModel[] = [
+            const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
                 { field: 'FirstName', label: 'First Name', type: 'string' }
             ];
             queryBuilder = new QueryBuilder({
                 columns: customFieldData,
-                valueModel: null,
+                valueModel: null
             }, '#querybuilder');
             expect(queryBuilder.valueModel).toEqual(null);
             queryBuilder = new QueryBuilder({
                 columns: customFieldData,
-                valueModel: undefined,
+                valueModel: undefined
             }, '#querybuilder');
             expect(queryBuilder.valueModel).toEqual(null);
         });
 
         it('QueryBuilder with enableSeparateConnector', () => {
-            let empField: ColumnsModel[] = [
+            const empField: ColumnsModel[] = [
                 {field: 'EmployeeID', label: 'Employee ID', type: 'number', values: [1, 2, 3, 4, 5]},
                 {field: 'Name', label: 'Name', type: 'string'}
             ];
-            let valRule: RuleModel = {
+            const valRule: RuleModel = {
                 'condition': 'and',
                 'rules': [
-                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1] },
+                    {'label': 'EmployeeID', 'field': 'EmployeeID', 'type': 'number', 'operator': 'in', 'value': [1] }
                 ]
             };
             queryBuilder = new QueryBuilder({
                 columns: empField,
                 rule: valRule,
-                enableSeparateConnector: null,
+                enableSeparateConnector: null
             }, '#querybuilder');
             expect(queryBuilder.enableSeparateConnector).toEqual(null);
             queryBuilder = new QueryBuilder({
                 columns: empField,
                 rule: valRule,
-                enableSeparateConnector: undefined,
+                enableSeparateConnector: undefined
             }, '#querybuilder');
             expect(queryBuilder.enableSeparateConnector).toEqual(false);
             queryBuilder = new QueryBuilder({
                 columns: empField,
                 rule: valRule,
-                enableSeparateConnector: true,
+                enableSeparateConnector: true
             }, '#querybuilder');
             expect(queryBuilder.enableSeparateConnector).toEqual(true);
-        });
-
-
-
-    })
-
-    describe('Data Manager', () => {
-        let data: DataManager = new DataManager({
-            url: 'https://services.syncfusion.com/js/production/api/orders',
-            adaptor: new WebApiAdaptor,
-	    crossDomain: true
-        });
-        let valRule: RuleModel = {
-            'condition': 'and',
-            'rules': [
-                {'label': 'CustomerID', 'field': 'CustomerID', 'type': 'string', 'operator': 'equal', 'value': 'BERGS'},
-            ] 
-        };
-        let columns: ColumnsModel[] = [
-            { field: 'EmployeeID', label: 'Employee ID', type: 'string' },
-            { field: 'OrderID', label: 'Order ID', type: 'string' },
-            { field: 'CustomerID', label: 'CustomerID', type: 'string' }
-        ];
-        function createQB(options: QueryBuilderModel, done: Function): QueryBuilder {
-            let dataBound: EmitType<Object> = () => {
-                setTimeout(function(){ 
-                    done();
-                }, 3000);
-            };
-            options.dataBound = dataBound;
-            let qb: QueryBuilder = new QueryBuilder(options);
-            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
-            qb.appendTo('#querybuilder');
-            return qb;
-        }
-        beforeAll((done: Function)=> {
-            queryBuilder = createQB({
-                dataSource: data,
-                columns: columns,
-                rule: valRule
-            }, done);
-        }); 
-        it('Remote Data Checking', (done: Function) => {
-            let msObj: TextBox = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances[0];
-            expect(msObj.value).toEqual('BERGS');
-            done();
-        });
-        it('Multi Select Data Checking', (done: Function) => {
-            let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
-            operatorElem[0].showPopup();
-            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
-            items[8].click();
-            expect(operatorElem[0].value).toEqual('in');
-            done();
         });
     });
 
@@ -4308,13 +4606,12 @@ describe('QueryBuilder', () => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));
         });
         afterEach(() => {
-            remove(queryBuilder.element.nextElementSibling);
-            remove(queryBuilder.element);
-            // queryBuilder = null;
-            queryBuilder.destroy();
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
         });
 
-        let rules: RuleModel = {
+        const rules: RuleModel = {
             'condition': 'and',
             'rules': [{
                 'label': 'Employee ID',
@@ -4330,7 +4627,7 @@ describe('QueryBuilder', () => {
                     'field': 'Title',
                     'type': 'string',
                     'operator': 'contains',
-                    'value':'Sales Manager'
+                    'value': 'Sales Manager'
                 },
                 {
                     'field': 'TitleOfCourtesy',
@@ -4339,44 +4636,916 @@ describe('QueryBuilder', () => {
                     'operator': 'equal',
                     'value': 'Mr.'
                 }]
-            },{
+            }, {
                 'condition': 'and',
-                    'rules': [{
-                        'label': 'City',
-                        'field': 'City',
-                        'type': 'string',
-                        'operator': 'equal',
-                        'value': 'Kirkland'
-                    },
-                    {
-                        'label': 'Hire Date',
-                        'field': 'HireDate',
-                        'type': 'date',
-                        'operator': 'equal',
-                        'value': '12/12/2019'
-                    }]
-                }
-            ],
+                'rules': [{
+                    'label': 'City',
+                    'field': 'City',
+                    'type': 'string',
+                    'operator': 'equal',
+                    'value': 'Kirkland'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'equal',
+                    'value': '12/12/2019'
+                }]
+            }
+            ]
         };
         it('QueryBuilder get and set sql methods', () => {
             queryBuilder = new QueryBuilder({
-                dataSource: employeeData, 
+                dataSource: employeeData,
                 rule: rules,
-                displayMode: "Horizontal", 
+                displayMode: 'Horizontal',
                 allowValidation: true
             }, '#querybuilder');
-            let actualSql: string = "EmployeeID = 1 AND Title = 'Sales Manager' AND (FirstName LIKE ('ewfew%') OR TitleOfCourtesy = 'Mr.' OR (FirstName LIKE ('ewfew%') AND HireDate = '12/06/2024') OR (FirstName LIKE ('reer%') OR Title LIKE ('erer%'))) AND Title LIKE ('ewfew%')";
+            let actualSql: string = 'EmployeeID = 1 AND Title = \'Sales Manager\' AND (FirstName LIKE (\'ewfew%\') OR TitleOfCourtesy = \'Mr.\' OR (FirstName LIKE (\'ewfew%\') AND HireDate = \'12/06/2024\') OR (FirstName LIKE (\'reer%\') OR Title LIKE (\'erer%\'))) AND Title LIKE (\'ewfew%\')';
             queryBuilder.setRulesFromSql(actualSql);
             let expectedSql: string = queryBuilder.getSqlFromRules();
             expect(expectedSql).toEqual(actualSql);
-            actualSql = "EmployeeID = 1001 AND (Title LIKE ('%Sales Manager%') OR (City = 'Kirkland' AND (FirstName LIKE ('fewfew%') OR FirstName LIKE ('efew%'))) OR LastName LIKE ('erer%')) AND (FirstName LIKE ('ewfew%') AND Title LIKE ('efweew%'))";
+            actualSql = 'EmployeeID = 1001 AND (Title LIKE (\'%Sales Manager%\') OR (City = \'Kirkland\' AND (FirstName LIKE (\'fewfew%\') OR FirstName LIKE (\'efew%\'))) OR LastName LIKE (\'erer%\')) AND (FirstName LIKE (\'ewfew%\') AND Title LIKE (\'efweew%\'))';
             queryBuilder.setRulesFromSql(actualSql);
             expectedSql = queryBuilder.getSqlFromRules();
             expect(expectedSql).toEqual(actualSql);
-            actualSql = "(EmployeeID = 1 AND LastName LIKE ('rgerger%') AND (FirstName LIKE ('erger%') OR Title LIKE ('asawd%')) AND (Title LIKE ('reger%') AND FirstName LIKE ('aefwaw%')) AND (Title LIKE ('ewrew%') OR LastName LIKE ('ewfew%')))";
+            actualSql = '(EmployeeID = 1 AND LastName LIKE (\'rgerger%\') AND (FirstName LIKE (\'erger%\') OR Title LIKE (\'asawd%\')) AND (Title LIKE (\'reger%\') AND FirstName LIKE (\'aefwaw%\')) AND (Title LIKE (\'ewrew%\') OR LastName LIKE (\'ewfew%\')))';
             queryBuilder.setRulesFromSql(actualSql);
             expectedSql = queryBuilder.getSqlFromRules();
             expect(expectedSql).toEqual(actualSql);
+        });
+    });
+
+    describe('clone, lock group covergae improvement', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+        afterEach(() => {
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+        });
+        const rules: RuleModel = {
+            'condition': 'and',
+            'rules': [{
+                'label': 'Employee ID',
+                'field': 'EmployeeID',
+                'type': 'number',
+                'operator': 'equal',
+                'value': 1001
+            },
+            {
+                'label': 'Title',
+                'field': 'Title',
+                'type': 'string',
+                'operator': 'equal',
+                'value': 'Sales Manager'
+            },
+            {
+                condition: 'or', rules: [
+                    { 'label': 'Title',
+                        'field': 'Title',
+                        'type': 'string',
+                        'operator': 'equal',
+                        'value': 'Engineer' },
+                    { 'label': 'HireDate',
+                        'field': 'HireDate',
+                        'type': 'date',
+                        'operator': 'equal',
+                        'value': '11/11/2024' },
+                    { 'label': 'TitleOfCourtesy',
+                        'field': 'TitleOfCourtesy',
+                        'type': 'boolean',
+                        'operator': 'equal',
+                        'value': 'Mr' }
+                ]
+            }
+            ]
+        };
+        const columnData: ColumnsModel[] = [
+            {
+                field: 'EmployeeID', label: 'Employee ID', type: 'number'
+            },
+            { field: 'FirstName', label: 'First Name', type: 'string' },
+            { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
+            { field: 'Title', label: 'Title', type: 'string' },
+            { field: 'HireDate', label: 'Hire Date', type: 'date', format: 'dd/MM/yyyy' },
+            { field: 'Country', label: 'Country', type: 'string' },
+            { field: 'City', label: 'City', type: 'string' }
+        ];
+        it('QueryBuilder methods cloneGroup, lockGroup', () => {
+            queryBuilder = new QueryBuilder({
+                showButtons: { ruleDelete: true , groupInsert: true, groupDelete: true, cloneGroup: false, cloneRule: false},
+                columns: columnData,
+                rule: rules
+            }, '#querybuilder');
+            queryBuilder.cloneGroup('querybuilder_group0', 'querybuilder_group1', 1);
+            queryBuilder.cloneRule('querybuilder_group0_rule0', 'querybuilder_group0', 1);
+            queryBuilder.lockGroup('querybuilder_group0');
+            queryBuilder.lockRule('querybuilder_group0_rule0');
+        });
+        it('QueryBuilder methods cloneGroup, lockGroup', () => {
+            queryBuilder = new QueryBuilder({
+                showButtons: { ruleDelete: true , groupInsert: true, groupDelete: true, cloneGroup: false, cloneRule: false},
+                columns: columnData,
+                rule: rules
+            }, '#querybuilder');
+            queryBuilder.lockGroup('querybuilder_group0');
+            queryBuilder.lockGroup('querybuilder_group0');
+        });
+    });
+
+
+    describe('Coverage Improvement', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+
+        afterEach(() => {
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+            remove(document.getElementById('querybuilder'));
+        });
+
+        it('QueryBuilder with complex data binding filtering', () => {
+            const columns: ColumnsModel[] = [
+                {field: 'Employee', label: 'Employee', columns: [
+                    { field: 'ID', label: 'ID', type: 'number'},
+                    { field: 'DOB', label: 'Date of birth', type: 'date'},
+                    { field: 'HireDate', label: 'Hire Date', type: 'date'},
+                    { field: 'Salary', label: 'Salary', type: 'number'},
+                    { field: 'Age', label: 'Age', type: 'number'},
+                    { field: 'Title', label: 'Title', type: 'string'}
+                ]},
+                {field: 'Name', label: 'Name', columns: [
+                    { field: 'FirstName', label: 'First Name', type: 'string'},
+                    { field: 'LastName', label: 'Last Name', type: 'string'}
+                ]},
+                {field: 'Country', label: 'Country', columns : [
+                    { field: 'State', label: 'State', columns : [
+                        { field: 'City', label: 'City', type: 'string'},
+                        { field: 'Zipcode', label: 'Zip Code', type: 'number'}] },
+                    { field: 'Region', label: 'Region', type: 'string'},
+                    { field: 'Name', label: 'Name', type: 'string'}
+                ]}
+            ];
+            queryBuilder = new QueryBuilder({ columns: columns, separator: '.', fieldMode: 'DropdownTree', allowValidation: true, fieldModel: { allowFiltering: true } }, '#querybuilder');
+            queryBuilder.setRulesFromSql('Name.FirstName LIKE (\'Date.parse(\'yyyy-MM-dd\',\'1980-05-24\')%\')');
+            const filterElem: DropDownTree = queryBuilder.element.querySelector('.e-rule-filter .e-control.e-dropdowntree').ej2_instances[0];
+            filterElem.showPopup();
+            let filterInp: Element = document.querySelector('.e-qb-ddt .e-filter-wrap .e-textbox');
+            queryBuilder.dropdownTreeFiltering({cancel: false, text: 'em', event: {srcElement: filterInp }});
+            filterInp = document.querySelector('.e-qb-ddt .e-filter-wrap .e-clear-icon');
+            queryBuilder.dropdownTreeFiltering({cancel: false, text: '', event: {srcElement: filterInp }});
+            filterElem.hidePopup();
+            queryBuilder.validateFields();
+        });
+        it('QueryBuilder field name with space', () => {
+            const columns: ColumnsModel[] = [
+                { field: 'ID', label: 'ID', type: 'number'},
+                { field: 'DOB', label: 'Date of birth', type: 'date'},
+                { field: 'Hire Date', label: 'Hire Date', type: 'date'},
+                { field: 'Salary', label: 'Salary', type: 'number'},
+                { field: 'Age', label: 'Age', type: 'number'},
+                { field: 'Title', label: 'Title', type: 'string'}
+            ];
+            queryBuilder = new QueryBuilder({ columns: columns }, '#querybuilder');
+            queryBuilder.setRulesFromSql(' \'Hire Date\' = \'1980-05-24\'');
+            const qStr = queryBuilder.getSqlFromRules(queryBuilder.getValidRules());
+        });
+    });
+
+    describe('Coverage Improvement - number literal', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+        afterEach(() => {
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+            remove(document.getElementById('querybuilder'));
+        });
+        const rules: RuleModel = {
+            'condition': 'and',
+            'rules': [{
+                'label': 'EmployeeID',
+                'field': 'EmployeeID',
+                'type': 'number',
+                'operator': 'equal',
+                'value': 10.01
+            }
+            ]
+        };
+        const numberLiteralData: object[] = [
+            { field: '1001', label: '1001', type: 'number' },
+            { field: '1002', label: '1002', type: 'string' },
+            { field: 'EmployeeID', label: 'Employee ID', type: 'number' }
+        ];
+        it('QueryBuilder with number literal', () => {
+            queryBuilder = new QueryBuilder({ columns: numberLiteralData, rule: rules }, '#querybuilder');
+            const actualSql: string = 'EmployeeID = 10.01 AND EmployeeID = 10.023)';
+            queryBuilder.setRulesFromSql(actualSql);
+            (queryBuilder as any).parser = [{}, {}];
+            (queryBuilder as any).checkNumberLiteral('10.01');
+            let operator: string = (queryBuilder as any).getOperator('%sgsdg%', 'not like', true);
+            operator = (queryBuilder as any).getOperator('%sgsdg%', 'like', true);
+            operator = (queryBuilder as any).getOperator('%sgsdg', 'like', true);
+            operator = (queryBuilder as any).getOperator('%sgsdg', 'not like', true);
+            operator = (queryBuilder as any).getOperator('sgsdg%', 'like', true);
+            operator = (queryBuilder as any).getOperator('sgsdg%', 'not like', true);
+            operator = (queryBuilder as any).getOperator('sgsdg', 'equal', true);
+            let field: string = queryBuilder.getLabelFromColumn('EmployeeID');
+            (queryBuilder as any).parseSqlStrings('', true);
+            (queryBuilder as any).lockRule('group0_rule0');
+            (queryBuilder as any).isDateFunction('date');
+        });
+    });
+
+    describe('Coverage Improvement', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+        afterEach(() => {
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+            remove(document.getElementById('querybuilder'));
+        });
+        const rules: RuleModel = {
+            'condition': 'and',
+            'rules': [{
+                'label': 'Employee ID',
+                'field': 'EmployeeID',
+                'type': 'number',
+                'operator': 'equal',
+                'value': 1001
+            },
+            {
+                'condition': 'or',
+                'rules': [{
+                    'label': 'Title',
+                    'field': 'Title',
+                    'type': 'string',
+                    'operator': 'contains',
+                    'value': 'Sales Manager'
+                },
+                {
+                    'field': 'TitleOfCourtesy',
+                    'label': 'Title Of Courtesy',
+                    'type': 'boolean',
+                    'operator': 'equal',
+                    'value': 'Mr.'
+                }]
+            }, {
+                'condition': 'and',
+                'rules': [{
+                    'label': 'City',
+                    'field': 'City',
+                    'type': 'string',
+                    'operator': 'equal',
+                    'value': 'Kirkland'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'equal',
+                    'value': '12/12/2019'
+                }]
+            }
+            ]
+        };
+        it('QueryBuilder with allowDragAndDrop helper', () => {
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+            let dragSpan: Element = queryBuilder.element.querySelector('.e-rule-field .e-drag-qb-rule');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            queryBuilder.helper();
+            dragSpan = queryBuilder.element.querySelector('.e-group-header .e-drag-qb-rule');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            queryBuilder.helper();
+            queryBuilder.isFieldChange = false; queryBuilder.isDestroy = false;
+            queryBuilder.fieldClose('querybuilder_group0_rule0_filterkey');
+            queryBuilder.element.querySelector('.e-cloneproperties').remove();
+            queryBuilder.element.querySelector('.e-cloneproperties').remove();
+        });
+    });
+    describe('drag stop covergae improvement - Drag and drop rule', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+        afterEach(() => {
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+            remove(document.getElementById('querybuilder'));
+        });
+
+        const columnData: ColumnsModel[] = [
+            {
+                field: 'EmployeeID', label: 'Employee ID', type: 'number'
+            },
+            { field: 'FirstName', label: 'First Name', type: 'string' },
+            { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
+            { field: 'Title', label: 'Title', type: 'string' },
+            { field: 'HireDate', label: 'Hire Date', type: 'date', format: 'dd/MM/yyyy' },
+            { field: 'Country', label: 'Country', type: 'string' },
+            { field: 'City', label: 'City', type: 'string' }
+        ];
+
+        const rules: RuleModel = {
+            'condition': 'and',
+            'rules': [{
+                'label': 'Employee ID',
+                'field': 'EmployeeID',
+                'type': 'number',
+                'operator': 'equal',
+                'value': 1001
+            },
+            {
+                'label': 'Title',
+                'field': 'Title',
+                'type': 'string',
+                'operator': 'equal',
+                'value': 'Sales Manager'
+            },
+            {
+                condition: 'or', rules: [
+                    { 'label': 'Title',
+                        'field': 'Title',
+                        'type': 'string',
+                        'operator': 'equal',
+                        'value': 'Engineer' },
+                    { 'label': 'Title',
+                        'field': 'Title',
+                        'type': 'string',
+                        'operator': 'equal',
+                        'value': 'Doctor' },
+                    {
+                        condition: 'and', rules: [
+                            { 'label': 'Title',
+                                'field': 'Title',
+                                'type': 'string',
+                                'operator': 'equal',
+                                'value': 'Engineer' }
+                        ]
+                    }
+                ]
+            },
+            {
+                condition: 'and', rules: [
+                    { 'label': 'Title',
+                        'field': 'Title',
+                        'type': 'string',
+                        'operator': 'equal',
+                        'value': 'Engineer' }
+                ]
+            }
+            ]
+        };
+
+        it('QueryBuilder with allowDragAndDrop dragStop', (done: Function) => {
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+            let dragSpan: Element = queryBuilder.element.querySelector('.e-rule-field .e-drag-qb-rule');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            dragSpan = queryBuilder.element.querySelectorAll('.e-rule-field')[1];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            remove(document.querySelector('#querybuilder_group0'));
+            queryBuilder.reset();
+            done();
+        });
+
+        it('QueryBuilder with allowDragAndDrop dragStop - Not condition', (done: Function) => {
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, enableNotCondition: true, columns: columnData, rule: rules }, '#querybuilder');
+            let dragSpan: Element = queryBuilder.element.querySelector('.e-rule-field .e-drag-qb-rule');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            dragSpan = queryBuilder.element.querySelectorAll('.e-rule-field')[1];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            remove(document.querySelector('#querybuilder_group0'));
+            queryBuilder.reset();
+            done();
+        });
+
+        it('QueryBuilder with allowDragAndDrop dragStop - enable separator', (done: Function) => {
+            queryBuilder = new QueryBuilder({ enableSeparateConnector: true, allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+            let dragSpan: Element = queryBuilder.element.querySelector('.e-rule-field .e-drag-qb-rule');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[1];
+            dragSpan = queryBuilder.element.querySelectorAll('.e-rule-field')[1];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            remove(document.querySelector('#querybuilder_group0'));
+            queryBuilder.reset();
+            done();
+        });
+    });
+    describe('drag stop covergae improvement - Drag and drop group', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+        afterEach(() => {
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+            remove(document.getElementById('querybuilder'));
+        });
+
+        const columnData: ColumnsModel[] = [
+            {
+                field: 'EmployeeID', label: 'Employee ID', type: 'number'
+            },
+            { field: 'FirstName', label: 'First Name', type: 'string' },
+            { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
+            { field: 'Title', label: 'Title', type: 'string' },
+            { field: 'HireDate', label: 'Hire Date', type: 'date', format: 'dd/MM/yyyy' },
+            { field: 'Country', label: 'Country', type: 'string' },
+            { field: 'City', label: 'City', type: 'string' }
+        ];
+
+        const singleRule: RuleModel = {
+            'condition': 'and',
+            'rules': [{
+                'label': 'Employee ID',
+                'field': 'EmployeeID',
+                'type': 'number',
+                'operator': 'equal',
+                'value': 1001
+            },
+            {
+                condition: 'or', rules: [
+                    { 'label': 'Title',
+                        'field': 'Title',
+                        'type': 'string',
+                        'operator': 'equal',
+                        'value': 'Engineer' }
+                    ]
+                }
+        ]};
+        const rules: RuleModel = {
+            'condition': 'and',
+            'rules': [{
+                'label': 'Employee ID',
+                'field': 'EmployeeID',
+                'type': 'number',
+                'operator': 'equal',
+                'value': 1001
+            },
+            {
+                'label': 'Title',
+                'field': 'Title',
+                'type': 'string',
+                'operator': 'equal',
+                'value': 'Sales Manager'
+            },
+            {
+                condition: 'or', rules: [
+                    { 'label': 'Title',
+                        'field': 'Title',
+                        'type': 'string',
+                        'operator': 'equal',
+                        'value': 'Engineer' },
+                    { 'label': 'Title',
+                        'field': 'Title',
+                        'type': 'string',
+                        'operator': 'notstartswith',
+                        'value': 'Doctor' },
+                    { 'label': 'Title',
+                        'field': 'Title',
+                        'type': 'string',
+                        'operator': 'notendswith',
+                        'value': 'Doctor' },
+                    { 'label': 'Title',
+                        'field': 'Title',
+                        'type': 'string',
+                        'operator': 'notcontains',
+                        'value': 'Doctor' },
+                    {
+                        condition: 'and', rules: [
+                            { 'label': 'Title',
+                                'field': 'Title',
+                                'type': 'string',
+                                'operator': 'equal',
+                                'value': 'Engineer' }
+                        ]
+                    }
+                ]
+            },
+            {
+                condition: 'and', rules: [
+                    { 'label': 'Title',
+                        'field': 'Title',
+                        'type': 'string',
+                        'operator': 'equal',
+                        'value': 'Engineer' }
+                ]
+            }
+            ]
+        };
+
+        it('QueryBuilder with allowDragAndDrop dragStop - group', (done: Function) => {
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+            const dragSpan: Element = document.querySelectorAll('.e-group-header')[2].querySelector('.e-drag-qb-rule');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+
+        it('QueryBuilder with allowDragAndDrop dragStop - Not', (done: Function) => {
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, enableNotCondition: true, columns: columnData, rule: rules }, '#querybuilder');
+            const dragSpan: Element = document.querySelectorAll('.e-group-header')[2].querySelector('.e-drag-qb-rule');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+
+        it('QueryBuilder with allowDragAndDrop dragStop - group - enableSeparateConnector', (done: Function) => {
+            queryBuilder = new QueryBuilder({ enableSeparateConnector: true, allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+            const dragSpan: Element = document.querySelectorAll('.e-group-header')[2].querySelector('.e-drag-qb-rule');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+
+        it('QueryBuilder coverage - code coverage', (done: Function) => {
+            queryBuilder = new QueryBuilder({ enableSeparateConnector: true, allowDragAndDrop: true, columns: columnData, rule: rules }, '#querybuilder');
+            const date: Date = (queryBuilder as any).getDate('10:10:50');
+            const isTime: boolean = (queryBuilder as any).isTime('10:10:50');
+            const predicate: any = (queryBuilder as any).getPredicate((queryBuilder as any).getValidRules());
+            queryBuilder.rule.isLocked = true; queryBuilder.rule.custom = { value: 'sgsdgsg'};
+            const rule: any = queryBuilder.getRules();
+            (queryBuilder as any).disableRuleCondition((queryBuilder as any).element.querySelectorAll('.e-group-container')[1]);
+            done();
+        });
+        it('QueryBuilder coverage - improvements', (done: Function) => {
+            queryBuilder = new QueryBuilder({ enableSeparateConnector: true, allowDragAndDrop: true, columns: columnData, rule: singleRule }, '#querybuilder');
+            const date: Date = (queryBuilder as any).getDate('10:10:50');
+            const isTime: boolean = (queryBuilder as any).isTime('10:10:50');
+            const predicate: any = (queryBuilder as any).getPredicate((queryBuilder as any).getValidRules());
+            queryBuilder.rule.isLocked = true; queryBuilder.rule.custom = { value: 'sgsdgsg'};
+            const rule: any = queryBuilder.getRules();
+            (queryBuilder as any).disableRuleCondition((queryBuilder as any).element.querySelectorAll('.e-group-container')[1]);
+            done();
+        });
+        it('QueryBuilder coverage - new group_1', (done: Function) => {
+            queryBuilder = new QueryBuilder({ enableSeparateConnector: true, allowDragAndDrop: true, columns: columnData, rule: singleRule }, '#querybuilder');
+            const date: Date = (queryBuilder as any).getDate('10:10:50');
+            const isTime: boolean = (queryBuilder as any).isTime('10:10:50');
+            const predicate: any = (queryBuilder as any).getPredicate((queryBuilder as any).getValidRules());
+            queryBuilder.rule.isLocked = true; queryBuilder.rule.custom = { value: 'sgsdgsg'};
+            const rule: any = queryBuilder.getRules();
+            (queryBuilder as any).disableRuleCondition((queryBuilder as any).element.querySelectorAll('.e-group-container')[1], null, true, true);
+            done();
+        });
+        it('QueryBuilder coverage - new group_2', (done: Function) => {
+            queryBuilder = new QueryBuilder({ enableSeparateConnector: true, allowDragAndDrop: true, columns: columnData, rule: singleRule }, '#querybuilder');
+            const date: Date = (queryBuilder as any).getDate('10:10:50');
+            const isTime: boolean = (queryBuilder as any).isTime('10:10:50');
+            const predicate: any = (queryBuilder as any).getPredicate((queryBuilder as any).getValidRules());
+            queryBuilder.rule.isLocked = true; queryBuilder.rule.custom = { value: 'sgsdgsg'};
+            const rule: any = queryBuilder.getRules();
+            (queryBuilder as any).disableRuleCondition((queryBuilder as any).element.querySelectorAll('.e-group-container')[1], null, true, false);
+            done();
+        });
+        it('QueryBuilder coverage - new group_3', (done: Function) => {
+            queryBuilder = new QueryBuilder({ enableSeparateConnector: true, allowDragAndDrop: true, columns: columnData, rule: singleRule }, '#querybuilder');
+            const date: Date = (queryBuilder as any).getDate('10:10:50');
+            const isTime: boolean = (queryBuilder as any).isTime('10:10:50');
+            const predicate: any = (queryBuilder as any).getPredicate((queryBuilder as any).getValidRules());
+            queryBuilder.rule.isLocked = true; queryBuilder.rule.custom = { value: 'sgsdgsg'};
+            const rule: any = queryBuilder.getRules();
+            (queryBuilder as any).disableRuleCondition((queryBuilder as any).element.querySelectorAll('.e-group-container')[1], null, false, true);
+            (queryBuilder as any).deleteGroup('group1');
+            done();
+        });
+        it('QueryBuilder with allowDragAndDrop dragStop - grop drag and drop', (done: Function) => {
+            const dRules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    { condition: 'and', rules: [
+                        { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' }
+                    ] },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Developer' },
+                    { condition: 'and', rules: [
+                        { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' }
+                    ] }
+                ]
+            };
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: dRules }, '#querybuilder');
+            const dragSpan: Element = queryBuilder.element.querySelector('.e-rule-list');
+            queryBuilder.draggable.currentStateTarget = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[1];
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[6];
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            eventObj.event = { clientX: 100, clientY: 100, changedTouches:[{clientX: 100, clientY: 100 }]};
+            queryBuilder.dragHandler(eventObj);
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[6];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+        it('QueryBuilder with allowDragAndDrop dragStop - grop drag and drop to empty group', (done: Function) => {
+            const dRules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    { condition: 'and', rules: [
+                        { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' }
+                    ] },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Developer' },
+                    { condition: 'and', rules: [
+                        { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' }
+                    ] }
+                ]
+            };
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: dRules }, '#querybuilder');
+            const dragSpan: Element = queryBuilder.element.querySelector('.e-rule-list');
+            queryBuilder.draggable.currentStateTarget = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[1];
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[5];
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            eventObj.event = { clientX: 100, clientY: 100, changedTouches:[{clientX: 100, clientY: 100 }]};
+            queryBuilder.dragHandler(eventObj);
+            queryBuilder.element.querySelector('.e-removerule').click();
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[5];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+        it('QueryBuilder with allowDragAndDrop dragStop - querybuilder as target', (done: Function) => {
+            const dRules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    { condition: 'and', rules: [
+                        { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' }
+                    ] },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Developer' }
+                ]
+            };
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: dRules }, '#querybuilder');
+            const dragSpan: Element = queryBuilder.element.querySelector('.e-rule-list');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[4];
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            eventObj.event = { clientX: 100, clientY: 100, changedTouches:[{clientX: 100, clientY: 100 }]};
+            queryBuilder.dragHandler(eventObj);
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[4];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+        it('QueryBuilder with allowDragAndDrop dragStop group- querybuilder as target', (done: Function) => {
+            const dRules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    { condition: 'and', rules: [
+                        { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' }
+                    ] },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Developer' }
+                ]
+            };
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: dRules }, '#querybuilder');
+            const dragSpan: Element = queryBuilder.element.querySelector('.e-rule-list');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[4];
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            eventObj.event = { clientX: 100, clientY: 100, changedTouches:[{clientX: 100, clientY: 100 }]};
+            queryBuilder.dragHandler(eventObj);
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[4];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+
+        it('QueryBuilder with allowDragAndDrop dragStop - querybuilder as target', (done: Function) => {
+            const dRules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    {condition: 'and', rules: [{}]},
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Developer' }
+                ]
+            };
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: dRules }, '#querybuilder');
+            const dragSpan: Element = queryBuilder.element.querySelectorAll('.e-rule-list')[1];
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[2];
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            queryBuilder.element.querySelector('.e-removerule').click();
+            eventObj.event = { clientX: 100, clientY: 100, changedTouches:[{clientX: 100, clientY: 100 }]};
+            queryBuilder.dragHandler(eventObj);
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[2];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+        it('QueryBuilder with allowDragAndDrop dragStop - group0 as target', (done: Function) => {
+            const dRules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    {condition: 'and', rules: [{}]},
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Developer' }
+                ]
+            };
+            queryBuilder = new QueryBuilder({ allowDragAndDrop: true, columns: columnData, rule: dRules }, '#querybuilder');
+            const dragSpan: Element = queryBuilder.element.querySelector('.e-group-container');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[2];
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            eventObj.event = { clientX: 100, clientY: 100, changedTouches:[{clientX: 100, clientY: 100 }]};
+            queryBuilder.dragHandler(eventObj);
+            queryBuilder.element.querySelector('.e-removerule').click();
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[2];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+        it('QueryBuilder with allowDragAndDrop dragStop - header as target separate connector', (done: Function) => {
+            const dRules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    { condition: 'and', rules: [
+                        { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' }
+                    ] },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Developer' }
+                ]
+            };
+            queryBuilder = new QueryBuilder({ enableSeparateConnector: true, allowDragAndDrop: true, columns: columnData, rule: dRules }, '#querybuilder');
+            const dragSpan: Element = queryBuilder.element.querySelector('.e-add-group-btn');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[4];
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            eventObj.event = { clientX: 100, clientY: 100, changedTouches:[{clientX: 100, clientY: 100 }]};
+            queryBuilder.dragStartHandler(eventObj);
+            queryBuilder.dragHandler(eventObj);
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[4];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+        it('QueryBuilder with allowDragAndDrop dragStop - querybuilder as target separate connector', (done: Function) => {
+            const dRules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    { condition: 'and', rules: [
+                        { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' }
+                    ] },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Developer' }
+                ]
+            };
+            queryBuilder = new QueryBuilder({ enableSeparateConnector: true, allowDragAndDrop: true, columns: columnData, rule: dRules }, '#querybuilder');
+            const dragSpan: Element = queryBuilder.element.querySelector('.e-rule-list');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[4];
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            eventObj.event = { clientX: 100, clientY: 100, changedTouches:[{clientX: 100, clientY: 100 }]};
+            queryBuilder.dragStartHandler(eventObj);
+            queryBuilder.dragHandler(eventObj);
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[4];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+        it('QueryBuilder with allowDragAndDrop dragStop - querybuilder as target separate connector', (done: Function) => {
+            const dRules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    {condition: 'and', rules: [{}]},
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Developer' }
+                ]
+            };
+            queryBuilder = new QueryBuilder({ enableSeparateConnector: true, allowDragAndDrop: true, columns: columnData, rule: dRules }, '#querybuilder');
+            const dragSpan: Element = queryBuilder.element.querySelectorAll('.e-rule-list')[1];
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[2];
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            eventObj.event = { clientX: 100, clientY: 100, changedTouches:[{clientX: 100, clientY: 100 }]};
+            queryBuilder.dragHandler(eventObj);
+            queryBuilder.element.querySelector('.e-removerule').click();
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[2];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+        it('QueryBuilder with allowDragAndDrop dragStop - group0 as target separate connector', (done: Function) => {
+            const dRules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    {condition: 'and', rules: [{}]},
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Engineer' },
+                    { 'label': 'Title', 'field': 'Title', 'type': 'string', 'operator': 'equal', 'value': 'Developer' }
+                ]
+            };
+            queryBuilder = new QueryBuilder({ enableSeparateConnector: true, allowDragAndDrop: true, columns: columnData, rule: dRules }, '#querybuilder');
+            const dragSpan: Element = queryBuilder.element.querySelector('.e-group-container');
+            queryBuilder.draggable.currentStateTarget = dragSpan;
+            const cloneElem: Element = createElement('div', { id: 'querybuilder', className: 'e-cloneproperties e-draganddrop e-dragclone e-group-body' });
+            queryBuilder.dragElement = cloneElem;
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[2];
+            const eventObj: any = { target: dragSpan, dragElement: cloneElem };
+            queryBuilder.dragStartHandler(eventObj);
+            queryBuilder.element.querySelector('.e-removerule').click();
+            queryBuilder.draggedRule = queryBuilder.element.querySelectorAll('.e-drag-qb-rule')[2];
+            queryBuilder.dragStopHandler({ target: dragSpan, event: { clientX: 100 }, dragElement: cloneElem });
+            done();
+        });
+    });
+    describe('Data Manager', () => {
+        const data: DataManager = new DataManager({
+            url: 'https://services.syncfusion.com/js/production/api/orders',
+            adaptor: new WebApiAdaptor,
+	        crossDomain: true
+        });
+        const valRule: RuleModel = {
+            'condition': 'and',
+            'rules': [
+                { 'label': 'CustomerID', 'field': 'CustomerID', 'type': 'string', 'operator': 'equal', 'value': 'BERGS' },
+                { 'label': 'CustomerID', 'field': 'CustomerID', 'type': 'string', 'operator': 'isnull', value: null }
+            ]
+        };
+        const columns: ColumnsModel[] = [
+            { field: 'EmployeeID', label: 'Employee ID', type: 'string' },
+            { field: 'OrderID', label: 'Order ID', type: 'string' },
+            { field: 'CustomerID', label: 'CustomerID', type: 'string' }
+        ];
+
+        function createQB(options: QueryBuilderModel, done: Function): QueryBuilder {
+            const dataBound: EmitType<Object> = () => {
+                setTimeout(function(){
+                    done();
+                }, 3000);
+            };
+            options.dataBound = dataBound;
+            const qb: QueryBuilder = new QueryBuilder(options);
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+            qb.appendTo('#querybuilder');
+            return qb;
+        }
+        beforeAll((done: Function) => {
+            queryBuilder = createQB({
+                dataSource: data,
+                columns: columns,
+                rule: valRule
+            }, done);
+        });
+        it('Remote Data Checking', (done: Function) => {
+            const msObj: TextBox = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances[0];
+            expect(msObj.value).toEqual('BERGS');
+            queryBuilder.getPredicate(queryBuilder.getValidRules());
+            done();
+        });
+        it('Multi Select Data Checking', (done: Function) => {
+            const operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
+            operatorElem[0].showPopup();
+            const items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            items[8].click();
+            expect(operatorElem[0].value).toEqual('in');
+            queryBuilder.getPredicate(queryBuilder.getValidRules());
+            done();
         });
     });
 });

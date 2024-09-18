@@ -15,6 +15,7 @@ import { WStyles } from './index';
 import { HeaderFooters } from './index';
 import { Search } from './index';
 import { OptionsPane } from './index';
+import { XmlPane } from './index';
 import { WordExport } from './index';
 import { TextExport } from './index';
 import { FormatType, PageFitType, DialogType, FormattingExceptions, CompatibilityMode } from './index';
@@ -199,7 +200,7 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     /**
      * Gets or sets color picker settings to customize the color picker used in Document Editor.
      */
-    @Property({mode: 'Picker', modeSwitcher: true, showButtons: true})
+    @Property({ mode: 'Picker', modeSwitcher: true, showButtons: true })
     public colorPickerSettings: ColorPickerModel;
 
     /**
@@ -213,7 +214,7 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     public showNavigationPane: boolean;
 
     /**
-     * Gets ot sets the mention configuration used in Document Editor. 
+     * Gets ot sets the mention configuration used in Document Editor.
      */
     @Property({ mentionChar: '@' })
     public mentionSettings: MentionModel;
@@ -302,6 +303,19 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
+    public enableXMLPane: boolean = false;
+    /**
+     * @private
+     */
+    public xPathString: string;
+    /**
+     * @private
+     */
+    public prefixMappings: string;
+
+    /**
+     * @private
+     */
     public isLayoutEnabled: boolean = true;
     /**
      * @private
@@ -314,11 +328,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
-    public isTableMarkerDragging : boolean = false;
+    public isTableMarkerDragging: boolean = false;
     /**
      * @private
      */
-    public startXPosition : number = 0;
+    public startXPosition: number = 0;
     /**
      * @private
      */
@@ -441,7 +455,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
-    public contentControlPropertiesDialogModule : ContentControlPropertiesDialog;
+    public contentControlPropertiesDialogModule: ContentControlPropertiesDialog;
     /**
      * @private
      */
@@ -470,6 +484,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public optionsPaneModule: OptionsPane;
+    /**
+     * @private
+     */
+    public xmlPaneModule: XmlPane;
     /**
      * @private
      */
@@ -1160,6 +1178,20 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public serverActionSettingsImport: string = 'Import';
     /**
+     * Gets or sets a value indicating whether xml toolbar is enabled or not.
+     * @private
+     *
+     * @default false
+     */
+    public isXmlPaneTool: boolean = false;
+    /**
+     * Gets or sets a value indicating whether xml cc is enabled or not.
+     * @private
+     *
+     * @default false
+     */
+    public isXmlMapCC: boolean = false;
+    /**
      * Gets the total number of pages.
      *
      * @returns {number} Returns the page count.
@@ -1176,35 +1208,34 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {CommentInfo[]} Returns the collection of comments.
      */
     public getComments(): CommentInfo[] {
-        let data: CommentInfo[] = [];
-        
+        const data: CommentInfo[] = [];
+
         const commentCollection: CommentElementBox[] = this.documentHelper.comments;
-      
         if (commentCollection.length > 0) {
             let tempData: any = [];
-            for(let comment of this.documentHelper.comments) {
+            for (const comment of this.documentHelper.comments) {
                 tempData = [];
-                let commentProperties: CommentProperties = {
+                const commentProperties: CommentProperties = {
                     author: comment.author,
                     isResolved: comment.isResolved ? comment.isResolved : false,
-                    dateTime: this.editor.parseDateTime(comment.createdDate),
+                    dateTime: this.editor.parseDateTime(comment.createdDate)
                 };
-                for(let replyComment of comment.replyComments) {
-                        let replyCommentProperties: CommentProperties = {
-                            author: replyComment.author,
-                            isResolved: replyComment.isResolved ? comment.isResolved : false,
-                            dateTime: this.editor.parseDateTime(replyComment.createdDate),
-                        };
-                        let newComment: Comment = new Comment(comment.commentId, replyCommentProperties, HelperMethods.parseCommentAsText(replyComment));
-                        tempData.push(newComment);
-                    }
-                
-                let commentInfo: CommentInfo = {
+                for (const replyComment of comment.replyComments) {
+                    const replyCommentProperties: CommentProperties = {
+                        author: replyComment.author,
+                        isResolved: replyComment.isResolved ? comment.isResolved : false,
+                        dateTime: this.editor.parseDateTime(replyComment.createdDate)
+                    };
+                    const commentText: string = HelperMethods.parseCommentAsText(replyComment);
+                    const newComment: Comment = new Comment(comment.commentId, replyCommentProperties, commentText);
+                    tempData.push(newComment);
+                }
+                const commentInfo: CommentInfo = {
                     id: comment.commentId,
                     text: HelperMethods.parseCommentAsText(comment),
                     commentProperties: commentProperties,
-                    replies: tempData,
-                }
+                    replies: tempData
+                };
                 data.push(commentInfo);
             }
         }
@@ -1512,6 +1543,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * @private
+     * @returns {void}
      */
     public showHideRulers(): void {
         if (this.rulerHelper && this.documentEditorSettings && !isNullOrUndefined(!this.documentEditorSettings.showRuler)) {
@@ -2488,6 +2520,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             modules.push({
                 member: 'Editor', args: [this.documentHelper]
             });
+            modules.push({
+                member: 'XmlPane', args: [this.documentHelper]
+            }); 
             if (this.enableImageResizer) {
                 modules.push({
                     member: 'ImageResizer', args: [this, this.documentHelper]
@@ -2998,7 +3033,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Next Comment': 'Next Comment',
         'Previous Comment': 'Previous Comment',
         'Un-posted comments': 'Un-posted comments',
+        'XML Mapping': 'XML Mapping',
+        'Custom XML Part' :'Custom XML Part:',
         'Discard Comment': 'Added comments not posted. If you continue, that comment will be discarded.',
+        'Discard Content Control': 'You can not insert a content control when the selection includes another content control.',
         'No Headings': 'No Heading Found!',
         'Add Headings': 'This document has no headings. Please add headings and try again.',
         'More Options': 'More Options',
@@ -3161,244 +3199,298 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     };
     /* eslint-enable */
     // Public Implementation Starts
-        /**
-         * Opens the given sfdt text or base 64 string or url.
-         *
-         * @param {string} sfdtText Specifies the sfdt text or base 64 string or url.
-         * @returns {void}
-         */    
-        public open(inputData:string):void;
-        /**
-         * Opens the given blob.
-         *
-         * @param {string} blob Specifies the Blob object containing the document data.
-         * @returns {void}
-         */
-        public open(blob:Blob):void;
-        /**
-         * Opens the given file.
-         *
-         * @param {string} file Specifies the File object containing the document data..
-         * @returns {void}
-         */
-        public open(file:File):void;
-    
-        public open(sfdtText: string | File | Blob): void {
-            // sfdtText = HelperMethods.sanitizeString(sfdtText);
-            showSpinner(this.element);
-            try {
-                if (!isNullOrUndefined(sfdtText)) {
-                    let fileName: string = this.isValidUrl(sfdtText as string);
-                    if (fileName !== null) {
-                         this.getSfdtFromUrl(sfdtText as string, fileName)
-                        .then((sfdt) => {
-                            sfdtText = sfdt;
-                            // Continue with the next steps after getting sfdt from URL
-                            this.processSfdt(sfdtText);
-                        })
-                        .catch((error) => {
-                            // Handle error
-                            console.error(error);
-                        });;
-                    } else if (this.isValidBase64(sfdtText as string)) {
-                        this.getSfdtFromBase64string(sfdtText as string)
-                        .then((sfdt) => {
-                            sfdtText = sfdt;
-                            // Continue with the next steps after getting sfdt from base64 string
-                            this.processSfdt(sfdtText);
-                        })
-                        .catch((error) => {
-                            // Handle error
-                            console.error(error);
-                        });
-                    } else if (sfdtText instanceof File) {
-                        this.convertToSfdt(sfdtText)
-                        .then((sfdt) => {
-                            sfdtText = sfdt;
-                            // Continue with the next steps after converting file to sfdt
-                            this.processSfdt(sfdtText);
-                        })
-                        .catch((error) => {
-                            // Handle error
-                            console.error(error);
-                        });
-                    } else if (sfdtText instanceof Blob) {
-                        let name: string[] = sfdtText.type.split('/');
-                        if (name[name.length - 1] === 'sfdt') {
-                            this.convertFromSfdtBlob(sfdtText)
-                                .then((sfdt) => {
-                                    sfdtText = sfdt;
-                                    // Continue with the next steps after converting from sfdt blob
-                                    this.processSfdt(sfdtText);
-                                })
-                                .catch((error) => {
-                                    // Handle error
-                                    console.error(error);
-                                });
-                        } else {
-                            this.convertFromBlob(sfdtText)
-                                .then((sfdt) => {
-                                    sfdtText = sfdt;
-                                    // Continue with the next steps after converting from blob
-                                    this.processSfdt(sfdtText);
-                                })
-                                .catch((error) => {
-                                    // Handle error
-                                    console.error(error);
-                                });
-                        }
-                    } else {
-                        this.processSfdt(sfdtText);
-                    }
-                }        
-     
-            } catch (error) {
-                hideSpinner(this.element);
-                this.failureHandler('onError');
+    /**
+     * Opens the given sfdt text or base 64 string or url.
+     *
+     * @param {string} sfdtText Specifies the sfdt text or base 64 string or url.
+     * @returns {void}
+     */
+    public open(inputData: string): void;
+    /**
+     * Opens the given blob.
+     *
+     * @param {string} blob Specifies the Blob object containing the document data.
+     * @returns {void}
+     */
+    public open(blob: Blob): void;
+    /**
+     * Opens the given file.
+     *
+     * @param {string} file Specifies the File object containing the document data..
+     * @returns {void}
+     */
+    public open(file: File): void;
+
+    public open(sfdtText: string | File | Blob): void {
+        // sfdtText = HelperMethods.sanitizeString(sfdtText);
+        showSpinner(this.element);
+        try {
+            if (!isNullOrUndefined(sfdtText)) {
+                this.openInternal(sfdtText, false);
             }
-        }
-        private processSfdt(sfdtText:string) {
-            if (!isNullOrUndefined(this.viewer) && !isNullOrUndefined(sfdtText)) {
-                this.clearPreservedCollectionsInViewer();
-                this.documentHelper.userCollection.push('Everyone');
-                this.documentHelper.lists = [];
-                this.documentHelper.abstractLists = [];
-                this.documentHelper.styles = new WStyles();
-                this.documentHelper.cachedPages = [];
-                this.clearSpellCheck();
-                if (this.isSpellCheck) {
-                    if (this.isSpellCheck && !this.spellCheckerModule.enableOptimizedSpellCheck) {
-                        this.documentHelper.triggerElementsOnLoading = true;
-                        this.documentHelper.triggerSpellCheck = true;
-                    }
-                }
-                if (!isNullOrUndefined(sfdtText) && this.viewer) {
-                    const incrementalOps: Record<string, ActionInfo[]> = {};
-                    this.documentHelper.setDefaultDocumentFormat();
-                    this.documentHelper.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText as string, incrementalOps), incrementalOps);
-                }
-                if (this.isSpellCheck) {
-                    if (this.isSpellCheck && !this.spellCheckerModule.enableOptimizedSpellCheck) {
-                        this.documentHelper.triggerElementsOnLoading = false;
-                        this.documentHelper.triggerSpellCheck = false;
-                    }
-                }
-          }
+        } catch (error) {
             hideSpinner(this.element);
+            this.failureHandler('onError');
         }
-        private isValidUrl(url: string): string | null {
-            try {
-                const parsedUrl = new URL(url);
-                const pathname = parsedUrl.pathname;
-                const segments = pathname.split('/');
-                const fileName = segments.pop();
-                return fileName || null;
-            } catch (error) {
-                return null;
+    }
+    /**
+     * Opens the given sfdt text or base 64 string or url.
+     *
+     * @param {string} sfdtText Specifies the sfdt text or base 64 string or url.
+     * @returns {void}
+     */
+    public openAsync(inputData: string): void;
+    /**
+     * Opens the given blob.
+     *
+     * @param {string} blob Specifies the Blob object containing the document data.
+     * @returns {void}
+     */
+    public openAsync(blob: Blob): void;
+    /**
+     * Opens the given file.
+     *
+     * @param {string} file Specifies the File object containing the document data..
+     * @returns {void}
+     */
+    public openAsync(file: File): void;
+
+    public openAsync(sfdtText: string | File | Blob): void {
+        // sfdtText = HelperMethods.sanitizeString(sfdtText);
+        showSpinner(this.element);
+        try {
+            if (!isNullOrUndefined(sfdtText)) {
+                this.openInternal(sfdtText, true);
+            }
+        } catch (error) {
+            hideSpinner(this.element);
+            this.failureHandler('onError');
+        }
+    }
+    private openInternal(sfdtText: string | Blob | File, isAsync: boolean): void {
+        const fileName: string = this.isValidUrl(sfdtText as string);
+        if (fileName !== null) {
+            this.getSfdtFromUrl(sfdtText as string, fileName)
+                .then((sfdt: string) => {
+                    sfdtText = sfdt;
+                    // Continue with the next steps after getting sfdt from URL
+                    this.processSfdt(sfdtText as string);
+                })
+                .catch((error: any) => {
+                    // Handle error
+                    console.error(error);
+                });
+        } else if (this.isValidBase64(sfdtText as string)) {
+            this.getSfdtFromBase64string(sfdtText as string)
+                .then((sfdt: string) => {
+                    sfdtText = sfdt;
+                    // Continue with the next steps after getting sfdt from base64 string
+                    this.processSfdt(sfdtText as string);
+                })
+                .catch((error: any) => {
+                    // Handle error
+                    console.error(error);
+                });
+        } else if (sfdtText instanceof File) {
+            this.convertToSfdt(sfdtText)
+                .then((sfdt: string) => {
+                    sfdtText = sfdt;
+                    // Continue with the next steps after converting file to sfdt
+                    this.processSfdt(sfdtText as string);
+                })
+                .catch((error: any) => {
+                    // Handle error
+                    console.error(error);
+                });
+        } else if (sfdtText instanceof Blob) {
+            const name: string[] = sfdtText.type.split('/');
+            if (name[name.length - 1] === 'sfdt') {
+                this.convertFromSfdtBlob(sfdtText)
+                    .then((sfdt: string) => {
+                        sfdtText = sfdt;
+                        // Continue with the next steps after converting from sfdt blob
+                        this.processSfdt(sfdtText as string);
+                    })
+                    .catch((error: any) => {
+                        // Handle error
+                        console.error(error);
+                    });
+            } else {
+                this.convertFromBlob(sfdtText)
+                    .then((sfdt: string) => {
+                        sfdtText = sfdt;
+                        // Continue with the next steps after converting from blob
+                        this.processSfdt(sfdtText as string);
+                    })
+                    .catch((error: any) => {
+                        // Handle error
+                        console.error(error);
+                    });
+            }
+        } else {
+            if (!isAsync) {
+                this.processSfdt(sfdtText as string);
+            }
+            else {
+                setTimeout(() => {
+                    try {
+                        this.processSfdt(sfdtText as string);
+                    } catch (error) {
+                        hideSpinner(this.element);
+                        this.failureHandler('onError');
+                    }
+                }, 50);
             }
         }
-        private isValidBase64(input: string): boolean {
-            try {
-                const decoded = atob(input);
-                const reencoded = btoa(decoded);
-                return reencoded === input;
-            } catch(error) {
-                return false;
+    }
+    private processSfdt(sfdtText: string): void {
+        if (!isNullOrUndefined(this.viewer) && !isNullOrUndefined(sfdtText)) {
+            this.clearPreservedCollectionsInViewer();
+            this.documentHelper.userCollection.push('Everyone');
+            this.documentHelper.lists = [];
+            this.documentHelper.abstractLists = [];
+            this.documentHelper.styles = new WStyles();
+            this.documentHelper.cachedPages = [];
+            this.clearSpellCheck();
+            if (this.isSpellCheck) {
+                if (this.isSpellCheck && !this.spellCheckerModule.enableOptimizedSpellCheck) {
+                    this.documentHelper.triggerElementsOnLoading = true;
+                    this.documentHelper.triggerSpellCheck = true;
+                }
+            }
+            if (!isNullOrUndefined(sfdtText) && this.viewer) {
+                const incrementalOps: Record<string, ActionInfo[]> = {};
+                this.documentHelper.setDefaultDocumentFormat();
+                this.documentHelper.onDocumentChanged(
+                    this.parser.convertJsonToDocument(sfdtText as string, incrementalOps), incrementalOps);
+            }
+            if (this.isSpellCheck) {
+                if (this.isSpellCheck && !this.spellCheckerModule.enableOptimizedSpellCheck) {
+                    this.documentHelper.triggerElementsOnLoading = false;
+                    this.documentHelper.triggerSpellCheck = false;
+                }
             }
         }
-        private async getSfdtFromUrl(value: string, fileName: string): Promise<string> {
-            let documentEditor: DocumentEditor = this;
-            return new Promise((resolve, reject) => {
-            var xhr = new XMLHttpRequest();
+        hideSpinner(this.element);
+    }
+    private isValidUrl(url: string): string | null {
+        try {
+            const parsedUrl: URL = new URL(url);
+            const pathname: string = parsedUrl.pathname;
+            const segments: string[] = pathname.split('/');
+            const fileName: string = segments.pop();
+            return fileName || null;
+        } catch (error) {
+            return null;
+        }
+    }
+    private isValidBase64(input: string): boolean {
+        try {
+            const decoded: string = atob(input);
+            const reencoded: string = btoa(decoded);
+            return reencoded === input;
+        } catch (error) {
+            return false;
+        }
+    }
+    private async getSfdtFromUrl(value: string, fileName: string): Promise<string> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const documentEditor: DocumentEditor = this;
+        return new Promise((resolve: (value: string | PromiseLike<string>) => void, reject: (reason: any) => void) => {
+            const xhr: XMLHttpRequest = new XMLHttpRequest();
             xhr.open('GET', value, true);
             xhr.responseType = 'blob';
-            xhr.onload = async function () {
+            xhr.onload = async function (): Promise<void> {
                 if (xhr.status === 200) {
-                    var blob = xhr.response;
-                    var formData = new FormData();
+                    const blob: any = xhr.response;
+                    const formData: FormData = new FormData();
                     formData.append('file', blob, fileName);
-                    let sfdt: string = await documentEditor.send(formData);
+                    const sfdt: string = await documentEditor.send(formData);
                     resolve(sfdt);
                 }
             };
-            xhr.onerror = function () {
+            xhr.onerror = function (): void{
                 reject(null);
             };
             xhr.send();
-            });
-        };
-        private async convertToSfdt(file: File): Promise<string> {
-            const formData: FormData = new FormData();
-            formData.append('files', file);
-            return await this.send(formData);
+        });
+    }
+    private async convertToSfdt(file: File): Promise<string> {
+        const formData: FormData = new FormData();
+        formData.append('files', file);
+        return await this.send(formData);
+    }
+    private async getSfdtFromBase64string(value: string): Promise<string> {
+        const binaryString: string = atob(value);
+        const byteArray: Uint8Array = new Uint8Array(binaryString.length);
+        for (let i: number = 0; i < binaryString.length; i++) {
+            byteArray[parseInt(i.toString(), 10)] = binaryString.charCodeAt(parseInt(i.toString(), 10));
         }
-        private async getSfdtFromBase64string(value: string): Promise<string> {
-            let binaryString = atob(value);
-            let byteArray = new Uint8Array(binaryString.length);
-            for (let i: number = 0; i < binaryString.length; i++) {
-                byteArray[parseInt(i.toString(), 10)] = binaryString.charCodeAt(parseInt(i.toString(), 10));
-            }
-            let blob = new Blob([byteArray], { type: 'application/octet-stream' });
-            const formData: FormData = new FormData();
-            formData.append('file', blob);
-            return await this.send(formData);
+        const blob: Blob = new Blob([byteArray], { type: 'application/octet-stream' });
+        const formData: FormData = new FormData();
+        formData.append('file', blob);
+        return await this.send(formData);
+    }
+    private async convertFromBlob(blob: Blob): Promise<string> {
+        const formData: FormData = new FormData();
+        const name: string[] = blob.type.split('/');
+        let type: string = null;
+        if (name[name.length - 1] === 'html' || name[name.length - 1] === 'rtf') {
+            type = '.' + name[name.length - 1];
+        } else {
+            type = blob.type;
         }
-        private async convertFromBlob(blob: Blob): Promise<string> {
-            const formData: FormData = new FormData();
-            let name: string[] = blob.type.split('/');
-            let type: string = null;
-            if (name[name.length - 1] === 'html' || name[name.length - 1] === 'rtf') {
-                type = '.' + name[name.length - 1];
+        formData.append('files', blob, type);
+        return await this.send(formData);
+    }
+    private send(formData: FormData): Promise<string> {
+        const serviceUrl: string = this.serviceUrl + this.serverActionSettingsImport;
+        return new Promise((resolve: (value: string | PromiseLike<string>) => void, reject: (reason: any) => void) => {
+            const ajax: XmlHttpRequestHandler = new XmlHttpRequestHandler();
+            ajax.url = serviceUrl;
+            ajax.onSuccess = (result: any) => {
+                resolve(result.data);
+            };
+            ajax.onFailure = this.failureHandler.bind(this);
+            ajax.onError = this.failureHandler.bind(this);
+            ajax.customHeaders = this.headers;
+            const httprequestEventArgs: XmlHttpRequestEventArgs = {
+                serverActionType: this.serverActionSettingsImport as ServerActionType,
+                headers: this.headers, timeout: 0, cancel: false, withCredentials: false
+            };
+            this.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
+            if (httprequestEventArgs.cancel) {
+                reject(null);
             } else {
-                type = blob.type;
+                ajax.send(formData);
             }
-            formData.append('files', blob, type);
-            return await this.send(formData);
+        });
+    }
+    private convertFromSfdtBlob(blob: Blob): Promise<string> {
+        return new Promise((resolve: (value: string | PromiseLike<string>) => void) => {
+            const reader: FileReader = new FileReader();
+            // eslint-disable-next-line @typescript-eslint/tslint/config
+            reader.onload = function (event) {
+                const text: string = (event.target as FileReader).result as string;
+                resolve(text);
+            };
+            reader.readAsText(blob);
+        });
+    }
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    private failureHandler(args: any): void {
+        const locale: L10n = new L10n('documenteditor', this.defaultLocale);
+        if (args.name === 'onError') {
+            DialogUtility.alert({
+                content: locale.getConstant('Error in establishing connection with web server'),
+                closeOnEscape: true, showCloseIcon: true,
+                position: { X: 'center', Y: 'center' }
+            }).enableRtl = this.enableRtl;
+        } else if (args === 'onError') {
+            alert(locale.getConstant('Failed to load the file'));
+            //this.fireServiceFailure(args);
         }
-        private send(formData: FormData): Promise<string> {
-            let serviceUrl: string = this.serviceUrl + this.serverActionSettingsImport;
-            return new Promise((resolve, reject) => {
-                const ajax: XmlHttpRequestHandler = new XmlHttpRequestHandler();
-                ajax.url = serviceUrl;
-                ajax.onSuccess = (result: any) => {
-                    resolve(result.data);
-                };
-                ajax.onFailure = this.failureHandler.bind(this);
-                ajax.onError = this.failureHandler.bind(this);
-                ajax.customHeaders = this.headers;
-                const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: this.serverActionSettingsImport as ServerActionType, headers: this.headers, timeout: 0, cancel: false, withCredentials: false };
-                this.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
-                if (httprequestEventArgs.cancel) {
-                    reject(null);
-                } else {
-                    ajax.send(formData);
-                }
-            });
-        }
-        private convertFromSfdtBlob(blob: Blob): Promise<string> {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    const text = (event.target as FileReader).result as string;
-                    resolve(text);
-                };
-                reader.readAsText(blob);
-            });
-        }
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        private failureHandler(args: any): void {
-            const locale: L10n = new L10n('documenteditor', this.defaultLocale);
-            if (args.name === 'onError') {
-                DialogUtility.alert({
-                    content: locale.getConstant('Error in establishing connection with web server'),
-                    closeOnEscape: true, showCloseIcon: true,
-                    position: { X: 'center', Y: 'center' }
-                }).enableRtl = this.enableRtl;
-            } else if (args === 'onError') {
-                alert(locale.getConstant('Failed to load the file'));
-                //this.fireServiceFailure(args);
-            }
-        }
+    }
     /**
      * Scrolls view to start of the given page number if exists.
      *
@@ -3431,7 +3523,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             = this.enableTableOptionsDialog = this.enableSpellCheck = this.enableComment
             = this.enableFormField = this.enableColumnsDialog = true;
         /* eslint-disable-next-line max-len */
-        DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, NotesDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, TabDialog, DatePickerDialog, PicContentControlDialog, ContentControlPropertiesDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, ColumnsDialog);
+        DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, NotesDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, TabDialog, DatePickerDialog, PicContentControlDialog, ContentControlPropertiesDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, ColumnsDialog, XmlPane);
     }
     /**
      * Resizes the component and its sub elements based on given size or container size.
@@ -3465,11 +3557,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.collaborativeEditingHandlerModule.updateCaretPosition();
         }
     }
-     /**
+    /**
      * Resize Document Editor
+     *
      * @private
+     * @returns {void}
      */
-     public triggerResize(): void{
+    public triggerResize(): void{
         if (this) {
             setTimeout(() => {
                 if (this) {
@@ -3628,7 +3722,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Imports content control data and returns the processed content control information.
-     * 
+     *
      * @param {ContentControlInfo[]} contentControlInfo - The array of content control information to be imported.
      * @returns {ContentControlInfo[]} The processed content control information.
      */
@@ -3665,7 +3759,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 if (contentControl.contentControlProperties.lockContents) {
                     contentControlData.canEdit = true;
                 }
-                const element:ElementBox = contentControl.nextElement;
+                const element: ElementBox = contentControl.nextElement;
                 if (contentControl.contentControlProperties.type === 'Picture') {
                     if (element instanceof ImageElementBox) {
                         contentControlData.value = this.documentHelper.getImageString(element);
@@ -3684,17 +3778,18 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         return data;
-    }    
+    }
     /**
      * Resets the content control data.
-     * @param {ContentControlInfo[]} contentControlInfo - The array of content control information to be reset
-     * @returns void
+     *
+     * @param {ContentControlInfo[]} contentControInfo - The array of content control information to be reset.
+     * @returns {void}
      */
     public resetContentControlData(contentControInfo: ContentControlInfo[]): void {
-        for (let i = 0; i < contentControInfo.length; i++) {
-            let contentInfo: ContentControlInfo = contentControInfo[parseInt(i.toString(), 10)];
-            for (let j = 0; j < this.documentHelper.contentControlCollection.length; j++) {
-                let contentControl: ContentControl = this.documentHelper.contentControlCollection[parseInt(j.toString(), 10)];
+        for (let i: number = 0; i < contentControInfo.length; i++) {
+            const contentInfo: ContentControlInfo = contentControInfo[parseInt(i.toString(), 10)];
+            for (let j: number = 0; j < this.documentHelper.contentControlCollection.length; j++) {
+                const contentControl: ContentControl = this.documentHelper.contentControlCollection[parseInt(j.toString(), 10)];
                 if (contentInfo.title === contentControl.contentControlProperties.title) {
                     this.editorModule.updateContentControl(contentControl, contentInfo.value, true);
                 }
@@ -3702,8 +3797,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
+     * @param {TextElementBox} element - Specifies the text element box.
      * @private
-     * @returns {String}
+     * @returns {string} - Returns the content control value.
      */
     public getContentControlValue(element: TextElementBox): string {
         let text: string = '';
@@ -3719,30 +3815,32 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         return text;
     }
     /**
+     * @param {ContentControl} element - Specifies the content control.
      * @private
-     * @returns {String}
+     * @returns {string} - Returns the content control value.
      */
     public getContentControlValueForText(element: ContentControl): string {
         let text: string = '';
         let startIndex: number = element.line.children.indexOf(element) + 1;
         let skip: boolean = false;
         if (this.selection.contentControleditRegionHighlighters.containsKey(element)) {
-            let contentInfo: Dictionary<LineWidget, SelectionWidgetInfo[]> = this.selection.contentControleditRegionHighlighters.get(element);
-            for (let i = 0; i < contentInfo.keys.length; i++) {
-                let line: LineWidget = contentInfo.keys[parseInt(i.toString(), 10)];
+            const contentInfo: Dictionary<LineWidget, SelectionWidgetInfo[]>
+                = this.selection.contentControleditRegionHighlighters.get(element);
+            for (let i: number = 0; i < contentInfo.keys.length; i++) {
+                const line: LineWidget = contentInfo.keys[parseInt(i.toString(), 10)];
                 if (i > 0 && line.paragraph !== contentInfo.keys[i - 1].paragraph) {
                     text += '/n';
                 }
-                for (let j = startIndex; j < line.children.length; j++) {
+                for (let j: number = startIndex; j < line.children.length; j++) {
                     startIndex = 0;
-                    let textElement: ElementBox = line.children[parseInt(j.toString(), 10)] as ElementBox;
+                    const textElement: ElementBox = line.children[parseInt(j.toString(), 10)] as ElementBox;
                     if (textElement instanceof TextElementBox) {
                         text += textElement.text;
                     }
                     if (textElement instanceof ContentControl) {
                         skip = true;
                         break;
-                    }   
+                    }
                 }
                 if (skip) {
                     break;
@@ -4161,6 +4259,18 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
+     * Shows the Xml pane.
+     *
+     * @returns {void}
+     */
+    public showXmlPane(): void {
+        if (!isNullOrUndefined(this.xmlPaneModule) && isNullOrUndefined(this.xmlPaneModule.element)) {
+            this.xmlPaneModule.showXmlProperties(true);
+        } else {
+            this.checkModuleInjection('XmlPane', this.enableXMLPane);
+        }
+    }
+    /**
      * Shows the restrict editing pane.
      *
      * @param {boolean} show Specifies to show or hide restrict editing pane.
@@ -4307,7 +4417,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNullOrUndefined(name) && !isNullOrUndefined(this.documentHelper.owner.sfdtExportModule)) {
             const style: Object = this.documentHelper.styles.findByName(name);
             if (!isNullOrUndefined(style)) {
-                let styleObject = this.getStyleObject(style, listId);
+                const styleObject: any = this.getStyleObject(style, listId);
                 if (!isNullOrUndefined(style) && this.enableCollaborativeEditing) {
                     operation = {
                         action: 'Update',
@@ -4320,11 +4430,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.fireContentChange();
     }
     /**
-     * 
+     *
      * @private
-     * @param style 
-     * @param listId 
-     * @returns 
+     * @param {Object} style - Specifies the style.
+     * @param {number} listId - Specifies the list id.
+     * @returns {any} - Returns the style object.
      */
     public getStyleObject(style: Object, listId: number): any {
         if (!isNullOrUndefined(style)) {
@@ -4405,6 +4515,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.optionsPaneModule.destroy();
             this.optionsPaneModule = undefined;
         }
+        if (this.xmlPaneModule) {
+            this.xmlPaneModule.destroy();
+            this.xmlPaneModule = undefined;
+        }
         if (this.commentReviewPane) {
             this.commentReviewPane.destroy();
             this.commentReviewPane = undefined;
@@ -4473,7 +4587,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.tablePropertiesDialogModule.destroy();
             this.tablePropertiesDialogModule = undefined;
         }
-        if(this.contentControlPropertiesDialogModule){
+        if (this.contentControlPropertiesDialogModule){
             this.contentControlPropertiesDialogModule.destroy();
             this.contentControlPropertiesDialogModule = undefined;
         }

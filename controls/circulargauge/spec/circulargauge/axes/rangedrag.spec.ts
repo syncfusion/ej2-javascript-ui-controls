@@ -100,7 +100,7 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
 
-        it('Checking range position', (done: Function) => {
+        it('Checking range position inside ', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 ele = document.getElementById('container_Axis_0_Range_0');
                 trigger.mousedownEvent(ele,812,197,'touchstart',gauge);
@@ -193,6 +193,30 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
 
+        it('Checking stroke of the range and direction anticlockwise', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void =>{
+                ele = document.getElementById("container_Axis_0_Range_0");
+                trigger.mousedownEvent(ele,812,197,'touchstart',gauge);
+                trigger.mousemoveEvent(ele,812,197,813,265);
+                expect(ele.getAttribute('stroke')).toBe('blue');
+                done();
+            };
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.refresh();
+        });
+        it('Checking stroke of the range and direction anticlockwise and startangle and endangle', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void =>{
+                ele = document.getElementById("container_Axis_0_Range_0");
+                trigger.mousedownEvent(ele,812,197,'touchstart',gauge);
+                trigger.mousemoveEvent(ele,812,197,813,265);
+                expect(ele.getAttribute('stroke')).toBe('blue');
+                done();
+            };
+            gauge.axes[0].startAngle = 140;
+            gauge.axes[0].direction = 'ClockWise';
+            gauge.refresh();
+        });
+
         it('Checking the fill property of the range', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void =>{
                 ele = document.getElementById("container_Axis_0_Range_0");
@@ -201,6 +225,7 @@ describe('Circular-Gauge Control', () => {
                 expect(ele.getAttribute('fill')).toBe('blue');
                 done();
             };
+            gauge.axes[0].direction = 'ClockWise';
             gauge.refresh();
         });
 
@@ -221,7 +246,7 @@ describe('Circular-Gauge Control', () => {
                 trigger.mousedownEvent(ele,812,197,'touchstart',gauge);
                 trigger.mousemoveEvent(ele,812,197,813,265);
                 value = ele.getAttribute('d').split(' ');
-                expect((value[2] == '87.96275251328018') || (value[2] =='83.30174328517799' )).toBe(true);
+                expect((value[2] == '87.96275251328018') || (value[2] =='83.30174328517799' ) || (value[2] =='413.0758435135144')).toBe(true);
                 expect((value[4] == '190.4') || (value[4] =='191.82500000000002')).toBe(true);
                 expect((value[5] == '190.4') || (value[5] =='191.82500000000002')).toBe(true);
                 done();

@@ -30,5 +30,6 @@ describe('RTE BASIC PROPERTIES - cssClass - ', () => {
                 expect(ele.classList.contains('custom-style2')).toBe(false);
             });
         });
+
     });
 });

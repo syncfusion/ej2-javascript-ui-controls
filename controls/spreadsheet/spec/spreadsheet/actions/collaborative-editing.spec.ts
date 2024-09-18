@@ -240,7 +240,7 @@ describe('Collaborative Editing ->', () => {
         it('Font family - Undo & Redo', (done: Function) => {
             helper.click('#spreadsheet_undo');
             setTimeout(() => {
-                expect(getCell(2, 3, sheets2[0]).style).toBeNull();
+                expect(getCell(2, 3, sheets2[0]).style).toBeUndefined();
                 expect(getCell(2, 3, sheets2[1]).style).toBeUndefined();
                 helper.click('#spreadsheet_redo');
                 setTimeout(() => {
@@ -636,7 +636,7 @@ describe('Collaborative Editing ->', () => {
                 expect(getCell(1, 3, sheets2[1]).value as any).toBe(10);
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 done();
-            }, 200);
+            }, 100);
         });
 
         it('Find & ReplaceAll - Undo & Redo', (done: Function) => {
@@ -656,8 +656,8 @@ describe('Collaborative Editing ->', () => {
                     expect(getCell(1, 3, sheets2[0]).value as any).toBe(121);
                     expect(getCell(1, 3, sheets2[1]).value as any).toBe(10);
                     done();
-                }, 100);
-            }, 100);
+                }, 50);
+            }, 50);
         });
 
         it('Hyperlink', (done: Function) => {
@@ -1094,7 +1094,7 @@ describe('Collaborative Editing ->', () => {
                 expect(getCell(4, 1, sheets2[0])).toBeNull();
                 expect(getCell(4, 2, sheets2[0])).toBeNull();
                 expect(getCell(5, 0, sheets2[0]).value).toBe('Sandals & Floaters');
-                expect(getCell(5, 1, sheets2[0]).value).toBe('11/21/2014');
+                expect(getCell(5, 1, sheets2[0]).value).toBe('41964');
                 expect(getCell(5, 2, sheets2[0]).value).toBe('06:23:54 AM');
                 expect(getCell(4, 0, sheets2[1]).value).toBe('Sandals & Floaters');
                 expect(getCell(4, 1, sheets2[1]).value).toBe('41964');
@@ -1108,7 +1108,7 @@ describe('Collaborative Editing ->', () => {
             helper.getInstance().undoredoModule.performUndoRedo({ isUndo: true });
             setTimeout(() => {
                 expect(getCell(4, 0, sheets2[0]).value).toBe('Sandals & Floaters');
-                expect(getCell(4, 1, sheets2[0]).value).toBe('11/21/2014');
+                expect(getCell(4, 1, sheets2[0]).value).toBe('41964');
                 expect(getCell(4, 2, sheets2[0]).value).toBe('06:23:54 AM');
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 helper.getInstance().undoredoModule.performUndoRedo({ isUndo: false });
@@ -1117,7 +1117,7 @@ describe('Collaborative Editing ->', () => {
                     expect(getCell(4, 1, sheets2[0])).toBeNull();
                     expect(getCell(4, 2, sheets2[0])).toBeNull();
                     expect(getCell(5, 0, sheets2[0]).value).toBe('Sandals & Floaters');
-                    expect(getCell(5, 1, sheets2[0]).value).toBe('11/21/2014');
+                    expect(getCell(5, 1, sheets2[0]).value).toBe('41964');
                     expect(getCell(5, 2, sheets2[0]).value).toBe('06:23:54 AM');
                     expect(getCell(4, 0, sheets2[1]).value).toBe('Sandals & Floaters');
                     expect(getCell(4, 1, sheets2[1]).value).toBe('41964');
@@ -1134,7 +1134,7 @@ describe('Collaborative Editing ->', () => {
                 expect(getCell(5, 1, sheets2[0])).toBeNull();
                 expect(getCell(5, 2, sheets2[0])).toBeNull();
                 expect(getCell(6, 0, sheets2[0]).value).toBe('Sandals & Floaters');
-                expect(getCell(6, 1, sheets2[0]).value).toBe('11/21/2014');
+                expect(getCell(6, 1, sheets2[0]).value).toBe('41964');
                 expect(getCell(6, 2, sheets2[0]).value).toBe('06:23:54 AM');
                 expect(getCell(5, 0, sheets2[1]).value).toBe('Flip- Flops & Slippers');
                 expect(getCell(5, 1, sheets2[1]).value).toBe('41813');
@@ -1148,7 +1148,7 @@ describe('Collaborative Editing ->', () => {
             helper.getInstance().undoredoModule.performUndoRedo({ isUndo: true });
             setTimeout(() => {
                 expect(getCell(5, 0, sheets2[0]).value).toBe('Sandals & Floaters');
-                expect(getCell(5, 1, sheets2[0]).value).toBe('11/21/2014');
+                expect(getCell(5, 1, sheets2[0]).value).toBe('41964');
                 expect(getCell(5, 2, sheets2[0]).value).toBe('06:23:54 AM');
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 helper.getInstance().undoredoModule.performUndoRedo({ isUndo: false });
@@ -1157,7 +1157,7 @@ describe('Collaborative Editing ->', () => {
                     expect(getCell(5, 1, sheets2[0])).toBeNull();
                     expect(getCell(5, 2, sheets2[0])).toBeNull();
                     expect(getCell(6, 0, sheets2[0]).value).toBe('Sandals & Floaters');
-                    expect(getCell(6, 1, sheets2[0]).value).toBe('11/21/2014');
+                    expect(getCell(6, 1, sheets2[0]).value).toBe('41964');
                     expect(getCell(6, 2, sheets2[0]).value).toBe('06:23:54 AM');
                     expect(getCell(5, 0, sheets2[1]).value).toBe('Flip- Flops & Slippers');
                     expect(getCell(5, 1, sheets2[1]).value).toBe('41813');
@@ -1207,7 +1207,7 @@ describe('Collaborative Editing ->', () => {
             helper.openAndClickCMenuItem(6, 0, [7], true);
             setTimeout(() => {
                 expect(getCell(6, 0, sheets2[0]).value).toBe('Flip- Flops & Slippers');
-                expect(getCell(6, 1, sheets2[0]).value).toBe('06/23/2014');
+                expect(getCell(6, 1, sheets2[0]).value).toBe('41813');
                 expect(getCell(6, 2, sheets2[0]).value).toBe('12:43:59 AM');
                 expect(getCell(6, 0, sheets2[1]).value).toBe('Sneakers');
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
@@ -1225,7 +1225,7 @@ describe('Collaborative Editing ->', () => {
                 helper.getInstance().undoredoModule.performUndoRedo({ isUndo: false });
                 setTimeout(() => {
                     expect(getCell(6, 0, sheets2[0]).value).toBe('Flip- Flops & Slippers');
-                    expect(getCell(6, 1, sheets2[0]).value).toBe('06/23/2014');
+                    expect(getCell(6, 1, sheets2[0]).value).toBe('41813');
                     expect(getCell(6, 2, sheets2[0]).value).toBe('12:43:59 AM');
                     expect(getCell(6, 0, sheets2[1]).value).toBe('Sneakers');
                     done();

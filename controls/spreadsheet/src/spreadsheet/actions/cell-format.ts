@@ -1,11 +1,11 @@
 import { Spreadsheet, ICellRenderer, clearViewer, getTextHeightWithBorder } from '../../spreadsheet/index';
 import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, getDPRValue, completeAction } from '../common/index';
-import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, isImported } from '../common/index';
+import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells } from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, activeCellChanged, clearCFRule } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight, cellValidation } from '../../workbook/index';
 import { setRowHeight, CellStyleExtendedModel, CellModel, beginAction, isHeightCheckNeeded, CFArgs } from '../../workbook/index';
-import { getSwapRange, skipHiddenIdx, isHiddenCol } from '../../workbook/index';
+import { getSwapRange, skipHiddenIdx, isHiddenCol, isImported } from '../../workbook/index';
 import { removeClass } from '@syncfusion/ej2-base';
 import { deleteChart, deleteImage } from '../common/index';
 /**
@@ -103,7 +103,9 @@ export class CellFormat {
                         if (cell && cell.children[0] && cell.children[0].className === 'e-cf-databar' && args.style.fontSize) {
                             (cell.children[0].querySelector('.e-databar-value') as HTMLElement).style.fontSize = args.style.fontSize;
                         }
-                        this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate);
+                        if (!args.isFromAutoFillOption) {
+                            this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate);
+                        }
                         if (cellModel.wrap && (args.style.fontSize || args.style.fontFamily)) {
                             cell.style.lineHeight = (parseFloat(
                                 (cellModel.style && cellModel.style.fontSize) || this.parent.cellStyle.fontSize) * getLineHeight(
@@ -150,8 +152,9 @@ export class CellFormat {
                     }
                     hgt = getTextHeightWithBorder(this.parent, rowIdx, colIdx, sheet, cell.style || this.parent.cellStyle, n);
                 }
-                if (hgt < 20) {
-                    hgt = 20; // default height
+                const defaultHeight: number = sheet.standardHeight ? sheet.standardHeight : 20;
+                if (hgt < defaultHeight) {
+                    hgt = defaultHeight; // default height
                 }
                 setMaxHgt(sheet, rowIdx, colIdx, hgt);
                 if (!outsideViewport) {

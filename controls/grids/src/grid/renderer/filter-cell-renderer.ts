@@ -50,6 +50,9 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
             const col: string = 'column';
             fltrData[`${col}`] = column;
             if (column.visible) {
+                if (this.parent.filterSettings.type === 'FilterBar') {
+                    node.classList.add('e-fltrtemp');
+                }
                 const isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
                 const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                     this.parent.parentDetails.parentInstObj.isReact;
@@ -113,6 +116,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                             enableRtl: this.parent.enableRtl, showClearButton: true, cssClass: this.parent.cssClass
                         }
                     };
+                    this.parent.filterModule.inputList.push(args);
                     Input.createInput(args, this.parent.createElement);
                 }
                 //TODO: apply intial filtering
@@ -145,8 +149,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                 }
             }
             else{
-                if(!column.visible)
-                {
+                if (!column.visible) {
                     node.classList.add('e-hide');
                 }
             }

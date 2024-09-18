@@ -537,6 +537,19 @@ describe('Circular3D Chart Control', () => {
             circular3D.getPersistData();
             circular3D.refresh();
         });
+        it('checking with keyboard navigation', (done: Function) => {
+            let enterKeyUpTriggered: boolean = false;
+            circular3D.loaded = (args: CircularChart3DLoadedEventArgs) => {
+                if (!enterKeyUpTriggered) {
+                    enterKeyUpTriggered = true;
+                    element = document.getElementById(id + '-svg-0-region-series-0' + '-point-3');
+                    trigger.keyboardEvent('keyup', element, 'Space', 'Space');
+                    expect(element !== null).toBe(true);
+                }
+                done();
+            };
+            circular3D.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

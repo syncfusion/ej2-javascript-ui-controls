@@ -887,6 +887,94 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('StepArea Series - Checking animation on data changes.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let seriesData: object[] = [
+            { x: "Jan", y: 54.481, text: "54.48%" },
+            { x: "Feb", y: 50.56382, text: "50.56%" },
+            { x: "Mar", y: 53.68715, text: "53.69%" },
+            { x: "Apr", y: 49.143363, text: "49.14%" },
+            { x: "May", y: 57.423575, text: "57.42%" },
+            { x: "Jun", y: 55.959774, text: "55.96%" },
+            { x: "Jul", y: 52.360737, text: "52.36%" },
+            { x: "Aug", y: 56.654956, text: "56.65%" },
+            { x: "Sep", y: 51.387971, text: "51.39%" },
+            { x: "Oct", y: 53.137774, text: "53.14%" },
+            { x: "Nov", y: 54.889794, text: "54.89%" }];
+        let chartContainerDiv: Element;
+        chartContainerDiv = createElement('div', { id: 'StepAreaContainer', styles: 'height:250px;width:590px;float: left;' });
+        beforeAll(() => {
+            document.body.appendChild(chartContainerDiv);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category' },
+                    series: [
+                        {
+                            dataSource: seriesData, xName: 'x', yName: 'y', type: 'StepArea', fill: 'red',
+                            animation: { enable: false }, name: 'series1', legendShape: 'Circle',
+                            marker: {
+                                visible: true,
+                                dataLabel: {
+                                    visible: true,
+                                    position: 'Outer',
+                                    font: { color: 'red', size: '12px' }
+                                }
+                            }
+                        }
+                    ],
+
+                });
+            chartObj.appendTo('#StepAreaContainer');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            chartContainerDiv.remove();
+        });
+
+        it('Checking StepArea series updated direction', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('StepAreaContainer_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            let dataSource: object[] = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 50.56382, text: "50.56%" },
+                { x: "Mar", y: 51.68715, text: "53.69%" },
+                { x: "Apr", y: 49.143363, text: "49.14%" },
+                { x: "May", y: 57.423575, text: "57.42%" },
+                { x: "Jun", y: 55.959774, text: "55.96%" },
+                { x: "Jul", y: 52.360737, text: "52.36%" },
+                { x: "Aug", y: 56.654956, text: "56.65%" },
+                { x: "Sep", y: 51.387971, text: "51.39%" },
+                { x: "Oct", y: 53.137774, text: "53.14%" },
+                { x: "Nov", y: 52.889794, text: "54.89%" },
+            ];
+            chartObj.series[0].setData(dataSource);
+            chartObj.refresh();
+        });
+        it('Checking StepArea series - addPoint', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('StepAreaContainer_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.series[0].addPoint({ x: "Dec", y: 56.760399, text: "56.76%" });
+            chartObj.refresh();
+        });
+        it('Checking StepArea series - removePoint', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('StepAreaContainer_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.series[0].removePoint(0);
+            chartObj.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -896,8 +984,83 @@ describe('Chart Control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+    
+    describe('Chart Steparea series without vertical risers', () => {
+        let chartObj: Chart;
+        let svg: HTMLElement;
+        let marker: HTMLElement;
+        let targetElement: HTMLElement;
+        let datalabel: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        beforeAll(() => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { title: 'PrimaryXAxis' },
+                    primaryYAxis: { title: 'PrimaryYAxis', rangePadding: 'Normal' },
+                    series: [{
+                        dataSource: data, xName: 'x', yName: 'y', animation: { enable: false }, type: 'StepArea',
+                        name: 'ChartSeriesNameGold', fill: 'skyblue', marker:{visible: true,dataLabel:{visible:false}},
+                        border: {
+                            color: 'blue',
+                            width: 4,
+                        },
+                        noRisers : true
+                    },
+                    ], width: '800',
+                    title: 'Chart TS Title', legendSettings: { visible: false, },
 
-       });
+                });
+            chartObj.appendTo('#container');
+
+        });
+
+        afterAll((): void => {
+            elem.remove();
+            chartObj.destroy();
+        });
+        it('Checking with step as Right', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_border_0');
+                // expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125 M 0 175.125 L 105.07142857142857 175.125 M 105.07142857142857 43.78125 L 210.14285714285714 43.78125 M 210.14285714285714 87.5625 L 315.2142857142857 87.5625 M 315.2142857142857 131.34375 L 420.2857142857143 131.34375 M 420.2857142857143 175.125 L 525.3571428571429 175.125 M 525.3571428571429 175.125 L 630.4285714285714 175.125 M 630.4285714285714 43.78125 L 735.5 43.78125 L 735.5 43.78125 ' || 'M 0 43.78125 L 0 43.78125 M 0 175.125 L 105.21428571428571 175.125 M 105.21428571428571 43.78125 L 210.42857142857142 43.78125 M 210.42857142857142 87.5625 L 315.6428571428571 87.5625 M 315.6428571428571 131.34375 L 420.85714285714283 131.34375 M 420.85714285714283 175.125 L 526.0714285714286 175.125 M 526.0714285714286 175.125 L 631.2857142857142 175.125 M 631.2857142857142 43.78125 L 736.5 43.78125 L 736.5 43.78125 ')
+                expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125 M 0 175.125 L 105.21428571428571 175.125 M 105.21428571428571 43.78125 L 210.42857142857142 43.78125 M 210.42857142857142 87.5625 L 315.6428571428571 87.5625 M 315.6428571428571 131.34375 L 420.85714285714283 131.34375 M 420.85714285714283 175.125 L 526.0714285714286 175.125 M 526.0714285714286 175.125 L 631.2857142857142 175.125 M 631.2857142857142 43.78125 L 736.5 43.78125 L 736.5 43.78125 ')         
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].dataSource = [{ x: 1000, y: 70 }, { x: 2000, y: 40 },
+                { x: 3000, y: 70 }, { x: 4000, y: 60 },
+                { x: 5000, y: 50 }, { x: 6000, y: 40 },
+                { x: 7000, y: 40 }, { x: 8000, y: 70 }]           
+            chartObj.series[0].step = 'Right'
+            chartObj.refresh();
+        });
+
+        it('Checking with step as Left', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_border_0');
+                // expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125 L 105.07142857142857 43.78125 M 105.07142857142857 175.125 L 210.14285714285714 175.125 M 210.14285714285714 43.78125 L 315.2142857142857 43.78125 M 315.2142857142857 87.5625 L 420.2857142857143 87.5625 M 420.2857142857143 131.34375 L 525.3571428571429 131.34375 M 525.3571428571429 175.125 L 630.4285714285714 175.125 M 630.4285714285714 175.125 L 735.5 175.125 M 735.5 43.78125 L 735.5 43.78125 ' || 'M 0 43.78125 L 0 43.78125 L 105.21428571428571 43.78125 M 105.21428571428571 175.125 L 210.42857142857142 175.125 M 210.42857142857142 43.78125 L 315.6428571428571 43.78125 M 315.6428571428571 87.5625 L 420.85714285714283 87.5625 M 420.85714285714283 131.34375 L 526.0714285714286 131.34375 M 526.0714285714286 175.125 L 631.2857142857142 175.125 M 631.2857142857142 175.125 L 736.5 175.125 M 736.5 43.78125 L 736.5 43.78125 ')
+                expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125 L 105.21428571428571 43.78125 M 105.21428571428571 175.125 L 210.42857142857142 175.125 M 210.42857142857142 43.78125 L 315.6428571428571 43.78125 M 315.6428571428571 87.5625 L 420.85714285714283 87.5625 M 420.85714285714283 131.34375 L 526.0714285714286 131.34375 M 526.0714285714286 175.125 L 631.2857142857142 175.125 M 631.2857142857142 175.125 L 736.5 175.125 M 736.5 43.78125 L 736.5 43.78125 ');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Left'
+            chartObj.refresh();
+        });
+
+        it('Checking with step as Center', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_border_0');
+                // expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125 L 52.535714285714285 43.78125 M 52.535714285714285 175.125 L 105.07142857142857 175.125 L 157.60714285714286 175.125 M 157.60714285714286 43.78125 L 210.14285714285714 43.78125 L 262.67857142857144 43.78125 M 262.67857142857144 87.5625 L 315.2142857142857 87.5625 L 367.75 87.5625 M 367.75 131.34375 L 420.2857142857143 131.34375 L 472.82142857142856 131.34375 M 472.82142857142856 175.125 L 525.3571428571429 175.125 L 577.8928571428571 175.125 M 577.8928571428571 175.125 L 630.4285714285714 175.125 L 682.9642857142858 175.125 M 682.9642857142858 43.78125 L 735.5 43.78125 L 735.5 43.78125 ' || 'M 0 43.78125 L 0 43.78125 L 52.607142857142854 43.78125 M 52.607142857142854 175.125 L 105.21428571428571 175.125 L 157.82142857142856 175.125 M 157.82142857142856 43.78125 L 210.42857142857142 43.78125 L 263.0357142857143 43.78125 M 263.0357142857143 87.5625 L 315.6428571428571 87.5625 L 368.25 87.5625 M 368.25 131.34375 L 420.85714285714283 131.34375 L 473.46428571428567 131.34375 M 473.46428571428567 175.125 L 526.0714285714286 175.125 L 578.6785714285713 175.125 M 578.6785714285713 175.125 L 631.2857142857142 175.125 L 683.8928571428571 175.125 M 683.8928571428571 43.78125 L 736.5 43.78125 L 736.5 43.78125 ')
+                expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125 L 52.607142857142854 43.78125 M 52.607142857142854 175.125 L 105.21428571428571 175.125 L 157.82142857142856 175.125 M 157.82142857142856 43.78125 L 210.42857142857142 43.78125 L 263.0357142857143 43.78125 M 263.0357142857143 87.5625 L 315.6428571428571 87.5625 L 368.25 87.5625 M 368.25 131.34375 L 420.85714285714283 131.34375 L 473.46428571428567 131.34375 M 473.46428571428567 175.125 L 526.0714285714286 175.125 L 578.6785714285713 175.125 M 578.6785714285713 175.125 L 631.2857142857142 175.125 L 683.8928571428571 175.125 M 683.8928571428571 43.78125 L 736.5 43.78125 L 736.5 43.78125 ')
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Center'
+            chartObj.refresh();
+        });
+    });
+    });
 export interface series1 {
     series: Series;
 }

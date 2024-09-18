@@ -512,11 +512,17 @@ export class ContextMenu implements IAction {
     public destroy(): void {
         const gridElement: Element = this.parent.element;
         if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
+        if (this.contextMenu) {
+            this.contextMenu.select = null;
+            this.contextMenu.beforeOpen = null;
+            this.contextMenu.onOpen = null;
+            this.contextMenu.onClose = null;
+        }
+        this.removeEventListener();
         this.contextMenu.destroy();
         if (this.element.parentNode) {
             remove(this.element);
         }
-        this.removeEventListener();
         this.parent.element.classList.remove('e-noselect');
     }
 

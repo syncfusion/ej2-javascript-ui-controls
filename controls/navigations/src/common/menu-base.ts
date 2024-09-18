@@ -263,7 +263,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private isClosed: boolean;
     private liTrgt: Element;
     private isMenusClosed: boolean;
-    private isContextMenuClosed: boolean;
     private isCMenu: boolean;
     private pageX: number;
     private pageY: number;
@@ -273,6 +272,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private timer: number;
     private currentTarget: Element;
     private isCmenuHover: boolean;
+    private isAnimationNone: boolean = false;
     /**
      * Triggers while rendering each menu item.
      *
@@ -908,7 +908,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             popupObj = getInstance(popupEle, Popup) as Popup;
                             popupObj.hide(); popupId = popupEle.id; popupObj.destroy(); detach(popupEle);
                         } else {
-                            this.isContextMenuClosed = false;
                             this.toggleAnimation(ul, false);
                         }
                         closeArgs = { element: ul, parentItem: item, items: items };
@@ -1009,7 +1008,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact && this.template && this.navIdx.length === 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const portals: any = (this as any).portals.splice(0, this.items.length);
+            let portals: any;
+            if (this.portals) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                portals = (this as any).portals.splice(0, this.items.length);
+            }
             this.clearTemplate(['template']);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).portals = portals; this.renderReactTemplates();
@@ -1267,7 +1270,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 break;
             case 'none':
                 this.top = observedOpenArgs.top; this.left = observedOpenArgs.left;
-                this.isContextMenuClosed = true;
                 break;
             case 'hamburger':
                 if (!observedOpenArgs.cancel) {
@@ -1726,7 +1728,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (!cli) {
                         this.removeLIStateByClass([SELECTED], [wrapper]);
                     }
-                    if (!cli || !cli.querySelector('.' + CARET)) {
+                    if (!this.isAnimationNone && !cli || (cli && !cli.querySelector('.' + CARET))) {
                         if (navigator.platform.toUpperCase().indexOf('MAC') < 0 || (navigator.platform.toUpperCase().indexOf('MAC') >= 0 && !e.ctrlKey)) {
                             this.closeMenu(null, e);
                         }
@@ -2095,6 +2097,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let pUlHeight: number;
         let pElement: HTMLElement;
         if (this.animationSettings.effect === 'None' || !isMenuOpen) {
+            if (this.hamburgerMode && ul) {
+                ul.style.top = '0px';
+            }
+            this.isAnimationNone = this.animationSettings.effect === 'None';
             this.end(ul, isMenuOpen);
         } else {
             this.animation.animate(ul, {
@@ -2105,16 +2111,16 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (this.hamburgerMode) {
                         pElement = options.element.parentElement;
                         options.element.style.position = 'absolute';
-                        pUlHeight = pElement.offsetHeight;
+                        if (pElement) { pUlHeight = pElement.offsetHeight; }
                         options.element.style.maxHeight = options.element.offsetHeight + 'px';
-                        pElement.style.maxHeight = '';
+                        if (pElement) { pElement.style.maxHeight = ''; }
                     } else {
                         options.element.style.display = 'block';
                         options.element.style.maxHeight = options.element.getBoundingClientRect().height + 'px';
                     }
                 },
                 progress: (options: AnimationOptions) => {
-                    if (this.hamburgerMode) {
+                    if (this.hamburgerMode && pElement) {
                         pElement.style.minHeight = (pUlHeight + options.element.offsetHeight) + 'px';
                     }
                 },
@@ -2122,7 +2128,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (this.hamburgerMode) {
                         options.element.style.position = '';
                         options.element.style.maxHeight = '';
-                        pElement.style.minHeight = '';
+                        if (pElement) { pElement.style.minHeight = ''; }
                         options.element.style.top = 0 + 'px';
                         (options.element.children[0] as HTMLElement).focus();
                         this.triggerOpen(options.element.children[0] as HTMLElement);
@@ -2146,7 +2152,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private end(ul: HTMLElement, isMenuOpen: boolean): void {
-        if (isMenuOpen && (this.isMenu || (!this.isMenu && this.isContextMenuClosed))) {
+        if (isMenuOpen) {
             if (this.isMenu || !Browser.isDevice) {
                 ul.style.display = 'block';
             }
@@ -2183,6 +2189,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     sli.classList.remove(SELECTED);
                 }
                 ul.style.display = 'none';
+                this.isAnimationNone = false;
             } else {
                 detach(ul);
             }
@@ -2471,14 +2478,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 wrapper.parentNode.insertBefore(this.element, wrapper);
                 this.clonedElement = null;
             }
-            if (this.isMenu && this.clonedElement) {
-                detach(this.element);
-                (wrapper as HTMLElement).style.display = '';
-                wrapper.classList.remove('e-' + this.getModuleName() + '-wrapper');
-                wrapper.removeAttribute('data-ripple');
-            } else {
-                detach(wrapper);
-            }
+            detach(wrapper);
             super.destroy();
             if (this.template) { this.clearTemplate(['template']); }
         }

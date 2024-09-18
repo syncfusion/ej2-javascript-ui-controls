@@ -19,8 +19,8 @@ export type SparklineType =
  'Area';
 
 /**
- * Defines the range padding of series
- * `None`, `Normal`, `Additional`, `Additional`
+ * Defines the range padding of series.
+ * `None`, `Normal`, `Additional`, `Additional`.
  */
 export type SparklineRangePadding =
  /** Define the Sparkline Line type series. */
@@ -62,12 +62,12 @@ export type VisibleType =
  /** Define the Sparkline marker | datalabel Visbile None type */
  'None';
 /**
- * Defines Theme of the sparkline. They are
+ * Defines Theme of the sparkline. They are:
  * * Material - Render a sparkline with Material theme.
- * * Fabric - Render a sparkline with Fabric theme
- * * Bootstrap - Render a sparkline with Bootstrap theme
- * * HighContrast - Render a sparkline with HighContrast theme
- * * Dark - Render a sparkline with Dark theme
+ * * Fabric - Render a sparkline with Fabric theme.
+ * * Bootstrap - Render a sparkline with Bootstrap theme.
+ * * HighContrast - Render a sparkline with HighContrast theme.
+ * * Dark - Render a sparkline with Dark theme.
  */
 export type SparklineTheme =
     /**  Render a sparkline with Material theme. */
@@ -102,6 +102,8 @@ export type SparklineTheme =
     'Fluent2' |
     /**  Render a sparkline with Fluent 2 dark theme. */
     'Fluent2Dark' |
+    /**  Render a sparkline with Fluent 2 highcontrast theme. */
+    'Fluent2HighContrast' |
     /**  Render a sparkline with FluentDark theme. */
     'FluentDark' |
     /**  Render a smithchart with Material 3 theme. */

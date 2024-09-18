@@ -1,4 +1,4 @@
-import { EventHandler } from '@syncfusion/ej2-base';
+import { EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { Chart } from '../chart';
 import { Axis } from '../axis/axis';
@@ -12,7 +12,7 @@ import { zoomComplete, onZooming } from '../../common/model/constants';
 import { IZoomCompleteEventArgs, IZoomingEventArgs, IAxisData } from '../../chart/model/chart-interface';
 
 /**
- * Zooming Toolkit created here
+ * The `Toolkit` class provides functionalities for zooming and panning in charts.
  *
  * @private
  */
@@ -34,6 +34,8 @@ export class Toolkit {
     private iconRectSelectionFill: string = 'transparent';
     /** @private */
     public zoomCompleteEvtCollection: IZoomCompleteEventArgs[] = [];
+    /** @private */
+    public isZoomed: boolean = false;
 
     /**
      * Constructor for the chart touch module.
@@ -60,17 +62,17 @@ export class Toolkit {
         direction += '11z M11,13H8.7l0.025-2.875h-1.4L7.35,13H5l3,3L11,13z M13,5v2.3l-2.875-0.025v1.4L13,8.65V11l3-3L13,5z';
         //This is for setting low opacity to PAN Button
         this.elementOpacity = !this.chart.zoomModule.isZoomed && this.chart.zoomSettings.showToolbar ? '0.2' : '1';
-        childElement.setAttribute('opacity', this.elementOpacity);
+        childElement.setAttribute('opacity', this.chart.theme === 'Fluent2HighContrast' ? '1' : this.elementOpacity);
         childElement.id = this.elementId + '_Zooming_Pan';
         childElement.setAttribute('role', 'button');
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Pan'));
         this.panElements = childElement;
         childElement.appendChild(render.drawRectangle(
-            new RectOption(this.elementId + '_Zooming_Pan_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0)
+            new RectOption(this.elementId + '_Zooming_Pan_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 || this.chart.theme.indexOf('Bootstrap5') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 || this.chart.theme.indexOf('Bootstrap5') > -1 ? 4 : 0)
         ) as HTMLElement);
         childElement.appendChild(render.drawPath(
             new PathOption(
-                this.elementId + '_Zooming_Pan_2', fillColor, null, null, 1, null,
+                this.elementId + '_Zooming_Pan_2', this.chart.theme === 'Fluent2HighContrast' && this.elementOpacity === '0.2' ? '#3FF23F' : fillColor, null, null, 1, null,
                 direction)) as HTMLElement);
         parentElement.appendChild(childElement);
         this.wireEvents(childElement, this.pan);
@@ -99,7 +101,7 @@ export class Toolkit {
         this.zoomElements = childElement;
         this.selectedID = this.chart.zoomModule.isPanning ? this.chart.element.id + '_Zooming_Pan_1' : this.elementId + '_Zooming_Zoom_1';
         childElement.appendChild(render.drawRectangle(
-            new RectOption(this.elementId + '_Zooming_Zoom_1', rectColor, {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0)
+            new RectOption(this.elementId + '_Zooming_Zoom_1', rectColor, {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 || this.chart.theme.indexOf('Bootstrap5') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 || this.chart.theme.indexOf('Bootstrap5') > -1 ? 4 : 0)
         ) as HTMLElement);
         childElement.appendChild(render.drawPath(new PathOption(
             this.elementId + '_Zooming_Zoom_3', fillColor, null, null, 1, null,
@@ -127,7 +129,7 @@ export class Toolkit {
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('ZoomIn'));
         const polygonDirection: string = '12.749,5.466 10.749,5.466 10.749,3.466 9.749,3.466 9.749,5.466 7.749,5.466 7.749,6.466';
         childElement.appendChild(render.drawRectangle(
-            new RectOption(this.elementId + '_Zooming_ZoomIn_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0)
+            new RectOption(this.elementId + '_Zooming_ZoomIn_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : this.chart.theme.indexOf('Bootstrap5') > -1 ? 2 : 0, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : this.chart.theme.indexOf('Bootstrap5') > -1 ? 2 : 0)
         ) as HTMLElement);
         childElement.appendChild(render.drawPath(
             new PathOption(
@@ -163,16 +165,16 @@ export class Toolkit {
         childElement.setAttribute('role', 'button');
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('ZoomOut'));
         childElement.appendChild(render.drawRectangle(
-            new RectOption(this.elementId + '_Zooming_ZoomOut_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0)
+            new RectOption(this.elementId + '_Zooming_ZoomOut_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 || this.chart.theme.indexOf('Bootstrap5') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 || this.chart.theme.indexOf('Bootstrap5') > -1 ? 4 : 0)
         ) as HTMLElement);
         childElement.appendChild(render.drawPath(
             new PathOption(
-                this.elementId + '_Zooming_ZoomOut_2', fillColor, null, null, 1, null,
+                this.elementId + '_Zooming_ZoomOut_2', (chart.theme === 'Fluent2HighContrast' && !chart.zoomModule.isZoomed) || (chart.theme === 'Fluent2HighContrast' && chart.zoomModule.isPanning) ? '#3FF23F' : fillColor, null, null, 1, null,
                 direction + '4.133s-1.866,4.133-4.133,4.133S5.911,8.222,5.911,5.911z M12.567,6.466h-5v-1h5V6.466z')) as HTMLElement);
         this.zoomOutElements = childElement;
         //This is for low opacity of ZOOM OUT button
         this.elementOpacity = chart.zoomModule.isPanning || (!chart.zoomModule.isZoomed && chart.zoomSettings.showToolbar && !this.enableZoomButton) ? '0.2' : '1';
-        childElement.setAttribute('opacity', this.elementOpacity);
+        childElement.setAttribute('opacity', chart.theme === 'Fluent2HighContrast' ? '1' : this.elementOpacity);
         parentElement.appendChild(childElement);
         this.wireEvents(childElement, this.zoomOut);
     }
@@ -197,14 +199,14 @@ export class Toolkit {
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Reset'));
         //This is for low opacity to RESET button
         this.elementOpacity = !chart.zoomModule.isZoomed && chart.zoomSettings.showToolbar ? '0.2' : '1';
-        childElement.setAttribute('opacity', this.elementOpacity);
+        childElement.setAttribute('opacity', chart.theme === 'Fluent2HighContrast' ? '1' : this.elementOpacity);
         if (!isDevice) {
             childElement.appendChild(render.drawRectangle(
-                new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 ? 4 : 0)
+                new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, this.chart.themeStyle.toolkitIconRect, this.chart.theme.indexOf('Fluent2') > -1 || this.chart.theme.indexOf('Bootstrap5') > -1 ? 4 : 0, this.chart.theme.indexOf('Fluent2') > -1 || this.chart.theme.indexOf('Bootstrap5') > -1 ? 4 : 0)
             ) as HTMLElement);
             childElement.appendChild(render.drawPath(
                 new PathOption(
-                    this.elementId + '_Zooming_Reset_2', fillColor, null, null, 1, null,
+                    this.elementId + '_Zooming_Reset_2', chart.theme === 'Fluent2HighContrast' && this.elementOpacity === '0.2' ? '#3FF23F' : fillColor, null, null, 1, null,
                     direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')) as HTMLElement);
         } else {
             size = measureText(this.chart.getLocalizedLabel('ResetZoom'), { size: '12px' }, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'});
@@ -218,7 +220,7 @@ export class Toolkit {
                     0 + size.width / 2, 0 + size.height * 3 / 4,
                     'middle', this.chart.getLocalizedLabel('ResetZoom'), 'rotate(0,' + (0) + ',' + (0) + ')', 'auto'
                 ),
-                { size: '12px' }, this.chart.theme === 'Material3Dark' || this.chart.theme === 'Fluent2Dark'  ? 'White' : 'black', childElement, null, null, null, null, null, null, null, null, chart.enableCanvas, null, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}
+                { size: '12px' }, this.chart.theme === 'Material3Dark' || this.chart.theme === 'Fluent2Dark' || this.chart.theme === 'Fluent2HighContrast' ? 'White' : 'black', childElement, null, null, null, null, null, null, null, null, chart.enableCanvas, null, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}
             );
         }
 
@@ -257,13 +259,13 @@ export class Toolkit {
         }
         if (rect) {
             this.hoveredID = rect.id;
-            rect.setAttribute('fill', this.chart.themeStyle.toolkitIconRectOverFill);
+            rect.setAttribute('fill', this.chart.theme === 'Fluent2HighContrast' && ((<HTMLElement>event.currentTarget).childNodes[1] as HTMLElement).getAttribute('fill') === '#3FF23F' ? 'transparent' : this.chart.themeStyle.toolkitIconRectOverFill);
         }
         if (icon2) {
-            icon2.setAttribute('fill', this.chart.themeStyle.toolkitSelectionColor);
+            icon2.setAttribute('fill', this.chart.theme === 'Fluent2HighContrast' && ((<HTMLElement>event.currentTarget).childNodes[1] as HTMLElement).getAttribute('fill') === '#3FF23F' ? '#3FF23F' : this.chart.themeStyle.toolkitSelectionColor);
         }
         if (icon3) {
-            icon3.setAttribute('fill', this.chart.themeStyle.toolkitSelectionColor);
+            icon3.setAttribute('fill', this.chart.theme === 'Fluent2HighContrast' && ((<HTMLElement>event.currentTarget).childNodes[1] as HTMLElement).getAttribute('fill') === '#3FF23F' ? '#3FF23F' : this.chart.themeStyle.toolkitSelectionColor);
         }
         if (!this.chart.isTouch) {
             createTooltip('EJ2_Chart_ZoomTip', this.chart.getLocalizedLabel(text), (event.pageY + 10), left, '10px');
@@ -276,18 +278,18 @@ export class Toolkit {
      */
     public removeTooltip(): void {
         if (this.hoveredID && getElement(this.hoveredID)) {
-            const rectColor: string = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.chart.themeStyle.toolkitIconRectSelectionFill : 'transparent' : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.chart.themeStyle.toolkitIconRectSelectionFill : 'transparent';
+            const rectColor: string = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.chart.themeStyle.toolkitIconRectSelectionFill : 'transparent' : (this.hoveredID.indexOf('_Zoom_') > -1) && (this.elementOpacity !== '0.2' && this.chart.theme !== 'Fluent2HighContrast') ? this.chart.themeStyle.toolkitIconRectSelectionFill : 'transparent';
             getElement(this.hoveredID).setAttribute('fill', rectColor);
         }
         const icon2: Element = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_2')) : null;
         const icon3: Element = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_3')) : null;
         if (icon2) {
-            const iconColor: string = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.chart.themeStyle.toolkitSelectionColor : this.chart.themeStyle.toolkitFill : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.chart.themeStyle.toolkitSelectionColor : this.chart.themeStyle.toolkitFill;
+            const iconColor: string = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.chart.themeStyle.toolkitSelectionColor : this.elementOpacity === '0.2' && this.chart.theme === 'Fluent2HighContrast' && getElement(this.hoveredID).nextElementSibling.getAttribute('fill') === '#3FF23F' ? '#3FF23F' : this.chart.themeStyle.toolkitFill : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.chart.themeStyle.toolkitSelectionColor : this.chart.theme === 'Fluent2HighContrast' && getElement(this.hoveredID).nextElementSibling.getAttribute('fill') === '#3FF23F' ? '#3FF23F' : this.chart.themeStyle.toolkitFill;
             icon2.setAttribute('fill', iconColor);
         }
         if (icon3) {
             //This is used for change color while hover on ZOOM button
-            const iconColor: string = this.chart.zoomModule.isPanning || (!this.chart.isZoomed && this.chart.zoomSettings.showToolbar) ? this.chart.themeStyle.toolkitFill : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.chart.themeStyle.toolkitSelectionColor : this.chart.themeStyle.toolkitFill;
+            const iconColor: string = this.chart.zoomModule.isPanning || (!this.chart.isZoomed && this.chart.zoomSettings.showToolbar) ? this.chart.theme === 'Fluent2HighContrast' && getElement(this.hoveredID).nextElementSibling.getAttribute('fill') === '#3FF23F' && this.elementOpacity === '0.2' ? '#3FF23F' : this.chart.themeStyle.toolkitFill : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.chart.themeStyle.toolkitSelectionColor : this.chart.theme === 'Fluent2HighContrast' && getElement(this.hoveredID).nextElementSibling.getAttribute('fill') === '#3FF23F' ? '#3FF23F' : this.chart.themeStyle.toolkitFill;
             icon3.setAttribute('fill', iconColor);
         }
         removeElement('EJ2_Chart_ZoomTip');
@@ -306,6 +308,7 @@ export class Toolkit {
         }
         const chart: Chart = this.chart;
         this.enableZoomButton = false;
+        chart.redraw = chart.zoomSettings.enableAnimation;
         if (!chart.zoomModule.isDevice) {
             remove(chart.zoomModule.toolkitElements);
         } else if (event.type === 'touchstart') {
@@ -353,13 +356,36 @@ export class Toolkit {
 
     private setDefferedZoom(chart: Chart): boolean  {
         chart.disableTrackTooltip = false;
+        const chartDuration: number = chart.duration;
+        chart.duration = 600;
         chart.zoomModule.isZoomed = chart.zoomModule.isPanning = chart.isChartDrag = chart.delayRedraw = false;
         chart.zoomModule.touchMoveList = chart.zoomModule.touchStartList = [];
         chart.zoomModule.pinchTarget = null;
-        chart.removeSvg();
+        chart.zoomRedraw = chart.zoomSettings.enableAnimation;
+        if (chart.redraw) {
+            const zoomToolBar: Element = getElement(chart.element.id + '_Zooming_KitCollection');
+            if (zoomToolBar) {
+                zoomToolBar.remove();
+            }
+            if (chart.tooltipModule) {
+                if (getElement(chart.element.id + '_tooltip')) {
+                    getElement(chart.element.id + '_tooltip').remove();
+                }
+                for (const series of chart.visibleSeries) {
+                    if (!isNullOrUndefined(series) && (series.marker.visible || chart.tooltip.shared || series.type === 'Scatter' || series.type === 'Bubble')) {
+                        chart.markerRender.removeHighlightedMarker(series, null, true);
+                    }
+                }
+            }
+        }
+        else {
+            chart.removeSvg();
+        }
         chart.refreshAxis();
         chart.refreshBound();
         this.elementOpacity = '1';
+        chart.duration = chartDuration;
+        chart.redraw = false;
         return false;
     }
 
@@ -383,6 +409,10 @@ export class Toolkit {
         this.elementOpacity = (!this.chart.zoomModule.isZoomed && this.chart.zoomSettings.showToolbar) ? '0.2' : '1';
         this.zoomOutElements.setAttribute('opacity', this.elementOpacity);
         this.applySelection(this.zoomElements.childNodes, this.chart.themeStyle.toolkitSelectionColor);
+        if (this.chart.theme === 'Fluent2HighContrast') {
+            this.applySelection(this.zoomInElements.childNodes, this.chart.themeStyle.toolkitFill);
+            this.applySelection(this.zoomOutElements.childNodes, this.chart.themeStyle.toolkitFill);
+        }
         this.applySelection(this.panElements.childNodes, '#737373');
         if (getElement(this.selectedID)) {
             getElement(this.selectedID).setAttribute('fill', 'transparent');
@@ -406,6 +436,13 @@ export class Toolkit {
         this.elementOpacity = '0.2';
         element = this.zoomInElements ? this.zoomInElements.setAttribute('opacity', this.elementOpacity) : null;
         element = this.zoomOutElements ? this.zoomOutElements.setAttribute('opacity', this.elementOpacity) : null;
+        if (this.chart.theme === 'Fluent2HighContrast') {
+            getElement(this.chart.element.id + '_Zooming_ZoomOut').setAttribute('opacity', '1');
+            getElement(this.chart.element.id + '_Zooming_ZoomIn').setAttribute('opacity', '1');
+            getElement(this.chart.element.id + '_Zooming_ZoomOut_2').setAttribute('fill', '#3FF23F');
+            getElement(this.chart.element.id + '_Zooming_ZoomIn_2').setAttribute('fill', '#3FF23F');
+            getElement(this.chart.element.id + '_Zooming_ZoomIn_3').setAttribute('fill', '#3FF23F');
+        }
         element = this.panElements ? this.applySelection(this.panElements.childNodes, this.chart.themeStyle.toolkitSelectionColor) : null;
         element = this.zoomElements ? this.applySelection(this.zoomElements.childNodes, '#737373') : null;
         if (getElement(this.selectedID)) {
@@ -418,6 +455,7 @@ export class Toolkit {
     }
 
     public zoomInOutCalculation(scale: number, chart: Chart, axes: AxisModel[], mode: ZoomMode): void {
+        this.isZoomed = true;
         if (chart.zoomSettings.showToolbar) {
             this.elementOpacity = this.zoomInElements.getAttribute('opacity');
         }

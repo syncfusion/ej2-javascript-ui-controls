@@ -351,6 +351,17 @@ describe('Stacked header render module', () => {
             expect(trs[1].querySelectorAll('.e-headercell').length).toBe(6);
             expect(trs[1].querySelectorAll('.e-stackedheadercell').length).toBe(0);
         });
+        // code coverage
+        it('getKeyColIndex  code coverage', () => {
+            (gridObj.selectionModule as any).getstackedColumns(gridObj.columns);
+        });
+
+        it('getstackedColumns code coverage', () => {
+            (gridObj.selectionModule as any).selectionSettings.allowColumnSelection = true;
+            (gridObj.selectionModule as any).getKeyColIndex({ keyArgs: { action: 'leftArrow' }, container:{}, element: gridObj.element.querySelector('.e-stackedheadercell') });
+            (gridObj.selectionModule as any).getKeyColIndex({ keyArgs: {}, container:{}, element: gridObj.element.querySelector('.e-stackedheadercell') });
+            (gridObj.selectionModule as any).getKeyColIndex({ keyArgs: {}, container:{}, element: gridObj.element.querySelector('.e-headercell') });
+        });
         afterAll(() => {
             destroy(gridObj);
         });

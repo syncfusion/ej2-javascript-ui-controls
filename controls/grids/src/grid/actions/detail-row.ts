@@ -60,7 +60,7 @@ export class DetailRow {
     }
 
     private clickHandler(e: MouseEvent): void {
-        if ((e.target as Element).classList.contains('e-icon-grightarrow') || (e.target as Element).classList.contains('e-icon-gdownarrow')
+        if (((e.target as Element).classList.contains('e-icon-grightarrow') || (e.target as Element).classList.contains('e-icon-gdownarrow'))
             && !this.parent.allowGrouping) {
             e.preventDefault();
         }
@@ -68,7 +68,7 @@ export class DetailRow {
     }
 
     private auxilaryclickHandler(e: MouseEvent): void {
-        if ((e.target as Element).classList.contains('e-icon-grightarrow') || (e.target as Element).classList.contains('e-icon-gdownarrow')
+        if (((e.target as Element).classList.contains('e-icon-grightarrow') || (e.target as Element).classList.contains('e-icon-gdownarrow'))
             && !this.parent.allowGrouping && (e.button === 1)) {
             e.preventDefault();
         }

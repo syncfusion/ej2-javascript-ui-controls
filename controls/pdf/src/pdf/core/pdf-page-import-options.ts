@@ -2,10 +2,6 @@ import { PdfRotationAngle } from './enumerator';
 /**
  * `PdfPageImportOptions` class represents to customize the support of import PDF pages
  *
- * @param {number} value Target page index to import.
- * @param {PdfRotationAngle} value Page rotation angle.
- * @param {boolean} value Indicates resource optimization.
- *
  * ```typescript
  * // Load an existing PDF document
  * let document: PdfDocument = new PdfDocument(data);
@@ -25,7 +21,6 @@ import { PdfRotationAngle } from './enumerator';
  * document.destroy();
  * ```
  */
-
 export class PdfPageImportOptions {
     _targetIndex: number;
     _rotation: PdfRotationAngle;
@@ -202,5 +197,4 @@ export class PdfPageImportOptions {
     set groupFormFields(value: boolean) {
         this._groupFormFields = value;
     }
-
 }

@@ -1544,3 +1544,119 @@ describe('EJ2-70058 -When rowdd is enabled with batch edit mode, the expand/coll
         });
     });
 });
+
+describe('coverage improvement', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                allowPaging: true,
+                editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: 'Batch', newRowPosition: 'Child' },
+                allowSorting: true,
+                allowFiltering: true,
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+                columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'startDate', headerText: 'Start Date' }
+                ]
+            },
+            done
+        );
+    });
+    it('Delete - collapse action', (done: Function) => {
+        gridObj.selectRow(2);
+        gridObj.deleteRecord();
+        rows = gridObj.getRows();
+        (gridObj.getRows()[0].querySelector('.e-treegridexpand')as HTMLElement).click();
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('coverage improvement', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                allowPaging: true,
+                editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: 'Batch', newRowPosition: 'Child' },
+                allowSorting: true,
+                allowFiltering: true,
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+                columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'startDate', headerText: 'Start Date' }
+                ]
+            },
+            done
+        );
+    });
+    it('Add - collapse action', (done: Function) => {
+        gridObj.addRecord({
+            taskID: 100,
+            taskName: 'Fist Record',
+            startDate: new Date('02/03/2017'),
+            progress: 100
+        }, 1, 'Below');
+        rows = gridObj.getRows();
+        (gridObj.getRows()[0].querySelector('.e-treegridexpand')as HTMLElement).click();
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Code coverage improment', () => {
+    let treegrid: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                allowPaging: true,
+                editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: 'Batch', newRowPosition: 'Below' },
+                allowFiltering: true,
+                allowRowDragAndDrop: true,
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+                columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'startDate', headerText: 'Start Date' }
+                ]
+            },
+            done
+        );
+    });
+    it('update cell', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            expect(((treegrid.flatData[1]as any).taskName === 'upadted')).toBe(true);
+            done();
+        };
+        treegrid.updateCell(1,'taskName','upadted');
+        (<any>treegrid.grid.toolbarModule).toolbarClickHandler({ item: { id: treegrid.grid.element.id + '_update' } });
+        select('#' + treegrid.element.id + '_gridcontrol' + 'EditConfirm', treegrid.element).querySelectorAll('button')[0].click();
+        treegrid.actionComplete = actionComplete;
+    });
+    afterAll(() => {
+        destroy(treegrid);
+    });
+});

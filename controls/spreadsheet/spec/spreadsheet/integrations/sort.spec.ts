@@ -2,8 +2,6 @@ import { SpreadsheetModel, Spreadsheet } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, virtualData, dataSource } from '../util/datasource.spec';
 import { CellModel, SortEventArgs, SortDescriptor, getCell, DialogBeforeOpenEventArgs, SheetModel, setCell, BeforeSortEventArgs } from '../../../src/index';
-import { Dialog } from '../../../src/spreadsheet/services/index';
-import { getComponent } from '@syncfusion/ej2-base';
 
 /**
  *  Sorting test cases
@@ -203,6 +201,22 @@ describe('Spreadsheet sorting module ->', () => {
                 });
             });
         });
+        it('Sorting on column with non auto-detected formatted numbers testing ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const sheet: any = spreadsheet.getActiveSheet();
+            setCell(99, 4, sheet, { value: '$30.75' });
+            expect(sheet.rows[99].cells[4].value).toBe('$30.75');
+            spreadsheet.setSheetPropertyOnMute(sheet, 'usedRange', { rowIndex: 99, colIndex: sheet.usedRange.colIndex });
+            helper.invoke('selectRange', ['E1:E100']);
+            spreadsheet.sort().then(() => {
+                expect(sheet.rows[0].cells[4].value).toBe('Price');
+                expect(sheet.rows[1].cells[4].value).toBe(10);
+                expect(sheet.rows[10].cells[4].value).toBe(30);
+                expect(sheet.rows[11].cells[4].value).toBe(30.75);
+                expect(sheet.rows[99].cells[4]).toBeNull();
+                done()
+            });
+        });
     });
 
     describe('Custom sort dialog', () => {
@@ -363,7 +377,7 @@ describe('Spreadsheet sorting module ->', () => {
                 expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Cricket Shoes');
                 expect(helper.invoke('getCell', [10, 0]).textContent).toBe('T-Shirts');
                 done()
-            }, 200);
+            }, 10);
         });
         it('Apply filter and sort ->', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
@@ -377,7 +391,7 @@ describe('Spreadsheet sorting module ->', () => {
                     expect(helper.invoke('getCell', [6, 0]).textContent).toBe('Running Shoes');
                     expect(helper.invoke('getCell', [10, 0]).textContent).toBe('T-Shirts');
                     done()
-                }, 200);
+                }, 10);
             });
         });
         it('Cancelling sort', (done: Function) => {
@@ -393,7 +407,7 @@ describe('Spreadsheet sorting module ->', () => {
                 expect(helper.invoke('getCell', [6, 0]).textContent).toBe('Running Shoes');
                 expect(helper.invoke('getCell', [10, 0]).textContent).toBe('T-Shirts');
                 done()
-            }, 200);
+            }, 10);
         });
     });
     
@@ -419,7 +433,7 @@ describe('Spreadsheet sorting module ->', () => {
                 helper.invoke('numberFormat', ['_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-', 'B1:B8']);
                 const inst: Spreadsheet = helper.getInstance();
                 expect(inst.sheets[0].rows[1].cells[1].format).toEqual('_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-');
-                expect(helper.invoke('getCell', [1, 1]).textContent).toEqual('2.00');
+                expect(helper.invoke('getCell', [1, 1]).textContent).toEqual('           02 ');
                 helper.invoke('selectRange', ['B1:B8']);
                 setTimeout((): void => {
                     helper.getElement('#' + helper.id + '_sorting').click();
@@ -437,15 +451,15 @@ describe('Spreadsheet sorting module ->', () => {
                                 null, sortAsc);
                             setTimeout((): void => {
                                 expect(inst.sheets[0].rows[3].cells[1].value.toString()).toEqual('4');
-                                expect(helper.invoke('getCell', [3, 1]).textContent).toEqual('4.00');
+                                expect(helper.invoke('getCell', [3, 1]).textContent).toEqual('           04 ');
                                 expect(inst.sheets[0].rows[4].cells[1].value.toString()).toEqual('5');
-                                expect(helper.invoke('getCell', [4, 1]).textContent).toEqual('5.00');
+                                expect(helper.invoke('getCell', [4, 1]).textContent).toEqual('           05 ');
                                 expect(inst.sheets[0].rows[5].cells[1].value.toString()).toEqual('6');
-                                expect(helper.invoke('getCell', [5, 1]).textContent).toEqual('6.00');
+                                expect(helper.invoke('getCell', [5, 1]).textContent).toEqual('           06 ');
                                 expect(inst.sheets[0].rows[6].cells[1].value.toString()).toEqual('7');
-                                expect(helper.invoke('getCell', [6, 1]).textContent).toEqual('7.00');
+                                expect(helper.invoke('getCell', [6, 1]).textContent).toEqual('           07 ');
                                 expect(inst.sheets[0].rows[7].cells[1].value.toString()).toEqual('11');
-                                expect(helper.invoke('getCell', [7, 1]).textContent).toEqual('11.00');
+                                expect(helper.invoke('getCell', [7, 1]).textContent).toEqual('           11 ');
                                 done();
                             }, 10);
                         });
@@ -467,9 +481,9 @@ describe('Spreadsheet sorting module ->', () => {
                             expect(inst.sheets[0].rows[7].cells[1]).toBeNull();
                             expect(helper.invoke('getCell', [7, 1]).textContent).toEqual('');
                             expect(inst.sheets[0].rows[1].cells[3].value.toString()).toEqual('2');
-                            expect(helper.invoke('getCell', [1, 3]).textContent).toEqual('2.00');
+                            expect(helper.invoke('getCell', [1, 3]).textContent).toEqual('           02 ');
                             expect(inst.sheets[0].rows[7].cells[3].value.toString()).toEqual('11');
-                            expect(helper.invoke('getCell', [7, 3]).textContent).toEqual('11.00');
+                            expect(helper.invoke('getCell', [7, 3]).textContent).toEqual('           11 ');
                             done();
                         });
                     }, 10);
@@ -484,9 +498,9 @@ describe('Spreadsheet sorting module ->', () => {
                         setTimeout((): void => {
                             const inst: Spreadsheet = helper.getInstance();
                             expect(inst.sheets[0].rows[1].cells[3].value.toString()).toEqual('Amount');
-                            expect(helper.invoke('getCell', [1, 3]).textContent).toEqual('Amount');
+                            expect(helper.invoke('getCell', [1, 3]).textContent).toEqual(' Amount ');
                             expect(inst.sheets[0].rows[8].cells[3].value.toString()).toEqual('11');
-                            expect(helper.invoke('getCell', [8, 3]).textContent).toEqual('11.00');
+                            expect(helper.invoke('getCell', [8, 3]).textContent).toEqual('           11 ');
                             done();
                         }, 10);
                     });
@@ -618,6 +632,7 @@ describe('Spreadsheet sorting module ->', () => {
         describe('EJ2-49332, EJ2-51133, EJ2-51376, EJ2-55120, EJ2-55397, EJ2-56132, SF-360222->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                    showAggregate: false,
                     created: (): void => {
                         helper.invoke('cellFormat', [{ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1']);
                         helper.invoke('numberFormat', ['dd/MM/yyyy', 'B2:B11']);
@@ -703,7 +718,7 @@ describe('Spreadsheet sorting module ->', () => {
                         expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
                         expect(helper.invoke('getCell', [10, 0]).textContent).toBe('T-Shirts');
                         done();
-                    }, 2000);
+                    }, 500);
                 });
             });
             it('SF-360222 - sorting whole column, header cell too get sorted and undo after sorting changes selection range', (done: Function) => {
@@ -955,7 +970,7 @@ describe('Spreadsheet sorting module ->', () => {
                     let td: Element = helper.invoke('getCell', [0, 3]);
                     expect(td.children[0].children[0].classList).toContain('e-sortasc-filter');
                     done();
-                }, 200);
+                }, 10);
             });
             it('Undo & redo -> Using filter with ribbon items sort ascending->', (done: Function) => {
                 let td: Element = helper.invoke('getCell', [0, 3]);
@@ -978,7 +993,7 @@ describe('Spreadsheet sorting module ->', () => {
                     let td: Element = helper.invoke('getCell', [0, 4]);
                     expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
                     done();
-                }, 200);
+                }, 10);
             });
             it('Undo & redo -> Using filter with ribbon items sort descending->', (done: Function) => {
                 let td: Element = helper.invoke('getCell', [0, 4]);
@@ -1001,7 +1016,7 @@ describe('Spreadsheet sorting module ->', () => {
                     let td: Element = helper.invoke('getCell', [0, 5]);
                     expect(td.children[0].children[0].classList).toContain('e-sortasc-filter');
                     done();
-                }, 200);
+                }, 10);
             });
             it('Undo & redo -> Using filter with context menu sort ascending->', (done: Function) => {
                 let td: Element = helper.invoke('getCell', [0, 5]);
@@ -1024,7 +1039,7 @@ describe('Spreadsheet sorting module ->', () => {
                     let td: Element = helper.invoke('getCell', [0, 6]);
                     expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
                     done();
-                }, 200);
+                }, 10);
             });
             it('Undo & redo -> Using filter with context menu sort descending->', (done: Function) => {
                 let td: Element = helper.invoke('getCell', [0, 6]);
@@ -1102,6 +1117,308 @@ describe('Spreadsheet sorting module ->', () => {
                 //expect(activeCell.style.height).toBe('20px');
                 done();
             }, 20);
+        });
+    });
+    
+    describe('Filtering - Date formate', () => {
+        const datasource: Function = (count: number) => {
+            const randomYear: Function = (min: number, max: number) => {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+            const randomPerfix: Function = (arr: string[]): string => {
+                const randomIndex = Math.floor(Math.random() * arr.length);
+                return arr[randomIndex];
+            }
+            const result: Object[] = [];
+            for (let i = count; i > 0; i--) {
+                result.push({
+                    Year: `${randomPerfix(['01/01/', '02/01', '03/02/', '04/02/', '05/03/', '06/03/'])}${randomYear(1900, 2024)}`,
+                });
+            }
+            return result;
+        };
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{
+                        dataSource: datasource(10),
+                        startCell: 'A1'
+                    }]
+                }],
+                allowFiltering: true
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking the date filter', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(5)');
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            helper.invoke('selectRange', ['A1']);
+            helper.invoke('getCell', [0, 0]).focus();
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+            setTimeout((): void => {
+                expect((spreadsheet.element.querySelectorAll('.e-excelfilter .e-checkboxlist .e-treeview .e-list-item .e-list-text')[0] as HTMLSpanElement).innerText !== null).toBeTruthy();
+                helper.click('#' + spreadsheet.element.id + ' .e-footer-content .e-flat');
+                done();
+            }, 500);
+        });
+    });
+
+    describe('Filtering - searching the data', (): void => {
+        const datasource: Function = (count: number): Object[] => {
+            const result: Object[] = [];
+            for (let i = count; i > 0; i--) {
+                result.push({
+                    TaskID: i
+                });
+            }
+            return result;
+        };
+        beforeAll((done: Function): void => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{
+                        dataSource: datasource(1100),
+                        startCell: 'A1'
+                    }]
+                }],
+                allowFiltering: true
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply and open filter', (done: Function): void => {
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(5)');
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            helper.invoke('selectRange', ['A1']);
+            helper.invoke('getCell', [0, 0]).focus();
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: (): void => {}, target: td, altKey: true, keyCode: 40 });
+            setTimeout((): void => {
+                expect(1).toBe(1);
+                done();
+            }, 300);
+        });
+        it('Search - 1', (done: Function): void => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const inputEle: HTMLInputElement = helper.getElement('.e-filter-popup .e-searchinput');
+            inputEle.value = '1'
+            spreadsheet.notify('refreshCheckbox', { event: { type: 'keyup', target: inputEle } });
+            const cboxes: NodeListOf<Element> = spreadsheet.element.querySelectorAll('.e-excelfilter .e-checkboxlist .e-ftrchk');
+            expect(cboxes.length).toBe(374);
+            expect(cboxes[2].textContent).toBe('1');
+            expect(cboxes[373].textContent).toBe('1100');
+            done();
+        });
+        it('Search - 2', (done: Function): void => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const inputEle: HTMLInputElement = helper.getElement('.e-filter-popup .e-searchinput');
+            inputEle.value = '11111'
+            spreadsheet.notify('refreshCheckbox', { event: { type: 'keyup', target: inputEle } });
+            expect((spreadsheet.element.querySelectorAll('.e-excelfilter .e-checkboxlist span')[2] as HTMLSpanElement).innerText).toBe('No Matches Found');
+            helper.click('#' + spreadsheet.element.id + ' .e-footer-content .e-flat');
+            done();
+        });
+    });
+
+    describe('Filter - Date formate and unto, reto', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{
+                        dataSource: [],
+                        startCell: 'A1'
+                    }]
+                }],
+                allowFiltering: true
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('unto-reto - adding data - 1', function (done: Function) {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.sheets[0].rows[0] = {
+                cells: [{
+                    value: 'spreadsheet',
+                    notes: 'spreadsheet',
+                    isReadOnly: false,
+                    isLocked: false
+                }]
+            }
+            spreadsheet.insertImage([{ src: "", height: 100, width: 400 }]);
+            helper.openAndClickCMenuItem(0, 0, [9]);
+            setTimeout((): void => {
+                helper.getElements('.e-addNoteContainer')[0].value = 'Syncfusion1';
+                done();
+            });
+        });
+        it('unto-reto - adding data - 2', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const td = helper.invoke('getCell', [0, 0]);
+            const coords = td.getBoundingClientRect();
+            (spreadsheet.sheets[0].rows[0].cells[0]).isReadOnly = true;
+            helper.triggerMouseAction('mousedown', { x: coords.left + 3, y: coords.top + 2 }, undefined, td);
+            helper.triggerMouseAction('mouseup', { x: coords.left + 3, y: coords.top + 2 }, undefined, td);
+            setTimeout((): void => {
+                expect(spreadsheet.sheets[0].rows[0].cells[0].notes).toBe('Syncfusion1');
+                done();
+            });
+        });
+        it('perform unto-reto', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                expect(1).toBe(1);
+                done();
+            });
+        });
+    });
+
+    describe('Footer tab sheet function test ->', () => {
+        beforeAll((done: Function) => {
+            model = {
+                sheets: [
+                    {
+                        name: 'sheet1', ranges: [{ dataSource: defaultData }]
+                    },
+                    {
+                        name: 'sheet2', ranges: [{ dataSource: defaultData }]
+                    },
+                    {
+                        name: 'sheet3', ranges: [{ dataSource: defaultData }]
+                    }
+                ],
+                allowFiltering: true
+            };
+            helper.initializeSpreadsheet(model, done);
+        });
+
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Filter popup check in sheet1', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.activeSheetIndex).toBe(0);
+            expect(spreadsheet.sheets[0].rows[5].cells[4].value.toString()).toBe('10');
+            (spreadsheet.element.querySelector('.e-sort-filter-ddb') as HTMLButtonElement).click();
+            (document.querySelector('.e-sort-filter-ddb.e-popup-open #' + spreadsheet.element.id + '_applyfilter') as HTMLLIElement).click();
+            const filter: NodeListOf<Element> = (spreadsheet.element.querySelectorAll('.e-filter-icon'));
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 4]);
+            helper.invoke('selectRange', ['E1']);
+            helper.invoke('getCell', [0, 4]).focus();
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+            setTimeout(() => {
+                expect(filter.length > 0).toBe(true);
+                done();
+            });
+        });
+        it('Apply filter to sheet1', (done: Function) => {
+            expect((document.querySelectorAll('.e-checkboxlist .e-ftrchk')[1] as HTMLElement).innerText).toBe('10');
+            (document.querySelectorAll('.e-checkboxlist .e-ftrchk')[1] as HTMLElement).click();
+            (document.querySelectorAll('.e-footer-content .e-btn')[0] as HTMLButtonElement).click();
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().filterModule.filterCollection.get(0))).toBe('[{"value":"10","type":"number","field":"E","ignoreAccent":false,"matchCase":false,"isFilterByMenu":true,"operator":"notequal","predicate":"and"}]');
+                done();
+            });
+        });
+        it('Move sheet2 and check filter in sheet2', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            (document.querySelectorAll('.e-sheet-tab .e-toolbar-item')[1] as HTMLElement).click();
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                done();
+            });
+        });
+        it('Move sheet2 and check filter in sheet2-1', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            var coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(8)');
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].name.toString()).toBe('sheet2');
+                    const filter: NodeListOf<Element> = (spreadsheet.element.querySelectorAll('.e-filter-icon'));
+                    expect(filter.length === 0).toBe(true);
+                    done();
+                });
+            });
+        });
+        it('Move to sheet1 and check filter', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            (document.querySelectorAll('.e-sheet-tab .e-toolbar-item')[1] as HTMLElement).click();
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                expect(spreadsheet.sheets[1].name.toString()).toBe('sheet1');
+                expect(JSON.stringify(helper.getInstance().filterModule.filterCollection.get(1))).toBe('[{"value":"10","type":"number","field":"E","ignoreAccent":false,"matchCase":false,"isFilterByMenu":true,"operator":"notequal","predicate":"and"}]');
+                done();
+            }, 500);
+        });
+        it('Move to sheet1 and check filter-1', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const filter: NodeListOf<Element> = (spreadsheet.element.querySelectorAll('.e-filter-icon'));
+            expect(filter.length > 0).toBe(true);
+            helper.triggerMouseAction('mousedown', undefined, spreadsheet.element, filter[4] as HTMLSpanElement);
+            setTimeout(() => {
+                (document.querySelectorAll('.e-checkboxlist .e-ftrchk')[1] as HTMLElement).click();
+                (document.querySelectorAll('.e-footer-content .e-btn')[0] as HTMLButtonElement).click();
+                setTimeout(() => {
+                    expect(JSON.stringify(helper.getInstance().filterModule.filterCollection.get(1))).toBe('[]');
+                    done();
+                }, 500);
+            }, 500);
+        });
+        it('Create a sheet2 duplicate and check filter', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            (document.querySelectorAll('.e-sheet-tab .e-toolbar-item')[0] as HTMLElement).click();
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(0);
+                expect(spreadsheet.sheets[0].name.toString()).toBe('sheet2');
+                done();
+            });
+        });
+        it('Create a sheet2 duplicate and check filter-1', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            var coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.click('#' + helper.id + '_contextmenu li:nth-child(3)');
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                const filter: NodeListOf<Element> = (spreadsheet.element.querySelectorAll('.e-filter-icon'));
+                expect(filter.length === 0).toBe(true);
+                expect(spreadsheet.sheets[1].name.toString()).toBe('sheet2 (2)');
+                done();
+            });
+        });
+        it('Check sheet1 filter after duplicate sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            (document.querySelectorAll('.e-sheet-tab .e-toolbar-item')[2] as HTMLElement).click();
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(2);
+                expect(spreadsheet.sheets[2].name.toString()).toBe('sheet1');
+                done();
+            });
+        });
+        it('Check sheet1 filter after duplicate sheet-1', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const filter: NodeListOf<Element> = (spreadsheet.element.querySelectorAll('.e-filter-icon'));
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 4]);
+            helper.invoke('selectRange', ['E1']);
+            helper.invoke('getCell', [0, 4]).focus();
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+            setTimeout(() => {
+                expect(filter.length > 0).toBe(true);
+                (document.querySelectorAll('.e-footer-content .e-btn')[1] as HTMLButtonElement).click();
+                done();
+            });
         });
     });
 });

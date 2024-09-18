@@ -15,12 +15,12 @@
       box-sizing: border-box;
     }
 
-    @if $skin-name == 'fluent2' {
+    @if $skin-name == 'fluent2' or $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
       border-radius: 4px;
     }
 
     &.e-listboxtool-container .e-list-wrap {
-      @if $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
+      @if $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' {
         width: calc(100% - 16%) !important; /* stylelint-disable-line declaration-no-important */
       }
       @else if $skin-name == 'material' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' or $skin-name == 'fabric' {
@@ -118,8 +118,10 @@
     }
 
     & .e-list-group-item:first-child {
-      border: 0;
-      border-bottom: $listbox-group-first-border-bottom solid $listbox-border-bottom-color;
+      @if $theme-name != 'bootstrap5.3' and $theme-name != 'bootstrap5.3-dark' {
+        border: 0;
+        border-bottom: $listbox-group-first-border-bottom solid $listbox-border-bottom-color;
+      }
     }
 
     & .e-list-group-item {
@@ -133,7 +135,12 @@
       }
       height: $listbox-groupheader-item-height;
       line-height: $listbox-groupheader-item-line-height;
-      padding: $listbox-item-padding;
+      @if $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
+        padding: 7px 12px;
+      }
+      @else {
+        padding: $listbox-item-padding;
+      }
     }
 
     & .e-icon-collapsible {
@@ -312,6 +319,9 @@
       @if $skin-name == 'fluent2' {
         border: 2px solid $badge-bgcolor;
       }
+      @else if $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
+        height: 2px;
+      }
       @else {
         height: 1px;
       }
@@ -435,122 +445,6 @@
       }
     }
   }
-
-  .e-bigger .e-listbox-wrapper,
-  .e-listbox-wrapper.e-bigger,
-  .e-bigger .e-listbox-container,
-  .e-listbox-container.e-bigger {
-    @if ($skin-name == 'bootstrap4') {
-      font-size: 16px;
-    }
-
-    &.e-listboxtool-container .e-list-wrap {
-      @if $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
-        width: calc(100% - 20%) !important; /* stylelint-disable-line declaration-no-important */
-      }
-      @else if $skin-name == 'material' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
-        width: calc(100% - 15%) !important; /* stylelint-disable-line declaration-no-important */
-      }
-      @else if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
-        width: calc(100% - 17%) !important; /* stylelint-disable-line declaration-no-important */
-      }
-    }
-
-    .e-list-item {
-      border-bottom: $listbox-border-bottom solid $listbox-border-bottom-color;
-      border-left: $listbox-border-left solid $listbox-border-left-color;
-      border-right: $listbox-border-right solid $listbox-border-right-color;
-      border-top: $listbox-border-top solid $listbox-border-top-color;
-    }
-
-    &:not(.e-list-template) .e-list-item,
-    .e-selectall-parent,
-    .e-list-group-item,
-    .e-list-header {
-      padding: $listbox-bigger-item-padding;
-    }
-
-    &:not(.e-list-template) .e-list-item,
-    .e-selectall-parent {
-      height: $listbox-touch-item-height;
-      line-height: $listbox-touch-item-line-height;
-      position: relative;
-      @if ($skin-name == 'bootstrap4') {
-        padding: 12px 20px;
-      }
-    }
-
-    .e-list-parent {
-      min-height: $listbox-touch-item-height;
-    }
-
-    .e-text-content {
-      font-size: $listbox-touch-item-font-size;
-    }
-
-    .e-list-group-item {
-      height: $listbox-touch-groupheader-height;
-      line-height: $listbox-touch-groupheader-line-height;
-      @if ($skin-name == 'bootstrap4') {
-        font-size: 16px;
-        padding: 12px 20px;
-      }
-    }
-
-    .e-list-header {
-      align-items: center;
-      display: flex;
-      font-weight: $listbox-touch-header-font-weight;
-      height: $listbox-touch-header-height;
-      @if ($skin-name == 'bootstrap4') {
-        font-size: 20px;
-        line-height: 1.2;
-        padding: 0 0 0 20px;
-      }
-    }
-
-    .e-list-header .e-text.header,
-    .e-list-header .e-headertemplate-text.nested-header {
-      display: none;
-    }
-
-    .e-list-header .e-text {
-      font-size: $listbox-touch-header-font-size;
-    }
-
-    .e-but-back {
-      @if ($skin-name == 'bootstrap4') {
-        margin-top: -3px;
-        padding-right: 12px;
-      }
-    }
-
-    .e-list-icon {
-      @if ($skin-name == 'bootstrap4') {
-        margin-right: 12px;
-      }
-    }
-
-    .e-icon-collapsible {
-      @if ($skin-name == 'bootstrap4') {
-        font-size: 12px;
-      }
-    }
-
-    .e-checkbox-wrapper {
-      @if ($skin-name == 'bootstrap4') {
-        margin: 0 12px 0 0;
-      }
-    }
-
-    &.e-rtl {
-      .e-checkbox-wrapper {
-        @if ($skin-name == 'bootstrap4') {
-          margin: 0 0 0 12px;
-        }
-      }
-    }
-  }
 }
 
 .e-listbox-wrapper,
@@ -568,10 +462,4 @@
       border-radius: 4px !important; /* stylelint-disable-line declaration-no-important */
     }
   }
-}
-
-.e-listbox-wrapper:not(.e-list-template) .e-list-parent li {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }

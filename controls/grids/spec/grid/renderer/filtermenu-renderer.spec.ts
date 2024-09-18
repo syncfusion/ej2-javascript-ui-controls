@@ -18,6 +18,8 @@ import { ValueFormatter } from '../../../src/grid/services/value-formatter';
 import { Column } from '../../../src/grid/models/column';
 import { Selection } from '../../../src/grid/actions/selection';
 import { DropDownList, AutoComplete } from '@syncfusion/ej2-dropdowns';
+import { BooleanFilterUI } from '../../../src/grid/renderer/boolean-filter-ui';
+import { FlMenuOptrUI } from '../../../src/grid/renderer/filter-menu-operator';
 import { DatePicker, DateTimePicker  } from '@syncfusion/ej2-calendars';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { Query, DataManager } from '@syncfusion/ej2-data';
@@ -25,6 +27,7 @@ import { filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import * as events from '../../../src/grid/base/constant';
 
 Grid.Inject(Filter, Page, Selection, Group, Sort, Reorder, ColumnMenu);
 
@@ -769,6 +772,477 @@ describe('filter menu module =>', () => {
         });
     });
 
+    
+
+    describe('Code Coverage for BooleanFilterUI =>', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'Verified', width: 150, headerText: 'Verified', validationRules: { required: true } },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                    ]
+                },
+                done);
+        });
+        it('boolean filter ui render testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterAfterOpen') {
+                    let dropDownList: DropDownList = document.querySelector('.e-filter-popup').querySelectorAll('.e-dropdownlist')[1]['ej2_instances'][0];
+                    dropDownList.showPopup();
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(
+                getClickObj(gridObj.getColumnHeaderByField('Verified').querySelector('.e-filtermenudiv')));
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Code Coverage for date FilterUI =>', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    filterSettings: { type: 'Menu' },
+                    cssClass: 'e-grid',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'Verified', width: 150, headerText: 'Verified', validationRules: { required: true } },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', type: 'dateonly', textAlign: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                    ]
+                },
+                done);
+        });
+        it('date filter ui render testing', (done: Function) => {
+            let filter: BooleanFilterUI = new BooleanFilterUI(undefined, undefined, undefined);
+            let string: StringFilterUI = new StringFilterUI(undefined, undefined, undefined);
+            let menu: FlMenuOptrUI = new FlMenuOptrUI(undefined, undefined, undefined);
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterAfterOpen') {
+                    let datepicker: DatePicker = document.querySelector('.e-filter-popup').querySelectorAll('.e-datepicker')[0]['ej2_instances'][0];
+                    datepicker.show();
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(
+                getClickObj(gridObj.getColumnHeaderByField('ShippedDate').querySelector('.e-filtermenudiv')));
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+
+    describe('Filter Menu Opertor test case', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    filterSettings: { type: 'Menu' },
+                    enableAdaptiveUI: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                        { field: 'Freight', headerText: 'Freight', width: 120 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('field and foreignkeyvalue as same- multiple filtering', (done: Function) => {
+            actionComplete = (e: any) => {
+                e.filterModel.flMuiObj.renderResponsiveDropDownList({ popup: { element: document.querySelector('.e-responsive-dialog') } });
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+        });
+
+        it('field and foreignkeyvalue as same- multiple filtering', () => {
+            let dropdown: DropDownList = document.querySelector('.e-responsive-dialog').querySelectorAll('.e-dropdownlist')[0]['ej2_instances'][0];
+            dropdown.showPopup();
+        });
+
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            actionComplete = null;
+        });
+    });
+
+
+    describe('Filter Menu Opertor test case', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('field and foreignkeyvalue as same- multiple filtering', (done: Function) => {
+            actionComplete = (e: any) => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+        });
+
+        it('field and foreignkeyvalue as same- multiple filtering', () => {
+            let dropdown: DropDownList = document.querySelector('.e-filter-popup').querySelectorAll('.e-dropdownlist')[0]['ej2_instances'][0];
+            dropdown.showPopup();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            actionComplete = null;
+        });
+    });
+
+
+    describe('Filter Menu file Code Coverage - 1 => ', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'OrderID', type: 'number', visible: true },
+                        { field: 'CustomerID', type: 'string' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 120, filter: { type: 'CheckBox' } }
+                    ],
+                    actionComplete: actionComplete,
+                }, done);
+        });
+
+        it('open filter menu filtering', (done: Function) => {
+            actionComplete = (e: any) => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+        });
+
+        it('clearCustomFilter coverage', (done: Function) => {
+            actionComplete = (args?: Object): void => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterModule.filterModule.clearCustomFilter((gridObj as any).filterModule.column);
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+        });
+
+        it('applyCustomFilter coverage', () => {
+            gridObj.filterModule.filterModule.openDialog({ field: 'ShipCountry'});
+            gridObj.filterModule.filterModule.applyCustomFilter({ col: (gridObj as any).filterModule.column });
+        });
+
+        it('getFilterUIInfo coverage', () => {
+            gridObj.filterModule.filterModule.getFilterUIInfo();
+        });
+
+        it('filter menu coverage - 1', (done: Function) => {
+            actionComplete = (args?: Object): void => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+        });
+
+        it('filter menu afterRenderFilterUI coverage - 2', () => {
+            (gridObj as any).filterModule.filterModule.currentDialogCreatedColumn.showColumnMenu = false;
+            (gridObj as any).filterModule.filterModule.dlgObj.element.querySelector('.e-flm_optrdiv').querySelector('input').value = 'Empty';
+            (gridObj as any).filterModule.filterModule.afterRenderFilterUI();
+        });
+
+        it('filter menu coverage - 2', (done: Function) => {
+            gridObj.on(events.filterMenuClose, (args: any) => {
+                args.cancel = true;
+                gridObj.off(events.filterMenuClose);
+                done();
+            });
+            (gridObj as any).filterModule.filterModule.closeDialog();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
+
+
+    describe('Filter Menu file Code Coverage - 2 => ', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        let template: string = '<input type="text" id="CustomerID" name="CustomerID" />';
+        let template1: string = '<input type="text" id="ShipName" name="ShipName" />';
+        let template2 = '<div><input type="checkbox" id="Boolean" name="Boolean" class="e-control" /></div>';
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'OrderID', type: 'number', visible: true },
+                        { field: 'CustomerID', type: 'string', filterTemplate: template, foreignKeyValue:'CustomerID' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 120, filter: { type: 'CheckBox' } },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 150, filterTemplate: template1, },
+                        {  field: 'Verified', headerText: 'Boolean', width: 150, filterTemplate: template2, }
+                    ],
+                    actionComplete: actionComplete,
+                }, done);
+        });
+
+        it('open filter menu with template - 1', (done: Function) => {
+            actionComplete = (e: any) => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+        });                
+        
+        it('template filter - 1', (done: Function) => {
+            actionComplete = (e: any) => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (document.querySelector('.e-flmenu-okbtn') as any).click();
+        });
+
+        it('open filter menu with template - 2', (done: Function) => {
+            actionComplete = (e: any) => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[3] as HTMLElement).click();
+        });                
+        
+        it('template filter - 2', (done: Function) => {
+            (gridObj as any).filterModule.filterModule.dlgDiv.querySelector('.e-flmenu-valuediv').children[0].value = 'a';
+            actionComplete = (e: any) => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (document.querySelector('.e-flmenu-okbtn') as any).click();
+        });
+
+        it('open filter menu with template - 3', (done: Function) => {
+            actionComplete = (e: any) => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[4] as HTMLElement).click();
+        });                
+        
+        it('template filter - 3', (done: Function) => {
+            actionComplete = (e: any) => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.showColumnMenu = true;
+            (document.querySelector('.e-flmenu-okbtn') as any).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = template = null;
+        });
+    });
+
+    describe('Filter Menu file Code Coverage - 3 => ', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        let dropInstance: DropDownList;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'OrderID', type: 'number', visible: true },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 120, filter: {
+                            ui: {
+                                create: (args: { target: Element, column: Object }) => {
+                                    let flValInput: HTMLElement = gridObj.createElement('input', { className: 'flm-input' });
+                                    args.target.appendChild(flValInput);
+                                    dropInstance = new DropDownList({
+                                        dataSource: new DataManager(filterData),
+                                        fields: { text: 'CustomerID', value: 'CustomerID' },
+                                        placeholder: 'Select a value',
+                                        popupHeight: '200px'
+                                    });
+                                    dropInstance.appendTo(flValInput);
+                                },
+                                write: (args: {
+                                    column: Object, target: Element, parent: any,
+                                    filteredValue: number | string
+                                }) => {
+                                    dropInstance.value = args.filteredValue;
+                                },
+                                read: (args: { target: Element, column: any, operator: string, fltrObj: Filter }) => {
+                                    args.fltrObj.filterByColumn(args.column.field, args.operator, (dropInstance as any).value);
+                                }
+                            }
+                        } },
+                    ],
+                    actionComplete: actionComplete,
+                }, done);
+        });
+
+        it('open filter menu - create and write and read ', (done: Function) => {
+            actionComplete = (e: any) => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+        });
+
+        it('filter btn click - - create and write and read', (done: Function) => {
+            actionComplete = (e: any) => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (document.querySelector('.e-flmenu-okbtn') as any).click();
+        });
+
+ 
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = dropInstance = null;
+        });
+    });
+
+    describe('EJ2-892612 - Support for adaptive layout responsive dialog in specific rendering - 1 =>', () => {
+        let gridObj: Grid;
+        let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            Browser.userAgent = androidPhoneUa;
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    enableAdaptiveUI: true,
+                    adaptiveUIMode: 'Desktop',
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    allowReordering: true,
+                    columns: [{ field: 'OrderID', type: 'number' },
+                    { field: 'CustomerID', type: 'string', filter: { type: 'Menu' } },
+                    { field: 'Freight', format: 'C2', type: 'number', allowFiltering: false }
+                    ],
+                    actionComplete: actionComplete
+                },
+                done);
+        });
+
+        it('filtering menu open Desktop mode =>', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterAfterOpen') {
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(
+                getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+        });
+
+        afterAll(() => {
+            let desktop: string = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
+            Browser.userAgent = desktop;
+            destroy(gridObj);
+        });
+    });
+
+
+    describe('EJ2-892612 - Support for adaptive layout responsive dialog in specific rendering - 2=>', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    enableAdaptiveUI: true,
+                    adaptiveUIMode: 'Mobile',
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [{ field: 'OrderID', type: 'number' },
+                    { field: 'CustomerID', type: 'string', filter: { type: 'Menu' } },
+                    { field: 'Freight', format: 'C2', type: 'number', allowFiltering: false }
+                    ],
+                    actionComplete: actionComplete
+                },
+                done);
+        });
+
+        it('filtering menu open Moblie mode =>', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterAfterOpen') {
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(
+                getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
     describe('Filter Menu Operator Code Coverage => ', () => {
         let gridObj: Grid;
         let template: string = '<input type="text" id="CustomerID" name="CustomerID" />';
@@ -820,4 +1294,55 @@ describe('filter menu module =>', () => {
             gridObj = actionComplete = null;
         });
     });
+
+    describe('EJ2: 901721 => A script error occurs when using the filter template, after applying the filter and reopening the filter dialog. => ', () => {
+        let gridObj: Grid;
+        let shouldDisable: boolean = true;
+        let template : string = `<input type="text" id="CustomerID" name="CustomerID" ${shouldDisable ? 'disabled' : ''} />`;
+        let template1: string = '<input type="text" id="ShipCountry" name="ShipCountry" />';
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'CustomerID' ,width:120, headerText:"Customer ID", filterTemplate: template },
+                        { field: 'ShipCountry', headerText: 'Ship Country', filterTemplate: template1 },
+                    ],
+                    actionComplete: actionComplete,
+                }, done);
+        });
+
+        it('Filter template input field disable testing', () => {
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[0] as HTMLElement).click();
+        });
+    
+        it('Filter template testing', () => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterAfterOpen') {
+                    expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
+                    let dropDownList: DropDownList = document.querySelector('.e-filter-popup').querySelectorAll('.e-dropdownlist')[0]['ej2_instances'][0];
+                    dropDownList.showPopup();
+                    (<HTMLInputElement>document.querySelector(".e-dropdownbase").querySelector('[data-value="equal"]')).click();
+                    (<HTMLInputElement>document.querySelector('.e-flmenu-okbtn')).click();
+                    gridObj.actionComplete = null;
+                }
+            }
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+        });
+
+        it('After Filtering click the filter icon testing', () => {
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = shouldDisable = template = template1 = null;
+        });
+    });
+
 });
+
+

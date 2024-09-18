@@ -46,6 +46,21 @@ describe('linear gauge direct properties', () => {
         gauge.refresh();
     });
 
+    it('checking with bar drag type for Rounded Rectangle in horizontal', (done: Function): void => {
+        gauge.loaded = (args:ILoadEventArgs): void => {
+            gauge.mouseX = 200;
+            gauge.mouseElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
+            gauge.barDrag(<Axis>gauge.axes[0], <Pointer>gauge.axes[0].pointers[0]);
+            done();
+        };
+        gauge.orientation = 'Horizontal';
+        gauge.container.width = 10;
+        gauge.container.type = 'RoundedRectangle';
+        gauge.axes[0].pointers[0].type = 'Bar';
+        gauge.axes[0].isInversed = true;
+        gauge.refresh();
+    });
+
     it('checking with bar drag manual', (done: Function): void => {
         gauge.loaded = (args: ILoadedEventArgs): void => {
             gauge.mouseX = 400;

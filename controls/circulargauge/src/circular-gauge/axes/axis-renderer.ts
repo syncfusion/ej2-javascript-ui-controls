@@ -171,7 +171,7 @@ export class AxisRenderer {
                 continue;
             }
             const textFont: FontModel = {
-                size: style.font.size,
+                size: style.font.size || this.gauge.themeStyle.fontSize,
                 color: style.font.color,
                 fontFamily: style.font.fontFamily || this.gauge.themeStyle.labelFontFamily,
                 fontWeight: style.font.fontWeight || this.gauge.themeStyle.fontWeight,
@@ -712,12 +712,12 @@ export class AxisRenderer {
                 range.currentDistanceFromScale = <number>range.offset;
             }
             this.calculateRangeRadius(axis, range);
-            if ((<string>range.startWidth).length > 0) {
+            if (!isNullOrUndefined((<string>range.startWidth)) && (<string>range.startWidth).length > 0) {
                 startWidth = toPixel(<string>range.startWidth, range.currentRadius);
             } else {
                 startWidth = <number>range.startWidth;
             }
-            if ((<string>range.endWidth).length > 0) {
+            if (!isNullOrUndefined((<string>range.endWidth)) && (<string>range.endWidth).length > 0) {
                 endWidth = toPixel(<string>range.endWidth, range.currentRadius);
             } else {
                 endWidth = <number>range.endWidth;

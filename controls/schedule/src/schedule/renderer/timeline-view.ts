@@ -237,7 +237,12 @@ export class TimelineViews extends VerticalView {
         const tr: Element = createElement('tr');
         const td: Element = createElement('td', { attrs: { 'aria-selected': 'false' } });
         const trCount: number = this.getRowCount();
+        const existingGroupIndices: number[] = this.getGroupIndices();
         for (let i: number = 0; i < trCount; i++) {
+            if (existingGroupIndices.length > 0 &&
+                existingGroupIndices.indexOf(this.parent.resourceBase.renderedResources[parseInt(i.toString(), 10)].groupIndex) > -1) {
+                continue;
+            }
             const ntr: Element = tr.cloneNode() as Element;
             for (let tdData of this.colLevels[this.colLevels.length - 1]) {
                 if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {

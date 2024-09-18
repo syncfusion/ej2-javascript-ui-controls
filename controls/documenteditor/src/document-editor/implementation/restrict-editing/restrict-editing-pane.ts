@@ -295,7 +295,9 @@ export class RestrictEditing {
     private changeHighlightOptions (): void {
         this.documentHelper.owner.documentEditorSettings.highlightEditableRanges = this.highlightCheckBox.checked;
         setTimeout((): void => {
-            this.documentHelper.owner.focusIn();
+            if(this.documentHelper) {
+                this.documentHelper.owner.focusIn();
+            }
         }, 10);
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */

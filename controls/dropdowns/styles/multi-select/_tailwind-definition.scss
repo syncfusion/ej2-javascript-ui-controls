@@ -222,11 +222,6 @@ $ddl-close-icon-hover-color: $icon-color-hover !default;
     width: 32px;
   }
 
-  .e-bigger .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
-    height: $ddl-chip-hooker-square;
-    width: $ddl-chip-hooker-square;
-  }
-
   .e-multi-select-wrapper .e-searcher input[type = 'text'],
   .e-multi-select-wrapper .e-multi-searcher input[type = 'text'] {
     color: $content-text-color;

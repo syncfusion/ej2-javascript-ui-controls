@@ -3,7 +3,7 @@
  */
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Gantt, Edit, Toolbar, Selection, Filter, ZoomTimelineSettings, CriticalPath } from '../../src/index';
-import { projectData1, projectData, projectNewData1} from '../base/data-source.spec';
+import { projectData1, projectData, projectNewData1 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 describe('Gantt toolbar support', () => {
@@ -1660,8 +1660,8 @@ describe('CR:890397-When adding a record via dialog, if the startDate is set to 
                 editSettings: {
                     allowAdding: true
                 },
-                   toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
-                    'PrevTimeSpan', 'NextTimeSpan'],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan'],
                 height: '550px',
                 dayWorkingTime : [{ from: 0, to: 24 }],
                 projectStartDate: new Date('03/25/2019'),
@@ -1681,6 +1681,15 @@ describe('CR:890397-When adding a record via dialog, if the startDate is set to 
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/05/2019');
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'MM/dd/yyyy')).toBe('04/05/2019');
         expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(1);
+    });
+    it('enable toolbar items', () => {
+        ganttObj.enableItems(['PrevTimeSpan'],true);
+        ganttObj.selectRows([2]);
+        ganttObj.selectCells([{ cellIndexes: [1,2], rowIndex: 2 }]);
+        ganttObj['updateRowHeightInConnectorLine'](ganttObj.updatedConnectorLineCollection);
+        ganttObj.getCriticalTasks();
+        expect(ganttObj.isUnscheduledTask(ganttObj.currentViewData[1].ganttProperties)).toBe(false);
+        expect(ganttObj.treeGridModule['objectEqualityChecker'](ganttObj.flatData[0], ganttObj.flatData[0])).toBe(true);
     });
     afterAll(() => {
         destroyGantt(ganttObj);

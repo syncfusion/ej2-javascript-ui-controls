@@ -7,7 +7,7 @@ import { Axis } from '../../chart/axis/axis';
 import { StepPosition } from '../utils/enum';
 
 /**
- * `StackingStepAreaSeries` module used to render the stacking step area series.
+ * The `StackingStepAreaSeries` module is used to render the stacking step area series.
  */
 
 export class StackingStepAreaSeries extends LineBase {
@@ -59,8 +59,8 @@ export class StackingStepAreaSeries extends LineBase {
                 if (prevPoint != null) {
                     currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex as number], xAxis, yAxis, isInverted);
                     secondPoint = getPoint(prevPoint.xValue, stackedvalue.endValues[prevPoint.index], xAxis, yAxis, isInverted);
-                    direction += (this.GetStepLineDirection(currentPointLocation, secondPoint, stackSeries.step));
-                    borderDirection += (this.GetStepLineDirection(currentPointLocation, secondPoint, stackSeries.step));
+                    direction += (this.GetStepLineDirection(currentPointLocation, secondPoint, stackSeries.step, 'L', stackSeries, false));
+                    borderDirection += (this.GetStepLineDirection(currentPointLocation, secondPoint, stackSeries.step, 'L', stackSeries, true));
                 } else if (stackSeries.emptyPointSettings.mode === 'Gap') {
                     currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex as number], xAxis, yAxis, isInverted);
                     direction += 'L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ';
@@ -98,7 +98,7 @@ export class StackingStepAreaSeries extends LineBase {
                             xAxis, yAxis, isInverted);
                     }
                     if (visiblePoint[previousPointIndex as number].visible) {
-                        direction = direction.concat(this.GetStepLineDirection(secondPoint, currentPointLocation, this.prevStep));
+                        direction = direction.concat(this.GetStepLineDirection(secondPoint, currentPointLocation, this.prevStep, 'L', stackSeries));
                     }
                 }
                 startPoint = i + 2;
@@ -137,7 +137,7 @@ export class StackingStepAreaSeries extends LineBase {
                         visiblePoint[validIndex as number].xValue, stackedvalue.startValues[pointIndex as number],
                         xAxis, yAxis, isInverted);
                     if (!(j !== 0 && !visiblePoint[j - 1].visible)) {
-                        direction = direction.concat(this.GetStepLineDirection(point3, point2, this.prevStep));
+                        direction = direction.concat(this.GetStepLineDirection(point3, point2, this.prevStep, 'L', stackSeries));
                     }
                 }
             }
@@ -181,12 +181,9 @@ export class StackingStepAreaSeries extends LineBase {
                 }
                 if (stackSeries.marker.dataLabel.visible && stackSeries.chart.dataLabelModule) {
                     stackSeries.chart.dataLabelModule.commonId = stackSeries.chart.element.id + '_Series_' + stackSeries.index + '_Point_';
-                    const dataLabelElement: Element[] = stackSeries.chart.dataLabelModule.
+                    stackSeries.chart.dataLabelModule.
                         renderDataLabel(stackSeries, stackSeries.points[point[j as number]],
                                         null, stackSeries.marker.dataLabel);
-                    for (let k: number = 0; k < dataLabelElement.length; k++) {
-                        stackSeries.chart.dataLabelModule.doDataLabelAnimation(stackSeries, dataLabelElement[k as number]);
-                    }
                 }
             }
         }
@@ -198,6 +195,7 @@ export class StackingStepAreaSeries extends LineBase {
      * @param {Series} series - The series to which the path belongs.
      * @param {string} clipRect - The clip rectangle for the path.
      * @returns {void}
+     * @private
      */
     public addPath (options: PathOption, series: Series, clipRect: string): void {
         const points: { element: Element; previousDirection: string; } =
@@ -239,6 +237,7 @@ export class StackingStepAreaSeries extends LineBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         const option: AnimationModel = series.animation;

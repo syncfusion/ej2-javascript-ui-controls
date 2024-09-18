@@ -695,7 +695,6 @@ describe('Group By Date feature', () => {
             expect((document.querySelectorAll('.e-maskedtextbox')[0] as HTMLInputElement).value === 'k').toBeTruthy();
             (document.querySelectorAll('.e-cancel-btn')[0] as HTMLElement).click();
             pivotGridObj.maxNodeLimitInMemberEditor = 1000;
-            pivotGridObj.refreshData();
         });
         it('Filter testing6', function (done) {
             setTimeout(function () {

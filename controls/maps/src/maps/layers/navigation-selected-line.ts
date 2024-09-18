@@ -93,7 +93,7 @@ export class NavigationLine {
                     }
                     if (showArrow) {
                         arrowColor = arrowSettings.color;
-                        arrowSize = arrowSettings.size;
+                        arrowSize = !isNullOrUndefined(arrowSettings.size) ? arrowSettings.size : 0;
                         offSetValue = !isNullOrUndefined(arrowSettings.offSet) ? arrowSettings.offSet : 0;
                         const divide: number = (Math.round(arrowSize / 2));
                         arrowPosition = arrowSettings.position;

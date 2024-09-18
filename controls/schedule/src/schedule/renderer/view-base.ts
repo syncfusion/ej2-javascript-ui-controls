@@ -671,6 +671,16 @@ export class ViewBase {
         }
     }
 
+    public getGroupIndices(dataCollection?: TdData[]): number[] {
+        let groupIndices: number[] = [];
+        if (this.parent.virtualScrollModule && this.parent.activeViewOptions.group.resources.length > 0 && (dataCollection ||
+            this.parent.virtualScrollModule.existingDataCollection.length > 0) && !this.parent.uiStateValues.isGroupAdaptive) {
+            dataCollection = isNullOrUndefined(dataCollection) ? this.parent.virtualScrollModule.existingDataCollection : dataCollection;
+            groupIndices = dataCollection.map((data: TdData) => data.groupIndex);
+        }
+        return groupIndices;
+    }
+
     public destroy(): void {
         if (this.element && this.element.parentNode) {
             remove(this.element);

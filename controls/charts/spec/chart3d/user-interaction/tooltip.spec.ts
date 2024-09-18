@@ -19,6 +19,7 @@ import { Tooltip3D } from '../../../src/chart3d/user-interaction/tooltip';
 import { StackingBarSeries3D } from '../../../src/chart3d/series/stacking-bar-series';
 import { DataValue } from '../../chart/base/data.spec';
 import { Rect } from '@syncfusion/ej2-svg-base';
+import { CircularChart3DLoadedEventArgs } from '../../../src';
 
 Chart3D.Inject(
     ColumnSeries3D, BarSeries3D, DateTime3D, Category3D, Tooltip3D, StackingBarSeries3D, Highlight3D, Legend3D
@@ -409,6 +410,48 @@ describe('3DChart Control', () => {
             chartObj.tooltip.template = '<div>${x}</div><div>${y}</div>';
             chartObj.refresh();
         });
+        it('chart tooltip format checking with keyboard navigation', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs) => {
+                let element = document.getElementById('container-svg-0-region-series-0-point-0');
+                trigger.keyboardEvent('keydown', element, 'Space', 'Space');
+                trigger.keyboardEvent('keyup', element, 'ArrowUp', 'ArrowUp');
+                trigger.keyboardEvent('keydown', element, 'Escape', 'Escape');
+                trigger.keyboardEvent('keyup', element, 'ArrowDown', 'ArrowDown');
+                trigger.keyboardEvent('keyup', element, 'ArrowLeft', 'ArrowLeft');
+                trigger.keyboardEvent('keyup', element, 'ArrowRight', 'ArrowRight');
+                trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('checking with tooltipRender event with fixed location', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs): void => {
+                const target: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-6');
+                const target1: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-5');
+                rect = target.getBoundingClientRect();
+                x = window.scrollX + rect.left + rect.width / 2;
+                y = window.scrollY + rect.top;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+
+                const tooltip: HTMLElement = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                expect(tooltip.firstElementChild.innerHTML).toEqual('<div>#7000</div><div>40C</div>');
+                rect = target1.getBoundingClientRect();
+                x = window.scrollX + rect.left + rect.width / 2;
+                y = window.scrollY + rect.top;
+                trigger.mousemovetEvent(target1, Math.ceil(x), Math.ceil(y));
+                expect(tooltip.firstElementChild.innerHTML).toEqual('<div>#6000</div><div>-20C</div>');
+                args.chart.isTouch = true;
+                trigger.mouseuptEvent(target1, Math.ceil(x), Math.ceil(y));
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.tooltip = { enable: true, fadeOutMode: 'Click', enableMarker: true, location: { x: 100, y: 100 } };
+            chartObj.tooltip.template = '<div>${x}</div><div>${y}</div>';
+            chartObj.refresh();
+        });
 
     });
 
@@ -490,6 +533,23 @@ describe('3DChart Control', () => {
             };
             chartObj.loaded = loaded1;
             chartObj.series[0].columnFacet='Cylinder';
+            chartObj.refresh();
+        });
+        it('Checking cylinder column series with tooltip template', (done: Function) => {
+            loaded1 = (args: Object): void => {
+                let target: HTMLElement;
+                target = document.getElementById('container-svg-19-region-series-0-point-1');
+                rect = target.getBoundingClientRect();
+                x = window.scrollX + rect.left + rect.width / 2;
+                y = window.scrollY + rect.top;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                let tooltip: HTMLElement = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded1;
+            chartObj.series[0].type = 'Bar';
+            chartObj.series[0].columnFacet = 'Cylinder';
             chartObj.refresh();
         });
     });
@@ -651,6 +711,26 @@ describe('3DChart Control', () => {
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Back to back column tooltip with fixed location', (done: Function) => {
+            loaded = (args: CircularChart3DLoadedEventArgs): void => {
+                targetElement = chartObj.element.querySelector('#container-svg-0-region-series-0-point-1') as HTMLElement;
+                rect = targetElement.getBoundingClientRect();
+                x = window.scrollX + rect.left + rect.width / 2;
+                y = window.scrollY + rect.top;
+                args.chart.isTouch = true;
+                trigger.mousemovetEvent(targetElement, Math.ceil(x), Math.ceil(y));
+                targetElement = document.getElementById('container_svg')
+                rect = targetElement.getBoundingClientRect();
+                x = window.scrollX + rect.left + rect.width / 2;
+                y = window.scrollY + rect.top;
+                trigger.mousemovetEvent(targetElement, Math.ceil(x), Math.ceil(y));
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.tooltip.location = { x: 100, y: 100 };
+            chartObj.tooltip.enableMarker = false;
             chartObj.refresh();
         });
 

@@ -45,31 +45,6 @@
 }
 
 @include export-module('diagram-definition-icons') {
-  .e-diagram-menu {
-    .e-bringforward::before{ content: '\e574'; }
-    .e-bringfront::before{ content: '\e575'; }
-    .e-sendback::before{ content: '\e576'; }
-    .e-sendbackward::before{ content: '\e577'; }
-    .e-delete::before{ content: '\e578'; }
-    .e-ungroup::before{ content: '\e579'; }
-    .e-group::before{ content: '\e57a'; }
-    .e-undo::before{ content: '\e57c'; }
-    .e-cut::before{ content: '\e57d'; }
-    .e-save::before{ content: '\e57e'; }
-    .e-paste::before{ content: '\e57f'; }
-    .e-copy::before{ content: '\e580'; }
-    .e-redo::before{ content: '\e581'; }
-    .e-zoomin::before{ content: '\e582'; }
-    .e-italic::before{ content: '\e583'; }
-    .e-close::before{ content: '\e584'; }
-    .e-pan::before{ content: '\e585'; }
-    .e-bold::before{ content: '\e586'; }
-    .e-underline::before{ content: '\e587'; }
-    .e-zoomout::before{ content: '\e588'; }
-    .e-export::before{ content: '\e589'; }
-    .e-print::before{ content: '\e58a'; }
-    .e-order::before{ content: '\e58b'; }
-  }
 
   .e-symbolpalette {
     .e-clear-searchtext::before{ content: '\e58c'; }

@@ -1,4 +1,4 @@
-import { PeriodsModel, RangeNavigator, RangeValueType } from '../index';
+import { RangeNavigator, RangeValueType } from '../index';
 import { animationMode, Browser, createElement } from '@syncfusion/ej2-base';
 import { RectOption, drawSymbol, linear } from '../../common/utils/helper';
 import { getXLocation, getExactData, getRangeValueXByPoint, DataPoint, getNearestValue } from '../utils/helper';
@@ -9,6 +9,7 @@ import { IChangedEventArgs, IRangeStyle } from '../model/range-navigator-interfa
 import { ThumbSettingsModel, StyleSettingsModel } from '../model/range-base-model';
 import { PeriodSelector } from '../../common';
 import { VisibleRangeModel } from '../../common/model/interface';
+import { PeriodsModel } from '../../common/model/base-model';
 
 /**
  * Class for slider
@@ -174,7 +175,7 @@ export class RangeSlider {
                 id + '_ThumpGrip', 'transparent',
                 1, disabledColor || control.themeStyle.gripColor, 1, null,
                 'M' + ' ' + (x + 2) + ' ' + (y + tickLength) + ' ' + 'L' + ' ' + (x + 2) + ' ' + (y - tickLength) + ' ' +
-                (this.control.theme.indexOf('Fluent2') > -1 ? '' : 'M' + ' ' + (x) + ' ' + (y + tickLength) + ' ' + 'L' + ' ' + (x) + ' ' + (y - tickLength) + ' ') +
+                ((this.control.theme.indexOf('Fluent2') > -1 || this.control.theme.indexOf('Bootstrap5') > -1) ? '' : 'M' + ' ' + (x) + ' ' + (y + tickLength) + ' ' + 'L' + ' ' + (x) + ' ' + (y - tickLength) + ' ') +
                 'M' + ' ' + (x - 2) + ' ' + (y + tickLength) + ' ' + 'L' + ' ' + (x - 2) + ' ' + (y - tickLength) + ' '
             )));
         }

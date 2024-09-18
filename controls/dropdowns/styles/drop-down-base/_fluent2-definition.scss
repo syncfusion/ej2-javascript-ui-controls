@@ -59,7 +59,7 @@ $ddl-nodata-font-color: $content-text-color !default;
 $ddl-list-default-font-color: $content-text-color !default;
 $ddl-list-active-border-color: $content-bg-color !default;
 $mention-popup-bg-color: $content-bg-color !default;
-$ddl-list-active-font-color: $flyout-text-color !default;
+$ddl-list-active-font-color: $flyout-text-color-hover !default;
 $mention-active-font-color: $primary !default;
 $ddl-list-active-bg-color: $flyout-bg-color-hover !default;
 $ddl-list-hover-border-color: $content-bg-color !default;
@@ -70,6 +70,7 @@ $ddl-default-header-font-color: $content-text-color !default;
 $ddl-list-focus-color: $content-bg-color-focus !default;
 $ddl-multi-column-border-color: $border-light !default;
 $ddl-list-icon-color: $icon-color !default;
+$ddl-list-focus-bg-color: $flyout-bg-color-focus !default;
 
 // Small Size color
 $ddl-small-list-font-color: $content-text-color !default;
@@ -97,29 +98,7 @@ $ddl-group-list-item-text-intent: 0 !default;
     font-size: $text-xxs;
   }
 
-  .e-bigger .e-dropdownbase .e-list-group-item,
-  .e-bigger .e-fixed-head,
-  .e-bigger.e-dropdownbase .e-list-group-item,
-  .e-bigger.e-fixed-head {
-    font-size: $text-sm;
-  }
-
-  .e-bigger.e-small .e-dropdownbase .e-list-group-item,
-  .e-bigger.e-small .e-fixed-head,
-  .e-bigger.e-small.e-dropdownbase .e-list-group-item,
-  .e-bigger.e-small.e-fixed-head {
-    font-size: $text-xs;
-  }
-
   .e-dropdownbase .e-list-item .e-list-icon {
-    padding: 0 8px 0 0;
-  }
-
-  .e-bigger .e-dropdownbase .e-list-item .e-list-icon {
-    padding: 0 12px 0 0;
-  }
-
-  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
     padding: 0 8px 0 0;
   }
 

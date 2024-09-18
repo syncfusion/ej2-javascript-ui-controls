@@ -1228,7 +1228,7 @@ describe('Chart Control Series', () => {
                 let content = chartObj.primaryXAxis.zoomFactor.toFixed(2);
                 expect(content == '0.33' || content == '0.30' || content == '0.31').toBe(true);
                 content = chartObj.primaryYAxis.zoomFactor.toFixed(2);
-                expect(content == '1.00' || content == '0.77' || content === '0.79').toBe(true);
+                expect(content == '1.00' || content == '0.77' || content === '0.83').toBe(true);
                 content = chartObj.primaryXAxis.zoomPosition.toFixed(2);
                 expect(content == '0.72' || content == '0.69' || content == '0.70').toBe(true);
                 chartObj.mouseLeave(<PointerEvent>trigger.onTouchLeave(areaElement, 748, 129, 304, 289, 304, 289));
@@ -1239,7 +1239,55 @@ describe('Chart Control Series', () => {
             chartObj.dataBind();
         });
 
+    });
+    describe('HiloOpenCLose - Checking setData method', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let targetElement: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let marker0: HTMLElement;
+        let dataLabel0: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
 
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    series: [{
+                        dataSource: [
+                            { x: 1, low: -12, high: 0, open: -1.22, close: -8.44 }, { x: 2, low: 12, high: 1, open: 5, close: 9 },
+                            { x: 3, low: 23, high: 10, open: 13, close: 20.44 }, { x: 4, low: 20, high: 43, open: 33.22, close: 21.44 },
+                            { x: 5, low: 0, high: 10, open: 5, close: 9 }, { x: 6, low: -22, high: 34, open: 3, close: 22 },
+                            { x: 7, low: -12, high: 23, open: 12, close: 4 }, { x: 8, low: 12, high: 40, open: 32, close: 15 }],
+                        xName: 'x', low: 'low', high: 'high', open: 'open', close: 'close', animation: { enable: false }, type: 'HiloOpenClose',
+                        name: 'ChartSeriesNameGold', fill: 'green',
+                        marker: { visible: true, dataLabel: { visible: true } },
+                    },
+                    ],
+                    legendSettings: { visible: false },
+                    title: 'Chart TS Title', height: '1000', width: '1000',
+                });
+            chartObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            elem.remove();
+        });
+        it('Checking HiloOpenClose updated direction', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element: HTMLElement = document.getElementById('container_Series_0_Point_0');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            let seriesData = [
+                { x: 1, low: -12, high: 0, open: -1.22, close: -8.44 }, { x: 2, low: 12, high: 1, open: 5, close: 9 },
+                { x: 3, low: 23, high: 10, open: 13, close: 20.44 }, { x: 4, low: 20, high: 43, open: 33.22, close: 21.44 },
+                { x: 5, low: 0, high: 10, open: 8, close: 9 }, { x: 6, low: -22, high: 34, open: 3, close: 22 },
+                { x: 7, low: -12, high: 23, open: 11, close: 4 }, { x: 8, low: 12, high: 40, open: 32, close: 15 }];
+            chartObj.series[0].setData(seriesData); 
+            chartObj.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

@@ -1,11 +1,11 @@
 import { IAxisSet, IGridValues, IValueSortSettings, IGroupSettings, IDataSet } from '../../base/engine';
 import { PivotEngine, IFieldOptions, IFormatSettings, IMatrix2D } from '../../base/engine';
 import { PivotView } from '../base/pivotview';
-import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs, PdfExportCompleteArgs, getScrollBarWidth, ContextMenuItem, ContextMenuItemModel, SelectionSettingsModel, Cell, IGrid } from '@syncfusion/ej2-grids';
+import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs, PdfExportCompleteArgs, getScrollBarWidth, ContextMenuItem, ContextMenuItemModel, SelectionSettingsModel, Cell, IGrid, ActionEventArgs } from '@syncfusion/ej2-grids';
 import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu, ResizeArgs, Freeze } from '@syncfusion/ej2-grids';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
-import { CellDeselectEventArgs, CellSelectingEventArgs, ExcelExportCompleteArgs, ActionEventArgs } from '@syncfusion/ej2-grids';
+import { CellDeselectEventArgs, CellSelectingEventArgs, ExcelExportCompleteArgs } from '@syncfusion/ej2-grids';
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement, closest, append } from '@syncfusion/ej2-base';
 import { addClass, removeClass, SanitizeHtmlHelper, select, selectAll } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
@@ -71,7 +71,6 @@ export class Render {
     private actualText: string = '';
     private drilledLevelInfo: { [key: string]: boolean } = {};
     private timeOutObj: ReturnType<typeof setTimeout>;
-    /** @hidden */
     /** Constructor for render module
      *
      * @param {PivotView} parent - Instance of pivot table.
@@ -122,6 +121,10 @@ export class Render {
                 this.parent.resizeInfo = {};
             }
             this.parent.grid.refreshColumns();
+            if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
+                this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
+                this.parent.groupingBarModule.setGridRowWidth();
+            }
             if (this.isAutoFitEnabled) {
                 this.addPivotAutoFitClass();
             } else {
@@ -280,8 +283,12 @@ export class Render {
         }
     }
 
-    /** @hidden */
-
+    /**
+     * It is used to add the pivot autofit class
+     *
+     * @returns {void}
+     * @hidden
+     */
     public addPivotAutoFitClass(): void {
         if (!document.body.classList.contains(cls.PIVOT_VIEW_CLASS)) {
             document.body.classList.add(cls.PIVOT_VIEW_CLASS);
@@ -291,8 +298,12 @@ export class Render {
         }
     }
 
-    /** @hidden */
-
+    /**
+     * It is used to remove the pivot autofit class
+     *
+     * @returns {void}
+     * @hidden
+     */
     public removePivotAutoFitClass(): void {
         if (document.body.classList.contains(cls.PIVOT_VIEW_CLASS)) {
             document.body.classList.remove(cls.PIVOT_VIEW_CLASS);
@@ -437,10 +448,8 @@ export class Render {
         }
     }
     private getCellElement(target: Element): Element {
-        let currentElement: Element = closest(target, 'td');
-        if (isNullOrUndefined(currentElement)) {
-            currentElement = closest(target, 'th');
-        }
+        const axis: string = (target.parentElement.classList.contains(cls.ROWSHEADER) || target.classList.contains(cls.ROWSHEADER)) ? 'row' : 'column';
+        const currentElement: Element = axis === 'column' ? closest(target, 'th') : closest(target, 'td');
         return currentElement;
     }
     private contextMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {
@@ -710,11 +719,6 @@ export class Render {
         // this.parent.gridSettings.contextMenuClick();
         const target: Element = this.parent.lastCellClicked;
         const selected: string = args.item.id;
-        const event: MouseEvent = new MouseEvent('dblclick', {
-            'view': window,
-            'bubbles': true,
-            'cancelable': true
-        });
         let exportArgs: BeforeExportEventArgs = {
         };
         const ele: Element = this.getCellElement(target);
@@ -767,9 +771,15 @@ export class Render {
                 );
             });
             break;
-        case this.parent.element.id + '_drillthrough_menu':
+        case this.parent.element.id + '_drillthrough_menu': {
+            const event: MouseEvent = new MouseEvent('dblclick', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
             ele.dispatchEvent(event);
             break;
+        }
         case this.parent.element.id + '_sortasc':
             this.parent.setProperties({
                 dataSourceSettings: {
@@ -1873,6 +1883,7 @@ export class Render {
                                 headerTextAlign: this.parent.enableRtl ? 'Right' : 'Left'
                             };
                             if (cCnt === colCount) {
+                                columnModel[actualCnt as number].width = ((columnModel[actualCnt as number].width as number) - 3);
                                 this.lastColumn = columnModel[actualCnt as number];
                             }
                         } else if (headerSplit[cCnt as number]) {
@@ -1939,11 +1950,8 @@ export class Render {
         if (this.parent.toolbarModule && this.parent.showToolbar) {
             this.parent.toolbarModule.isReportChange = false;
         }
-        autoFitApplied = this.parent.pivotColumns.length > 0 && this.parent.pivotColumns[this.parent.pivotColumns.length - 1].autoFit;
-        if (this.lastColumn && !autoFitApplied) {
-            this.lastColumn.width = Number(this.lastColumn.width) - 3;
-        }
         this.parent.triggerColumnRenderEvent(this.pivotColumns);
+        autoFitApplied = this.parent.pivotColumns.length > 0 && this.parent.pivotColumns[this.parent.pivotColumns.length - 1].autoFit;
         return this.pivotColumns;
     }
 

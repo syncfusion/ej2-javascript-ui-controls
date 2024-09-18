@@ -203,7 +203,7 @@ export class ToolbarRenderer implements IRenderer {
             args.element.setAttribute('data-rte-id', this.parent.getID());
         }
     }
-    
+
     /**
      * renderDropDownButton method
      *
@@ -332,6 +332,28 @@ export class ToolbarRenderer implements IRenderer {
                                 }
                             } else {
                                 removeClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                            }
+                        }
+                    }
+                }
+                else if (proxy.parent.editorMode === 'Markdown') {
+                    if ((args.items[0 as number] as IDropDownItemModel).command === 'Formats') {
+                        const formats: string[] = [];
+                        let hasUpdatedActive: boolean = false;
+                        this.parent.format.types.forEach((item: IDropDownItemModel): void => {
+                            formats.push(item.value.toLocaleLowerCase());
+                        });
+                        const childNodes: NodeListOf<ChildNode> = args.element.childNodes;
+                        for (let index: number = 0; index < childNodes.length; index++) {
+                            const divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
+                            divNode.innerHTML = dropDown.content.trim();
+                            if (!hasUpdatedActive && ((divNode.textContent.trim() !== '' && childNodes[index as number].textContent.trim() === divNode.textContent.trim()))) {
+                                if (!(childNodes[index as number] as HTMLElement).classList.contains('e-active')) {
+                                    addClass([childNodes[index as number]] as Element[], 'e-active');
+                                    hasUpdatedActive = true;
+                                }
+                            } else {
+                                removeClass([childNodes[index as number]] as Element[], 'e-active');
                             }
                         }
                     }

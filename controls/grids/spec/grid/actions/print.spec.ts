@@ -566,6 +566,13 @@ describe('EJ2-852222, EJ2-853086 - script error on Export and print hierarchy gr
         select('#' + gridObj.element.id + '_print', gridObj.toolbarModule.getToolbar()).click();
     });
 
+    // print file coverage
+    it('contentReady coevarge', () => {
+        (gridObj as any).isPrinting = false;
+        (gridObj as any).printModule.contentReady();
+    });
+
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;

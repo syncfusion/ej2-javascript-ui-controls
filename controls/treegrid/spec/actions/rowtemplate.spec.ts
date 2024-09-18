@@ -387,6 +387,41 @@ describe('Bug 870007: Script Error thrown on performing ExpandAll and CollapseAl
         gridObj.expandAll();
         expect(gridObj.getRows()[0].querySelector('.e-treegridexpand').classList[1]).toEqual('e-treegridexpand');
     });
+    it('Collapse action', () =>{
+        let rows: Element[] = gridObj.getRows();
+        (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+        expect(rows[0].querySelectorAll('.e-treegridcollapse').length).toBe(1);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('coverage improvement', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: employeeData,
+                rowTemplate: rowtemplate,
+                childMapping: 'Children',
+                treeColumnIndex: 0,
+                columns: [
+                    {field: 'EmployeeID', width: 150, textAlign: 'Center'},
+                    { headerText: 'Employee Image', width: 150, textAlign: 'Center', field: 'OrderID' },
+                    { headerText: 'Employee Details', width: 300, field: 'EmployeeID'}
+                ],
+                height: 315
+            },
+            done
+        );
+    });
+    it('expand action', () =>{
+        let rows: Element[] = gridObj.getRows();
+        (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+        (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+        expect(rows[0].querySelectorAll('.e-treegridexpand').length).toBe(1);
+    });
     afterAll(() => {
         destroy(gridObj);
     });

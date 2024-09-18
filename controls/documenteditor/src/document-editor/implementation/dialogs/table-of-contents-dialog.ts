@@ -807,7 +807,7 @@ export class TableOfContentsDialog {
             for (let j: number = newEndLevel + 1; j <= 9; j++) {
                 let outlineHeader: string = this.getTOCInputValue(j);
                 let outlineLevel: number = this.getHeadingLevel(j);
-                if (!outlineHeader.match(/^[0-9]+$/) && outlineHeader!=="") {
+                if (!outlineHeader.match(/^[0-9]+$/) && outlineHeader !== "") {
                     this.initAlertDialog(false);
                     return false;
                 } else {
@@ -883,11 +883,15 @@ export class TableOfContentsDialog {
     public unWireEventsAndBindings = (): void => {
         this.pageNumber.checked = false;
         this.rightAlign.checked = false;
-        this.tabLeader.value = '';
+        if (this.tabLeader) {
+            this.tabLeader.value = '';
+        }
         this.hyperlink.checked = false;
         this.style.checked = false;
         this.outline.checked = false;
-        this.normal.value = '';
+        if (this.normal) {
+            this.normal.value = '';
+        }
     }
     /**
      * @private

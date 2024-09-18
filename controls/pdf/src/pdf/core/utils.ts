@@ -1,6 +1,6 @@
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
 import { PdfDestination, PdfPage } from './pdf-page';
-import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlightMode, PdfBorderStyle, PdfBorderEffectStyle, PdfLineEndingStyle, _PdfCheckFieldState, PdfMeasurementUnit, _PdfGraphicsUnit, PdfTextMarkupAnnotationType, PdfRotationAngle, PdfAnnotationState, PdfAnnotationStateModel, PdfPopupIcon, PdfRubberStampAnnotationIcon, PdfAttachmentIcon, PdfAnnotationIntent, PdfBlendMode, _PdfAnnotationType, PdfDestinationMode } from './enumerator';
+import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlightMode, PdfBorderStyle, PdfBorderEffectStyle, PdfLineEndingStyle, _PdfCheckFieldState, PdfMeasurementUnit, _PdfGraphicsUnit, PdfTextMarkupAnnotationType, PdfRotationAngle, PdfAnnotationState, PdfAnnotationStateModel, PdfPopupIcon, PdfRubberStampAnnotationIcon, PdfAttachmentIcon, PdfAnnotationIntent, PdfBlendMode, _PdfAnnotationType, PdfDestinationMode, PdfNumberStyle } from './enumerator';
 import { _PdfTransformationMatrix } from './graphics/pdf-graphics';
 import { PdfDocument, PdfPageSettings } from './pdf-document';
 import { _PdfBaseStream, _PdfStream } from './base-stream';
@@ -3986,3 +3986,82 @@ export function _stringToBigEndianBytes(input: string): number[] {
     }
     return bytes;
 }
+/**
+ * Convert number respect to ordered list number style.
+ *
+ * @param {number} intArabic Input value.
+ * @param {PdfNumberStyle} numberStyle Number style.
+ * @returns {string} String value.
+ */
+export function _convertNumber(intArabic: number, numberStyle: PdfNumberStyle): string {
+    switch (numberStyle) {
+    case PdfNumberStyle.none:
+        return '';
+    case PdfNumberStyle.numeric:
+        return intArabic.toString();
+    case PdfNumberStyle.lowerLatin:
+        return _arabicToLetter(intArabic).toLowerCase();
+    case PdfNumberStyle.lowerRoman:
+        return _arabicToRoman(intArabic).toLowerCase();
+    case PdfNumberStyle.upperLatin:
+        return _arabicToLetter(intArabic);
+    case PdfNumberStyle.upperRoman:
+        return _arabicToRoman(intArabic);
+    }
+}
+/**
+ * Convert arabic numbers to roman style.
+ *
+ * @param {number} intArabic Input value.
+ * @returns {string} String value.
+ */
+export function _arabicToRoman(intArabic: number): string {
+    let retval: string = '';
+    const romanNumerals: [number, string][] = [
+        [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
+        [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
+        [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']
+    ];
+    for (const [value, numeral] of romanNumerals) {
+        while (intArabic >= value) {
+            retval += numeral;
+            intArabic -= value;
+        }
+    }
+    return retval;
+}
+/**
+ * Convert arabic numbers to alphabet.
+ *
+ * @param {number} arabic Input value.
+ * @returns {string} String value.
+ */
+export function _arabicToLetter(arabic: number): string {
+    let result: string = '';
+    while (arabic > 0) {
+        let remainder: number = arabic % 26;
+        arabic = Math.floor(arabic / 26);
+        if (remainder === 0) {
+            arabic--;
+            remainder = 26;
+        }
+        result = _appendChar(remainder) + result;
+    }
+    return result;
+}
+/**
+ * Convert character code to string.
+ *
+ * @param {number} value Input value.
+ * @returns {string} String value.
+ */
+export function _appendChar(value: number): string {
+    if (value <= 0 || value > 26) {
+        throw new Error('Value can not be less 0 and greater 26');
+    }
+    return String.fromCharCode(64 + value);
+}
+/**
+ * Base64 encoded string representing an empty PDF document.
+ */
+export const _emptyPdfData: string = 'JVBERi0xLjQNCiWDkvr+DQoxIDAgb2JqDQo8PA0KL1R5cGUgL0NhdGFsb2cNCi9QYWdlcyAyIDAgUg0KL0Fjcm9Gb3JtIDMgMCBSDQo+Pg0KZW5kb2JqDQoyIDAgb2JqDQo8PA0KL1R5cGUgL1BhZ2VzDQovS2lkcyBbNCAwIFJdDQovQ291bnQgMQ0KL1Jlc291cmNlcyA8PD4+DQoNCi9NZWRpYUJveCBbLjAwIC4wMCA1OTUuMDAgODQyLjAwXQ0KL1JvdGF0ZSAwDQo+Pg0KZW5kb2JqDQozIDAgb2JqDQo8PA0KL0ZpZWxkcyBbXQ0KPj4NCmVuZG9iag0KNCAwIG9iag0KPDwNCi9Db3VudCAxDQovVHlwZSAvUGFnZXMNCi9LaWRzIFs1IDAgUl0NCi9QYXJlbnQgMiAwIFINCj4+DQplbmRvYmoNCjUgMCBvYmoNCjw8DQovVHlwZSAvUGFnZQ0KL1BhcmVudCA0IDAgUg0KPj4NCmVuZG9iag0KeHJlZg0KMCA2DQowMDAwMDAwMDAwIDY1NTM1IGYNCjAwMDAwMDAwMTcgMDAwMDAgbg0KMDAwMDAwMDA4OSAwMDAwMCBuDQowMDAwMDAwMjE4IDAwMDAwIG4NCjAwMDAwMDAyNTUgMDAwMDAgbg0KMDAwMDAwMDMzNCAwMDAwMCBuDQp0cmFpbGVyDQo8PA0KL1Jvb3QgMSAwIFINCi9TaXplIDYNCj4+DQoNCnN0YXJ0eHJlZg0KMzg3DQolJUVPRg0K';

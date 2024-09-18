@@ -458,6 +458,7 @@ export class Toolbar {
             buttons: [
                 {
                     click: this.okBtnClick.bind(this),
+                    isFlat: false,
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('ok'),
                         isPrimary: true
@@ -465,6 +466,7 @@ export class Toolbar {
                 },
                 {
                     click: this.cancelBtnClick.bind(this),
+                    isFlat: false,
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('cancel')
                     }
@@ -503,6 +505,7 @@ export class Toolbar {
             buttons: [
                 {
                     click: this.copyMDXQuery.bind(this),
+                    isFlat: false,
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('copy'),
                         isPrimary: true
@@ -697,6 +700,7 @@ export class Toolbar {
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
+                    isFlat: false,
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('yes'), isPrimary: true,
                         cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '')
@@ -704,6 +708,7 @@ export class Toolbar {
                     click: this.okButtonClick.bind(this)
                 },
                 {
+                    isFlat: false,
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('no'),
                         cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '')
@@ -1359,8 +1364,12 @@ export class Toolbar {
                     this.parent.currentView = 'Table';
                     this.parent.setProperties({ displayOption: { primary: 'Table' } }, true);
                     if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
-                        (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = '';
-                        (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = 'none';
+                        if (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement) {
+                            (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = '';
+                        }
+                        if (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement) {
+                            (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = 'none';
+                        }
                     }
                     const actionInfo: PivotActionInfo = {
                         toolbarInfo: {
@@ -1574,10 +1583,12 @@ export class Toolbar {
             buttons: [
                 {
                     click: () => { this.chartTypeDialogUpdate(); },
+                    isFlat: false,
                     buttonModel: { cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
                 },
                 {
                     click: () => { this.removeDialog(); },
+                    isFlat: false,
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],

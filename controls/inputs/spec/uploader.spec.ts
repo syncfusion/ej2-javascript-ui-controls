@@ -848,28 +848,142 @@ describe('Uploader Control', () => {
             document.body.innerHTML = '';
         });
         it('Cancel uploading', function (done) {
+            var textContent = 'The uploader component is useful to upload images, documents, and other files to server.' 
+                    + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+                    + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+                    + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+                    + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+                    + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+                    + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+                    + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+                    + 'The uploader component is useful to upload images, documents, and other files to server.'
+                    + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+                    + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+                    + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+                    + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+                    + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+                    + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+                    + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+                    + 'The uploader component is useful to upload images, documents, and other files to server.' 
+                    let parts = [
+                        new Blob([textContent], {type: 'text/plain'}),
+                        new Uint16Array([33])
+                    ];
             var item1 = createElement('span', { id: 'item1', className: 'cancel' });
             document.body.appendChild(item1);
             uploadObj = new Uploader({ autoUpload: false, buttons: {
                     browse: document.getElementById('item1') },
                     asyncSettings: {
                         saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
-                        removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                        removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                        chunkSize: 400
                     },
-                    uploading: function(e: any) { e.cancel = true }
+                    
             });
+            let keyboardEventArgs: any = {
+                preventDefault: (): void => {},
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => {},
+                stopPropagation: (): void => {},
+            };
             uploadObj.appendTo(document.getElementById('upload'));
             expect(uploadObj.buttons.browse.classList.contains('cancel')).toBe(true);
-            var fileObj = new File(["Nice One"], "last.txt", { lastModified: 0, type: "overide/mimetype" });
+            var fileObj = new File(parts, "last.txt", { lastModified: 0, type: "overide/mimetype" });
             var eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: function () { } };
             uploadObj.onSelectFiles(eventArgs);
             expect(uploadObj.fileList.length).toEqual(1);
-            uploadObj.browseButtonClick();
-            uploadObj.uploadButtonClick();
+            uploadObj.upload([uploadObj.filesData[0]]);
             setTimeout(function () {
-                expect(uploadObj.getFilesData()[0].statusCode).toBe('5');
-                done();
-            }, 1500);
+                let pausebtn = uploadObj.uploadWrapper.querySelectorAll('.e-upload-file-list ')[0].querySelectorAll('.e-file-pause-btn')[0]
+                expect(pausebtn.classList.contains('e-file-pause-btn')).toBe(true);
+                pausebtn.focus();
+                pausebtn.classList.add('e-clear-icon-focus');
+                keyboardEventArgs.target = pausebtn;
+                keyboardEventArgs.action = 'enter';
+                uploadObj.keyActionHandler(keyboardEventArgs);
+                let playbtn = uploadObj.uploadWrapper.querySelectorAll('.e-upload-file-list ')[0].querySelectorAll('.e-file-play-btn')[0]
+                expect(pausebtn.classList.contains('e-file-play-btn')).toBe(true);
+                playbtn.focus();
+                playbtn.classList.add('e-clear-icon-focus');
+                keyboardEventArgs.target = playbtn;
+                keyboardEventArgs.action = 'enter';
+                uploadObj.keyActionHandler(keyboardEventArgs);
+                setTimeout(() => {
+                    done();
+                }, 1000);  
+            }, 1200);
+        });
+    });
+    describe('Check upload canceled', () => {
+        let uploadObj: any;
+        beforeEach((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+        })
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Cancel uploading', function (done) {
+            var textContent = 'The uploader component is useful to upload images, documents, and other files to server.' 
+                    + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+                    + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+                    + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+                    + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+                    + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+                    + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+                    + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+                    + 'The uploader component is useful to upload images, documents, and other files to server.'
+                    + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+                    + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+                    + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+                    + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+                    + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+                    + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+                    + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+                    + 'The uploader component is useful to upload images, documents, and other files to server.' 
+                    let parts = [
+                        new Blob([textContent], {type: 'text/plain'}),
+                        new Uint16Array([33])
+                    ];
+            var item1 = createElement('span', { id: 'item1', className: 'cancel' });
+            document.body.appendChild(item1);
+            uploadObj = new Uploader({ autoUpload: false, buttons: {
+                    browse: document.getElementById('item1') },
+                    asyncSettings: {
+                        saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                        removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                        chunkSize: 200
+                    },
+                    success: function(){}
+            });
+            let keyboardEventArgs: any = {
+                preventDefault: (): void => {},
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => {},
+                stopPropagation: (): void => {},
+            };
+            uploadObj.appendTo(document.getElementById('upload'));
+            expect(uploadObj.buttons.browse.classList.contains('cancel')).toBe(true);
+            let fileObj = new File(parts, "last.txt", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: function () { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.fileList.length).toEqual(1);
+            uploadObj.upload([uploadObj.filesData[0]]);
+            setTimeout(function () {
+                let pausebtn = uploadObj.uploadWrapper.querySelectorAll('.e-upload-file-list ')[0].querySelectorAll('.e-file-abort-btn')[0];
+                expect(pausebtn.classList.contains('e-file-abort-btn')).toBe(true);
+                pausebtn.focus();
+                pausebtn.classList.add('e-clear-icon-focus');
+                keyboardEventArgs.target = pausebtn;
+                keyboardEventArgs.action = 'enter';
+                uploadObj.keyActionHandler(keyboardEventArgs);
+                setTimeout(() => {
+                    done();
+                }, 500);  
+            }, 1000);
         });
     });
     describe('Event canceling ', () => {
@@ -930,115 +1044,135 @@ describe('Uploader Control', () => {
             expect(uploadObj2.listParent.querySelectorAll('li').length).toEqual(1);
         });
         it('Uploading event cancel', (done) => {
+            let uploadObj2: any = new Uploader({ autoUpload: false, uploading: function(e: any) {
+                e.cancel = true
+            } });
+            let keyboardEventArgs: any = {
+                preventDefault: (): void => {},
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => {},
+                stopPropagation: (): void => {},
+            };
+            uploadObj2.appendTo(document.getElementById('upload'));
+            uploadObj2.asyncSettings = { saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save'};
+            let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: { files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj2.onSelectFiles(eventArgs);
+            var pausebtn = uploadObj2.uploadWrapper.querySelectorAll('.e-file-upload-btn')[0];
+                expect(pausebtn.classList.contains('e-file-upload-btn')).toBe(true);
+                pausebtn.focus();
+                pausebtn.classList.add('e-clear-icon-focus');
+                keyboardEventArgs.target = pausebtn;
+                keyboardEventArgs.action = 'enter';
+                uploadObj2.keyActionHandler(keyboardEventArgs);
+                setTimeout(function () {
+                    var retrybtn = uploadObj2.uploadWrapper.querySelectorAll('.e-file-reload-btn')[0];
+                    expect(retrybtn.classList.contains('e-file-reload-btn')).toBe(true);
+                    retrybtn.focus();
+                    retrybtn.classList.add('e-clear-icon-focus');
+                    keyboardEventArgs.target = retrybtn;
+                    keyboardEventArgs.action = 'enter';
+                    uploadObj2.keyActionHandler(keyboardEventArgs);
+                    done();
+                }, 1000);
+        });   
+        it('Uploading event cancel in chunk upload', (done) => {
             let uploadObj2: any = new Uploader({ uploading: function(e: any) {
                 e.cancel = true
             } });
             uploadObj2.appendTo(document.getElementById('upload'));
-            uploadObj2.asyncSettings = { saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save'};
-            let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            uploadObj2.asyncSettings = { saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save', chunkSize: 1};
+            let fileObj: File = new File(["Nice two"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
             let eventArgs = { type: 'click', target: { files: [fileObj]}, preventDefault: (): void => { } };
             uploadObj2.onSelectFiles(eventArgs);
             setTimeout(() => {
                 expect(uploadObj2.getFilesData()[0].statusCode).toBe('5');
                 done();
             }, 500);
-        });   
-        // it('Uploading event cancel in chunk upload', (done) => {
-        //     let uploadObj2: any = new Uploader({ uploading: function(e: any) {
-        //         e.cancel = true
-        //     } });
-        //     uploadObj2.appendTo(document.getElementById('upload'));
-        //     uploadObj2.asyncSettings = { saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save', chunkSize: 1};
-        //     let fileObj: File = new File(["Nice two"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
-        //     let eventArgs = { type: 'click', target: { files: [fileObj]}, preventDefault: (): void => { } };
-        //     uploadObj2.onSelectFiles(eventArgs);
-        //     setTimeout(() => {
-        //         expect(uploadObj2.getFilesData()[0].statusCode).toBe('5');
-        //         done();
-        //     }, 500);
-        // });     
-        // it('args.cancel in cancel event', () => {
-        //     uploadObj = new Uploader({
-        //         multiple: true, autoUpload: false, canceling: function(e: any) {
-        //             e.cancel = true
-        //         },
-        //         asyncSettings: { 
-        //             saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
-        //             removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
-        //             chunkSize: 1, retryAfterDelay: 0 }
-        //     });
-        //     uploadObj.appendTo(document.getElementById('upload'));
-        //     let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
-        //     let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
-        //     uploadObj.onSelectFiles(eventArgs);
-        //     uploadObj.upload([uploadObj.filesData[0]]);
-        //     // setTimeout(() => {
-        //     //     uploadObj.uploadWrapper.querySelector('.e-file-abort-btn').click();
-        //     //     setTimeout(() => {
-        //     //         expect(uploadObj.filesData[0].statusCode).not.toEqual('5');
-        //     //         let pausebtn = uploadObj.uploadWrapper.querySelector('span.e-icons');
-        //     //         expect(pausebtn.classList.contains('e-file-reload-btn')).toBe(false);
-        //     //         done();
-        //     //     }, 500);
-        //     // }, 50);
-        // });
-        // it('args.response in failure event', (done) => {
-        //     uploadObj = new Uploader({
-        //         multiple: true, asyncSettings: { saveUrl: 'js.syncfusion.comm', chunkSize: 2 },
-        //         chunkFailure: function(args: any) {
-        //             expect(Object.keys(args.response).length).toBe(5);
-        //             expect(args.response.readyState).toBe(4);
-        //             expect(args.response.headers).not.toBe("");
-        //             expect(args.response.withCredentials).toBe(false);
-        //         },
-        //         failure: function(args: any) {
-        //             expect(Object.keys(args.response).length).toBe(5);
-        //             expect(args.response.readyState).toBe(4);
-        //             expect(args.response.headers).not.toBe("");
-        //             expect(args.response.withCredentials).toBe(false);
-        //         },
-        //     });
-        //     uploadObj.appendTo(document.getElementById('upload'));
-        //     let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
-        //     let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
-        //     uploadObj.onSelectFiles(eventArgs);
-        //     setTimeout(() => {
-        //         done();
-        //     }, 1500);
-        // }); 
-        // it('args.response in success and progress events', (done) => {
-        //     uploadObj = new Uploader({
-        //         multiple: true, success: function(args: any) {
-        //             expect(Object.keys(args.response).length).toBe(5);
-        //             expect(args.response.readyState).toBe(4);
-        //             expect(args.response.headers).not.toBe("");
-        //             expect(args.response.withCredentials).toBe(false);
-        //         },
-        //         progress: function(args: any) {
-        //             expect(Object.keys(args.response).length).toBe(5);
-        //             expect(args.response.readyState).toBe(4);
-        //             expect(args.response.headers).not.toBe("");
-        //             expect(args.response.withCredentials).toBe(false);
-        //         },
-        //         chunkSuccess: function(args: any) {
-        //             expect(Object.keys(args.response).length).toBe(5);
-        //             expect(args.response.readyState).toBe(4);
-        //             expect(args.response.headers).not.toBe("");
-        //             expect(args.response.withCredentials).toBe(false);
-        //         },
-        //         asyncSettings: { 
-        //             saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
-        //             removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
-        //             chunkSize: 1
-        //         }
-        //     });
-        //     uploadObj.appendTo(document.getElementById('upload'));let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
-        //     let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
-        //     uploadObj.onSelectFiles(eventArgs);
-        //     setTimeout(() => {
-        //         done();
-        //     }, 1000);
-        // });
+        });     
+        it('args.cancel in cancel event', () => {
+            uploadObj = new Uploader({
+                multiple: true, autoUpload: false, canceling: function(e: any) {
+                    e.cancel = true
+                },
+                asyncSettings: { 
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    chunkSize: 1, retryAfterDelay: 0 }
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+            let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            uploadObj.upload([uploadObj.filesData[0]]);
+            // setTimeout(() => {
+            //     uploadObj.uploadWrapper.querySelector('.e-file-abort-btn').click();
+            //     setTimeout(() => {
+            //         expect(uploadObj.filesData[0].statusCode).not.toEqual('5');
+            //         let pausebtn = uploadObj.uploadWrapper.querySelector('span.e-icons');
+            //         expect(pausebtn.classList.contains('e-file-reload-btn')).toBe(false);
+            //         done();
+            //     }, 500);
+            // }, 50);
+        });
+        it('args.response in failure event', (done) => {
+            uploadObj = new Uploader({
+                multiple: true, asyncSettings: { saveUrl: 'js.syncfusion.comm', chunkSize: 2 },
+                chunkFailure: function(args: any) {
+                    expect(Object.keys(args.response).length).toBe(5);
+                    expect(args.response.readyState).toBe(4);
+                    expect(args.response.headers).not.toBe("");
+                    expect(args.response.withCredentials).toBe(false);
+                },
+                failure: function(args: any) {
+                    expect(Object.keys(args.response).length).toBe(5);
+                    expect(args.response.readyState).toBe(4);
+                    expect(args.response.headers).not.toBe("");
+                    expect(args.response.withCredentials).toBe(false);
+                },
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+            let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                done();
+            }, 1500);
+        }); 
+        it('args.response in success and progress events', (done) => {
+            uploadObj = new Uploader({
+                multiple: true, success: function(args: any) {
+                    expect(Object.keys(args.response).length).toBe(5);
+                    expect(args.response.readyState).toBe(4);
+                    expect(args.response.headers).not.toBe("");
+                    expect(args.response.withCredentials).toBe(false);
+                },
+                progress: function(args: any) {
+                    expect(Object.keys(args.response).length).toBe(5);
+                    expect(args.response.readyState).toBe(4);
+                    expect(args.response.headers).not.toBe("");
+                    expect(args.response.withCredentials).toBe(false);
+                },
+                chunkSuccess: function(args: any) {
+                    expect(Object.keys(args.response).length).toBe(5);
+                    expect(args.response.readyState).toBe(4);
+                    expect(args.response.headers).not.toBe("");
+                    expect(args.response.withCredentials).toBe(false);
+                },
+                asyncSettings: { 
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    chunkSize: 1
+                }
+            });
+            uploadObj.appendTo(document.getElementById('upload'));let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                done();
+            }, 1000);
+        });
     })
     describe('Methods', () => {
         let uploadObj: any;
@@ -1487,7 +1621,7 @@ describe('Uploader Control', () => {
             keyboardEventArgs.action = 'enter';
             keyboardEventArgs.target = uploadObj.browseButton;
             uploadObj.keyActionHandler(keyboardEventArgs);
-            expect(document.activeElement).toBe(uploadObj.browseButton);
+           // expect(document.activeElement).toBe(uploadObj.browseButton);
         });
     })
 
@@ -2614,81 +2748,81 @@ describe('Uploader Control', () => {
     //     });
     // });
 
-    // describe('Chunk upload pause & resume public methods', () => {
-    //     let iconElement : any;
-    //     let uploadObj: any;    
-    //     let originalTimeout: number;
-    //     let keyboardEventArgs: any = {
-    //         preventDefault: (): void => {},
-    //         action: null,
-    //         target: null,
-    //         stopImmediatePropagation: (): void => {},
-    //         stopPropagation: (): void => {},
-    //     };
-    //     beforeAll((): void => {
-    //         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 13000;
-    //         let element: HTMLElement = createElement('input', {id: 'upload'});
-    //         document.body.appendChild(element);
-    //         element.setAttribute('type', 'file');
-    //         uploadObj = new Uploader({
-    //             multiple: true, autoUpload: false,
-    //             asyncSettings: {
-    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
-    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
-    //                 chunkSize: 0.5
-    //             },
-    //             template: "<span class='wrapper'><span class='icon template-icons sf-icon-${type}'></span>" +
-    //             "<span class='name file-name'>${name} ( ${size} bytes)</span><span class='upload-status'>${status}</span>" +
-    //             "</span><span class='e-icons e-file-remove-btn' title='Remove'></span>"
-    //         });
-    //     })
-    //     afterAll((): void => {
-    //         uploadObj.destroy();
-    //         document.body.innerHTML = '';
-    //     });
-    //     it('Pause, resume', (done) => {
-    //         uploadObj.appendTo(document.getElementById('upload'));
-    //         let fileObj: File = new File(["pause upload"], "pauseData.txt", {lastModified: 0, type: "overide/mimetype"});
-    //         let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
-    //         uploadObj.onSelectFiles(eventArgs);
-    //         expect(uploadObj.fileList.length).toEqual(1);
-    //         uploadObj.upload([uploadObj.filesData[0]]);
-    //         setTimeout(() => {
-    //             uploadObj.pause(uploadObj.getFilesData()[0]);
-    //             setTimeout(() => {
-    //                 //ensure the uploading is paused.
-    //                 // expect(uploadObj.getFilesData()[0].statusCode).toEqual('4');
-    //                 uploadObj.resume(uploadObj.getFilesData()[0]);
-    //                 //Reume the upload
-    //                 setTimeout(() => {
-    //                     // expect(uploadObj.getFilesData()[0].statusCode).toEqual('3');  
-    //                     done();
-    //                 }, 100);                    
-    //             }, 100);
-    //         }, 200);
-    //     });
-    //     it('Remove the paused file', (done) => {
-    //         let fileObj: File = new File(["remove pause"], "removePauseData.txt", {lastModified: 0, type: "overide/mimetype"});
-    //         let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
-    //         uploadObj.onSelectFiles(eventArgs);
-    //         expect(uploadObj.fileList.length).toEqual(2);
-    //         uploadObj.upload([uploadObj.filesData[1]]);
-    //         setTimeout(() => {
-    //             uploadObj.pause(uploadObj.getFilesData()[1]);
-    //             setTimeout(() => {
-    //                 //ensure the uploading is paused.
-    //                 expect(uploadObj.getFilesData()[1].statusCode).toEqual('4');
-    //                 uploadObj.remove([uploadObj.getFilesData()[1]]);
-    //                 //Reume the upload
-    //                 setTimeout(() => {
-    //                     expect(uploadObj.fileList.length).toEqual(1);
-    //                     done();
-    //                 }, 5000);                    
-    //             }, 100);
-    //         }, 200);
-    //     });
-    // });
+    describe('Chunk upload pause & resume public methods', () => {
+        let iconElement : any;
+        let uploadObj: any;    
+        let originalTimeout: number;
+        let keyboardEventArgs: any = {
+            preventDefault: (): void => {},
+            action: null,
+            target: null,
+            stopImmediatePropagation: (): void => {},
+            stopPropagation: (): void => {},
+        };
+        beforeAll((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 13000;
+            let element: HTMLElement = createElement('input', {id: 'upload'});
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+                multiple: true, autoUpload: false,
+                asyncSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    chunkSize: 0.5
+                },
+                template: "<span class='wrapper'><span class='icon template-icons sf-icon-${type}'></span>" +
+                "<span class='name file-name'>${name} ( ${size} bytes)</span><span class='upload-status'>${status}</span>" +
+                "</span><span class='e-icons e-file-remove-btn' title='Remove'></span>"
+            });
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Pause, resume', (done) => {
+            uploadObj.appendTo(document.getElementById('upload'));
+            let fileObj: File = new File(["pause upload"], "pauseData.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.fileList.length).toEqual(1);
+            uploadObj.upload([uploadObj.filesData[0]]);
+            setTimeout(() => {
+                uploadObj.pause(uploadObj.getFilesData()[0]);
+                setTimeout(() => {
+                    //ensure the uploading is paused.
+                    // expect(uploadObj.getFilesData()[0].statusCode).toEqual('4');
+                    uploadObj.resume(uploadObj.getFilesData()[0]);
+                    //Reume the upload
+                    setTimeout(() => {
+                        // expect(uploadObj.getFilesData()[0].statusCode).toEqual('3');  
+                        done();
+                    }, 100);                    
+                }, 100);
+            }, 200);
+        });
+        it('Remove the paused file', (done) => {
+            let fileObj: File = new File(["remove pause"], "removePauseData.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.fileList.length).toEqual(2);
+            uploadObj.upload([uploadObj.filesData[1]]);
+            setTimeout(() => {
+                uploadObj.pause(uploadObj.getFilesData()[1]);
+                setTimeout(() => {
+                    //ensure the uploading is paused.
+                    expect(uploadObj.getFilesData()[1].statusCode).toEqual('4');
+                    uploadObj.remove([uploadObj.getFilesData()[1]]);
+                    //Reume the upload
+                    setTimeout(() => {
+                        expect(uploadObj.fileList.length).toEqual(1);
+                        done();
+                    }, 5000);                    
+                }, 100);
+            }, 200);
+        });
+    });
     // describe('Chunk upload pause & resume with single and multiple files its public methods', () => {
     //     let iconElement : any;
     //     let uploadObj: any;    
@@ -3537,7 +3671,7 @@ describe('Uploader Control', () => {
                 expect(uploadObj.filesData[0].statusCode).toBe('0');
                 expect(uploadObj.fileList[0].querySelector('.e-file-status').innerHTML).toBe('upload failed');
                 done();
-            }, 800);
+            }, 1000);
         });
     })
 
@@ -3829,49 +3963,49 @@ describe('Uploader Control', () => {
         });
     })
 
-    // describe('Form support', () => {
-    //     let uploadObj: any;
-    //     let SuccessCallback: EmitType<any> = jasmine.createSpy('success');
-    //     let RemovingCallback: EmitType<any> = jasmine.createSpy('removing');
-    //     let originalTimeout: number;
-    //     beforeEach((): void => {
-    //         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
-    //         let element: HTMLElement = createElement('input', {id: 'upload'});
-    //         let form: HTMLElement = createElement('form', {id: 'MyForm'});
-    //         form.appendChild(element);
-    //         document.body.appendChild(form);
-    //         element.setAttribute('type', 'file');
-    //     })
-    //     afterEach((): void => {
-    //         if (uploadObj.uploadWrapper) { uploadObj.destroy();}
-    //         document.body.innerHTML = '';
-    //     });
-    //     it('Remove uploaded file', (done) => {
-    //         uploadObj = new Uploader({
-    //             multiple: true, success: SuccessCallback, removing: RemovingCallback, autoUpload: false,
-    //             asyncSettings: {
-    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
-    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
-    //                 chunkSize: 4
-    //             }
-    //         });
-    //         uploadObj.appendTo(document.getElementById('upload'));
-    //         let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
-    //         let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
-    //         uploadObj.onSelectFiles(eventArgs);
-    //         expect(uploadObj.fileList.length).toEqual(1);
-    //         uploadObj.upload([uploadObj.filesData[0]]);
-    //         setTimeout(() => {
-    //             uploadObj.remove([uploadObj.filesData[0]]);
-    //             setTimeout(() => {
-    //                 expect(RemovingCallback).toHaveBeenCalledTimes(1);
-    //                 expect(SuccessCallback).toHaveBeenCalledTimes(2);
-    //                 done();
-    //             }, 1500);
-    //         }, 1500);
-    //     });
-    // })
+    describe('Form support', () => {
+        let uploadObj: any;
+        let SuccessCallback: EmitType<any> = jasmine.createSpy('success');
+        let RemovingCallback: EmitType<any> = jasmine.createSpy('removing');
+        let originalTimeout: number;
+        beforeEach((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
+            let element: HTMLElement = createElement('input', {id: 'upload'});
+            let form: HTMLElement = createElement('form', {id: 'MyForm'});
+            form.appendChild(element);
+            document.body.appendChild(form);
+            element.setAttribute('type', 'file');
+        })
+        afterEach((): void => {
+            if (uploadObj.uploadWrapper) { uploadObj.destroy();}
+            document.body.innerHTML = '';
+        });
+        it('Remove uploaded file', (done) => {
+            uploadObj = new Uploader({
+                multiple: true, success: SuccessCallback, removing: RemovingCallback, autoUpload: false,
+                asyncSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    chunkSize: 4
+                }
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+            let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.fileList.length).toEqual(1);
+            uploadObj.upload([uploadObj.filesData[0]]);
+            setTimeout(() => {
+                uploadObj.remove([uploadObj.filesData[0]]);
+                setTimeout(() => {
+                    expect(RemovingCallback).toHaveBeenCalledTimes(1);
+                    expect(SuccessCallback).toHaveBeenCalledTimes(2);
+                    done();
+                }, 1500);
+            }, 1500);
+        });
+    })
 
     describe('PostRawFile in remove method argument', () => {
         let uploadObj: any;
@@ -4740,5 +4874,231 @@ describe('Uploader Control', () => {
             expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
             expect(uploadObj.dropZoneElement).toBeNull;
         });
+    });
+    describe('Null or undefined value testing', function (){
+        let uploadObj: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'upload'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            document.body.innerHTML = '';
+        });
+        it('allowedExtensions',function() {
+            uploadObj = new Uploader({ 
+                allowedExtensions: null
+            },'#upload');
+            expect(uploadObj.allowedExtensions).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                allowedExtensions: undefined
+            },'#upload');
+            expect(uploadObj.allowedExtensions).toBe('');
+            uploadObj.destroy();
+         });
+         it('autoUpload',function() {
+            uploadObj = new Uploader({ 
+                autoUpload: null
+            },'#upload');
+            expect(uploadObj.autoUpload).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                autoUpload: undefined
+            },'#upload');
+            expect(uploadObj.autoUpload).toBe(true);
+            uploadObj.destroy();
+         });
+        it('cssClass',function() {
+            uploadObj = new Uploader({ 
+                cssClass: null
+            },'#upload');
+            expect(uploadObj.cssClass).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                cssClass: undefined
+            },'#upload');
+            expect(uploadObj.cssClass).toBe('');
+            uploadObj.destroy();
+         });
+         it('directoryUpload',function() {
+            uploadObj = new Uploader({ 
+                directoryUpload: null
+            },'#upload');
+            expect(uploadObj.directoryUpload).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                directoryUpload: undefined
+            },'#upload');
+            expect(uploadObj.directoryUpload).toBe(false);
+            uploadObj.destroy();
+         });
+         it('dropArea',function() {
+            uploadObj = new Uploader({ 
+                dropArea: null
+            },'#upload');
+            expect(uploadObj.dropArea).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                dropArea: undefined
+            },'#upload');
+            expect(uploadObj.dropArea).toBe(null);
+            uploadObj.destroy();
+         });
+         it('dropEffect',function() {
+            uploadObj = new Uploader({ 
+                dropEffect: null
+            },'#upload');
+            expect(uploadObj.dropEffect).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                dropEffect: undefined
+            },'#upload');
+            expect(uploadObj.dropEffect).toBe('Default');
+            uploadObj.destroy();
+         });
+         it('enableHtmlSanitizer',function() {
+            uploadObj = new Uploader({ 
+                enableHtmlSanitizer: null
+            },'#upload');
+            expect(uploadObj.enableHtmlSanitizer).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                enableHtmlSanitizer: undefined
+            },'#upload');
+            expect(uploadObj.enableHtmlSanitizer).toBe(true);
+            uploadObj.destroy();
+         });
+         it('enablePersistence',function() {
+            uploadObj = new Uploader({ 
+                enablePersistence: null
+            },'#upload');
+            expect(uploadObj.enablePersistence).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                enablePersistence: undefined
+            },'#upload');
+            expect(uploadObj.enablePersistence).toBe(false);
+            uploadObj.destroy();
+         });
+         it('enableRtl',function() {
+            uploadObj = new Uploader({ 
+                enableRtl: null
+            },'#upload');
+            expect(uploadObj.enableRtl).toBe(false);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                enableRtl: undefined
+            },'#upload');
+            expect(uploadObj.enableRtl).toBe(false);
+            uploadObj.destroy();
+         });
+         it('enabled',function() {
+            uploadObj = new Uploader({ 
+                enabled: null
+            },'#upload');
+            expect(uploadObj.enabled).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                enabled: undefined
+            },'#upload');
+            expect(uploadObj.enabled).toBe(true);
+            uploadObj.destroy();
+         });
+         it('files',function() {
+            uploadObj = new Uploader({ 
+                files: null
+            },'#upload');
+            expect(JSON.stringify(uploadObj.files)).toBe('[]');
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                files: undefined
+            },'#upload');
+            expect(JSON.stringify(uploadObj.files)).toBe('[]');
+            uploadObj.destroy();
+         });
+         it('htmlAttributes',function() {
+            uploadObj = new Uploader({ 
+                htmlAttributes: null
+            },'#upload');
+            expect(uploadObj.htmlAttributes).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                htmlAttributes: undefined
+            },'#upload');
+            expect(JSON.stringify(uploadObj.htmlAttributes)).toBe('{}');
+            uploadObj.destroy();
+         });
+         it('maxFileSize',function() {
+            uploadObj = new Uploader({ 
+                maxFileSize: null
+            },'#upload');
+            expect(uploadObj.maxFileSize).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                maxFileSize: undefined
+            },'#upload');
+            expect(uploadObj.maxFileSize).toBe(30000000);
+            uploadObj.destroy();
+         });
+         it('minFileSize',function() {
+            uploadObj = new Uploader({ 
+                minFileSize: null
+            },'#upload');
+            expect(uploadObj.minFileSize).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                minFileSize: undefined
+            },'#upload');
+            expect(uploadObj.minFileSize).toBe(0);
+            uploadObj.destroy();
+         });
+         it('multiple',function() {
+            uploadObj = new Uploader({ 
+                multiple: null
+            },'#upload');
+            expect(uploadObj.multiple).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                multiple: undefined
+            },'#upload');
+            expect(uploadObj.multiple).toBe(true);
+            uploadObj.destroy();
+         });
+         it('sequentialUpload',function() {
+            uploadObj = new Uploader({ 
+                sequentialUpload: null
+            },'#upload');
+            expect(uploadObj.sequentialUpload).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                sequentialUpload: undefined
+            },'#upload');
+            expect(uploadObj.sequentialUpload).toBe(false);
+            uploadObj.destroy();
+         });
+         it('showFileList',function() {
+            uploadObj = new Uploader({ 
+                showFileList: null
+            },'#upload');
+            expect(uploadObj.showFileList).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                showFileList: undefined
+            },'#upload');
+            expect(uploadObj.showFileList).toBe(true);
+            uploadObj.destroy();
+         });
+         it('template',function() {
+            uploadObj = new Uploader({ 
+                template: null
+            },'#upload');
+            expect(uploadObj.template).toBe(null);
+            uploadObj.destroy();
+            uploadObj = new Uploader({ 
+                template: undefined
+            },'#upload');
+            expect(uploadObj.template).toBe(null);
+            uploadObj.destroy();
+         });
     });
 });

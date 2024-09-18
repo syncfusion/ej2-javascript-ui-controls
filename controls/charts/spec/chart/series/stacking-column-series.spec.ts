@@ -20,8 +20,9 @@ import { tooltipData21, tooltipData22, datetimeData21, negativeDataPoint, series
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { Legend } from '../../../src/chart/legend/legend';
 
-Chart.Inject(LineSeries, StackingColumnSeries, DateTime, Category, DataLabel, ColumnSeries);
+Chart.Inject(LineSeries, StackingColumnSeries, DateTime, Category, DataLabel, ColumnSeries, Legend);
 let data: any = tooltipData21;
 let data2: any = tooltipData22;
 let dateTime: any = datetimeData21;
@@ -1471,7 +1472,67 @@ describe('Chart Control', () => {
             chart.tooltip.shared = true;
             chart.refresh();
         });
+        it('Stacking Column - Checking setData method', (done: Function) => {
+            loaded = (args: Object): void => {
+                dataLabel = document.getElementById('container_Series_0_Point_1');
+                expect(dataLabel !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            let seriesColumnData = [{ x: new Date(2000, 6, 11), y: 10 }, { x: new Date(2002, 3, 7), y: -30 },
+            { x: new Date(2004, 3, 6), y: 27 }, { x: new Date(2006, 3, 30), y: -65 },
+            { x: new Date(2008, 3, 8), y: 0 }, { x: new Date(2010, 3, 8), y: 85 }]
+            chart.series[0].setData(seriesColumnData);
+            chart.refresh();unbindResizeEvents(chart);
+        });
     }); 
+    describe('Staking Column - Checking legend click animation.', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let path: string[];
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            elem = createElement('div', { id: 'StackingColumncontainer' });
+            document.body.appendChild(elem);
+            chartObj = new Chart({
+                series: [
+                    {
+                        dataSource: [{ x: 1, y: 10 }, { x: 2, y: null },
+                        { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: 30 }, { x: 6, y: 20 }],
+                        xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Average' },
+                        type: 'StackingColumn', animation: { enable: false },
+                        marker: { visible: true, dataLabel: { visible: true } },
+                        name:'Column1'
+                    },
+                    {
+                        dataSource: [{ x: 1, y: 10 }, { x: 2, y: null },
+                        { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: 30 }, { x: 6, y: 20 }],
+                        xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Average' },
+                        type: 'StackingColumn', animation: { enable: false },
+                        marker: { visible: true, dataLabel: { visible: true } },
+                        name:'Column2'
+                    }
+                ],
+                legendSettings: { visible: true },
+            });
+            chartObj.appendTo('#StackingColumncontainer');
+        });
+        afterAll((): void => {
+            elem.remove();
+            chartObj.destroy();
+        });
+        it('Stacking column - legend click animation', (done: Function) => {
+            loaded = (args: Object): void => {
+                let legendElement = document.getElementById('StackingColumncontainer_chart_legend_text_0');
+                trigger.clickEvent(legendElement);
+                expect(legendElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

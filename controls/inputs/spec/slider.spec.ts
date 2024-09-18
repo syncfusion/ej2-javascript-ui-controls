@@ -5015,3 +5015,81 @@ describe('Slider Null or undefined value testing ', () => {
         slider.destroy();
     });
 });
+
+describe('Slider handles event list testing for dynamic updates of the showButtons, enabled, orientation, and readonly properties', () => {
+    let slider: any;
+    let element: HTMLElement;
+
+    beforeEach((): void => {
+        slider = undefined;
+        element = createElement('div', { id: 'slider' });
+        document.body.appendChild(element);
+    });
+    afterEach((): void => {
+        element.remove();
+        document.body.innerHTML = '';
+    });
+
+    it('Default slider', () => {
+        slider = new Slider({ value: 30, min: 0, max: 100, tooltip: { isVisible: true, placement: 'Before', showOn: 'Hover' }, ticks: { placement: 'After', largeStep: 20 } });
+        slider.appendTo('#slider');
+        slider.showButtons = true;
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(7);
+        slider.enabled = false;
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(0);
+        slider.orientation = 'Vertical';
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(0);
+        slider.enabled = true;
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(7);
+        slider.readonly = true;
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(0);
+        slider.destroy();
+    });
+
+    it('MinRange slider', () => {
+        slider = new Slider({ value: 30, min: 0, max: 100, type: 'MinRange', tooltip: { isVisible: true, placement: 'Before', showOn: 'Hover' }, ticks: { placement: 'After', largeStep: 20 } });
+        slider.appendTo('#slider');
+        slider.showButtons = true;
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(7);
+        slider.enabled = false;
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(0);
+        slider.orientation = 'Vertical';
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(0);
+        slider.enabled = true;
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(7);
+        slider.readonly = true;
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(0);
+        slider.destroy();
+    });
+
+    it('Range slider', () => {
+        slider = new Slider({ value: [30, 70], min: 0, max: 100, type: 'Range', tooltip: { isVisible: true, placement: 'Before', showOn: 'Hover' }, ticks: { placement: 'After', largeStep: 20 } });
+        slider.appendTo('#slider');
+        slider.showButtons = true;
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(7);
+        slider.enabled = false;
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(0);
+        slider.orientation = 'Vertical';
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(0);
+        slider.enabled = true;
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(7);
+        slider.readonly = true;
+        slider.dataBind();
+        expect(slider.firstHandle.__eventList.events.length).toBe(0);
+        slider.destroy();
+    });
+});

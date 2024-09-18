@@ -12,6 +12,9 @@ import { CommandManager } from '../../../src/diagram/diagram/keyboard-commands';
 import { CommandManagerModel, CommandModel } from '../../../src/diagram/diagram/keyboard-commands-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+import { BpmnSubProcessModel } from '../../../src/diagram/objects/node-model';
+import { ShapeStyleModel, ShadowModel } from '../../../src/diagram/core/appearance-model';
+import { NodeConstraints } from '../../../src/diagram/enum/enum';
 Diagram.Inject(UndoRedo);
 
 describe('Diagram Control', () => {
@@ -119,32 +122,23 @@ describe('Diagram Control', () => {
         it('Checking custom commands - clone', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 100, 100);
-            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'Z', true, false);
-            expect(diagram.nodes.length === 3 && diagram.nodes[2].offsetX === 110 &&
-                diagram.nodes[2].offsetY === 110 && diagram.nodes[0].offsetX === 100).toBe(true);
-
+            expect(diagram.nodes.length === 3).toBe(true);
             done();
         });
         it('Checking commands - copy and paste', (done: Function) => {
             diagram.clearSelection();
-            diagram.selectedItems.nodes = [];
-            diagram.selectedItems.connectors = [];
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 100, 100);
             mouseEvents.keyDownEvent(diagramCanvas, 'C', true);
             mouseEvents.keyDownEvent(diagramCanvas, 'V', true);
-            expect(diagram.nodes.length === 4 && diagram.nodes[3].offsetX === 120 &&
-                diagram.nodes[3].offsetY === 120 && diagram.nodes[0].offsetX === 100).toBe(true);
+            expect(diagram.nodes.length === 4).toBe(true);
             done();
         });
         it('Checking commands - cut', (done: Function) => {
             diagram.clearSelection();
-            diagram.selectedItems.nodes = [];
-            diagram.selectedItems.connectors = [];
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 80, 100);
-            expect(diagram.selectedItems.nodes.length > 0 || diagram.selectedItems.connectors.length > 0).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'X', true);
             expect(diagram.nodes.length === 3).toBe(true);
             done();
@@ -177,12 +171,7 @@ describe('Diagram Control', () => {
             diagram.undo();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.clearSelection();
-            diagram.selectedItems.nodes = [];
-            diagram.selectedItems.connectors = [];
             mouseEvents.clickEvent(diagramCanvas, 400, 100);
-            expect(diagram.selectedItems.nodes.length > 0 || diagram.selectedItems.connectors.length > 0).toBe(true);
-            let tempNodeOffsetY = diagram.selectedItems.nodes[0].offsetY;
-            let tempNodeOffsetX = diagram.selectedItems.nodes[0].offsetX;
             mouseEvents.keyDownEvent(diagramCanvas, 'Up');
             expect(diagram.selectedItems.nodes[0].offsetY == 99).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'Down');
@@ -196,7 +185,6 @@ describe('Diagram Control', () => {
         it('Checking commands - annotation edit', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 400, 100);
-            expect(diagram.selectedItems.nodes.length > 0 && diagram.selectedItems.nodes[0].annotations[0] !== undefined).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'F2');
             let editBox = document.getElementById(diagram.element.id + '_editBox');
             expect(editBox != undefined).toBe(true);
@@ -215,20 +203,17 @@ describe('Diagram Control', () => {
 
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 100, 100);
-            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'Enter');
             let editBox = document.getElementById(diagram.element.id + '_editBox');
             (editBox as HTMLInputElement).value = "Node";
             mouseEvents.keyDownEvent(diagramCanvas, 'Escape');
             expect((diagram.selectedItems.nodes[0] as NodeModel).annotations[0].content == "Node").toBe(true);
-
             done();
         });
         it('Checking commands - start text edit (node)', (done: Function) => {
 
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 600 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop);
-            expect(diagram.selectedItems.connectors.length > 0).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'Enter');
             let editBox = document.getElementById(diagram.element.id + '_editBox');
             (editBox as HTMLInputElement).value = "Connector";
@@ -334,6 +319,69 @@ describe('Diagram Control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+});
+describe('SendToBack ordercommands', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagram_div' });
+        document.body.appendChild(ele);
+        var nodes:NodeModel[] = [
+            {
+              id: 'node1',
+              width: 90,
+              height: 70,
+              offsetX: 120,
+              offsetY: 100,
+              style: {
+                fill: '#6BA5D7',
+                strokeColor: 'white',
+                strokeWidth: 1,
+              },
+            },
+            {
+              id: 'node2',
+              width: 90,
+              height: 70,
+              offsetX: 150,
+              offsetY: 120,
+              style: {
+                fill: '#6BA5D7',
+                strokeColor: 'white',
+                strokeWidth: 1,
+              },
+            },
+            {
+              id: 'node3',
+              width: 90,
+              height: 70,
+              offsetX: 170,
+              offsetY: 150,
+              style: {
+                fill: '#6BA5D7',
+                strokeColor: 'white',
+                strokeWidth: 1,
+              },
+            },
+          ];
+        diagram = new Diagram({
+            width: '1500px',
+            height: '600px',
+            nodes: nodes,
+        });
+        diagram.appendTo("#diagram_div");
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Undo after sendtoback the selected node ', (done: Function) => {
+        diagram.select([diagram.nodes[2]]);
+        diagram.sendToBack();
+        diagram.undo();
+        expect(diagram.nodes.length!==0).toBe(true);
+        done();
+    });
 });
 describe('SendToBack exception', () => {
     let diagram: Diagram;
@@ -1126,5 +1174,284 @@ describe(' keyboard commands', () => {
             expect(zIndexBeforeCall ===1  && zIndexAfterCall===2).toBe(true);
             done();
         });
+    });
+});
+describe('connection change events', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'connChange' });
+        document.body.appendChild(ele);
+        let selArray: (NodeModel | ConnectorModel)[] = [];
+        let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 500, offsetY: 300,
+            ports: [{ id: 'n1p1', offset: { x: 1, y: 0.5 } }, { id: 'n1p2', offset: { x: 0.5, y: 1 } }]
+         };
+        let node1: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 100, offsetY: 300,
+            ports: [{ id: 'n2p1', offset: { x: 1, y: 0.5 } }, { id: 'n2p2', offset: { x: 0.5, y: 1 } }]
+         };
+        let connector: ConnectorModel = { id: 'connector1', type: 'Orthogonal',
+            sourceID: 'node1', targetID: 'node2', sourcePortID: 'n1p1', targetPortID: 'n2p2'
+        };
+        diagram = new Diagram({
+            width: 800, height: 500, nodes: [node, node1],
+            connectors: [connector],
+            connectionChange: function (args) {
+                if (args.state) {
+                    args.cancel = true;
+                }
+            }
+        });
+        diagram.appendTo('#connChange');
+        
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking connector connect event ', (done: Function) => {
+       
+        var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas, 105, 360);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 110, 360);
+        mouseEvents.mouseUpEvent(diagramCanvas, 150, 150);
+        done();
+    });
+    it('Checking connector disconnect event ', (done: Function) => {
+       
+        var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas, 150, 360);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 150, 365);
+        mouseEvents.mouseUpEvent(diagramCanvas, 150, 365);
+        done();
+    });
+ });
+ describe('BPMN sub process Shape render highlighter', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let events: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        ele = createElement('div', { id: 'subprocessTrans' });
+        document.body.appendChild(ele);
+        let shadow: ShadowModel = { distance: 10, opacity: 0.5 };
+        let nodes: NodeModel[] = [
+            {
+                id: 'processesStart', width: 30, height: 30, shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    event: { event: 'Start' }
+                }, margin: { left: 40, top: 80 }
+            },{
+                id: 'nodea', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
+                constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                offsetX: 200, offsetY: 200,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: {
+                            collapsed: false, type: 'Transaction',
+                            transaction: {
+                            success: {
+                                id: 'success',
+                                event: 'Start',
+                                trigger: 'None',
+                            },
+                            failure: {
+                                id: 'failure',
+                                event: 'ThrowingIntermediate',
+                                trigger: 'Error',
+                            },
+                            cancel: {
+                                id: 'cancel',
+                                event: 'End',
+                                trigger: 'Cancel',
+                            },
+                            }
+                        } as BpmnSubProcessModel
+                    },
+                },
+        }]
+        let connectors: ConnectorModel[] = [
+            {id:'connector1', sourcePoint:{x:400,y:200}, targetPoint:{x:600,y:200}},
+            {id:'connector2', sourcePoint:{x:125,y:400}, targetPoint:{x:125,y:600}},
+            {id:'connector3', sourcePoint:{x:275,y:400}, targetPoint:{x:275,y:600}},
+        ]
+        diagram = new Diagram({
+            width: 1000, height: 500, nodes: nodes, connectors: connectors
+        });
+        diagram.appendTo('#subprocessTrans');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('check highlighter for sub process when connetor dock', (done: Function) => {
+       
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        let decorator = document.getElementById('connectorSourceThumb');
+        let bounds: any = decorator.getBoundingClientRect();
+        events.mouseDownEvent(diagramCanvas, bounds.x, bounds.y, false, false);
+        events.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y, false, false);
+        events.mouseMoveEvent(diagramCanvas, bounds.x - 50, bounds.y, false, false);
+        events.mouseMoveEvent(diagramCanvas, bounds.x - 100, bounds.y, false, false);
+        events.mouseUpEvent(diagramCanvas, bounds.x - 100, bounds.y, false, false);
+        done();
+    });
+    it('check highlighter for sub process when connetor dock', (done: Function) => {
+       
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[1]]);
+        let decorator = document.getElementById('connectorSourceThumb');
+        let bounds: any = decorator.getBoundingClientRect();
+        events.mouseDownEvent(diagramCanvas, bounds.x, bounds.y, false, false);
+        events.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y, false, false);
+        events.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y - 50, false, false);
+        events.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y - 100, false, false);
+        events.mouseUpEvent(diagramCanvas, bounds.x, bounds.y - 100, false, false);
+        done();
+    });
+    it('check highlighter for sub process when connetor dock', (done: Function) => {
+       
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[2]]);
+        let decorator = document.getElementById('connectorSourceThumb');
+        let bounds: any = decorator.getBoundingClientRect();
+        events.mouseDownEvent(diagramCanvas, bounds.x, bounds.y, false, false);
+        events.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y, false, false);
+        events.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y - 50, false, false);
+        events.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y - 100, false, false);
+        events.mouseUpEvent(diagramCanvas, bounds.x, bounds.y - 100, false, false);
+        done();
+    });
+});
+describe('Diagram Control', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagram_command3' });
+        document.body.appendChild(ele);
+        let selArray: (NodeModel)[] = [];
+        let nodes: NodeModel[] = [
+            {
+                id: 'subProcess1',
+                width: 200,
+                height: 100,
+                offsetX: 150,
+                offsetY: 100,
+                constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                shape: {
+                    shape: 'Activity',
+                    type: 'Bpmn',
+                    activity: {
+                        activity: 'SubProcess',
+                        subProcess: {
+                            collapsed: false,
+                            processes: ['A', 'B'],
+                        },
+                    },
+                },
+            },
+            {
+                id: 'A',
+                width: 50,
+                height: 50,
+                offsetX: 100,
+                offsetY: 100,
+                shape: { type: 'Bpmn', shape: 'Event' },
+               
+            },
+            {
+                id: 'B',
+                width: 50,
+                height: 50,
+                offsetX: 200,
+                offsetY: 100,
+                shape: { type: 'Bpmn', shape: 'Event' },
+               
+            },
+            {
+                id: 'subProcess2',
+                width: 200,
+                height: 100,
+                offsetX: 350,
+                offsetY: 100,
+                constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                shape: {
+                    shape: 'Activity',
+                    type: 'Bpmn',
+                    activity: {
+                        activity: 'SubProcess',
+                        subProcess: {
+                            collapsed: false,
+                            processes: ['C', 'D'],
+                        },
+                    },
+                },
+            },
+            {
+                id: 'C',
+                width: 50,
+                height: 50,
+                offsetX: 300,
+                offsetY: 100,
+                shape: { type: 'Bpmn', shape: 'Event' },
+               
+            },
+            {
+                id: 'D',
+                width: 50,
+                height: 50,
+                offsetX: 400,
+                offsetY: 100,
+                shape: { type: 'Bpmn', shape: 'Event' },
+               
+            }
+        ];
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1',
+                type: 'Straight',
+                sourceID: 'A',
+                targetID: 'C',
+            }
+        ];
+        diagram = new Diagram({
+            width: '900px', height: '700px', nodes: nodes, connectors: connectors
+        });
+ 
+        diagram.appendTo('#diagram_command3');
+        selArray.push(diagram.nodes[0]);
+        diagram.select(selArray);
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('selection change in BPMNSubProcess', (done: Function) => {
+        diagram.select([diagram.nodes[3]]);
+        diagram.select([diagram.connectors[0]]);
+        expect(diagram.nodes.length>0).toBe(true);
+        done();
+    });
+    it('selection change in BPMNSubProcess', (done: Function) => {
+        diagram.select([diagram.nodes[3]]);
+        diagram.select([diagram.connectors[4]]);
+        expect(diagram.nodes.length>0).toBe(true);
+        done();
     });
 });

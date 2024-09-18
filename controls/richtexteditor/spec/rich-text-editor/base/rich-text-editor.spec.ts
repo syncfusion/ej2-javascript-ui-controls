@@ -5,7 +5,7 @@ import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach } 
 import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent, ITableCommandsArgs, DialogType, ToolbarType, PasteCleanup, HtmlEditor, Toolbar } from '../../../src/rich-text-editor/index';
 import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
-import { renderRTE, destroy, dispatchKeyEvent } from './../render.spec';
+import { renderRTE, destroy, dispatchKeyEvent, setCursorPoint as setCursor } from './../render.spec';
 
 function setCursorPoint(curDocument: Document, element: Element, point: number) {
     let range: Range = curDocument.createRange();
@@ -127,8 +127,10 @@ describe('EJ2-60422: Removed nested bullet list when press ctrl+B on two times',
         keyBoardEvent.keyCode = 66;
         keyBoardEvent.code = 'b';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).inputElement.innerHTML === `<ul><li><strong class="focusNode">List parent</strong><ul><li>Nested List</li><li>Nested List﻿﻿<br></li></ul></li></ul>`).toBe(true);
-        done();
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.innerHTML === `<ul><li><strong class="focusNode">List parent</strong><ul><li>Nested List</li><li>Nested List﻿﻿<br></li></ul></li></ul>`).toBe(true);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -149,8 +151,10 @@ describe('831600: When using the mention with the Rich Text Editor, the backspac
         keyBoardEvent.keyCode = 8;
         keyBoardEvent.code = 'Backspace';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).inputElement.innerHTML).toBe(`<p>sdvdsvsdv</p><p>sdvsdv <span contenteditable="false" class="e-mention-chip"><a title="maria@gmail.com">@Maria</a></span>&nbsp;sdvsdvdsv</p>`);
-        done();
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.innerHTML).toBe(`<p>sdvdsvsdv</p><p>sdvsdv <span contenteditable="false" class="e-mention-chip"><a title="maria@gmail.com">@Maria</a></span>&nbsp;sdvsdvdsv</p>`);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -175,8 +179,10 @@ describe('832431: Entire line gets removed while pressing enter key after pressi
         keyBoardEvent.keyCode = 8;
         keyBoardEvent.code = 'Backspace';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).inputElement.innerHTML).toBe(`<p>\n            The Rich Text Editor is a WYSIWYG ('what you see is what you get') editor useful to create and edit content and return the valid\n            <a href="https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#html-editor">HTML markup</a> or\n            <a href="https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#markdown-editor">markdown</a> of the content\n        <b class="focusNode">Toolbar</b></p>`);
-        done();
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.innerHTML).toBe(`<p>\n            The Rich Text Editor is a WYSIWYG ('what you see is what you get') editor useful to create and edit content and return the valid\n            <a href="https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#html-editor">HTML markup</a> or\n            <a href="https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#markdown-editor">markdown</a> of the content\n        <b class="focusNode">Toolbar</b></p>`);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -197,8 +203,10 @@ describe('870158: Pressing backspace inside the list', () => {
         keyBoardEvent.keyCode = 8;
         keyBoardEvent.code = 'Backspace';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).inputElement.innerHTML).toBe(`<ol><li>List node content</li><li>List node <span style="background-color: rgb(255, 255, 0);">content</span><br></li><li><span style="background-color: transparent;">List node content<br></span><span class="focusNode" style="background-color: transparent;">Shift enter pressed</span></li></ol>`);
-        done();
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.innerHTML).toBe(`<ol><li>List node content</li><li>List node <span style="background-color: rgb(255, 255, 0);">content</span><br></li><li><span style="background-color: transparent;">List node content<br></span><span class="focusNode" style="background-color: transparent;">Shift enter pressed</span></li></ol>`);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -219,8 +227,10 @@ describe('840133: Backspace key not working properly when placed cursor in the e
         keyBoardEvent.keyCode = 8;
         keyBoardEvent.code = 'Backspace';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).inputElement.innerHTML).toBe(`<p>This is the first line</p><p>This is the secod line</p><p class="focusNode">This is the thirdline<br>This is also the third line</p>`);
-        done();
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.innerHTML).toBe(`<p>This is the first line</p><p>This is the secod line</p><p class="focusNode">This is the thirdline<br>This is also the third line</p>`);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -241,9 +251,11 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
         keyBoardEvent.keyCode = 8;
         keyBoardEvent.code = 'Backspace';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).inputElement.childNodes[0].innerHTML).toBe('Testing 1Testing 2');
-        expect((rteObj as any).inputElement.childNodes[0].parentElement.hasAttribute('style')).toBe(false);
-        done();
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.childNodes[0].innerHTML).toBe('Testing 1Testing 2');
+            expect((rteObj as any).inputElement.childNodes[0].parentElement.hasAttribute('style')).toBe(false);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -264,8 +276,10 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
         keyBoardEvent.keyCode = 8;
         keyBoardEvent.code = 'Backspace';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).inputElement.childNodes[1].childNodes[1].innerHTML === "Testing 2﻿﻿<br>").toBe(true);
-        done();
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.childNodes[1].childNodes[1].innerHTML === "Testing 2﻿﻿<br>").toBe(true);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -287,8 +301,10 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
         keyBoardEvent.action = 'enter';
         keyBoardEvent.which = 13;
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((node as any).textContent.length).toBe(8);
-        done();
+        setTimeout(() => {
+            expect((node as any).textContent.length).toBe(8);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -309,8 +325,10 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
         keyBoardEvent.action = 'enter';
         keyBoardEvent.which = 13;
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((node as any).textContent.length).toBe(9);
-        done();
+        setTimeout(() => {
+            expect((node as any).textContent.length).toBe(9);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -353,8 +371,10 @@ describe('827539: Random spaces got removed while pressing backspace key in Rich
         keyBoardEvent.keyCode = 8;
         keyBoardEvent.code = 'Backspace';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect(((rteObj as any).inputElement.childNodes[2] as HTMLElement).firstElementChild.querySelectorAll('BR').length === 2).toBe(true);
-        done();
+        setTimeout(() => {
+            expect(((rteObj as any).inputElement.childNodes[2] as HTMLElement).firstElementChild.querySelectorAll('BR').length === 2).toBe(true);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -378,8 +398,10 @@ describe('EJ2-69674 - Deleting bullet list using backspace key doesnt delete the
         keyBoardEvent.keyCode = 8;
         keyBoardEvent.code = 'Backspace';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).inputElement.querySelectorAll('li').length).toBe(0);
-        done();
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.querySelectorAll('li').length).toBe(0);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -518,9 +540,11 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
         keyBoardEvent.keyCode = 8;
         keyBoardEvent.code = 'Backspace';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).inputElement.childNodes[1].childElementCount).toBe(4);
-        expect((rteObj as any).inputElement.innerHTML === `<p><b>Functional\n            Specifications/Requirements:</b></p><ol><li><p>Provide\n            the tool bar support, it’s also customizable.</p></li><li><p>Options\n            to get the HTML elements with styles.</p></li><li>Support\n            to insert image from a defined path.</li><li><p>Footer\n            elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol><p><br></p>`).toBe(true);
-        done();
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.childNodes[1].childElementCount).toBe(4);
+            expect((rteObj as any).inputElement.innerHTML === `<p><b>Functional\n            Specifications/Requirements:</b></p><ol><li><p>Provide\n            the tool bar support, it’s also customizable.</p></li><li><p>Options\n            to get the HTML elements with styles.</p></li><li>Support\n            to insert image from a defined path.</li><li><p>Footer\n            elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol><p><br></p>`).toBe(true);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -540,8 +564,10 @@ describe('EJ2-56125: backSpaceKey action at start of list with previous list emp
         keyBoardEvent.keyCode = 8;
         keyBoardEvent.code = 'Backspace';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect(rteObj.inputElement.textContent).toBe('List Content 1List Content 3');
-        done();
+        setTimeout(() => {
+            expect(rteObj.inputElement.textContent).toBe('List Content 1List Content 3');
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -562,9 +588,11 @@ describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor',
         keyBoardEvent.keyCode = 46;
         keyBoardEvent.code = 'Delete';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).inputElement.childNodes[0].innerHTML).toBe('Testing 1Testing 2');
-        expect((rteObj as any).inputElement.childNodes[0].parentElement.hasAttribute('style')).toBe(false);
-        done();
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.childNodes[0].innerHTML).toBe('Testing 1Testing 2');
+            expect((rteObj as any).inputElement.childNodes[0].parentElement.hasAttribute('style')).toBe(false);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -601,8 +629,10 @@ describe('EJ2-61099: Link in the list reverted when press ctrl+C', () => {
         keyBoardEvent.keyCode = 67;
         keyBoardEvent.code = 'C';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect(rteObj.inputElement.querySelectorAll('a').length).toBe(1);
-        done();
+        setTimeout(() => {
+            expect(rteObj.inputElement.querySelectorAll('a').length).toBe(1);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -645,8 +675,10 @@ describe('EJ2-57616: clearing all list maintains the list element', () => {
         keyBoardEvent.code = 'Backspace';
         expect(rteObj.inputElement.textContent.length).toBe(1049);
         (rteObj as any).keyDown(keyBoardEvent);
-        expect(rteObj.inputElement.textContent.length).toBe(1011);
-        done();
+        setTimeout(() => {
+            expect(rteObj.inputElement.textContent.length).toBe(1011);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -666,8 +698,10 @@ describe('EJ2-56125: backSpaceKey action at start of list with previous list emp
         keyBoardEvent.keyCode = 8;
         keyBoardEvent.code = 'Backspace';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect(rteObj.inputElement.textContent).toBe('List Content 3List Content 4');
-        done();
+        setTimeout(() => {
+            expect(rteObj.inputElement.textContent).toBe('List Content 3List Content 4');
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -688,8 +722,10 @@ describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor',
         keyBoardEvent.keyCode = 46;
         keyBoardEvent.code = 'Delete';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect(rteObj.inputElement.childNodes[1].childNodes[0].textContent === "Testing 1").toBe(true);
-        done();
+        setTimeout(() => {
+            expect(rteObj.inputElement.childNodes[1].childNodes[0].textContent === "Testing 1").toBe(true);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -710,8 +746,10 @@ describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor',
         keyBoardEvent.keyCode = 46;
         keyBoardEvent.code = 'Delete';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect(rteObj.inputElement.childNodes[1].childNodes[0].textContent === "Provide\nthe tool bar support, it’s also customizable.Options\nto get the HTML elements with styles.").toBe(true);
-        done();
+        setTimeout(() => {
+            expect(rteObj.inputElement.childNodes[1].childNodes[0].textContent === "Provide\nthe tool bar support, it’s also customizable.Options\nto get the HTML elements with styles.").toBe(true);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -732,8 +770,10 @@ describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor',
         keyBoardEvent.keyCode = 46;
         keyBoardEvent.code = 'Delete';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect(rteObj.inputElement.childNodes[1].childNodes[1].textContent === "Options\nto get the HTML elements with styles.Support\nto insert image from a defined path.").toBe(true);
-        done();
+        setTimeout(() => {
+            expect(rteObj.inputElement.childNodes[1].childNodes[1].textContent === "Options\nto get the HTML elements with styles.Support\nto insert image from a defined path.").toBe(true);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -754,8 +794,10 @@ describe('EJ2-57112: Delete Key not working when image is focused and deleted', 
         keyBoardEvent.keyCode = 46;
         keyBoardEvent.code = 'Delete';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).inputElement.innerHTML === `<ol><li><p>image</p></li></ol><p class="focusNode"><img alt="Logo" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" style="width: 300px;"></p><p>Content</p>`).toBe(true);
-        done();
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.innerHTML === `<ol><li><p>image</p></li></ol><p class="focusNode"><img alt="Logo" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" style="width: 300px;"></p><p>Content</p>`).toBe(true);
+            done();
+        }, 100);
     });
     afterAll((done) => {
         destroy(rteObj);
@@ -6864,6 +6906,8 @@ describe('69081 - When user paste the table in insert media option, It doesn’t
     });
     it('Paste the table copied to the editor should remove resize elements when paste cleanup injected', (done: DoneFn) => {
         editor.focusIn();
+        editor.pasteCleanupSettings.allowedStyleProps = null;
+        editor.pasteCleanupSettings.allowedStyleProps = undefined;
         const clipBoardData: string = `<!--StartFragment--><table class="e-rte-table" style="box-sizing: border-box; border-spacing: 0px; border-collapse: collapse; background-color: rgb(255, 255, 255); empty-cells: show; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; width: 1503px; min-width: 0px;"><tbody style="box-sizing: border-box;"><tr style="box-sizing: border-box;"><td class="" style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.688px;"><br style="box-sizing: border-box;"></td></tr><tr style="box-sizing: border-box; height: 25px;"><td class="e-cell-select" style="box-sizing: border-box; padding: 2px 5px; border: 1px double rgb(4, 120, 215); height: 24.67px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td class="" style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.688px;"><br style="box-sizing: border-box;"></td></tr><tr style="box-sizing: border-box;"><td class="" style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td class="" style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.688px;"><br style="box-sizing: border-box;"></td></tr></tbody></table><p style="box-sizing: border-box; margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><br style="box-sizing: border-box;"></p><span data-col="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: col-resize; height: 76px; overflow: visible; position: absolute; width: 4px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 16px; left: 16px;"></span><span data-col="1" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: col-resize; height: 76px; overflow: visible; position: absolute; width: 4px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 16px; left: 517px;"></span><span data-col="2" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: col-resize; height: 76px; overflow: visible; position: absolute; width: 4px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 16px; left: 1017px;"></span><span data-col="3" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: col-resize; height: 76px; overflow: visible; position: absolute; width: 4px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 16px; left: 1518px;"></span><span data-row="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: row-resize; height: 4px; overflow: visible; position: absolute; width: 1503px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 39px; left: 16px;"></span><span data-row="1" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: row-resize; height: 4px; overflow: visible; position: absolute; width: 1503px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 64px; left: 16px;"></span><span data-row="2" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: row-resize; height: 4px; overflow: visible; position: absolute; width: 1503px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 89px; left: 16px;"></span><br class="Apple-interchange-newline"><!--EndFragment-->`;
         const dataTransfer: DataTransfer = new DataTransfer();
         dataTransfer.setData('text/html', clipBoardData);
@@ -6878,8 +6922,7 @@ describe('69081 - When user paste the table in insert media option, It doesn’t
 
 describe('872399 - Close the table popup using esc key, the focus does not move table icon ', () => {
     let editor: RichTextEditor;
-    let listCount: number;
-    beforeAll((done: DoneFn) => {
+    beforeEach((done: DoneFn) => {
         editor = renderRTE({
             toolbarSettings: {
                 items: ['CreateTable', 'OrderedList', 'UnorderedList']
@@ -6887,7 +6930,7 @@ describe('872399 - Close the table popup using esc key, the focus does not move 
         });
         done();
     });
-    afterAll((done: DoneFn) => {
+    afterEach((done: DoneFn) => {
         destroy(editor);
         done();
     });
@@ -6901,6 +6944,25 @@ describe('872399 - Close the table popup using esc key, the focus does not move 
             expect(document.activeElement === tableButton).toBe(true);
             done();
         }, 200);
+    });
+    it('For coverage', (done: DoneFn) => {
+        editor.focusIn();
+        const tableButton: HTMLElement = editor.element.querySelector('.e-rte-toolbar .e-toolbar-item button');
+        tableButton.click();
+        const escapekeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true, view: window  });
+        detach(editor.tableModule.popupObj.relateTo as HTMLElement);
+        editor.inputElement.dispatchEvent(escapekeyUpEvent);
+        done();
+    });
+    it('For coverage', (done: DoneFn) => {
+        editor.focusIn();
+        const tableButton: HTMLElement = editor.element.querySelector('.e-rte-toolbar .e-toolbar-item button');
+        tableButton.click();
+        const escapekeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true, view: window  });
+        (editor.tableModule as any).createTableButton.destroy();
+        editor.inputElement.dispatchEvent(escapekeyUpEvent);
+        expect( (editor.tableModule as any).getSelectedTableEle([])).toBeNull();
+        done();
     });
 });
 
@@ -7396,7 +7458,7 @@ describe('876271 - Checking the tooltip is notshown when the dropdown is in open
         destroy(rteObj);
     });
 });
-xdescribe('881576 - The tooltips are not destroyed when the dialog with the editor is closed by a keyboard action.', () => {
+describe('881576 - The tooltips are not destroyed when the dialog with the editor is closed by a keyboard action.', () => {
     let rteObj: RichTextEditor;
     beforeAll((done)=> {
         rteObj = renderRTE({
@@ -7416,8 +7478,7 @@ xdescribe('881576 - The tooltips are not destroyed when the dialog with the edit
         expect(toolTipContent).not.toBe(null);
         rteObj.destroy();
         setTimeout(function () {
-            toolTipContent = document.querySelector('.e-tip-content');
-            expect(toolTipContent).toBe(null);
+            expect(document.body.contains(toolTipContent)).toBe(false);
             done();
         }, 100)
     });
@@ -8425,4 +8486,108 @@ describe('286578: Dialog element not removed when destroying RTE instance in mob
         done();
     });
 });
+
+describe('Bug 908240: Number and Bullet list dropdowns are not applied on selecting it', () => {
+    let rteObj: RichTextEditor;
+    let elem: HTMLElement;
+    let selectNode: HTMLElement;
+    let editNode: HTMLElement;
+    let curDocument: Document;
+    let innerHTML: string = `<div><p class='first-p'>description</p><p>NumberFormatList</p></div>`;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Undo', 'Redo', 'NumberFormatList', 'BulletFormatList']
+            }
+        });
+        elem = rteObj.element;
+        editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+        curDocument = rteObj.contentModule.getDocument();
+        editNode.innerHTML = innerHTML;
+    });
+
+    it('NumberFormatList dropdown action in mac', () => {
+        rteObj.focusIn()
+        selectNode = (editNode.querySelector('.first-p') as HTMLElement).firstChild as HTMLElement
+        setCursor(selectNode, 1);
+        let trg = document.querySelector('[title="Number Format List (Ctrl+Shift+O)"]').childNodes[0].childNodes[0] as HTMLElement
+        let event = new MouseEvent('mousedown', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+        });
+        trg.dispatchEvent(event);
+        (document.querySelector('[title="Number Format List (Ctrl+Shift+O)"]').childNodes[0] as HTMLElement).click();
+        (document.querySelector('.e-dropdown-popup').childNodes[0].childNodes[3] as HTMLElement).click();
+        expect((editNode.querySelector('.first-p') as HTMLElement).innerHTML == `<li>description</li>`).toBe(true)
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe("Toobar list item focus testing -", () => {
+    let rteObj: RichTextEditor;
+    let elem: HTMLElement;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: '<ul><li><br></li></ul>'
+        });
+        elem = rteObj.element;
+    });
+    afterAll((done) => {
+        destroy(rteObj);
+        done();
+    });
+    it('checking the toolbar item is in active state', (done: Function) => {
+        rteObj.focusIn();
+        rteObj.selectAll();
+       (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        expect(((elem.querySelectorAll(".e-toolbar-item.e-tbtn-align")[5] as HTMLElement).classList.contains('e-active'))).toBe(true);
+        done();
+    });
+});
+
+describe('904056: Count exceeds the maximum limit when copy paste content ', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: null, which: 64, key: '' };
+    let curDocument: Document;
+    let selectNode: any;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: `<div><p class='first-p'>First p node-0</p></div>`,
+            placeholder: 'Type something',
+            maxLength: 100,
+            editorMode: 'Markdown'
+        });
+        curDocument = rteObj.contentModule.getDocument();
+        done();
+    });
+    it('Preventing paste the content exceeds the maximum limit', (done) => {
+        selectNode = document.querySelector('.e-content.e-lib.e-keyboard');
+        setCursorPoint(curDocument, selectNode, 0);
+        keyBoardEvent.clipboardData = {
+            getData: (e: any) => {
+                if (e === "text/plain") {
+                    return 'Hi syncfusion website https://ej2.syncfusion.com is here with another URL https://ej2.syncfusion.com text after second URL';
+                } else {
+                    return '';
+                }
+            },
+            items: []
+        };
+        rteObj.onPaste(keyBoardEvent);
+        setTimeout(() => {
+            expect(!isNullOrUndefined(selectNode)).toBe(true);
+            expect(selectNode.value.length === 48).toBe(true);
+            done();
+        }, 10);
+    });
+    afterAll((done) => {
+        destroy(rteObj);
+        done();
+    });
+});
+
 });

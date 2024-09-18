@@ -1,0 +1,181 @@
+@include export-module('e-aiassistview-theme') {
+  .e-aiassistview {
+    border-color: $assist-view-border-color;
+    background-color: $assist-view-bg-color;
+    .e-view-header {
+      border-bottom-color: $assist-view-border-color;
+      .e-toolbar-item::after {
+        background-color: transparent;
+      }
+      .e-toolbar,
+      .e-toolbar-items {
+        background: $assist-view-bg-color;
+      }
+      .e-toolbar-item.e-active::after {
+        background-color: $assist-header-border-bottom-color;
+      }
+      .e-toolbar-item.e-custom-view-header,
+      .e-toolbar-item.e-assist-view-header {
+        .e-btn:active,
+        .e-btn:hover,
+        .e-btn:focus {
+          background: transparent;
+          border-color: transparent;
+        }
+        .e-tbar-btn {
+          background: transparent;
+        }
+      }
+    }
+    .e-views {
+      .e-prompt-icon,
+      .e-output-icon {
+        border: 1px solid $icon-border-color;
+        color: $user-logo-color;
+        background-color: $user-logo-bg-color;
+      }
+      .e-prompt-text {
+        background: $suggested-content-bg-color;
+        color: $suggested-content-text-color;
+        @if ($skin-name == 'bootstrap5.3') {
+          border: none;
+        }
+        @else {
+          border: 1px solid $prompt-text-border-color;
+        }
+      }
+      .e-content-body {
+        color: $response-text-color;
+        a {
+          @if $theme-name == 'tailwind' or $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'fluent2' or $theme-name == 'FluentUI' or $theme-name == 'fabric' or $theme-name == 'bootstrap5' or $theme-name == 'bootstrap4' or $theme-name == 'bootstrap' or $theme-name == 'bootstrap5.3' {
+            color: rgba(10, 83, 172, 1);
+          }
+          @if $theme-name == 'tailwind-dark' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' or $theme-name == 'fluentui-dark' or $theme-name == 'fabric-dark' or $theme-name == 'bootstrap-dark' or $theme-name == 'highcontrast' or $theme-name == 'bootstrap5.3-dark' or $theme-name == 'fluent2-dark' or $theme-name == 'fluent2-highcontrast' {
+            color: rgba(124, 180, 249, 1);
+          }
+        }
+        pre {
+          background: $suggested-content-bg-color;
+        }
+        tbody,
+        td,
+        tfoot,
+        th,
+        thead,
+        tr {
+          border: 1px solid $assist-view-border-color;
+        }
+        blockquote {
+          border-left: 4px solid $suggested-content-bg-color;
+        }
+        img,
+        svg {
+          background-color: $suggested-content-bg-color;
+        }
+      }
+      .e-content-body code:not(pre code) {
+        @if $theme-name == 'tailwind' or $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'fluent2' or $theme-name == 'FluentUI' or $theme-name == 'fabric' or $theme-name == 'bootstrap5' or $theme-name == 'bootstrap4' or $theme-name == 'bootstrap' or $theme-name == 'bootstrap5.3' {
+          background: rgba(255, 241, 241, 1);
+          color: rgba(134, 18, 18, 1);
+        }
+        @if $theme-name == 'tailwind-dark' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' or $theme-name == 'fluentui-dark' or $theme-name == 'fabric-dark' or $theme-name == 'bootstrap-dark' or $theme-name == 'highcontrast' or $theme-name == 'bootstrap5.3-dark' or $theme-name == 'fluent2-dark' or $theme-name == 'fluent2-highcontrast' {
+          background: rgba(74, 44, 44, 1);
+          color: rgba(255, 212, 212, 1);
+        }
+      }
+      .e-suggestions {
+        .e-suggestion-header {
+          color: $suggesstions-header-color;
+        }
+        li {
+          color: $suggested-content-text-color;
+          box-shadow: $suggestion-li-box-shadow;
+          @if ($skin-name == 'bootstrap5.3') {
+            border: none;
+          }
+          @else {
+            border: 1px solid $suggestion-li-border-color;
+          }
+        }
+      }
+    }
+    .e-stop-response {
+      border-color: $response-stopper-border-color;
+      color: $response-stopper-item-color;
+      background-color: $response-stopper-bg-color;
+      box-shadow: $response-stopper-box-shadow;
+    }
+    .e-views,
+    .e-custom-view,
+    .e-aiassist-view-content-section {
+      &::-webkit-scrollbar-thumb {
+        background: $scrollbar-color;
+      }
+    }
+    .e-footer {
+      textarea::-webkit-scrollbar-thumb {
+        background: $scrollbar-color;
+      }
+      .e-assist-send {
+        color: $send-icon-color;
+        &.disabled {
+          color: $send-icon-disabled-color;
+        }
+      }
+      // To override the default border style of the textarea component for the Material and Material3 themes.
+      .e-input-group.e-multi-line-input {
+        @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
+          border: 1px solid $assist-view-border-color !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+    }
+    .e-view-header,
+    .e-prompt-toolbar,
+    .e-content-footer {
+      .e-toolbar .e-toolbar-item .e-tbar-btn:hover:active .e-icons,
+      .e-toolbar .e-toolbar-item .e-tbar-btn:hover .e-icons,
+      .e-toolbar .e-toolbar-item .e-tbar-btn:hover .e-tbar-btn-text,
+      .e-toolbar .e-toolbar-item .e-tbar-btn:hover:active .e-tbar-btn-text {
+        color: $header-text-color;
+      }
+    }
+    .e-view-header {
+      .e-toolbar .e-toolbar-item.e-active .e-tbar-btn:hover:active .e-icons,
+      .e-toolbar .e-toolbar-item.e-active .e-tbar-btn:hover .e-icons,
+      .e-toolbar .e-toolbar-item.e-active .e-tbar-btn:hover .e-tbar-btn-text,
+      .e-toolbar .e-toolbar-item.e-active .e-tbar-btn:hover:active .e-tbar-btn-text,
+      .e-toolbar .e-toolbar-item.e-active .e-tbar-btn .e-icons,
+      .e-toolbar .e-toolbar-item.e-active .e-tbar-btn .e-tbar-btn-text {
+        color: $header-active-text-color;
+      }
+    }
+    &.e-rtl {
+      .e-views {
+        .e-content-body {
+          blockquote {
+            border-right: 4px solid $suggested-content-bg-color;
+          }
+        }
+      }
+    }
+  }
+  .e-prompt-toolbar,
+  .e-content-footer {
+    .e-toolbar,
+    .e-toolbar .e-toolbar-items,
+    .e-tbar-btn:not(:hover),
+    .e-tbar-btn:not(:active),
+    .e-tbar-btn:not(:focus) {
+      background: $assist-view-bg-color;
+    }
+    .e-toolbar {
+      box-shadow: unset;
+      border: unset;
+    }
+  }
+  .e-aiassist-view-toolbar-item .e-tbar-btn:not(:hover),
+  .e-aiassist-view-toolbar-item .e-tbar-btn:not(:active),
+  .e-aiassist-view-toolbar-item .e-tbar-btn:not(:focus) {
+    background: transparent;
+  }
+}

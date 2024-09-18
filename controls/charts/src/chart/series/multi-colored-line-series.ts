@@ -6,7 +6,7 @@ import { MultiColoredSeries } from './multi-colored-base';
 import { ChartSegmentModel } from './chart-series-model';
 
 /**
- * `MultiColoredLineSeries` used to render the line series with multi color.
+ * The `MultiColoredLineSeries` module is used to render line series with multiple colors.
  */
 
 export class MultiColoredLineSeries extends MultiColoredSeries {
@@ -20,6 +20,7 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
      * @param {boolean} pointAnimate - Specifies whether the point has to be animated or not.
      * @param {boolean} pointUpdate - Specifies whether the point has to be updated or not.
      * @returns {void}
+     * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean, pointAnimate?: boolean, pointUpdate?: boolean): void {
         let previous: Points = null;
@@ -92,11 +93,8 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
             }
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -105,6 +103,7 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         this.doLinearAnimation(series, series.animation);

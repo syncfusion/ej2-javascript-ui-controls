@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-pdf-export",
-	"version": "26.2.11",
+	"version": "0.38.8",
 	"description": "Syncfusion TypeScript Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -34,7 +34,8 @@
 		"simple-odata-server": "^0.3.1"
 	},
 	"dependencies": {
-		"@syncfusion/ej2-compression": "*"
+		"@syncfusion/ej2-compression": "*",
+		"markdown-spellcheck": "^1.3.1"
 	},
 	"scripts": {
 		"build": "gulp build",

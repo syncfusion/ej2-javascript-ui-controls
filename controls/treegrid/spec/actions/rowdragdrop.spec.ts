@@ -7,10 +7,11 @@ import { RowDD } from '../../src/treegrid/actions/rowdragdrop';
 import { ITreeData, TreeGridColumn } from '../../src';
 import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
+import { Sort } from '../../src/treegrid/actions/sort';
 /**
  * TreeGrid Row Drag And Drop spec 
  */
-TreeGrid.Inject(RowDD, VirtualScroll, Toolbar);
+TreeGrid.Inject(RowDD, VirtualScroll, Toolbar, Sort);
 describe('Treegrid Row Reorder', () => {
     let TreeGridObj: TreeGrid;
     beforeAll((done: Function) => {
@@ -1124,6 +1125,389 @@ describe('Treegrid indent and outdent action in virtualization', () => {
     TreeGridObj.selectRow(3);
     TreeGridObj.indent();
     expect(TreeGridObj.getCurrentViewRecords()[2]['level'] === 2).toBe(true);
+  });
+
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});
+
+describe('Drag and drop with in the treegrid', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        height: 450,
+        allowRowDragAndDrop: true,
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      }, done);
+  });
+  it('coverage improvement single treegrid with data drag and drop', () => {
+    expect(TreeGridObj.rowDropSettings.targetID).toBe(undefined);
+    const dragRowElem: Element = TreeGridObj.getRowByIndex(2).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+    const dropRowElem: Element = TreeGridObj.getRowByIndex(1).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+    const dragClient: any = dragRowElem.getBoundingClientRect();
+    const dropClient: any = dropRowElem.getBoundingClientRect();
+    TreeGridObj.selectRow(2);
+    dragRowElem.classList.add('e-rowcell');
+    (TreeGridObj.grid.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+    (TreeGridObj.grid.rowDragAndDropModule as any).helper({
+      target: TreeGridObj.getContentTable().querySelector('tr'),
+      sender: { clientX: 10, clientY: 10, target: dragRowElem }
+    });
+    const dropClone: HTMLElement = TreeGridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+    (TreeGridObj.grid.rowDragAndDropModule as any).dragStart({
+      target: dragRowElem,
+      event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+    });
+    (TreeGridObj.grid.rowDragAndDropModule as any).drag({
+      target: dropRowElem,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+    (TreeGridObj.grid.rowDragAndDropModule as any).dragStop({
+      target: dropRowElem,
+      element: TreeGridObj.getContentTable(),
+      helper: dropClone,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+  });
+
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});
+
+describe('Drag and drop with immutablemode', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        enableImmutableMode: true,
+        height: 450,
+        allowRowDragAndDrop: true,
+        toolbar: ['Indent', 'Outdent'],
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      }, done);
+  });
+  it('coverage improvement single treegrid with data drag and drop', () => {
+    expect(TreeGridObj.rowDropSettings.targetID).toBe(undefined);
+    const dragRowElem: Element = TreeGridObj.getRowByIndex(2).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+    const dropRowElem: Element = TreeGridObj.getRowByIndex(1).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+    const dragClient: any = dragRowElem.getBoundingClientRect();
+    const dropClient: any = dropRowElem.getBoundingClientRect();
+    TreeGridObj.selectRow(2);
+    dragRowElem.classList.add('e-rowcell');
+    (TreeGridObj.grid.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+    (TreeGridObj.grid.rowDragAndDropModule as any).helper({
+      target: TreeGridObj.getContentTable().querySelector('tr'),
+      sender: { clientX: 10, clientY: 10, target: dragRowElem }
+    });
+    const dropClone: HTMLElement = TreeGridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+    (TreeGridObj.grid.rowDragAndDropModule as any).dragStart({
+      target: dragRowElem,
+      event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+    });
+    (TreeGridObj.grid.rowDragAndDropModule as any).drag({
+      target: dropRowElem,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+    (TreeGridObj.grid.rowDragAndDropModule as any).dragStop({
+      target: dropRowElem,
+      element: TreeGridObj.getContentTable(),
+      helper: dropClone,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+  });
+
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});
+
+describe('Drag and drop with two treegrid', () => {
+  let gridObj1: TreeGrid;
+  let gridObj2: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj1 = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        height: 400,
+        allowRowDragAndDrop: true,
+        allowPaging: true,
+        selectionSettings: { type: 'Multiple' },
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      }, done);
+  });
+  beforeAll((done: Function) => {
+    gridObj2 = createGrid(
+      {
+        dataSource: [],
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        height: 400,
+        allowRowDragAndDrop: true,
+        allowPaging: true,
+        selectionSettings: { type: 'Multiple' },
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      }, done);
+  });
+  it('coverage improvement multiple treegrid with data drag and drop', () => {
+    gridObj1.element.style.display = 'inline-block';
+    gridObj2.element.style.display = 'inline-block';
+    expect(gridObj1.rowDropSettings.targetID).toBe(undefined);
+    expect((gridObj2.dataSource as Object[]).length).toBe(0);
+    gridObj1.rowDropSettings.targetID = gridObj2.element.id;
+    const dragRowElem: Element = gridObj1.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+    const dropRowElem: Element = gridObj2.getContentTable().querySelector('tr');
+    const dragClient: any = dragRowElem.getBoundingClientRect();
+    const dropClient: any = dropRowElem.getBoundingClientRect();
+    gridObj1.selectRows([0, 1]);
+    dragRowElem.classList.add('e-rowcell');
+    (gridObj1.grid.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+    (gridObj1.grid.rowDragAndDropModule as any).helper({
+      target: gridObj1.getContentTable().querySelector('tr'),
+      sender: { clientX: 10, clientY: 10, target: dragRowElem }
+    });
+    const dropClone: HTMLElement = gridObj1.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+    (gridObj1.grid.rowDragAndDropModule as any).dragStart({
+      target: dragRowElem,
+      event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+    });
+    (gridObj1.grid.rowDragAndDropModule as any).drag({
+      target: dropRowElem,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+    (gridObj1.grid.rowDragAndDropModule as any).dragStop({
+      target: dropRowElem,
+      element: gridObj2.getContentTable(),
+      helper: dropClone,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+  });
+
+  afterAll(() => {
+    destroy(gridObj1);
+    gridObj1 = null;
+    destroy(gridObj2);
+    gridObj2 = null;
+  });
+});
+
+describe('Treegrid Row Reorder using self reference data', () => {
+  let gridObj1: TreeGrid;
+  let gridObj2: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj1 = createGrid(
+      {
+        dataSource: projectData2,
+        idMapping: 'TaskID',
+        parentIdMapping: 'parentID',
+        treeColumnIndex: 1,
+        allowRowDragAndDrop: true,
+        allowPaging: true,
+        height: 400,
+        selectionSettings: { type: 'Multiple' },
+        columns: [
+          { field: "TaskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'TaskName', headerText: 'TaskName', width: 60 },
+          { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+        ],
+      },done); 
+    });
+    beforeAll((done: Function) => {
+      gridObj2 = createGrid(
+        {
+          dataSource: [],
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          treeColumnIndex: 1,
+          height: 400,
+          allowRowDragAndDrop: true,
+          allowPaging: true,
+        selectionSettings: { type: 'Multiple' },
+          columns: [
+            { field: "TaskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+            { field: 'TaskName', headerText: 'TaskName', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ],
+        },done); 
+      });
+
+  it('coverage improvement multiple treegrid with data drag and drop with self referntial data', () => {
+    gridObj1.element.style.display = 'inline-block';
+    gridObj2.element.style.display = 'inline-block';
+    expect(gridObj1.rowDropSettings.targetID).toBe(undefined);
+    expect((gridObj2.dataSource as Object[]).length).toBe(0);
+    gridObj1.rowDropSettings.targetID = gridObj2.element.id;
+    const dragRowElem: Element = gridObj1.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+    const dropRowElem: Element = gridObj2.getContentTable().querySelector('tr');
+    const dragClient: any = dragRowElem.getBoundingClientRect();
+    const dropClient: any = dropRowElem.getBoundingClientRect();
+    gridObj1.selectRows([0, 1]);
+    dragRowElem.classList.add('e-rowcell');
+    (gridObj1.grid.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+    (gridObj1.grid.rowDragAndDropModule as any).helper({
+      target: gridObj1.getContentTable().querySelector('tr'),
+      sender: { clientX: 10, clientY: 10, target: dragRowElem }
+    });
+    const dropClone: HTMLElement = gridObj1.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+    (gridObj1.grid.rowDragAndDropModule as any).dragStart({
+      target: dragRowElem,
+      event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+    });
+    (gridObj1.grid.rowDragAndDropModule as any).drag({
+      target: dropRowElem,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+    (gridObj1.grid.rowDragAndDropModule as any).dragStop({
+      target: dropRowElem,
+      element: gridObj2.getContentTable(),
+      helper: dropClone,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+  });
+  afterAll(() => {
+    destroy(gridObj1);
+    gridObj1 = null;
+    destroy(gridObj2);
+    gridObj2 = null;
+  });
+});
+
+describe('Drag and drop with in the treegrid', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        enableImmutableMode: true,
+        height: 450,
+        allowRowDragAndDrop: true,
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      }, done);
+  });
+  it('coverage improvement single treegrid with data drag and drop', () => {
+    expect(TreeGridObj.rowDropSettings.targetID).toBe(undefined);
+    const dragRowElem: Element = TreeGridObj.getRowByIndex(2).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+    const dropRowElem: Element = TreeGridObj.getRowByIndex(1).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+    const dragClient: any = dragRowElem.getBoundingClientRect();
+    const dropClient: any = dropRowElem.getBoundingClientRect();
+    TreeGridObj.selectRow(2);
+    dragRowElem.classList.add('e-rowcell');
+    (TreeGridObj.grid.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+    TreeGridObj.rowDrop = function(args: any){
+      this.rowDragAndDropModule.dropPosition = 'middleSegment';
+    };
+    (TreeGridObj.grid.rowDragAndDropModule as any).helper({
+      target: TreeGridObj.getContentTable().querySelector('tr'),
+      sender: { clientX: 10, clientY: 10, target: dragRowElem }
+    });
+    const dropClone: HTMLElement = TreeGridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+    (TreeGridObj.grid.rowDragAndDropModule as any).dragStart({
+      target: dragRowElem,
+      event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+    });
+    (TreeGridObj.grid.rowDragAndDropModule as any).drag({
+      target: dropRowElem,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+    (TreeGridObj.grid.rowDragAndDropModule as any).dragStop({
+      target: dropRowElem,
+      element: TreeGridObj.getContentTable(),
+      helper: dropClone,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+  });
+
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});
+
+describe('Drag and drop with sorting', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        allowSorting: true,
+        height: 450,
+        allowRowDragAndDrop: true,
+        toolbar: ['Indent', 'Outdent'],
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+        sortSettings: { columns: [{ field: 'taskName', direction: 'Ascending' }]},
+      }, done);
+  });
+  it('coverage improvement single treegrid with data drag and drop with sorting', () => {
+    expect(TreeGridObj.rowDropSettings.targetID).toBe(undefined);
+    const dragRowElem: Element = TreeGridObj.getRowByIndex(2).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+    const dropRowElem: Element = TreeGridObj.getRowByIndex(1).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+    const dragClient: any = dragRowElem.getBoundingClientRect();
+    const dropClient: any = dropRowElem.getBoundingClientRect();
+    TreeGridObj.selectRow(2);
+    dragRowElem.classList.add('e-rowcell');
+    (TreeGridObj.grid.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+    (TreeGridObj.grid.rowDragAndDropModule as any).helper({
+      target: TreeGridObj.getContentTable().querySelector('tr'),
+      sender: { clientX: 10, clientY: 10, target: dragRowElem }
+    });
+    const dropClone: HTMLElement = TreeGridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+    (TreeGridObj.grid.rowDragAndDropModule as any).dragStart({
+      target: dragRowElem,
+      event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+    });
+    (TreeGridObj.grid.rowDragAndDropModule as any).drag({
+      target: dropRowElem,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+    (TreeGridObj.grid.rowDragAndDropModule as any).dragStop({
+      target: dropRowElem,
+      element: TreeGridObj.getContentTable(),
+      helper: dropClone,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
   });
 
   afterAll(() => {

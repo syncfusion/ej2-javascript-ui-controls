@@ -177,7 +177,8 @@ describe('Stacking Bar Series', () => {
                 chartObj.primaryXAxis.interval = null;
                 const seriesElements: HTMLElement = document.getElementById('barElement-svg-0-region-series-0-point-2');
                 const fill: string = seriesElements.getAttribute('fill');
-                expect(fill === '#6355C7').toBe(true); done();
+
+                expect(fill === '#FD7E14').toBe(true); done();
             };
             chartObj.loaded = loaded;
             chartObj.primaryXAxis.minimum = -20;
@@ -423,7 +424,7 @@ describe('Stacking Bar Series', () => {
         it('Checking with logarithmic axis', (done: Function) => {
             loaded = (args: Object): void => {
                 const element: HTMLElement = document.getElementById('barElement-svg-0-region-series-0-point-2');
-                expect(element.getAttribute('fill')).toBe('#6355C7');
+                expect(element.getAttribute('fill')).toBe('#FD7E14');
                 done();
             };
             chartObj.series = [{
@@ -573,7 +574,7 @@ describe('Stacking Bar Series', () => {
             loaded = (args: Object): void => {
                 const element: HTMLElement = document.getElementById('barElement-svg-series-0-point-0-data-label');
                 expect(element.textContent === '10').toBe(true);
-                expect(element.getAttribute('fill')).toBe('#FFFFFF');
+                expect(element.getAttribute('fill')).toBe('#212529');
                 done();
             };
             chartObj.loaded = loaded;
@@ -650,7 +651,7 @@ describe('Stacking Bar Series', () => {
         it('Checking font color saturation - background black', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: HTMLElement = document.getElementById('barElement-svg-series-2-point-4-data-label');
-                expect(textElement.getAttribute('fill')).toBe('#000000');
+                expect(textElement.getAttribute('fill')).toBe('#212529');
                 done();
             };
             chartObj.loaded = loaded;
@@ -660,7 +661,7 @@ describe('Stacking Bar Series', () => {
         it('Checking font color saturation - background white', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: HTMLElement = document.getElementById('barElement-svg-series-2-point-4-data-label');
-                expect(textElement.getAttribute('fill')).toBe('#000000'); done();
+                expect(textElement.getAttribute('fill')).toBe('#212529'); done();
             };
             chartObj.loaded = loaded;
             chartObj.refresh();
@@ -762,7 +763,7 @@ describe('Stacking Bar Series', () => {
         });
         it('Checking datalabel template', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('barElement-series-0-data-label-5').style.left).toBe('242.723px');
+                expect(document.getElementById('barElement-series-0-data-label-5').style.left).toBe('241.582px');
                 done();
             };
             chartObj.loaded = loaded;
@@ -827,15 +828,15 @@ describe('Stacking Bar Series', () => {
                 let point: Element = document.getElementById('container-svg-0-region-series-0-point-0-front-front-front');
                 let path: string[] = point.getAttribute('d').split(' ');
                 let x: number = parseInt(path[1], 10);
-                expect(x).toBe(199 );
+                expect(x).toBe(198 );
                 point = document.getElementById('container-svg-0-region-series-1-point-0');
                 path = point.getAttribute('d').split(' ');
                 x = parseInt(path[1], 10);
-                expect(x).toBe(90);
+                expect(x).toBe(88);
                 point = document.getElementById('container-svg-0-region-series-2-point-0');
                 path = point.getAttribute('d').split(' ');
                 x = parseInt(path[1], 10);
-                expect(x).toBe(90);
+                expect(x).toBe(88);
                 done();
             };
             chartObj.loaded = loaded;
@@ -886,6 +887,23 @@ describe('Stacking Bar Series', () => {
                 expect(element.textContent === '65').toBe(true);
                 done();
             };
+            chartObj.series[0].dataLabel.visible = true;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Checking default data', (done: Function) => {
+            loaded = (args: Object): void => {
+                const element: HTMLElement = document.getElementById('container');
+                expect(element.textContent !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].dataSource = [
+                { x: new Date(2000, 6, 11), y: -6 }, { x: new Date(2002, 3, 7), y: null }];
+            chartObj.primaryYAxis = {
+                title: 'Percentage (%)',
+                minimum: -2,
+                maximum: 10,
+            }
             chartObj.series[0].dataLabel.visible = true;
             chartObj.loaded = loaded;
             chartObj.refresh();

@@ -1,6 +1,6 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { FormFieldsBase } from './index';
-import { PdfAnnotationFlag, PdfGraphics, PdfInkAnnotation, PdfPage, PdfPen, _PdfPath } from '@syncfusion/ej2-pdf';
+import { AnnotationRenderer, FormFieldsBase, Path, PointBase } from './index';
+import { PdfAnnotationFlag, PdfGraphics, PdfInkAnnotation, PdfPage, PdfPen, PdfPath } from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase } from '../index';
 import { Rect } from '@syncfusion/ej2-drawings';
 
@@ -56,8 +56,8 @@ export class SignatureBase {
                                 pageWidth = size[1];
                             }
                             else {
-                                pageHeight = size[0];
-                                pageWidth = size[1];
+                                pageHeight = size[1];
+                                pageWidth = size[0];
                             }
                             let bounds: Rect = JSON.parse(data.bounds);
                             bounds = this.getSignatureBounds(bounds, this.convertPointToPixel(pageHeight),
@@ -114,7 +114,7 @@ export class SignatureBase {
                             const colors: PdfPen = new PdfPen(color, width);
                             colors._width = thickness;
                             if (stampObjects.length > 0) {
-                                let dataPath: _PdfPath = new _PdfPath();
+                                let dataPath: PdfPath = new PdfPath();
                                 for (let j: number = 0; j < stampObjects.length; j++) {
                                     const value: any = stampObjects[parseInt(j.toString(), 10)];
                                     const path: string = value.command.toString();
@@ -124,12 +124,12 @@ export class SignatureBase {
                                     const currentY: number = ((value.y - minimumY) / differenceY);
                                     if (path === 'M') {
                                         if (j !== 0) {
-                                            page.graphics._drawPath(dataPath, colors, null);
-                                            dataPath = new _PdfPath();
+                                            page.graphics.drawPath(dataPath, colors, null);
+                                            dataPath = new PdfPath();
                                         }
                                         newPoint1 = [newX, currentY];
                                         if (!isNullOrUndefined(graphics)) {
-                                            dataPath._addLine(newX, currentY, newX, currentY);
+                                            dataPath.addLine(newX, currentY, newX, currentY);
                                         }
                                     }
                                     else if (path === 'L') {
@@ -137,12 +137,12 @@ export class SignatureBase {
                                         if (graphics != null) {
                                             // Removed this line to fix the issue EJ2-60295
                                             // graphics.DrawLine(colors, newpoint1, newpoint2);
-                                            dataPath._addLine(newPoint1[0], newPoint1[1], newPoint2[0], newPoint2[1]);
+                                            dataPath.addLine(newPoint1[0], newPoint1[1], newPoint2[0], newPoint2[1]);
                                         }
                                         newPoint1 = newPoint2;
                                     }
                                     if (j === stampObjects.length - 1) {
-                                        page.graphics._drawPath(dataPath, colors, null);
+                                        page.graphics.drawPath(dataPath, colors, null);
                                     }
                                 }
                             }
@@ -177,7 +177,7 @@ export class SignatureBase {
             bound = { 'left': (pageWidth - bounds.left - bounds.width), 'top': (pageHeight - bounds.top - bounds.height), 'width': bounds.width, 'height': bounds.height };
         }
         else if (rotateAngle === 3) {
-            bound = { 'left': bounds.top, 'top': (pageHeight - bounds.width), 'width': bounds.height, 'height': bounds.width };
+            bound = { 'left': bounds.top, 'top': (pageHeight - bounds.left - bounds.width), 'width': bounds.height, 'height': bounds.width };
         }
         return bound;
     }
@@ -189,6 +189,7 @@ export class SignatureBase {
      * @returns {void}
      */
     public saveSignatureAsAnnotatation(jsonObject: { [key: string]: string }, loadedDocument: any): void {
+        const annotationRenderer: AnnotationRenderer = new AnnotationRenderer(this.pdfViewer, this.pdfViewerBase);
         const signatureDetails: any = JSON.parse(jsonObject.signatureData);
         if (!isNullOrUndefined(signatureDetails)) {
             for (let i: number = 0; i < signatureDetails.length; i++) {
@@ -210,12 +211,16 @@ export class SignatureBase {
                         else {
                             const bounds: Rect = JSON.parse(signatureAnnotation.bounds);
                             const stampObjects: any = JSON.parse(signatureAnnotation.data);
-                            const left: number = this.convertPixelToPoint(bounds.left);
-                            const top: number = this.convertPixelToPoint(bounds.top);
-                            const width: number = this.convertPixelToPoint(bounds.width);
-                            const height: number = this.convertPixelToPoint(bounds.height);
                             const pageNumber: number = signatureAnnotation.pageIndex;
                             const page: PdfPage = loadedDocument.getPage(pageNumber);
+                            const cropValues: PointBase = annotationRenderer.getCropBoxValue(page, false);
+                            const left: number = cropValues.x + this.convertPixelToPoint(bounds.left);
+                            let top: number = this.convertPixelToPoint(bounds.top);
+                            if (!(cropValues.x === 0 && (page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]))) {
+                                top -= cropValues.y;
+                            }
+                            const width: number = this.convertPixelToPoint(bounds.width);
+                            const height: number = this.convertPixelToPoint(bounds.height);
                             // let cropX = 0;
                             // let cropY = 0;
                             // if(page.cropBox.x)
@@ -227,17 +232,24 @@ export class SignatureBase {
                             let minimumY: number = -1;
                             let maximumX: number = -1;
                             let maximumY: number = -1;
+                            const rotationAngle: number = annotationRenderer.getInkRotateAngle(page.rotation.toString());
+                            const drawingPath: PdfPath = new PdfPath();
                             for (let p: number = 0; p < stampObjects.length; p++) {
-                                const value: any = stampObjects[parseInt(p.toString(), 10)];
+                                const val: any = stampObjects[parseInt(p.toString(), 10)];
+                                drawingPath.addLine(val.x, val.y, 0, 0);
+                            }
+                            const rotatedPath: Path = annotationRenderer.getRotatedPathForMinMax(drawingPath._points, rotationAngle);
+                            for (let k: number = 0; k < rotatedPath.points.length; k += 2) {
+                                const value: number[] = rotatedPath.points[parseInt(k.toString(), 10)];
                                 if (minimumX === -1) {
-                                    minimumX = value.x;
-                                    minimumY = value.y;
-                                    maximumX = value.x;
-                                    maximumY = value.x;
+                                    minimumX = value[0];
+                                    minimumY = value[1];
+                                    maximumX = value[0];
+                                    maximumY = value[1];
                                 }
                                 else {
-                                    const point1: number = value.x;
-                                    const point2: number = value.y;
+                                    const point1: number = value[0];
+                                    const point2: number = value[1];
                                     if (minimumX >= point1) {
                                         minimumX = point1;
                                     }
@@ -252,52 +264,106 @@ export class SignatureBase {
                                     }
                                 }
                             }
-                            const newDifferenceX: number = maximumX - minimumX;
-                            const newDifferenceY: number = maximumY - minimumY;
+                            let newDifferenceX: number = (maximumX - minimumX) / width;
+                            let newDifferenceY: number = (maximumY - minimumY) / height;
+                            if (newDifferenceX === 0) {
+                                newDifferenceX = 1;
+                            }
+                            else if (newDifferenceY === 0) {
+                                newDifferenceY = 1;
+                            }
+
                             let linePoints: number[] = [];
                             let isNewValues: number = 0;
-                            for (let j: number = 0; j < stampObjects.length; j++) {
-                                const value: any = stampObjects[parseInt(j.toString(), 10)];
-                                const path: string = value.command.toString();
-                                if (path === 'M' && j !== 0) {
-                                    isNewValues = j;
-                                    break;
+                            if (rotationAngle !== 0) {
+                                for (let j: number = 0; j < stampObjects.length; j++) {
+                                    const val: any = stampObjects[parseInt(j.toString(), 10)];
+                                    const path: string = val['command'].toString();
+                                    if (path === 'M' && j !== isNewValues) {
+                                        isNewValues = j;
+                                        break;
+                                    }
+                                    linePoints.push((parseFloat(val['x'].toString())));
+                                    linePoints.push((parseFloat(val['y'].toString())));
                                 }
-                                const differenceX: number = ((newDifferenceX) / width);
-                                const differenceY: number = ((newDifferenceY) / height);
-                                linePoints.push(((value.x - minimumX) / differenceX) + left);
-                                const newX: number = ((value.y - minimumY) / differenceY);
-                                linePoints.push(loadedDocument.getPage(pageNumber).size[1] - newX - top);
-                            }
-                            let highestY: number = 1;
-                            for (let k: number = 0; k < linePoints.length - 1; k++) {
-                                if (linePoints[parseInt(k.toString(), 10)] > highestY) {
-                                    highestY = linePoints[parseInt(k.toString(), 10)];
+                                const rotatedPoints: PdfPath = annotationRenderer.getRotatedPath(linePoints, rotationAngle);
+                                linePoints = [];
+                                for (let z: number = 0; z < rotatedPoints._points.length; z += 2) {
+                                    linePoints.push((rotatedPoints._points[parseInt(z.toString(), 10)][0] - minimumX)
+                                        / newDifferenceX + left);
+                                    linePoints.push(page.size[1] - (rotatedPoints._points[parseInt(z.toString(), 10)][1]
+                                        - minimumY) / newDifferenceY - top);
                                 }
                             }
-                            const rectangle: Rect = new Rect(left, top, width, height);
-                            const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation([rectangle.x, rectangle.y, rectangle.width,
-                                rectangle.height], linePoints);
-                            const bound: Rect = new Rect(inkAnnotation.bounds.x, inkAnnotation.bounds.y, inkAnnotation.bounds.width,
-                                                         inkAnnotation.bounds.height);
+                            else {
+                                for (let j: number = 0; j < stampObjects.length; j++) {
+                                    const val: any = stampObjects[parseInt(j.toString(), 10)];
+                                    const path: string = val['command'].toString();
+                                    if (path === 'M' && j !== isNewValues) {
+                                        isNewValues = j;
+                                        break;
+                                    }
+                                    linePoints.push(((val.x - minimumX) / newDifferenceX) + left);
+                                    const newX: number = ((val.y - minimumY) / newDifferenceY);
+                                    linePoints.push(page.size[1] - newX - top);
+                                }
+                            }
+                            const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation([left, top, width, height], linePoints);
+                            let bound: Rect = new Rect();
+                            bound = new Rect(inkAnnotation.bounds.x, (page.size[1] - (inkAnnotation.bounds.y +
+                                inkAnnotation.bounds.height)), inkAnnotation.bounds.width, inkAnnotation.bounds.height);
                             inkAnnotation.bounds = bound;
                             inkAnnotation.color = color;
                             linePoints = [];
-                            for (let i: number = isNewValues; i < stampObjects.length; i++) {
-                                const val: any = stampObjects[parseInt(i.toString(), 10)];
-                                const path: string = val['command'].toString();
-                                if (path === 'M' && i !== isNewValues) {
-                                    inkAnnotation.inkPointsCollection.push(linePoints);
-                                    linePoints = [];
+                            if (isNewValues > 0) {
+                                if (rotationAngle !== 0) {
+                                    const pathCollection: number[][] = [];
+                                    for (let i: number = isNewValues; i < stampObjects.length; i++) {
+                                        const val: any = stampObjects[parseInt(i.toString(), 10)];
+                                        const path: string = val['command'].toString();
+                                        if (path === 'M' && i !== isNewValues) {
+                                            pathCollection.push(linePoints);
+                                            linePoints = [];
+                                        }
+                                        linePoints.push(val['x']);
+                                        linePoints.push(val['y']);
+                                    }
+                                    if (linePoints.length > 0) {
+                                        pathCollection.push(linePoints);
+                                    }
+                                    for (let g: number = 0; g < pathCollection.length; g++) {
+                                        let graphicsPoints: any = [];
+                                        const pointsCollections: number[] = pathCollection[parseInt(g.toString(), 10)];
+                                        if (pointsCollections.length > 0) {
+                                            const rotatedPoints: PdfPath = annotationRenderer.getRotatedPath(pointsCollections,
+                                                                                                             rotationAngle);
+                                            for (let z: number = 0; z < rotatedPoints._points.length; z += 2) {
+                                                graphicsPoints.push((rotatedPoints._points[parseInt(z.toString(), 10)][0] - minimumX)
+                                                                   / newDifferenceX + left);
+                                                graphicsPoints.push(page.size[1] - (rotatedPoints._points[parseInt(z.toString(), 10)][1]
+                                                                   - minimumY) / newDifferenceY - top);
+                                            }
+                                            inkAnnotation.inkPointsCollection.push(graphicsPoints);
+                                        }
+                                        graphicsPoints = [];
+                                    }
                                 }
-                                const differenceX: number = newDifferenceX / width;
-                                const differenceY: number = newDifferenceY / height;
-                                linePoints.push((parseFloat(val['x'].toString()) - minimumX) / differenceX + left);
-                                const newX: number = (parseFloat(val['y'].toString()) - minimumY) / differenceY;
-                                linePoints.push(loadedDocument.getPage(pageNumber).size[1] - newX - top);
-                            }
-                            if (linePoints.length > 0) {
-                                inkAnnotation.inkPointsCollection.push(linePoints);
+                                else {
+                                    for (let i: number = isNewValues; i < stampObjects.length; i++) {
+                                        const val: any = stampObjects[parseInt(i.toString(), 10)];
+                                        const path: string = val['command'].toString();
+                                        if (path === 'M' && i !== isNewValues) {
+                                            inkAnnotation.inkPointsCollection.push(linePoints);
+                                            linePoints = [];
+                                        }
+                                        linePoints.push((val['x'] - minimumX) / newDifferenceX + left);
+                                        const newX: number = ((val['y'] - minimumY) / newDifferenceY);
+                                        linePoints.push(page.size[1] - newX - top);
+                                    }
+                                    if (linePoints.length > 0) {
+                                        inkAnnotation.inkPointsCollection.push(linePoints);
+                                    }
+                                }
                             }
                             inkAnnotation.border.width = thickness;
                             inkAnnotation.opacity = opacity;
@@ -329,15 +395,19 @@ export class SignatureBase {
         let angle: number = 0;
         switch (angleString) {
         case 'RotateAngle0':
+        case '0':
             angle = 0;
             break;
         case 'RotateAngle180':
+        case '2':
             angle = 2;
             break;
         case 'RotateAngle270':
+        case '3':
             angle = 3;
             break;
         case 'RotateAngle90':
+        case '1':
             angle = 1;
             break;
         }

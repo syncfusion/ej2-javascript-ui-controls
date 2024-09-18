@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusion/ej2-base';import { FadeOutMode, TooltipPosition } from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, EmptyPointMode, TextOverflow, TitlePosition} from '../utils/enum';import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';
+import { Property, ChildProperty, Browser, Complex, Collection } from '@syncfusion/ej2-base';import { Alignment, EmptyPointMode, PeriodSelectorPosition, RangeIntervalType, TextOverflow, TitlePosition } from '../utils/enum';import { FadeOutMode, TooltipPosition } from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType } from '../../accumulation-chart/model/enum';
 
 /**
  * Interface for a class Connector
@@ -6,7 +6,8 @@ import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusi
 export interface ConnectorModel {
 
     /**
-     * Specifies the type of the connector line. They are
+     * Specifies the type of connector line.
+     * The available types are:
      * * Smooth
      * * Line
      *
@@ -16,7 +17,7 @@ export interface ConnectorModel {
     type?: ConnectorType;
 
     /**
-     * Color of the connector line.
+     * Specifies the color of the connector line, accepting values in hex or rgba as valid CSS color strings.
      *
      * @default null
      */
@@ -24,7 +25,7 @@ export interface ConnectorModel {
     color?: string;
 
     /**
-     * Width of the connector line in pixels.
+     * Specifies the width of the connector line in pixels.
      *
      * @default 1
      */
@@ -32,7 +33,7 @@ export interface ConnectorModel {
     width?: number;
 
     /**
-     * Length of the connector line in pixels.
+     * Specifies the length of the connector line in pixels.
      *
      * @default null
      */
@@ -40,7 +41,7 @@ export interface ConnectorModel {
     length?: string;
 
     /**
-     * DashArray of the connector line.
+     * Specifies the dash pattern of the connector line.
      *
      * @default ''
      */
@@ -50,43 +51,35 @@ export interface ConnectorModel {
 }
 
 /**
- * Interface for a class titleBorder
+ * Interface for a class Location
  */
-export interface titleBorderModel {
+export interface LocationModel {
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
-     *
-     * @default 'transparent'
-     */
-
-    color?: string;
-
-    /**
-     * The width of the border in pixels.
+     * Specifies the X coordinate position of the legend or tooltip in pixels.
      *
      * @default 0
      */
 
-    width?: number;
+    x?: number;
 
     /**
-     * Corner radius for the border.
+     * Specifies the Y coordinate position of the legend or tooltip in pixels.
      *
-     * @default 0.8
+     * @default 0
      */
 
-    cornerRadius?: number;
+    y?: number;
 
 }
 
 /**
- * Interface for a class titleSettings
+ * Interface for a class Font
  */
-export interface titleSettingsModel {
+export interface FontModel {
 
     /**
-     * FontStyle for the text.
+     * Specifies the style of the text.
      *
      * @default 'Normal'
      */
@@ -94,23 +87,23 @@ export interface titleSettingsModel {
     fontStyle?: string;
 
     /**
-     * Font size for the text.
+     * Specifies the size of the text.
      *
-     * @default '15px'
+     * @default '16px'
      */
 
     size?: string;
 
     /**
-     * FontWeight for the text.
+     * Specifies the font weight of the text.
      *
-     * @default '500'
+     * @default 'Normal'
      */
 
     fontWeight?: string;
 
     /**
-     * Color for the text.
+     * Specifies the color of the text.
      *
      * @default ''
      */
@@ -126,12 +119,12 @@ export interface titleSettingsModel {
     textAlignment?: Alignment;
 
     /**
-     * FontFamily for the text.
+     * Specifies the font family for the text.
      */
     fontFamily?: string;
 
     /**
-     * Opacity for the text.
+     * Specifies the opacity level for the text.
      *
      * @default 1
      */
@@ -139,146 +132,41 @@ export interface titleSettingsModel {
     opacity?: number;
 
     /**
-     * Specifies the chart title text overflow.
+     * Specifies how the chart title text should handle overflow.
      *
      * @default 'Wrap'
      */
 
     textOverflow?: TextOverflow;
 
-    /**
-     * Defines the position for the chart title.
-     * * Top: Displays the title at the top of the chart.
-     * * Left: Displays the title at the left of the chart.
-     * * Bottom: Displays the title at the bottom of the chart.
-     * * Right: Displays the title at the right of the chart.
-     * * Custom: Displays the title based on the given x and y values.
-     *
-     * @default 'Top'
-     */
-
-    position?: TitlePosition;
-
-    /**
-     * Defines the X coordinate for the chart title.
-     *
-     * @default 0
-     */
-
-    x?: number;
-
-    /**
-     * Defines the Y coordinate for the chart title.
-     *
-     * @default 0
-     */
-
-    y?: number;
-
-    /**
-     * Background of the title border.
-     *
-     * @default 'transparent'
-     */
-
-    background?: string;
-
-    /**
-     * Options to customize the border of the chart title.
-     */
-
-    border?: titleBorderModel;
-
 }
 
 /**
- * Interface for a class Location
+ * Interface for a class CenterLabel
  */
-export interface LocationModel {
+export interface CenterLabelModel {
 
     /**
-     * X coordinate of the legend or tooltip in pixels.
+     * Defines the text to be placed at the center of the Pie and Donut chart.
      *
-     * @default 0
+     * @default null
      */
 
-    x?: number;
+    text?: string;
 
     /**
-     * Y coordinate of the legend or tooltip in pixels.
+     * Defines the font style for the center label of the Pie and Donut charts.
+     */
+
+    textStyle?: FontModel;
+
+    /**
+     * Defines the format for the center label when the mouse hovers over the pie data.
      *
-     * @default 0
+     * @default null
      */
 
-    y?: number;
-
-}
-
-/**
- * Interface for a class Font
- */
-export interface FontModel {
-
-    /**
-     * FontStyle for the text.
-     *
-     * @default 'Normal'
-     */
-
-    fontStyle?: string;
-
-    /**
-     * Font size for the text.
-     *
-     * @default '16px'
-     */
-
-    size?: string;
-
-    /**
-     * FontWeight for the text.
-     *
-     * @default 'Normal'
-     */
-
-    fontWeight?: string;
-
-    /**
-     * Color for the text.
-     *
-     * @default ''
-     */
-
-    color?: string;
-
-    /**
-     * text alignment.
-     *
-     * @default 'Center'
-     */
-
-    textAlignment?: Alignment;
-
-    /**
-     * FontFamily for the text.
-     */
-    fontFamily?: string;
-
-    /**
-     * Opacity for the text.
-     *
-     * @default 1
-     */
-
-    opacity?: number;
-
-    /**
-     * Specifies the chart title text overflow.
-     *
-     * @default 'Wrap'
-     */
-
-    textOverflow?: TextOverflow;
+    hoverTextFormat?: string;
 
 }
 
@@ -288,7 +176,7 @@ export interface FontModel {
 export interface BorderModel {
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * Specifies the color of the border, accepting values in hex or RGBA as valid CSS color strings.
      *
      * @default ''
      */
@@ -319,7 +207,7 @@ export interface BorderModel {
 export interface OffsetModel {
 
     /**
-     * Specifies the x value of the marker position.
+     * Specifies the x value of the marker's position.
      *
      * @default 0
      */
@@ -327,7 +215,7 @@ export interface OffsetModel {
     x?: number;
 
     /**
-     * Specifies the y value of the marker position.
+     * Specifies the y value of the marker's position.
      *
      * @default 0
      */
@@ -337,57 +225,12 @@ export interface OffsetModel {
 }
 
 /**
- * Interface for a class ChartArea
- */
-export interface ChartAreaModel {
-
-    /**
-     * Options to customize the border of the chart area.
-     */
-
-    border?: BorderModel;
-
-    /**
-     * The background of the chart area that accepts value in hex and rgba as a valid CSS color string.
-     *
-     * @default 'transparent'
-     */
-
-    background?: string;
-
-    /**
-     * The opacity for background.
-     *
-     * @default 1
-     */
-
-    opacity?: number;
-
-    /**
-     * The background image of the chart area that accepts value in string as url link or location of an image.
-     *
-     * @default null
-     */
-
-    backgroundImage?: string;
-
-    /**
-     * Defines the width for the chart area element. Takes value in percentage and in pixel.
-     *
-     * @default null
-     */
-
-    width?: string;
-
-}
-
-/**
  * Interface for a class Margin
  */
 export interface MarginModel {
 
     /**
-     * Left margin in pixels.
+     * The left margin of the chart, specified in pixels.
      *
      * @default 10
      */
@@ -395,7 +238,7 @@ export interface MarginModel {
     left?: number;
 
     /**
-     * Right margin in pixels.
+     * The right margin of the chart, specified in pixels.
      *
      * @default 10
      */
@@ -403,7 +246,7 @@ export interface MarginModel {
     right?: number;
 
     /**
-     * Top margin in pixels.
+     * The top margin of the chart, specified in pixels.
      *
      * @default 10
      */
@@ -411,46 +254,11 @@ export interface MarginModel {
     top?: number;
 
     /**
-     * Bottom margin in pixels.
+     * The bottom margin of the chart, specified in pixels.
      *
      * @default 10
      */
 
-    bottom?: number;
-
-}
-
-/**
- * Interface for a class ContainerPadding
- */
-export interface ContainerPaddingModel {
-
-    /**
-     * Left padding in pixels.
-     *
-     * @default 0
-     */
-    left?: number;
-
-    /**
-     * Right padding in pixels.
-     *
-     * @default 0
-     */
-    right?: number;
-
-    /**
-     * Top padding in pixels.
-     *
-     * @default 0
-     */
-    top?: number;
-
-    /**
-     * Bottom padding in pixels.
-     *
-     * @default 0
-     */
     bottom?: number;
 
 }
@@ -461,7 +269,7 @@ export interface ContainerPaddingModel {
 export interface AnimationModel {
 
     /**
-     * If set to true, series gets animated on initial loading.
+     * If set to true, the series will be animated on initial loading.
      *
      * @default true
      */
@@ -469,7 +277,7 @@ export interface AnimationModel {
     enable?: boolean;
 
     /**
-     * The duration of animation in milliseconds.
+     * The duration of the animation in milliseconds.
      *
      * @default 1000
      */
@@ -477,7 +285,7 @@ export interface AnimationModel {
     duration?: number;
 
     /**
-     * The option to delay animation of the series.
+     * The option to delay the animation of the series, specified in milliseconds.
      *
      * @default 0
      */
@@ -487,183 +295,12 @@ export interface AnimationModel {
 }
 
 /**
- * Interface for a class Indexes
- */
-export interface IndexesModel {
-
-    /**
-     * Specifies the series index.
-     *
-     * @default 0
-     * @aspType int
-     */
-
-    series?: number;
-
-    /**
-     * Specifies the point index.
-     *
-     * @default 0
-     * @aspType int
-     */
-
-    point?: number;
-
-}
-
-/**
- * Interface for a class CornerRadius
- */
-export interface CornerRadiusModel {
-
-    /**
-     * Specifies the top left corner radius value.
-     *
-     * @default 0
-     */
-
-    topLeft?: number;
-
-    /**
-     * Specifies the top right corner radius value.
-     *
-     * @default 0
-     */
-
-    topRight?: number;
-
-    /**
-     * Specifies the bottom left corner radius value.
-     *
-     * @default 0
-     */
-
-    bottomLeft?: number;
-
-    /**
-     * Specifies the bottom right corner radius value.
-     *
-     * @default 0
-     */
-
-    bottomRight?: number;
-
-}
-
-/**
- * Interface for a class Index
- * @private
- */
-export interface IndexModel {
-
-}
-
-/**
- * Interface for a class EmptyPointSettings
- */
-export interface EmptyPointSettingsModel {
-
-    /**
-     * To customize the fill color of empty points.
-     *
-     * @default null
-     */
-
-    fill?: string;
-
-    /**
-     * Options to customize the border of empty points.
-     *
-     * @default "{color: 'transparent', width: 0}"
-     */
-
-    border?: BorderModel;
-
-    /**
-     * To customize the mode of empty points.
-     *
-     * @default Gap
-     */
-
-    mode?: EmptyPointMode | AccEmptyPointMode;
-
-}
-
-/**
- * Interface for a class DragSettings
- */
-export interface DragSettingsModel {
-
-    /**
-     * To enable dragging the points.
-     *
-     * @default false
-     */
-
-    enable?: boolean;
-
-    /**
-     * To set the minimum y of the point.
-     *
-     * @default null
-     */
-
-    minY?: number;
-
-    /**
-     * To set the maximum y of the point.
-     *
-     * @default null
-     */
-
-    maxY?: number;
-
-    /**
-     * To set the color of the edited point.
-     *
-     * @default null
-     */
-
-    fill?: string;
-
-}
-
-/**
- * Interface for a class CenterLabel
- */
-export interface CenterLabelModel {
-
-    /**
-     * Define the label to be placed to the center of the pie and doughnut chart.
-     *
-     * @default null
-     */
-
-    text?: string;
-
-    /**
-     * Defines the font style of the center label.
-     */
-
-    textStyle?: FontModel;
-
-    /**
-     * Define the format for the center label when mouse hovered on the pie data.
-     *
-     * @default null
-     */
-
-    hoverTextFormat?: string;
-
-}
-
-/**
  * Interface for a class TooltipSettings
  */
 export interface TooltipSettingsModel {
 
     /**
-     * If set to true, enables the tooltip for the data points.
+     * If set to true, enables tooltips for the data points.
      *
      * @default false.
      */
@@ -679,7 +316,7 @@ export interface TooltipSettingsModel {
     enableMarker?: boolean;
 
     /**
-     * If set to true, a single ToolTip will be displayed for every index.
+     * If set to true, a single tooltip will be displayed for each index.
      *
      * @default false.
      */
@@ -695,7 +332,7 @@ export interface TooltipSettingsModel {
     fill?: string;
 
     /**
-     * The header text for the tooltip. By default, it displays the series name.
+     * Customizes the header text for the tooltip. By default, this property displays the series name.
      *
      * @default null
      */
@@ -711,13 +348,13 @@ export interface TooltipSettingsModel {
     opacity?: number;
 
     /**
-     * Options for customizing the tooltip text appearance.
+     * This property defines the font family, size, style, weight, and color for the tooltip text.
      */
 
     textStyle?: FontModel;
 
     /**
-     * The format for customizing the tooltip content.
+     * Specifies the format for customizing the content of the tooltip.
      *
      * @default null.
      */
@@ -725,7 +362,7 @@ export interface TooltipSettingsModel {
     format?: string;
 
     /**
-     * A custom template used to format the Tooltip content. You can use ${x} and ${y} as placeholder text to display the corresponding data points.
+     * A custom template used to format the tooltip content. Use `${x}` and `${y}` as placeholders for the corresponding data points.
      *
      * @default null.
      * @aspType string
@@ -734,14 +371,14 @@ export interface TooltipSettingsModel {
     template?: string | Function;
 
     /**
-     * If set to true, tooltip will animate while moving from one point to another.
+     * If set to true, the tooltip will animate as it moves from one point to another.
      *
      * @default true.
      */
     enableAnimation?: boolean;
 
     /**
-     * Duration for the Tooltip animation.
+     * Duration of the tooltip animation, specified in milliseconds.
      *
      * @default 300
      */
@@ -749,7 +386,7 @@ export interface TooltipSettingsModel {
     duration?: number;
 
     /**
-     * Duration of the fade-out animation for hiding the Tooltip.
+     * Duration of the fade-out animation for hiding the tooltip, in milliseconds.
      *
      * @default 1000
      */
@@ -757,7 +394,7 @@ export interface TooltipSettingsModel {
     fadeOutDuration?: number;
 
     /**
-     * Fade Out duration for the Tooltip hide.
+     * Specifies the mode for the fade-out animation when hiding the tooltip.
      *
      * @default Move
      */
@@ -765,8 +402,8 @@ export interface TooltipSettingsModel {
     fadeOutMode?: FadeOutMode;
 
     /**
-     * To wrap the tooltip long text based on available space.
-     * This is only application for chart tooltip.
+     * Wraps the tooltip's long text based on the available space.
+     > Note that this feature applies only to chart tooltips.
      *
      * @default false
      */
@@ -774,7 +411,9 @@ export interface TooltipSettingsModel {
     enableTextWrap?: boolean;
 
     /**
-     * By default, the nearest points will be included in the shared tooltip; however, you can set it to false to exclude the nearest value from the tooltip.
+     * Specifies whether the nearest points should be included in the shared tooltip.
+     * By default, the nearest data points are displayed.
+     * Set this property to false to exclude the nearest point.
      *
      * @default true
      */
@@ -782,24 +421,24 @@ export interface TooltipSettingsModel {
     showNearestPoint?: boolean;
 
     /**
-     * Options for customizing the tooltip borders.
+     * Options for customizing the tooltip borders, including the color and width of the tooltip's border.
      */
 
     border?: BorderModel;
 
     /**
-     * Specifies the location of the tooltip, relative to the chart.
-     * If x is 20, tooltip moves by 20 pixels to the right of the chart.
+     * Specifies the location of the tooltip relative to the chart.
+     * If x is 20, the tooltip moves 20 pixels to the right of the chart.
      * ```html
      * <div id='Chart'></div>
      * ```
      * ```typescript
      * let chart: Chart = new Chart({
      * ...
-     * tooltipSettings: {
-     * enable: true,
-     * location: { x: 100, y: 150 },
-     *   },
+     * tooltip: {
+     *        enable: true,
+     *        location: { x: 100, y: 150 }
+     *  }
      * ...
      * });
      * chart.appendTo('#Chart');
@@ -807,6 +446,438 @@ export interface TooltipSettingsModel {
      */
 
     location?: LocationModel;
+
+}
+
+/**
+ * Interface for a class EmptyPointSettings
+ */
+export interface EmptyPointSettingsModel {
+
+    /**
+     * Customizes the fill color for empty points in the series.
+     *
+     * @default null
+     */
+
+    fill?: string;
+
+    /**
+     * Options to customize the border for empty points in the series, including color and width.
+     *
+     * @default "{color: 'transparent', width: 0}"
+     */
+
+    border?: BorderModel;
+
+    /**
+     * Defines the mode for handling empty or missing data points in the series.
+     * The available modes are:
+     * * Gap - Displays empty points as gaps in the series.
+     * * Zero - Displays empty points as zero values.
+     * * Drop - Ignores empty points while rendering the series.
+     * * Average - Displays empty points as the average of the previous and next points.
+     *
+     * @default Gap
+     */
+
+    mode?: EmptyPointMode | AccEmptyPointMode;
+
+}
+
+/**
+ * Interface for a class Indexes
+ */
+export interface IndexesModel {
+
+    /**
+     * Specifies the index of the series.
+     *
+     * @default 0
+     * @aspType int
+     */
+
+    series?: number;
+
+    /**
+     * Specifies the index of the data point within the series.
+     *
+     * @default 0
+     * @aspType int
+     */
+
+    point?: number;
+
+}
+
+/**
+ * Interface for a class CornerRadius
+ */
+export interface CornerRadiusModel {
+
+    /**
+     * Specifies the top-left corner radius value.
+     *
+     * @default 0
+     */
+
+    topLeft?: number;
+
+    /**
+     * Specifies the top-right corner radius value.
+     *
+     * @default 0
+     */
+
+    topRight?: number;
+
+    /**
+     * Specifies the bottom-left corner radius value.
+     *
+     * @default 0
+     */
+
+    bottomLeft?: number;
+
+    /**
+     * Specifies the bottom-right corner radius value.
+     *
+     * @default 0
+     */
+
+    bottomRight?: number;
+
+}
+
+/**
+ * Interface for a class ContainerPadding
+ */
+export interface ContainerPaddingModel {
+
+    /**
+     * Defines the left padding for the legend container in pixels.
+     *
+     * @default 0
+     */
+    left?: number;
+
+    /**
+     * Defines the right padding for the legend container in pixels.
+     *
+     * @default 0
+     */
+    right?: number;
+
+    /**
+     * Defines the top padding for the legend container in pixels.
+     *
+     * @default 0
+     */
+    top?: number;
+
+    /**
+     * Defines the bottom padding for the legend container in pixels.
+     *
+     * @default 0
+     */
+    bottom?: number;
+
+}
+
+/**
+ * Interface for a class titleBorder
+ */
+export interface titleBorderModel {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default 'transparent'
+     */
+
+    color?: string;
+
+    /**
+     * The `width` property defines the thickness of the border surrounding the chart title and subtitle.
+     *
+     * @default 0
+     */
+
+    width?: number;
+
+    /**
+     * Specifies the radius of the corners for the border.
+     *
+     * @default 0.8
+     */
+
+    cornerRadius?: number;
+
+}
+
+/**
+ * Interface for a class titleSettings
+ */
+export interface titleSettingsModel {
+
+    /**
+     * The `fontStyle` property specifies the style of the text used for the chart title and subtitle.
+     *
+     * @default 'Normal'
+     */
+
+    fontStyle?: string;
+
+    /**
+     * Specifies the font size for the chart title and subtitle.
+     *
+     * @default '15px'
+     */
+
+    size?: string;
+
+    /**
+     * The `fontWeight` property specifies the weight (thickness) of the text used for the chart title and subtitle.
+     *
+     * @default '500'
+     */
+
+    fontWeight?: string;
+
+    /**
+     * The `color` property specifies the color of the text used for the chart title and subtitle.
+     *
+     * @default ''
+     */
+
+    color?: string;
+
+    /**
+     * The `textAlignment` property determines how the text is aligned within the specified area.
+     *
+     * @default 'Center'
+     */
+
+    textAlignment?: Alignment;
+
+    /**
+     * The `fontFamily` property specifies the font family for the text used in the chart title and subtitle.
+     */
+    fontFamily?: string;
+
+    /**
+     * Specifies the opacity for the text.
+     *
+     * @default 1
+     */
+
+    opacity?: number;
+
+    /**
+     * The `textOverflow` property determines how the text in the chart title and subtitle behaves when it exceeds the available space.
+     *
+     * @default 'Wrap'
+     */
+
+    textOverflow?: TextOverflow;
+
+    /**
+     * Defines the position for the chart title and subtitle.
+     * The available options are:
+     * * Top: Displays the title and subtitle at the top of the chart.
+     * * Left: Displays the title and subtitle at the left of the chart.
+     * * Bottom: Displays the title and subtitle at the bottom of the chart.
+     * * Right: Displays the title and subtitle at the right of the chart.
+     * * Custom: Displays the title and subtitle based on the specified x and y values.
+     *
+     * @default 'Top'
+     */
+
+    position?: TitlePosition;
+
+    /**
+     * Defines the X coordinate for the chart title and subtitle.
+     *
+     * @default 0
+     */
+
+    x?: number;
+
+    /**
+     * Defines the Y coordinate for the chart title and subtitle.
+     *
+     * @default 0
+     */
+
+    y?: number;
+
+    /**
+     * The `background` property sets the background color of the chart title and subtitle.
+     *
+     * @default 'transparent'
+     */
+
+    background?: string;
+
+    /**
+     * The `border` property allows configuring the border settings for the chart title and subtitle.
+     */
+
+    border?: titleBorderModel;
+
+}
+
+/**
+ * Interface for a class ChartArea
+ */
+export interface ChartAreaModel {
+
+    /**
+     * Options to customize the border of the chart area.
+     */
+
+    border?: BorderModel;
+
+    /**
+     * The `background` property accepts both hex color codes and rgba color values for customizing the chart area's background.
+     *
+     * @default 'transparent'
+     */
+
+    background?: string;
+
+    /**
+     * The `opacity` property controls the transparency of the background of the chart area.
+     *
+     * @default 1
+     */
+
+    opacity?: number;
+
+    /**
+     * The background image of the chart area, specified as a URL or local image path.
+     *
+     * @default null
+     */
+
+    backgroundImage?: string;
+
+    /**
+     * Defines the width of the chart area element.
+     * Accepts values in `percentage` or `pixels`.
+     *
+     * @default null
+     */
+
+    width?: string;
+
+}
+
+/**
+ * Interface for a class DragSettings
+ */
+export interface DragSettingsModel {
+
+    /**
+     * If set to true, dragging of the points is enabled.
+     * If set to false, dragging is disabled.
+     *
+     * @default false
+     */
+
+    enable?: boolean;
+
+    /**
+     * Sets the minimum y-coordinate value that a point can be dragged to.
+     *
+     * @default null
+     */
+
+    minY?: number;
+
+    /**
+     * Sets the maximum y-coordinate value that a point can be dragged to.
+     *
+     * @default null
+     */
+
+    maxY?: number;
+
+    /**
+     * Sets the color of the point while it is being edited.
+     *
+     * @default null
+     */
+
+    fill?: string;
+
+}
+
+/**
+ * Interface for a class Periods
+ */
+export interface PeriodsModel {
+
+    /**
+     * IntervalType of button.
+     *
+     * @default 'Years'
+     */
+
+    intervalType?: RangeIntervalType;
+
+    /**
+     * Count value for the button.
+     *
+     * @default 1
+     */
+
+    interval?: number;
+
+    /**
+     * Text to be displayed on the button.
+     *
+     * @default null
+     */
+
+    text?: string;
+
+    /**
+     * To select the default period.
+     *
+     * @default false
+     */
+
+    selected?: boolean;
+
+}
+
+/**
+ * Interface for a class PeriodSelectorSettings
+ */
+export interface PeriodSelectorSettingsModel {
+
+    /**
+     * Height for the period selector.
+     *
+     * @default 43
+     */
+
+    height?: number;
+
+    /**
+     * Vertical position of the period selector.
+     *
+     * @default 'Bottom'
+     */
+
+    position?: PeriodSelectorPosition;
+
+    /**
+     * Specify the attributes of each period.
+     */
+
+    periods?: PeriodsModel[];
 
 }
 
@@ -953,69 +1024,9 @@ export interface StockTooltipSettingsModel {
 }
 
 /**
- * Interface for a class Periods
+ * Interface for a class Index
+ * @private
  */
-export interface PeriodsModel {
-
-    /**
-     * IntervalType of button.
-     *
-     * @default 'Years'
-     */
-
-    intervalType?: RangeIntervalType;
-
-    /**
-     * Count value for the button.
-     *
-     * @default 1
-     */
-
-    interval?: number;
-
-    /**
-     * Text to be displayed on the button.
-     *
-     * @default null
-     */
-
-    text?: string;
-
-    /**
-     * To select the default period.
-     *
-     * @default false
-     */
-
-    selected?: boolean;
-
-}
-
-/**
- * Interface for a class PeriodSelectorSettings
- */
-export interface PeriodSelectorSettingsModel {
-
-    /**
-     * Height for the period selector.
-     *
-     * @default 43
-     */
-
-    height?: number;
-
-    /**
-     * Vertical position of the period selector.
-     *
-     * @default 'Bottom'
-     */
-
-    position?: PeriodSelectorPosition;
-
-    /**
-     * Specify the attributes of each period.
-     */
-
-    periods?: PeriodsModel[];
+export interface IndexModel {
 
 }

@@ -720,4 +720,46 @@ describe('Cell Format ->', () => {
             });
         });
     });
+    describe('Applying formats to the hidden rows ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply cell format border to the hidden row ', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.applyFilter([{ field: 'E', predicate: 'or', operator: 'notequal', value: '15' }], 'A1:H1')
+            setTimeout(() => {
+                spreadsheet.cellFormat({ fontWeight: 'bold', color: '#ffffff', border: '12pt' }, 'A4:E4');
+                spreadsheet.cellFormat({ fontWeight: 'bold', color: '#ffffff', border: '12pt' }, 'A3:E3');
+                helper.getElement('#' + helper.id + '_line-through').click();
+                helper.getElement('#' + helper.id + '_underline').click();
+                helper.getElement('#' + helper.id + '_line-through').click();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.textDecoration).toBe('underline');
+
+                done();
+            });
+        });
+    });
+    describe('Applying text decorator formats with args.cancel as true in actionBegin event ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                actionBegin(args: any) {
+                    if (args.action === 'format') {
+                      args.args.eventArgs.cancel = true;
+                    }
+                }
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply cell format border to the hidden row ', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getElement('#' + helper.id + '_line-through').click();
+            expect(spreadsheet.activeSheetIndex).toEqual(0);
+            done();
+        });
+    });
 });

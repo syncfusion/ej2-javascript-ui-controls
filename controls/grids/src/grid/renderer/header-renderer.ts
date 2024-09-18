@@ -16,7 +16,7 @@ import { parentsUntil, wrap, measureColumnDepth, appendChildren, addFixedColumnB
 import { AriaService } from '../services/aria-service';
 import * as literals from '../base/string-literals';
 
-// eslint-disable-next-line valid-jsdoc
+// eslint-disable-next-line valid-jsdoc, jsdoc/require-param
 /**
  * Content module is used to render grid content
  *
@@ -34,7 +34,6 @@ export class HeaderRender implements IRenderer {
     private frzIdx: number = 0;
     private notfrzIdx: number = 0;
     private lockColsRendered: boolean;
-    public freezeReorder: boolean;
     public draggable: Draggable;
     private droppable: Droppable;
     private isFirstCol: boolean = false;
@@ -600,8 +599,7 @@ export class HeaderRender implements IRenderer {
     public refreshUI(): void {
         const headerDiv: Element = this.getPanel();
         this.toggleStackClass(headerDiv);
-        const table: Element = this.freezeReorder ? this.headerPanel.querySelector('.' + literals.movableHeader).querySelector('.' + literals.table)
-            : this.getTable();
+        const table: Element = this.getTable();
         const tableName: freezeTable = undefined;
         if (table) {
             remove(table);
@@ -646,7 +644,8 @@ export class HeaderRender implements IRenderer {
 
     public toggleStackClass(div: Element): void {
         const column: Column[] = this.parent.columns as Column[];
-        const stackedHdr: boolean = (!isNullOrUndefined(column) ? column.some((column: Column) => !isNullOrUndefined(column.columns)): false);
+        const stackedHdr: boolean = (!isNullOrUndefined(column) ? column.some((column: Column) => !isNullOrUndefined(column.columns))
+            : false);
         if (stackedHdr) {
             div.classList.add('e-stackedheader');
         } else {

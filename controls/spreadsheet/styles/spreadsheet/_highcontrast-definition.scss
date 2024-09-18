@@ -35,7 +35,7 @@ $selection-border-color: $hover-bg !default;
 $selection-border-width: 2px !default;
 $hdr-selection-bg-color: $selection-bg !default;
 $hdr-selection-border: 1px solid !default;
-$hdr-selection-border-color: $cell-border-color !default;
+$spreadsheet-hdr-selection-border-color: $cell-border-color !default;
 $header-cell-color: $content-font !default;
 $hdr-selection-color: $selection-font !default;
 $hdr-hover-bg-color: $selection-border-color !default;
@@ -74,6 +74,8 @@ $bigger-insert-function-btn-icon-font-size: 18px !default;
 $bigger-formula-bar-drop-icon-font-size: 18px !default;
 $formula-bar-btn-icon-line-height: 24px !default;
 $spreadsheet-formula-bar-height: 23px !default;
+$spreadsheet-formula-bar-expanded-height: 71px !default;
+$spreadsheet-formula-bar-expanded-separator-height: 60px !default;
 $bigger-name-box-ddl-input-height: 29px !default;
 $bigger-formula-bar-drop-icon-line-height: 29px !default;
 $bigger-insert-function-height: 89px !default;
@@ -187,6 +189,8 @@ $protectworkbook-dlg-pwd-content-font-size: 14px !default;
 $protect-content-font-size: 14px !default;
 $protect-content-height: 37px !default;
 $protectworkbook-dlg-alert-span-padding-top: 7px !default;
+$bigger-protectworkbook-dlg-pwd-content-line-height: 28px !default;
+$bigger-protectworkbook-dlg-pwd-content-margin-bottom: 4px !default;
 
 //Conditional Formatting
 $ele-color: #616161;
@@ -232,6 +236,9 @@ $validation-list-icon-bottom: 5px !default;
 $validation-list-icon-height: 18px !default;
 $validation-list-icon-min-height: 0 !default;
 $validation-dlg-error-padding-top: 10px !default;
+$validation-dlg-content-margin-bottom: 24px !default;
+$validation-dlg-content-input-margin-top: 5px !default;
+$validation-dlg-content-valid-input-height: 34px !default;
 
 //Chart
 $title-dlg-content-header-font-size: 16px !default;

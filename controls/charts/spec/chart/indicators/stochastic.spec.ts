@@ -555,7 +555,6 @@ describe('Chart', () => {
 
         it('checking  zooming with touch', (done: Function) => {
             loaded = (args: Object): void => {
-
                 chartObj.loaded = null;
                 let touchStartArgs: Object;
                 let areaElement = document.getElementById('container_svg');
@@ -565,7 +564,7 @@ describe('Chart', () => {
                 let content = chartObj.primaryXAxis.zoomFactor.toFixed(2);
                 expect( content == '0.23' || content == '0.17').toBe(true);
                 content = chartObj.primaryYAxis.zoomFactor.toFixed(2);
-                expect(content == '0.63' ||content == '0.45').toBe(true);
+                expect(content == '0.63' ||content == '0.52').toBe(true);
                 content = chartObj.primaryXAxis.zoomPosition.toFixed(2);
                 expect(content == '0.72' ||content == '0.45').toBe(true);
                 chartObj.mouseLeave(<PointerEvent>trigger.onTouchLeave(areaElement, 748, 129, 304, 289, 304, 289));

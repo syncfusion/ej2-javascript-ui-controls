@@ -20,8 +20,7 @@
     width: 0;
   }
 
-  #{&}.e-daterangepicker,
-  .e-bigger.e-small #{&}.e-daterangepicker {
+  #{&}.e-daterangepicker {
     #{if(&, '&', '*')}.e-popup {
       border: $range-popup-border;
       border-radius: $range-popup-border-radius;
@@ -48,6 +47,10 @@
         }
         @if $skin-name == 'Material3' {
           border-top-left-radius: $range-popup-border-radius;
+        }
+        @if $skin-name == 'fluent2' {
+          border-top-left-radius: inherit;
+          border-top-right-radius: inherit;
         }
 
         #{if(&, '&', '*')} .e-start-label,
@@ -111,7 +114,13 @@
         #{if(&, '&', '*')} .e-header {
           #{if(&, '&', '*')} .e-title {
             cursor: $range-cursor-pointer-style;
-            line-height: $range-normal-nav-icon-height;
+            @if $skin-name == 'bootstrap5.3' {
+              line-height: $range-normal-nav-icon-line-height;
+              padding: $range-header-title-padding;
+            }
+            @else {
+              line-height: $range-normal-nav-icon-height;
+            }
             @if ($skin-name != 'FluentUI') {
               width: $range-control-header-width;
               float: $range-float-none;
@@ -169,7 +178,7 @@
       }
       #{if(&, '&', '*')} .e-footer {
         align-items: $range-align-center;
-        @if ($skin-name != 'FluentUI') {
+        @if ($skin-name != 'FluentUI' and $skin-name != 'fluent2') {
           border-top: $range-border-value;
         }
         clear: $range-float-clear;
@@ -196,6 +205,10 @@
       }
       #{if(&, '&', '*')} .e-date-range-container {
         float: $range-float-left;
+        @if $skin-name == 'fluent2' {
+          border-top-left-radius: inherit;
+          border-top-right-radius: inherit;
+        }
 
         #{if(&, '&', '*')}.e-range-border {
           border-right: $range-border-value;
@@ -209,7 +222,7 @@
           float: $range-float-left;
         }
         #{if(&, '&', '*')} .e-left-container {
-          @if $skin-name != 'FluentUI' {
+          @if $skin-name != 'FluentUI' and $skin-name != 'fluent2' {
             border-right: $range-border-value;
           }
           @if $skin-name == 'tailwind' {
@@ -312,238 +325,6 @@
     }
   }
 
-  .e-bigger #{&}.e-daterangepicker.e-range-modal,
-  #{if(&, '&', '*')}.e-device#{&}.e-daterangepicker.e-range-modal {
-    @if $skin-name != 'Material3' {
-      background-color: $range-overlay;
-    }
-    @if $skin-name == 'Material3' {
-      background: $range-overlay;
-    }
-    height: 100%;
-    left: 0;
-    opacity: .5;
-    pointer-events: auto;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 999;
-  }
-
-  .e-bigger.e-small #{&}.e-daterangepicker #{&}.e-calendar {
-    max-width: $calendar-bigger-small-max-width;
-  }
-
-  .e-bigger #{&}.e-daterangepicker,
-  #{if(&, '&', '*')}.e-bigger#{&}.e-daterangepicker,
-  #{if(&, '&', '*')}.e-device#{&}.e-daterangepicker {
-    #{if(&, '&', '*')}.e-popup {
-      @if $skin-name == 'material' or $skin-name == 'bootstrap'{
-        background-color: $range-background;
-      }
-      @if $skin-name == 'Material3' {
-        background: $range-background;
-      }
-
-      #{if(&, '&', '*')} .e-start-label,
-      #{if(&, '&', '*')} .e-end-label {
-        @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-          font-size: $range-bigger-header-label-size;
-        }
-      }
-
-      #{if(&, '&', '*')} .e-day-span {
-        @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-          font-size: $range-bigger-indicator-label-size;
-        }
-      }
-
-      #{if(&, '&', '*')}.e-preset-wrapper {
-        max-width: $range-bigger-max-width;
-        min-width: $range-width-auto;
-
-        #{if(&, '&', '*')} .e-presets {
-          max-height: $range-value-none;
-        }
-      }
-      #{if(&, '&', '*')} .e-range-header {
-        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' {
-          margin: $range-control-bigger-header-margin;
-        }
-
-        @if $skin-name == 'tailwind' {
-          padding: $range-control-bigger-header-margin;
-        }
-        width: $range-control-header-width;
-
-        #{if(&, '&', '*')} .e-change-icon {
-          @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
-            font-size: $range-bigger-change-icon-size;
-          }
-        }
-
-        #{if(&, '&', '*')} .e-start-end {
-          align-items: $range-align-center;
-          cursor: $range-cursor-pointer-style;
-          display: $range-flex-style;
-          height: $range-device-header-container-height;
-          justify-content: $range-align-center;
-          user-select: $range-browser-select-none;
-          width: $range-device-header-container-width;
-
-          #{if(&, '&', '*')} .e-start-btn,
-          #{if(&, '&', '*')} .e-end-btn {
-            border: $range-btn-border-value;
-            box-shadow: $range-box-shadow-none;
-            font-size: $range-calendar-btn-font-size;
-            font-weight: $range-range-btn-font-weight;
-            height: $range-btn-height;
-            line-height: $range-device-btn-line-height;
-            max-width: $range-header-btn-max-width;
-            overflow: $range-visibility-hidden;
-            padding: $range-sart-end-btn-padding;
-            text-overflow: $range-text-overflow;
-            width: $range-btn-width;
-          }
-          #{if(&, '&', '*')} .e-end-btn {
-            border-left: $range-value-zero;
-            border-radius: $range-btn-right-radius;
-          }
-          #{if(&, '&', '*')} .e-start-btn {
-            border-radius: $range-btn-left-radius;
-          }
-          #{if(&, '&', '*')} .e-start-btn:hover,
-          #{if(&, '&', '*')} .e-end-btn:hover:not([disabled]) {
-            box-shadow: $range-box-shadow-none;
-          }
-          #{if(&, '&', '*')} .e-start-btn.e-active,
-          #{if(&, '&', '*')} .e-start-btn.e-active:active,
-          #{if(&, '&', '*')} .e-end-btn.e-active,
-          #{if(&, '&', '*')} .e-end-btn.e-active:active:not([disabled]),
-          #{if(&, '&', '*')} .e-start-btn.e-active:hover,
-          #{if(&, '&', '*')} .e-end-btn.e-active:hover {
-            box-shadow: $range-box-shadow-none;
-          }
-          #{if(&, '&', '*')} .e-start-btn,
-          #{if(&, '&', '*')} .e-end-btn {
-            max-width: $range-header-btn-bigger-max-width;
-          }
-        }
-      }
-      #{if(&, '&', '*')} .e-presets {
-        max-height: $range-bigger-presets-height;
-
-        #{if(&, '&', '*')}.e-preset-wrapper {
-          max-height: $range-value-none;
-        }
-
-        #{if(&, '&', '*')} ul {
-          max-width: $range-value-none;
-
-          #{if(&, '&', '*')} li.e-list-item {
-            font-size: $range-presets-bigger-list-font-size;
-            height: $range-preset-bigger-list-height;
-            line-height: $range-preset-bigger-list-height;
-            padding: $range-device-list-item-padding;
-          }
-        }
-      }
-    }
-    #{if(&, '&', '*')} .e-calendar {
-      max-width: $range-calendar-bigger-max;
-      @if ($skin-name != 'FluentUI') {
-        padding: $range-bigger-calendar-popup-padding;
-      }
-
-      #{if(&, '&', '*')} .e-content table {
-        @if ($skin-name != 'FluentUI') {
-          padding: $range-calendar-bigger-table-padding;
-        }
-      }
-      #{if(&, '&', '*')} .e-header {
-        @if ($skin-name == 'FluentUI') {
-          padding: 8px 16px;
-        }
-        
-        #{if(&, '&', '*')} .e-next,
-        #{if(&, '&', '*')} .e-prev {
-          height: $range-bigger-nav-icon-height;
-          width: $range-bigger-nav-icon-width;
-
-          #{if(&, '&', '*')} span {
-            padding: $range-icon-bigger-padding;
-          }
-        }
-
-        #{if(&, '&', '*')} .e-title {
-          cursor: $range-cursor-pointer-style;
-          line-height: $range-bigger-nav-icon-height;
-        }
-        #{if(&, '&', '*')}.e-month,
-        #{if(&, '&', '*')}.e-year,
-        #{if(&, '&', '*')}.e-decade {
-          @if ($skin-name != 'FluentUI') {
-            padding: $range-e-bigger-header-padding;
-          }
-        }
-      }
-    }
-    #{if(&, '&', '*')} .e-footer {
-      height: $range-bigger-footer-height;
-
-      #{if(&, '&', '*')} .e-btn {
-        height: $range-btn-bigger-height;
-        line-height: $range-btn-bigger-line-height;
-        overflow: $range-visibility-hidden;
-      }
-      #{if(&, '&', '*')} .e-btn.e-apply {
-        margin: $range-bigger-footer-margin;
-      }
-    }
-    #{if(&, '&', '*')}.e-rtl.e-popup {
-      #{if(&, '&', '*')} .e-range-header .e-start-end {
-        #{if(&, '&', '*')} .e-end-btn {
-          border: $range-btn-border-value;
-          border-radius: $range-btn-left-radius;
-          border-right: $range-value-zero;
-        }
-        #{if(&, '&', '*')} .e-start-btn {
-          border-radius: $range-btn-right-radius;
-        }
-      }
-      #{if(&, '&', '*')} .e-footer {
-        #{if(&, '&', '*')}.e-btn.e-cancel {
-          margin: $range-bigger-rtl-footer-margin;
-        }
-        #{if(&, '&', '*')} .e-btn.e-apply {
-          margin-left: $range-value-zero;
-        }
-      }
-    }
-    #{if(&, '&', '*')}.e-device {
-      #{if(&, '&', '*')}.e-popup {
-        max-width: $range-device-max-width;
-
-        #{if(&, '&', '*')} .e-range-header {
-          margin: $range-device-control-header-margin;
-          padding: $range-device-control-header-padding;
-
-          #{if(&, '&', '*')} .e-day-span {
-            @if $skin-name == 'tailwind' {
-              height: $range-device-indicator-height;
-              line-height: $range-device-indicator-height;
-            }
-            margin: $range-device-indicator-margin;
-            
-            @if $skin-name == 'fluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap4' {
-              margin-bottom: 0;
-            }
-          }
-        }
-      }
-    }
-  }
-
   .e-small #{&}.e-daterangepicker,
   #{if(&, '&', '*')}.e-small#{&}.e-daterangepicker {
     #{if(&, '&', '*')}.e-popup {
@@ -594,21 +375,14 @@
       }
     }
   }
-  .e-daterangepicker .e-calendar .e-month .e-selected span.e-day,
-  .e-daterangepicker.e-bigger.e-small .e-calendar .e-month .e-selected span.e-day {
+  .e-daterangepicker .e-calendar .e-month .e-selected span.e-day {
     @if $skin-name == 'FluentUI' {
       height: 25px;
       width: 25px;
       line-height: 25px;
     }
   }
-  .e-daterangepicker.e-bigger .e-calendar .e-month .e-selected span.e-day {
-    @if $skin-name == 'FluentUI' {
-      height: 29px;
-      width: 29px;
-      line-height: 29px;
-    }
-  }
+
   .e-daterangepicker.e-small .e-calendar .e-month .e-selected span.e-day {
     @if $skin-name == 'FluentUI' {
       height: 21px;
@@ -653,12 +427,6 @@
 .e-content-placeholder.e-daterangepicker.e-placeholder-daterangepicker {
   background-size: 250px 33px;
   min-height: 33px;
-}
-
-.e-bigger .e-content-placeholder.e-daterangepicker.e-placeholder-daterangepicker,
-.e-bigger.e-content-placeholder.e-daterangepicker.e-placeholder-daterangepicker {
-  background-size: 250px 40px;
-  min-height: 40px;
 }
 
 .e-daterangepick-mob-popup-wrap {

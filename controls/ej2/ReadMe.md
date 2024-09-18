@@ -65,7 +65,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/grids/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/grid/grid-overview.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/grid/grid-overview.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/grid/getting-started/">Documentation</a>
@@ -82,7 +82,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/pivotview/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/pivot-view/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/pivot-view/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/pivotview/getting-started/">Documentation</a>
@@ -99,7 +99,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/treegrid/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/tree-grid/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/tree-grid/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/treegrid/getting-started/">Documentation</a>
@@ -116,7 +116,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/spreadsheet/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/spreadsheet/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/spreadsheet/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/spreadsheet/getting-started/">Documentation</a>
@@ -138,7 +138,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/inplaceeditor/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/inplace-editor/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/inplace-editor/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/in-place-editor/getting-started/">Documentation</a>
@@ -155,7 +155,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/pdfviewer/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/pdfviewer/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/pdfviewer/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/pdfviewer/getting-started/">Documentation</a>
@@ -172,7 +172,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/richtexteditor/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/rich-text-editor/tools.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/rich-text-editor/tools.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/rich-text-editor/getting-started/">Documentation</a>
@@ -189,7 +189,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/documenteditor/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/document-editor/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/document-editor/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/document-editor/getting-started/">Documentation</a>
@@ -211,7 +211,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/dropdowns/src/auto-complete">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/auto-complete/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/auto-complete/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/auto-complete/getting-started/">Documentation</a>
@@ -225,7 +225,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/dropdowns/src/combo-box">Source</a>
         </td>
         <td>
-            <a href="https://ej2syncfusion.com/demos#/material/combo-box/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/combo-box/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/combo-box/getting-started/">Documentation</a>
@@ -239,7 +239,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/dropdowns/src/drop-down-list">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/drop-down-list/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/drop-down-list/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/drop-down-list/getting-started/">Documentation</a>
@@ -253,7 +253,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/dropdowns/src/drop-down-tree">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/drop-down-tree/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/drop-down-tree/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/drop-down-tree/getting-started/">Documentation</a>
@@ -267,7 +267,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/dropdowns/src/multi-select">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/multi-select/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/multi-select/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/multi-select/getting-started/">Documentation</a>
@@ -281,7 +281,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/dropdowns/src/list-box">Source</a>
         </td>
         <td>
-            <a href="https://ej2syncfusion.com/demos/#/material/list-box/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/list-box/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/list-box/getting-started/">Documentation</a>
@@ -303,7 +303,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/inputs/src/textbox">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/textbox/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/textbox/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/textbox/getting-started/">Documentation</a>
@@ -317,7 +317,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/inputs/src/maskedtextbox">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/maskedtextbox/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/maskedtextbox/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/maskedtextbox/getting-started/">Documentation</a>
@@ -331,7 +331,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/inputs/src/numerictextbox">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/numerictextbox/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/numerictextbox/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/numerictextbox/getting-started/">Documentation</a>
@@ -348,7 +348,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/buttons/src/radio-button">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/radio-button.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/button/radio-button.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/radio-button/getting-started/">Documentation</a>
@@ -362,7 +362,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/buttons/src/check-box">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/button/checkbox.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/button/checkbox.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/check-box/getting-started/">Documentation</a>
@@ -379,7 +379,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/inputs/src/color-picker">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/color-picker/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/color-picker/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/color-picker/getting-started/">Documentation</a>
@@ -393,7 +393,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/inputs/src/uploader">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/uploader/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/uploader/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/uploader/getting-started/">Documentation</a>
@@ -407,7 +407,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/inputs/src/slider">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/slider/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/slider/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/range-slider/getting-started/">Documentation</a>
@@ -424,7 +424,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/buttons/src/switch">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/switch.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/button/switch.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/switch/getting-started/">Documentation</a>
@@ -447,7 +447,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/charts/src/chart">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/chart/line.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/chart/line.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/chart/getting-started/">Documentation</a>
@@ -461,7 +461,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/charts/src/stock-chart">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/stock-chart/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/stock-chart/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/stock-chart/getting-started/">Documentation</a>
@@ -478,7 +478,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/circulargauge/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/circular-gauge/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/circular-gauge/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/circular-gauge/getting-started/">Documentation</a>
@@ -495,7 +495,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/diagrams/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/diagram/default-functionalities.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/diagram/default-functionalities.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/diagram/getting-started/">Documentation</a>
@@ -512,7 +512,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/heatmap/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/heatmap/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/heatmap/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/heatmap-chart/getting-started/">Documentation</a>
@@ -529,7 +529,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/lineargauge/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/linear-gauge/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/linear-gauge/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/linear-gauge/getting-started/">Documentation</a>
@@ -546,7 +546,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/maps/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/maps/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/maps/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/maps/getting-started/">Documentation</a>
@@ -563,7 +563,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/charts/src/range-navigator">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/range-navigator/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/range-navigator/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/range-navigator/getting-started/">Documentation</a>
@@ -577,7 +577,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/charts/src/smithchart">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/smith-chart/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/smith-chart/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/smithchart/getting-started/">Documentation</a>
@@ -594,7 +594,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/barcodegenerator/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/javascript/demos/#/material/barcode/ean8.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/javascript/demos/#/fluent2/barcode/ean8.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/barcode/getting-started/">Documentation</a>
@@ -611,7 +611,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/charts/src/sparkline">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/sparkline/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/sparkline/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/sparkline/getting-started/">Documentation</a>
@@ -628,7 +628,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/treemap/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/treemap/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/treemap/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/treemap/getting-started/">Documentation</a>
@@ -645,7 +645,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/charts/src/bullet-chart">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/bullet-chart/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/bullet-chart/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/bullet-chart/getting-started/">Documentation</a>
@@ -662,7 +662,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/kanban/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/kanban/overview.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/kanban/overview.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/kanban/getting-started/">Documentation</a>
@@ -684,7 +684,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/schedule/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/schedule/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/schedule/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/schedule/getting-started/">Documentation</a>
@@ -701,7 +701,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/calendars/src/calendar">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/calendar/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/calendar/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/calendar/getting-started/">Documentation</a>
@@ -715,7 +715,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/calendars/src/datepicker">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/datepicker/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/datepicker/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/datepicker/getting-started/">Documentation</a>
@@ -729,7 +729,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/calendars/src/daterangepicker">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/daterangepicker/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/daterangepicker/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/daterangepicker/getting-started/">Documentation</a>
@@ -743,7 +743,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/calendars/src/datetimepicker">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/datetimepicker/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/datetimepicker/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/datetimepicker/getting-started/">Documentation</a>
@@ -757,7 +757,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/calendars/src/timepicker">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/timepicker/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/timepicker/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/timepicker/getting-started/">Documentation</a>
@@ -774,7 +774,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/gantt/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/gantt/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/gantt/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/gantt/getting-started/">Documentation</a>
@@ -796,7 +796,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/navigations/src/accordion">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/accordion/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/accordion/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/accordion/getting-started/">Documentation</a>
@@ -810,7 +810,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/navigations/src/context-menu">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/context-menu/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/context-menu/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/context-menu/getting-started/">Documentation</a>
@@ -824,7 +824,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/navigations/src/menu">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/menu/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/menu/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/menu/getting-started/">Documentation</a>
@@ -838,7 +838,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/navigations/src/sidebar">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/sidebar/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/sidebar/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/sidebar/getting-started/">Documentation</a>
@@ -852,7 +852,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/navigations/src/tab">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/tab/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/tab/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/tab/getting-started/">Documentation</a>
@@ -866,7 +866,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/navigations/src/toolbar">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/toolbar/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/toolbar/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/toolbar/getting-started/">Documentation</a>
@@ -880,7 +880,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/navigations/src/treeview">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/treeview/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/treeview/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/treeview/getting-started/">Documentation</a>
@@ -897,7 +897,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/filemanager/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/file-manager/overview.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/file-manager/overview.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/file-manager/getting-started/">Documentation</a>
@@ -919,7 +919,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/buttons/src/button">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/button/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/button/getting-started/">Documentation</a>
@@ -936,7 +936,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/splitbuttons/src/button-group">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/button-group.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/button/button-group.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/button-group/getting-started/">Documentation</a>
@@ -950,7 +950,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/splitbuttons/src/drop-down-button">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/dropdown-button.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/button/dropdown-button.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/drop-down-button/getting-started/">Documentation</a>
@@ -964,7 +964,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/splitbuttons/src/progress-button">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/progress-button.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/button/progress-button.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/progress-button/getting-started/">Documentation</a>
@@ -978,7 +978,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/splitbuttons/src/split-button">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/split-button.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/button/split-button.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/split-button/getting-started/">Documentation</a>
@@ -995,7 +995,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/buttons/src/chips">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/chips/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/chips/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/chips/getting-started/">Documentation</a>
@@ -1017,7 +1017,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/layouts/styles/avatar">Styles</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/avatar/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/avatar/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/avatar/getting-started/">Documentation</a>
@@ -1031,7 +1031,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/layouts/styles/card">Styles</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/card/basic.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/card/basic.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/card/getting-started/">Documentation</a>
@@ -1048,7 +1048,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/popups/src/dialog">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/dialog/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/dialog/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/dialog/getting-started/">Documentation</a>
@@ -1065,7 +1065,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/lists/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/listview/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/listview/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/listview/getting-started/">Documentation</a>
@@ -1082,7 +1082,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/popups/src/tooltip">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/tooltip/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/tooltip/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/tooltip/getting-started/">Documentation</a>
@@ -1099,7 +1099,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/layouts/src/splitter">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/splitter/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/splitter/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/splitter/getting-started/">Documentation</a>
@@ -1113,7 +1113,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/layouts/src/dashboard-layout">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/dashboard-layout/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/dashboard-layout/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/dashboard-layout/getting-started/">Documentation</a>
@@ -1135,7 +1135,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/notifications/styles/badge">Styles</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/badge/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/badge/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/badge/getting-started/">Documentation</a>
@@ -1149,7 +1149,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/notifications/src/toast">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/toast/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/toast/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/toast/getting-started/">Documentation</a>
@@ -1166,10 +1166,10 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/progressbar/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/progress-bar/linear/">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/progress-bar/linear/">Live demo</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/documentation/progress-bar/getting-started/">Documentation</a>
+            <a href="https://ej2.syncfusion.com/documentation/progressbar/getting-started/">Documentation</a>
         </td>
     </tr>
 </table>
@@ -1188,7 +1188,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/inputs/src/form-validator">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/form-validator/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/fluent2/form-validator/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/form-validator/validation-rules/">Documentation</a>
@@ -1205,7 +1205,7 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
             <a href="controls/querybuilder/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/query-builder/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/fluent2/query-builder/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/query-builder/getting-started/">Documentation</a>
@@ -1332,5 +1332,5 @@ The entire Essential JS 2 framework is built from scratch to be lightweight and 
 ## License
  This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of [Syncfusion's EULA](https://www.syncfusion.com/eula/es/). To acquire a license, you can purchase [here](https://www.syncfusion.com/sales/products) or start a free 30-day trial [here](https://www.syncfusion.com/account/manage-trials/start-trials).
  A free [community license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
-     © Copyright 2022 Syncfusion, Inc. All Rights Reserved. 
+     © Copyright 2024 Syncfusion, Inc. All Rights Reserved. 
     The Syncfusion Essential Studio license and copyright applies to this distribution.

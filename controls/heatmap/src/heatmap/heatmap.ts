@@ -536,12 +536,12 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.setProperties({ cellSettings: { textStyle: { fontFamily: 'Roboto', fontWeight: '400' } } }, true);
         }
         if (this.theme === 'Bootstrap5' || this.theme === 'Bootstrap5Dark') {
-            const textSettings: LegendSettingsModel = { title: { textStyle: { size: '12px', fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"', fontWeight: '500' } }, textStyle: { size: '12px', fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' } };
-            this.setProperties({ titleSettings: { textStyle: { size: '16px', fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' } } }, true);
+            const textSettings: LegendSettingsModel = { title: { textStyle: { size: '12px', fontFamily: 'Segoe UI', fontWeight: '400' } }, textStyle: { size: '12px', fontFamily: 'Segoe UI', fontWeight: '400' } };
+            this.setProperties({ titleSettings: { textStyle: { size: '14px', fontFamily: 'Segoe UI', fontWeight: '400' } } }, true);
             this.setProperties({ legendSettings: textSettings }, true);
             this.setProperties({ xAxis: textSettings }, true);
             this.setProperties({ yAxis: textSettings }, true);
-            this.setProperties({ cellSettings: { textStyle: { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' } } }, true);
+            this.setProperties({ cellSettings: { textStyle: { size: '10px', fontWeight: '400', fontFamily: 'Segoe UI' } } }, true);
         }
         if (this.theme === 'Fluent' || this.theme === 'FluentDark') {
             const textSettings: LegendSettingsModel = { title: { textStyle: { size: '12px', fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif', fontWeight: '500' } }, textStyle: { size: '12px', fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' } };
@@ -631,8 +631,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
 
     private updateBubbleHelperProperty(): void {
-        if (this.cellSettings.tileType === 'Bubble' &&
-            (this.cellSettings.bubbleType === 'Size' || this.cellSettings.bubbleType === 'Sector')) {
+        if (isNullOrUndefined(this.legendModule) || (this.cellSettings.tileType === 'Bubble' &&
+            (this.cellSettings.bubbleType === 'Size' || this.cellSettings.bubbleType === 'Sector'))) {
             this.legendVisibilityByCellType = false;
         } else if (this.legendModule && this.legendSettings.visible) {
             this.legendVisibilityByCellType = true;
@@ -1741,7 +1741,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                             1500);
                         if (e) {
                             if (e.type === 'touchmove') {
-                                e.preventDefault();
+                                if (e.cancelable) {
+                                    e.preventDefault();
+                                }
                             }
                         }
                     }
@@ -1822,28 +1824,30 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
 
     private getDataCollection(): void {
-        const pXIndex: number = this.previousRect.xIndex;
-        const pYIndex: number = this.previousRect.yIndex;
-        const cXIndex: number = this.currentRect.xIndex;
-        const cYIndex: number = this.currentRect.yIndex;
-        const minX: number = cXIndex > pXIndex ? pXIndex : cXIndex;
-        const maxX: number = cXIndex > pXIndex ? cXIndex : pXIndex;
-        const minY: number = cYIndex > pYIndex ? pYIndex : cYIndex;
-        const maxY: number = cYIndex > pYIndex ? cYIndex : pYIndex;
-        let tempX: number = minX;
-        let tempY: number = minY;
-        let cellX: number = this.previousRect.x;
-        let cellY: number = this.previousRect.y;
-        this.getCellCollection(this.currentRect, this.previousRect, true, tempX, tempY, maxX, maxY, minX, cellX, cellY);
-        tempX = minX;
-        tempY = minY;
-        cellX = this.previousRect.x;
-        cellY = this.previousRect.y;
-        this.checkSelectedCells();
-        this.getCellCollection(this.currentRect, this.previousRect, false, tempX, tempY, maxX, maxY, minX, cellX, cellY);
-        this.selectedMultiCellCollection = [];
-        this.canvasSelectedCells = new Rect(0, 0, 0, 0);
-        this.selectedCellCount = 0;
+        if (!isNullOrUndefined(this.previousRect) && !isNullOrUndefined(this.currentRect)) {
+            const pXIndex: number = this.previousRect.xIndex;
+            const pYIndex: number = this.previousRect.yIndex;
+            const cXIndex: number = this.currentRect.xIndex;
+            const cYIndex: number = this.currentRect.yIndex;
+            const minX: number = cXIndex > pXIndex ? pXIndex : cXIndex;
+            const maxX: number = cXIndex > pXIndex ? cXIndex : pXIndex;
+            const minY: number = cYIndex > pYIndex ? pYIndex : cYIndex;
+            const maxY: number = cYIndex > pYIndex ? cYIndex : pYIndex;
+            let tempX: number = minX;
+            let tempY: number = minY;
+            let cellX: number = this.previousRect.x;
+            let cellY: number = this.previousRect.y;
+            this.getCellCollection(this.currentRect, this.previousRect, true, tempX, tempY, maxX, maxY, minX, cellX, cellY);
+            tempX = minX;
+            tempY = minY;
+            cellX = this.previousRect.x;
+            cellY = this.previousRect.y;
+            this.checkSelectedCells();
+            this.getCellCollection(this.currentRect, this.previousRect, false, tempX, tempY, maxX, maxY, minX, cellX, cellY);
+            this.selectedMultiCellCollection = [];
+            this.canvasSelectedCells = new Rect(0, 0, 0, 0);
+            this.selectedCellCount = 0;
+        }
     }
     /**
      * To get the selected datas.
@@ -2236,7 +2240,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         if (this.titleSettings.text && this.titleCollection[0].indexOf('...') !== -1) {
-            e.preventDefault();
+            if (e.cancelable) {
+                e.preventDefault();
+            }
             if (!this.isTouch) {
                 if (!this.enableCanvasRendering) {
                     removeElement(this.element.id + '_Title_Tooltip');

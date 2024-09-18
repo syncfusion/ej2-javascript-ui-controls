@@ -7,7 +7,7 @@ import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { CylinderSeriesOption } from './column-series';
 
 /**
- * `BarSeries` module is used to render the bar series.
+ * The `BarSeries` module is used to render the bar series.
  */
 export class BarSeries extends ColumnBase {
 
@@ -56,7 +56,7 @@ export class BarSeries extends ColumnBase {
         }
     }
 
-    public updateDirection(series: Series, point: number[], isInverted: boolean): void {
+    public updateDirection(series: Series, point: number[]): void {
         const origin: number = Math.max(series.yAxis.visibleRange.min, 0);
         for (let i: number = 0; i < point.length; i++) {
             this.renderPoint(series, series.points[point[i as number]], this.sideBySideInfo[series.index], origin);
@@ -66,11 +66,8 @@ export class BarSeries extends ColumnBase {
             }
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -80,6 +77,7 @@ export class BarSeries extends ColumnBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         this.animate(series);

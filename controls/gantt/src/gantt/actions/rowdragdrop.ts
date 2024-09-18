@@ -156,11 +156,12 @@ export class RowDD {
         }
     }
     private rowDrop(args: RowDropEventArgs): void {
-        const ganttDragelem: Element = document.querySelector('.e-ganttdrag');
-        if (ganttDragelem) {
-            ganttDragelem.remove();
-        }
+        // const ganttDragelem: Element = document.querySelector('.e-ganttdrag');
+        // if (ganttDragelem) {
+        //     ganttDragelem.remove();
+        // }
         const gridRow: Element = closest(args.target, '.e-row');
+        this.parent['oldRecords'] = extend([], [], args.data, true) as IGanttData[];
         const dropIndex: number = gridRow ? parseInt(gridRow.getAttribute('data-rowindex'), 10) : args.dropIndex;
         args.dropIndex = dropIndex;
         args.dropRecord = this.parent.updatedRecords[args.dropIndex];
@@ -262,7 +263,9 @@ export class RowDD {
                     if (this.dropPosition !== 'Invalid') {
                         if (this.parent.viewType === 'ResourceView') {
                             this.checkisSharedTask();
-                            this.previousParent = this.draggedRecord.parentItem.uniqueID;
+                            if (this.draggedRecord.level !== 0) {
+                                this.previousParent = this.draggedRecord.parentItem.uniqueID;
+                            }
                         }
                         if (this.isSharedTask) {
                             return;
@@ -536,6 +539,7 @@ export class RowDD {
                 this.parent.previousFlatData = extend([], [], this.parent.flatData, true) as IGanttData[];
             }
         }
+        this.parent['oldRecords'] = [];
     }
     private updateCurrentTask(currentTask: IGanttData): void {
         this.parent.dataOperation.updateMappingData(currentTask, 'resourceInfo');
@@ -888,10 +892,13 @@ export class RowDD {
             dataSource = this.parent.dataSource;
         }
         const deletedRow: IGanttData = record;
-        const flatParentData: IGanttData = deletedRow.parentItem ? this.parent.getParentTask(deletedRow.parentItem) : null;
+        const flatParentData: IGanttData = deletedRow && deletedRow.parentItem ? this.parent.getParentTask(deletedRow.parentItem) : null;
         if (deletedRow) {
             if (deletedRow.parentItem) {
-                const childRecords: IGanttData[] = flatParentData ? flatParentData.childRecords : [];
+                let childRecords: IGanttData[] = [];
+                if (flatParentData) {
+                    childRecords = flatParentData.childRecords;
+                }
                 let childIndex: number = 0;
                 if (childRecords && childRecords.length > 0) {
                     if (this.parent.viewType === 'ResourceView' && childRecords.length === 1) {
@@ -1014,8 +1021,7 @@ export class RowDD {
      */
     public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
         if (!this.parent.readOnly) {
-            // eslint-disable-next-line
-            if (fromIndexes[0] !== toIndex && position === 'above' || 'below' || 'child') {
+            if (fromIndexes[0] !== toIndex && (position === 'above' || position === 'below' || position === 'child')) {
                 if (position === 'above') {
                     this.dropPosition = 'topSegment';
                 }

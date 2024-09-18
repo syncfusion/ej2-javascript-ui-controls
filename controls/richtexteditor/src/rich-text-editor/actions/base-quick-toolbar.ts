@@ -519,9 +519,6 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
      * @deprecated
      */
     public removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         if (this.parent.inlineMode.enable || this.parent.quickToolbarSettings.text) {

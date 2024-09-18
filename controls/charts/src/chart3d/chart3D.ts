@@ -2417,8 +2417,9 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {HTMLElement} previousElement - The element whose tabindex should be removed.
      * @param {HTMLElement} currentElement - The element to which tabindex should be set.
      * @returns {void}
+     * @private
      */
-    private setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
+    public setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
         if (previousElement) {
             previousElement.removeAttribute('tabindex');
         }

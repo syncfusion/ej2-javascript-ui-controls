@@ -3,7 +3,7 @@ import { BaseEventArgs, Component, EmitType, Event, INotifyPropertyChanged, Noti
 import { Browser, closest, detach, EventHandler, getInstance, select, selectAll, formatUnit } from '@syncfusion/ej2-base';
 import { addClass, attributes, classList, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { remove, removeClass, rippleEffect } from '@syncfusion/ej2-base';
-import { SplitButton, BeforeOpenCloseMenuEventArgs, getModel, ClickEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { SplitButton, BeforeOpenCloseMenuEventArgs, getModel } from '@syncfusion/ej2-splitbuttons';
 import { Deferred } from '@syncfusion/ej2-splitbuttons';
 import { Tooltip, TooltipEventArgs, getZindexPartial, Popup, isCollide } from '@syncfusion/ej2-popups';
 import { Input } from './../input/index';
@@ -97,6 +97,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     private hsv: number[];
     private formElement: HTMLFormElement;
     private initialInputValue: string;
+    private recentColors: string[] = [];
     /**
      * It is used to set the color value for ColorPicker. It should be specified as Hex code.
      *
@@ -203,6 +204,17 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     public createPopupOnClick: boolean;
 
     /**
+     * Specifies to show the recent color options in the color picker in the palate mode.
+     * It accepts boolean value to configure recent colors. The default value is false.
+     * If this property value is false, then the recent color user interface is not rendered in color picker component.
+     * This recent color option is rendered only in the palette mode.
+     *
+     * @default false
+     */
+    @Property(false)
+    public showRecentColors: boolean;
+
+    /**
      * Triggers while selecting the color in picker / palette, when showButtons property is enabled.
      *
      * @event select
@@ -296,7 +308,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
 
-        const localeText: object = { Apply: 'Apply', Cancel: 'Cancel', ModeSwitcher: 'Switch Mode' };
+        const localeText: object = { Apply: 'Apply', Cancel: 'Cancel', ModeSwitcher: 'Switch Mode', RecentColors: 'Recent colors' };
         this.l10n = new L10n('colorpicker', localeText, this.locale);
         if (ele.getAttribute('ejs-for') && !ele.getAttribute('name')) {
             ele.setAttribute('name', ele.id);
@@ -405,6 +417,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             });
         this.splitBtn.createElement = this.createElement;
         this.splitBtn.appendTo(splitButton);
+        this.splitBtn.element.setAttribute('aria-label', 'colorpicker');
         const preview: HTMLElement = this.createElement('span', { className: SPLITPREVIEW });
         select('.e-selected-color', splitButton).appendChild(preview);
         preview.style.backgroundColor = this.convertToRgbString(this.hexToRgb(this.value));
@@ -537,10 +550,35 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         if (this.mode === 'Palette' && !this.modeSwitcher && this.noColor) {
             this.setNoColor();
         }
+        if (this.showRecentColors && this.recentColors && this.recentColors.length > 0) {
+            this.renderRecentColor();
+        }
         const width: number = parseInt(getComputedStyle(this.container).borderBottomWidth, 10);
         this.container.style.width = formatUnit((this.container.children[0] as HTMLElement).offsetWidth + width + width);
         this.rgb = this.hexToRgb(this.roundValue(this.value));
         this.hsv = this.rgbToHsv.apply(this, this.rgb);
+    }
+
+    private renderRecentColor(): void {
+        const recentClrWpr: HTMLElement = this.container.querySelector('.e-clr-pal-rec-wpr');
+        if (recentClrWpr) { detach(recentClrWpr); }
+        const recentColorWrapper: HTMLElement = this.createElement('div', { className: 'e-clr-pal-rec-wpr' });
+        const refEle: HTMLElement = this.container.querySelector('.e-switch-ctrl-btn');
+        if (refEle) {
+            this.container.insertBefore(recentColorWrapper, refEle);
+        } else {
+            this.container.appendChild(recentColorWrapper);
+        }
+        const recentClrSpan: Element = this.createElement('label', { className: 'e-recent-clr-span' });
+        recentClrSpan.textContent = this.l10n.getConstant('RecentColors');
+        recentColorWrapper.appendChild(recentClrSpan);
+        if (this.recentColors.length > 0) {
+            this.recentColors = this.recentColors.filter((item: string, index: number) => this.recentColors.indexOf(item) === index);
+            while (this.recentColors.length > 10) {
+                this.recentColors.pop();
+            }
+            this.appendPalette(this.recentColors, 'recent-color', recentColorWrapper);
+        }
     }
 
     private firstPaletteFocus(): void {
@@ -551,6 +589,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     private appendPalette(colors: string[], key: string, refEle?: HTMLElement): void {
         const palette: HTMLElement = this.createElement('div', { className: PALETTES, attrs: { 'tabindex': '0', 'role': 'grid' } });
+        if (key === 'recent-color') { palette.classList.add('e-recent-palette'); }
         if (refEle) {
             refEle.appendChild(palette);
         } else {
@@ -566,11 +605,11 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             }
             roundedColor = this.roundValue(colors[i as number]).toLowerCase();
             tile = this.createElement('span', {
-                className: TILE, attrs: { 'role': 'gridcell', 'aria-label': roundedColor, 'aria-selected': 'false', 'tabindex': '0'}
+                className: TILE, attrs: { 'role': 'gridcell', 'aria-label': roundedColor, 'aria-selected': 'false' }
             });
             this.trigger('beforeTileRender', <PaletteTileEventArgs>{ element: tile, presetName: key, value: colors[i as number] });
             row.appendChild(tile);
-            if (this.value === roundedColor) {
+            if (this.value === roundedColor && key !== 'recent-color') {
                 this.addTileSelection(tile);
                 palette.focus();
             }
@@ -599,8 +638,10 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     }
 
     private addTileSelection(ele: Element): void {
-        ele.classList.add(SELECT);
-        ele.setAttribute('aria-selected', 'true');
+        if (ele) {
+            ele.classList.add(SELECT);
+            ele.setAttribute('aria-selected', 'true');
+        }
     }
 
     private createPicker(): void {
@@ -633,11 +674,11 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         const dragHandler: HTMLElement = this.getDragHandler();
         const hsvArea: HTMLElement = select('.' + HSVAREA, this.container) as HTMLElement;
         if (this.enableRtl) {
-            dragHandler.style.left = formatUnit(hsvArea.offsetWidth * Math.abs(100 - this.hsv[1]) / 100);
+            dragHandler.style.left = formatUnit((hsvArea.offsetWidth - dragHandler.offsetWidth / 2.5) * Math.abs(100 - this.hsv[1]) / 100);
         } else {
-            dragHandler.style.left = formatUnit(hsvArea.offsetWidth * this.hsv[1] / 100);
+            dragHandler.style.left = formatUnit((hsvArea.offsetWidth - dragHandler.offsetWidth / 2.5) * this.hsv[1] / 100);
         }
-        dragHandler.style.top = formatUnit(hsvArea.offsetHeight * (100 - this.hsv[2]) / 100);
+        dragHandler.style.top = formatUnit((hsvArea.offsetHeight - dragHandler.offsetHeight / 2.5) * (100 - this.hsv[2]) / 100);
     }
 
     private createSlider(): void {
@@ -968,7 +1009,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     }
 
     private removeTileSelection(): void {
-        const selectedEle: Element[] = [].slice.call(selectAll('.' + SELECT, this.container.children[0]));
+        const selectedEle: Element[] = [].slice.call(selectAll('.' + SELECT, this.container));
         selectedEle.forEach((ele: Element): void => {
             ele.classList.remove(SELECT);
             ele.setAttribute('aria-selected', 'false');
@@ -1143,12 +1184,12 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         case 13: {
             e.preventDefault();
             const cValue: string = this.rgbToHex(this.rgb);
-            this.enterKeyHandler(cValue, e);
+            this.enterKeyHandler(cValue);
         }
         }
     }
 
-    private enterKeyHandler(value: string, e: MouseEvent | KeyboardEvent): void {
+    private enterKeyHandler(value: string): void {
         this.triggerChangeEvent(value);
         if (!this.inline) {
             this.splitBtn.element.focus();
@@ -1172,6 +1213,10 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
             value: this.enableOpacity ? value : hex
         });
+        if (this.showRecentColors) {
+            this.recentColors.unshift(hex);
+            if (this.inline) { this.renderRecentColor(); }
+        }
         if (this.enableOpacity) {
             this.setProperties({ 'value': value }, true);
         } else {
@@ -1293,9 +1338,9 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.createInput();
         this.refreshPopupPos();
         //for image editor popup position refreshing
-        if (this.element.parentElement && this.element.parentElement.parentElement && this.element.parentElement.parentElement.classList.contains('e-ie-ddb-popup')) { 
+        if (this.element.parentElement && this.element.parentElement.parentElement && this.element.parentElement.parentElement.classList.contains('e-ie-ddb-popup')) {
             this.refreshImageEditorPopupPos();
-        };
+        }
         this.wireEvents();
         this.trigger('onModeSwitch', <ModeSwitchEventArgs>{ element: this.container, mode: 'Palette'});
     }
@@ -1308,6 +1353,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             popupEle.style.top = formatUnit(0 + pageYOffset);
             const btnElem: HTMLElement = document.querySelector(`#${this.element.parentElement.parentElement.id.split('-popup')[0]}`);
             if (btnElem) {
+                //eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (popupEle.parentElement as any).ej2_instances[0].refreshPosition(btnElem);
             }
         }
@@ -1423,6 +1469,9 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         ([].slice.call(selectAll('.' + PALETTES, this.container))).forEach((ele: HTMLElement) => {
             detach(ele);
         });
+        if (this.container.querySelector('.e-clr-pal-rec-wpr')) {
+            detach(this.container.querySelector('.e-clr-pal-rec-wpr'));
+        }
         if (wrapper.classList.contains(SHOWVALUE)) {
             detach(select('.' + INPUTWRAPPER, this.container));
         }
@@ -1436,9 +1485,9 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.createInput();
         this.refreshPopupPos();
         //for image editor popup position refreshing
-        if (this.element.parentElement && this.element.parentElement.parentElement && this.element.parentElement.parentElement.classList.contains('e-ie-ddb-popup')) { 
+        if (this.element.parentElement && this.element.parentElement.parentElement && this.element.parentElement.parentElement.classList.contains('e-ie-ddb-popup')) {
             this.refreshImageEditorPopupPos();
-        };
+        }
         this.wireEvents();
         this.trigger('onModeSwitch', <ModeSwitchEventArgs>{ element: this.container, mode: 'Picker'});
     }
@@ -1501,8 +1550,9 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             e.preventDefault();
             if (prevSelectedEle) {
                 const cValue: string = prevSelectedEle.getAttribute('aria-label');
-                this.enterKeyHandler(cValue ? cValue : '', e);
+                this.enterKeyHandler(cValue ? cValue : '');
             }
+            break;
         }
     }
 
@@ -1630,6 +1680,10 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         if (!this.showButtons && !isKey) {
             this.trigger('change', { currentValue: { hex: hex, rgba: rgba }, event: e,
                 previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) }, value: cValue });
+            if (this.showRecentColors) {
+                this.recentColors.unshift(hex);
+                if (this.inline) { this.renderRecentColor(); }
+            }
             if (this.enableOpacity) {
                 this.setProperties({ 'value': cValue }, true);
             } else {
@@ -2059,6 +2113,13 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 break;
             case 'enableOpacity':
                 this.changeOpacityProps(newProp.enableOpacity);
+                break;
+            case 'showRecentColors':
+                if (!newProp.showRecentColors) {
+                    const recentClrWpr: HTMLElement = this.container.querySelector('.e-clr-pal-rec-wpr');
+                    if (recentClrWpr) { detach(recentClrWpr); }
+                }
+                this.recentColors = [];
                 break;
             }
         }

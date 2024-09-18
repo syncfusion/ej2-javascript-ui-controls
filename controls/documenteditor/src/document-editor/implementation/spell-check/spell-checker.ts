@@ -354,11 +354,13 @@ export class SpellChecker {
 
         /* eslint-disable @typescript-eslint/no-explicit-any */
         this.callSpellChecker(this.languageID, retrievedText, false, false, true).then((data: any) => {
-            this.documentHelper.triggerSpellCheck = true;
-            this.removeErrorsFromCollection(contextItem);
-            this.ignoreAllItems.push(retrievedText);
-            this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection, true);
-            this.documentHelper.triggerSpellCheck = false;
+            if (!isNullOrUndefined(this.documentHelper)) {
+                this.documentHelper.triggerSpellCheck = true;
+                this.removeErrorsFromCollection(contextItem);
+                this.ignoreAllItems.push(retrievedText);
+                this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection, true);
+                this.documentHelper.triggerSpellCheck = false;
+            }
         });
     }
     /**
@@ -369,7 +371,9 @@ export class SpellChecker {
 
     public manageSpecialCharacters(exactText: string, replaceText: string, isRemove?: boolean): string {
         if (!isNullOrUndefined(exactText)) {
+            let isRemoveSpecChar: boolean = false;
             if (isNullOrUndefined(replaceText)) {
+                isRemoveSpecChar = true;
                 replaceText = exactText;
             }
 

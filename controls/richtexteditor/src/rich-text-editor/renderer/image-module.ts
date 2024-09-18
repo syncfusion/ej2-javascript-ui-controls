@@ -1,4 +1,4 @@
-import { addClass, detach, EventHandler, L10n, KeyboardEventArgs, select, Ajax, formatUnit } from '@syncfusion/ej2-base';
+import { addClass, detach, EventHandler, L10n, KeyboardEventArgs, select, formatUnit, createElement } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import {
     IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, ImageSuccessEventArgs,
@@ -8,9 +8,9 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { ServiceLocator } from '../services/service-locator';
 import { NodeSelection } from '../../selection/selection';
-import { Uploader, SelectedEventArgs, MetaData, TextBox, InputEventArgs, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
+import { Uploader, SelectedEventArgs, MetaData, TextBox, InputEventArgs, FileInfo, BeforeUploadEventArgs, SuccessEventArgs } from '@syncfusion/ej2-inputs';
 import { RemovingEventArgs, UploadingEventArgs, ProgressEventArgs } from '@syncfusion/ej2-inputs';
-import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
+import { BeforeCloseEventArgs, Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -70,7 +70,6 @@ export class Image {
     private uploadFailureTime: number;
     private uploadSuccessTime: number;
     private showImageQTbarTime: number;
-    private isResizeBind: boolean = true;
     private isDestroyed: boolean;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -116,6 +115,9 @@ export class Image {
     }
 
     protected removeEventListener(): void {
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.keyUp, this.onKeyUp);
         this.parent.off(events.windowResize, this.onWindowResize);
@@ -153,7 +155,7 @@ export class Image {
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
             if (this.parent.insertImageSettings.resize) {
                 EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
-                (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.docClick, true);
+                (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.docClick);
                 this.docClick = null;
                 EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
                 EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
@@ -197,7 +199,7 @@ export class Image {
         EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick, this);
         if (this.parent.insertImageSettings.resize) {
             EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
-            (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick, true);
+            (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick);
             EventHandler.add(this.contentModule.getEditPanel(), 'cut', this.onCutHandler, this);
         }
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument :
@@ -209,7 +211,7 @@ export class Image {
     }
 
     private undoStack(args?: { [key: string]: string }): void {
-        if (args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') {
+        if ((args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') && this.parent.editorMode === 'HTML') {
             for (let i: number = 0; i < this.parent.formatter.getUndoRedoStack().length; i++) {
                 const temp: Element = this.parent.createElement('div');
                 const contentElem: DocumentFragment = this.parent.formatter.getUndoRedoStack()[i as number].text as DocumentFragment;
@@ -292,11 +294,8 @@ export class Image {
                     }
                 });
             }
-            if (this.isResizeBind) {
-                EventHandler.add(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing, this);
-                EventHandler.add(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd, this);
-                this.isResizeBind = false;
-            }
+            EventHandler.add(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing, this);
+            EventHandler.add(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd, this);
         }
     }
     private imageClick(e: MouseEvent): void {
@@ -547,7 +546,6 @@ export class Image {
     }
 
     private cancelResizeAction(): void {
-        this.isResizeBind = true;
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
         if (this.imgEle && this.imgResizeDiv && this.contentModule.getEditPanel().contains(this.imgResizeDiv)) {
@@ -735,10 +733,6 @@ export class Image {
             break;
         case 'backspace':
         case 'delete':
-            for (let i: number = 0; i < this.deletedImg.length; i++) {
-                const src: string = (this.deletedImg[i as number] as HTMLImageElement).src;
-                this.imageRemovePost(src as string);
-            }
             if (this.parent.editorMode !== 'Markdown') {
                 if (range.startContainer.nodeType === 3) {
                     if (originalEvent.code === 'Backspace') {
@@ -839,15 +833,16 @@ export class Image {
     private closeDialog(): void {
         if (this.dialogObj) { this.dialogObj.hide({ returnValue: true } as Event); }
     }
-    // eslint-disable-next-line
-    private onKeyUp(event: NotifyArgs): void {
+    private onKeyUp(): void {
         if (!isNOU(this.deletedImg) && this.deletedImg.length > 0) {
-            for (let i: number = 0; i < this.deletedImg.length; i++) {
+            const deleteImages: Node[] = Array.from(this.deletedImg);
+            for (let i: number = deleteImages.length - 1; i >= 0; i--) {
                 const args: AfterImageDeleteEventArgs = {
                     element: this.deletedImg[i as number],
                     src: (this.deletedImg[i as number] as HTMLElement).getAttribute('src')
                 };
                 this.parent.trigger(events.afterImageDelete, args);
+                this.deletedImg.splice(i as number, 1);
             }
         }
     }
@@ -1251,7 +1246,6 @@ export class Image {
                 captionClass: classes.CLS_CAPTION,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
             });
-        this.imageRemovePost(args.src);
         if (this.quickToolObj && document.body.contains(this.quickToolObj.imageQTBar.element)) {
             this.quickToolObj.imageQTBar.hidePopup();
         }
@@ -1260,38 +1254,7 @@ export class Image {
             this.parent.trigger(events.afterImageDelete, args);
         }
     }
-    private imageRemovePost(src: string): void {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const proxy: Image = this;
-        let absoluteUrl: string = '';
-        if (isNOU(this.parent.insertImageSettings.removeUrl) || this.parent.insertImageSettings.removeUrl === '') { return; }
-        if (src.indexOf('http://') > -1 || src.indexOf('https://') > -1) {
-            absoluteUrl = src;
-        } else {
-            absoluteUrl = new URL(src, document.baseURI).href;
-        }
-        this.removingImgName = absoluteUrl.replace(/^.*[\\/]/, '');
-        const xhr: XMLHttpRequest = new XMLHttpRequest();
-        // eslint-disable-next-line @typescript-eslint/tslint/config
-        xhr.addEventListener('readystatechange', function() {
-            if (this.readyState === 4 && this.status === 200) {
-                proxy.triggerPost(this.response);
-            }
-        });
-        xhr.open('GET', absoluteUrl);
-        xhr.responseType = 'blob';
-        xhr.send();
-    }
-    private triggerPost(response: Blob): void {
-        const removeUrl: string = this.parent.insertImageSettings.removeUrl;
-        if (isNOU(removeUrl) || removeUrl === '') { return; }
-        // eslint-disable-next-line @typescript-eslint/tslint/config
-        const file = new File([response], this.removingImgName);
-        const ajax: Ajax = new Ajax(removeUrl, 'POST', true, null);
-        const formData: FormData = new FormData();
-        formData.append('UploadFiles', file);
-        ajax.send(formData);
-    }
+
     private caption(e: IImageNotifyArgs): void {
         const selectNode: HTMLElement = e.selectNode[0] as HTMLElement;
         if (selectNode.nodeName !== 'IMG') {
@@ -1471,23 +1434,17 @@ export class Image {
                 buttonModel: { content: imgInsert, cssClass: 'e-flat e-insertImage' + this.parent.getCssClass(true), isPrimary: true, disabled: this.parent.editorMode === 'Markdown' ? false : true }
             },
             {
-                click: (e: MouseEvent) => {
-                    this.cancelDialog(e);
-                },
+                click: this.cancelDialog.bind(this),
                 buttonModel: { cssClass: 'e-flat e-cancel' + this.parent.getCssClass(true), content: imglinkCancel }
             }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
-            close: (event: { [key: string]: object }) => {
-                if (this.isImgUploaded) {
-                    if (this.dialogObj.element.querySelector('.e-file-abort-btn') as HTMLElement) {
-                        (this.dialogObj.element.querySelector('.e-file-abort-btn') as HTMLElement).click();
-                    } else {
-                        this.uploadObj.remove();
-                    }
+            close: (event: BeforeCloseEventArgs) => {
+                if (event && event.closedBy !== 'user action' && this.uploadObj.filesData.length > 0) {
+                    this.uploadObj.remove();
                 }
                 this.parent.isBlur = false;
-                if (event && !isNOU(event.event) && (event.event as { [key: string]: string }).returnValue) {
+                if (event && !isNOU(event.event) && event.event.returnValue) {
                     if (this.parent.editorMode === 'HTML') {
                         selection.restore();
                     } else {
@@ -1516,6 +1473,7 @@ export class Image {
         if (e.selectNode && e.selectNode[0].nodeName === 'IMG') {
             dialogModel.header = this.parent.localeObj.getConstant('editImageHeader');
             dialogModel.content = dialogContent;
+            dialogModel.buttons[0].buttonModel.cssClass = dialogModel.buttons[0].buttonModel.cssClass + ' e-updateImage';
         } else {
             dialogModel.content = dialogContent;
         }
@@ -1543,9 +1501,11 @@ export class Image {
         }
     }
 
-    // eslint-disable-next-line
-    private cancelDialog(e: MouseEvent): void {
+    private cancelDialog(): void {
         this.parent.isBlur = false;
+        if (this.uploadObj.filesData.length > 0) {
+            this.uploadObj.remove();
+        }
         this.dialogObj.hide({ returnValue: true } as Event);
     }
 
@@ -1582,7 +1542,7 @@ export class Image {
         if (!(this.parent.iframeSettings.enable && !isNOU(this.parent.currentTarget) && this.parent.currentTarget.nodeName === 'IMG') &&
             (e.target as HTMLElement).tagName !== 'IMG' && this.imgResizeDiv && !(this.quickToolObj &&
             this.quickToolObj.imageQTBar && this.quickToolObj.imageQTBar.element.contains(e.target as HTMLElement)) &&
-            this.contentModule.getEditPanel().contains(this.imgResizeDiv) && !this.imgResizeDiv.contains(e.target as HTMLElement)) {
+            this.contentModule.getEditPanel().contains(this.imgResizeDiv)) {
             this.cancelResizeAction();
         }
         if (this.contentModule.getEditPanel().querySelector('.e-img-resize') && !(this.parent.iframeSettings.enable && this.parent.currentTarget.nodeName === 'IMG')) {
@@ -1606,7 +1566,6 @@ export class Image {
     }
 
     private removeResizeEle(): void {
-        this.isResizeBind = true;
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
         detach(this.contentModule.getEditPanel().querySelector('.e-img-resize'));
@@ -1642,11 +1601,21 @@ export class Image {
         return imgUrl;
     }
 
-    // eslint-disable-next-line
     private insertImageUrl(e: MouseEvent): void {
         const proxy: Image = (this as IImageNotifyArgs).selfImage;
         proxy.isImgUploaded = false;
         let url: string = (proxy.inputUrl as HTMLInputElement).value;
+        if (e.target && (e.target as HTMLElement).nodeName === 'BUTTON' && (e.target as HTMLElement).classList.contains('e-updateImage')) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const element: HTMLElement = (this as any).selectNode && (this as any).selectNode[0] && (this as any).selectNode[0].nodeName === 'IMG' ?
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (this as any).selectNode[0] as HTMLElement : null;
+            const args: AfterImageDeleteEventArgs = {
+                element: element,
+                src: url
+            };
+            proxy.parent.trigger(events.afterImageDelete, args);
+        }
         if (proxy.parent.editorMode === 'Markdown' && url === '') {
             url = 'http://';
         }
@@ -1836,6 +1805,7 @@ export class Image {
         uploadParentEle.appendChild(uploadEle);
         let altText: string;
         let selectArgs: SelectedEventArgs;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let filesData: FileInfo[];
         let previousFileInfo: FileInfo | null = null;
         this.uploadObj = new Uploader({
@@ -1845,7 +1815,6 @@ export class Image {
             selected: (e: SelectedEventArgs) => {
                 proxy.isImgUploaded = true;
                 selectArgs = e;
-                // eslint-disable-next-line
                 filesData = e.filesData;
                 this.parent.trigger(events.imageSelected, selectArgs, (selectArgs: SelectedEventArgs) => {
                     if (!selectArgs.cancel) {
@@ -1894,7 +1863,7 @@ export class Image {
                     if (!isNOU(this.parent.insertImageSettings.path)) {
                         const url: string = this.parent.insertImageSettings.path + (e).file.name;
                         // Update the URL of the previously uploaded image
-                        if (!isNOU(previousFileInfo) && (e as ProgressEventArgs).operation === 'upload') {
+                        if (!isNOU(previousFileInfo) && (e as SuccessEventArgs).operation === 'upload') {
                             this.uploadObj.remove(previousFileInfo);
                         }
                         // eslint-disable-next-line
@@ -1936,11 +1905,13 @@ export class Image {
     }
     private checkExtension(e: FileInfo): void {
         if (this.uploadObj.allowedExtensions) {
-            if (this.uploadObj.allowedExtensions.toLocaleLowerCase().indexOf(('.' + e.type).toLocaleLowerCase()) === -1) {
-                (this.dialogObj.getButtons(0) as Button).element.setAttribute('disabled', 'disabled');
-                this.isAllowedTypes = false;
-            } else {
-                this.isAllowedTypes = true;
+            if (e.type) {
+                if (this.uploadObj.allowedExtensions.toLocaleLowerCase().indexOf(('.' + e.type).toLocaleLowerCase()) === -1) {
+                    (this.dialogObj.getButtons(0) as Button).element.setAttribute('disabled', 'disabled');
+                    this.isAllowedTypes = false;
+                } else {
+                    this.isAllowedTypes = true;
+                }
             }
         }
     }
@@ -1987,36 +1958,30 @@ export class Image {
             const imgElement: HTMLElement = this.parent.inputElement.ownerDocument.querySelector('.' + classes.CLS_RTE_DRAG_IMAGE);
             const isImgOrFileDrop: boolean = (imgElement && imgElement.tagName === 'IMG') || e.dataTransfer.files.length > 0;
             if (!e.cancel && isImgOrFileDrop) {
-                this.parent.trigger(events.actionBegin, e, (actionBeginArgs: ActionBeginEventArgs) => {
-                    if (actionBeginArgs.cancel) {
-                        e.preventDefault();
-                    } else {
-                        if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar') ||
-                            this.parent.inputElement.contentEditable === 'false') {
-                            e.preventDefault();
-                            return;
-                        }
-                        if (this.parent.element.querySelector('.' + classes.CLS_IMG_RESIZE)) {
-                            detach(this.imgResizeDiv);
-                        }
-                        e.preventDefault();
-                        let range: Range;
-                        if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
-                            range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
-                        } else if ((e.rangeParent)) { //For mozilla firefox
-                            range = this.contentModule.getDocument().createRange();
-                            range.setStart(e.rangeParent, e.rangeOffset);
-                        } else {
-                            range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
-                        }
-                        this.parent.notify(events.selectRange, { range: range });
-                        const uploadArea: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_DROPAREA) as HTMLElement;
-                        if (uploadArea) {
-                            return;
-                        }
-                        this.insertDragImage(e as DragEvent);
-                    }
-                });
+                if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar') ||
+                    this.parent.inputElement.contentEditable === 'false') {
+                    e.preventDefault();
+                    return;
+                }
+                if (this.parent.element.querySelector('.' + classes.CLS_IMG_RESIZE)) {
+                    detach(this.imgResizeDiv);
+                }
+                e.preventDefault();
+                let range: Range;
+                if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
+                    range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
+                } else if ((e.rangeParent)) { //For mozilla firefox
+                    range = this.contentModule.getDocument().createRange();
+                    range.setStart(e.rangeParent, e.rangeOffset);
+                } else {
+                    range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                }
+                this.parent.notify(events.selectRange, { range: range });
+                const uploadArea: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_DROPAREA) as HTMLElement;
+                if (uploadArea) {
+                    return;
+                }
+                this.insertDragImage(e as DragEvent);
             } else {
                 if (isImgOrFileDrop) {
                     e.preventDefault();
@@ -2061,6 +2026,12 @@ export class Image {
             activePopupElement.classList.add(classes.CLS_HIDE);
         }
         const imgElement: HTMLElement = this.parent.inputElement.ownerDocument.querySelector('.' + classes.CLS_RTE_DRAG_IMAGE);
+        const actionBeginArgs: ActionBeginEventArgs = {
+            requestType: 'Images',
+            name: 'ImageDragAndDrop',
+            cancel: false,
+            originalEvent: e
+        };
         if (e.dataTransfer.files.length > 0 && imgElement === null) { //For external image drag and drop
             if (e.dataTransfer.files.length > 1) {
                 return;
@@ -2074,34 +2045,47 @@ export class Image {
                     if (this.parent.insertImageSettings.saveUrl) {
                         this.onSelect(e);
                     } else {
-                        const args: NotifyArgs = { args: e, text: '', file: imgFiles[0] };
-                        e.preventDefault();
-                        this.imagePaste(args);
+                        this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
+                            if (!actionBeginArgs.cancel) {
+                                const args: NotifyArgs = { args: e, text: '', file: imgFiles[0] };
+                                e.preventDefault();
+                                this.imagePaste(args);
+                            } else {
+                                actionBeginArgs.originalEvent.preventDefault();
+                            }
+                        });
                     }
                 }
             }
         } else { //For internal image drag and drop
-            const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-            if (imgElement && imgElement.tagName === 'IMG') {
-                if (imgElement.nextElementSibling) {
-                    if (imgElement.nextElementSibling.classList.contains(classes.CLS_IMG_INNER)) {
-                        range.insertNode(imgElement.parentElement.parentElement);
-                    } else {
-                        range.insertNode(imgElement);
+            this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
+                if (!actionBeginArgs.cancel) {
+                    const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(
+                        this.parent.contentModule.getDocument());
+                    if (imgElement && imgElement.tagName === 'IMG') {
+                        if (imgElement.nextElementSibling) {
+                            if (imgElement.nextElementSibling.classList.contains(classes.CLS_IMG_INNER)) {
+                                range.insertNode(imgElement.parentElement.parentElement);
+                            } else {
+                                range.insertNode(imgElement);
+                            }
+                        } else {
+                            range.insertNode(imgElement);
+                        }
+                        imgElement.classList.remove(classes.CLS_RTE_DRAG_IMAGE);
+                        const imgArgs: ActionCompleteEventArgs = { elements: [imgElement] };
+                        imgElement.addEventListener('load', () => {
+                            this.parent.trigger(events.actionComplete, imgArgs);
+                        });
+                        this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
+                        const args: MouseEvent = e as MouseEvent;
+                        this.resizeStart(args as PointerEvent, imgElement);
+                        this.hideImageQuickToolbar();
                     }
                 } else {
-                    range.insertNode(imgElement);
+                    actionBeginArgs.originalEvent.preventDefault();
                 }
-                imgElement.classList.remove(classes.CLS_RTE_DRAG_IMAGE);
-                const imgArgs: ActionCompleteEventArgs = { elements: [imgElement] };
-                imgElement.addEventListener('load', () => {
-                    this.parent.trigger(events.actionComplete, imgArgs);
-                });
-                this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
-                const args: MouseEvent = e as MouseEvent;
-                this.resizeStart(args as PointerEvent, imgElement);
-                this.hideImageQuickToolbar();
-            }
+            });
         }
     }
 
@@ -2112,11 +2096,11 @@ export class Image {
         const parentElement: HTMLElement = this.parent.createElement('ul', { className: classes.CLS_UPLOAD_FILES });
         this.parent.rootContainer.appendChild(parentElement);
         const validFiles: FileInfo = {
-            name: '',
-            size: 0,
+            name: args.dataTransfer.files[0].name,
+            size: args.dataTransfer.files[0].size,
             status: '',
             statusCode: '',
-            type: '',
+            type: args.dataTransfer.files[0].type,
             rawFile: args.dataTransfer.files[0],
             validationMessages: {}
         };
@@ -2134,13 +2118,57 @@ export class Image {
         if (file) {
             reader.readAsDataURL(file);
         }
-        range.insertNode(imageTag);
-        this.uploadMethod(args, imageTag);
-        const e: ActionCompleteEventArgs = { elements: [imageTag] };
-        imageTag.addEventListener('load', () => {
-            this.parent.trigger(events.actionComplete, e);
+        const selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(
+            range, this.parent.contentModule.getDocument());
+        const imageCommand: IImageCommandsArgs = {
+            cssClass: (this.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
+            url: this.parent.insertImageSettings.path + file.name,
+            selection: selection,
+            altText: file.name.replace(/\.[a-zA-Z0-9]+$/, ''),
+            width: {
+                width: this.parent.insertImageSettings.width, minWidth: this.parent.insertImageSettings.minWidth,
+                maxWidth: this.parent.getInsertImgMaxWidth()
+            },
+            height: {
+                height: this.parent.insertImageSettings.height, minHeight: this.parent.insertImageSettings.minHeight,
+                maxHeight: this.parent.insertImageSettings.maxHeight
+            }
+        };
+        const actionBeginArgs: ActionBeginEventArgs = {
+            requestType: 'Image',
+            name: 'ImageDragAndDrop',
+            cancel: false,
+            originalEvent: args,
+            itemCollection: imageCommand
+        };
+        this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
+            if (!actionBeginArgs.cancel) {
+                const command: IImageCommandsArgs = actionBeginArgs.itemCollection as IImageCommandsArgs;
+                const image: HTMLImageElement = createElement('img', {
+                    className: command.cssClass,
+                    attrs: { src: command.url, alt: command.altText}
+                }) as HTMLImageElement;
+                image.style.opacity = '0.5';
+                image.classList.add(classes.CLS_RTE_IMAGE);
+                image.classList.add(classes.CLS_IMGINLINE);
+                image.classList.add(classes.CLS_RESIZE);
+                range.insertNode(image);
+                this.uploadMethod(args, image);
+                image.addEventListener('load', (e: Event) => {
+                    const actionCompleteArgs: ActionCompleteEventArgs = {
+                        requestType: 'Image',
+                        name: 'InsertDropImage',
+                        elements: [image],
+                        event: e as KeyboardEventArgs,
+                        editorMode: 'HTML'
+                    };
+                    this.parent.trigger(events.actionComplete, actionCompleteArgs);
+                });
+                detach(parentElement);
+            } else {
+                actionBeginArgs.originalEvent.preventDefault();
+            }
         });
-        detach(parentElement);
     }
 
     /**

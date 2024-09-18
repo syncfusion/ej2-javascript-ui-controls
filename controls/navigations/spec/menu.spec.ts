@@ -4,7 +4,7 @@
  *  Menu spec document
  */
 import { Menu } from '../src/menu/menu';
-import { MenuItemModel, BeforeOpenCloseMenuEventArgs } from '../src/common/index';
+import { MenuItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs, addScrolling, destroyScroll } from '../src/common/index';
 import { closest, createElement, Browser, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
@@ -148,6 +148,8 @@ describe('Menu', () => {
         { title: "Option5" }
     ];
     const ul: HTMLElement = createElement('ul', { id: 'menu' });
+    const ul1: HTMLElement = createElement('ul', { id: 'menu1' });
+    ul1.style.width = '200px';
     const sTag: HTMLElement = createElement('script', { id: 'menuTemplate', attrs: { type: 'text/x-template' } });
     sTag.innerHTML = '<div>${title}</div>';
     const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
@@ -248,6 +250,7 @@ describe('Menu', () => {
             menu.hamburgerMode = true;
             menu.dataBind();
             expect(menu.element.previousElementSibling.classList.contains('e-vertical')).toBeTruthy();
+            menu.element.children[1].click();
         });
 
         it('target with or without hamburger mode checking', () => {
@@ -694,6 +697,8 @@ describe('Menu', () => {
             const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>subElem.querySelectorAll('li');
             expect((li[li.length - 1] as Element).classList.contains('e-focused')).toBe(true);
             menu.closeMenu(1);
+            menu.navIdx = [];
+            menu.keyBoardHandler(upEventArgs);
         });
         it('enter action', () => {
             document.body.appendChild(ul);
@@ -724,6 +729,11 @@ describe('Menu', () => {
             expect((li[0] as Element).classList.contains('e-focused')).toBe(true);
             menu.closeMenu(1);
         });
+        it('menu wit keyhandler', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items }, '#menu');
+            menu.keyHandler({target: menu.element.firstChild, keyCode: 40, preventDefault: (): void => { /** NO Code */ } });
+        });
     });
 
     it('memory leak', () => {
@@ -734,6 +744,101 @@ describe('Menu', () => {
         const memory: any = inMB(getMemoryProfile())
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+
+    describe('Code coverage improvement', () => {
+        afterEach(() => {
+            Browser.userAgent = '';
+            menu.destroy();
+        });
+        it('menu wit getMenuItemMidel', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items }, '#menu');
+            menu.getMenuItemModel(menu.items[1], 0);
+            menu.getItemIndex(menu.items[1]);
+            menu.getItemIndex('cookbooks', true);
+            menu.removeChildElement(menu.element.firstChild);
+            menu.navIdx = [1, 1];
+            menu.updateItemsByNavIdx();
+        });
+        it('menu wit scroll destroy', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, enableScrolling: true }, '#menu');
+            menu.updateItem(menu.element, items);
+            menu.orientation = 'Vertical';
+            menu.dataBind();
+            menu.updateItem(menu.element, items);
+        });
+        it('menu wit react template', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, template: '<div>eee</div>', showItemOnClick: true }, '#menu');
+            menu.isReact = true;
+            menu.updateReactTemplate();
+            menu.element.children[1].classList.add('e-selected');
+            menu.showSubMenu = true; menu.cliIdx = [0];
+            menu.afterCloseMenu({target: ul1, type: 'mouseover'});
+        });
+        it('items, orientation and enableScrolling', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, enableScrolling: true, orientation: 'Horizontal' }, '#menu');
+            menu.element.parentElement.classList.add('e-custom-scroll');
+            menu.items =  [
+                { text: 'File', iconCss: 'e-file', items: [{ text: 'Open', iconCss: 'em-icons e-open' },{ separator: true },{ text: 'Exit' }] },
+                { text: 'Edit' },{ text: 'View',
+                  items: [{ text: 'Toolbars', items: [{ text: 'Menu Bar' },{ text: 'Bookmarks Toolbar' },{ text: 'Customize' }] },
+                    { text: 'Zoom', items: [{ text: 'Zoom In' },{ text: 'Zoom Out' },{ text: 'Reset' }] }, { text: 'Full Screen' }]
+                },{ text: 'Tools' },{ text: 'Help' }
+            ];
+            menu.dataBind();
+            menu.items =  [
+                { text: 'File', iconCss: 'e-file', items: [{ text: 'Open', iconCss: 'em-icons e-open' },{ separator: true },{ text: 'Exit' }] },
+            ];
+            menu.orientation = 'Vertical';
+            menu.dataBind();
+        });
+        it('menu Scrolling', () => {
+            const divElem: HTMLElement = createElement('div', { id: 'menuTrgt' });
+            divElem.style.width = '300px';
+            divElem.appendChild(ul1);
+            document.body.appendChild(divElem);
+            menu = new Menu({ items: items, enableScrolling: true, cssClass: 'e-custom-scroll' }, '#menu1');
+            menu.element.parentElement.style.width = '400px';
+            let ele: any = addScrolling(createElement, menu.element.parentElement, menu.element, 'hscroll', false, 2);
+            destroyScroll(ele.ej2_instances[0], ul);
+        });
+        it('Hamburger mode with close interaction checking', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, hamburgerMode: true, showItemOnClick: true, beforeClose: (args: BeforeOpenCloseMenuEventArgs) => {
+                args.cancel = true; }}, '#menu');
+            menu.element.children[1].click();
+            menu.element.children[1].setAttribute('aria-expanded', 'false');
+            menu.closeMenu(0, {target:menu.element.children[1]});
+        });
+        it('Right arrow key with menu selection', () => {
+            document.body.appendChild(ul);
+            let ites: any = [{ text: 'Purchase', url: 'http' },
+            { text: 'Contact Us', url: 'http' },
+            { text: 'Login', url: 'http' }];
+            menu = new Menu({ items: ites, beforeItemRender: (args: MenuEventArgs) => {
+                if (args.item.text === 'Purchase') {
+                    args.element.getElementsByTagName('a')[0].setAttribute('target', '_blank');
+                } else if (args.item.text === 'Login') {
+                    args.element.getElementsByTagName('a')[0].setAttribute('target', '_parent');
+                }
+            } }, '#menu');
+            const rightEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'enter', type: 'keyup', target: null };
+            menu.element.children[0].classList.add('e-focused');
+            rightEventArgs.target = menu.element.children[0];
+            menu.rightEnterKeyHandler(rightEventArgs);
+            // menu.element.children[0].classList.remove('e-focused');
+            // menu.element.children[1].classList.add('e-focused');
+            // rightEventArgs.target = menu.element.children[1];
+            // menu.rightEnterKeyHandler(rightEventArgs);
+            // menu.element.children[1].classList.remove('e-focused');
+            // menu.element.children[2].classList.add('e-focused');
+            // rightEventArgs.target = menu.element.children[2];
+            // menu.rightEnterKeyHandler(rightEventArgs);
+        });
     });
 
     describe('CR issues', () => {

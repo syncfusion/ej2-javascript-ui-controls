@@ -30,6 +30,7 @@ describe('Get context based paste option', () => {
             done();
         }, 1000);
     });
+    
     it('Get the paste option for first row when optimised sfdt contains only table',() =>{
         editor.openBlank();
         editor.editorModule.insertTable(2,2);

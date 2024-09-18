@@ -2150,7 +2150,80 @@ describe('Column Series', () => {
             columnChart.refresh();
         });
      });
-     
+
+     describe('Column Series - Cheking animation on data changes.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let series1: object[] = [
+            { x: "Jan", y: 54.481, text: "54.48%" },
+            { x: "Feb", y: 50.56382, text: "50.56%" },
+            { x: "Mar", y: 53.68715, text: "53.69%" },
+            { x: "Apr", y: 49.143363, text: "49.14%" },
+            { x: "May", y: 57.423575, text: "57.42%" },
+            { x: "Jun", y: 55.959774, text: "55.96%" },
+            { x: "Jul", y: 52.360737, text: "52.36%" },
+            { x: "Aug", y: 56.654956, text: "56.65%" },
+            { x: "Sep", y: 51.387971, text: "51.39%" },
+            { x: "Oct", y: 53.137774, text: "53.14%" },
+            { x: "Nov", y: 54.889794, text: "54.89%" },
+            { x: "Dec", y: 56.760399, text: "56.76%" }];
+        let chartContainerDiv: Element;
+        chartContainerDiv = createElement('div', { id: 'ColumnContainer', styles: 'height:250px;width:590px;float: left;' });
+        beforeAll(() => {
+            document.body.appendChild(chartContainerDiv);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category' },
+                    series: [
+                        {
+                            dataSource: series1, xName: 'x', yName: 'y', type: 'Column', fill: 'red',
+                            animation: { enable: false }, name: 'series1', legendShape: 'Circle',
+                            marker: {
+                                visible: true,
+                                dataLabel: {
+                                    visible: true,
+                                    position: 'Outer',
+                                    font: { color: 'red', size: '12px' }
+                                }
+                            }
+                        }
+                    ],
+
+                });
+            chartObj.appendTo('#ColumnContainer');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            chartContainerDiv.remove();
+        });
+
+        it('Checking column series updated direction', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('ColumnContainer_Series_0_Point_0');
+                expect(element.getAttribute('d')).toBe('M 6.843750000000001 54.626609374999994 Q 6.843750000000001 54.626609374999994 6.843750000000001 54.626609374999994 L 38.78125 54.626609374999994 Q 38.78125 54.626609374999994 38.78125 54.626609374999994 L 38.78125 171.25 Q 38.78125 171.25 38.78125 171.25 L 6.843750000000001 171.25 Q 6.843750000000001 171.25 6.843750000000001 171.25 L 6.843750000000001 54.626609374999994 Z');
+                done();
+            };
+            let dataSource: object[] = [
+                { x: "Jan", y: 54.481, text: "52.48%" },
+                { x: "Feb", y: 50.56382, text: "50.56%" },
+                { x: "Mar", y: 51.68715, text: "53.69%" },
+                { x: "Apr", y: 49.143363, text: "49.14%" },
+                { x: "May", y: 57.423575, text: "57.42%" },
+                { x: "Jun", y: 55.959774, text: "55.96%" },
+                { x: "Jul", y: 52.360737, text: "52.36%" },
+                { x: "Aug", y: 56.654956, text: "56.65%" },
+                { x: "Sep", y: 51.387971, text: "51.39%" },
+                { x: "Oct", y: 53.137774, text: "53.14%" },
+                { x: "Nov", y: 52.889794, text: "54.89%" },
+                { x: "Dec", y: 56.760399, text: "56.76%" }
+            ];
+            chartObj.series[0].setData(dataSource);
+            chartObj.refresh();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -2160,6 +2233,81 @@ describe('Column Series', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+
+    describe('Column Series Data', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let animationCOmplete: EmitType<IAnimationCompleteEventArgs>;
+        element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            var chartData = [
+                { country: 'USA', gold: 50 },
+                { country: 'China', gold: 40},
+                { country: 'Japan', gold: 70},
+                { country: 'Australia', gold: 60},
+                { country: 'France', gold: 50},
+                { country: 'Germany', gold: 40},
+                { country: 'Italy', gold: 40},
+                { country: 'Sweden', gold: 30}
+            ];
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category',
+                        title: 'Countries',
+                        majorGridLines: { width: 0 },
+                        border : {width : 0},
+                        lineStyle : {width : 0}
+                        
+                    },
+                    primaryYAxis: {
+                        interval: 20, title: 'Medals',
+                        border : {width : 0},
+                        lineStyle : {width : 0}
+                        
+                    },
+                    series: [{
+                
+                        dataSource: chartData,
+                        xName: 'country', yName: 'gold',
+                        name: 'Gold',
+                        type: 'Column', animation: { enable: false },
+                        marker: { visible: true, dataLabel: { visible: true, position: 'Top', name : 'a' } },
+                    },
+                ],
+                chartArea: { border:{ width: 0}},
+                tooltip: { enable: true, shared: false },
+                title: 'Olympic Medals',
+                    width: '800',
+                    // title: 'Chart TS Title', loaded: loaded, legendSettings: { visible: false }
+
+                });
+            chartObj.appendTo('#container');
+        });
+        
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+        it('Checking range step area series -set Data method', (done: Function) => {
+            let chartstepSeriesData = [
+                { country: 'China', gold: 40},
+                { country: 'Japan', gold: 70},
+                { country: 'Australia', gold: 60},
+                { country: 'France', gold: 50},
+                { country: 'Germany', gold: 40},
+                { country: 'Italy', gold: 40},
+                { country: 'Sweden', gold: 30},
+                { country: 'USA', gold: 50 },
+            ];
+            chartObj.series[0].setData(chartstepSeriesData);
+            let svg = document.getElementById('container_Series_0_Point_0');
+            expect(svg != null).toBe(true);
+            done();
+        });
+
+    });
 });
 
 export interface series1 {

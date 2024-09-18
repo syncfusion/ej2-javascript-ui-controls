@@ -1,7 +1,7 @@
 import { L10n, EventHandler, getValue, KeyboardEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { addClass, removeClass, extend, Browser } from '@syncfusion/ej2-base';
 import { IGrid, IFocus, FocusInfo, FocusedContainer, IIndex, CellFocusArgs, SwapInfo, GroupEventArgs, VirtualSelectionInfo } from '../base/interface';
-import { CellType } from '../base/enum';
+import { CellType, FocusType } from '../base/enum';
 import * as event from '../base/constant';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
@@ -358,7 +358,8 @@ export class FocusStrategy {
             }
         }
         if (focusFirstHeaderCell) {
-            if (this.parent.allowGrouping && !isNullOrUndefined(this.parent.groupSettings.columns) && this.parent.groupSettings.columns.length === this.parent.columns.length){
+            if (this.parent.allowGrouping && !isNullOrUndefined(this.parent.groupSettings.columns)
+                && this.parent.groupSettings.columns.length === this.parent.columns.length) {
                 this.setActive(true);
             } else {
                 this.setActive(false);
@@ -431,7 +432,8 @@ export class FocusStrategy {
                 }
             }
             if (e.action === 'shiftTab' && bValue.toString() === this.active.matrix.current.toString()) {
-                if (this.parent.allowGrouping && !isNullOrUndefined(this.parent.groupSettings.columns) && this.parent.groupSettings.columns.length === this.parent.columns.length) {
+                if (this.parent.allowGrouping && !isNullOrUndefined(this.parent.groupSettings.columns)
+                    && this.parent.groupSettings.columns.length === this.parent.columns.length) {
                     this.focusOutFromHeader(e);
                     return;
                 }
@@ -468,6 +470,23 @@ export class FocusStrategy {
                 this.focusOutFromChildGrid(e);
             }
             return;
+        }
+        this.header.action = e.action;
+        this.header.currentTarget = null;
+        this.header.focusType = 'key';
+        if (e.target && parentsUntil(e.target as HTMLElement, 'e-fltrtemp') && (e.action === 'tab' || e.action === 'shiftTab')) {
+            const target: HTMLElement = e.target as HTMLElement;
+            const focusElement: HTMLElement[] = [].slice.call(closest(target, 'th').querySelectorAll('.e-fltrtemp-focus'));
+            if (focusElement.length) {
+                const elementIndex: number = focusElement.indexOf(target);
+                const resetActive: boolean = ((e.action === 'tab' && elementIndex < focusElement.length - 1)
+                    || (e.action === 'shiftTab' && elementIndex > 0)) ? true : false;
+                if (resetActive) {
+                    this.setActive(false);
+                    this.active.matrix.current = bValue;
+                    this.active.currentTarget = target;
+                }
+            }
         }
         if (focusFirstHeaderCell && parentsUntil(this.active.getTable(), 'e-gridheader')
             && e.target && (e.target as HTMLElement).id === this.parent.element.id + '_searchbar') {
@@ -710,10 +729,12 @@ export class FocusStrategy {
         setTimeout(
             () => {
                 if (!isNullOrUndefined(this.currentInfo.elementToFocus)) {
+                    const filterMenuElement: Element = isNullOrUndefined(this.parent.element.querySelector('.e-flmenu')) ?
+                        document.querySelector('.e-grid-popup .e-flmenu') : this.parent.element.querySelector('.e-flmenu');
                     if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
                         this.focusVirtualElement(e);
-                    } else if (isNullOrUndefined(this.parent.element.querySelector('.e-flmenu')) ||
-                    parentsUntil(document.activeElement, 'e-flmenu-valuediv') !== this.parent.element.querySelector('.e-flmenu-valuediv')) {
+                    } else if (isNullOrUndefined(filterMenuElement) ||
+                    parentsUntil(document.activeElement, 'e-flmenu-valuediv') !== filterMenuElement.querySelector('.e-flmenu-valuediv')) {
                         this.currentInfo.elementToFocus.focus();
                     }
                 }
@@ -731,7 +752,8 @@ export class FocusStrategy {
     protected removeFocus(e?: FocusEvent): void {
         if (!this.currentInfo.element) { return; }
         if (this.parent.isReact && !this.parent.isEdit && this.currentInfo.element.classList.contains('e-rowcell')
-            && !this.currentInfo.element.parentElement && !(this.parent.allowGrouping && !isNullOrUndefined(this.parent.groupSettings.columns) && this.parent.groupSettings.columns.length) &&
+            && !this.currentInfo.element.parentElement && !(this.parent.allowGrouping
+            && !isNullOrUndefined(this.parent.groupSettings.columns) && this.parent.groupSettings.columns.length) &&
             this.parent.getRowByIndex(this.prevIndexes.rowIndex)) {
             const cellElem: HTMLElement = this.parent.getCellFromIndex(this.prevIndexes.rowIndex, this.prevIndexes
                 .cellIndex) as HTMLElement;
@@ -1138,7 +1160,7 @@ export class FocusStrategy {
     }
 
     private commandColumnFocusElement(cell: HTMLElement, isLast: boolean): HTMLElement {
-        let commandButtons = cell.querySelectorAll('button:not(.e-hide)');
+        const commandButtons: NodeListOf<Element> = cell.querySelectorAll('button:not(.e-hide)');
         return isLast ? commandButtons[commandButtons.length - 1] as HTMLElement : commandButtons[0] as HTMLElement;
     }
 }
@@ -1256,6 +1278,9 @@ export class ContentFocus implements IFocus {
     public lastIdxCell: boolean = false;
     public target: HTMLElement;
     public indexesByKey: (action: string) => number[];
+    public focusType: FocusType;
+    public currentTarget: HTMLElement;
+    public action: string;
     constructor(parent: IGrid) {
         this.parent = parent;
         this.keyActions = {
@@ -1432,6 +1457,16 @@ export class ContentFocus implements IFocus {
             query = 'input:not([type="hidden"]), select:not([aria-hidden="true"]), textarea' + commandCellQuery;
         }
         const child: HTMLElement[] = [].slice.call(element.querySelectorAll(query));
+        if (element.classList.contains('e-fltrtemp')) {
+            const focusElement: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-fltrtemp-focus'));
+            if (this.focusType === 'click' && this.target && this.target.classList.contains('e-fltrtemp-focus')) {
+                return this.target;
+            } else if (this.focusType === 'key' && focusElement.length && (this.action === 'tab' || this.action === 'shiftTab')) {
+                const elementIndex: number = focusElement.indexOf(this.currentTarget);
+                return elementIndex === -1 ? focusElement[this.action === 'tab' ? 0 : focusElement.length - 1]
+                    : focusElement[this.action === 'tab' ? elementIndex + 1 : elementIndex - 1];
+            }
+        }
 
         /* Select the first focusable child element
          * if no child found then select the cell itself.
@@ -1487,7 +1522,7 @@ export class ContentFocus implements IFocus {
         this.lastIdxCell = false;
         const enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'shiftEnter';
         const headerSwap: boolean = (action === 'upArrow' || enterFrozen) && current[0] === 0;
-        if(this.matrix.matrix[current[0]]){
+        if (this.matrix.matrix[current[0]]) {
             if (action === 'tab' && this.matrix.matrix.length &&
                 current[1] === this.matrix.matrix[current[0]].lastIndexOf(1) && this.matrix.matrix.length - 1 !== current[0]) {
                 this.matrix.current[0] = this.nextRowFocusValidate(this.matrix.current[0] + 1);
@@ -1610,6 +1645,7 @@ export class HeaderFocus extends ContentFocus implements IFocus {
     }
 
     public onClick(e: Event): void | boolean {
+        this.focusType = 'click';
         let target: HTMLTableCellElement = <HTMLTableCellElement>e.target;
         this.target = target;
         target = <HTMLTableCellElement>(target.classList.contains('e-headercell') ? target : closest(target, 'th'));

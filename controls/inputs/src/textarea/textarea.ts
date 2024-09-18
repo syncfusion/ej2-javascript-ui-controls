@@ -341,7 +341,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
             this.isForm = true;
         }
         /* istanbul ignore next */
-        if (this.element.tagName === 'EJS-TEXTAREA') {
+        if (this.element.tagName === 'EJS-TEXTAREA' || this.element.tagName === 'EJS-SMARTTEXTAREA') {
             const ejInstance: Object = getValue('ej2_instances', this.element);
             const inputElement: string | HTMLTextAreaElement = <HTMLTextAreaElement>this.createElement('textarea');
             let index: number = 0;
@@ -486,7 +486,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         }
     }
 
-    private wireEvents(): void {
+    protected wireEvents(): void {
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'blur', this.focusOutHandler, this);
         EventHandler.add(this.element, 'keydown', this.keydownHandler, this);
@@ -498,7 +498,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         this.bindClearEvent();
     }
 
-    private unWireEvents(): void {
+    protected unWireEvents(): void {
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'blur', this.focusOutHandler);
         EventHandler.remove(this.element, 'keydown', this.keydownHandler);
@@ -561,7 +561,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         this.trigger('blur', eventArgs);
     }
 
-    private keydownHandler (args: KeyboardEvent): void {
+    protected keydownHandler (args: KeyboardEvent): void {
         if ((args.keyCode === 13 || args.keyCode === 9) && !((this.previousValue === null || this.previousValue === '') && (this.value === null || this.value === '') && this.element.value === '')) {
             this.setProperties({ value: this.element.value }, true);
         }

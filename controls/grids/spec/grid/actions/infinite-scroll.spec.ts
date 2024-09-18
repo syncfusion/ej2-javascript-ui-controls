@@ -2101,6 +2101,133 @@ describe('width service code coverage', () => {
 });
 
 
+// used for code coverage
+describe('Infinite Scroll code coverage', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                enableInfiniteScrolling: true,
+                enableColumnVirtualization: true,
+                infiniteScrollSettings: { enableCache: true },
+                frozenRows: 1,
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 140
+                    },
+                    {
+                        field: 'CustomerID', headerText: 'Customer ID',
+                        validationRules: { required: true }, width: 140
+                    },
+                    {
+                        field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                        width: 140, format: 'C2', validationRules: { required: true }
+                    },
+                    {
+                        field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit',
+                        width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' },
+                    },
+                ],
+            }, done);
+    });
+
+
+    it('Content renderer coverage', () => {
+        gridObj.infiniteScrollModule.requestType = 'delete';
+        (gridObj as any).contentModule.ensureFrozenHeaderRender({});
+        gridObj.infiniteScrollSettings.enableCache  = false;
+        (gridObj as any).contentModule.setInfiniteVisibleRows({}, []);
+        (gridObj as any).contentModule.infiniteRowVisibility(true);
+        (gridObj as any).contentModule.immutableModeRendering(undefined);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+
+describe('Infinite Scroll file code coverage - 2', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { enableCache: true },
+                frozenRows: 1,
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 140
+                    },
+                    {
+                        field: 'CustomerID', headerText: 'Customer ID',
+                        validationRules: { required: true }, width: 140
+                    },
+                    {
+                        field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                        width: 140, format: 'C2', validationRules: { required: true }
+                    },
+                    {
+                        field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit',
+                        width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' },
+                    },
+                ],
+            }, done);
+    });
+    
+
+
+
+
+    it('infinite scroll file method coverage - 1', () => {
+        (gridObj as any).infiniteScrollModule.captionActionComplete({ isCollapse: false });
+        (gridObj as any).infiniteScrollModule.isNormaledit = false;
+        (gridObj as any).infiniteScrollModule.infiniteAddActionBegin({});
+        (gridObj as any).infiniteScrollModule.infiniteEditSuccess({});
+        (gridObj as any).infiniteScrollModule.actionComplete({  requestType : 'cancel' });
+        (gridObj as any).infiniteScrollModule.resetInfiniteEdit();
+        (gridObj as any).infiniteScrollModule.infiniteEditHandler({ e: { requestType : 'edit' } });
+        (gridObj as any).infiniteScrollModule.makeRequest({ prevPage: 1 });
+        gridObj.infiniteScrollSettings.enableCache = false;
+    });
+
+    it('coverage for infinite scroll navigation', () => {
+        let cells: NodeListOf<Element> = gridObj.getContent().querySelectorAll('.e-groupcaption');
+        gridObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault: () => { }, target: cells[0] } as any);
+        gridObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault: () => { }, target: cells[1] } as any);
+        // (gridObj as any).infiniteScrollModule.scrollToLastFocusedCell({ keyArgs : { action: '' } });
+    });
+
+    it('infinite scroll file method coverage - 1', () => {
+        (gridObj as any).infiniteScrollModule.requestType = 'add';
+        (gridObj as any).sortSettings.columns = ['Freight'];
+        (gridObj as any).infiniteScrollModule.ensureRowAvailability(gridObj.getRowsObject()[0], gridObj.getRowsObject()[0].data);
+        gridObj.infiniteScrollSettings.enableCache = true;
+    });
+
+    it('infinite scroll file method coverage - 3', () => {
+        (gridObj as any).infiniteScrollModule.setDisplayNone({ index: 1, vissible: true});
+        (gridObj as any).infiniteScrollModule.infiniteCache['1'][1].visible = false;
+        (gridObj as any).infiniteScrollModule.refreshInfiniteCacheRowVisibleLength((gridObj as any).infiniteScrollModule.infiniteCache, 1);
+        gridObj.infiniteScrollSettings.enableCache = false;
+        (gridObj as any).infiniteScrollModule.refreshInfiniteCacheRowVisibleLength((gridObj as any).infiniteScrollModule.infiniteCache, 1);
+    });
+
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+
 describe('EJ2-907977 - Focus is lost when enableColumnVirtualization is enabled with Freeze columns - coverage 1 => ', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {

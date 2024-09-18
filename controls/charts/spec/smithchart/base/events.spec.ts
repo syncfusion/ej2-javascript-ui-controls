@@ -6,7 +6,15 @@ let prevent: Function = (): void => {
     //Prevent Function
 };
 export class MouseEvents {
-
+    public keyboardEvent(element: Element, eventType: string, key: string, code: string): void {
+        let keyboardEvent = new KeyboardEvent(eventType, {
+            key: key,
+            code: code,
+            bubbles: true,
+            cancelable: true
+        });
+        element.dispatchEvent(keyboardEvent);
+    }
     public clickEvent(element: Element): void {
         let click: Event = document.createEvent('MouseEvent');
         click.initEvent('click', true, false);

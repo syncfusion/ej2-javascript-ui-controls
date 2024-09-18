@@ -12,6 +12,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import { PolarSeries } from '../../../src/chart/index';
+import { getMemoryProfile, inMB, profile } from '../../common.spec';
 Chart.Inject(StackingLineSeries, PolarSeries, DateTime, Category, DataLabel);
 export interface Arg {
     chart: Chart;
@@ -124,6 +125,62 @@ describe('Chart Control', () => {
             chartObj.series[3].type = 'Polar';
             chartObj.series[3].drawType = 'StackingLine';
             chartObj.refresh();
+        });
+    });
+    describe('Staking line  Checking animation on data changes', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let path: string[];
+        beforeAll(() => {
+            elem = createElement('div', { id: 'StackingLinecontainer' });
+            document.body.appendChild(elem);
+            chartObj = new Chart({
+                series: [
+                    {
+                        dataSource: [{ x: 1, y: 10 }, { x: 2, y: 20 },
+                        { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: 30 }, { x: 6, y: 20 }],
+                        xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Average' },
+                        type: 'StackingLine', animation: { enable: false },
+                        marker: { visible: true, dataLabel: { visible: true } },
+                    }]
+            });
+            chartObj.appendTo('#StackingLinecontainer');
+        });
+        afterAll((): void => {
+            elem.remove();
+            chartObj.destroy();
+        });
+        it('Stacking Line checking setData method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement: HTMLElement = document.getElementById('StackingLinecontainer_Series_0');
+                expect(seriesElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            let seriesData = [{ x: 1, y: 10 }, { x: 2, y: 20 },
+            { x: 3, y: 15 }, { x: 4, y: 30 }, { x: 5, y: 30 }, { x: 6, y: 20 }];
+            chartObj.series[0].setData(seriesData);
+            chartObj.refresh();
+        });
+        it('Stacking Line  checking addPoint method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement: HTMLElement = document.getElementById('StackingLinecontainer_Series_0');
+                expect(seriesElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].addPoint(1, 10);
+            chartObj.refresh();
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         });
     });
 });

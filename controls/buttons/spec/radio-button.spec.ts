@@ -69,6 +69,17 @@ describe('RadioButton', () => {
             expect(element.getAttribute('value')).toEqual('male');
         });
 
+        it('RadioButton with htmlAttributes', () => {
+            radio = new RadioButton({}, '#radio');
+            radio.appendTo('#radio');
+            radio.htmlAttributes = {'class':'Choose Option'};
+            radio.dataBind();
+            radio.htmlAttributes = { 'data-containerid': 'error-agreement', 'test': 'test' };
+            radio.dataBind();
+            radio.htmlAttributes = { 'name': 'radio-btn' };
+            radio.dataBind();
+        });
+
         it('RadioButton with cssClass', () => {
             radio = new RadioButton({ cssClass: 'class' }, '#radio');
             expect(element.parentElement.classList.contains('class')).toEqual(true);
@@ -78,6 +89,18 @@ describe('RadioButton', () => {
             radio = new RadioButton({ change: changeFn }, '#radio');
             (element.nextElementSibling as HTMLElement).click();
             expect(i).toEqual(1);
+        });
+
+        it('Vue RadioButton with change event', () => {
+            radio = new RadioButton({ change: changeFn }, '#radio');
+            radio.isVue = true;
+            radio.value = true;
+            (element.nextElementSibling as HTMLElement).click();
+            expect(i).toEqual(1);
+            radio = new RadioButton({ });
+            radio.isVue = true;
+            radio.value = true;
+            radio.appendTo('#radio');
         });
     });
 
@@ -282,6 +305,7 @@ describe('RadioButton', () => {
             expect(radio.element.parentElement.children[0].tagName).toEqual('INPUT');
             expect(radio.element.parentElement.children[1].tagName).toEqual('LABEL');
             expect(radio.element.getAttribute('label')).toEqual(null);
+            radio.isAngular = true;
             radio.element.click();
             radio.destroy();
             expect((document.getElementById('ngradiobutton')).tagName).toBe('EJS-RADIOBUTTON');

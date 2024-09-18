@@ -638,13 +638,13 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      */
     private setTheme(): void {
         this.themeStyle = getBulletThemeColor(this.theme);
-        if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && this.theme.indexOf('Fluent') > -1) {
-            this.valueFill = !(this.valueFill) ? (this.theme === 'FluentDark' ? '#797775' : '#A19F9D') : this.valueFill;
-            this.targetColor = (this.targetColor === '#191919') ? (this.theme === 'FluentDark' ? '#797775' : '#A19F9D') : this.targetColor;
+        if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && (this.theme.indexOf('Fluent') > -1 || this.theme.indexOf('Bootstrap5') > -1)) {
+            this.valueFill = !(this.valueFill) ? (this.theme === 'FluentDark' ? '#797775' : this.theme === 'Bootstrap5' ? '#343A40' : '#A19F9D') : this.valueFill;
+            this.targetColor = (this.targetColor === '#191919') ? (this.theme === 'FluentDark' ? '#797775' : this.theme === 'Bootstrap5' ? '#343A40' : '#A19F9D') : this.targetColor;
         }
-        if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && this.theme.indexOf('Material3') > -1) {
-            this.valueFill = !(this.valueFill) ? (this.theme === 'Material3Dark' ? '#938F99' : '#79747E') : this.valueFill;
-            this.targetColor = (this.targetColor === '#191919') ? (this.theme === 'Material3Dark' ? '#938F99' : '#79747E') : this.targetColor;
+        if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && (this.theme.indexOf('Material3') > -1 || this.theme.indexOf('Bootstrap5') > -1)) {
+            this.valueFill = !(this.valueFill) ? (this.theme === 'Material3Dark' ? '#938F99' : this.theme === 'Bootstrap5Dark' ? '#343A40' : '#79747E') : this.valueFill;
+            this.targetColor = (this.targetColor === '#191919') ? (this.theme === 'Material3Dark' ? '#938F99' : this.theme === 'Bootstrap5Dark' ? '#343A40' : '#79747E') : this.targetColor;
         }
         if (!(document.getElementById(this.element.id + 'Keyboard_bullet_chart_focus'))) {
             const style: HTMLStyleElement = document.createElement('style');
@@ -1599,7 +1599,15 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         return false;
     }
 
-    private setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
+    /**
+     * Sets the tab index for the specified elements.
+     *
+     * @param {HTMLElement} previousElement - The previous element whose tab index needs to be removed.
+     * @param {HTMLElement} currentElement - The current element to which the tab index needs to be set.
+     * @returns {void}
+     * @private
+     */
+    public setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
         if (previousElement) {
             previousElement.removeAttribute('tabindex');
         }
@@ -1608,7 +1616,15 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         }
     }
 
-    private getActualIndex(index: number, totalLength: number): number {
+    /**
+     * Gets the actual index based on the provided index and the total length.
+     *
+     * @param {number} index - The provided index.
+     * @param {number} totalLength - The total length of the collection.
+     * @returns {number} - The actual index, ensuring it is within the valid range.
+     * @private
+     */
+    public getActualIndex(index: number, totalLength: number): number {
         return index > totalLength - 1 ? 0 : (index < 0 ? totalLength - 1 : index);
     }
 

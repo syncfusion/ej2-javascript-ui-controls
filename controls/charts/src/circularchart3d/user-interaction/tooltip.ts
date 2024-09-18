@@ -225,8 +225,8 @@ export class CircularChartTooltip3D extends ChildProperty<CircularChartTooltip3D
         const swipeThreshold: number = 10;
         const isWithinSwipeThreshold: boolean = Math.abs(chart.mouseX - chart.cachedX) < swipeThreshold &&
             Math.abs(chart.mouseY - chart.cachedY) < swipeThreshold;
-        if (this.control.tooltip.enable && this.control.isTouch && !chart.rotateActivate && isWithinSwipeThreshold
-            && withInBounds(this.control.mouseX, this.control.mouseY, this.control.initialClipRect)) {
+        if (this.control.tooltip.enable && !chart.rotateActivate && isWithinSwipeThreshold
+            && withInBounds(this.control.mouseX, this.control.mouseY, this.control.initialClipRect) && this.control.isTouch) {
             this.tooltip(event);
             this.removeTooltip(2000);
             this.tooltipRendered = true;
@@ -546,7 +546,7 @@ export class CircularChartTooltip3D extends ChildProperty<CircularChartTooltip3D
         if (isFirst) {
             this.svgTooltip = new SVGTooltip(
                 {
-                    opacity: chart.tooltip.opacity ? chart.tooltip.opacity : ((this.control.theme === 'Material3' || this.control.theme === 'Material3Dark') ? 1 : 0.75),
+                    opacity: chart.tooltip.opacity ? chart.tooltip.opacity : ((this.control.theme === 'Material3' || this.control.theme === 'Material3Dark' || this.control.theme.indexOf('Bootstrap5') > -1) ? 1 : 0.75),
                     header: this.headerText,
                     content: this.text,
                     fill: chart.tooltip.fill,

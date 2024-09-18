@@ -20,8 +20,9 @@ import { MouseEvents } from '../base/events.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { getElement } from '../../../src/index';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import { Export } from '../../../src/chart/print-export/export';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
-Chart.Inject(LineSeries, ParetoSeries, DataLabel, Category, DateTime, Tooltip, Crosshair);
+Chart.Inject(LineSeries, ParetoSeries, DataLabel, Category, DateTime, Tooltip, Crosshair, Export);
 export interface Arg {
     chart: Chart;
 }
@@ -355,7 +356,7 @@ describe('chart control', () => {
             var data1= [
                 { x: 'Traffic', y: 56 }, { x: 'Child Care', y: 44.8 },
                 { x: 'Transport', y: 37.2 }, { x: 'Weather', y: 19.6 },
-                { x: 'Emergency', y: 6.6 }
+                { x: 'Emergency', y: 6.6 },
             ];
             chartObj = new Chart(
                 {
@@ -385,23 +386,23 @@ describe('chart control', () => {
                         {
                             xName: 'x',
                             yName: 'y', dataSource: data, name: 'Browser', type: 'Pareto',
-                            marker: { dataLabel: { visible: true }, visible: true, width: 10, height: 10 },
+                            marker: { dataLabel: { visible: false }, visible: true, width: 10, height: 10 },
                             paretoOptions: {
                                 fill: '#000000',
                                 width : 2,
                                 dashArray :'2,2',
-                                marker : { dataLabel: { visible: true }, visible: true, width:10, height:10, shape: 'Circle' }
+                                marker : { dataLabel: { visible: false }, visible: true, width:10, height:10, shape: 'Circle' }
                             }
                         },
                         {
                             xName: 'x',
                             yName: 'y', dataSource: data1, name: 'Browser', type: 'Pareto',
-                            marker: { dataLabel: { visible: true }, visible: true, width: 10, height: 10, },
+                            marker: { dataLabel: { visible: false }, visible: true, width: 10, height: 10, },
                             paretoOptions: {
                                 fill: '#000000',
                                 width : 2,
                                 dashArray :'2,2',
-                                marker : { dataLabel: { visible: true }, visible: true, width:10, height:10, shape: 'Circle' }
+                                marker : { dataLabel: { visible: false }, visible: true, width:10, height:10, shape: 'Circle' }
                             }
                         },
 
@@ -467,6 +468,41 @@ describe('chart control', () => {
             };
             chartObj.loaded = loaded;
             chartObj.series[0].paretoOptions.showAxis = false;
+            chartObj.refresh();
+        });
+        it('Pareto Series - Checking addPoint', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element: Element = document.getElementById('container_Series_2');
+                expect(element.getAttribute('d') != '').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].addPoint({ x: 'Health', y: 56 });
+            chartObj.series[0].paretoOptions.showAxis = false;
+            chartObj.refresh();
+        });
+        it('Pareto Series - Checking removePoint', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element: Element = document.getElementById('container_Series_2');
+                expect(element.getAttribute('d') != '').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].marker = { visible: true };
+            chartObj.series[0].paretoOptions.showAxis = false;
+            chartObj.series[0].paretoOptions.marker = { visible: true };
+            chartObj.series[1].paretoOptions.marker = { visible: true };
+            chartObj.palettes = ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000'];
+            chartObj.refresh();
+        });
+        it('Pareto Series excel export ', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element: Element = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.exportModule.export('XLSX', 'chart');
             chartObj.refresh();
         });
     });

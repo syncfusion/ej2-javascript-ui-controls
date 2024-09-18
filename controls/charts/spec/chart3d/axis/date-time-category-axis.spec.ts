@@ -74,8 +74,8 @@ describe('Chart Control', () => {
         it('Checking Xaxis title default position', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-0');
-                expect(parseInt(area.getAttribute('y'))).toBe(439);
-                expect(parseInt(area.getAttribute('x'))).toBe(397);
+                expect(parseInt(area.getAttribute('y'))).toBe(438);
+                expect(parseInt(area.getAttribute('x'))).toBe(396);
                 done();
             };
             chartObj.loaded = loaded;
@@ -85,8 +85,8 @@ describe('Chart Control', () => {
         it('Checking Yaxis title default position', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-1');
-                expect(parseInt(area.getAttribute('y'))).toBe(209);
-                expect(parseInt(area.getAttribute('x'))).toBe(21);
+                expect(parseInt(area.getAttribute('y'))).toBe(208);
+                expect(parseInt(area.getAttribute('x'))).toBe(23);
                 done();
             };
             chartObj.loaded = loaded;
@@ -96,8 +96,8 @@ describe('Chart Control', () => {
         it('Checking Xaxis title default styles', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-0');
-                expect(area.getAttribute('font-size') == '14px').toBe(true);
-                expect(area.getAttribute('font-weight') == '600').toBe(true);
+                expect(area.getAttribute('font-size') == '16px').toBe(true);
+                expect(area.getAttribute('font-weight') == '700').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -106,8 +106,8 @@ describe('Chart Control', () => {
         it('Checking Yaxis title default styles', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-1');
-                expect(area.getAttribute('font-size') == '14px').toBe(true);
-                expect(area.getAttribute('font-weight') == '600').toBe(true);
+                expect(area.getAttribute('font-size') == '16px').toBe(true);
+                expect(area.getAttribute('font-weight') == '700').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -117,18 +117,18 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let label = document.getElementById('chartContainer-1-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(409);
+                expect(parseInt(label.getAttribute('y'))).toBe(407);
                 label = document.getElementById('chartContainer-1-axis-label-1');
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(373);
+                expect(parseInt(label.getAttribute('y'))).toBe(372);
                 label = document.getElementById('chartContainer-1-axis-label-2');
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(337);
+                expect(parseInt(label.getAttribute('y'))).toBe(336);
                 label = document.getElementById('chartContainer-1-axis-label-3');
-                expect(parseInt(label.getAttribute('y'))).toBe(302);
+                expect(parseInt(label.getAttribute('y'))).toBe(300);
                 label = document.getElementById('chartContainer-1-axis-label-4');
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(266);
+                expect(parseInt(label.getAttribute('y'))).toBe(265);
                 done();
             };
             chartObj.loaded = loaded;
@@ -137,7 +137,7 @@ describe('Chart Control', () => {
         it('Checking Xaxis title Rotation', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-0');
-                expect(area.getAttribute('transform')).toBe('rotate(90,408.0363214837712,430.9428129829984)');
+                expect(area.getAttribute('transform')).toBe('rotate(90,408.0363214837712,428.86652941460585)');
                 done();
             };
             chartObj.loaded = loaded;
@@ -148,7 +148,7 @@ describe('Chart Control', () => {
         it('Checking Yaxis title Rotation', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-1');
-                expect(area.getAttribute('transform')).toBe('rotate(90,12.82225656877898,200.97333848531682)');
+                expect(area.getAttribute('transform')).toBe('rotate(90,13.802936630602783,198.89705491692425)');
                 done();
             };
             chartObj.loaded = loaded;
@@ -203,7 +203,7 @@ describe('Chart Control', () => {
         it('Checking secondary Xaxis position opposite', (done: Function) => {
             loaded = (args: Object): void => {
                 let label = document.getElementById('chartContainer-2-axis-label-0');
-                expect(parseInt(label.getAttribute('x'))).toBe(744);
+                expect(parseInt(label.getAttribute('x'))).toBe(746);
                 expect(parseInt(label.getAttribute('y'))).toBe(377);
                 done();
             };
@@ -235,7 +235,7 @@ describe('Chart Control', () => {
                 let path3: string = gridLineElement.getAttribute("y2");
                 expect(path === "85.24346257889991" || path === "84.74943046171867").toBe(true);
                 expect(path1 === "24.34625788999098" || path1 === "369.20454545454544").toBe(true);
-                expect(path2 === "85.24346257889991" || path2 === "713.0972429210134").toBe(true);
+                expect(path2 === "85.24346257889991" || path2 === "714.9884500745156").toBe(true);
                 expect(path3 === "403.2551848512173" || path3 === "369.20454545454544").toBe(true);
                 done();
             }
@@ -245,11 +245,11 @@ describe('Chart Control', () => {
             chartObj.loaded = () => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(131);
-                expect(parseInt(label.getAttribute('y'))).toBe(233);
+                expect(parseInt(label.getAttribute('y'))).toBe(234);
                 expect(label.textContent === "Jul 2000").toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-5');
-                expect(parseInt(label.getAttribute('x'))).toBe(679);
-                expect(parseInt(label.getAttribute('y'))).toBe(235);
+                expect(parseInt(label.getAttribute('x'))).toBe(680);
+                expect(parseInt(label.getAttribute('y'))).toBe(236);
                 expect(label.textContent === "Apr 2010").toBe(true);
                 done();
             }
@@ -270,11 +270,11 @@ describe('Chart Control', () => {
             chartObj.loaded = () => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(131);
-                expect(parseInt(label.getAttribute('y'))).toBe(234);
+                expect(parseInt(label.getAttribute('y'))).toBe(235);
                 expect(label.textContent === "7/11/2000").toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-5');
-                expect(parseInt(label.getAttribute('x'))).toBe(679);
-                expect(parseInt(label.getAttribute('y'))).toBe(232);
+                expect(parseInt(label.getAttribute('x'))).toBe(680);
+                expect(parseInt(label.getAttribute('y'))).toBe(233);
                 expect(label.textContent === "4/8/2010").toBe(true);
                 done();
             }
@@ -294,10 +294,10 @@ describe('Chart Control', () => {
             chartObj.loaded = () => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(131);
-                expect(parseInt(label.getAttribute('y'))).toBe(233);
+                expect(parseInt(label.getAttribute('y'))).toBe(234);
                 expect(label.textContent === "Tue 00:00").toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-5');
-                expect(parseInt(label.getAttribute('x'))).toBe(679);
+                expect(parseInt(label.getAttribute('x'))).toBe(680);
                 expect(parseInt(label.getAttribute('y'))).toBe(234);
                 expect(label.textContent === "Thu 00:00").toBe(true);
                 done();
@@ -318,11 +318,11 @@ describe('Chart Control', () => {
             chartObj.loaded = () => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(131);
-                expect(parseInt(label.getAttribute('y'))).toBe(236);
+                expect(parseInt(label.getAttribute('y'))).toBe(237);
                 expect(label.textContent === "00:00:00").toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-5');
-                expect(parseInt(label.getAttribute('x'))).toBe(679);
-                expect(parseInt(label.getAttribute('y'))).toBe(236);
+                expect(parseInt(label.getAttribute('x'))).toBe(680);
+                expect(parseInt(label.getAttribute('y'))).toBe(237);
                 expect(label.textContent === "00:00:00").toBe(true);
                 done();
             }
@@ -342,7 +342,7 @@ describe('Chart Control', () => {
             chartObj.loaded = () => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(131);
-                expect(parseInt(label.getAttribute('y'))).toBe(236);
+                expect(parseInt(label.getAttribute('y'))).toBe(237);
                 done();
             }
             chartObj.primaryXAxis = {
@@ -361,11 +361,11 @@ describe('Chart Control', () => {
             chartObj.loaded = () => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(131);
-                expect(parseInt(label.getAttribute('y'))).toBe(233);
+                expect(parseInt(label.getAttribute('y'))).toBe(234);
                 expect(label.textContent === "Jul 2000").toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-5');
-                expect(parseInt(label.getAttribute('x'))).toBe(679);
-                expect(parseInt(label.getAttribute('y'))).toBe(235);
+                expect(parseInt(label.getAttribute('x'))).toBe(680);
+                expect(parseInt(label.getAttribute('y'))).toBe(236);
                 expect(label.textContent === "Apr 2010").toBe(true);
                 done();
             }
@@ -385,11 +385,11 @@ describe('Chart Control', () => {
             chartObj.loaded = () => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(131);
-                expect(parseInt(label.getAttribute('y'))).toBe(233);
+                expect(parseInt(label.getAttribute('y'))).toBe(234);
                 expect(label.textContent === "Jul 2000").toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-5');
-                expect(parseInt(label.getAttribute('x'))).toBe(679);
-                expect(parseInt(label.getAttribute('y'))).toBe(235);
+                expect(parseInt(label.getAttribute('x'))).toBe(680);
+                expect(parseInt(label.getAttribute('y'))).toBe(236);
                 expect(label.textContent === "Apr 2010").toBe(true);
                 done();
             }
@@ -409,7 +409,7 @@ describe('Chart Control', () => {
             chartObj.loaded = () => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(186);
-                expect(parseInt(label.getAttribute('y'))).toBe(232);
+                expect(parseInt(label.getAttribute('y'))).toBe(233);
                 expect(label.textContent === "4/7/2002").toBe(true);
                 done();
             }
@@ -430,10 +430,10 @@ describe('Chart Control', () => {
             chartObj.loaded = () => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(186);
-                expect(parseInt(label.getAttribute('y'))).toBe(234);
+                expect(parseInt(label.getAttribute('y'))).toBe(235);
                 label = document.getElementById('chartContainer-0-axis-label-2');
-                expect(parseInt(label.getAttribute('x'))).toBe(624);
-                expect(parseInt(label.getAttribute('y'))).toBe(234);
+                expect(parseInt(label.getAttribute('x'))).toBe(625);
+                expect(parseInt(label.getAttribute('y'))).toBe(235);
                 done();
             }
             chartObj.primaryXAxis = {
@@ -453,7 +453,7 @@ describe('Chart Control', () => {
             chartObj.loaded = () => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(186);
-                expect(parseInt(label.getAttribute('y'))).toBe(236);
+                expect(parseInt(label.getAttribute('y'))).toBe(237);
                 expect(label.textContent === "00:00:00").toBe(true);
                 done();
             }
@@ -474,11 +474,11 @@ describe('Chart Control', () => {
             chartObj.loaded = () => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(186);
-                expect(parseInt(label.getAttribute('y'))).toBe(236);
+                expect(parseInt(label.getAttribute('y'))).toBe(237);
                 expect(label.textContent === "00:00:00").toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-2');
-                expect(parseInt(label.getAttribute('x'))).toBe(624);
-                expect(parseInt(label.getAttribute('y'))).toBe(236);
+                expect(parseInt(label.getAttribute('x'))).toBe(625);
+                expect(parseInt(label.getAttribute('y'))).toBe(237);
                 expect(label.textContent === "00:00:00").toBe(true);
                 done();
             }
@@ -499,11 +499,11 @@ describe('Chart Control', () => {
             chartObj.loaded = () => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(186);
-                expect(parseInt(label.getAttribute('y'))).toBe(235);
+                expect(parseInt(label.getAttribute('y'))).toBe(236);
                 expect(label.textContent === "Apr 2002").toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-2');
-                expect(parseInt(label.getAttribute('x'))).toBe(624);
-                expect(parseInt(label.getAttribute('y'))).toBe(235);
+                expect(parseInt(label.getAttribute('x'))).toBe(625);
+                expect(parseInt(label.getAttribute('y'))).toBe(236);
                 expect(label.textContent === "Apr 2006").toBe(true);
                 done();
             }
@@ -524,7 +524,7 @@ describe('Chart Control', () => {
             chartObj.loaded = (args: Object): void => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(183);
-                expect(parseInt(label.getAttribute('y'))).toBe(234);
+                expect(parseInt(label.getAttribute('y'))).toBe(235);
                 expect(label.textContent === 'Tue 00:30').toBe(true);
                 done();
             };
@@ -553,7 +553,7 @@ describe('Chart Control', () => {
             chartObj.loaded = (args: Object): void => {
                 let label: Element = document.getElementById('chartContainer-1-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(65);
-                expect(parseInt(label.getAttribute('y'))).toBe(199);
+                expect(parseInt(label.getAttribute('y'))).toBe(200);
                 expect(label.textContent === '0').toBe(true);
                 done();
             };
@@ -582,7 +582,7 @@ describe('Chart Control', () => {
             chartObj.loaded = (args: Object): void => {
                 let label: Element = document.getElementById('chartContainer-1-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(65);
-                expect(parseInt(label.getAttribute('y'))).toBe(199);
+                expect(parseInt(label.getAttribute('y'))).toBe(200);
                 expect(label.textContent === '0').toBe(true);
                 done();
             };
@@ -611,7 +611,7 @@ describe('Chart Control', () => {
             chartObj.loaded = (args: Object): void => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(183);
-                expect(parseInt(label.getAttribute('y'))).toBe(236);
+                expect(parseInt(label.getAttribute('y'))).toBe(237);
                 expect(label.textContent === '00:15:00' || label.textContent === '00:30:00').toBe(true);
                 done();
             };
@@ -640,7 +640,7 @@ describe('Chart Control', () => {
             chartObj.loaded = (args: Object): void => {
                 let label: Element = document.getElementById('chartContainer-0-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(183);
-                expect(parseInt(label.getAttribute('y'))).toBe(241);
+                expect(parseInt(label.getAttribute('y'))).toBe(242);
                 expect(label.textContent === '5 Tue').toBe(true);
                 done();
             };

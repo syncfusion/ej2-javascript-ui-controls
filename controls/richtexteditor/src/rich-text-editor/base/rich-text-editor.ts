@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach, remove } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';
@@ -9,7 +9,7 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
-import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, IBaseQuickToolbar } from './interface';
+import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, IBaseQuickToolbar, SlashMenuItemSelectArgs } from './interface';
 import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';
 import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';
 import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';
@@ -22,8 +22,8 @@ import { ExecCommandCallBack } from '../actions/execute-command-callback';
 import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';
 import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';
-import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel } from '../models/models';
-import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, EmojiSettings } from '../models/toolbar-settings';
+import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel } from '../models/models';
+import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, EmojiSettings, ImportWord, ExportWord, ExportPdf } from '../models/toolbar-settings';
 import { FileManagerSettings } from '../models/toolbar-settings';
 import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';
 import { FontColor, BackgroundColor } from '../models/toolbar-settings';
@@ -43,6 +43,7 @@ import { BaseToolbar } from '../actions/base-toolbar';
 import { QuickToolbar } from '../actions/quick-toolbar';
 import { FullScreen } from '../actions/full-screen';
 import { PasteCleanup } from '../actions/paste-clean-up';
+import { ImportExport } from '../actions/import-export';
 import { EnterKeyAction } from '../actions/enter-key';
 import * as CONSTANT from '../../common/constant';
 import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
@@ -53,6 +54,10 @@ import { Resize } from '../actions/resize';
 import { FileManager } from '../actions/file-manager';
 import { FormatPainter } from '../actions/format-painter';
 import { EmojiPicker } from '../actions/emoji-picker';
+import { SlashMenuSettings } from '../models/slash-menu-settings';
+import { SlashMenuSettingsModel } from '../models/slash-menu-settings-model';
+import { SlashMenu} from '../renderer/slash-menu';
+import { mentionRestrictKeys } from '../../common/config';
 
 /**
  * Represents the Rich Text Editor component.
@@ -72,6 +77,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private onFocusHandler:  () => void;
     private onBlurHandler:  () => void;
     private onResizeHandler: () => void;
+    private onLoadHandler: () => void;
     private timeInterval: number;
     private autoSaveTimeOut: number;
     private idleInterval: number;
@@ -181,6 +187,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      * @deprecated
      */
+    public importExportModule: ImportExport;
+
+    /**
+     * @hidden
+     * @deprecated
+     */
     public enterKeyModule: EnterKeyAction;
 
     /**
@@ -223,6 +235,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     public formatPainterModule: FormatPainter;
+
+    public slashMenuModule: SlashMenu;
+
     /**
      * @hidden
      * @deprecated
@@ -259,6 +274,26 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<ToolbarSettingsModel>({}, ToolbarSettings)
     public toolbarSettings: ToolbarSettingsModel;
+
+    /**
+     * Specifies the list items in the mention popup.
+     * * enable- Specifies to enable or disable the slash menu in the Editor.
+     * * items- Specfies the items to be rendered in the slash menu.
+     * * popupWidth- Specifies the width of the slash menu popup in pixels/number/percentage. The number value is considered as pixels.
+     * * popupHeight- Specifies the height of the slash menu popup in pixels/number/percentage. The number value is considered as pixels.
+     *
+     * @default
+     * {
+     * enable: false,
+     * items: ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'OrderedList', 'UnorderedList'
+     * .'CodeBlock', 'BlockQuote'],
+     * popupWidth: '300px',
+     * popupHeight: '320px'
+     * }
+     */
+    @Complex<SlashMenuSettingsModel>({enable: false, items: ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'OrderedList', 'UnorderedList', 'CodeBlock', 'Blockquote' ], popupWidth: '300px', popupHeight: '320px'}, SlashMenuSettings )
+    public slashMenuSettings: SlashMenuSettingsModel;
+
     /**
      * Specifies the items to be rendered in quick toolbar based on the target element.
      * * It has following fields:
@@ -346,6 +381,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * resources - we can add both styles and scripts to the iframe.
      * 1. styles[] - An array of CSS style files to inject inside the iframe to display content
      * 2. scripts[] - An array of JS script files to inject inside the iframe
+     * * metaTags[] - An array of meta tags to inject inside the iframe's head for setting up various metadata like http-equiv, charset, etc.
+     * * sandbox - A string array defining the sandbox attribute for the iframe, which controls the security restrictions applied to the embedded content. By default, "allow-same-origin" is included in the Rich Text Editor's iframe sandbox.
      *
      * {% codeBlock src='rich-text-editor/iframe-settings/index.md' %}{% endcodeBlock %}
      *
@@ -353,7 +390,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * {
      * enable: false,
      * attributes: null,
-     * resources: { styles: [], scripts: [] }
+     * resources: { styles: [], scripts: [] },
+     * metaTags: [],
+     * sandbox: null,
      * }
      */
     @Complex<IFrameSettingsModel>({}, IFrameSettings)
@@ -387,6 +426,47 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<ImageSettingsModel>({}, ImageSettings)
     public insertImageSettings: ImageSettingsModel;
+    /**
+     * Specifies the file insert options for the Rich Text Editor component, with the following property:
+     * * serviceUrl - Specifies the URL that will receive the uploaded files on the server.
+     *
+     * @default
+     * {
+     * serviceUrl: null,
+     * }
+     */
+    @Complex<ImportWordModel>({}, ImportWord)
+    public importWord: ImportWordModel;
+    /**
+     * Specifies the file export options for the Rich Text Editor component, with the following properties:
+     * * serviceurl - Specifies the URL that will be used to export the Rich Text Editor content into Word files.
+     * * fileName - Specifies the name of the exported Word file.
+     * * stylesheet - Specifies the stylesheet to be applied to the exported Word file.
+     *
+     * @default
+     * {
+     * serviceUrl:null,
+     * fileName:Sample.docx,
+     * stylesheet: null,
+     * }
+     */
+    @Complex<ExportWordModel>({}, ExportWord)
+    public exportWord: ExportWordModel;
+    /**
+     * Specifies the file export options for the Rich Text Editor component, with the following properties:
+     * * serviceurl - Specifies the URL that will be used to export the Rich Text Editor content into PDF files.
+     * * fileName - Specifies the name of the exported PDF file.
+     * * stylesheet - Specifies the stylesheet to be applied to the exported PDF file.
+     *
+     * @default
+     * {
+     * serviceUrl:null,
+     * fileName:Sample.pdf,
+     * stylesheet: null,
+     * }
+     */
+    @Complex<ExportPdfModel>({}, ExportPdf)
+    public exportPdf: ExportPdfModel;
     /**
      * Specifies the audio insert options in Rich Text Editor component and control with the following properties.
      * * allowedTypes - Specifies the extensions of the audio types allowed to insert on bowering and
@@ -1191,18 +1271,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(null)
     public formatter: IFormatter;
+
+    /**
+     * Triggers when an slash menu item in the popup is selected by the user either with mouse/tap or with keyboard navigation.
+     *
+     * @event 'slashMenuItemSelect'
+     */
+    @Event()
+    public slashMenuItemSelect: EmitType<SlashMenuItemSelectArgs>;
+
     public keyboardModule: KeyboardEvents;
     public localeObj: L10n;
     public valueContainer: HTMLTextAreaElement;
     private originalElement: HTMLElement;
     private clickPoints: { [key: string]: number };
     private initialValue: string;
-    private isSelectAll: boolean;
+    private isCopyAll: boolean;
 
     public constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
         this.needsID = true;
-        this.isSelectAll = false;
+        this.isCopyAll = false;
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -1243,6 +1332,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 );
             }
         }
+        if (this.editorMode === 'HTML' && this.slashMenuSettings.enable) {
+            modules.push(
+                { member: 'slashMenu', args: [this, this.serviceLocator] }
+            );
+        }
         if (this.showCharCount) {
             modules.push(
                 { member: 'count', args: [this, this.serviceLocator] }
@@ -1259,6 +1353,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             );
             modules.push(
                 { member: 'pasteCleanup', args: [this, this.serviceLocator] }
+            );
+            modules.push(
+                { member: 'importExport', args: [this, this.serviceLocator] }
             );
             modules.push({
                 member: 'formatPainter',
@@ -1564,7 +1661,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             null,
             null,
             (internalValue ? internalValue : tool.value),
-            (internalValue ? internalValue : (tool.value === 'UL' || tool.value ==='OL') ? null : tool.value),
+            (internalValue ? internalValue : (tool.value === 'UL' || tool.value === 'OL') ? null : tool.value),
             null,
             this.enterKey
         );
@@ -1711,10 +1808,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     protected render(): void {
-        this.value = (!(this.editorMode === 'Markdown') && !isNOU(this.value)) ? this.addAnchorAriaLabel(this.value) : this.value;
         if (this.value && !this.valueTemplate) {
             this.setProperties({ value: this.serializeValue(this.value) }, true);
         }
+        this.value = (!(this.editorMode === 'Markdown') && !isNOU(this.value)) ? this.addAnchorAriaLabel(this.value) : this.value;
         this.renderModule = new Render(this, this.serviceLocator);
         this.sourceCodeModule = new ViewSource(this, this.serviceLocator);
         this.notify(events.initialLoad, {});
@@ -1870,6 +1967,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      */
     public keyDown(e: KeyboardEvent): void {
+        if (this.inputElement.classList.contains('e-mention')) {
+            const mentionPopup: HTMLElement = this.inputElement.ownerDocument.getElementById(this.inputElement.id + '_popup');
+            const mentionKeys: string[] = mentionRestrictKeys;
+            if (mentionKeys.indexOf(e.key) !== -1 &&  mentionPopup && mentionPopup.classList.contains('e-popup-open')) {
+                return;
+            }
+        }
         this.notify(events.keyDown, { member: 'keydown', args: e });
         this.restrict(e);
         if (this.editorMode === 'HTML') {
@@ -1921,10 +2025,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             !(e.altKey || e.shiftKey || (e.altKey && e.shiftKey && e.which === 67))) {
             this.formatter.saveData();
         }
-        let preventingMention = false;
+        let preventingMention: boolean = false;
         if (this.editorMode === 'HTML') {
             const range: Range = this.getRange();
-            preventingMention = !isNOU(range.startContainer) && range.startContainer === range.endContainer && range.endContainer.childNodes.length > 1 && !isNOU(range.startContainer.childNodes[range.startOffset - 1]) && range.startContainer.childNodes[range.startOffset - 1].nodeName === '#text' && !isNOU(range.startContainer.childNodes[range.startOffset - 1].previousSibling) && range.startContainer.childNodes[range.startOffset - 1].textContent.charCodeAt(0) === 32 && (range.startContainer.childNodes[range.startOffset - 1].previousSibling as HTMLElement).classList.contains("e-mention-chip");
+            preventingMention = !isNOU(range.startContainer) && range.startContainer === range.endContainer && range.endContainer.childNodes.length > 1 && !isNOU(range.startContainer.childNodes[range.startOffset - 1]) && range.startContainer.childNodes[range.startOffset - 1].nodeName === '#text' && !isNOU(range.startContainer.childNodes[range.startOffset - 1].previousSibling) && range.startContainer.childNodes[range.startOffset - 1].textContent.charCodeAt(0) === 32 && (range.startContainer.childNodes[range.startOffset - 1].previousSibling as HTMLElement).classList.contains('e-mention-chip');
         }
         const keyboardEventAction: string[] = ['insert-link', 'format-copy', 'format-paste', 'insert-image', 'insert-table', 'insert-audio', 'insert-video'];
         if (keyboardEventAction.indexOf((e as KeyboardEventArgs).action) === -1 &&
@@ -1973,7 +2077,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             div.appendChild(range.cloneContents());
             const selectedHTML: string = div.innerHTML;
             if (selectedHTML === this.inputElement.innerHTML) {
-                this.isSelectAll = true;
+                this.isCopyAll = true;
             }
         }
     }
@@ -1986,9 +2090,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 const currentRange: Range = this.getRange();
                 const selection: Selection = this.iframeSettings.enable ? this.contentModule.getPanel().ownerDocument.getSelection() :
                     this.contentModule.getDocument().getSelection();
-                if (this.isSelectAll) {
+                if (this.isCopyAll) {
                     this.inputElement.innerHTML = this.enterKey !== 'BR' ? '<' + this.enterKey + '><br></' + this.enterKey + '>' : '<br>';
-                    this.isSelectAll = false;
+                    this.isCopyAll = false;
                 }
                 if (selection.rangeCount > 0 && this.contentModule.getDocument().activeElement.tagName !== 'INPUT' && this.inputElement.contains(this.contentModule.getDocument().activeElement) && (range.startContainer as HTMLElement).innerHTML === '<br>' && (range.startContainer as HTMLElement).textContent === '' ) {
                     selection.removeAllRanges();
@@ -2007,9 +2111,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         this.notify(events.keyUp, { member: 'keyup', args: e });
-        if (e.keyCode === 39  || e.keyCode === 37) {
-            this.notify(events.tableModulekeyUp, { member: 'tableModulekeyUp', args: e });
-        }
+        this.notify(events.tableModulekeyUp, { member: 'tableModulekeyUp', args: e });
         if (e.code === 'KeyX' && e.which === 88 && e.keyCode === 88 && e.ctrlKey && (this.inputElement.innerHTML === '' ||
         this.inputElement.innerHTML === '<br>')) {
             this.inputElement.innerHTML = getEditValue(getDefaultValue(this), this);
@@ -2090,7 +2192,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             touchData: { prevClientX: this.clickPoints.clientX, prevClientY: this.clickPoints.clientY,
                 clientX: touch.clientX, clientY: touch.clientY }
         });
-        if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
+        if (this.inputElement && ((this.editorMode === 'HTML' && ((this.inputElement.textContent.length !== 0) || e.target && !isNOU((e.target as HTMLElement).querySelector('li')))) ||
             (this.editorMode === 'Markdown' && (this.inputElement as HTMLTextAreaElement).value.length !== 0)) ||
             (e.target && !isNOU(closest((e.target as HTMLElement), 'table'))) ||
             (e.target && !isNOU((e.target as HTMLElement).querySelector('img'))) ||
@@ -2160,7 +2262,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             requestType: 'Paste'
         };
         this.trigger(events.actionBegin, evenArgs, (pasteArgs: { [key: string]: Object }) => {
-            const currentLength: number = this.getText().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
+            const currentLength: number = this.getText().replace(/\u200B/g, '').replace(this.editorMode === 'HTML' ? /(\r\n|\n|\r|\t)/gm : '', '').length;
             const selectionLength: number = this.getSelection().length;
             const pastedContentLength: number = (isNOU(e as ClipboardEvent) || isNOU((e as ClipboardEvent).clipboardData))
                 ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
@@ -2600,7 +2702,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     private updatePanelValue(): void {
-        let value: string = this.listOrderCorrection(this.value);
+        let value: string = this.editorMode === 'HTML' ? this.listOrderCorrection(this.value) : this.value;
         value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
         const getTextArea: HTMLInputElement = this.element.querySelector('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA) ;
         if (value) {
@@ -3351,14 +3453,18 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private removeResizeElement(value: string): string {
         const valueElementWrapper: HTMLElement = document.createElement('div');
-        valueElementWrapper.innerHTML = value;
-        const item: NodeListOf<Element> = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize');
-        if (item.length > 0) {
-            for (let i: number = 0; i < item.length; i++) {
-                detach(item[i as number]);
+        if (this.editorMode === 'HTML') {
+            valueElementWrapper.innerHTML = value;
+            const item: NodeListOf<Element> = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize');
+            if (item.length > 0) {
+                for (let i: number = 0; i < item.length; i++) {
+                    detach(item[i as number]);
+                }
             }
+            this.removeSelectionClassStates(valueElementWrapper);
+        } else {
+            valueElementWrapper.textContent = value;
         }
-        this.removeSelectionClassStates(valueElementWrapper);
         return (this.editorMode === 'Markdown') ? valueElementWrapper.innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') : valueElementWrapper.innerHTML;
     }
 
@@ -3603,9 +3709,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     private wireEvents(): void {
-        this.onResizeHandler = this.resizeHandler.bind(this);
         this.onBlurHandler = this.blurHandler.bind(this);
         this.onFocusHandler = this.focusHandler.bind(this);
+        this.onResizeHandler = this.resizeHandler.bind(this);
         this.element.addEventListener('focusin', this.onFocusHandler, true);
         this.element.addEventListener('focusout', this.onBlurHandler, true);
         this.on(events.contentChanged, this.contentChanged, this);
@@ -3614,6 +3720,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.on(events.cleanupResizeElements, this.cleanupResizeElements, this);
         this.on(events.updateValueOnIdle, this.updateValueOnIdle, this);
         this.on(events.autoResize, this.autoResize, this);
+        if (this.iframeSettings.enable) {
+            this.onLoadHandler = this.iframeEditableElemLoad.bind(this);
+            this.contentModule.getEditPanel().addEventListener('load', this.onLoadHandler, true);
+        }
         if (this.readonly && this.enabled) {
             return;
         }
@@ -3715,6 +3825,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.off(events.cleanupResizeElements, this.cleanupResizeElements);
         this.off(events.updateValueOnIdle, this.updateValueOnIdle);
         this.off(events.autoResize, this.autoResize);
+        if (this.iframeSettings.enable) {
+            this.contentModule.getEditPanel().removeEventListener('load', this.onLoadHandler, true);
+            this.onLoadHandler = null;
+        }
         if (this.readonly && this.enabled) {
             return;
         }
@@ -3821,6 +3935,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private iframeLoadHandler(): void {
+        this.autoResize();
+    }
+
+    private iframeEditableElemLoad(): void {
         this.autoResize();
     }
 }

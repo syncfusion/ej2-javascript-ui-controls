@@ -18,7 +18,6 @@ export type AccumulationType =
  * Defines the AccumulationLabelPosition. They are:
  * * Inside - Define the data label position for the accumulation series Inside.
  * * Outside - Define the data label position for the accumulation series Outside.
- * *
  */
 export type AccumulationLabelPosition =
     /** Define the data label position for the accumulation series Inside */
@@ -30,7 +29,6 @@ export type AccumulationLabelPosition =
  * Defines the type of connector lines in an accumulation series. The options are:
  * * Line - Accumulation series Connector line type as Straight line.
  * * Curve - Accumulation series Connector line type as Curved line.
- * *
  */
 export type ConnectorType =
     /** Accumulation series Connector line type as Straight line */
@@ -114,6 +112,8 @@ export type AccumulationTheme =
     'Fluent2' |
     /**  Render a accumulation chart with Fluent 2 dark theme. */
     'Fluent2Dark' |
+    /**  Render a accumulation chart with Fluent 2 highcontrast theme. */
+    'Fluent2HighContrast' |
     /**  Render a accumulation chart with Material 3 theme. */
     'Material3' |
     /**  Render a accumulation chart with Material 3 dark theme. */

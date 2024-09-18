@@ -216,29 +216,33 @@ export class ConnectorEditing extends ToolBase {
     private removePrevSegment(connector: ConnectorModel, index: number): void {
         const first: OrthogonalSegment = connector.segments[index - 2] as OrthogonalSegment;
         const next: OrthogonalSegment = connector.segments[index + 1] as OrthogonalSegment;
-        const length: number = (next.length || next.length === 0) ? next.length : Point.distancePoints(next.points[0], next.points[1]);
-        if (!(length <= 5)) {
-            const removeSegments: OrthogonalSegmentModel[] = connector.segments.slice(index - 1, index + 1);
-            let args: ISegmentCollectionChangeEventArgs = {
-                element: connector, removeSegments: removeSegments, type: 'Removal', cancel: false
-            };
-            //Removed isBlazor code
-            this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
-            if (!args.cancel) {
-                const last: OrthogonalSegment = connector.segments[index + 1] as OrthogonalSegment;
-                connector.segments.splice(index - 1, 2);
-                const segment: OrthogonalSegment = this.selectedSegment as OrthogonalSegment;
-                if (segment.direction === 'Left' || segment.direction === 'Right') {
-                    first.points[first.points.length - 1].x = last.points[0].x;
-                    last.points[0].y = first.points[first.points.length - 1].y;
-                } else {
-                    first.points[first.points.length - 1].y = last.points[0].y;
-                    last.points[0].x = first.points[first.points.length - 1].x;
+        //Bug 905092: Exception through while dragging segment and reverted back to its original position.
+        //Added next condition to check the next segment is not null.
+        if (next) {
+            const length: number = (next.length || next.length === 0) ? next.length : Point.distancePoints(next.points[0], next.points[1]);
+            if (!(length <= 5)) {
+                const removeSegments: OrthogonalSegmentModel[] = connector.segments.slice(index - 1, index + 1);
+                const args: ISegmentCollectionChangeEventArgs = {
+                    element: connector, removeSegments: removeSegments, type: 'Removal', cancel: false
+                };
+                //Removed isBlazor code
+                this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+                if (!args.cancel) {
+                    const last: OrthogonalSegment = connector.segments[index + 1] as OrthogonalSegment;
+                    connector.segments.splice(index - 1, 2);
+                    const segment: OrthogonalSegment = this.selectedSegment as OrthogonalSegment;
+                    if (segment.direction === 'Left' || segment.direction === 'Right') {
+                        first.points[first.points.length - 1].x = last.points[0].x;
+                        last.points[0].y = first.points[first.points.length - 1].y;
+                    } else {
+                        first.points[first.points.length - 1].y = last.points[0].y;
+                        last.points[0].x = first.points[first.points.length - 1].x;
+                    }
+                    if (segment.length || segment.length === 0) {
+                        this.findSegmentDirection(first);
+                    }
+                    this.findSegmentDirection(last);
                 }
-                if (segment.length || segment.length === 0) {
-                    this.findSegmentDirection(first);
-                }
-                this.findSegmentDirection(last);
             }
         }
     }
@@ -453,7 +457,7 @@ export class ConnectorEditing extends ToolBase {
         segments.push(
             new OrthogonalSegment(
                 obj, 'segments', { type: 'Orthogonal', direction: segmentDirection, length: length / 2 }, true));
-        let args: ISegmentCollectionChangeEventArgs = {
+        const args: ISegmentCollectionChangeEventArgs = {
             element: obj, addSegments: segments, type: 'Addition', cancel: false
         };
         //Removed isBlazor code
@@ -500,7 +504,7 @@ export class ConnectorEditing extends ToolBase {
             segments.push(insertseg);
 
         }
-        let args: ISegmentCollectionChangeEventArgs | IBlazorSegmentCollectionChangeEventArgs = {
+        const args: ISegmentCollectionChangeEventArgs | IBlazorSegmentCollectionChangeEventArgs = {
             element: obj, addSegments: segments, type: 'Addition', cancel: false
         };
         //Removed isBlazor code
@@ -574,8 +578,7 @@ export class ConnectorEditing extends ToolBase {
         const args: ISegmentCollectionChangeEventArgs = {
             element: connector, addSegments: segments, type: 'Addition', cancel: false
         };
-        let args1: ISegmentCollectionChangeEventArgs | IBlazorSegmentCollectionChangeEventArgs;
-        args1 = {
+        const args1: ISegmentCollectionChangeEventArgs | IBlazorSegmentCollectionChangeEventArgs = {
             element: cloneBlazorObject(connector), addSegments: cloneBlazorObject(segments) as OrthogonalSegmentModel[],
             type: 'Addition', cancel: args.cancel
         };

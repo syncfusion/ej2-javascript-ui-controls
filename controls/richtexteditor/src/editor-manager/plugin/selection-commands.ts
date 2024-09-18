@@ -32,7 +32,7 @@ export class SelectionCommands {
         value?: string, selector?: string, painterValues?: FormatPainterValue): void {
         this.enterAction = enterAction;
         const validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
-            'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
+            'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor', 'inlinecode'];
         if (validFormats.indexOf(format) > -1 || value === 'formatPainter') {
             if (format === 'backgroundcolor' && value === '') {
                 value = 'transparent';
@@ -902,6 +902,8 @@ export class SelectionCommands {
             this.updateStyles(node, tagName, styles);
             node.style.fontSize = value;
             return node;
+        case 'inlinecode':
+            return document.createElement('code');
         default:
             node = document.createElement('span');
             this.updateStyles(node, tagName, styles);

@@ -321,10 +321,10 @@ export class KeyboardShortcut {
             if (!sheet.isProtected || sheet.protectSettings.formatCells) {
                 const range: string = sheet.selectedRange;
                 let format: string;
-                if (e.keyCode === 192) { /*ctrl + shift + ~General*/
-                    format = getFormatFromType('General');
+                if (e.keyCode === 192) { /*ctrl + shift + ~(General)*/
+                    format = 'General';
                 } else if (e.keyCode === 52) { /*ctrl + shift + $(currency)*/
-                    format = '$#,##0.00;[Red]($#,##0.00)';
+                    format = getFormatFromType('CurrencyWithColorCode' as 'Currency');
                 } else if (e.keyCode === 53) { /*ctrl + shift + %(percent)*/
                     format = '0%';
                 } else if (e.keyCode === 54) { /*ctrl + shift + ^(scentific)*/

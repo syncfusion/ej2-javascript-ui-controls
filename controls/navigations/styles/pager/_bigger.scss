@@ -1,0 +1,304 @@
+@include export-module('pager-bigger') {
+
+  /*! Pager bigger */
+  .e-bigger  #{&}.e-pager,
+  #{&}.e-pager.e-bigger {
+    font-size: $pager-bigger-font-size;
+    padding: $pager-bigger-padding;
+    div.e-icons:not(.e-check) {
+      font-size: $pager-bigger-icon-font-size;
+    }
+  
+    div.e-parentmsgbar {
+      padding-bottom: $pager-bigger-messagebar-padding-bottom;
+      padding-right: $pager-bigger-messagebar-padding-right;
+      padding-top: $pager-bigger-messagebar-padding-top;
+      @if $pager-skin == 'tailwind' or $pager-skin == 'fluent2' {
+        line-height: 22px;
+      }
+    }
+  
+    &:not(.e-adaptive) {
+      .e-pagerdropdown {
+        height: $pager-bigger-dropdown-heigh;
+        margin: $pager-bigger-dropdown-margin;
+        margin-top: $pager-bigger-dropdown-margin-top;
+        width: $pager-bigger-dropdown-width;
+      }
+    }
+  
+    .e-pagercontainer {
+      margin: $pager-bigger-pagercontainer-margin;
+      .e-firstpage,
+      .e-prevpage,
+      .e-firstpagedisabled,
+      .e-prevpagedisabled,
+      .e-nextpage,
+      .e-lastpage,
+      .e-nextpagedisabled,
+      .e-lastpagedisabled {
+        padding: $pager-bigger-pagecontainer-icon-padding;
+      }
+    }
+  
+    .e-pagerconstant {
+      margin-bottom: $pager-bigger-dropdown-constant-margin;
+      margin-left: $pager-bigger-constant-margin-left;
+      @if $pager-skin == 'tailwind' {
+        line-height: 22px;
+      }
+    }
+ 
+    @media (max-width: 769px) {
+      padding: $pager-device-padding;
+      &.e-adaptive .e-icons {
+        @if $pager-skin == 'fluent2' {
+          font-size: 20px;
+        }
+      }
+      &.e-rtl div.e-parentmsgbar {
+        margin-right: 0;
+      }
+  
+      div.e-parentmsgbar {
+        padding: $pager-device-messabar-padding;
+        @if $pager-skin == 'material3' {
+          vertical-align: top;
+          margin-top: 5px;
+        }
+      }
+    }
+  
+    .e-next.e-icons.e-icon-next.e-nextpagedisabled.e-disable,
+    .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default {
+      margin-left: $pager-bigger-nexticon-marign-left;
+    }
+ 
+    .e-numericitem {
+      margin: $pager-bigger-numeric-item-margin;
+      @if $pager-skin == 'tailwind' or $pager-skin == 'fluent2' {
+        line-height: 22px;
+      }
+      &.e-currentitem,
+      &.e-currentitem:hover {
+        @if $pager-skin == 'tailwind' {
+          padding: 6px 14px 5.5px 13px;
+        }
+        @else if $pager-skin == 'bootstrap5' {
+          padding: 9px 13px 10px 12px;
+        }
+      }
+    }
+  
+    .e-pp.e-spacing,
+    .e-np.e-spacing,
+    .e-pp.e-spacing:hover,
+    .e-np.e-spacing:hover {
+      padding: $pager-bigger-letter-spacing;
+    }
+  
+    .e-np.e-spacing.e-focused,
+    .e-pp.e-spacing.e-focused {
+      @if $pager-skin == 'tailwind' {
+        padding: 11px 12px 10.5px 11.5px;
+      }
+    }
+  
+    .e-spacing,
+    .e-numericitem:hover,
+    .e-currentitem {
+      border-radius: $pager-bigger-current-item-border-radius;
+      padding: $pager-bigger-current-item-padding;
+    }
+  
+    &.e-rtl {
+      .e-spacing,
+      .e-numericitem:hover,
+      .e-currentitem {
+        margin: $pager-bigger-numeric-item-margin;
+        @if $pager-skin == 'material3' {
+          padding: $pager-bigger-current-item-padding;
+        }
+        @else {
+          padding: $pager-bigger-letter-spacing;
+        }
+      }
+ 
+      & .e-pagerdropdown {
+        margin: $pager-rtl-pagerdropdown-bigger-margin;
+      }
+
+      & .e-pagerconstant {
+        margin: $pager-rtl-pagerconstant-bigger-margin-top;
+      }
+  
+      .e-pagercontainer {
+        margin: $pager-bigger-new-container-rtl-margin;
+ 
+        .e-prevpage.e-focused {
+          @if $pager-skin == 'tailwind' {
+            padding: 10px 11px 9px 10px;
+          }
+        }
+    
+        .e-firstpage.e-focused,
+        .e-lastpage.e-focused {
+          @if $pager-skin == 'tailwind' {
+            padding: 10px 10px 9px;
+          }
+        }
+  
+        .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default.e-focused {
+          @if $pager-skin == 'tailwind' {
+            padding: 10px 11px 9px;
+          }
+        }
+      }
+  
+      .e-next.e-icons.e-icon-next.e-nextpagedisabled.e-disable,
+      .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default {
+        margin-left: 0;
+        margin-right: $pager-bigger-rtl-nexticon-marign-right;
+      }
+  
+      div.e-parentmsgbar {
+        margin-left: $pager-bigger-rtl-parentmsgbar-margin-left;
+        margin-top: $pager-bigger-rtl-parentmsgbar-margin-top;
+      }
+  
+      @media (max-width: 769px) {
+        div.e-parentmsgbar {
+          margin-left: 0;
+          margin-top: $pager-rtl-pagermsgbar-device-margin-top;
+        }
+      }
+      
+      .e-numericitem.e-currentitem,
+      .e-numericitem.e-currentitem:hover {
+        @if $pager-skin == 'tailwind' {
+          padding: 6px 14px 6px 13px;
+        }
+        @else if $pager-skin == 'bootstrap5' {
+          padding: 9px 13px 10px 12px;
+        }
+        @else if $pager-skin == 'material3' {
+          padding: 10px 15px;
+        }
+      }
+  
+      .e-np.e-spacing.e-focused,
+      .e-pp.e-spacing.e-focused {
+        @if $pager-skin == 'tailwind' {
+          padding: 13px 13px 11px 12px;
+        }
+      }
+
+      & .e-pp.e-spacing.e-numericitem,
+      & .e-np.e-spacing.e-numericitem,
+      & .e-pp.e-spacing.e-numericitem:hover,
+      & .e-np.e-spacing.e-numericitem:hover {
+        font-size: $pager-rtl-bigger-tripledot-font-size;
+        margin-top: $pager-tripledot-rtl-bigger-margin-top;
+        @if $pager-skin == 'tailwind' {
+          padding: 7px 12.6px;
+        }
+        @else if $pager-skin == 'bootstrap5' {
+          padding: 14px 14px 13px;
+        }
+        @else if $pager-skin == 'material3' {
+          &.e-focused {
+            padding: 10px 12px;
+          }
+          padding: 10px 12px;
+        }
+      }
+        
+      &.e-adaptive {
+        div.e-parentmsgbar {
+          margin-top: $pager-rtl-e-bigger-adaptive-pagermsgbar-margin-top;
+        }
+        div.e-pagerdropdown {
+          margin: $pager-rtl-e-bigger-adaptive-dropdown-margin;
+        }
+        div.e-pagerconstant.e-page-all {
+          top: $pager-rtl-e-bigger-adaptive-constant-pagesizeall-top;
+        }
+      }
+    }
+  
+    .e-pagercontainer {
+      .e-firstpage,
+      .e-prevpage,
+      .e-firstpagedisabled,
+      .e-prevpagedisabled,
+      .e-nextpage,
+      .e-lastpage,
+      .e-nextpagedisabled,
+      .e-lastpagedisabled {
+        margin-right: $pager-bigger-pagercontainer-icons-marign-right;
+        @if $pager-skin == 'fluent2' {
+          margin-left: 2px;
+        }
+        @if $pager-skin == 'tailwind' {
+          margin-top: -4px;
+        }
+        padding: $pager-bigger-pagercontainer-icons-padding;
+      }
+
+      .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default.e-focused,
+      .e-prevpage.e-focused,
+      .e-firstpage.e-focused {
+        @if $pager-skin == 'tailwind' {
+          padding: 10px 11px 9px 10px;
+        }
+      }
+  
+      .e-lastpage.e-focused {
+        @if $pager-skin == 'tailwind' {
+          padding: 10px 10px 9px;
+        }
+      }
+    }
+ 
+    .e-pp,
+    .e-np,
+    .e-pp:hover,
+    .e-np:hover {
+      font-size: $pager-bigger-tripledot-font-size;
+    }
+    &.e-adaptive {
+      div.e-parentmsgbar {
+        margin-top: $pager-bigger-adaptive-pagermsgbar-margin-top;
+      }
+      .e-pagerdropdown {
+        margin: $pager-bigger-adaptive-dropdown-margin;
+        height: 40px;
+      }
+      .e-pagerconstant.e-page-all {
+        top: $pager-bigger-adaptive-constant-pagesizeall-top;
+      }
+      .e-pagerconstant {
+        margin: 0 8px 0 10px;
+      }
+    }
+  }
+  
+  .e-bigger .e-responsive  #{&}.e-pager,
+  .e-responsive #{&}.e-pager.e-bigger {
+    div.e-icons {
+      @if $pager-skin == 'material3' {
+        border-radius: 4px;
+      }
+    }
+    &.e-adaptive {
+      .e-firstpagedisabled,
+      .e-prevpagedisabled,
+      .e-nextpagedisabled,
+      .e-lastpagedisabled {
+        @if $pager-skin == 'fluent2' {
+          background-color: transparent;
+        }
+      }
+    }
+  }
+}

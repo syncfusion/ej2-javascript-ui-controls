@@ -194,8 +194,10 @@ export class SpellCheckDialog {
                 /* eslint-disable @typescript-eslint/no-explicit-any */
                 const jsonObject: any = JSON.parse(data);
                 suggestions = jsonObject.Suggestions;
-                this.isSpellChecking = false;
-                this.handleRetrievedSuggestion(error, suggestions);
+                if (!isNullOrUndefined(this.parent)) {
+                    this.isSpellChecking = false;
+                    this.handleRetrievedSuggestion(error, suggestions);
+                }
             });
         } else {
             error = this.parent.spellCheckerModule.manageSpecialCharacters(error, undefined, true);

@@ -112,7 +112,6 @@ export class HtmlExport {
         if (!isPreviousList && !(listCloseCount && listCloseCount.length !== 0)) {
             blockStyle += this.closeList();
         }
-
         if (!isNullOrUndefined(listLevel)) {
             isList = true;
         }

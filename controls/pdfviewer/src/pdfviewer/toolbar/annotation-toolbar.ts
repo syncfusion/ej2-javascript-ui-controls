@@ -14,7 +14,7 @@ import { FreeTextAnnotation } from '../annotation/free-text-annotation';
 import { ComboBox } from '@syncfusion/ej2-dropdowns';
 import { Query } from '@syncfusion/ej2-data';
 import { DynamicStampItem, SignStampItem, StandardBusinessStampItem } from '../base/types';
-
+/* eslint-disable valid-jsdoc */
 /**
  * @param {string} args - args
  * @param {any} buttonElement - button element
@@ -989,7 +989,7 @@ export class AnnotationToolbar {
         if (this.toolbarElement && this.toolbarElement.children.length === 0 && this.propertyToolbar &&
             this.propertyToolbar.element.children.length > 0) {
             toolbarHeight = this.propertyToolbar.element.clientHeight;
-            if (this.pdfViewer.toolbarModule.toolbarElement.style.display === 'none') {
+            if (this.pdfViewer.toolbarModule.toolbarElement.style.display === 'none' && !(this.pdfViewerBase.navigationPane && this.pdfViewerBase.navigationPane.isNavigationToolbarVisible)) {
                 this.pdfViewer.toolbarModule.toolbarElement.style.display = 'block';
             }
         } else if (this.freetextToolbarElement && this.freetextToolbarElement.children.length > 0) {
@@ -1121,7 +1121,8 @@ export class AnnotationToolbar {
         // eslint-disable-next-line
         const proxy: any = this;
         let items: ItemModel[] = [];
-        if (this.pdfViewer.handWrittenSignatureSettings || this.pdfViewer.handWrittenSignatureSettings.signatureItem.length === 0 ||
+        if (this.pdfViewer.handWrittenSignatureSettings ||
+            this.pdfViewer.handWrittenSignatureSettings.signatureItem.length === 0 ||
             this.pdfViewer.handWrittenSignatureSettings.signatureItem.length === 2) {
             items = [
                 {
@@ -4221,10 +4222,15 @@ export class AnnotationToolbar {
             }
             this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), annotationToolbarHeight) + 'px';
             newToolbarHeight = this.getNavigationToolbarHeight(toolbarHeight);
-            sideBarToolbar.style.height = newToolbarHeight;
-            splitterElement.style.height = newToolbarHeight;
-            commentPanelResizer.style.height = newToolbarHeight;
-            sideBarContentContainer.style.height = newToolbarHeight;
+            if (!isNullOrUndefined(sideBarToolbar)) {
+                sideBarToolbar.style.height = newToolbarHeight;
+            } if (!isNullOrUndefined(splitterElement)) {
+                splitterElement.style.height = newToolbarHeight;
+            } if (!isNullOrUndefined(commentPanelResizer)) {
+                commentPanelResizer.style.height = newToolbarHeight;
+            } if (!isNullOrUndefined(sideBarContentContainer)) {
+                sideBarContentContainer.style.height = newToolbarHeight;
+            }
             if (this.pdfViewerBase.viewerContainer.style.height === '0px') {
                 this.pdfViewerBase.viewerContainer.style.height = (parseInt(this.pdfViewer.element.style.height, 10) - parseInt(sideBarToolbar.style.top, 10)) + 'px';
             }
@@ -4256,7 +4262,7 @@ export class AnnotationToolbar {
                 // getComputedStyle gets the value from style and toolbar border height is added to it.
                 toolbarHeight = parseFloat(window.getComputedStyle(element)['height']) + this.toolbarBorderHeight;
             }
-            return toolbarHeight;      
+            return toolbarHeight;
         }
         return null;
     }

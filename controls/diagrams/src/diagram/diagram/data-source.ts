@@ -147,7 +147,6 @@ export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
      *
      * @aspDefaultValueIgnore
      * @default undefined
-     * @deprecated
      */
     @Complex<CrudActionModel>({}, CrudAction)
     public crudAction: CrudActionModel;
@@ -222,7 +221,6 @@ export class DataSource extends ChildProperty<DataSource> {
      *
      * @aspDefaultValueIgnore
      * @default undefined
-     * @deprecated
      */
     @Complex<CrudActionModel>({}, CrudAction)
     public crudAction: CrudActionModel;

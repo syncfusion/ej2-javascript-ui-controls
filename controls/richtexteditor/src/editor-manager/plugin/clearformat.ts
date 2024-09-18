@@ -64,8 +64,10 @@ export class ClearFormat {
                     lastText = nodes[nodes.length - i];
                 }
                 const lasNode: Node = nodeCutter.GetSpliceNode(range, lastText as HTMLElement);
-                nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
-                    lasNode.textContent.length : lasNode.childNodes.length);
+                if (lasNode) {
+                    nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
+                        lasNode.textContent.length : lasNode.childNodes.length);
+                }
                 range = nodeSelection.getRange(docElement);
             }
             let exactNodes: Node[] = nodeSelection.getNodeCollection(range);

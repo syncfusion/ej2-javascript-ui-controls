@@ -4,7 +4,7 @@ import { isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, EmitType } from '@syncfusion/ej2-base';
 import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';
-import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, TextDecoration, BlazorTooltip, ConnectorConstraints, NodeConstraints, DiagramTooltipModel, UmlClassifierShapeModel, RelationShipModel } from '../diagram/index';
+import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, TextDecoration, ConnectorConstraints, NodeConstraints, DiagramTooltipModel, UmlClassifierShapeModel, RelationShipModel } from '../diagram/index';
 import { Transform, SwimLane, PathModel, IPaletteExpandArgs } from '../diagram/index';
 import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';
 import { DiagramElement, TextElement, MarginModel, Canvas, PointModel, IElement } from '../diagram/index';
@@ -446,7 +446,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private checkOnRender: boolean = false;
     private l10n: L10n;
     private currentPosition: PointModel;
-    public symbolTooltipObject: Tooltip | BlazorTooltip = null;
+    public symbolTooltipObject: Tooltip = null;
 
     //region - protected methods
 
@@ -1676,11 +1676,11 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Initialize the basic properties of Toolip object
      *
-     * @returns {Tooltip | BlazorTooltip} Returns the basic properties of Toolip object.\
+     * @returns {Tooltip} Returns the basic properties of Toolip object.\
      * @param {NodeModel | ConnectorModel} element - provide the Symbol object.
      */
-    private initTooltip(element: NodeModel | ConnectorModel): Tooltip | BlazorTooltip {
-        let tooltip: Tooltip | BlazorTooltip;
+    private initTooltip(element: NodeModel | ConnectorModel): Tooltip {
+        let tooltip: Tooltip;
         if (!isBlazor()) {
             let tooltipOption: Tooltip = new Tooltip;
             tooltipOption = this.updateTooltipContent(this.hoverElement.tooltip, tooltipOption) as Tooltip;
@@ -1695,12 +1695,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**Method to update Tooltip Content
      *
-     * @returns { Tooltip | BlazorTooltip} Returns the basic properties of Toolip object.\
+     * @returns { Tooltip } Returns the basic properties of Toolip object.\
      *
      * @param {TooltipModel} tooltip - provide the Symbol object.
-     * @param {Tooltip | BlazorTooltip} tooltipObject - provide the Symbol object.
+     * @param {Tooltip} tooltipObject - provide the Symbol object.
      */
-    private updateTooltipContent(tooltip: TooltipModel, tooltipObject: Tooltip | BlazorTooltip): Tooltip | BlazorTooltip {
+    private updateTooltipContent(tooltip: TooltipModel, tooltipObject: Tooltip): Tooltip {
         tooltipObject.content = tooltip.content;
         tooltipObject.position = 'BottomRight';
         tooltipObject.showTipPointer = tooltip.showTipPointer;
@@ -2156,7 +2156,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     }
     private createTextbox(): void {
         const searchDiv: HTMLElement = createHtmlElement('div', { id: this.element.id + '_search' });
-        applyStyleAgainstCsp(searchDiv, 'backgroundColor:white;height:30px');
+        applyStyleAgainstCsp(searchDiv, 'height:30px');
         //  searchDiv.setAttribute('style', 'backgroundColor:white;height:30px');
         searchDiv.className = 'e-input-group';
         this.element.appendChild(searchDiv);

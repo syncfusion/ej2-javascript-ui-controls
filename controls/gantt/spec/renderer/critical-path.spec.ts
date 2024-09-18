@@ -3,7 +3,7 @@
  */
 import { Gantt, Edit, CriticalPath, ContextMenu, ContextMenuClickEventArgs, RowDD, Selection, Toolbar, DayMarkers, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ExcelExport, PdfExport, ITaskbarEditedEventArgs } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
-import { multiTaskbarData, projectData1, resources, normalResourceData, resourceCollection, criticalPathData, taskModeData1, taskModeData2, criticalPathData1, criticalPathData2, bwData1, bwData2, bwData3, bwData4, criticalData2 } from '../base/data-source.spec';
+import { multiTaskbarData, projectData1, resources, normalResourceData, resourceCollection, criticalPathData, taskModeData1, taskModeData2, criticalPathData1, criticalPathData2, bwData1, bwData2, bwData3, bwData4, criticalData2, unscheduleCriticalTask } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 Gantt.Inject(Edit, CriticalPath, ContextMenu, RowDD, Selection, Toolbar, DayMarkers, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ExcelExport, PdfExport);
@@ -44,10 +44,10 @@ describe('Gantt spec for critical path', () => {
             }, done);
         });
         it('Initial rendering critical path ', () => {
-            expect(ganttObj.flatData[5].isCritical).toBe(false);
-            expect(ganttObj.flatData[12].isCritical).toBe(false);
-            expect(ganttObj.flatData[16].isCritical).toBe(false);
-            expect(ganttObj.flatData[17].isCritical).toBe(false);
+            expect(ganttObj.flatData[5].isCritical).toBe(true);
+            expect(ganttObj.flatData[12].isCritical).toBe(true);
+            expect(ganttObj.flatData[16].isCritical).toBe(true);
+            expect(ganttObj.flatData[17].isCritical).toBe(true);
         });
         it('Drag and Drop', () => {
             ganttObj.actionComplete = (args) => {
@@ -111,7 +111,7 @@ describe('Gantt spec for critical path', () => {
         it('Progress Resizing', () => {
             ganttObj.actionComplete = (args) => {
                 if (args.requestType == 'save' && args.taskBarEditAction == 'ProgressResizing') {
-                    expect(args.data.isCritical).toBe(false);
+                    expect(args.data.isCritical).toBe(true);
                 }
             };
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(12) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
@@ -223,7 +223,7 @@ describe('Gantt spec for critical path', () => {
             ganttObj.actionComplete = (args) => {
                 if (args.requestType == 'save' && args.taskBarEditAction == 'RightResizing') {
                     expect(args.data.isCritical).toBe(true);
-                    expect(ganttObj.flatData[4].isCritical).toBe(false);
+                    expect(ganttObj.flatData[4].isCritical).toBe(true);
                 }
             };
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(6) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
@@ -766,7 +766,7 @@ describe('Gantt spec for critical path', () => {
                 columns: [
                     { field: 'TaskID', visible: true },
                     { field: 'TaskName' },
-                    { field: 'isManual' },
+                    { field: 'isManual',width:100,editType:'dropdownedit',headerTemplate:'Manual' },
                     { field: 'StartDate' },
                     { field: 'Duration' },
                     { field: 'Progress' }
@@ -990,7 +990,7 @@ describe('Gantt spec for critical path', () => {
                 columns: [
                     { field: 'TaskID', visible: false },
                     { field: 'TaskName', headerText: 'Name', width: 250 },
-                    { field: 'work', headerText: 'Work' },
+                    { field: 'work', headerText: 'Work', editType:'numericedit' },
                     { field: 'Progress' },
                     { field: 'resourceGroup', headerText: 'Group' },
                     { field: 'StartDate' },
@@ -1418,7 +1418,7 @@ describe('clone taskbar Right resizing taskbar', () => {
     it('Progress Resizing', () => {
         ganttObj.actionComplete = (args) => {
             if (args.requestType == 'save' && args.taskBarEditAction == 'ProgressResizing') {
-                expect(args.data.isCritical).toBe(false);
+                expect(args.data.isCritical).toBe(true);
             }
         }
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(12) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
@@ -1771,7 +1771,7 @@ describe('CR: 883874-Critical path of task connected dependent tasks have not ch
     it('Verifying the critical path if offset is 1-Day', () => {
         expect(ganttObj.currentViewData[0].isCritical).toBe(true);
         expect(ganttObj.currentViewData[1].isCritical).toBe(true);
-        expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].offset).toBe(-1);
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].offset).toBe(1);
     });
     afterAll(() => {
         if(ganttObj){
@@ -1950,7 +1950,7 @@ describe('Invalid critical task', () => {
     it('Verifying the critical path task', () => {
         ganttObj.actionComplete = (args: any): void => {
             if (args.requestType === 'save') {
-                expect(ganttObj.flatData[10].ganttProperties.isCritical).toBe(false);
+                expect(ganttObj.flatData[10].ganttProperties.isCritical).toBe(true);
             }
         }
         let predecessor: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(12) > td:nth-child(6)') as HTMLElement;
@@ -1960,6 +1960,373 @@ describe('Invalid critical task', () => {
         input.dataBind();
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(13) > td:nth-child(6)') as HTMLElement;
         triggerMouseEvent(element, 'click');
+    });
+    afterAll(() => {
+        if(ganttObj){
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Rendering unschedule critical task', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: unscheduleCriticalTask,
+            height: '450px',
+            enableCriticalPath: true,
+            allowUnscheduledTasks :true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            treeColumnIndex: 1,
+            toolbar: ['Add', 'Edit', 'Delete', 'CriticalPath'],
+            columns: [
+                { field: 'TaskID', width: 80 },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
+                { field: 'Predecessor' },
+                { field: 'Progress' },
+            ],
+            labelSettings: {
+                leftLabel: 'TaskName'
+            },
+            projectStartDate: new Date('03/24/2019'),
+            projectEndDate: new Date('07/06/2019')
+        }, done);
+    });
+    it('Checking for unscheduled critical task', (done:Function) => {
+        ganttObj.criticalPathModule.getCriticalTasks();
+        ganttObj.dataBound = (): void => {
+            expect(ganttObj.flatData[0].isCritical).toBe(true)
+            done()
+        }
+        ganttObj.refresh()
+    });
+    afterAll(() => {
+        if(ganttObj){
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Rendering critical task for different modes', () => {
+    let ganttObj: Gantt;
+    let projectNewData = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                    Indicators: [
+                        {
+                            'date': '04/10/2019',
+                            'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                            'name': 'Indicator title',
+                            'tooltip': 'tooltip'
+                        }
+                    ]
+                },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+            ]
+        },
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+        {
+            TaskID: 6,
+            TaskName: 'Market Research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand Analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5", Progress: 30 },
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5FS+2hour" },
+                        { TaskID: 10, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5FS+2day" },
+                        { TaskID: 11, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5FS+2minute" }
+                    ]
+                },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        enableCriticalPath: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            indicators: 'Indicators'
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        selectedRowIndex: 1,
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('Checking for critical task', () => {
+        ganttObj.criticalPathModule.showCriticalPath(false);
+        ganttObj.getCriticalTasks();
+        expect(ganttObj.flatData[9].ganttProperties.isCritical).toBe(true);
+    });
+    afterAll(() => {
+        if(ganttObj){
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Rendering critical task for SS connection', () => {
+    let ganttObj: Gantt;
+    let projectNewData = [
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/04/2019'), Duration: 0 },
+        {
+            TaskID: 6,
+            TaskName: 'Market Research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand Analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                      //  { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5", Progress: 30 },
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5SS-2" },
+                    ]
+                },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        enableCriticalPath: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            indicators: 'Indicators'
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        selectedRowIndex: 1,
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('Checking for critical task SS', () => {
+        expect(ganttObj.flatData[0].ganttProperties.isCritical).toBe(true);
+    });
+    afterAll(() => {
+        if(ganttObj){
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Rendering critical task for SF connection', () => {
+    let ganttObj: Gantt;
+    let projectNewData = [
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/04/2019'), Duration: 0 },
+        {
+            TaskID: 6,
+            TaskName: 'Market Research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand Analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                      //  { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5", Progress: 30 },
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4,Predecessor: "5SF" },
+                    ]
+                },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        enableCriticalPath: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            indicators: 'Indicators'
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        selectedRowIndex: 1,
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('Checking for critical task SF', () => {
+        ganttObj.windowResize();
+        expect(ganttObj.flatData[0].ganttProperties.isCritical).toBe(true);
     });
     afterAll(() => {
         if(ganttObj){

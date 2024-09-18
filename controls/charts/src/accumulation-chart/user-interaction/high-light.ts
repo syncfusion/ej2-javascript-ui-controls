@@ -8,7 +8,7 @@ import { AccumulationSeries } from '../model/acc-base';
 import { AccumulationSelection } from './selection';
 
 /**
- * `AccumulationHighlight` module handles the selection for chart.
+ * The `AccumulationHighlight` module handles highlighting for the accumulation chart.
  *
  * @private
  */

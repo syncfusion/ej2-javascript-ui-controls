@@ -4,7 +4,7 @@ import { getCellIndexes, getRangeIndexes, skipHiddenIdx, applyCF, ApplyCFArgs } 
 import { getColumnsWidth, getColumnWidth, ConditionalFormat } from '../../workbook/index';
 import { contentLoaded, editOperation, getUpdateUsingRaf, IRowRenderer, removeAllChildren, SheetRenderArgs } from '../common/index';
 import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded, setAriaOptions, dataBound } from '../common/index';
-import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, getDPRValue } from '../common/index';
+import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, getDPRValue, spreadsheetCreated } from '../common/index';
 import { checkMerge, forRefSelRender, initiateEdit, chartRangeSelection, rowHeightChanged } from '../common/index';
 import { colWidthChanged, clearUndoRedoCollection, getUpdatedScrollPosition, locale } from '../common/index';
 import { CellModel, SheetModel, ExtendedRange, getCell, getRowsHeight, getRowHeight } from '../../workbook/index';
@@ -384,6 +384,7 @@ export class SheetRender implements IRenderer {
             this.parent.trigger(created, null);
             this.parent.notify(clearUndoRedoCollection, null);
         }
+        this.parent.notify(spreadsheetCreated, null);
     }
 
     /**

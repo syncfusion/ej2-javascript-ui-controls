@@ -11,22 +11,6 @@
     height: $listbox-filter-small-height !important; /* stylelint-disable-line declaration-no-important */
   }
 
-  .e-bigger .e-listbox-wrapper.e-filter-list:not(.e-listbox-container) .e-list-parent {
-    height: $listbox-filter-bigger-height !important; /* stylelint-disable-line declaration-no-important */
-  }
-  .e-bigger .e-listbox-container.e-filter-list .e-list-wrap {
-    height: $listbox-mat-filter-bigger-height !important; /* stylelint-disable-line declaration-no-important */
-  }
-
-  .e-bigger .e-listbox-container.e-filter-list .e-list-parent,
-  .e-bigger .e-listbox-container .e-selectall-parent + .e-list-parent,
-  .e-small.e-bigger .e-listbox-container.e-filter-list .e-list-parent,
-  .e-bigger .e-listbox-container.e-filter-list .e-selectall-parent + .e-list-parent {
-    height: 100%;
-  }
-
-  .e-bigger .e-listbox-wrapper.e-filter-list .e-selectall-parent + .e-list-parent,
-  .e-bigger .e-listbox-container.e-filter-list .e-selectall-parent + .e-list-parent,
   .e-listbox-container.e-filter-list .e-selectall-parent + .e-list-parent {
     height: $listbox-filterselect-bigger-height !important; /* stylelint-disable-line declaration-no-important */
   }
@@ -35,42 +19,14 @@
     height: $listbox-filter-height !important; /* stylelint-disable-line declaration-no-important */
   }
 
-  .e-bigger .e-listbox-wrapper .e-selectall-parent + .e-list-parent,
-  .e-bigger .e-listbox-container .e-selectall-parent + .e-list-wrap {
-    height: $listbox-select-bigger-height !important; /* stylelint-disable-line declaration-no-important */
-  }
-
-  .e-small.e-bigger .e-listbox-wrapper.e-filter-list .e-list-parent,
-  .e-small.e-bigger .e-listbox-container.e-filter-list .e-list-wrap {
-    height: $listbox-filter-bigger-small-height !important; /* stylelint-disable-line declaration-no-important */
-  }
-
   .e-listbox-wrapper.e-filter-list:not(.e-listbox-container) .e-selectall-parent + .e-hidden-select + .e-listbox + .e-list-parent {
     height: $listbox-ej2-filterselect-height !important;/* stylelint-disable-line declaration-no-important */
-  }
-
-  .e-bigger .e-listbox-wrapper.e-filter-list:not(.e-listbox-container) .e-selectall-parent + .e-hidden-select + .e-listbox + .e-list-parent {
-    height: $listbox-ej2-filterselect-bigger-height !important;/* stylelint-disable-line declaration-no-important */
   }
 
   .e-listbox-wrapper,
   .e-listbox-container:not(.e-listboxtool-container):not(.e-sortableclone),
   .e-listboxtool-container.e-listbox-container .e-ul {
     border: 1px solid $listbox-border-color;
-  }
-
-  .e-bigger.e-listbox-wrapper,
-  .e-bigger.e-listbox-container {
-    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
-      font-size: $listbox-touch-item-font-size;
-    }
-
-    & .e-list-header,
-    & .e-list-group-item {
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
-        font-size: $listbox-touch-header-font-size;
-      }
-    }
   }
 
   .e-listbox-wrapper,
@@ -129,14 +85,21 @@
       & .e-list-item.e-focused.e-selected.e-checklist,
       & .e-list-item.e-selected {
         background-color: $listbox-item-active-bg;
-        color: $listbox-text-active-color;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          color: $listbox-text-selected-color;
+        }
+        @else {
+          color: $listbox-text-active-color;
+        }
       }
 
       & .e-list-item.e-focused .e-checkbox-wrapper .e-frame.e-check,
       & .e-list-item.e-focused .e-css.e-checkbox-wrapper .e-frame.e-check {
-        background-color: $checkmark-bgcolor;
-        border-color: $checkmark-border-color;
-        color: $checkmark-color;
+        @if $skin-name != 'fluent2' {
+          background-color: $checkmark-bgcolor;
+          border-color: $checkmark-border-color;
+          color: $checkmark-color;
+        }
       }
 
       & .e-list-group-item {
@@ -321,10 +284,10 @@
 
   .e-listbox-wrapper.e-sortableclone,
   .e-listbox-container.e-sortableclone {
-    @if $skin-name == 'fluent2' {
+    @if $skin-name == 'fluent2' or $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
       & .e-list-item {
-        background-color: $content-bg-color-alt3 !important; /* stylelint-disable-line declaration-no-important */
-        color: $content-text-color !important; /* stylelint-disable-line declaration-no-important */
+        background-color: $listbox-dragged-item-bg-color !important; /* stylelint-disable-line declaration-no-important */
+        color: $listbox-dragged-item-text-color !important; /* stylelint-disable-line declaration-no-important */
       }
     }
   }

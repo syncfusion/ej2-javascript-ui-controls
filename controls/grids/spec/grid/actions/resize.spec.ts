@@ -19,9 +19,11 @@ import { GridModel } from '../../../src/grid/base/grid-model';
 import { extend } from '@syncfusion/ej2-base';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { Freeze } from '../../../src/grid/actions/freeze';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { resizeStart } from '../../../src';
 
-Grid.Inject(Sort, Page, Filter, Reorder, Group, Resize, Selection, Aggregate);
+Grid.Inject(Sort, Page, Filter, Reorder, Group, Resize, Selection, Aggregate, Freeze, VirtualScroll);
 
 describe('Resize module', () => {
     describe('Resize functionalities for columns', () => {
@@ -1410,6 +1412,203 @@ describe('Resize module', () => {
         });
     });
 
+    // resize code coverage
+    describe('resize file code coverage improvement - 1', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    height: 410,
+                    allowResizing: true,
+                    frozenColumns: 4,
+                    frozenRows: 2,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, format: 'C2', minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 180, minWidth: 10 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 150, format: 'yMd', textAlign: 'Right', minWidth: 10 },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 180, format: 'yMd', textAlign: 'Right', minWidth: 10 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 300, minWidth: 10 },
+                        { field: 'ShipAddress', headerText: 'Ship Address', width: 270, minWidth: 10 },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 250, minWidth: 10 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 250, minWidth: 10 }
+                    ],
+    
+                    pageSettings: { pageCount: 5 }
+                }, done);
+        });
+    
+        it('resize file method coverage - 1', () => {
+            (gridObj as any).resizeModule.refreshResizePosition();
+            let cell: HTMLElement = gridObj.getHeaderTable().querySelector('.e-rowcell');
+            cell.setAttribute('colSpan', '2');
+            (gridObj as any).resizeModule.calculateColspanWidth(gridObj.getColumns(), cell, 1);
+            (gridObj as any).resizeModule.element = cell;
+            (gridObj as any).resizeModule.updateResizeEleHeight();
+            (gridObj as any).resizeModule.hander = cell;
+            (gridObj as any).resizeModule.removeHelper({ target: cell });
+            (gridObj as any).resizeModule.touchResizeStart ({target: cell});
+            (gridObj as any).resizeModule.timeoutHandler();
+            (gridObj as any).resizeModule.cancelResizeAction(true);
+            (gridObj as any).headerModule.headerTable = null;
+            (gridObj as any).resizeModule.refreshHeight();
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    // resize code coverage
+    describe('resize file code coverage improvement - 2', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    allowResizing: true,
+                    frozenColumns: 1,
+                    enableColumnVirtualization: true,
+                    allowTextWrap: true,
+                    width: 800,
+                    height: 300,
+                    columns: [
+                        {
+                            field: 'OrderID',
+                            headerText: 'Order ID',
+                            width: 120,
+                            textAlign: 'Right'
+                        },
+                        { headerText: 'Customer ID', autoFit: true, width: 150 },
+                    ],
+                }, done);
+        });
+    
+        it('resize file method coverage - 2', () => {
+            (gridObj as any).resizeModule.autoFit();
+            (gridObj as any).resizeModule.findColumn([]);
+            (gridObj as any).resizeModule.resizeColumn();
+            (gridObj as any).resizeModule.refreshResizeFixedCols();
+            (gridObj as any).resizeModule.refreshResizefrzCols(true);
+            (gridObj as any).resizeModule.frzHdrRefresh();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    // resize code coverage
+    describe('resize file code coverage improvement - 3', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 1),
+                    height: 410,
+                    allowResizing: true,
+                    frozenRows: 2,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, format: 'C2', minWidth: 10, visible: false },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 180, minWidth: 10 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 150, format: 'yMd',visible: false , freeze:'Fixed' , textAlign: 'Right', minWidth: 10 },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 180, format: 'yMd',  freeze:'Fixed', textAlign: 'Right', minWidth: 10 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 300, minWidth: 10 },
+                        { field: 'ShipAddress', headerText: 'Ship Address', width: 270, minWidth: 10, },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 250, minWidth: 10 , visible: false , freeze:'Right'},
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 250, minWidth: 10, freeze:'Right' }
+                    ],
+                }, done);
+        });
+    
+        it('resize file method coverage - 3', () => {
+            (gridObj as any).resizeModule.frzHdrRefresh('Left');
+            (gridObj as any).resizeModule.refreshResizePosition();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+     // resize code coverage
+     describe('resize file code coverage improvement - 4', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 1),
+                    height: 410,
+                    allowResizing: true,
+                    frozenRows: 2,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right', validationRules: { required: true }, freeze: 'Left', },
+                        { field: 'Freight', width: 125, format: 'C2', textAlign: 'Right', validationRules: { required: true }, },
+
+
+
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 270 },
+
+                        { field: 'ShipRegion', headerText: 'ShipRegion ', width: 150, freeze: 'Left' },
+                        { field: 'ShipAddress1', headerText: 'Ship Address1', width: 100, freeze: 'Right', validationRules: { required: true }, },
+                        {
+                            headerText: 'Order Details', columns: [
+                                {
+                                    headerText: 'Orderes', columns: [
+                                        { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2', minWidth: 10, freeze: 'Fixed' },
+                                        {
+                                            headerText: '4th level', columns: [
+                                                { field: 'ShipName', headerText: 'Ship Name', width: 190 },
+                                            ]
+                                        },
+                                    ]
+                                },
+
+                                {
+                                    headerText: 'Customer', columns: [
+                                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, freeze: 'Right' },
+                                        { field: 'ShipAddress', headerText: 'Ship Address', width: 170, freeze: 'Fixed' },
+                                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150, freeze: 'Left' },
+                                        {
+                                            headerText: '3th level', columns: [
+                                                { field: 'ShipCity', headerText: 'Ship City', width: 140 },
+                                                { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd', minWidth: 10 },
+                                            ]
+                                        },
+                                    ]
+                                },
+
+                                {
+                                    headerText: 'ID', columns: [
+                                        { field: 'ShipName', headerText: 'Ship Name', freeze: 'Left', width: 190 },
+                                        {
+                                            headerText: '5th level', columns: [
+                                                { field: 'ShipName', headerText: 'Ship Name', width: 190, freeze: 'Right' },
+                                                { field: 'ShipCity', headerText: 'Ship City', width: 140 },
+                                            ]
+                                        },
+                                    ]
+                                },
+
+                            ]
+                        },
+                    ],
+                }, done);
+        });
+    
+        it('resize file method coverage - 4', () => {
+            (gridObj as any).resizeModule.refreshResizePosition();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
     describe('EJ2-899166 - The columns width is set to "Auto". When resized, the column jumps back to its max width.', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {
@@ -1423,15 +1622,15 @@ describe('Resize module', () => {
                         { field: 'Freight', width: 125, format: 'C2', minWidth: 10 },
                         { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
                     ],
-    
+
                     pageSettings: { pageCount: 5 }
                 }, done);
         });
-    
+
         it('content table 100% width test', () => {
             expect((gridObj.getContentTable() as HTMLElement).style.width).toBe('100%');
         });
-    
+
         afterAll(() => {
             destroy(gridObj);
         });
@@ -1526,5 +1725,5 @@ describe('Resize module', () => {
             destroy(gridObj);
         });
     });
-    
+
 });

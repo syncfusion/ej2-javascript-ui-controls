@@ -441,3 +441,50 @@ describe('EJ2-66966- Collapse Issue on freeze direction sample', () => {
         destroy(gridObj);
     });
 });
+
+describe('code coverage improvement', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                filterSettings: { hierarchyMode: 'Child' },
+                columns: [
+                    {
+                        field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
+                        validationRules: { required: true, number: true}, width: 90, freeze: 'Left'
+                    },
+                    { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220, freeze: 'Left' },
+                    { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 210 },
+                    { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
+                        format: 'yMd' },
+                    { field: 'endDate', headerText: 'End Date', width: 230, textAlign: 'Right',
+                        type: 'date', format: { type: 'dateTime', format: 'dd/MM/yyyy' } },
+                    { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 210 },
+                    { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 230 },
+                    { field: 'approved', headerText: 'Approved', width: 230, textAlign: 'Left', freeze: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+
+    it('getDataRows check in frozen grid', () => {
+        let length: number = gridObj.getDataRows().length
+        expect(gridObj.getMovableDataRows().length).toBe(length);
+        expect(gridObj.getFrozenRightDataRows().length).toBe(length);
+    });
+
+    it('getDataRows check in frozen grid', () => {
+        let cell: any = gridObj.getCellFromIndex(0,2);
+        expect(gridObj.getMovableCellFromIndex(0,2)).toBe(cell);
+        expect(gridObj.getFrozenRightCellFromIndex(0,2)).toBe(cell);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

@@ -82,6 +82,8 @@ export class IsFormatted {
             return this.isFontSize(node);
         case 'backgroundcolor':
             return this.isBackgroundColor(node);
+        case 'inlinecode':
+            return IsFormatted.isCode(node);
         default:
             return false;
         }
@@ -241,6 +243,23 @@ export class IsFormatted {
         const name: string = (node as HTMLElement).style && (node as HTMLElement).style.fontFamily;
         if ( IsFormatted.inlineTags.indexOf(node.nodeName.toLowerCase()) !== -1 &&
         name !== null && name !== '' && name !== undefined ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * isCode method
+     *
+     * @param {Node} node - specifies the node value
+     * @returns {boolean} - returns the boolean value
+     * @hidden
+     * @deprecated
+     */
+    public static isCode(node: Node): boolean {
+        const validTags: string[] = ['code'];
+        if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
             return true;
         } else {
             return false;

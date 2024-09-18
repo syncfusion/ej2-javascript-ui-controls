@@ -44,14 +44,14 @@ export class KeyboardNavigation {
             this.parent.notify(filterCellKeyDown, { closePopup: true });
             return;
         }
-        if (e.ctrlKey && e.keyCode === 80 && this.parent.allowPrint) {
+        if (this.parent.allowPrint && e.ctrlKey && e.keyCode === 80) {
             e.preventDefault();
             this.parent.print();
             return;
         }
         const textarea: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
         if (!isNullOrUndefined(textarea) && textarea.classList.contains('e-addNoteContainer')) {
-            if (e.key === 'Escape') {
+            if (e.key === 'Escape' || e.keyCode === 27) {
                 const isNoteCellIndex: boolean = !isNullOrUndefined(this.parent.spreadsheetNoteModule.noteCellIndexes);
                 const cellIndexes: number[] = isNoteCellIndex ? this.parent.spreadsheetNoteModule.noteCellIndexes :
                     getCellIndexes(this.parent.getActiveSheet().activeCell);
@@ -978,7 +978,7 @@ export class KeyboardNavigation {
                 return;
             }
         }
-        if (e.shiftKey && e.ctrlKey && !this.parent.scrollSettings.enableVirtualization) { /*ctrl + shift selection*/
+        if (!this.parent.scrollSettings.enableVirtualization && e.shiftKey && e.ctrlKey) { /*ctrl + shift selection*/
             const usedRange: number[] = [sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
             if (e.keyCode === 37) {
                 if (selectedRange[3] <= usedRange[1]) {

@@ -225,6 +225,18 @@ describe('Linear gauge control', () => {
             };
             gauge.refresh();
         });
+        it('Checking Annotation Event text Content', (done: Function): void => {
+            gauge.annotationRender = (args: IAnnotationRenderEventArgs): void => {
+                args.cancel = true;
+                args.content = null;
+            };
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Annotation_0');
+                expect(svg == null).toBe(true);
+                done();
+            };
+            gauge.refresh();
+        });
     });
 
     describe('Checking Gauge tooltip Events', () => {

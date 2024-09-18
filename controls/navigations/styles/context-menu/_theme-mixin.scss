@@ -8,9 +8,14 @@
     }
   
     & .e-menu-icon {
-      color: $cmenu-icon-color;
       @if $skin-name == 'fluent2' {
         color: $cmenu-hover-icon-color;
+      }
+      @else if $skin-name == 'bootstrap5.3' {
+        color: $cmenu-hover-icon-color;
+      }
+      @else {
+        color: $cmenu-icon-color;
       }
     }
   }
@@ -23,7 +28,12 @@
     }
   
     & .e-menu-icon {
-      color: $cmenu-hover-icon-color;
+      @if $skin-name == 'bootstrap5.3' {
+        color: $flyout-text-color-pressed;
+      }
+      @else {
+        color: $cmenu-hover-icon-color;
+      }
     }
   }
 }
@@ -59,7 +69,12 @@
 @mixin disabled-color {
   & .e-disabled {
     color: $cmenu-disable-text;
-    opacity: 1;
+    @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+      opacity: $cmenu-disabled-item-opacity;
+    }
+    @else{
+      opacity: 1;
+    }
 
     & .e-menu-icon {
       color: $cmenu-icon-disabled-color;

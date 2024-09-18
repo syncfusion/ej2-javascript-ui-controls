@@ -3168,7 +3168,6 @@ describe('layout-info assistant support', () => {
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 716, 446);
-            console.log(diagram.selectedItems.nodes.length);
             expect(diagram.selectedItems.nodes.length === 1).toBe(true);
             done();
         });

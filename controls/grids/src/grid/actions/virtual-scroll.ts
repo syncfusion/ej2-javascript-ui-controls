@@ -140,7 +140,7 @@ export class VirtualScroll implements IAction {
             const col: Column = gObj.getColumnByField(field);
             const scrollTop: number = this.parent.getContent().firstElementChild.scrollTop;
             const row: Element = gObj.getRowByIndex(args.editIdx);
-            if (isRenderer || !col || (!isNullOrUndefined(args.addIdx) && scrollTop > 0) || (!isNullOrUndefined(args.editIdx) && !row)) {
+            if ((!isNullOrUndefined(args.addIdx) && scrollTop > 0) || (!isNullOrUndefined(args.editIdx) && !row) || isRenderer || !col) {
                 let validationCol: Column;
                 for (let i: number = 0; i < cols.length && !col; i++) {
                     if (cols[parseInt(i.toString(), 10)].field === field) {

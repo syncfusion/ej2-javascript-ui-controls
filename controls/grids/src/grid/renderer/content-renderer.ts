@@ -23,7 +23,7 @@ import { freezeTable } from '../base/enum';
 import * as literals from '../base/string-literals';
 
 
-// eslint-disable-next-line valid-jsdoc
+// eslint-disable-next-line valid-jsdoc, jsdoc/require-param, jsdoc/require-returns
 /**
  * Content module is used to render grid content
  *

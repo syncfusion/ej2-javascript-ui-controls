@@ -77,6 +77,13 @@ export class ComboBox extends DropDownList {
     @Property(false)
     public allowFiltering: boolean;
     /**
+     * Defines whether the popup opens in fullscreen mode on mobile devices when filtering is enabled. When set to false, the popup will display similarly on both mobile and desktop devices.
+     *
+     * @default true
+     */
+    @Property(true)
+    public isDeviceFullScreen: boolean;
+    /**
      * Accepts the external `Query`
      * that execute along with [`data processing`](../../combo-box/data-binding).
      *
@@ -266,12 +273,12 @@ export class ComboBox extends DropDownList {
     @Property(null)
     public value: number | string | boolean | object | null;
     /**
-    * Defines whether the object binding is allowed or not in the component.
-    *
-    * @default false
-    */
+     * Defines whether the object binding is allowed or not in the component.
+     *
+     * @default false
+     */
     @Property(false)
-    public allowObjectBinding: boolean; 
+    public allowObjectBinding: boolean;
     /**
      * *Constructor for creating the component
      *
@@ -310,7 +317,7 @@ export class ComboBox extends DropDownList {
             EventHandler.add(this.inputElement, 'keyup', this.onFilterUp, this);
             EventHandler.add(this.inputElement, 'keydown', this.onFilterDown, this);
             EventHandler.add(this.inputElement, 'paste', this.pasteHandler, this);
-            EventHandler.add(<HTMLElement & Window>window, 'resize',this.windowResize, this);
+            EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.windowResize, this);
         }
         this.bindCommonEvent();
     }
@@ -357,14 +364,14 @@ export class ComboBox extends DropDownList {
         const inputValue: string = isNullOrUndefined(value) ? null : value.toString();
         Input.setValue(inputValue, this.inputElement, this.floatLabelType, this.showClearButton);
         let changeData: { [key: string]: Object } = {};
-        if(this.allowObjectBinding){
+        if (this.allowObjectBinding) {
             value = this.getDataByValue(value as string | number | boolean);
             if (isNullOrUndefined(value)) {
                 const fields: FieldSettingsModel = this.fields;
                 let isvalidTextField: boolean = false;
                 let isValidValue: boolean = false;
                 if (this.allowObjectBinding) {
-                    let keys: string[] = Object.keys(this.value);
+                    const keys: string[] = Object.keys(this.value);
                     keys.forEach((key: string) => {
                         if (key === fields.value) {
                             isValidValue = true;
@@ -389,7 +396,7 @@ export class ComboBox extends DropDownList {
             this.setProperties(changeData, true);
         }
         else {
-            this.setProperties({ value: value, text: value, index: null }, true);
+            this.setProperties({ value: value, text: value ? value.toString() : value, index: null }, true);
         }
         this.activeIndex = this.index;
         const fields: FieldSettingsModel = this.fields;
@@ -398,7 +405,9 @@ export class ComboBox extends DropDownList {
         dataItem[fields.value] = isNullOrUndefined(value) ? null : value.toString();
         this.itemData = <{ [key: string]: Object }>dataItem;
         this.item = null;
-        if ((!this.allowObjectBinding && (this.previousValue !== this.value)) || (this.allowObjectBinding && this.previousValue && this.value && !this.isObjectInArray(this.previousValue, [this.value]))) {
+        if ((!this.allowObjectBinding && (this.previousValue !== this.value)) ||
+            (this.allowObjectBinding && this.previousValue && this.value &&
+                !this.isObjectInArray(this.previousValue, [this.value]))) {
             this.detachChangeEvent(null);
         }
     }
@@ -416,12 +425,12 @@ export class ComboBox extends DropDownList {
             }
         }
         if (!isNullOrUndefined(this.value)) {
-            let currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+            const currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
             const li: Element = this.getElementByValue(currentValue);
             let doesItemExist: boolean = !isNullOrUndefined(li) ? true : false;
             if (this.enableVirtualization && this.value) {
                 const fields: string = (this.fields.value) ? this.fields.value : '';
-                let currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+                const currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
                 if (this.dataSource instanceof DataManager) {
                     const getItem: any = <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
                         this.virtualGroupDataSource as DataOptions | JSON[]).executeLocal(new Query().where(new Predicate(fields, 'equal', currentValue)));
@@ -429,9 +438,12 @@ export class ComboBox extends DropDownList {
                         this.itemData = getItem[0];
                         doesItemExist = true;
                         const dataItem: { [key: string]: string } = this.getItemData();
-                        let value: string | number | boolean | Object = this.allowObjectBinding ? this.getDataByValue(dataItem.value) : dataItem.value;
-                        if((this.value === dataItem.value && this.text !== dataItem.text) || (this.value !== dataItem.value && this.text === dataItem.text)){
-                            this.setProperties({ 'text': dataItem.text, 'value': value });
+                        const value: string | number | boolean | Object = this.allowObjectBinding
+                            ? this.getDataByValue(dataItem.value)
+                            : dataItem.value;
+                        if ((this.value === dataItem.value && this.text !== dataItem.text)
+                            || (this.value !== dataItem.value && this.text === dataItem.text)) {
+                            this.setProperties({ 'text': dataItem.text ? dataItem.text.toString() : dataItem.text, 'value': value });
                         }
                     }
                 }
@@ -442,18 +454,24 @@ export class ComboBox extends DropDownList {
                         this.itemData = getItem[0];
                         doesItemExist = true;
                         const dataItem: { [key: string]: string } = this.getItemData();
-                        let value: string | number | boolean | Object = this.allowObjectBinding ? this.getDataByValue(dataItem.value) : dataItem.value;
-                        if((this.value === dataItem.value && this.text !== dataItem.text) || (this.value !== dataItem.value && this.text === dataItem.text)){
-                            this.setProperties({ 'text': dataItem.text, 'value': value });
+                        const value: string | number | boolean | Object = this.allowObjectBinding
+                            ? this.getDataByValue(dataItem.value)
+                            : dataItem.value;
+                        if ((this.value === dataItem.value && this.text !== dataItem.text)
+                            || (this.value !== dataItem.value && this.text === dataItem.text)) {
+                            this.setProperties({ 'text': dataItem.text ? dataItem.text.toString() : dataItem.text, 'value': value });
                         }
                     }
                 }
             }
             if (li) {
                 this.setSelection(li, null);
-            } else if ((!this.enableVirtualization && this.allowCustom) || (this.allowCustom && this.enableVirtualization && !doesItemExist)) {
+            } else if (
+                (!this.enableVirtualization && this.allowCustom) ||
+                (this.allowCustom && this.enableVirtualization && !doesItemExist)
+            ) {
                 this.valueMuteChange(this.value);
-            } else if(!this.enableVirtualization || (this.enableVirtualization && !doesItemExist)){
+            } else if (!this.enableVirtualization || (this.enableVirtualization && !doesItemExist)) {
                 this.valueMuteChange(null);
             }
         } else if (this.text && isNullOrUndefined(this.value)) {
@@ -487,7 +505,7 @@ export class ComboBox extends DropDownList {
             'aria-autocomplete': 'both',
             'aria-labelledby': this.hiddenElement.id,
             'aria-expanded': 'false',
-            'aria-readonly': this.readonly.toString(),
+            'aria-readonly': this.readonly ? this.readonly.toString() : 'false',
             'autocomplete': 'off',
             'autocapitalize': 'off',
             'spellcheck': 'false'
@@ -516,7 +534,7 @@ export class ComboBox extends DropDownList {
 
     protected setSearchBox(): InputObject {
         this.filterInput = this.inputElement;
-        let searchBoxContainer = (this.isFiltering() || ((this as any).isReact && this.getModuleName() === 'combobox'))? this.inputWrapper : inputObject;
+        const searchBoxContainer: InputObject = (this.isFiltering() || ((this as any).isReact && this.getModuleName() === 'combobox')) ? this.inputWrapper : inputObject;
         return searchBoxContainer;
     }
 
@@ -548,15 +566,20 @@ export class ComboBox extends DropDownList {
             let activeItem: { [key: string]: Element | number } =
                 Search(inputValue, this.liCollections, this.filterType, true, dataSource, this.fields, type);
             if (this.enableVirtualization && inputValue !== '' && this.getModuleName() !== 'autocomplete' && this.isTyped && !this.allowFiltering) {
-                var updatingincrementalindex = false;
-                if ((this.viewPortInfo.endIndex >= this.incrementalEndIndex && this.incrementalEndIndex <= this.totalItemCount) || this.incrementalEndIndex == 0) {
+                let updatingincrementalindex: boolean = false;
+                const isEndIndexValid: boolean =
+                    this.viewPortInfo.endIndex >= this.incrementalEndIndex &&
+                    this.incrementalEndIndex <= this.totalItemCount;
+
+                const isIncrementalEndIndexZero: boolean = this.incrementalEndIndex === 0;
+
+                if (isEndIndexValid || isIncrementalEndIndexZero) {
                     updatingincrementalindex = true;
                     this.incrementalStartIndex = this.incrementalEndIndex;
-                    if (this.incrementalEndIndex == 0) {
-                        this.incrementalEndIndex = 100 > this.totalItemCount ? this.totalItemCount : 100;
-                    }
-                    else {
-                        this.incrementalEndIndex = this.incrementalEndIndex + 100 > this.totalItemCount ? this.totalItemCount : this.incrementalEndIndex + 100;
+                    if (isIncrementalEndIndexZero) {
+                        this.incrementalEndIndex = Math.min(100, this.totalItemCount);
+                    } else {
+                        this.incrementalEndIndex = Math.min(this.incrementalEndIndex + 100, this.totalItemCount);
                     }
                     this.updateIncrementalInfo(this.incrementalStartIndex, this.incrementalEndIndex);
                     updatingincrementalindex = true;
@@ -567,7 +590,9 @@ export class ComboBox extends DropDownList {
                 activeItem = Search(inputValue, this.incrementalLiCollections, this.filterType, true, dataSource, this.fields, type);
                 while (isNullOrUndefined(activeItem.item) && this.incrementalEndIndex < this.totalItemCount) {
                     this.incrementalStartIndex = this.incrementalEndIndex;
-                    this.incrementalEndIndex = this.incrementalEndIndex + 100 > this.totalItemCount ? this.totalItemCount : this.incrementalEndIndex + 100;
+                    this.incrementalEndIndex = this.incrementalEndIndex + 100 > this.totalItemCount
+                        ? this.totalItemCount
+                        : this.incrementalEndIndex + 100;
                     this.updateIncrementalInfo(this.incrementalStartIndex, this.incrementalEndIndex);
                     updatingincrementalindex = true;
                     if (this.viewPortInfo.startIndex !== 0 || updatingincrementalindex) {
@@ -584,31 +609,33 @@ export class ComboBox extends DropDownList {
                         break;
                     }
                 }
-                if (activeItem.index) {
-                    if ((!(this.viewPortInfo.startIndex >= (activeItem.index as number))) || (!((activeItem.index as number) >= this.viewPortInfo.endIndex))) {
-                        var startIndex = (activeItem.index as number) - ((this.itemCount / 2) - 2) > 0 ? (activeItem.index as number) - ((this.itemCount / 2) - 2) : 0;
-                        var endIndex = this.viewPortInfo.startIndex + this.itemCount > this.totalItemCount ? this.totalItemCount : this.viewPortInfo.startIndex + this.itemCount;
-                        if(startIndex != this.viewPortInfo.startIndex) {
-                            this.updateIncrementalView(startIndex, endIndex);
-                        }
-                    }
+                const startIndex: number =
+                    (activeItem.index as number) - ((this.itemCount / 2) - 2) > 0
+                        ? (activeItem.index as number) - ((this.itemCount / 2) - 2)
+                        : 0;
+                const endIndex: number =
+                    this.viewPortInfo.startIndex + this.itemCount > this.totalItemCount
+                        ? this.totalItemCount
+                        : this.viewPortInfo.startIndex + this.itemCount;
+                if (startIndex !== this.viewPortInfo.startIndex) {
+                    this.updateIncrementalView(startIndex, endIndex);
                 }
                 if (!isNullOrUndefined(activeItem.item)) {
-                    var index_1 = this.getIndexByValue((activeItem.item as Element).getAttribute('data-value')) - this.skeletonCount;
-                    if (index_1 > this.itemCount / 2) {
-                        var startIndex = this.viewPortInfo.startIndex + ((this.itemCount / 2) - 2) < this.totalItemCount ? this.viewPortInfo.startIndex + ((this.itemCount / 2) - 2) : this.totalItemCount;
-                        var endIndex = this.viewPortInfo.startIndex + this.itemCount > this.totalItemCount ? this.totalItemCount : this.viewPortInfo.startIndex + this.itemCount;
-                        this.updateIncrementalView(startIndex, endIndex);
-                    }
+                    const startIndex: number = this.viewPortInfo.startIndex + ((this.itemCount / 2) - 2) < this.totalItemCount
+                        ? this.viewPortInfo.startIndex + ((this.itemCount / 2) - 2)
+                        : this.totalItemCount;
+                    const endIndex: number = this.viewPortInfo.startIndex + this.itemCount > this.totalItemCount
+                        ? this.totalItemCount
+                        : this.viewPortInfo.startIndex + this.itemCount;
+                    this.updateIncrementalView(startIndex, endIndex);
                     activeItem.item = this.getElementByValue((activeItem.item as Element).getAttribute('data-value'));
-                }
-                else {
+                } else {
                     this.updateIncrementalView(0, this.itemCount);
-                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                     (this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any).style = this.getTransformValues();
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any).style = this.getTransformValues();
                     this.list.scrollTop = 0;
                 }
-                if(activeItem && activeItem.item){
+                if (activeItem && activeItem.item){
                     activeItem.item = this.getElementByValue((activeItem.item as Element).getAttribute('data-value'));
                 }
             }
@@ -623,10 +650,19 @@ export class ComboBox extends DropDownList {
                         this.list.scrollTop = count * height + fixedHead;
                     } else {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any).style = this.getTransformValues();
+                        const virtualContent: any = this.list.getElementsByClassName('e-virtual-ddl-content')[0];
+                        virtualContent.style = this.getTransformValues();
                         if (this.enableVirtualization && !this.fields.groupBy) {
-                            var selectedLiOffsetTop = this.virtualListInfo && this.virtualListInfo.startIndex ? (activeElement as HTMLElement).offsetTop + (this.virtualListInfo.startIndex * (activeElement as HTMLElement).offsetHeight) : (activeElement as HTMLElement).offsetTop;
-                            this.list.scrollTop = selectedLiOffsetTop - (this.list.querySelectorAll('.e-virtual-list').length * (activeElement as HTMLElement).offsetHeight);
+                            const selectedLiOffsetTop: number = (activeElement as HTMLElement).offsetTop;
+                            const virtualListInfoStartIndex: number = this.virtualListInfo && this.virtualListInfo.startIndex
+                                ? this.virtualListInfo.startIndex
+                                : 0;
+                            const virtualListHeight: number = (activeElement as HTMLElement).offsetHeight;
+                            const selectedLiOffsetTopWithStartIndex: number = selectedLiOffsetTop +
+                                (virtualListInfoStartIndex * virtualListHeight);
+                            const virtualListLength: number = this.list.querySelectorAll('.e-virtual-list').length;
+                            const scrollTopOffset: number = virtualListLength * virtualListHeight;
+                            this.list.scrollTop = selectedLiOffsetTopWithStartIndex - scrollTopOffset;
                         }
                     }
                     addClass([activeElement], dropDownListClasses.focus);
@@ -714,15 +750,21 @@ export class ComboBox extends DropDownList {
         if (this.autofill && !this.preventAutoFill) {
             const currentValue: string = <string>this.getTextByValue(activeElement.getAttribute('data-value')).toString();
             const currentFillValue: string | number | boolean = this.getFormattedValue(activeElement.getAttribute('data-value'));
+
             if (this.getModuleName() === 'combobox') {
-                if (!this.isSelected && ((!this.allowObjectBinding && this.previousValue !== currentFillValue)) || (this.allowObjectBinding && this.previousValue && currentFillValue && !this.isObjectInArray(this.previousValue, [this.getDataByValue(currentFillValue)]))) {
+                if (!this.isSelected && ((!this.allowObjectBinding && this.previousValue !== currentFillValue)) ||
+                    (this.allowObjectBinding && this.previousValue && currentFillValue &&
+                    !this.isObjectInArray(this.previousValue, [this.getDataByValue(currentFillValue)]))) {
                     this.updateSelectedItem(activeElement, null);
                     this.isSelected = true;
-                    this.previousValue = this.allowObjectBinding ? this.getDataByValue(this.getFormattedValue(activeElement.getAttribute('data-value'))) : this.getFormattedValue(activeElement.getAttribute('data-value'));
+                    this.previousValue = this.allowObjectBinding ?
+                        this.getDataByValue(this.getFormattedValue(activeElement.getAttribute('data-value'))) :
+                        this.getFormattedValue(activeElement.getAttribute('data-value'));
                 } else {
                     this.updateSelectedItem(activeElement, null, true);
                 }
             }
+
             if (!this.isAndroidAutoFill(currentValue)) {
                 this.setAutoFillSelection(currentValue, isHover);
             }
@@ -830,7 +872,7 @@ export class ComboBox extends DropDownList {
                 EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
                 EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
                 EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
-                EventHandler.remove(<HTMLElement & Window>window, 'resize', this.windowResize);
+                EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.windowResize);
             }
         }
         this.unBindCommonEvent();
@@ -901,8 +943,13 @@ export class ComboBox extends DropDownList {
             if (isNullOrUndefined(this.value)) {
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
             }
-            const newValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
-            if (this.autofill && ((!this.allowObjectBinding && previousValue === this.value) || (this.allowObjectBinding && previousValue && this.isObjectInArray(previousValue,[this.value]))) && ((!this.allowObjectBinding && currentValue !== this.value) || (this.allowObjectBinding && currentValue && !this.isObjectInArray(currentValue,[this.value])))) {
+            if (this.autofill && (
+                (!this.allowObjectBinding && previousValue === this.value) ||
+                (this.allowObjectBinding && previousValue && this.isObjectInArray(previousValue, [this.value]))
+            ) && (
+                (!this.allowObjectBinding && currentValue !== this.value) ||
+                (this.allowObjectBinding && currentValue && !this.isObjectInArray(currentValue, [this.value]))
+            )) {
                 this.onChangeEvent(null);
             }
         } else if (this.inputElement.value.trim() !== '') {
@@ -923,7 +970,9 @@ export class ComboBox extends DropDownList {
                 this.isSelectCustom = false;
                 value = this.allowObjectBinding ? this.getDataByValue(value) : value;
                 this.setProperties({ value: value });
-                if ((!this.allowObjectBinding && previousValue !== this.value) || (this.allowObjectBinding && previousValue && this.value && !this.isObjectInArray(previousValue, [this.value]))) {
+                if ((!this.allowObjectBinding && previousValue !== this.value) ||
+                    (this.allowObjectBinding && previousValue && this.value && !this.isObjectInArray(previousValue, [this.value]))
+                ) {
                     this.onChangeEvent(e);
                 }
             }
@@ -948,12 +997,12 @@ export class ComboBox extends DropDownList {
         this.itemData = <{ [key: string]: Object }>dataItem;
         const emptyObject: { [key: string]: any } = {};
         if (this.allowObjectBinding) {
-            let keys = this.listData && this.listData.length > 0 ? Object.keys(this.listData[0]) : Object.keys(this.itemData);
-            if((!(this.listData && this.listData.length > 0)) && (this.getModuleName() === 'autocomplete' || (this.getModuleName() === 'combobox' && this.allowFiltering))){
+            let keys: string[] = this.listData && this.listData.length > 0 ? Object.keys(this.listData[0]) : Object.keys(this.itemData);
+            if ((!(this.listData && this.listData.length > 0)) && (this.getModuleName() === 'autocomplete' || (this.getModuleName() === 'combobox' && this.allowFiltering))){
                 keys = this.firstItem ? Object.keys(this.firstItem) : Object.keys(this.itemData);
             }
             // Create an empty object with predefined keys
-            keys.forEach(key => {
+            keys.forEach((key: string) => {
                 emptyObject[key as any] = ((key === fields.value) || (key === fields.text)) ? getValue(fields.value, this.itemData) : null;
             });
         }
@@ -966,7 +1015,9 @@ export class ComboBox extends DropDownList {
         this.setSelection(null, null);
         this.isSelectCustom = true;
         this.isObjectCustomValue = false;
-        if ((!this.allowObjectBinding && (previousValue !== this.value)) || (this.allowObjectBinding && ((previousValue == null && this.value !== null) || (previousValue && !this.isObjectInArray(previousValue, [this.value]))))) {
+        if ((!this.allowObjectBinding && (previousValue !== this.value)) ||
+            (this.allowObjectBinding && ((previousValue == null && this.value !== null) ||
+            (previousValue && !this.isObjectInArray(previousValue, [this.value]))))) {
             this.onChangeEvent(e, true);
         }
     }
@@ -985,37 +1036,37 @@ export class ComboBox extends DropDownList {
         }
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'readonly':
-                    Input.setReadonly(this.readonly, this.inputElement as HTMLInputElement);
-                    if (this.readonly) {
-                        EventHandler.remove(this.inputElement, 'input', this.onInput);
-                        EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
-                        EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
-                    } else {
-                        EventHandler.add(this.inputElement, 'input', this.onInput, this);
-                        EventHandler.add(this.inputElement, 'keyup', this.onFilterUp, this);
-                        EventHandler.add(this.inputElement, 'keydown', this.onFilterDown, this);
-                    }
-                    this.setReadOnly();
-                    break;
-                case 'allowFiltering':
-                    this.setSearchBox();
-                    if (this.isFiltering() && this.getModuleName() === 'combobox' && isNullOrUndefined(this.list)) {
-                        super.renderList();
-                    }
-                    break;
-                case 'allowCustom':
-                    break;
-                default: {
-                    // eslint-disable-next-line max-len
-                    const comboProps: { [key: string]: Object } = this.getPropObject(prop, <{ [key: string]: string }>newProp, <{ [key: string]: string }>oldProp);
-                    super.onPropertyChanged(comboProps.newProperty, comboProps.oldProperty);
-                    if (this.isFiltering() && prop === 'dataSource' && isNullOrUndefined(this.list) && this.itemTemplate &&
-                        this.getModuleName() === 'combobox') {
-                        super.renderList();
-                    }
-                    break;
+            case 'readonly':
+                Input.setReadonly(this.readonly, this.inputElement as HTMLInputElement);
+                if (this.readonly) {
+                    EventHandler.remove(this.inputElement, 'input', this.onInput);
+                    EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
+                    EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
+                } else {
+                    EventHandler.add(this.inputElement, 'input', this.onInput, this);
+                    EventHandler.add(this.inputElement, 'keyup', this.onFilterUp, this);
+                    EventHandler.add(this.inputElement, 'keydown', this.onFilterDown, this);
                 }
+                this.setReadOnly();
+                break;
+            case 'allowFiltering':
+                this.setSearchBox();
+                if (this.isFiltering() && this.getModuleName() === 'combobox' && isNullOrUndefined(this.list)) {
+                    super.renderList();
+                }
+                break;
+            case 'allowCustom':
+                break;
+            default: {
+                // eslint-disable-next-line max-len
+                const comboProps: { [key: string]: Object } = this.getPropObject(prop, <{ [key: string]: string }>newProp, <{ [key: string]: string }>oldProp);
+                super.onPropertyChanged(comboProps.newProperty, comboProps.oldProperty);
+                if (this.isFiltering() && prop === 'dataSource' && isNullOrUndefined(this.list) && this.itemTemplate &&
+                        this.getModuleName() === 'combobox') {
+                    super.renderList();
+                }
+                break;
+            }
             }
         }
     }
@@ -1128,7 +1179,7 @@ export class ComboBox extends DropDownList {
                 this.customValue(e);
             }
         }
-        let value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+        const value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
         if (isNullOrUndefined(this.listData) && this.allowCustom && !isNullOrUndefined(inputValue) && inputValue !== value) {
             this.customValue();
         }

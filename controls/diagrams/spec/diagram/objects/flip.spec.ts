@@ -709,7 +709,8 @@ describe('Diagram Control', () => {
             };
             diagram = new Diagram({
                 width: '600', height: '530px', nodes: [node],
-                snapSettings: { constraints: SnapConstraints.ShowLines }
+                snapSettings: { constraints: SnapConstraints.ShowLines },
+                constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting
             });
 
             diagram.appendTo('#flipDiagram');
@@ -720,13 +721,10 @@ describe('Diagram Control', () => {
             ele.remove();
         });
         it('895070-Checking horizontally flipped node is able to move or not', (done: Function) => {
-            debugger;
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.nodes[0].flip= "Horizontal";
             diagram.dataBind();
-            mouseEvents.mouseDownEvent(diagramCanvas, 120, 120);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 220, 350);
-            mouseEvents.mouseUpEvent(diagramCanvas, 220, 350);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 110, 110, 200, 100);
             expect(diagram.selectedItems.nodes[0].id === 'node1').toBe(true);
             done();
         });
@@ -734,9 +732,7 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.nodes[0].flip= "Vertical";
             diagram.dataBind();
-            mouseEvents.mouseDownEvent(diagramCanvas, 240, 360);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 120, 120);
-            mouseEvents.mouseUpEvent(diagramCanvas, 120, 120);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 210, 110, 300, 100);
             expect(diagram.selectedItems.nodes[0].id === 'node1').toBe(true);
             done();
         });
@@ -744,9 +740,7 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.nodes[0].flip= "Both";
             diagram.dataBind();
-            mouseEvents.mouseDownEvent(diagramCanvas, 90, 60);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 200, 300);
-            mouseEvents.mouseUpEvent(diagramCanvas, 200, 300);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 310, 110, 100, 100);
             expect(diagram.selectedItems.nodes[0].id === 'node1').toBe(true);
             done();
         });

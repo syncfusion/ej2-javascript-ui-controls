@@ -1214,6 +1214,80 @@ describe('Chart', () => {
 
         });
     });
+    describe('Range area series - animation on data changes', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let animate: EmitType<IAnimationCompleteEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let element2: Element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element2);
+            chartObj = new Chart({
+                primaryXAxis: {
+                    title: 'Month',
+                },
+                primaryYAxis: {
+                    title: 'Temperature(Celsius)'
+                },
+                series: [{
+                    dataSource: [
+                        { x: 1, low: -12, high: 0 }, { x: 2, low: 12, high: 10 },
+                        { x: 3, low: 23, high: 10 }, { x: 4, low: 202, high: 43 },
+                        { x: 5, low: 0, high: 10 }, { x: 6, low: -22, high: 34 },
+                        { x: 7, low: -12, high: 23 }, { x: 8, low: 12, high: 40 }],
+                    xName: 'x', low: 'low', high: 'high',
+                    animation: { enable: false },
+                    name: 'India',
+                    type: 'RangeArea', marker: { visible: true, dataLabel: { visible: true } },
+                }],
+                width: '800',
+                title: 'Chart TS Title', legendSettings: { visible: true }
+            });
+            chartObj.appendTo('#container');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+        it('Checking range area series -set Data method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0');
+                expect(svg != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            let chartSeriesData = [
+                { x: 1, low: -12, high: 0 }, { x: 2, low: 14, high: 10 },
+                { x: 3, low: 23, high: 10 }, { x: 4, low: 202, high: 43 },
+                { x: 5, low: 0, high: 10 }, { x: 6, low: -22, high: 34 },
+                { x: 7, low: -12, high: 27 }, { x: 8, low: 12, high: 40 }];
+            chartObj.series[0].setData(chartSeriesData);
+            chartObj.refresh();
+        });
+        it('Checking range area series - addPoint method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0');
+                expect(svg != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].addPoint({x: 7, low: -12, high: 27});
+            chartObj.refresh();
+        });
+        it('Checking range area series - remove point method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0');
+                expect(svg != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].removePoint(0);
+            chartObj.refresh();
+        });
+
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

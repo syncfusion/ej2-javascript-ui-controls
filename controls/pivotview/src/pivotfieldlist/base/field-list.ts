@@ -1231,7 +1231,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 requireRefresh = true;
                 break;
             case 'enableFieldSearching':
+            case 'allowDeferLayoutUpdate':
+            case 'allowCalculatedField':
                 this.refresh();
+                break;
             }
             if (requireRefresh) {
                 this.fieldListRender();
@@ -1413,7 +1416,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         this.pivotCommon = new PivotCommon(args);
         this.pivotCommon.control = this;
         if (this.allowDeferLayoutUpdate) {
-            this.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
+            this.clonedDataSource = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
             if (this.dataType === 'olap') {
                 this.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.olapEngineModule.fieldListData);
             }
@@ -1553,12 +1556,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     }
                 } else {
                     isOlapDataRefreshed = pivot.updateOlapDataSource(
-                        pivot, isSorted, isCalcChange, isOlapDataRefreshed, enableValueSorting
+                        pivot, isSorted, isCalcChange, isOlapDataRefreshed, enableValueSorting, isFiltered
                     );
                 }
                 pivot.getFieldCaption(pivot.dataSourceSettings);
             } else {
                 pivot.axisFieldModule.render();
+                if (pivot.pivotGridModule) {
+                    pivot.pivotGridModule.notify(events.uiUpdate, pivot);
+                }
                 pivot.isRequiredUpdate = false;
             }
             pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
@@ -1588,15 +1594,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             }
             if (pivot.isRequiredUpdate) {
                 if (pivot.allowDeferLayoutUpdate) {
-                    pivot.clonedDataSource = extend({}, pivot.dataSourceSettings, null, true) as IDataOptions;
+                    pivot.clonedDataSource = PivotUtil.getClonedDataSourceSettings(pivot.dataSourceSettings);
                     if (this.dataType === 'olap') {
                         this.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.olapEngineModule.fieldListData);
                     }
                     pivot.clonedFieldList = PivotUtil.getClonedFieldList(pivot.pivotFieldList);
                 }
                 pivot.updateView(pivot.pivotGridModule);
-            } else if (this.isPopupView && (this.isDeferLayoutUpdate || (pivot.pivotGridModule
-                && pivot.pivotGridModule.pivotDeferLayoutUpdate))) {
+            } else if (this.isPopupView && (this.isDeferLayoutUpdate || (pivot.pivotGridModule &&
+                pivot.pivotGridModule.pivotDeferLayoutUpdate))) {
                 pivot.pivotGridModule.engineModule = pivot.engineModule;
                 pivot.pivotGridModule.setProperties({
                     dataSourceSettings: (<{ [key: string]: Object }>pivot.dataSourceSettings).properties as IDataOptions
@@ -1624,14 +1630,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
 
     private updateOlapDataSource(
-        pivot: PivotFieldList, isSorted: boolean, isCalcChange: boolean, isOlapDataRefreshed: boolean, enableValueSorting: boolean
+        pivot: PivotFieldList, isSorted: boolean, isCalcChange: boolean, isOlapDataRefreshed: boolean, enableValueSorting: boolean,
+        isFiltered: boolean
     ): boolean {
         const customProperties: IOlapCustomProperties = pivot.frameCustomProperties(
             pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList
         );
         customProperties.enableValueSorting = enableValueSorting;
         customProperties.savedFieldList = pivot.pivotFieldList;
-        if (isCalcChange || isSorted) {
+        if ((isCalcChange || isSorted) && !isFiltered) {
             pivot.olapEngineModule.savedFieldList = pivot.pivotFieldList;
             pivot.olapEngineModule.savedFieldListData = pivot.olapEngineModule.fieldListData;
             if (isCalcChange) {
@@ -1683,7 +1690,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             }
             this.axisFieldModule.render();
             if (!this.isPopupView && this.allowDeferLayoutUpdate) {
-                this.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
+                this.clonedDataSource = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
                 if (this.dataType === 'olap') {
                     this.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.olapEngineModule.fieldListData);
                 }

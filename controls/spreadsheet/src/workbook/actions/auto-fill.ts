@@ -4,6 +4,7 @@ import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFill
 import { checkIsFormula, getColumnHeaderText, isNumber, ConditionalFormatModel, updateCFModel, isCustomDateTime } from './../index';
 import { updateCell, intToDate, dateToInt, applyCF, ApplyCFArgs, CellUpdateArgs, ConditionalFormat } from './../common/index';
 import { DateFormatCheckArgs, checkDateFormat, parseFormulaArgument } from '../common/index';
+import { checkIsNumberAndGetNumber } from '../common/internalization';
 
 /**
  * WorkbookAutoFill module allows to perform auto fill functionalities.
@@ -613,7 +614,10 @@ export class WorkbookAutoFill {
     }
 
     private getNextFormattedValue(value: string, numValue: number): string {
-        return new Internationalization().formatNumber(Math.abs(numValue), { minimumIntegerDigits: value.length, useGrouping: false });
+        const val: string = new Internationalization().formatNumber(
+            Math.abs(numValue), { minimumIntegerDigits: value.length, useGrouping: false });
+        const numeArgs: { isNumber: boolean, value: string } = checkIsNumberAndGetNumber({ value: val }, this.parent.locale);
+        return numeArgs.isNumber ? numeArgs.value : val;
     }
 
     private isCellReference(text: string): string | boolean {

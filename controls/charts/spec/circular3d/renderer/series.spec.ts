@@ -770,10 +770,10 @@ describe('Accumulation Chart Control', () => {
         it('Check Bootstrap5 theme  ', (done: Function) => {
             pie.loaded = () => {
                 const points: CircularChart3DPoints[] = pie.visibleSeries[0].points;
-                expect(points[1].color).toBe('#FFB400');
-                expect(points[3].color).toBe('#F7523F');
+                expect(points[1].color).toBe('#6610F2');
+                expect(points[3].color).toBe('#D63384');
                 const element: Element = getElement(id + '-svg-0-region-series-0-point-0');
-                expect(element.getAttribute('fill')).toBe('#594CB3');
+                expect(element.getAttribute('fill')).toBe('#E37112');
                 done();
             };
             pie.theme = 'Bootstrap5';
@@ -782,10 +782,10 @@ describe('Accumulation Chart Control', () => {
         it('Check Bootstrap5Dark theme  ', (done: Function) => {
             pie.loaded = () => {
                 const points: CircularChart3DPoints[] = pie.visibleSeries[0].points;
-                expect(points[1].color).toBe('#FFD46D');
-                expect(points[3].color).toBe('#FF7F71');
+                expect(points[1].color).toBe('#6610F2');
+                expect(points[3].color).toBe('#D63384');
                 const element: Element = getElement(id + '-svg-0-region-series-0-point-0');
-                expect(element.getAttribute('fill')).toBe('#8073DB');
+                expect(element.getAttribute('fill')).toBe('#E37112');
                 done();
             };
             pie.theme = 'Bootstrap5Dark';

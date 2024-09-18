@@ -1,4 +1,4 @@
-import { withInRange, getPoint, drawSymbol } from '../../common/utils/helper';
+import { withInRange, getPoint, drawSymbol, getElement } from '../../common/utils/helper';
 import { Size, PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { markerAnimate, appendChildElement, ChartLocation, animateRedrawElement } from '../../common/utils/helper';
 import { Series, Points } from './chart-series';
@@ -8,7 +8,7 @@ import { pointRender } from '../../common/model/constants';
 import { Axis } from '../../chart/axis/axis';
 
 /**
- * `BubbleSeries` module is used to render the bubble series.
+ * The `BubbleSeries` module is used to render the bubble series.
  */
 
 export class BubbleSeries {
@@ -52,7 +52,7 @@ export class BubbleSeries {
     }
 
     public renderPoint(series: Series, bubblePoint: Points, isInverted: boolean, radius: number,
-                       maximumSize: number, minRadius: number, visiblePoints: Points[]): void {
+                       maximumSize: number, minRadius: number, visiblePoints: Points[], pointUpdate?: boolean): void {
         let startLocation: ChartLocation = series.chart.redraw && bubblePoint.symbolLocations ? bubblePoint.symbolLocations[0] : null;
         bubblePoint.symbolLocations = [];
         bubblePoint.regions = [];
@@ -81,12 +81,18 @@ export class BubbleSeries {
                     series.chart.element.id + '_Series_' + series.index + '_Point_' + bubblePoint.index,
                     argsData.fill, argsData.border.width, argsData.border.color, series.opacity, null
                 );
+                if (pointUpdate && getElement(shapeOption.id)) {
+                    const markerElement: Element = getElement(shapeOption.id);
+                    startLocation = {
+                        x: +markerElement.getAttribute('cx'), y: +markerElement.getAttribute('cy')
+                    };
+                }
                 const element: Element = drawSymbol(
                     bubblePoint.symbolLocations[0], 'Circle', new Size(argsData.width, argsData.height),
                     series.marker.imageUrl, shapeOption, bubblePoint.x.toString() + ':' + bubblePoint.yValue.toString(),
                     series.chart.svgRenderer, series.clipRect
                 );
-                appendChildElement(series.chart.enableCanvas, series.seriesElement, element, series.chart.redraw, false, '', '', null, '', false, false, null, null, true);
+                appendChildElement(series.chart.enableCanvas, series.seriesElement, element, series.chart.redraw, true,  'cx', 'cy', startLocation, null, false, false, null, series.chart.duration, true);
                 bubblePoint.regions.push(
                     new Rect(
                         bubblePoint.symbolLocations[0].x - segmentRadius,
@@ -134,14 +140,11 @@ export class BubbleSeries {
             radius = maxRadius - minRadius;
         }
         for (let i: number = 0; i < point.length; i++) {
-            this.renderPoint(series, series.points[point[i as number]], isInverted, radius, maximumSize, minRadius, visiblePoints);
+            this.renderPoint(series, series.points[point[i as number]], isInverted, radius, maximumSize, minRadius, visiblePoints, true);
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -176,6 +179,7 @@ export class BubbleSeries {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         const duration: number = series.animation.duration;

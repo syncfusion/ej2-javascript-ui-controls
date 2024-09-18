@@ -132,7 +132,166 @@ describe('Heatmap Control', () => {
                 done();
             }, 500);
         });
-});
+    });
+    describe('Heatmap series properties and its behavior and theme as Tailwind background transparent', () => {
+        let heatmap: HeatMap;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            (<any>window).open = () => {
+                return {
+                    document: { write: () => { }, close: () => { } },
+                    close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+                };
+            };
+            let template: Element = createElement('div', { id: 'template', styles: 'display: none;border: 2px solid red' });
+            document.body.appendChild(template);
+            template.innerHTML = "<div id='templateWrap' style='background-color:#4472c4;border-radius: 3px;'>" +
+                "<img src='../base/spec/img/img1.jpg' style='border-radius: 0px;width: 24px;height: 24px;padding: 2px;' />" +
+                "<div style='color:white;float: right;padding: 2px;line-height: 20px; text-align: center; font-family:Roboto; font-style: medium; fontp-size:14px;'><span>Print</span></div></div>";
+            document.body.appendChild(ele);
+            heatmap = new HeatMap({
+                theme: 'Tailwind',
+                background: 'transparent',
+                width: "100%",
+                height: "300px",
+                xAxis: {
+                    title: { text: "Weekdays" },
+                },
+                yAxis: {
+                    title: { text: "YAxis" },
+                },
+                dataSource: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
+                paletteSettings: {
+                    palette: [{ 'value': 100, 'color': "rgb(255, 255, 153)" },
+                    { 'value': 50, 'color': "rgb(153, 255, 187)" },
+                    { 'value': 20, 'color': "rgb(153, 153, 255)" },
+                    { 'value': 0, 'color': "rgb(255, 159, 128)" },
+                    ],
+                    type: "Gradient"
+                },
+                legendSettings: {
+                    visible: false
+                },
+            });
+            heatmap.appendTo('#container')
+        });
+        afterAll((): void => {
+            heatmap.destroy();
+            ele.remove();
+            remove(document.getElementById('template'));
+        });
+        it('Export support- JPEG mode', function (done: Function) {
+            debugger;
+            heatmap.export('JPEG', 'JPEG');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Export support- PDF mode', function (done: Function) {
+            heatmap.export('PDF', 'PDF');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Export support- PNG mode', function (done: Function) {
+            heatmap.export('PNG', 'PNG');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Export support- SVG mode', function (done: Function) {
+            heatmap.export('SVG', 'SVG');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+    });
+    describe('Heatmap series properties and its behavior and theme as TailwindDark background transparent', () => {
+        let heatmap: HeatMap;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            (<any>window).open = () => {
+                return {
+                    document: { write: () => { }, close: () => { } },
+                    close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+                };
+            };
+            let template: Element = createElement('div', { id: 'template', styles: 'display: none;border: 2px solid red' });
+            document.body.appendChild(template);
+            template.innerHTML = "<div id='templateWrap' style='background-color:#4472c4;border-radius: 3px;'>" +
+                "<img src='../base/spec/img/img1.jpg' style='border-radius: 0px;width: 24px;height: 24px;padding: 2px;' />" +
+                "<div style='color:white;float: right;padding: 2px;line-height: 20px; text-align: center; font-family:Roboto; font-style: medium; fontp-size:14px;'><span>Print</span></div></div>";
+            document.body.appendChild(ele);
+            heatmap = new HeatMap({
+                theme: 'TailwindDark',
+                background: 'transparent',
+                width: "100%",
+                height: "300px",
+                xAxis: {
+                    title: { text: "Weekdays" },
+                },
+                yAxis: {
+                    title: { text: "YAxis" },
+                },
+                dataSource: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
+                paletteSettings: {
+                    palette: [{ 'value': 100, 'color': "rgb(255, 255, 153)" },
+                    { 'value': 50, 'color': "rgb(153, 255, 187)" },
+                    { 'value': 20, 'color': "rgb(153, 153, 255)" },
+                    { 'value': 0, 'color': "rgb(255, 159, 128)" },
+                    ],
+                    type: "Gradient"
+                },
+                legendSettings: {
+                    visible: false
+                },
+            });
+            heatmap.appendTo('#container')
+        });
+        afterAll((): void => {
+            heatmap.destroy();
+            ele.remove();
+            remove(document.getElementById('template'));
+        });
+        it('Export support- JPEG mode', function (done: Function) {
+            heatmap.export('JPEG', 'JPEG');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Export support- PDF mode', function (done: Function) {
+            heatmap.export('PDF', 'PDF');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Export support- PNG mode', function (done: Function) {
+            heatmap.export('PNG', 'PNG');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Export support- SVG mode', function (done: Function) {
+            heatmap.export('SVG', 'SVG');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+    });
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

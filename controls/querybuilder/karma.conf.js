@@ -65,6 +65,13 @@ module.exports = function (config) {
     // web server port
     port: 9876,
 
+     // proxy server for service
+        proxies: {
+            '/api': {
+                'target': 'http://127.0.0.1:9000'
+            }
+        },
+
     // enable / disable colors in the output (reporters and logs)
     colors: true,
 
@@ -80,7 +87,7 @@ module.exports = function (config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['PhantomJS', 'Chrome', 'Firefox'],
+    browsers: ['ChromeHeadless', 'Chrome', 'Firefox'],
 
 
     // Continuous Integration mode
@@ -105,4 +112,3 @@ module.exports = function (config) {
     }
   })
 }
-  

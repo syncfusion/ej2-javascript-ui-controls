@@ -550,7 +550,7 @@ describe('Stacking Bar Series', () => {
             loaded = (args: Object): void => {
                 const element: HTMLElement = document.getElementById('barElement-svg-series-0-point-2-data-label');
                 expect(element.textContent === '15').toBe(true);
-                expect(element.getAttribute('fill')).toBe('#FFFFFF');
+                expect(element.getAttribute('fill')).toBe('#212529');
                 done();
             };
             chartObj.loaded = loaded;
@@ -626,7 +626,7 @@ describe('Stacking Bar Series', () => {
         it('Checking font color saturation - background black', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: HTMLElement = document.getElementById('barElement-svg-series-1-point-3-data-label');
-                expect(textElement.getAttribute('fill')).toBe('#000000');
+                expect(textElement.getAttribute('fill')).toBe('#212529');
                 done();
             };
             chartObj.loaded = loaded;
@@ -636,7 +636,7 @@ describe('Stacking Bar Series', () => {
         it('Checking font color saturation - background white', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: HTMLElement = document.getElementById('barElement-svg-series-1-point-3-data-label');
-                expect(textElement.getAttribute('fill')).toBe('#000000'); done();
+                expect(textElement.getAttribute('fill')).toBe('#212529'); done();
             };
             chartObj.loaded = loaded;
             chartObj.refresh();
@@ -734,6 +734,7 @@ describe('Stacking Bar Series', () => {
                 top: 25,
                 bottom: 5
             };
+            chartObj.primaryYAxis.labelFormat = 'p'
             chartObj.refresh();
         });
     });

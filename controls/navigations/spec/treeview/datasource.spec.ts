@@ -598,6 +598,51 @@ export let hierarchicalData8: { [key: string]: Object; }[] = [
     },
 ];
 
+export let hierarchicalData10: { [key: string]: Object; }[] = [
+    {
+        id: 1, function: "Administration", expanded: true,
+        childs: [
+            {
+                id: 7,
+                function: "View Only",
+            },
+            {
+                id: 8,
+                function: "Update",htmlAttributes: { class: 'e-disable' }
+            },
+            {
+                id: 9,
+                function: "View Only",
+            },
+            {
+                id: 10,
+                function: "Update",
+            }
+        ]
+    },
+    {
+        orgId: 1, id: 2, function: "Purchasing",
+        childs: [
+            {
+                id: 11,
+                function: "View Only",
+            },
+            {
+                id: 12,
+                function: "Update",htmlAttributes: { class: 'e-disable' }
+            },
+            {
+                id: 13,
+                function: "View Only",
+            },
+            {
+                id: 14,
+                function: "Update",
+            }
+        ]
+    },
+];
+
 export let localData10: { [key: string]: Object }[] = [
     { nodeId: '01', nodeText: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Voluptatem, expedita, ea consequatur nesciunt error cum laudantium, doloribus quae consectetur architecto quibusdam fugit recusandae beatae deserunt distinctio molestias quam nostrum sapi',
     hasChild: true,},
@@ -1203,3 +1248,17 @@ export let autoCheckHierarcialData: any = [
         {hasChildren: true,id: "FY 2009",name: "FY 2009", isSelected: true},
         {hasChildren: true,id: "FY 2011",name: "FY 2011", isSelected: true},
     ];
+
+export let dynamicChangeCheckbox: any = [
+    { id: 1, name: 'Discover Music', hasChild: true, expanded: true },
+        { id: 2, pid: 1, name: 'Hot Singles', customField: 'treeviewField' },
+        { id: 3, pid: 1, name: 'Rising Artists', customField: 'treeviewField' },
+        { id: 4, pid: 1, name: 'Live Music', hasChild: true },
+        { id: 26, pid: 4, name: 'Test' },
+        { id: 7, name: 'Sales and Events', hasChild: true },
+        { id: 8, pid: 7, name: '100 Albums - $5 Each' },
+        { id: 9, pid: 7, name: 'Hip-Hop and R&B Sale' },
+        { id: 10, pid: 7, name: 'CD Deals' },
+        { id: 25, pid: 7, name: 'Hot Singles' },
+        { id: 27, pid: 7, name: 'Test' },
+];

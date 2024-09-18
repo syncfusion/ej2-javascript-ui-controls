@@ -233,7 +233,7 @@ export class OlapEngine {
             this.fieldListData = [];
             this.fieldListObj = {};
             this.setNamedSetsPosition();
-            if (!(this.savedFieldList && this.savedFieldListData)) {
+            if (!(this.savedFieldList && Object.keys(this.savedFieldList).length > 0 && this.savedFieldListData)) {
                 this.getCubes(dataSourceSettings);
                 this.getFieldList(dataSourceSettings);
             } else {
@@ -953,7 +953,7 @@ export class OlapEngine {
                             const uniqueName: string = this.getUniqueName(member.querySelector('UName').textContent);
                             const depth: number =
                                 this.getDepth(this.tupRowInfo[tupPos as number], uniqueName, Number(typeColl[memPos as number]));
-                            const levelName: string = this.getCaptionCollectionWithMeasure(this.tupRowInfo[tupPos as number], memPos);
+                            let levelName: string = this.getCaptionCollectionWithMeasure(this.tupRowInfo[tupPos as number], memPos, true);
                             if (this.showSubTotalsAtBottom && position > this.rowStartPos) {
                                 lastPos = position = this.insertRowSubTotal(pivotValues, valueContent, subTotals, position, lvl, levelName);
                             }
@@ -1008,6 +1008,7 @@ export class OlapEngine {
                                 if (!prevParent) {
                                     rowMembers.push(member.querySelector('Caption').textContent);
                                 }
+                                levelName = this.getCaptionCollectionWithMeasure(this.tupRowInfo[tupPos as number], memPos, false);
                                 (pivotValues[position as number] as IAxisSet[])[0].valueSort.levelName = levelName;
                                 (pivotValues[position as number] as IAxisSet[])[0].valueSort[levelName as string] = 1;
                                 valueContent[position - this.rowStartPos] = {} as IAxisSet[];
@@ -1354,10 +1355,10 @@ export class OlapEngine {
         return maxLevel;
     }
 
-    private getCaptionCollectionWithMeasure(tuple: ITupInfo, memPos: number): string {
+    private getCaptionCollectionWithMeasure(tuple: ITupInfo, memPos: number, isAddTotals: boolean): string {
         let captionColection: string = tuple.captionCollection;
         let isMeasureAdd: boolean = true;
-        if (tuple.typeCollection[memPos as number] !== '3') {
+        if (!isAddTotals && tuple.typeCollection[memPos as number] !== '3') {
             for (let i: number = 0; i < this.measurePosition; i++) {
                 if (tuple.drillInfo[memPos as number].hierarchy === this.dataSourceSettings.rows[i as number].name) {
                     isMeasureAdd = false;

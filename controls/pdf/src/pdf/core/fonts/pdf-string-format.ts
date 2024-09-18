@@ -35,6 +35,7 @@ export class PdfStringFormat {
     rightToLeft: boolean = false;
     _pdfSubSuperScript: PdfSubSuperScript;
     _wordWrapType: _PdfWordWrapType = _PdfWordWrapType.word;
+    _isList: boolean = false;
     /**
      * Initializes a new instance of the `PdfStringFormat` class.
      *

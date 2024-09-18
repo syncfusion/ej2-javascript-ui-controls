@@ -237,6 +237,7 @@ export class VirtualScroll {
                 this.parent.actionObj.actionName = events.horizontalScroll;
                 if (enableOptimizedRendering && this.parent.grid && this.parent.grid.element.querySelector('.e-spinner-inner')) {
                     addClass([this.parent.grid.element.querySelector('.e-spinner-inner')], [cls.PIVOT_HIDE_LOADER]);
+                    removeClass([mHdr, mCont], ['e-virtual-pivot-content']);
                 }
                 this.parent.actionBeginMethod();
                 if (!enableOptimizedRendering) {

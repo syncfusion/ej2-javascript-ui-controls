@@ -1,0 +1,105 @@
+@include export-module('datetimepicker-bigger') {
+
+  .e-bigger.e-datetime-wrapper,
+  #{if(&, '&', '*')}.e-bigger .e-datetime-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      font-size: $datetime-icon-bigger-font-size;
+    }
+
+    #{if(&, '&', '*')} .e-input-group-icon.e-time-icon {
+      margin: $datetime-time-bigger-icon-margin;
+      @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3' {
+        min-height: $datetime-bigger-min-height;
+        min-width: $datetime-bigger-min-width;
+        @if $skin-name == 'Material3' {
+          border-radius: $datetime-bigger-icon-border-radius;
+        }
+      }
+    }
+  }
+
+  .e-bigger.e-datetime-wrapper:not(.e-outline),
+  #{if(&, '&', '*')}.e-bigger .e-datetime-wrapper:not(.e-outline) {
+    #{if(&, '&', '*')}.e-rtl .e-input-group-icon.e-time-icon {
+      margin: $datetime-time-rtl-bigger-icon-margin;
+    }
+  }
+
+  .e-bigger #{&}.e-datetimepicker.e-popup,
+  #{if(&, '&', '*')}.e-bigger#{&}.e-datetimepicker.e-popup {
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      @if $skin-name != 'Material3' {
+        padding: $datetime-list-bigger-padding 0;
+      }
+      @else {
+        padding: 0;
+      }
+      
+      #{if(&, '&', '*')} .e-list-item {
+        font-size: $datetime-list-bigger-font-size;
+        line-height: $datetime-list-bigger-line-height;
+        text-indent: $datetime-list-bigger-text-indent;
+      }
+    }
+  }
+
+  
+  .e-bigger .e-content-placeholder.e-datetimepicker.e-placeholder-datetimepicker,
+  .e-bigger.e-content-placeholder.e-datetimepicker.e-placeholder-datetimepicker {
+    background-size: 250px 40px;
+    min-height: 40px;
+  }
+
+  .e-small.e-bigger.e-datetime-wrapper,
+  #{if(&, '&', '*')}.e-small.e-bigger .e-datetime-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      font-size: $datetime-icon-bigger-small-font-size;
+    }
+
+    #{if(&, '&', '*')} .e-input-group-icon.e-time-icon {
+      @if $skin-name == 'Material3' {
+        min-height: $datetime-bigger-small-min-height;
+        min-width: $datetime-bigger-small-min-width;
+        border-radius: $datetime-bigger-small-icon-border-radius;
+        margin: $datetime-time-bigger-small-icon-margin;
+      }
+    }
+  }
+
+  .e-small.e-bigger #{&}.e-datetimepicker.e-popup,
+  #{if(&, '&', '*')}.e-small.e-bigger#{&}.e-datetimepicker.e-popup {
+    #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
+      font-size: $datetime-list-bigger-small-font-size;
+      line-height: $datetime-list-bigger-small-line-height;
+      text-indent: $datetime-list-bigger-small-text-indent;
+    }
+  }
+
+  .e-bigger .e-datetime-wrapper.e-outline .e-input-group-icon.e-date-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-bigger.e-outline .e-input-group-icon.e-date-icon,
+  .e-bigger .e-datetime-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-date-icon,
+  .e-bigger .e-datetime-wrapper.e-outline .e-input-group-icon.e-time-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-bigger.e-outline .e-input-group-icon.e-time-icon,
+  .e-bigger .e-datetime-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-time-icon {
+    @if $skin-name == 'material-dark' or $skin-name == 'material' {
+      min-height: $zero-value;
+      min-width: 24px;
+    }
+  }
+
+  .e-bigger.e-small .e-outline.e-datetime-wrapper .e-input-group-icon.e-date-icon,
+  .e-bigger.e-small.e-outline.e-datetime-wrapper .e-input-group-icon.e-date-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-bigger.e-small.e-outline .e-input-group-icon.e-date-icon,
+  .e-bigger.e-small .e-datetime-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-date-icon,
+  .e-bigger.e-small .e-outline.e-datetime-wrapper .e-input-group-icon.e-time-icon,
+  .e-bigger.e-small.e-outline.e-datetime-wrapper .e-input-group-icon.e-time-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-bigger.e-small.e-outline .e-input-group-icon.e-time-icon,
+  .e-bigger.e-small .e-datetime-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-time-icon {
+    @if $skin-name == 'material-dark' or $skin-name == 'material' {
+      min-height: $zero-value;
+      min-width: 20px;
+    }
+  }
+}

@@ -288,7 +288,7 @@ export class StampAnnotation {
         const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
         X = X / zoomFactor;
         Y = Y / zoomFactor;
-        const author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
+        const author: string = (!isNullOrUndefined(this.pdfViewer.annotationSettings.author) && this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
         if (this.pdfViewerBase.isDynamicStamp) {
             if (this.pdfViewer.dateTimeFormat) {
                 const dateTime: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTimeFormat();
@@ -521,11 +521,10 @@ export class StampAnnotation {
                 isMaskedImage: annotation.IsMaskedImage, customStampName: '', template: annotation ? annotation.template : null, templateSize: annotation ? annotation.templateSize : 0
             };
             this.storeStampInSession(pageIndex, annotationObject);
-            if (this.isAddAnnotationProgramatically)
-            {
+            this.pdfViewer.add(annot as PdfAnnotationBase);
+            if (this.isAddAnnotationProgramatically) {
                 this.triggerAnnotationAdd(annot, annotation);
             }
-            this.pdfViewer.add(annot as PdfAnnotationBase);
             if (isNullOrUndefined(canvass)) {
                 canvass = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
             }
@@ -808,6 +807,7 @@ export class StampAnnotation {
             this.storeStampInSession(pageIndex, annotationObject, isNeedToReorderCollection, orderNumber);
             annot.comments = this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author);
             annot.review = { state: annotation.State, stateModel: annotation.StateModel, author: author, modifiedDate: modifiedDate };
+            this.pdfViewer.add(annot as PdfAnnotationBase);
             if (this.isAddAnnotationProgramatically) {
                 const settings: any = {
                     opacity: annot.opacity, borderColor: annot.strokeColor, borderWidth: annot.thickness,
@@ -821,7 +821,6 @@ export class StampAnnotation {
                 this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'Image', annot.bounds, settings, null, null, null, null, null, this.customStampName);
                 this.customStampName = null;
             }
-            this.pdfViewer.add(annot as PdfAnnotationBase);
             if (isNullOrUndefined(canvas)) {
                 canvas = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
             }
@@ -1108,11 +1107,13 @@ export class StampAnnotation {
                                  annotations[parseInt(z.toString(), 10)].randomId].wrapper.bounds;
                         }
                         if (!this.pdfViewerBase.clientSideRendering && pageAnnotationObject.annotations[parseInt(z.toString(), 10)].icon) {
-                            let bounds: any = JSON.parse(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds);
-                            let iconSize: number = this.pdfViewer.annotationModule.calculateFontSize(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].icon.toUpperCase(), bounds);
+                            const bounds: any = JSON.parse(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds);
+                            const iconSize: number =
+                            this.pdfViewer.annotationModule.calculateFontSize(pageAnnotationObject.
+                                annotations[parseInt(z.toString(), 10)].icon.toUpperCase(), bounds);
                             pageAnnotationObject.annotations[parseInt(z.toString(), 10)].iconFontSize = iconSize;
                             let textSize: number = 10;
-                            let dynamicText: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].dynamicText;
+                            const dynamicText: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].dynamicText;
                             if (dynamicText.trim().length !== 0) {
                                 textSize = this.pdfViewer.annotationModule.calculateFontSize(dynamicText, bounds);
                             }
@@ -1304,7 +1305,7 @@ export class StampAnnotation {
         if (stampAnnotation) {
             annotationObject = {
                 stampAnnotationType: 'path', author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
-                note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor,
+                note: annotation.Note, strokeColor: stampAnnotation.strokeColor, fillColor: stampAnnotation.fillColor,
                 opacity: annotation.Opacity, stampFillcolor: stampAnnotation.stampFillColor,
                 rotateAngle: annotation.RotateAngle, creationDate: annotation.ModifiedDate, pageNumber: pageNumber, icon: stampAnnotation.iconName, stampAnnotationPath: stampAnnotation.pathdata, randomId: 'stamp', isDynamicStamp: false, dynamicText: this.dynamicText,
                 bounds: this.calculateImagePosition(annotation.Rect, true), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
@@ -1312,6 +1313,9 @@ export class StampAnnotation {
             };
             if (isDynamic) {
                 annotationObject.dynamicText = this.findDynamicText(annotation.Apperarance, annotation.IconName);
+                if (annotationObject.dynamicText === '') {
+                    annotationObject.dynamicText = 'By ' + annotationObject.author + ' at ' + annotationObject.creationDate;
+                }
                 annotationObject.isDynamicStamp = true;
             }
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_stamp');
@@ -1475,16 +1479,18 @@ export class StampAnnotation {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.annotName === pageAnnotations[parseInt(i.toString(), 10)].annotName) {
                     if (property === 'bounds') {
-                        this.pdfViewerBase.isBounds = this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds, annotationBase.wrapper.bounds);
+                        this.pdfViewerBase.isBounds =
+                        this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds,
+                                                             annotationBase.wrapper.bounds);
                         if (this.pdfViewerBase.isBounds) {
                             pageAnnotations[parseInt(i.toString(), 10)].bounds =
                             {
                                 left: annotationBase.wrapper.bounds.x, top: annotationBase.wrapper.bounds.y,
                                 width: annotationBase.wrapper.bounds.width, height: annotationBase.wrapper.bounds.height
                             };
-                            pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
-                                this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                         }
+                        pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
+                            this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                     }
                     this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[parseInt(i.toString(), 10)], pageNumber);
                 }

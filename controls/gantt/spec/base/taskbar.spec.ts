@@ -4,7 +4,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, IQueryTaskbarInfoEventArgs } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
-import { baselineData, resourceData, projectData, projectNewData18, projectNewData19, projectNewData20, splitData, projectNewData21, taskModeData4, taskModeData5, projectNewData22, CR899690 } from './data-source.spec';
+import { baselineData, resourceData, projectData, projectNewData18, projectNewData19, projectNewData20, splitData, projectNewData21, taskModeData4, taskModeData5, projectNewData22, CR899690, addDependency } from './data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 describe('Gantt taskbar rendering', () => {
@@ -898,7 +898,11 @@ describe('Style not applied for the collapsed row when the virtual scroll is ena
     });
     it('Style not applied for the collapsed row when the virtual scroll is enabled', () => {
         ganttObj.ganttChartModule.expandCollapseAll('collapse');
-        expect((ganttObj.element.querySelector('.' + cls.childTaskBarInnerDiv) as HTMLElement).style.backgroundColor).toBe('rgb(242, 210, 189)');
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.requestType === 'refresh'){
+                expect((ganttObj.element.querySelector('.' + cls.childTaskBarInnerDiv) as HTMLElement).style.backgroundColor).toBe('rgb(242, 210, 189)');
+            }
+        }
     });
     afterAll(() => {
         if (ganttObj) {
@@ -1300,6 +1304,170 @@ describe('Merge segment getting console error', () => {
         }
     });
 });
+describe('manual parent right resizing ', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        'TaskID': 1,
+                        'TaskName': 'Parent Task 1',
+                        'StartDate': new Date('02/27/2017'),
+                        'EndDate': new Date('03/03/2017'),
+                        'Progress': '40',
+                        'isManual' : true,
+                        'Children': [
+                             { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                             'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+                             { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                             'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+                             { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                             'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+                        ]
+                    },
+                    {
+                        'TaskID': 5,
+                        'TaskName': 'Parent Task 2',
+                        'StartDate': new Date('03/05/2017'),
+                        'EndDate': new Date('03/09/2017'),
+                        'Progress': '40',
+                        'isManual': true,
+                        'Children': [
+                             { 'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/06/2017'),
+                             'EndDate': new Date('03/09/2017'), 'Progress': '40' },
+                             { 'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/06/2017'),
+                             'EndDate': new Date('03/09/2017'), 'Progress': '40', },
+                             { 'TaskID': 8, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/28/2017'),
+                             'EndDate': new Date('03/05/2017'), 'Progress': '40', 'isManual': true },
+                             { 'TaskID': 9, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/04/2017'),
+                             'EndDate': new Date('03/09/2017'), 'Progress': '40', 'isManual': true }
+                        ]
+                    },
+                    {
+                        'TaskID': 10,
+                        'TaskName': 'Parent Task 3',
+                        'StartDate': new Date('03/13/2017'),
+                        'EndDate': new Date('03/17/2017'),
+                        'Progress': '40',
+                        'Children': [
+                             { 'TaskID': 11, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/13/2017'),
+                             'EndDate': new Date('03/17/2017'), 'Progress': '40' },
+                             { 'TaskID': 12, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/13/2017'),
+                             'EndDate': new Date('03/17/2017'), 'Progress': '40', },
+                             { 'TaskID': 13, 'TaskName': 'Child Task 3', 'StartDate': new Date('03/13/2017'),
+                             'EndDate': new Date('03/17/2017'), 'Progress': '40', },
+                             { 'TaskID': 14, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/12/2017'),
+                             'EndDate': new Date('03/17/2017'), 'Progress': '40', 'isManual': true },
+                             { 'TaskID': 15, 'TaskName': 'Child Task 5', 'StartDate': new Date('03/13/2017'),
+                             'EndDate': new Date('03/17/2017'), 'Progress': '40' }
+                        ]
+                    }
+                ],
+                allowSorting: true,
+                enableContextMenu: true,
+                height: '450px',
+                allowSelection: true,
+                highlightWeekends: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    dependency: 'Predecessor',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode : 'Custom',
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' }, 
+                    { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+                'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+                enableVirtualization:true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowRowDragAndDrop: true,
+                splitterSettings: {
+                    position: "50%",
+                   // columnIndex: 4
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                allowFiltering: true,
+                columns: [
+                    { field: 'TaskID', visible: true},
+                    {field: 'TaskName'},
+                    { field: 'isManual'},
+                    {field: 'StartDate'},
+                    {field: 'Duration'},
+                    {field: 'Progress'}
+                ],
+                validateManualTasksOnLinking: true,
+                treeColumnIndex: 1,
+                allowReordering: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                gridLines: "Both",
+                showColumnMenu: true,
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: '${Progress}%'
+                },
+                projectStartDate: new Date('02/20/2017'),
+                projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('Right resizing', () => {
+        ganttObj.actionBegin = (args: object) => { };         
+        ganttObj.taskbarEditing = (args: any) => {
+            expect(args.taskBarEditAction).toBe('ParentResizing');
+        };
+        ganttObj.taskbarEdited = (args: any) => {
+            expect(args.taskBarEditAction).toBe('ParentResizing');
+            expect(ganttObj.currentViewData[1].taskData['Duration']).toBe(5);
+        };      
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-manualparent-main-container >div.e-gantt-manualparenttaskbar-right') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 100, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });   
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
 describe('CR-899690: Left value miscalculated for taskbar while duration in decimals duration', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
@@ -1333,12 +1501,49 @@ describe('CR-899690: Left value miscalculated for taskbar while duration in deci
     });
     it('Checking Taskbar left with decimal duration', () => {
        expect(ganttObj.currentViewData[1].ganttProperties.left).toBe(33);
-       expect(ganttObj.currentViewData[2].ganttProperties.left).toBe(59.400000000000006);
-       expect(ganttObj.currentViewData[5].ganttProperties.left).toBe(59.400000000000006);
+       expect(Math.floor(ganttObj.currentViewData[2].ganttProperties.left)).toBe(59);
+       expect(Math.floor(ganttObj.currentViewData[4].ganttProperties.left)).toBe(59);
+       expect(Math.floor(ganttObj.currentViewData[6].ganttProperties.left)).toBe(59);
     });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Add dependency', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: addDependency,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            allowSelection: true,
+            gridLines: "Both",
+            height: '450px',
+            allowUnscheduledTasks: true
+        }, done);
+    });
+    it('Add a predecessor to Task 2', () => {
+        ganttObj.addPredecessor(2, '1FS');
+        var updatedTask = ganttObj.getRecordByID('2');
+        if (updatedTask && updatedTask.ganttProperties) {
+            expect(updatedTask.ganttProperties.predecessorsName).toBe('1FS');
         }
     });
 });

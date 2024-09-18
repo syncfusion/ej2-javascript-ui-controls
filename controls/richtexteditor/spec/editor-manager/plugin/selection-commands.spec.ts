@@ -4,7 +4,7 @@
 import { detach, Browser } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
 import { SelectionCommands } from '../../../src/editor-manager/plugin/selection-commands';
-import { renderRTE, destroy } from '../../rich-text-editor/render.spec';
+import { renderRTE, destroy, setCursorPoint } from '../../rich-text-editor/render.spec';
 
 describe('Selection commands', () => {
     //HTML value
@@ -781,8 +781,7 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
         SelectionCommands.applyFormat(document, 'italic', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'bold', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', null, 'rgb(246, 198, 206)');
-        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><strong>​<em>​<span style="text-decoration: underline;">​<span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">RTE Content</span></span></em></strong><span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="background-color: rgb(246, 198, 206);">​</span></span></p>`);
-        done();
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><strong>​<em>​<span style="text-decoration: underline;">​<span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">RTE Content</span></span></em></strong><span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="background-color: rgb(246, 198, 206);">​</span></span></p>`);        done();
     });
 });
 
@@ -1879,6 +1878,108 @@ describe('888161 - Font color applied to full line instead of selected text', ()
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode, focusNode, 0, 1);
         SelectionCommands.applyFormat(document, 'fontcolor', rteObj.inputElement, 'P', null, 'rgb(102, 102, 0)');
         expect((rteObj as any).inputElement.innerHTML).toBe(`<ul><li>hello <span style="color: rgb(102, 102, 0); text-decoration: inherit;"><span style="background-color: rgb(255, 255, 0);">word </span></span>this is me</li></ul>`);
+        done();
+    });
+});
+
+describe('888243 - Single sentence break into double sentence', () => {
+    let innervalue: string = `<p>hello world this is me</p>`;
+    let rteObj: any;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline', 'FontColor', 'BackgroundColor']
+            }
+        });
+        done();
+    });
+    afterAll((done: DoneFn) => {
+        destroy(rteObj);
+        done();
+    });
+    it('select text and apply background color and font color', () => {
+        let focusNode = rteObj.inputElement.querySelector('p');
+        setCursorPoint(focusNode, 0);
+        SelectionCommands.applyFormat(document, 'fontsize', focusNode, 'P', null, '20px');
+        SelectionCommands.applyFormat(document, 'fontsize', focusNode, 'P', null, '24px');
+        SelectionCommands.applyFormat(document, 'fontsize', focusNode, 'P', null, '18px');
+        focusNode = rteObj.inputElement.querySelector('p');
+        expect(focusNode.innerHTML===`<span style="font-size: 18px;">​</span>hello world this is me`).toBe(true);
+    });
+});
+describe(' - feature for code format', () => {
+    let innervalue: string = `<p>Hello world this is the sample for code feature .</p>`;
+    let rteObj: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['InlineCode']
+            }
+        });
+        done();
+    });
+    afterAll((done: DoneFn) => {
+        destroy(rteObj);
+        done();
+    });
+
+    it('select text and apply code format', (done) => {
+        let focusNode = rteObj.inputElement.querySelector('p');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode, focusNode, 0, 1);
+        SelectionCommands.applyFormat(document, 'inlinecode', focusNode, 'P');
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><code>Hello world this is the sample for code feature .</code></p>`);
+        SelectionCommands.applyFormat(document, 'inlinecode', focusNode, 'P');
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p>Hello world this is the sample for code feature .</p>`);
+        done();
+    })
+    it('select text apply code format using and checking toolbar status', (done) => {
+        let focusNode = rteObj.inputElement.querySelector('p');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode, focusNode, 0, 1);
+        let codeButton: HTMLElement = document.querySelectorAll(".e-toolbar-item")[0] as HTMLElement;
+        codeButton.click();
+        expect(codeButton.classList.contains('e-active')).toBe(true);
+        codeButton.click();
+        expect(codeButton.classList.contains('e-active')).toBe(false);
+        done();
+    });
+});
+describe(' - feature for code format using execCommand', () => {
+    let innervalue: string = `<p>Hello world this is the sample for code feature .</p>`;
+    let rteObj: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: [{
+                    click: function () {
+                        let customBtn = rteObj.element.querySelector('#custom_tbar');
+                        rteObj.executeCommand('InlineCode');
+                    },
+                    tooltipText: 'Insert Symbol',
+                    template:
+                        '<button class="e-tbar-btn e-btn" tabindex="-1" id="custom_tbar"  style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> Apply code</div></button>',
+                },
+                    '|',
+                    'Undo',
+                ]
+            },
+        });
+        done();
+    });
+    afterAll((done: DoneFn) => {
+        destroy(rteObj);
+        done();
+    });
+
+    it('select text and apply code format', (done) => {
+        let focusNode = rteObj.inputElement.querySelector('p');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode, focusNode, 0, 1);
+        document.getElementById('custom_tbar').click();
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><code>Hello world this is the sample for code feature .</code></p>`);
         done();
     });
 });

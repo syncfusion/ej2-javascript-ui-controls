@@ -17,7 +17,9 @@
  import { IAccLoadedEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
  import '../../../node_modules/es6-promise/dist/es6-promise';
  import { profile, inMB, getMemoryProfile } from '../../common.spec';
- AccumulationChart.Inject(PieSeries, AccumulationLegend, AccumulationDataLabel, AccumulationHighlight, AccumulationSelection);
+ import { AccumulationTooltip } from '../../../src/accumulation-chart/user-interaction/tooltip';
+ import { Indexes } from '../../../src/common/model/base';
+ AccumulationChart.Inject(PieSeries, AccumulationLegend, AccumulationDataLabel, AccumulationHighlight, AccumulationSelection, AccumulationTooltip);
  
  describe('Accumulation Chart Control', () => {
      beforeAll(() => {
@@ -349,6 +351,7 @@
                 done();
             };
             accumulation.series[0].selectionStyle = 'highlight';
+            accumulation.tooltip.enable = true;
             accumulation.refresh();
          });
          it('Pie - highlighted in mousemove over Legend', (done: Function) => {
@@ -362,6 +365,7 @@
             accumulation.legendSettings.toggleVisibility = false;
             accumulation.selectedDataIndexes = [];
             accumulation.accumulationHighlightModule.selectedDataIndexes = [];
+            accumulation.tooltip.enable = false;
             accumulation.refresh();
          });
          it('Pie - point highlight while hover the correspoding Datalabel ', (done: Function) => {
@@ -375,6 +379,16 @@
             accumulation.series[0].selectionStyle = null;
             accumulation.accumulationHighlightModule.selectedDataIndexes = [];
             accumulation.refresh();
+         }); 
+         it('Pie - point checking highlighted data index ', (done: Function) => {
+             accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                 args.accumulation.accumulationHighlightModule.highlightDataIndexes = [{ series: 0, point: 1 }] as Indexes[];
+                 args.accumulation.accumulationHighlightModule.redrawSelection(args.accumulation);
+                 expect(document.getElementsByClassName('pie') !== null).toBe(true);
+                 done();
+             };
+             accumulation.highlightMode = 'Point';
+             accumulation.refresh();
          });         
     });
         it('memory leak', () => {

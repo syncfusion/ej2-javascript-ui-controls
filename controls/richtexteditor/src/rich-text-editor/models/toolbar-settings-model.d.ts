@@ -48,6 +48,76 @@ export interface ToolbarSettingsModel {
 }
 
 /**
+ * Interface for a class ImportWord
+ */
+export interface ImportWordModel {
+
+    /**
+     * Specifies the URL that will receive and handle file uploads on the server.
+     *
+     * @default 'null'
+     */
+    serviceUrl?: string;
+
+}
+
+/**
+ * Interface for a class ExportWord
+ */
+export interface ExportWordModel {
+
+    /**
+     * Specifies the URL used to export Rich Text Editor content into Word files.
+     *
+     * @default 'null'
+     */
+    serviceUrl?: string;
+
+    /**
+     * Specifies the file name of the exported word file.
+     *
+     * @default 'Sample.docx'
+     */
+    fileName?: string;
+
+    /**
+     * Specifies the stylesheet to be applied to the exported file.
+     *
+     * @default 'null'
+     */
+    stylesheet?: string;
+
+}
+
+/**
+ * Interface for a class ExportPdf
+ */
+export interface ExportPdfModel {
+
+    /**
+     * Specifies the URL used to export Rich Text Editor content into PDF files.
+     *
+     * @default 'null'
+     */
+    serviceUrl?: string;
+
+    /**
+     * Specifies the file name of the exported pdf file.
+     *
+     * @default 'Sample.pdf'
+     */
+    fileName?: string;
+
+    /**
+     * Specifies the stylesheet to be applied to the exported file.
+     *
+     * @default 'null'
+     */
+    stylesheet?: string;
+
+}
+
+/**
  * Interface for a class ImageSettings
  */
 export interface ImageSettingsModel {
@@ -88,16 +158,22 @@ export interface ImageSettingsModel {
     height?: string;
 
     /**
-     * Specifies the URL of save action that will receive the upload files and save in the server.
+     * Specifies the URL of save action that will receive the uploaded image and save it on the server.
      *
-     * @default 'null'
+     *
+     * The URL of the save action for uploading and saving images on the server.
+     * The save action should handle a `POST` request and define an argument with the name `UploadFiles`.
+     *
+     * Trigger the event when inserting the image via Insert image dialog, pasting the image, replacing the existing image, and dragging and dropping from the file browser.
+     *
+     * @default null
      */
     saveUrl?: string;
 
     /**
      * Specifies the path of the location to store the images and refer it to display the images.
      *
-     * @default 'null'
+     * @default null
      */
     path?: string;
 
@@ -109,9 +185,15 @@ export interface ImageSettingsModel {
     resize?: boolean;
 
     /**
-     * Specifies the URL of remove action that receives the file information and handle the remove operation in server.
+     * Specifies the URL of remove action that receives the image information and handles the remove operation on the server.
      *
-     * @default 'null'
+     * The URL of the remove action for removing the image on the server.
+     *
+     * The remove action should handle a `POST` request and define an argument with the name `UploadFiles`.
+     *
+     * Trigger the event when uploading and canceling or removing an image in the insert image dialog, pasting and removing an image in Paste cleanup popup.
+     *
+     * @default null
      */
     removeUrl?: string;
 

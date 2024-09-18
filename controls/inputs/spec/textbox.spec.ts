@@ -3214,4 +3214,170 @@ describe('TextBox ', () => {
             expect(textboxObj.value).toBe('Syncfusion');
          });
     });
+    describe('Null or undefined value testing', function (){
+        let textboxObj: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'textbox'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            document.body.innerHTML = '';
+        });
+        it('autocomplete',function() {
+            textboxObj = new TextBox({ 
+                autocomplete: null
+            },'#textbox');
+            expect(textboxObj.autocomplete).toBe(null);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                autocomplete: undefined
+            },'#textbox');
+            expect(textboxObj.autocomplete).toBe('on');
+            textboxObj.destroy();
+        });
+        it('cssClass',function() {
+            textboxObj = new TextBox({ 
+                cssClass: null
+            },'#textbox');
+            expect(textboxObj.cssClass).toBe(null);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                cssClass: undefined
+            },'#textbox');
+            expect(textboxObj.cssClass).toBe('');
+            textboxObj.destroy();
+         });
+         it('enablePersistence',function() {
+            textboxObj = new TextBox({ 
+                enablePersistence: null
+            },'#textbox');
+            expect(textboxObj.enablePersistence).toBe(null);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                enablePersistence: undefined
+            },'#textbox');
+            expect(textboxObj.enablePersistence).toBe(false);
+            textboxObj.destroy();
+         });
+         it('enableRtl',function() {
+            textboxObj = new TextBox({ 
+                enableRtl: null
+            },'#textbox');
+            expect(textboxObj.enableRtl).toBe(false);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                enableRtl: undefined
+            },'#textbox');
+            expect(textboxObj.enableRtl).toBe(false);
+            textboxObj.destroy();
+         });
+         it('floatLabelType',function() {
+            textboxObj = new TextBox({ 
+                floatLabelType: null
+            },'#textbox');
+            expect(textboxObj.floatLabelType).toBe(null);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                floatLabelType: undefined
+            },'#textbox');
+            expect(textboxObj.floatLabelType).toBe('Never');
+            textboxObj.destroy();
+         });
+         it('htmlAttributes',function() {
+            textboxObj = new TextBox({ 
+                htmlAttributes: null
+            },'#textbox');
+            expect(textboxObj.htmlAttributes).toBe(null);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                htmlAttributes: undefined
+            },'#textbox');
+            expect(JSON.stringify(textboxObj.htmlAttributes)).toBe('{}');
+            textboxObj.destroy();
+         });
+         it('multiline',function() {
+            textboxObj = new TextBox({ 
+                multiline: null
+            },'#textbox');
+            expect(textboxObj.multiline).toBe(null);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                multiline: undefined
+            },'#textbox');
+            expect(textboxObj.multiline).toBe(false);
+            textboxObj.destroy();
+         });
+         it('placeholder',function() {
+            textboxObj = new TextBox({ 
+                placeholder: null
+            },'#textbox');
+            expect(textboxObj.placeholder).toBe(null);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                placeholder: undefined
+            },'#textbox');
+            expect(textboxObj.placeholder).toBe(null);
+            textboxObj.destroy();
+         });
+         it('readonly',function() {
+            textboxObj = new TextBox({ 
+                readonly: null
+            },'#textbox');
+            expect(textboxObj.readonly).toBe(null);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                readonly: undefined
+            },'#textbox');
+            expect(textboxObj.readonly).toBe(false);
+            textboxObj.destroy();
+         });
+         it('showClearButton',function() {
+            textboxObj = new TextBox({ 
+                showClearButton: null
+            },'#textbox');
+            expect(textboxObj.showClearButton).toBe(null);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                showClearButton: undefined
+            },'#textbox');
+            expect(textboxObj.showClearButton).toBe(false);
+            textboxObj.destroy();
+         });
+         it('type',function() {
+            textboxObj = new TextBox({ 
+                type: null
+            },'#textbox');
+            expect(textboxObj.type).toBe(null);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                type: undefined
+            },'#textbox');
+            expect(textboxObj.type).toBe('text');
+            textboxObj.destroy();
+         });
+         it('value',function() {
+            textboxObj = new TextBox({ 
+                value: null
+            },'#textbox');
+            expect(textboxObj.value).toBe(null);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                value: undefined
+            },'#textbox');
+            expect(textboxObj.value).toBe(null);
+            textboxObj.destroy();
+         });
+         it('width',function() {
+            textboxObj = new TextBox({ 
+                width: null
+            },'#textbox');
+            expect(textboxObj.width).toBe(null);
+            textboxObj.destroy();
+            textboxObj = new TextBox({ 
+                width: undefined
+            },'#textbox');
+            expect(textboxObj.width).toBe(null);
+            textboxObj.destroy();
+         });
+    });
 });

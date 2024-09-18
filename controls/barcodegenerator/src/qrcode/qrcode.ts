@@ -38,11 +38,11 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
     public height: string | number;
 
     /**
-     * Specifies the logo overlay configuration for the QR code. 
+     * Specifies the logo overlay configuration for the QR code.
      *
      * @default ''
      */
-    @Complex<QRCodeLogoModel>({},QRCodeLogo)
+    @Complex<QRCodeLogoModel>({}, QRCodeLogo)
     public logo: QRCodeLogoModel;
 
     /**
@@ -284,6 +284,10 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
     public destroy(): void {
         this.notify('destroy', {});
         super.destroy();
+        const content: HTMLElement = document.getElementById(this.element.id + 'content');
+        if (content) {
+            this.element.removeChild(content);
+        }
     }
 
     private initializePrivateVariables(): void {

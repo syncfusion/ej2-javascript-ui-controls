@@ -1945,6 +1945,8 @@ export class TextSelection {
                 } else {
                     top = spanBounds.bottom + this.pdfViewerBase.toolbarHeight - topMargin;
                 }
+                this.pdfViewerBase.contextMenuModule.open(top, (spanBounds.right - spanBounds.left) / 2,
+                                                          this.pdfViewerBase.viewerContainer);
             }
         }
     }

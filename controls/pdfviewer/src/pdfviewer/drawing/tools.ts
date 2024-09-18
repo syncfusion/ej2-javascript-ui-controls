@@ -1734,7 +1734,7 @@ export class NodeDrawingTool extends ToolBase {
                     insertSpaces: drawingObject.insertSpaces, isTransparent : drawingObject.isTransparent,
                     rotateAngle: drawingObject.rotateAngle,
                     selectedIndex: drawingObject.selectedIndex, options: drawingObject.options ? drawingObject.options : [],
-                    signatureType: drawingObject.signatureType, zIndex : drawingObject.zIndex, customData: drawingObject.customData ? drawingObject.customData : ""
+                    signatureType: drawingObject.signatureType, zIndex : drawingObject.zIndex, customData: drawingObject.customData ? drawingObject.customData : ''
                 };
                 this.commandHandler.formFieldCollections.push(formField);
                 this.commandHandler.formDesignerModule.drawHTMLContent(this.drawingObject.formFieldAnnotationType,
@@ -1766,9 +1766,11 @@ export class NodeDrawingTool extends ToolBase {
         if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
             this.dragging = true;
             const rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
-            this.updateNodeDimension(this.drawingObject, rect);
-            if (this.drawingObject.shapeAnnotationType === 'Radius') {
-                this.updateRadiusLinePosition(this.drawingObject.wrapper.children[1], this.drawingObject);
+            if (!isNullOrUndefined(this.drawingObject)) {
+                this.updateNodeDimension(this.drawingObject, rect);
+                if (this.drawingObject.shapeAnnotationType === 'Radius') {
+                    this.updateRadiusLinePosition(this.drawingObject.wrapper.children[1], this.drawingObject);
+                }
             }
         }
         return true;
@@ -1821,28 +1823,30 @@ export class NodeDrawingTool extends ToolBase {
      */
     public updateNodeDimension(obj: PdfAnnotationBaseModel, rect?: Rect): void {
         const zoom: number = this.commandHandler.viewerBase.getZoomFactor();
-        obj.bounds.x = (rect.x / zoom) + rect.width / zoom;
-        obj.bounds.y = (rect.y / zoom) + rect.height / zoom;
-        obj.bounds.width = rect.width / zoom;
-        obj.bounds.height = rect.height / zoom;
-        const annotationSettings: any = this.commandHandler.annotationModule ?
-            this.commandHandler.annotationModule.findAnnotationSettings(obj) : {};
-        let annotationMaxHeight: number = 0;
-        let annotationMaxWidth: number  = 0;
-        if (annotationSettings.maxWidth || annotationSettings.maxHeight) {
-            annotationMaxHeight = annotationSettings.maxHeight ? annotationSettings.maxHeight : 2000;
-            annotationMaxWidth = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
-            if (obj.bounds.width > annotationMaxWidth) {
-                obj.bounds.width = annotationMaxWidth;
-            }
-            if (obj.bounds.height > annotationMaxHeight) {
-                obj.bounds.height = annotationMaxHeight;
-            }
-            if (obj.bounds.height <= annotationMaxHeight && obj.bounds.width <= annotationMaxWidth) {
+        if (!isNullOrUndefined(obj)) {
+            obj.bounds.x = (rect.x / zoom) + rect.width / zoom;
+            obj.bounds.y = (rect.y / zoom) + rect.height / zoom;
+            obj.bounds.width = rect.width / zoom;
+            obj.bounds.height = rect.height / zoom;
+            const annotationSettings: any = this.commandHandler.annotationModule ?
+                this.commandHandler.annotationModule.findAnnotationSettings(obj) : {};
+            let annotationMaxHeight: number = 0;
+            let annotationMaxWidth: number = 0;
+            if (annotationSettings.maxWidth || annotationSettings.maxHeight) {
+                annotationMaxHeight = annotationSettings.maxHeight ? annotationSettings.maxHeight : 2000;
+                annotationMaxWidth = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
+                if (obj.bounds.width > annotationMaxWidth) {
+                    obj.bounds.width = annotationMaxWidth;
+                }
+                if (obj.bounds.height > annotationMaxHeight) {
+                    obj.bounds.height = annotationMaxHeight;
+                }
+                if (obj.bounds.height <= annotationMaxHeight && obj.bounds.width <= annotationMaxWidth) {
+                    this.commandHandler.nodePropertyChange(obj, { bounds: obj.bounds });
+                }
+            } else {
                 this.commandHandler.nodePropertyChange(obj, { bounds: obj.bounds });
             }
-        } else {
-            this.commandHandler.nodePropertyChange(obj, { bounds: obj.bounds });
         }
     }
 
@@ -1972,7 +1976,7 @@ export class PolygonDrawingTool extends ToolBase {
         }
         else
         {
-            currentSelector = "";
+            currentSelector = '';
         }
         if (this.drawingObject && this.drawingObject.vertexPoints.length === 2 && isDoubleClineck && isMouseLeave) {
             this.commandHandler.remove(this.drawingObject);

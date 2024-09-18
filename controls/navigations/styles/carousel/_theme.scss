@@ -1,3 +1,9 @@
+@mixin carousel-navigator-button-color($color) {
+  .e-btn-icon {
+    color: $color;
+  }
+}
+
 @include export-module('carousel-theme') {
   .e-carousel {
     .e-carousel-navigators {
@@ -6,10 +12,7 @@
       .e-next .e-btn:not(:disabled),
       .e-play-pause .e-btn:not(:disabled) {
         background-color: $carousel-navigator-btn-bg;
-
-        .e-btn-icon {
-          color: $carousel-navigator-icon-color;
-        }
+        @include carousel-navigator-button-color($carousel-navigator-icon-color);
 
         &:active,
         &:focus,
@@ -19,10 +22,18 @@
         }
 
         @if $skin-name == 'fluent2' {
-          &:focus {
+          &:focus-visible {
             background-color: $carousel-navigator-btn-bg;
             box-shadow: $carousel-navigator-btn-focus-box-shadow;
             border-radius: 4px;
+            @include carousel-navigator-button-color($carousel-navigator-btn-hover-color);
+          }
+          &:active {
+            @include carousel-navigator-button-color($carousel-navigator-btn-active-color);
+          }
+          &:hover,
+          &:focus {
+            @include carousel-navigator-button-color($carousel-navigator-btn-hover-color);
           }
         }
       }

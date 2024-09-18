@@ -57,8 +57,8 @@ export class YearEvent extends TimelineEvent {
             const monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), month, 1);
             const monthStart: Date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
             const monthEnd: Date = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
-            let startDate: Date = util.getWeekFirstDate(monthStart, this.parent.firstDayOfWeek);
-            const endDate: Date = util.addDays(util.getWeekLastDate(monthEnd, this.parent.firstDayOfWeek), 1);
+            let startDate: Date = util.getWeekFirstDate(monthStart, this.parent.activeViewOptions.firstDayOfWeek);
+            const endDate: Date = util.addDays(util.getWeekLastDate(monthEnd, this.parent.activeViewOptions.firstDayOfWeek), 1);
             for (let index: number = 0; startDate.getTime() < endDate.getTime(); index++) {
                 const start: Date = util.resetTime(new Date(startDate.getTime()));
                 const end: Date = util.addDays(new Date(start.getTime()), 1);

@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-navigations",
-	"version": "26.2.11",
+	"version": "22.42.3",
 	"description": "A package of Essential JS 2 navigation components such as Tree-view, Tab, Toolbar, Context-menu, and Accordion which is used to navigate from one page to another",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -13,7 +13,8 @@
 		"@syncfusion/ej2-data": "*",
 		"@syncfusion/ej2-inputs": "*",
 		"@syncfusion/ej2-lists": "*",
-		"@syncfusion/ej2-popups": "*"
+		"@syncfusion/ej2-popups": "*",
+		"markdown-spellcheck": "^1.3.1"
 	},
 	"devDependencies": {
 		"@syncfusion/ej2-staging": "^1.0.1",

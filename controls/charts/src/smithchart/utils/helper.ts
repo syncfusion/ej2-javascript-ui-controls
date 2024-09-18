@@ -108,6 +108,7 @@ export function convertElementFromLabel(
  * Get epsilon value.
  *
  * @returns {number} - return epsilon value.
+ * @private
  */
 export function _getEpsilonValue(): number {
     let e: number = 1.0;
@@ -173,6 +174,7 @@ export function templateAnimate(smithchart: Smithchart, element: Element, delay:
  * @param {string} value - string type value.
  * @param {number} containerSize - size of the container.
  * @returns {number} - returns converted number.
+ * @private
  */
 export function stringToNumber(value: string, containerSize: number): number {
     if (value !== null && value !== undefined) {

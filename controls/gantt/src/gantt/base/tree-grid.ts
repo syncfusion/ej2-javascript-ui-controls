@@ -11,6 +11,7 @@ import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';
 import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, RowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuOpenEventArgs, ColumnMenuClickEventArgs } from '@syncfusion/ej2-grids';
 import { isCountRequired } from './utils';
+import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 
 /** @hidden */
 
@@ -19,6 +20,7 @@ export class GanttTreeGrid {
     private treeGridElement: HTMLElement;
     public treeGridColumns: ColumnModel[];
     public isPersist: boolean = false;
+    public dropInstance: AutoComplete;
     /**
      * @private
      */
@@ -116,7 +118,7 @@ export class GanttTreeGrid {
             const count: number = getValue('count', this.parent.dataSource);
             this.parent.treeGrid.dataSource = {result: this.parent.flatData, count: count};
         } else {
-            if (!this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+            if (this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
                 this.parent.treeGrid.dataSource = this.parent.dataSource;
             }
             else {
@@ -196,7 +198,8 @@ export class GanttTreeGrid {
     }
 
     private beforeDataBound(args: object): void {
-        if (!isNullOrUndefined(this.parent.selectionModule) && this.parent.selectionSettings && this.parent.selectionSettings.persistSelection && this.parent.selectionModule.getSelectedRowIndexes().length > 0 &&
+        if (!isNullOrUndefined(this.parent.selectionModule) && this.parent.selectionSettings &&
+            this.parent.selectionSettings.persistSelection && this.parent.selectionModule.getSelectedRowIndexes().length > 0 &&
             args['actionArgs']['requestType'] === 'sorting') {
             this.isPersist = true;
         }
@@ -287,7 +290,7 @@ export class GanttTreeGrid {
                 collapsedArgs = this.createExpandCollapseArgs(args, null);
                 this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
             }
-            if (!this.parent.allowTaskbarOverlap && !this.parent.ganttChartModule.isCollapseAll && collapsedArgs['gridRow']) {
+            if (!this.parent.ganttChartModule.isCollapseAll && collapsedArgs['gridRow'] && !this.parent.allowTaskbarOverlap) {
                 collapsedArgs['gridRow'].style.height = collapsedArgs['chartRow'].style.height;
                 this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
                     this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
@@ -316,7 +319,7 @@ export class GanttTreeGrid {
                 expandedArgs = this.createExpandCollapseArgs(args, null);
                 this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
             }
-            if (!this.parent.allowTaskbarOverlap && !this.parent.ganttChartModule.isExpandAll && args['row']) {
+            if (!this.parent.ganttChartModule.isExpandAll && args['row'] && !this.parent.allowTaskbarOverlap) {
                 args['row'].style.height = this.parent.rowHeight + 'px';
                 this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
                     this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
@@ -451,7 +454,7 @@ export class GanttTreeGrid {
                 if (this.parent.undoRedoModule['currentAction'] && this.parent.undoRedoModule['currentAction']['sortColumns'].length > 1) {
                     this.parent.undoRedoModule['sortedColumnsLength']++;
                 }
-                if (!this.parent.undoRedoModule['isFromUndoRedo'] && (!this.parent.undoRedoModule['currentAction'] || (this.parent.undoRedoModule['sortedColumnsLength'] !== this.parent.undoRedoModule['currentAction']['sortColumns'].length))) {
+                if ((!this.parent.undoRedoModule['currentAction'] || (this.parent.undoRedoModule['sortedColumnsLength'] !== this.parent.undoRedoModule['currentAction']['sortColumns'].length)) && !this.parent.undoRedoModule['isFromUndoRedo']) {
                     if (this.parent.undoRedoModule['redoEnabled']) {
                         this.parent.undoRedoModule['disableRedo']();
                     }
@@ -512,7 +515,7 @@ export class GanttTreeGrid {
             }
             this.parent.notify('actionComplete', args);
         }
-        if (!isNullOrUndefined(getValue('batchChanges', args)) && !isNullOrUndefined(this.parent.toolbarModule)) {
+        if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(getValue('batchChanges', args))) {
             this.parent.toolbarModule.refreshToolbarItems();
         }
         if (this.parent.isCancelled) {
@@ -522,7 +525,12 @@ export class GanttTreeGrid {
         }
         if (getValue('requestType', args) === 'refresh' && isNullOrUndefined(getValue('type', args)) && this.parent.addDeleteRecord) {
             if (this.parent.selectedRowIndex !== -1) {
-                if (!isNullOrUndefined(this.parent.selectionModule) && this.parent.selectionSettings && this.parent.selectionSettings.persistSelection && this.parent.editModule.isAdded) {
+                if (
+                    !isNullOrUndefined(this.parent.selectionModule) &&
+                    this.parent.selectionSettings &&
+                    this.parent.selectionSettings.persistSelection &&
+                    this.parent.editModule.isAdded
+                ) {
                     const selectedIndexes: number[] = this.parent.selectionModule.selectedRowIndexes;
                     if (selectedIndexes.length > 1 && this.parent.selectionSettings.persistSelection) {
                         for (let i: number = 0; i < selectedIndexes.length; i++) {
@@ -539,7 +547,8 @@ export class GanttTreeGrid {
                 }
             }
             else {
-                if (!isNullOrUndefined(this.parent.selectionModule) && this.parent.selectionSettings && this.parent.selectionSettings.persistSelection
+                if (!isNullOrUndefined(this.parent.selectionModule) && this.parent.selectionSettings &&
+                    this.parent.selectionSettings.persistSelection
                     && this.parent.editModule && !this.parent.editModule.isAdded) {
                     const selectedRecords: Object[] = this.parent.selectionModule.getSelectedRecords();
                     for (let i: number = selectedRecords.length - 1; i >= 0; i--) {
@@ -561,13 +570,16 @@ export class GanttTreeGrid {
                 this.addedRecord = true;
                 this.parent.selectRow((isNullOrUndefined(indexvalue) ? 0 : indexvalue));
             }
-            this.parent.addDeleteRecord = false;
+            if (!this.parent['isExpandPerformed']) {
+                this.parent.addDeleteRecord = false;
+            }
+            this.parent['isExpandPerformed'] = false;
         }
         if (this.parent.undoRedoModule) {
             this.parent.undoRedoModule['isFromUndoRedo'] = false;
         }
         this.parent.trigger('actionComplete', updatedArgs);
-        if (!this.parent.allowTaskbarOverlap && this.parent.showOverAllocation) {
+        if ( this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
                 if (this.parent.currentViewData[i as number].hasChildRecords && !this.parent.currentViewData[i as number].expanded) {
                     this.parent.chartRowsModule.updateDragDropRecords(this.parent.currentViewData[i as number]);
@@ -800,10 +812,37 @@ export class GanttTreeGrid {
             column.type = 'string';
             column.allowFiltering = column.allowFiltering === false ? false : true;
             column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.dependencyValueAccessor.bind(this);
+            if (isNullOrUndefined(column.filter) && this.parent.locale !== 'en-US') {
+                column.filter = {
+                    'ui': {
+                        create: (args: { target: Element, column: Object }) => {
+                            const flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
+                            args.target.appendChild(flValInput);
+                            this.dropInstance = new AutoComplete({
+                                dataSource: this.changeLocale(this.parent.treeGrid.grid.dataSource),
+                                fields: { text: this.parent.taskFields.dependency, value: this.parent.taskFields.dependency },
+                                placeholder: this.parent.localeObj.getConstant('enterValue'),
+                                popupHeight: '200px'
+                            });
+                            this.dropInstance.appendTo(flValInput);
+                        },
+                        write: (args: {
+                            column: Object, target: Element, parent: any,
+                            filteredValue: number | string
+                        }) => {
+                            this.dropInstance.value = args.filteredValue;
+                        },
+                        read: (args: { target: Element, column: any, operator: string, fltrObj: any }) => {
+                            args.fltrObj.filterByColumn(args.column.field, args.operator,
+                                                        this.changeDelocale((this.dropInstance.value) as string));
+                        }
+                    }
+                };
+            }
         } else if (taskSettings.resourceInfo === column.field) {
             this.composeResourceColumn(column);
         } else if (taskSettings.notes === column.field) {
-            if (this.parent.isLocaleChanged && previousColumn) {
+            if (previousColumn && this.parent.isLocaleChanged) {
                 column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('notes');
             }
             else {
@@ -832,7 +871,7 @@ export class GanttTreeGrid {
             column.editType = column.editType ? column.editType :
                 this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
         } else if (taskSettings.work === column.field) {
-            if (this.parent.isLocaleChanged && previousColumn) {
+            if (previousColumn && this.parent.isLocaleChanged) {
                 column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('work');
             }
             else {
@@ -843,7 +882,7 @@ export class GanttTreeGrid {
             column.editType = column.editType ? column.editType : 'numericedit';
 
         } else if (taskSettings.type === column.field) {
-            if (this.parent.isLocaleChanged && previousColumn) {
+            if (previousColumn && this.parent.isLocaleChanged) {
                 column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('taskType');
             }
             else {
@@ -854,7 +893,7 @@ export class GanttTreeGrid {
             column.editType = 'dropdownedit';
             column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.taskTypeValueAccessor.bind(this);
         } else if (taskSettings.manual === column.field && this.parent.taskMode  === 'Custom') {
-            if (this.parent.isLocaleChanged && previousColumn) {
+            if (previousColumn && this.parent.isLocaleChanged) {
                 column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('taskMode');
             }
             else {
@@ -877,6 +916,68 @@ export class GanttTreeGrid {
         }
         this.bindTreeGridColumnProperties(column, isDefined);
     }
+    public changeLocale(data: any): any[] {
+        const filter: any = [];
+        const flatdatas: Object[] = data.map((task: any) => task.ganttProperties.predecessorsName);
+        flatdatas.map((predecessorsName: any) => {
+            if (!isNullOrUndefined(predecessorsName)) {
+                let value: string = '';
+                const splitString: string[] = (predecessorsName as string).split(',');
+                splitString.map((splitvalue: string, index: number) => {
+                    if (splitvalue.includes('FS')) {
+                        value += splitvalue.replace('FS', this.parent.localeObj.getConstant('FS'));
+                        value += (splitString.length !== index + 1) ? ',' : '';
+                    } else if (splitvalue.includes('FF')) {
+                        value += splitvalue.replace('FF', this.parent.localeObj.getConstant('FF'));
+                        value += (splitString.length !== index + 1) ? ',' : '';
+                    } else if (splitvalue.includes('SS')) {
+                        value += splitvalue.replace('SS', this.parent.localeObj.getConstant('SS'));
+                        value += (splitString.length !== index + 1) ? ',' : '';
+                    }
+                    else if (splitvalue.includes('SF')) {
+                        value += splitvalue.replace('SF', this.parent.localeObj.getConstant('SF'));
+                        value += (splitString.length !== index + 1) ? ',' : '';
+                    }
+                });
+                filter.push(value);
+            }
+
+        });
+        return filter;
+    }
+
+    public changeDelocale(dependency: string): string {
+        const FF: string = this.parent.localeObj.getConstant('FF');
+        const FS: string = this.parent.localeObj.getConstant('FS');
+        const SS: string = this.parent.localeObj.getConstant('SS');
+        const SF: string = this.parent.localeObj.getConstant('SF');
+        if (!isNullOrUndefined(dependency)) {
+            const splitString: string[] = dependency.split(',');
+            let value: string = '';
+            splitString.map((splitvalue: string, index: number) => {
+                if (splitvalue.includes(FF)) {
+                    value += splitvalue.replace(FF, 'FF');
+                    value += (splitString.length !== index + 1) ? ',' : '';
+                } else if (splitvalue.includes(FS)) {
+                    value += splitvalue.replace(FS, 'FS');
+                    value += (splitString.length !== index + 1) ? ',' : '';
+                } else if (splitvalue.includes(SS)) {
+                    value += splitvalue.replace(SS, 'SS');
+                    value += (splitString.length !== index + 1) ? ',' : '';
+                }
+                else if (splitvalue.includes(SF)) {
+                    value += splitvalue.replace(SF, 'SF');
+                    value += (splitString.length !== index + 1) ? ',' : '';
+                }
+                else {
+                    value += splitvalue;
+                    value += (splitString.length !== index + 1) ? ',' : '';
+                }
+            });
+            return value;
+        }
+        return null;
+    }
     /**
      * Compose Resource columns
      *
@@ -887,7 +988,7 @@ export class GanttTreeGrid {
         const previousColumn: GanttColumnModel = this.parent.previousGanttColumns.filter((prevcolumn: GanttColumnModel) => {
             return column.field === prevcolumn.field;
         })[0];
-        if (this.parent.isLocaleChanged && previousColumn) {
+        if (previousColumn && this.parent.isLocaleChanged) {
             column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('resourceName');
         }
         else {
@@ -1006,38 +1107,36 @@ export class GanttTreeGrid {
             const ganttProp: ITaskData = data.ganttProperties;
             return this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
         }
-        else if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+        else if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
             return this.parent.dataOperation.getDurationString(parseInt(data[this.parent.taskFields.duration], 10),
                                                                this.parent.durationUnit);
         }
         return '';
     }// eslint-disable-next-line
-
-    
     private dependencyValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
         if (data && data.ganttProperties && !isNullOrUndefined(data.ganttProperties.predecessorsName)) {
-            let value: string = "";
-            let predecessorsName = data.ganttProperties.predecessorsName;
-            let splitString = (predecessorsName as string).split(",");
+            let value: string = '';
+            const predecessorsName: any = data.ganttProperties.predecessorsName;
+            const splitString: string[] = (predecessorsName as string).split(',');
             splitString.map((splitvalue: string, index: number) => {
-                if (splitvalue.includes("FS")) {
-                    value += splitvalue.replace("FS", this.parent.localeObj.getConstant("FS"))
-                    value += (splitString.length !== index + 1) ? "," : "";
-                } else if (splitvalue.includes("FF")) {
-                    value += splitvalue.replace("FF", this.parent.localeObj.getConstant("FF"))
-                    value += (splitString.length !== index + 1) ? "," : "";
-                } else if (splitvalue.includes("SS")) {
-                    value += splitvalue.replace("SS", this.parent.localeObj.getConstant("SS"))
-                    value += (splitString.length !== index + 1) ? "," : "";
+                if (splitvalue.includes('FS')) {
+                    value += splitvalue.replace('FS', this.parent.localeObj.getConstant('FS'));
+                    value += (splitString.length !== index + 1) ? ',' : '';
+                } else if (splitvalue.includes('FF')) {
+                    value += splitvalue.replace('FF', this.parent.localeObj.getConstant('FF'));
+                    value += (splitString.length !== index + 1) ? ',' : '';
+                } else if (splitvalue.includes('SS')) {
+                    value += splitvalue.replace('SS', this.parent.localeObj.getConstant('SS'));
+                    value += (splitString.length !== index + 1) ? ',' : '';
                 }
-                else if (splitvalue.includes("SF")) {
-                    value += splitvalue.replace("SF", this.parent.localeObj.getConstant("SF"))
-                    value += (splitString.length !== index + 1) ? "," : "";
+                else if (splitvalue.includes('SF')) {
+                    value += splitvalue.replace('SF', this.parent.localeObj.getConstant('SF'));
+                    value += (splitString.length !== index + 1) ? ',' : '';
                 }
-            })
+            });
             return value;
         }
-        return ""
+        return '';
     }
     private resourceValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
         const ganttProp: ITaskData = data.ganttProperties;

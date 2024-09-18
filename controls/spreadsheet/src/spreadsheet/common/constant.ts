@@ -409,6 +409,7 @@ export const defaultLocale: object = {
     Retry: 'Retry',
     DialogError: 'The list source must be a reference to single row or column.',
     MinMaxError: 'The Maximum must be greater than or equal to the Minimum.',
+    InvalidNumberError: 'Please enter a valid number.',
     MoreValidation: 'This selection contains more than one validation. \n Erase current settings and continue?',
     FileNameError: 'A file name can\'t contain characters like \\ / : * ? " < > [ ] |',
     ListLengthError: 'The list values allows only upto 256 characters',

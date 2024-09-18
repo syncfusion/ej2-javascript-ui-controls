@@ -7,7 +7,7 @@ import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { BorderModel } from '../../common/model/base-model';
 
 /**
- * `HiloOpenCloseSeries` module is used to render the hilo open close series.
+ * The `HiloOpenCloseSeries` module is used to render the hilo open close series.
  */
 export class HiloOpenCloseSeries extends ColumnBase {
     public sideBySideInfo: DoubleRange[] = [];
@@ -79,11 +79,8 @@ export class HiloOpenCloseSeries extends ColumnBase {
             this.renderPoint(series, series.points[point[i as number]], this.sideBySideInfo[series.index], borderWidth);
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -191,6 +188,7 @@ export class HiloOpenCloseSeries extends ColumnBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         this.animate(series);

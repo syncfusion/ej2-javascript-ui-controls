@@ -745,11 +745,10 @@ export class ListBox extends DropDownBase {
             }
             if (this.allowFiltering) {
                 filterElem = (this.list.getElementsByClassName('e-input-filter')[0] as HTMLInputElement);
+                if (isNullOrUndefined(filterElem)) { return; }
                 filterElem.selectionStart = txtLength;
                 filterElem.selectionEnd = txtLength;
-                if (filterElem.value !== '') {
-                    filterElem.focus();
-                }
+                filterElem.focus();
             }
         }
         if (this.toolbarSettings.items.length && this.scope && this.scope.indexOf('#') > -1 && !isNullOrUndefined(e)) {
@@ -852,7 +851,7 @@ export class ListBox extends DropDownBase {
         }
         extend(items, args.items);
         this.trigger('beforeDrop', args);
-        if (args.items !== items) {
+        if (JSON.stringify(args.items) !== JSON.stringify(items)) {
             this.customDraggedItem = args.items;
         }
     }
@@ -1172,29 +1171,36 @@ export class ListBox extends DropDownBase {
         const liElement: HTMLElement[] | NodeListOf<HTMLLIElement> = this.list.querySelectorAll('.' + dropDownBaseClasses.li);
         if (items) {
             items = (items instanceof Array ? items : [items]) as { [key: string]: Object }[] | string[] | boolean[] | number[];
-            const fields: FieldSettingsModel = this.fields; let dataValue: string; let objValue: { [key: string]: number } = {};
-            const dupData: {[key: string]: Object }[] = [];
+            const fields: FieldSettingsModel = this.fields; let dataValue: string; let objValue: string;
+            const dupData: {[key: string]: Object }[] = []; let itemIdx: number;
             extend(dupData, [], this.jsonData as { [key: string]: Object }[]);
             const removeIdxes: number [] = []; const removeLiIdxes: number [] = [];
-            for (let i: number = 0; i < dupData.length; i++) {
-                const value: any = (dupData[i as number] instanceof Object) ? dupData[i as number][fields.value] : dupData[i as number].toString();
-                objValue[value as any] = i;
-            }
             for (let j: number = 0; j < items.length; j++) {
-                dataValue = (items[j as number] instanceof Object) ? (items[j as number] as any)[fields.value] : items[j as number].toString();
-                if (objValue.hasOwnProperty(dataValue)) {
-                    const idx: number = objValue[dataValue as string];
-                    liCollections.push(liElement[idx as number]);
-                    removeIdxes.push(idx);
-                    removeLiIdxes.push(idx);
+                if (items[j as number] instanceof Object) {
+                    dataValue = getValue(fields.value, items[j as number]);
+                } else {
+                    dataValue = items[j as number].toString();
+                }
+                for (let i: number = 0, len: number = dupData.length; i < len; i++) {
+                    if (dupData[i as number] instanceof Object) {
+                        objValue = getValue(fields.value, dupData[i as number]);
+                    } else {
+                        objValue = dupData[i as number].toString();
+                    }
+                    if (objValue === dataValue) {
+                        itemIdx = this.getIndexByValue(dataValue);
+                        const idx: number = itemIdx === i ? itemIdx : i;
+                        liCollections.push(liElement[idx as number]);
+                        removeIdxes.push(idx);
+                        removeLiIdxes.push(idx);
+                    }
                 }
             }
-            for (let k: number = removeIdxes.length - 1; k >= 0; k--) {
-                (this.listData as { [key: string]: Object }[]).splice(removeIdxes[k as number], 1);
-            }
-            for (let k: number = removeIdxes.length - 1; k >= 0; k--) {
-                (this.jsonData as { [key: string]: Object }[]).splice(removeIdxes[k as number], 1);
-            }
+            const validRemoveIdxes: number[] = removeIdxes.sort((a: number, b: number) => b - a);
+            validRemoveIdxes.forEach((idx: number) => {
+                this.listData.splice(idx, 1);
+                this.jsonData.splice(idx, 1);
+            });
             for (let k: number = removeLiIdxes.length - 1; k >= 0; k--) {
                 this.updateLiCollection(removeLiIdxes[k as number]);
             }
@@ -1289,6 +1295,7 @@ export class ListBox extends DropDownBase {
      * @returns {void}
      */
     public moveAllTo(targetId?: string, index?: number): void {
+        this.toolbarAction = 'moveAllTo';
         if (this.listData.length > 0) {
             const tlistbox: ListBox = (targetId) ? getComponent(targetId, ListBox) : this.getScopedListBox();
             this.moveAllData(this, tlistbox, false, index);
@@ -1641,7 +1648,6 @@ export class ListBox extends DropDownBase {
         }
         return data;
     }
-
     private getDataByElements(elems: Element[]): Object[] {
         const data: Object[] = []; let value: string | number | boolean; let sIdx: number = 0;
         if (!isNullOrUndefined(this.listData)) {
@@ -1812,7 +1818,8 @@ export class ListBox extends DropDownBase {
             if (elems.length > 199) {
                 for (const item of fListBox.listData) {
                     if (!isNullOrUndefined(item)) {
-                        const key = fListBox.getFormattedValue(getValue((fListBox.fields.value ? fListBox.fields.value : 'value'), item));
+                        const key: string | number | boolean = fListBox.getFormattedValue(getValue((fListBox.fields.value ? fListBox.fields.value : 'value'), item));
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         listDataMap[key as any] = item as object;
                     }
                 }
@@ -1974,21 +1981,28 @@ export class ListBox extends DropDownBase {
             const childNode: any = childNodes[i as number] as HTMLElement;
             if (childNode.classList.contains('e-disabled')) {
                 tempLiColl.push(childNode);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                tempData.push(fListBox.listData[i as number] as any);
+                if (this.sortOrder != null) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    tempData.push(fListBox.sortedData[i as number] as any);
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    tempData.push(fListBox.listData[i as number] as any);
+                }
             } else {
                 newFlistboxArray.push(i);
             }
         }
         flistboxarray = newFlistboxArray;
-        if (!isRefresh) {
-            moveTo(fListBox.ulElement, tListBox.ulElement, flistboxarray, index);
-            fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
-        }
+        moveTo(fListBox.ulElement, tListBox.ulElement, flistboxarray, index);
+        this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         if (isKey) { this.list.focus(); }
         index = (index) ? index : listData.length;
         for (let i: number = 0; i < flistboxarray.length; i++) {
-            listData.splice(index + i, 0, fListBox.listData[flistboxarray[i as number]]);
+            if (this.sortOrder != null) {
+                listData.splice(index + i, 0, fListBox.sortedData[flistboxarray[i as number]]);
+            } else {
+                listData.splice(index + i, 0, fListBox.listData[flistboxarray[i as number]]);
+            }
         }
         for (let i: number = 0; i < flistboxarray.length; i++) {
             jsonData.splice(index + i, 0, fListBox.jsonData[flistboxarray[i as number]] as {[key: string]: object});
@@ -2023,6 +2037,16 @@ export class ListBox extends DropDownBase {
         if (fListBox.listData.length === fListBox.jsonData.length) {
             fListBox.listData = fListBox.sortedData = fListBox.jsonData = tempData;
         } else if (fListBox.allowFiltering) {
+            if (tempLiColl.length > 0) {
+                const disabledData: { [key: string]: Object }[] = [];
+                for (let i: number = 0; i < tempLiColl.length; i++) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    disabledData.push(this.getDataByValue(tempLiColl[i as number].getAttribute('data-value')) as any);
+                }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                fListBox.listData = (fListBox as any).listData.filter((obj1: any) =>
+                    !disabledData.some((obj2: any) => obj1 === obj2)) as any;
+            }
             for (let i: number = 0; i < fListBox.listData.length; i++) {
                 for (let j: number = 0; j < fListBox.jsonData.length; j++) {
                     if (fListBox.listData[i as number] === fListBox.jsonData[j as number]) {
@@ -2034,8 +2058,9 @@ export class ListBox extends DropDownBase {
         }
         if (isRefresh) {
             const sourceElem: HTMLElement = tListBox.renderItems(listData as obj[], tListBox.fields);
-            tListBox.updateListItems(sourceElem, tListBox.ulElement);
-            fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
+            if (!this.itemTemplate) {
+                tListBox.updateListItems(sourceElem, tListBox.ulElement);
+            }
         } else {
             (tListBox.sortedData as dataType[]) = listData;
         }
@@ -2045,7 +2070,7 @@ export class ListBox extends DropDownBase {
             const btn: HTMLButtonElement = wrap.querySelector('[data-value="' + this.toolbarAction + '"]');
             btn.disabled = true;
         }
-        if (fListBox.listData.length === 0) {
+        if (fListBox.listData.length === 0 && tempLiColl.length === 0) {
             fListBox.l10nUpdate();
         }
     }
@@ -2296,7 +2321,7 @@ export class ListBox extends DropDownBase {
 
     protected targetElement(): string {
         this.targetInputElement = this.list.getElementsByClassName('e-input-filter')[0] as HTMLInputElement;
-        return this.targetInputElement.value;
+        return isNullOrUndefined(this.targetInputElement) ? null : this.targetInputElement.value;
     }
 
     private dataUpdater(
@@ -2304,7 +2329,7 @@ export class ListBox extends DropDownBase {
         query?: Query, fields?: FieldSettingsModel): void {
         this.isDataFetched = false;
         const backCommand: boolean = true;
-        if (this.targetElement().trim() === '') {
+        if (this.targetElement() && this.targetElement().trim() === '') {
             let list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
             if (backCommand) {
                 this.remoteCustomValue = false;
@@ -2448,6 +2473,7 @@ export class ListBox extends DropDownBase {
 
     private updateSelectTag(): void {
         const ele: Element = this.getSelectTag(); let innerHTML: string = '';
+        if (isNullOrUndefined(ele)) { return; }
         ele.innerHTML = '';
         if (this.value) {
             for (let i: number = 0, len: number = this.value.length; i < len; i++) {
@@ -2658,9 +2684,7 @@ export class ListBox extends DropDownBase {
                 if (newProp.allowDragAndDrop) {
                     this.initDraggable();
                 } else {
-                    if (this.ulElement.classList.contains("e-sortable")) {
-                        (getComponent(this.ulElement, 'sortable') as Sortable).destroy();
-                    }
+                    (getComponent(this.ulElement, 'sortable') as Sortable).destroy();
                 }
                 break;
             case 'allowFiltering':

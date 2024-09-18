@@ -379,12 +379,25 @@ describe('Map layer testing', () => {
             remove(ele);
             label.destroy();
         });        
+        it('testing datalabel', () => {
+            label.loaded = (args: ILoadedEventArgs) => {
+                spec = document.getElementById('label_LayerIndex_1_shapeIndex_0_LabelIndex_0');
+                expect(spec.innerHTML).toBe('$11.00');
+            };
+            label.refresh();
+        });
         it('testing datalabel zoomByPosition', () => {
             label.loaded = (args: ILoadedEventArgs) => {
-                spec = document.getElementById('label_LayerIndex_0_shapeIndex_4_LabelIndex_4');
-                expect(spec.innerHTML).toBe('4.00');
+                spec = document.getElementById('label_LayerIndex_1_shapeIndex_1_LabelIndex_1');
+                expect(spec.innerHTML).toBe('$10.00');
             };
             label.zoomByPosition({ latitude: 33.5302186, longitude: -117.7418381 }, 5);
+        });
+        it('testing height 0%', () => {
+            label.height = '0%';
+            label.refresh();
+            spec = document.getElementById('label_svg');
+            expect(spec.getAttribute('height') == '0').toBe(true);            
         });
     });
     describe('datalabel border testing with enable zoom', () => {

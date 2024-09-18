@@ -5982,4 +5982,254 @@ describe('Change Event testing', () => {
             expect(numeric.inputWrapper.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
        });
     });
+    describe('Null or undefined value testing', function (){
+        let numericObj: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'numeric'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            document.body.innerHTML = '';
+        });
+        it('cssClass',function() {
+            numericObj = new NumericTextBox({ 
+                cssClass: null
+            },'#numeric');
+            expect(numericObj.cssClass).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                cssClass: undefined
+            },'#numeric');
+            expect(numericObj.cssClass).toBe('');
+            numericObj.destroy();
+         });
+         it('currency',function() {
+            numericObj = new NumericTextBox({ 
+                currency: null
+            },'#numeric');
+            expect(numericObj.currency).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                currency: undefined
+            },'#numeric');
+            expect(numericObj.currency).toBe(null);
+            numericObj.destroy();
+        });
+        it('decimals',function() {
+            numericObj = new NumericTextBox({ 
+                decimals: null
+            },'#numeric');
+            expect(numericObj.decimals).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                decimals: undefined
+            },'#numeric');
+            expect(numericObj.decimals).toBe(null);
+            numericObj.destroy();
+        });
+         it('enablePersistence',function() {
+            numericObj = new NumericTextBox({ 
+                enablePersistence: null
+            },'#numeric');
+            expect(numericObj.enablePersistence).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                enablePersistence: undefined
+            },'#numeric');
+            expect(numericObj.enablePersistence).toBe(false);
+            numericObj.destroy();
+         });
+         it('enableRtl',function() {
+            numericObj = new NumericTextBox({ 
+                enableRtl: null
+            },'#numeric');
+            expect(numericObj.enableRtl).toBe(false);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                enableRtl: undefined
+            },'#numeric');
+            expect(numericObj.enableRtl).toBe(false);
+            numericObj.destroy();
+         });
+         it('enabled',function() {
+            numericObj = new NumericTextBox({ 
+                enabled: null
+            },'#numeric');
+            expect(numericObj.enabled).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                enabled: undefined
+            },'#numeric');
+            expect(numericObj.enabled).toBe(false);
+            numericObj.destroy();
+         });
+         it('floatLabelType',function() {
+            numericObj = new NumericTextBox({ 
+                floatLabelType: null
+            },'#numeric');
+            expect(numericObj.floatLabelType).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                floatLabelType: undefined
+            },'#numeric');
+            expect(numericObj.floatLabelType).toBe('Never');
+            numericObj.destroy();
+         });
+         it('format',function() {
+            numericObj = new NumericTextBox({ 
+                format: null
+            },'#numeric');
+            expect(numericObj.format).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                format: undefined
+            },'#numeric');
+            expect(numericObj.format).toBe('n2');
+            numericObj.destroy();
+         });
+         it('htmlAttributes',function() {
+            numericObj = new NumericTextBox({ 
+                htmlAttributes: null
+            },'#numeric');
+            expect(numericObj.htmlAttributes).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                htmlAttributes: undefined
+            },'#numeric');
+            expect(JSON.stringify(numericObj.htmlAttributes)).toBe('{}');
+            numericObj.destroy();
+         });
+         it('max',function() {
+            numericObj = new NumericTextBox({ 
+                max: null
+            },'#numeric');
+            expect(numericObj.max).toBe(1.7976931348623157e+308);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                max: undefined
+            },'#numeric');
+            expect(numericObj.max).toBe(1.7976931348623157e+308);
+            numericObj.destroy();
+         });
+         it('min',function() {
+            numericObj = new NumericTextBox({ 
+                min: null
+            },'#numeric');
+            expect(numericObj.min).toBe(-1.7976931348623157e+308);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                min: undefined
+            },'#numeric');
+            expect(numericObj.min).toBe(-1.7976931348623157e+308);
+            numericObj.destroy();
+         });
+         it('placeholder',function() {
+            numericObj = new NumericTextBox({ 
+                placeholder: null
+            },'#numeric');
+            expect(numericObj.placeholder).toBe('');
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                placeholder: undefined
+            },'#numeric');
+            expect(numericObj.placeholder).toBe('');
+            numericObj.destroy();
+         });
+         it('readonly',function() {
+            numericObj = new NumericTextBox({ 
+                readonly: null
+            },'#numeric');
+            expect(numericObj.readonly).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                readonly: undefined
+            },'#numeric');
+            expect(numericObj.readonly).toBe(false);
+            numericObj.destroy();
+         });
+         it('showClearButton',function() {
+            numericObj = new NumericTextBox({ 
+                showClearButton: null
+            },'#numeric');
+            expect(numericObj.showClearButton).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                showClearButton: undefined
+            },'#numeric');
+            expect(numericObj.showClearButton).toBe(false);
+            numericObj.destroy();
+         });
+         it('showSpinButton',function() {
+            numericObj = new NumericTextBox({ 
+                showSpinButton: null
+            },'#numeric');
+            expect(numericObj.showSpinButton).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                showSpinButton: undefined
+            },'#numeric');
+            expect(numericObj.showSpinButton).toBe(true);
+            numericObj.destroy();
+         });
+         it('step',function() {
+            numericObj = new NumericTextBox({ 
+                step: null
+            },'#numeric');
+            expect(numericObj.step).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                step: undefined
+            },'#numeric');
+            expect(numericObj.step).toBe(1);
+            numericObj.destroy();
+         });
+         it('strictMode',function() {
+            numericObj = new NumericTextBox({ 
+                strictMode: null
+            },'#numeric');
+            expect(numericObj.strictMode).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                strictMode: undefined
+            },'#numeric');
+            expect(numericObj.strictMode).toBe(true);
+            numericObj.destroy();
+         });
+         it('validateDecimalOnType',function() {
+            numericObj = new NumericTextBox({ 
+                validateDecimalOnType: null
+            },'#numeric');
+            expect(numericObj.validateDecimalOnType).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                validateDecimalOnType: undefined
+            },'#numeric');
+            expect(numericObj.validateDecimalOnType).toBe(false);
+            numericObj.destroy();
+         });
+         it('value',function() {
+            numericObj = new NumericTextBox({ 
+                value: null
+            },'#numeric');
+            expect(numericObj.value).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                value: undefined
+            },'#numeric');
+            expect(numericObj.value).toBe(null);
+            numericObj.destroy();
+         });
+         it('width',function() {
+            numericObj = new NumericTextBox({ 
+                width: null
+            },'#numeric');
+            expect(numericObj.width).toBe(null);
+            numericObj.destroy();
+            numericObj = new NumericTextBox({ 
+                width: undefined
+            },'#numeric');
+            expect(numericObj.width).toBe(null);
+            numericObj.destroy();
+         });
+    });
 });

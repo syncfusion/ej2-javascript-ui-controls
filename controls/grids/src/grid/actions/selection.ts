@@ -329,8 +329,8 @@ export class Selection implements IAction {
         if (!isToggle || !this.selectedRowIndexes.length) {
             isToggle = false;
         } else {
-            const isCheckboxModeResetOnRowClick = this.selectionSettings.checkboxMode === 'ResetOnRowClick';
-            const isSelectionTypeMultiple = !this.parent.isCheckBoxSelection && this.selectionSettings.type === 'Multiple';
+            const isCheckboxModeResetOnRowClick: boolean = this.selectionSettings.checkboxMode === 'ResetOnRowClick';
+            const isSelectionTypeMultiple: boolean = !this.parent.isCheckBoxSelection && this.selectionSettings.type === 'Multiple';
             if ((!isCheckboxModeResetOnRowClick && !isSelectionTypeMultiple) ||
                 (this.selectedRowIndexes.length === 1 && (isCheckboxModeResetOnRowClick || isSelectionTypeMultiple))) {
                 isToggle = !(this.isKeyAction && this.parent.isCheckBoxSelection) ? this.selectedRowIndexes.indexOf(index) !== -1 : false;
@@ -353,7 +353,8 @@ export class Selection implements IAction {
                                 this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can));
         } else {
             if (this.selectionSettings.checkboxMode !== 'ResetOnRowClick' && this.selectionSettings.persistSelection) {
-                this.rowDeselect(events.rowDeselecting, [rowObj.index], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], this.actualTarget);
+                this.rowDeselect(events.rowDeselecting, [rowObj.index], [rowObj.data], [selectedRow], [rowObj.foreignKeyData],
+                                 this.actualTarget);
                 if (this.isCancelDeSelect) {
                     return;
                 }
@@ -363,7 +364,8 @@ export class Selection implements IAction {
                     this.isRowSelected = false;
                     this.selectRowIndex(-1);
                 }
-                this.rowDeselect(events.rowDeselected, [rowObj.index], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], this.actualTarget, undefined, undefined, undefined);
+                this.rowDeselect(events.rowDeselected, [rowObj.index], [rowObj.data], [selectedRow], [rowObj.foreignKeyData],
+                                 this.actualTarget, undefined, undefined, undefined);
             }
             this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can)(args);
         }
@@ -487,7 +489,7 @@ export class Selection implements IAction {
                 this.disableInteracted();
                 return;
             }
-            if (!(gObj.allowRowDragAndDrop && this.isDragged && this.selectionSettings.persistSelection)) {
+            if (!(this.selectionSettings.persistSelection && gObj.allowRowDragAndDrop && this.isDragged)) {
                 this.clearRow();
             }
             this.selectRowIndex(selectableRowIndex.slice(-1)[0]);
@@ -2581,7 +2583,7 @@ export class Selection implements IAction {
         if (this.isMacOS) {
             EventHandler.add(this.parent.element, 'keydown', this.keyDownHandler, this);
             EventHandler.add(this.parent.element, 'keyup', this.keyUpHandler, this);
-        }else {
+        } else {
             if (!this.parent.allowKeyboard) {
                 EventHandler.add(this.parent.element, 'keydown', this.keyDownHandler, this);
             }
@@ -2592,7 +2594,7 @@ export class Selection implements IAction {
         if (this.isMacOS) {
             EventHandler.remove(this.parent.element, 'keydown', this.keyDownHandler);
             EventHandler.remove(this.parent.element, 'keyup', this.keyUpHandler);
-        }else {
+        } else {
             if (!this.parent.allowKeyboard) {
                 EventHandler.remove(this.parent.element, 'keydown', this.keyDownHandler);
             }
@@ -3096,10 +3098,10 @@ export class Selection implements IAction {
             } else if (classes.contains('e-stop')) {
                 status = 'Intermediate';
             }
-        } 
+        }
         return status;
     }
-    
+
     private checkSelect(checkBox: HTMLInputElement): void {
         const target: HTMLElement = closest(this.checkedTarget, '.' + literals.rowCell) as HTMLElement;
         const gObj: IGrid = this.parent;
@@ -3372,8 +3374,8 @@ export class Selection implements IAction {
 
     private keyDownHandler(e: KeyboardEvent): void {
         // Below are keyCode for command key in MAC OS. Safari/Chrome(91-Left command, 93-Right Command), Opera(17), FireFox(224)
-        if ((((Browser.info.name === 'chrome') || (Browser.info.name === 'safari')) && (e.keyCode === 91 || e.keyCode === 93)) ||
-            (Browser.info.name === 'opera' && e.keyCode === 17) || (Browser.info.name === 'mozilla' && e.keyCode === 224)) {
+        if ((Browser.info.name === 'opera' && e.keyCode === 17) || (Browser.info.name === 'mozilla' && e.keyCode === 224) ||
+            (((Browser.info.name === 'safari') || (Browser.info.name === 'chrome') ) && (e.keyCode === 91 || e.keyCode === 93))) {
             this.cmdKeyPressed = true;
         }
         const targetHeadCell: Element = parentsUntil(e.target as HTMLElement, 'e-headercell');
@@ -3386,8 +3388,8 @@ export class Selection implements IAction {
     }
 
     private keyUpHandler(e: KeyboardEvent): void {
-        if ((((Browser.info.name === 'chrome') || (Browser.info.name === 'safari')) && (e.keyCode === 91 || e.keyCode === 93)) ||
-            (Browser.info.name === 'opera' && e.keyCode === 17) || (Browser.info.name === 'mozilla' && e.keyCode === 224)) {
+        if ((Browser.info.name === 'opera' && e.keyCode === 17) || (Browser.info.name === 'mozilla' && e.keyCode === 224) ||
+            (((Browser.info.name === 'safari') || (Browser.info.name === 'chrome') ) && (e.keyCode === 91 || e.keyCode === 93))) {
             this.cmdKeyPressed = false;
         }
     }
@@ -3715,7 +3717,7 @@ export class Selection implements IAction {
     public ctrlPlusA(): void {
         if (this.isRowType() && !this.isSingleSel()) {
             const rowObj: Row<Column>[] = this.parent.getRowsObject();
-            this.selectRowsByRange(rowObj[0].index, rowObj[rowObj.length-1].index);
+            this.selectRowsByRange(rowObj[0].index, rowObj[rowObj.length - 1].index);
         }
         if (this.isCellType() && !this.isSingleSel()) {
             this.selectCellsByRange(
@@ -3920,7 +3922,7 @@ export class Selection implements IAction {
         const isMultiColumns: boolean = this.selectedColumnsIndexes.length > 1 &&
             this.selectedColumnsIndexes.indexOf(index) > -1;
         this.clearColDependency();
-        if (!isColSelected || !this.selectionSettings.enableToggle || isMultiColumns) {
+        if (!this.selectionSettings.enableToggle || isMultiColumns || !isColSelected) {
             const args: ColumnSelectingEventArgs = {
                 columnIndex: index, headerCell: selectedCol,
                 column: column,
@@ -3933,7 +3935,7 @@ export class Selection implements IAction {
                 this.disableInteracted();
                 return;
             }
-            if (!(gObj.selectionSettings.enableToggle && index === this.prevColIndex && isColSelected) || isMultiColumns) {
+            if (isMultiColumns || !(isColSelected && gObj.selectionSettings.enableToggle && index === this.prevColIndex)) {
                 this.updateColSelection(selectedCol, index);
             }
             const selectedArgs: ColumnSelectEventArgs = {

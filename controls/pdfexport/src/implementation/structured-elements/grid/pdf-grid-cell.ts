@@ -12,7 +12,7 @@ import { PdfPen } from './../../graphics/pdf-pen';
 import { PdfStringFormat } from './../../graphics/fonts/pdf-string-format';
 import { RectangleF, PointF, SizeF } from './../../drawing/pdf-drawing';
 import { PdfGraphics } from './../../graphics/pdf-graphics';
-import { PdfDashStyle, PdfLineCap } from './../../graphics/enum';
+import { PdfDashStyle, PdfLineCap, PdfTextAlignment } from './../../graphics/enum';
 import { PdfBorderOverlapStyle } from './../tables/light-tables/enum';
 import { PdfSolidBrush } from './../../graphics/brushes/pdf-solid-brush';
 import { PdfColor } from './../../graphics/pdf-color';
@@ -403,23 +403,41 @@ export class PdfGridCell {
         else{
             if (this.style.cellPadding == null || typeof this.style.cellPadding === 'undefined')
             {
-                if(typeof this.gridRow.grid.style.cellPadding.left !== 'undefined' && this.gridRow.grid.style.cellPadding.hasLeftPad){
-                    returnBounds.x += this.gridRow.grid.style.cellPadding.left + this.cellStyle.borders.left.width;
-                    returnBounds.width -= this.gridRow.grid.style.cellPadding.left;
+                if (this.gridRow.grid.style.cellPadding !== null && typeof this.gridRow.grid.style.cellPadding !== 'undefined') {
+                    const hasLeftPad: boolean = this.gridRow.grid.style.cellPadding.hasLeftPad;
+                    const hasTopPad: boolean = this.gridRow.grid.style.cellPadding.hasTopPad;
+                    const hasRightPad: boolean = this.gridRow.grid.style.cellPadding.hasRightPad;
+                    const hasBottomPad: boolean = this.gridRow.grid.style.cellPadding.hasBottomPad;
+                    if (hasLeftPad || hasTopPad || hasRightPad || hasBottomPad) {
+                        if (typeof this.gridRow.grid.style.cellPadding.left !== 'undefined' && hasLeftPad){
+                            returnBounds.x += this.gridRow.grid.style.cellPadding.left + this.cellStyle.borders.left.width;
+                            returnBounds.width -= this.gridRow.grid.style.cellPadding.left;
+                        }
+                        if (typeof this.gridRow.grid.style.cellPadding.top !== 'undefined' && hasTopPad){
+                            returnBounds.y += this.gridRow.grid.style.cellPadding.top + this.cellStyle.borders.top.width;
+                            returnBounds.height -= this.gridRow.grid.style.cellPadding.top;
+                        }
+                        if (typeof this.gridRow.grid.style.cellPadding.right !== 'undefined' && hasRightPad){
+                            returnBounds.width -= this.gridRow.grid.style.cellPadding.right;
+                        }
+                        if (typeof this.gridRow.grid.style.cellPadding.bottom !== 'undefined' && hasBottomPad){
+                            returnBounds.height -= this.gridRow.grid.style.cellPadding.bottom;
+                        }
+                    } else {
+                        const format: PdfStringFormat = this.getStringFormat();
+                        if (format.alignment === null || typeof format.alignment === 'undefined') {
+                            returnBounds.x += this.row.grid.style.cellPadding.left;
+                            returnBounds.y += this.row.grid.style.cellPadding.top;
+                        }
+                    }
+                } else {
+                    const format: PdfStringFormat = this.getStringFormat();
+                    if (format.alignment === null || typeof format.alignment === 'undefined') {
+                        returnBounds.x += this.row.grid.style.cellPadding.left;
+                        returnBounds.y += this.row.grid.style.cellPadding.top;
+                    }
                 }
-                if(typeof this.gridRow.grid.style.cellPadding.top !== 'undefined' && this.gridRow.grid.style.cellPadding.hasTopPad){
-                    returnBounds.y += this.gridRow.grid.style.cellPadding.top + this.cellStyle.borders.top.width;
-                    returnBounds.height -= this.gridRow.grid.style.cellPadding.top;
-                }
-                if(typeof this.gridRow.grid.style.cellPadding.right !== 'undefined' && this.gridRow.grid.style.cellPadding.hasRightPad){
-                    returnBounds.width -= this.gridRow.grid.style.cellPadding.right;
-                }
-                if(typeof this.gridRow.grid.style.cellPadding.bottom !== 'undefined' && this.gridRow.grid.style.cellPadding.hasBottomPad){
-                    returnBounds.height -= this.gridRow.grid.style.cellPadding.bottom;
-                }
-            }
-            else
-            {        
+            } else {
                 if(typeof this.style.cellPadding.left !== 'undefined' && this.style.cellPadding.hasLeftPad) {
                     returnBounds.x += this.style.cellPadding.left + this.cellStyle.borders.left.width;
                     returnBounds.width -= this.style.cellPadding.left;
@@ -654,11 +672,13 @@ export class PdfGridCell {
             }
             
         } else if (this.objectValue instanceof PdfImage || this.objectValue instanceof PdfBitmap) {
-            let imageBounds : RectangleF;
-            if ((this.objectValue as PdfImage).width <= innerLayoutArea.width) {
-                imageBounds = new RectangleF(innerLayoutArea.x, innerLayoutArea.y, (this.objectValue as PdfImage).width, innerLayoutArea.height);
-            } else {
-                imageBounds = innerLayoutArea;
+            const imageBounds: RectangleF = new RectangleF(innerLayoutArea.x, innerLayoutArea.y, innerLayoutArea.width, innerLayoutArea.height);
+            const image: PdfImage = this.objectValue as PdfImage;
+            if (image.width <= innerLayoutArea.width) {   
+                imageBounds.width = image.width;
+            }
+            if (image.height <= innerLayoutArea.height) {
+                imageBounds.height = image.height;
             }
             graphics.drawImage(this.objectValue as PdfImage, imageBounds.x, imageBounds.y, imageBounds.width, imageBounds.height);
         } else if (this.objectValue instanceof PdfTextWebLink) {            
@@ -671,7 +691,7 @@ export class PdfGridCell {
             }
             if (this.gridRow.grid.style.cellSpacing != 0) {
                 bounds.width -= this.gridRow.grid.style.cellSpacing;
-        } 
+            } 
         }
         if (this.style.borders != null) {
             if(!this.fontSpilt)

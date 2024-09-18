@@ -72,13 +72,9 @@ export function getSeriesColor(theme: SparklineTheme): string[] {
         palette = ['#8B5CF6', '#22D3EE', '#F87171', '#4ADE80', '#E879F9',
             '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
         break;
-    case 'Bootstrap5':
-        palette = ['#6355C7', '#FFB400', '#2196F5', '#F7523F', '#963C70',
-            '#4BE0BC', '#FD7400', '#C9E422', '#DE3D8A', '#162F88'];
-        break;
     case 'Bootstrap5Dark':
-        palette = ['#8F80F4', '#FFD46D', '#6CBDFF', '#FF7F71', '#FF6DB3',
-            '#63F5D2', '#FCAA65', '#ECFF77', '#EF8EFF', '#5F82FD'];
+    case 'Bootstrap5':
+        palette = ['#FD7E14', '#6610F2', '#6F42C1', '#D63384', '#DC3545', '#FFC107', '#198754', '#0DCAF0'];
         break;
     case 'FluentDark':
         palette = ['#1AC9E6', '#DA4CB2', '#EDBB40', '#AF4BCF', '#FF7266',
@@ -93,6 +89,10 @@ export function getSeriesColor(theme: SparklineTheme): string[] {
             '#0364DE', '#66CD15', '#F3A93C', '#107C10', '#C19C00'];
         break;
     case 'Fluent2Dark':
+        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
+            '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
+        break;
+    case 'Fluent2HighContrast':
         palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
             '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
         break;
@@ -204,40 +204,40 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
         break;
     case 'Bootstrap5':
         themeColors = {
-            axisLineColor: '#D1D5DB',
-            dataLabelColor: '#495057',
-            rangeBandColor: '#212529',
+            axisLineColor: '#343A40',
+            dataLabelColor: '#212529BF',
+            rangeBandColor: '#343A40',
             background: 'rgba(255, 255, 255, 0.0)',
-            tooltipFill: '#212529',
-            tooltipFontColor: '#F9FAFB',
-            trackerLineColor: '#1F2937',
-            fontFamily: 'Helvetica',
+            tooltipFill: '#000000E5',
+            tooltipFontColor: '#FFFFFF',
+            trackerLineColor: '#343A40',
+            fontFamily: 'Segoe UI',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
-            labelFontFamily: 'Helvetica',
-            tooltipFontFamily: 'Helvetica',
+            labelFontFamily: 'Segoe UI',
+            tooltipFontFamily: 'Segoe UI',
             dataLabelFont: {
-                fontFamily: 'Helvetica', color: '#495057', size: '12px', fontWeight: '400', fontStyle: 'Medium'
+                fontFamily: 'Segoe UI', color: '#495057', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: '#0D6EFD'
         };
         break;
     case 'Bootstrap5Dark':
         themeColors = {
-            axisLineColor: '#D1D5DB',
-            dataLabelColor: '#E9ECEF',
+            axisLineColor: '#ADB5BD',
+            dataLabelColor: '#DEE2E6BF',
             rangeBandColor: '#ADB5BD',
             background: 'rgba(255, 255, 255, 0.0)',
-            tooltipFill: '#E9ECEF',
+            tooltipFill: '#FFFFFFE5',
             tooltipFontColor: '#212529',
             trackerLineColor: '#ADB5BD',
-            fontFamily: 'Helvetica',
+            fontFamily: 'Segoe UI',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
-            labelFontFamily: 'Helvetica',
-            tooltipFontFamily: 'Helvetica',
+            labelFontFamily: 'Segoe UI',
+            tooltipFontFamily: 'Segoe UI',
             dataLabelFont: {
-                fontFamily: 'Helvetica', color: '#E9ECEF', size: '12px', fontWeight: '400', fontStyle: 'Medium'
+                fontFamily: 'Segoe UI', color: '#E9ECEF', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: '#0D6EFD'
         };
@@ -318,6 +318,26 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipFontFamily: 'Segoe UI',
             dataLabelFont: {
                 fontFamily: 'Segoe UI', color: '#D6D6D6', size: '12px', fontWeight: '400', fontStyle: 'Medium'
+            },
+            tabColor: '#0078D4'
+        };
+        break;
+    case 'Fluent2HighContrast':
+        themeColors = {
+            axisLineColor: '#8A8886',
+            dataLabelColor: '#FFFFFF',
+            rangeBandColor: '#8A8886',
+            background: 'transparent',
+            tooltipFill: '#000000',
+            tooltipFontColor: '#FFFFFF',
+            trackerLineColor: '#3B3A39',
+            fontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Segoe UI',
+            tooltipFontFamily: 'Segoe UI',
+            dataLabelFont: {
+                fontFamily: 'Segoe UI', color: '#FFFFFF', size: '12px', fontWeight: '400', fontStyle: 'Medium'
             },
             tabColor: '#0078D4'
         };

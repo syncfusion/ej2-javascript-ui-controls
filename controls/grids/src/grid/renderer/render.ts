@@ -304,7 +304,8 @@ export class Render {
     private isNeedForeignAction(): boolean {
         const gObj: IGrid = this.parent;
         return !!((gObj.allowFiltering && gObj.filterSettings.columns.length) ||
-            (!isNullOrUndefined(gObj.searchSettings.key) && gObj.searchSettings.key.length)) && this.foreignKey(this.parent.getForeignKeyColumns());
+            (!isNullOrUndefined(gObj.searchSettings.key) && gObj.searchSettings.key.length))
+            && this.foreignKey(this.parent.getForeignKeyColumns());
     }
 
     private foreignKey(columns: Column[]): boolean {
@@ -401,7 +402,8 @@ export class Render {
         } else {
             td = this.parent.createElement('td', {
                 innerHTML: this.l10n.getConstant('EmptyRecord'),
-                attrs: { colspan: (gObj.getVisibleColumns().length + spanCount + (!isNullOrUndefined(gObj.groupSettings.columns) ? gObj.groupSettings.columns.length : 0)).toString()}
+                attrs: { colspan: (gObj.getVisibleColumns().length + spanCount + (!isNullOrUndefined(gObj.groupSettings.columns) ?
+                    gObj.groupSettings.columns.length : 0)).toString()}
             });
         }
         if (gObj.isFrozenGrid()) {
@@ -566,7 +568,8 @@ export class Render {
             }
             this.parent.notify(
                 events.dataReady,
-                extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates, loadSummaryOnEmpty: false }, args));
+                extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates, loadSummaryOnEmpty: false },
+                       args));
             if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
                 && (args && args.requestType !== 'filtering')) {
                 this.headerRenderer.refreshUI();

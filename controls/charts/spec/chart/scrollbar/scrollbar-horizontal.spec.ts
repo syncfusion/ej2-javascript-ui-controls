@@ -57,6 +57,7 @@ describe('Scrollbar Chart ', () => {
                     title: 'Chart Title',
                     legendSettings: { visible: true },
                     width: '900',
+                    enableAnimation: false,
                     zoomSettings: { enableSelectionZooming: true, enableScrollbar: true, mode: 'X' }
                 }
             );
@@ -235,6 +236,7 @@ describe('Scrollbar Chart ', () => {
                         xName: 'x', yName: 'y', marker: { visible: true }, type: 'Line'
                     }],
                     title: 'Chart Title',
+                    enableAnimation: false,
                     legendSettings: { visible: true },
                     width: '900',
                     zoomSettings: { enableSelectionZooming: true, enableScrollbar: true, mode: 'X' }
@@ -334,6 +336,7 @@ describe('Scrollbar Chart ', () => {
                         dataSource: [{ x: 10, y: 46 }, { x: 20, y: 27 }, { x: 30, y: 26 }, { x: 40, y: 16 }, { x: 50, y: 31 }],
                         xName: 'x', yName: 'y', marker: { visible: true }, type: 'Line'
                     }],
+                    enableAnimation: false,
                     title: 'Chart Title',
                     legendSettings: { visible: true },
                     width: '900',
@@ -398,6 +401,7 @@ describe('Scrollbar Chart ', () => {
                             categories: [{ start: 15, end: 25, text: 'Label 1', }, { start: 25, end: 40, text: 'Label 2', }]
                         }]
                     },
+                    enableAnimation: false,
                     primaryYAxis: { title: 'PrimaryYAxis' },
                     series: [{
                         dataSource: [{ x: 10, y: 46 }, { x: 20, y: 27 }, { x: 30, y: 26 }, { x: 40, y: 16 }, { x: 50, y: 31 }],
@@ -622,7 +626,7 @@ describe('Scrollbar Chart ', () => {
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp();
             done();
         });
-        it('Left Resize using Circle', (done: Function) => {
+        it('Left resize using circle', (done: Function) => {
             let currentTarget: Element = document.getElementById('container_scrollBar_leftCircle_primaryXAxis');
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 300, 390)));
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 120, 390)));
@@ -965,7 +969,7 @@ describe('Scrollbar Chart ', () => {
                 trigger.draganddropEvent(ele, 150, 150, 400, 400);
                 let currentTarget: Element = document.getElementById('container_scrollBar_leftCircle_primaryXAxis');
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 160, 390)));
-                expect(document.getElementById('container_scrollBar_leftCircle_primaryXAxis').getAttribute('fill') === '#495057').toBe(true);
+                expect(document.getElementById('container_scrollBar_leftCircle_primaryXAxis').getAttribute('fill') === '#2B3035').toBe(true);
                 done();
             }
             chartObj.loaded = loaded;
@@ -1099,6 +1103,7 @@ describe('Scrollbar Chart ', () => {
                             xName: 'x', yName: 'y', marker: { visible: true }, type: 'Line'
                         }],
                         theme : 'Bootstrap',
+                        enableAnimation: false,
                         title: 'Chart Title', legendSettings: { visible: true }, width: '900',
                        
                     }
@@ -1199,7 +1204,7 @@ describe('Scrollbar Chart ', () => {
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp();
                 done();
             });
-            it('Left Resize using Circle', (done: Function) => {
+            it('Left resize using Circle', (done: Function) => {
                 let currentTarget: Element = document.getElementById('container_scrollBar_leftCircle_primaryXAxis');
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 300, 390)));
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 120, 390)));
@@ -1209,6 +1214,7 @@ describe('Scrollbar Chart ', () => {
                 expect(thumbX === '164.22' || thumbX === '165.37').toBe(true);
                 expect(thumbWidth === '420' || thumbWidth === '423').toBe(true);
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp();
+                chartObj.animate(600);
                 done();
             });
         });

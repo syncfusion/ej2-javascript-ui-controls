@@ -1,0 +1,35 @@
+@include export-module('aiassist-highcontrast-icons') {
+  .e-assist-send::before {
+    content: '\e816';
+  }
+  .e-assistview-icon::before {
+    content: '\e9d5';
+  }
+  .e-assist-user::before {
+    content: '\e9db';
+  }
+  .e-assist-like::before {
+    content: '\e9d7';
+  }
+  .e-assist-dislike::before {
+    content: '\e9d8';
+  }
+  .e-assist-copy::before {
+    content: '\e33d';
+  }
+  .e-assist-edit::before {
+    content: '\e338';
+  }
+  .e-assist-check::before {
+    content: '\e963';
+  }
+  .e-assist-stop::before {
+    content: '\e934';
+  }
+  .e-assist-like-filled::before {
+    content: '\e9ea';
+  }
+  .e-assist-dislike-filled::before {
+    content: '\e9eb';
+  }
+}

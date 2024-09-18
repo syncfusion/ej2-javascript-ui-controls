@@ -10,8 +10,17 @@
             background: $breadcrumb-item-hover-color;
             border-radius: 4px;
           }
-          @else {
+          @else if $skin-name != 'bootstrap5.3' {
             color: $breadcrumb-item-hover-color;
+          }
+          @if $skin-name == 'fluent2' {
+            background-color: $content-bg-color-hover;
+            color: $breadcrumb-item-hover-color !important; /* stylelint-disable-line declaration-no-important */
+            border-radius: 4px;
+
+            & .e-breadcrumb-icon {
+              color: $toolbar-icon-color;
+            }
           }
         }
 
@@ -26,7 +35,7 @@
             background: $breadcrumb-item-active-color;
             border-radius: 4px;
           }
-          @else {
+          @else if $skin-name != 'bootstrap5.3' {
             color: $breadcrumb-item-active-color;
           }
         }
@@ -44,7 +53,7 @@
         }
       }
 
-      @if $breadcrumb-skin == 'material' or $breadcrumb-skin == 'bootstrap' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
+      @if $breadcrumb-skin == 'material' or $breadcrumb-skin == 'bootstrap' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' or $breadcrumb-skin == 'tailwind' {
         &.e-icon-item {
           &:hover {
             background: $breadcrumb-collapsed-icon-hover-bgcolor;
@@ -68,6 +77,13 @@
       @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
         .e-breadcrumb-text:focus {
           border: $breadcrumb-item-focus-border;
+        }
+      }
+
+      @if $breadcrumb-skin == 'bootstrap5.3' {
+        .e-breadcrumb-text:focus {
+          box-shadow: $keyboard-focus-shadow;
+          border-radius: 4px;
         }
       }
 
@@ -120,7 +136,9 @@
 
       &:hover {
         background: $breadcrumb-collapsed-icon-hover-bgcolor;
-        color: $breadcrumb-collapsed-icon-hover-color;
+        @if $breadcrumb-skin != 'fluent2' {
+          color: $breadcrumb-collapsed-icon-hover-color;
+        }
       }
 
       &:active {
@@ -128,7 +146,7 @@
         @if $skin-name == 'FluentUI' {
           color: $breadcrumb-collapsed-icon-active-color;
         }
-        @else {
+        @else if $breadcrumb-skin != 'fluent2' {
           color: $breadcrumb-collapsed-icon-hover-color;
         }
       }
@@ -140,13 +158,15 @@
         }
         @else {
           background: $breadcrumb-collapsed-icon-focus-bgcolor;
-          color: $breadcrumb-collapsed-icon-hover-color;
+          @if $breadcrumb-skin != 'fluent2' {
+            color: $breadcrumb-collapsed-icon-hover-color;
+          }
         }
       }
     }
 
     &.e-disabled .e-breadcrumb-item .e-breadcrumb-text,
-    .e-disabled.e-breadcrumb-item .e-breadcrumb-text,
+    & .e-disabled.e-breadcrumb-item .e-breadcrumb-text,
     &.e-disabled .e-breadcrumb-separator {
       color: $breadcrumb-disabled-item-color;
       @if $breadcrumb-skin == 'fluent2' {
@@ -155,6 +175,9 @@
 
       .e-breadcrumb-icon {
         color: $breadcrumb-disabled-item-color;
+        @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' {
+          color: $breadcrumb-disabled-icon-color;
+        }
       }
     }
   }
@@ -168,6 +191,13 @@
       &:hover {
         background: $breadcrumb-popup-item-hover-bgcolor;
         color: $breadcrumb-popup-item-hover-color;
+      }
+
+      &:active {
+        @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' or $breadcrumb-skin == 'bootstrap5.3' {
+          background: $breadcrumb-popup-item-active-color;
+          color: $breadcrumb-popup-item-text-active-color;
+        }
       }
     }
 
@@ -183,7 +213,6 @@
       }
   
       .e-breadcrumb-item.e-disabled .e-breadcrumb-text {
-        background: $flyout-bg-color-focus;
         color: $flyout-text-color-disabled;
       }
   

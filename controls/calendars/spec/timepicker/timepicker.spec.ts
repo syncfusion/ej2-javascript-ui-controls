@@ -3991,5 +3991,328 @@ describe('TimePicker', () => {
             expect(timepicker.inputElement.value === "12:00 AM").toBe(true);
         });
     });
+    describe('Null or undefined value testing', () => {
+        debugger;
+        let timepickerObj : any;
+        beforeEach(()=>{
+            let ele : HTMLElement = createElement('div', { id : 'timepicker'});
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            document.body.innerHTML = '';
+        });
+        it('allowEdit', () => {
+            timepickerObj = new TimePicker({
+                allowEdit: null
+            },'#timepicker');
+            expect(timepickerObj.allowEdit).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                allowEdit: undefined
+            },'#timepicker');
+            expect(timepickerObj.allowEdit).toBe(true);
+            timepickerObj.destroy();
+        });
+        it('cssClass', () => {
+            timepickerObj = new TimePicker({
+                cssClass: null
+            },'#timepicker');
+            expect(timepickerObj.cssClass).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                cssClass: undefined
+            },'#timepicker');
+            expect(timepickerObj.cssClass).toBe(null);
+            timepickerObj.destroy();
+        });
+        it('enableMask', () => {
+            timepickerObj = new TimePicker({
+                enableMask: null
+            },'#timepicker');
+            expect(timepickerObj.enableMask).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                enableMask: undefined
+            },'#timepicker');
+            expect(timepickerObj.enableMask).toBe(false);
+            timepickerObj.destroy();
+        });
+        it('enablePersistence', () => {
+            timepickerObj = new TimePicker({
+                enablePersistence: null
+            },'#timepicker');
+            expect(timepickerObj.enablePersistence).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                enablePersistence: undefined
+            },'#timepicker');
+            expect(timepickerObj.enablePersistence).toBe(false);
+            timepickerObj.destroy();
+        });
+        it('enableRtl', () => {
+            timepickerObj = new TimePicker({
+                enableRtl: null
+            },'#timepicker');
+            expect(timepickerObj.enableRtl).toBe(false);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                enableRtl: undefined
+            },'#timepicker');
+            expect(timepickerObj.enableRtl).toBe(false);
+            timepickerObj.destroy();
+        });
+        it('enabled', () => {
+            timepickerObj = new TimePicker({
+                enabled: null
+            },'#timepicker');
+            expect(timepickerObj.enabled).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                enabled: undefined
+            },'#timepicker');
+            expect(timepickerObj.enabled).toBe(true);
+            timepickerObj.destroy();
+        });
+        it('floatLabelType', () => {
+            timepickerObj = new TimePicker({
+                floatLabelType: null
+            },'#timepicker');
+            expect(timepickerObj.floatLabelType).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                floatLabelType: undefined
+            },'#timepicker');
+            expect(timepickerObj.floatLabelType).toBe('Never');
+            timepickerObj.destroy();
+        });
+        it('format', () => {
+            timepickerObj = new TimePicker({
+                format: null
+            },'#timepicker');
+            expect(timepickerObj.format).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                format: undefined
+            },'#timepicker');
+            expect(timepickerObj.format).toBe(null);
+            timepickerObj.destroy();
+        });
+        it('fullScreenMode', () => {
+            timepickerObj = new TimePicker({
+                fullScreenMode: null
+            },'#timepicker');
+            expect(timepickerObj.fullScreenMode).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                fullScreenMode: undefined
+            },'#timepicker');
+            expect(timepickerObj.fullScreenMode).toBe(false);
+            timepickerObj.destroy();
+        });
+        it('htmlAttributes', () => {
+            timepickerObj = new TimePicker({
+                htmlAttributes: null
+            },'#timepicker');
+            expect(timepickerObj.htmlAttributes).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                htmlAttributes: undefined
+            },'#timepicker');
+            expect(JSON.stringify(timepickerObj.htmlAttributes)).toBe('{}');
+            timepickerObj.destroy();
+        });
+        it('keyConfigs', () => {
+            timepickerObj = new TimePicker({
+                keyConfigs: null
+            },'#timepicker');
+            expect(timepickerObj.keyConfigs).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                keyConfigs: undefined
+            },'#timepicker');
+            expect(timepickerObj.keyConfigs).toBe(null);
+            timepickerObj.destroy();
+        });
+        it('locale', () => {
+            timepickerObj = new TimePicker({
+                locale: null
+            },'#timepicker');
+            expect(timepickerObj.locale).toBe('en-US');
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                locale: undefined
+            },'#timepicker');
+            expect(timepickerObj.locale).toBe('en-US');
+            timepickerObj.destroy();
+        });
+        it('maskPlaceholder', () => {
+            timepickerObj = new TimePicker({
+                maskPlaceholder: null
+            },'#timepicker');
+            expect(timepickerObj.maskPlaceholder).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                maskPlaceholder: undefined
+            },'#timepicker');
+            expect(JSON.stringify(timepickerObj.maskPlaceholder)).toBe('{"day":"day","month":"month","year":"year","hour":"hour","minute":"minute","second":"second","dayOfTheWeek":"day of the week"}');
+            timepickerObj.destroy();
+        });
+        it('max', () => {
+            timepickerObj = new TimePicker({
+                max: null
+            },'#timepicker');
+            expect(timepickerObj.max).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                max: undefined
+            },'#timepicker');
+            expect(timepickerObj.max).toBe(null);
+            timepickerObj.destroy();
+        });
+        it('min', () => {
+            timepickerObj = new TimePicker({
+                min: null
+            },'#timepicker');
+            expect(timepickerObj.min).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                min: undefined
+            },'#timepicker');
+            expect(timepickerObj.min).toBe(null);
+            timepickerObj.destroy();
+        });
+        it('openOnFocus', () => {
+            timepickerObj = new TimePicker({
+                openOnFocus: null
+            },'#timepicker');
+            expect(timepickerObj.openOnFocus).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                openOnFocus: undefined
+            },'#timepicker');
+            expect(timepickerObj.openOnFocus).toBe(false);
+            timepickerObj.destroy();
+        });
+        it('placeholder', () => {
+            timepickerObj = new TimePicker({
+                placeholder: null
+            },'#timepicker');
+            expect(timepickerObj.placeholder).toBe('');
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                placeholder: undefined
+            },'#timepicker');
+            expect(timepickerObj.placeholder).toBe('');
+            timepickerObj.destroy();
+        });
+        it('readonly', () => {
+            timepickerObj = new TimePicker({
+                readonly: null
+            },'#timepicker');
+            expect(timepickerObj.readonly).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                readonly: undefined
+            },'#timepicker');
+            expect(timepickerObj.readonly).toBe(false);
+            timepickerObj.destroy();
+        });
+        it('scrollTo', () => {
+            timepickerObj = new TimePicker({
+                scrollTo: null
+            },'#timepicker');
+            expect(timepickerObj.scrollTo).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                scrollTo: undefined
+            },'#timepicker');
+            expect(timepickerObj.scrollTo).toBe(null);
+            timepickerObj.destroy();
+        });
+        it('serverTimezoneOffset', () => {
+            timepickerObj = new TimePicker({
+                serverTimezoneOffset: null
+            },'#timepicker');
+            expect(timepickerObj.serverTimezoneOffset).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                serverTimezoneOffset: undefined
+            },'#timepicker');
+            expect(timepickerObj.serverTimezoneOffset).toBe(null);
+            timepickerObj.destroy();
+        });
+        it('showClearButton', () => {
+            timepickerObj = new TimePicker({
+                showClearButton: null
+            },'#timepicker');
+            expect(timepickerObj.showClearButton).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                showClearButton: undefined
+            },'#timepicker');
+            expect(timepickerObj.showClearButton).toBe(true);
+            timepickerObj.destroy();
+        });
+        it('step', () => {
+            timepickerObj = new TimePicker({
+                step: null
+            },'#timepicker');
+            expect(timepickerObj.step).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                step: undefined
+            },'#timepicker');
+            expect(timepickerObj.step).toBe(30);
+            timepickerObj.destroy();
+        });
+        it('strictMode', () => {
+            timepickerObj = new TimePicker({
+                strictMode: null
+            },'#timepicker');
+            expect(timepickerObj.strictMode).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                strictMode: undefined
+            },'#timepicker');
+            expect(timepickerObj.strictMode).toBe(false);
+            timepickerObj.destroy();
+        });
+        it('value', () => {
+            timepickerObj = new TimePicker({
+                value: null
+            },'#timepicker');
+            expect(timepickerObj.value).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                value: undefined
+            },'#timepicker');
+            expect(timepickerObj.value).toBe(null);
+            timepickerObj.destroy();
+        });
+        it('width', () => {
+            timepickerObj = new TimePicker({
+                width: null
+            },'#timepicker');
+            expect(timepickerObj.width).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                width: undefined
+            },'#timepicker');
+            expect(timepickerObj.width).toBe(null);
+            timepickerObj.destroy();
+        });
+        it('zIndex', () => {
+            timepickerObj = new TimePicker({
+                zIndex: null
+            },'#timepicker');
+            expect(timepickerObj.zIndex).toBe(null);
+            timepickerObj.destroy();
+            timepickerObj = new TimePicker({
+                zIndex: undefined
+            },'#timepicker');
+            expect(timepickerObj.zIndex).toBe(1000);
+            timepickerObj.destroy();
+        });
+    });
 });
 

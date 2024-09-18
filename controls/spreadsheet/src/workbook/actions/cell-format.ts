@@ -488,14 +488,14 @@ export class WorkbookCellFormat {
                     switch (options.type) {
                     case 'Clear Formats':
                         delete cell.format; delete cell.rowSpan; delete cell.style;
-                        delete cell.wrap; delete cell.colSpan;
+                        delete cell.wrap; delete cell.colSpan; delete cell.formattedText;
                         break;
                     case 'Clear Contents':
                         if (cell.hyperlink) {
                             this.parent.notify(deleteHyperlink, { sheet: sheet, rowIdx: sRowIdx, colIdx: sColIdx, preventRefresh: true });
                         }
                         isValExist = !!(cell.value || cell.formula);
-                        delete cell.value; delete cell.formula;
+                        delete cell.value; delete cell.formula; delete cell.formattedText;
                         if (isValExist) {
                             evtArgs = { action: 'refreshCalculate', rowIndex: sRowIdx, colIndex: sColIdx, sheetIndex: sheetIdx };
                             this.parent.notify(workbookFormulaOperation, evtArgs);

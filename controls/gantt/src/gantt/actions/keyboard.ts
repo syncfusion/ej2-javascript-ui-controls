@@ -1,6 +1,7 @@
 import { Gantt } from '../base/gantt';
 import { KeyboardEventArgs, isNullOrUndefined, getValue, removeClass } from '@syncfusion/ej2-base';
-import { IKeyPressedEventArgs, IGanttData, ColumnModel, ITaskData } from '..';
+import { IKeyPressedEventArgs, IGanttData } from '../base/interface';
+import { ColumnModel } from '../models/column';
 import { TextBox } from '@syncfusion/ej2-inputs';
 import { ISelectedCell, IIndex } from '@syncfusion/ej2-grids';
 import { ContextMenu } from '@syncfusion/ej2-navigations/src/context-menu';
@@ -40,10 +41,16 @@ export class FocusModule {
      */
     public onKeyPress(e: KeyboardEventArgs): void | boolean {
         const ganttObj: Gantt = this.parent;
+        const ele: Element = e.target as Element;
         const expandedRecords: IGanttData[] = ganttObj.getExpandedRecords(ganttObj.currentViewData);
         if (isNullOrUndefined(this.parent.focusModule.getActiveElement()) && (e.action === 'expandAll' || e.action === 'collapseAll')) {
             const focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
             focussedElement.focus();
+        }
+        if (!this.parent.isEdit && !isNullOrUndefined(ele) && ele.closest('.e-headercell') && (e.key === 'Enter') && this.parent.sortModule
+        && this.parent.allowSorting) {
+            e.action = 'enter';
+            this.parent.treeGrid.grid.notify('key-pressed', e);
         }
         const targetElement: Element = this.parent.focusModule.getActiveElement();
         if (e.action === 'home' || e.action === 'end' || e.action === 'downArrow' || e.action === 'upArrow' || e.action === 'delete' ||
@@ -69,7 +76,9 @@ export class FocusModule {
                 if (ganttObj.selectedRowIndex === 0) {
                     return;
                 }
-                ganttObj.selectionModule.selectRow(0, false, true);
+                if (ganttObj.selectionModule && ganttObj.selectionModule.getCellSelectedRecords().length === 0) {
+                    ganttObj.selectionModule.selectRow(0, false, true);
+                }
             }
             break;
         case 'end':
@@ -78,7 +87,9 @@ export class FocusModule {
                 if (ganttObj.selectedRowIndex === ganttObj.flatData.indexOf(currentSelectingRecord)) {
                     return;
                 }
-                ganttObj.selectionModule.selectRow(ganttObj.flatData.indexOf(currentSelectingRecord), false, true);
+                if (ganttObj.selectionModule && ganttObj.selectionModule.getCellSelectedRecords().length === 0) {
+                    ganttObj.selectionModule.selectRow(ganttObj.flatData.indexOf(currentSelectingRecord), false, true);
+                }
             }
             break;
         case 'downArrow':
@@ -92,6 +103,9 @@ export class FocusModule {
                 this.upDownKeyNavigate(e);
                 if (!isNullOrUndefined(targetElement) && !isNullOrUndefined(targetElement.closest('.e-chart-row'))) {
                     ganttObj.ganttChartModule.manageFocus(this.getActiveElement(), 'remove', true, e.action);
+                }
+                if (ganttObj.selectionSettings && ganttObj.selectionSettings.mode === 'Both' && e.target instanceof HTMLElement && e.target.classList.contains('e-cellselectionbackground')) {
+                    e.target.classList.remove('e-cellselectionbackground');
                 }
             }
             break;
@@ -114,13 +128,16 @@ export class FocusModule {
                         !isNullOrUndefined(col.edit.read)) {
                     const textBox: TextBox = <TextBox>(<EJ2Instance>e.target).ej2_instances[0];
                     const textValue: string = (e.target as HTMLInputElement).value;
-                    const ganttProp: ITaskData = ganttObj.currentViewData[ganttObj.selectedRowIndex].ganttProperties;
+                    // const ganttProp: ITaskData = ganttObj.currentViewData[ganttObj.selectedRowIndex].ganttProperties;
                     let tempValue: string | Date | number;
                     if (col.field === ganttObj.columnMapping.duration) {
-                        tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as Function)() :
-                            // eslint-disable-next-line
-                            !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)(ganttObj.columnMapping.duration, ganttObj.editedRecords, col) :
-                                ganttObj.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+                        // tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as Function)() :
+                        //     // eslint-disable-next-line
+                        //     !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)(ganttObj.columnMapping.duration, ganttObj.editedRecords, col) :
+                        //         ganttObj.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+                        if (!isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read)) {
+                            tempValue = (col.edit.read as Function)();
+                        }
                         if (textValue !== tempValue.toString()) {
                             textBox.value = textValue;
                             textBox.dataBind();
@@ -134,7 +151,16 @@ export class FocusModule {
                 const focussedElement: HTMLElement = <HTMLElement>ganttObj.element.querySelector('.e-treegrid');
                 focussedElement.focus();
             }
-            if (!isNullOrUndefined(this.parent.onTaskbarClick) && !isNullOrUndefined(targetElement)
+            // if (!isNullOrUndefined(this.parent.onTaskbarClick) && !isNullOrUndefined(targetElement)
+            //     && !isNullOrUndefined(targetElement.closest('.e-chart-row'))) {
+            //     const target: EventTarget = e.target;
+            //     const taskbarElement: Element = targetElement.querySelector('.e-gantt-parent-taskbar,' +
+            //             '.e-gantt-child-taskbar,.e-gantt-milestone');
+            //     if (taskbarElement) {
+            //         this.parent.ganttChartModule.onTaskbarClick(e, target, taskbarElement);
+            //     }
+            // }
+            if (!isNullOrUndefined(targetElement)
                 && !isNullOrUndefined(targetElement.closest('.e-chart-row'))) {
                 const target: EventTarget = e.target;
                 const taskbarElement: Element = targetElement.querySelector('.e-gantt-parent-taskbar,' +
@@ -268,24 +294,24 @@ export class FocusModule {
             break;
         }
         case 'selectAll':
-            {   
-                e.preventDefault();
-                const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
-                if (ganttRow.length > 0) {
-                    let firstRowIndex: any = ganttRow[0].getAttribute('data-rowindex');
-                    let lastRowIndex: any = ganttRow[ganttRow.length - 1].getAttribute('data-rowindex');
-                    if (!isNullOrUndefined(firstRowIndex)) {
-                        firstRowIndex = Number(firstRowIndex);
-                    }
-                    if (!isNullOrUndefined(lastRowIndex)) {
-                        lastRowIndex = Number(lastRowIndex);
-                    }
-                    if(!isNullOrUndefined(firstRowIndex) && !isNullOrUndefined(lastRowIndex)){
-                        this.parent.selectionModule.selectRowsByRange(firstRowIndex, lastRowIndex);
-                    }
+        {
+            e.preventDefault();
+            const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
+            if (ganttRow.length > 0) {
+                let firstRowIndex: any = ganttRow[0].getAttribute('data-rowindex');
+                let lastRowIndex: any = ganttRow[ganttRow.length - 1].getAttribute('data-rowindex');
+                if (!isNullOrUndefined(firstRowIndex)) {
+                    firstRowIndex = Number(firstRowIndex);
                 }
-                break;
+                if (!isNullOrUndefined(lastRowIndex)) {
+                    lastRowIndex = Number(lastRowIndex);
+                }
+                if (!isNullOrUndefined(firstRowIndex) && !isNullOrUndefined(lastRowIndex)) {
+                    this.parent.selectionModule.selectRowsByRange(firstRowIndex, lastRowIndex);
+                }
             }
+            break;
+        }
         default:
         {
             const eventArgs: IKeyPressedEventArgs = {
@@ -301,10 +327,22 @@ export class FocusModule {
     private upDownKeyNavigate(e: KeyboardEventArgs): void {
         e.preventDefault();
         const ganttObj: Gantt = this.parent;
-        const expandedRecords: IGanttData[] = ganttObj.getExpandedRecords(ganttObj.currentViewData);
+        let expandedRecords: IGanttData[];
+        if ((e.action === 'downArrow' || e.action === 'upArrow') && this.parent.selectionModule && this.parent.allowSelection && this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+            expandedRecords = ganttObj.getExpandedRecords(ganttObj.flatData);
+        }
+        else {
+            expandedRecords = ganttObj.getExpandedRecords(ganttObj.currentViewData);
+        }
         if (ganttObj.selectionModule) {
             if (ganttObj.selectionSettings.mode !== 'Cell' && ganttObj.selectedRowIndex !== -1) {
-                const selectedItem: IGanttData = ganttObj.currentViewData[ganttObj.selectedRowIndex];
+                let selectedItem: IGanttData;
+                if ((e.action === 'downArrow' || e.action === 'upArrow') && this.parent.selectionModule && this.parent.allowSelection && this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+                    selectedItem = ganttObj.flatData[ganttObj.selectedRowIndex];
+                }
+                else {
+                    selectedItem = ganttObj.currentViewData[ganttObj.selectedRowIndex];
+                }
                 const focussedElement: HTMLElement = <HTMLElement>ganttObj.element.querySelector('.e-focused');
                 if (focussedElement) {
                     removeClass([focussedElement], 'e-focused');
@@ -314,7 +352,12 @@ export class FocusModule {
                     expandedRecords[selectingRowIndex - 1];
                 const activeElement: Element = this.parent['args'];
                 if (document.activeElement !== activeElement) {
-                    ganttObj.selectionModule.selectRow(ganttObj.currentViewData.indexOf(currentSelectingRecord), false, true);
+                    if ((e.action === 'downArrow' || e.action === 'upArrow') && this.parent.selectionModule && this.parent.allowSelection && this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+                        ganttObj.selectionModule.selectRow(ganttObj.flatData.indexOf(currentSelectingRecord), false, true);
+                    }
+                    else {
+                        ganttObj.selectionModule.selectRow(ganttObj.currentViewData.indexOf(currentSelectingRecord), false, true);
+                    }
                 }
             } else if (ganttObj.selectionSettings.mode === 'Cell' && ganttObj.selectionModule.getSelectedRowCellIndexes().length > 0) {
                 const selectCellIndex: ISelectedCell[] = ganttObj.selectionModule.getSelectedRowCellIndexes();
@@ -342,6 +385,10 @@ export class FocusModule {
             } else if (ganttObj.selectionSettings.mode === 'Cell' && ganttObj.selectionModule.getSelectedRowCellIndexes().length > 0) {
                 const selectCellIndex: ISelectedCell[] = ganttObj.selectionModule.getSelectedRowCellIndexes();
                 selectedRowIndex = selectCellIndex[selectCellIndex.length - 1].rowIndex;
+            }
+            if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+                selectedRowIndex = this.parent.currentViewData.findIndex((obj: IGanttData) => obj.ganttProperties.rowUniqueID ===
+                    selectedRowIndex.toString()) + 1;
             }
             if (e.action === 'expandRow') {
                 ganttObj.expandByIndex(selectedRowIndex);

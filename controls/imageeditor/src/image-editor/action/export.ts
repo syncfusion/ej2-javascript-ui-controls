@@ -1,7 +1,8 @@
+/* eslint-disable max-len */
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dimension } from '@syncfusion/ej2-inputs';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { BeforeSaveEventArgs, FileType, ImageEditor, Point, SaveEventArgs, SelectionPoint, ActivePoint, CurrentObject } from '../index';
+import { BeforeSaveEventArgs, FileType, ImageEditor, Point, SaveEventArgs, SelectionPoint, ActivePoint, CurrentObject, EditCompleteEventArgs  } from '../index';
 
 export class Export {
     private parent: ImageEditor;
@@ -43,6 +44,10 @@ export class Export {
             break;
         case 'setImageQuality':
             this.imageQuality = args.value['value'];
+            break;
+        case 'drawAnnotation':
+            this.drawAnnotation(args.value['context'], args.value['ratio']);
+            break;
         }
     }
 
@@ -63,19 +68,6 @@ export class Export {
         parent.notify('draw', { prop: 'getFileName', onPropertyChange: false, value: {obj: obj }});
         const imageName: string = obj['fileName'];
         if (!parent.disabled && parent.isImageLoaded) {
-            const dummyObj: Object = {bool: false };
-            parent.notify('selection', { prop: 'getFreehandDrawEditing', onPropertyChange: false, value: {obj: dummyObj }});
-            if (dummyObj['bool']) {
-                parent.notify('freehand-draw', { prop: 'applyFhd', onPropertyChange: false});
-            }
-            if (parent.togglePen) {
-                parent.currObjType.isZoomed = true;
-                parent.notify('shape', { prop: 'apply', onPropertyChange: false, value: {shape: null, obj: null, canvas: null}});
-            }
-            if (parent.textArea.style.display === 'block' || parent.textArea.style.display === 'inline-block') {
-                parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,
-                    value: {x: null, y: null, isMouseDown: null}});
-            }
             parent.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: null}});
             const obj: Object = {canvasFilter: this.parent.canvasFilter };
             this.lowerContext.filter = obj['canvasFilter'];
@@ -89,8 +81,7 @@ export class Export {
         }
     }
 
-    private beforeSaveEvent(observableSaveArgs: BeforeSaveEventArgs, type: string, fileName: string, imageName: string,
-                            imgQuality?: number): void {
+    private beforeSaveEvent(observableSaveArgs: BeforeSaveEventArgs, type: string, fileName: string, imageName: string, imgQuality?: number): void {
         const parent: ImageEditor = this.parent;
         if (!observableSaveArgs.cancel) {
             parent.currObjType.isSave = true;
@@ -104,6 +95,8 @@ export class Export {
             }
             const saved: SaveEventArgs = { fileName: fileName ? fileName : imageName, fileType: type as FileType};
             parent.trigger('saved', saved);
+            const actionArgs: EditCompleteEventArgs  = { action: 'save', actionEventArgs: saved };
+            parent.triggerEditCompleteEvent(actionArgs);
             parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
             parent.lowerCanvas.style.left = parent.upperCanvas.style.left = '';
             parent.lowerCanvas.style.top = parent.upperCanvas.style.top = '';
@@ -217,6 +210,9 @@ export class Export {
             this.updateSaveContext(tempContext);
             this.exportTransformedImage(tempContext);
         }
+        if (parent.isSafari) {
+            parent.notify('filter', { prop: 'apply-filter', onPropertyChange: false, value: {context: tempContext}});
+        }
         this.drawAnnotation(tempContext, ratio);
         if (parent.isCircleCrop) {
             parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
@@ -256,6 +252,11 @@ export class Export {
         const tempObjColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const tempPointColl: any = extend([], parent.pointColl, [], true);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const nonRedact: any = parent.shapeColl.filter((item: SelectionPoint) => item.shape !== 'redact');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const redact: any = parent.shapeColl.filter((item: SelectionPoint) => item.shape === 'redact');
+        parent.shapeColl = redact.concat(nonRedact);
         for (let i: number = 0; i < parent.shapeColl.length; i++) {
             if (parent.shapeColl[i as number].order) {
                 if (parent.shapeColl[i as number].currIndex && parent.shapeColl[i as number].currIndex.indexOf('shape') > -1) {
@@ -380,6 +381,12 @@ export class Export {
         const obj: Object = {width: 0, height: 0 };
         parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
             value: {width: img.width, height: img.height, obj: obj, isImgShape: null }});
+        const bgObj: Object = { color: null };
+        parent.notify('draw', { prop: 'getImageBackgroundColor', value: {obj: bgObj }});
+        if (bgObj['color'] !== '') {
+            ctx.fillStyle = bgObj['color'];
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
         if (obj['width'] > width && obj['height'] > height) {
             const tempCanvas: HTMLCanvasElement = parent.createElement('canvas', {
                 id: parent.element.id + '_downScaleCanvas', attrs: { name: 'canvasImage' }

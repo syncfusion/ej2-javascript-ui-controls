@@ -4,7 +4,7 @@ import { TechnicalAnalysis } from './indicator-base';
 import { Chart } from '../chart';
 
 /**
- * `RsiIndicator` module is used to render RSI indicator.
+ * The `RsiIndicator` module is used to render the Relative Strength Index indicator.
  */
 export class RsiIndicator extends TechnicalAnalysis {
 

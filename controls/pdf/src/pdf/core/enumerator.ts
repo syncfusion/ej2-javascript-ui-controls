@@ -144,6 +144,62 @@ export enum PdfLineIntent {
     lineDimension
 }
 /**
+ * Public Enum to define the types of points and segments in a path.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Create a new pen
+ * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+ * // Create a new brush
+ * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+ * // Add path points
+ * let pathPoints: Array<number[]> = [[50, 50], [100, 50], [100, 100], [50, 100], [50, 50]];
+ * // Add path types
+ * let pathTypes: PathPointType[] = [0, 1, 1, 1, 1];
+ * // Create a new PDF path
+ * let path: PdfPath = new PdfPath(pathPoints, pathTypes);
+ * // Draw the path to the PDF page
+ * page.graphics.drawPath(path, pen, brush);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PathPointType {
+    /**
+     * The starting point of a path.
+     */
+    start = 0,
+    /**
+     * A straight line segment.
+     */
+    line = 1,
+    /**
+     * A Bezier curve segment.
+     */
+    bezier = 3,
+    /**
+     * A mask for extracting the type of a point.
+     */
+    pathTypeMask = 7,
+    /**
+     * Indicates that the segment has dashed line style.
+     */
+    dashMode = 16,
+    /**
+     * Indicates a marker point in the path.
+     */
+    pathMarker = 32,
+    /**
+     * Closes the current path.
+     */
+    closePath = 128
+}
+/**
  * Public Enum to define line caption type.
  * ```typescript
  * // Load an existing PDF document
@@ -1672,4 +1728,197 @@ export enum _PdfColorSpace {
     cmyk,
     grayScale,
     indexed
+}
+/**
+ * Public enum type to represent the ordered list style
+ * ````typescript
+ * // Load an existing document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Add each item to the item collection by passing the string array
+ * let items: PdfListitemCollection = new PdfListitemCollection(['Excel', 'Power', 'Point', 'Word', 'PDF']);
+ * // Create a new ordered list and passing the list item collection
+ * let list: PdfOrderedList = new PdfOrderedList(items);
+ * // Set the ordered list number style for the list items
+ * list.style = PdfNumberStyle.lowerLatin;
+ * // Draw the ordered list
+ * list.draw(page, 0, 20, 500, 700);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export  enum PdfNumberStyle {
+    /**
+     * No numbering at all.
+     */
+    none = 0,
+    /**
+     * Specifies the type '1'.
+     */
+    numeric,
+    /**
+     * Specifies the style 'a'.
+     */
+    lowerLatin,
+    /**
+     * Specifies the style 'i'.
+     */
+    lowerRoman,
+    /**
+     * Specifies the style 'A'.
+     */
+    upperLatin,
+    /**
+     * Specifies the style 'I'.
+     */
+    upperRoman
+}
+/**
+ * Public enum to define the style used for unordered list.
+ * ```typescript
+ * // Load an existing document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Add each item to the collection by passing the string array
+ * let items: PdfListitemCollection = new PdfListitemCollection(['Excel', 'Power', 'Point', 'Word', 'PDF']);
+ * // Create a unordered list and pass the list item collection
+ * let list: PdfUnorderedList = new PdfUnorderedList(items);
+ * // Set the unordered list style for the list items
+ * list.style = PdfUnorderedListStyle.circle;
+ * // Draw the unordered list associated with items
+ * list.draw(page, 0, 20, 500, 700);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfUnorderedListStyle {
+    /**
+     * No bulleting at all.
+     */
+    none = 0,
+    /**
+     * Specifies disk style.
+     */
+    disk = 1,
+    /**
+     * Specifies square style.
+     */
+    square = 2,
+    /**
+     * Specifies asterisk style.
+     */
+    asterisk = 3,
+    /**
+     * Specifies circle style.
+     */
+    circle = 4
+}
+/**
+ * Public enum to define a layout type for drawing
+ * ```typescript
+ * // Load an existing document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Assign the array of string for items
+ * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
+ * // Add the items to the list item collection by passing the array
+ * let items: PdfListItemCollection = new PdfListItemCollection(products);
+ * // Create a new ordered list
+ * let list: PdfOrderedList = new PdfOrderedList(items);
+ * // Create a layout format for drawing
+ * let pageLayout: PdfLayoutFormat = new PdfLayoutFormat();
+ * // Initialize layout type for drawing
+ * pageLayout.layout = PdfLayoutType.paginate;
+ * // Draw the list on the page along with the specified layout
+ * list.draw(page, 0, 20, 500, 700, pageLayout);
+ * // Get the layout type used to draw the list
+ * let layoutType: PdfLayoutType = pageLayout.layout;
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ````
+ */
+export enum PdfLayoutType {
+    /**
+     * Specifies pagination across multiple pages based on the specified dimensions and layout options
+     */
+    paginate,
+    /**
+     * Specifies content to be laid out to fit within a single page, without pagination
+     */
+    onePage
+}
+/**
+ * Public enum to define a layout Break type for drawing
+ * ```typescript
+ * // Load an existing document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Assign the array of string for items
+ * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
+ * // Add the item to list item collection by passing the string array
+ * let items: PdfListItemCollection = new PdfListItemCollection(products);
+ * // Create a new ordered list
+ * let list: PdfOrderedList = new PdfOrderedList(items);
+ * // Create a layout for drawing
+ * let pageLayout: PdfLayoutFormat = new PdfLayoutFormat();
+ * // Set  the layout break type for drawing
+ * pageLayout.break = PdfLayoutBreakType.fitPage;
+ * // Draw the list associated with items along with layout
+ * list.draw(page, 0, 20, 500, 700, pageLayout);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ````
+ */
+export enum PdfLayoutBreakType {
+    /**
+     * Specifies that content should break to a new page to fit within specified dimensions.
+     */
+    fitPage,
+    /**
+     * Specifies that content should break to a new page or element to fit within specified dimensions.
+     */
+    fitElement
+}
+/**
+ * Public enum to define a list marker alignment
+ * ````typescript
+ * // Load an existing document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Add each item to the item collection by passing the string array
+ * let items: PdfListitemCollection = new PdfListitemCollection(['Excel', 'Power', 'Point', 'Word', 'PDF']);
+ * // Create a new ordered list and passing the list item collection
+ * let list: PdfOrderedList = new PdfOrderedList(items);
+ * // Set the marker alignment
+ * list.alignment = PdfListMarkerAlignment.left;
+ * // Draw the ordered list
+ * list.draw(page, 0, 20, 500, 700);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfListMarkerAlignment {
+    /**
+     * Left alignment for marker.
+     */
+    left,
+    /**
+     * Right alignment for marker.
+     */
+    right
 }

@@ -608,32 +608,34 @@ export class CellEdit {
             this.parent.trigger('actionFailure', { error: err });
         }
         this.parent.predecessorModule.updateUnscheduledDependency(editedArgs.data);
-        const FF = this.parent.localeObj.getConstant("FF");
-        const FS = this.parent.localeObj.getConstant("FS");
-        const SS = this.parent.localeObj.getConstant("SS");
-        const SF = this.parent.localeObj.getConstant("SF");
-        let splitString = (editedArgs.data[this.parent.taskFields.dependency] as string).split(",");
-        let value = ""
-        splitString.map((splitvalue: string, index: number) => {
-            if (splitvalue.includes(FF)) {
-                value += splitvalue.replace(FF, "FF")
-                value += (splitString.length !== index + 1) ? "," : "";
-            } else if (splitvalue.includes(FS)) {
-                value += splitvalue.replace(FS, "FS")
-                value += (splitString.length !== index + 1) ? "," : "";
-            } else if (splitvalue.includes(SS)) {
-                value += splitvalue.replace(SS, "SS")
-                value += (splitString.length !== index + 1) ? "," : "";
-            }
-            else if (splitvalue.includes(SF)) {
-                value += splitvalue.replace(SF, "SF")
-                value += (splitString.length !== index + 1) ? "," : "";
-            }
-            else {
-                value += splitvalue;
-                value += (splitString.length !== index + 1) ? "," : "";
-            }
-        })
+        const FF: string = this.parent.localeObj.getConstant('FF');
+        const FS: string = this.parent.localeObj.getConstant('FS');
+        const SS: string = this.parent.localeObj.getConstant('SS');
+        const SF: string = this.parent.localeObj.getConstant('SF');
+        let value: string = '';
+        if (!isNullOrUndefined(editedArgs.data[this.parent.taskFields.dependency])) {
+            const splitString: string[] = (editedArgs.data[this.parent.taskFields.dependency] as string).split(',');
+            splitString.map((splitvalue: string, index: number) => {
+                if (splitvalue.includes(FF)) {
+                    value += splitvalue.replace(FF, 'FF');
+                    value += (splitString.length !== index + 1) ? ',' : '';
+                } else if (splitvalue.includes(FS)) {
+                    value += splitvalue.replace(FS, 'FS');
+                    value += (splitString.length !== index + 1) ? ',' : '';
+                } else if (splitvalue.includes(SS)) {
+                    value += splitvalue.replace(SS, 'SS');
+                    value += (splitString.length !== index + 1) ? ',' : '';
+                }
+                else if (splitvalue.includes(SF)) {
+                    value += splitvalue.replace(SF, 'SF');
+                    value += (splitString.length !== index + 1) ? ',' : '';
+                }
+                else {
+                    value += splitvalue;
+                    value += (splitString.length !== index + 1) ? ',' : '';
+                }
+            });
+        }
         if (!this.parent.connectorLineEditModule.updatePredecessor(
             editedArgs.data,
             value, editedArgs)) {

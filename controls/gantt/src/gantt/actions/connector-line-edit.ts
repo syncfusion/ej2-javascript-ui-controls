@@ -95,7 +95,7 @@ export class ConnectorLineEdit {
         this.connectorLineElement = element;
         const pathElement: Element = element.querySelector('.' + cls.connectorLineSVG);
         if (pathElement) {
-            pathElement.setAttribute('stroke-width', '2');
+            pathElement.setAttribute('stroke-width', (this.parent.connectorLineModule['lineStroke'] + 1).toString());
         }
     }
 
@@ -109,7 +109,7 @@ export class ConnectorLineEdit {
         if (this.connectorLineElement) {
             const pathElement: Element = this.connectorLineElement.querySelector('.' + cls.connectorLineSVG);
             if (pathElement) {
-                pathElement.setAttribute('stroke-width', '1');
+                pathElement.setAttribute('stroke-width', (this.parent.connectorLineModule['lineStroke']).toString());
             }
             this.connectorLineElement = null;
         }
@@ -751,18 +751,17 @@ export class ConnectorLineEdit {
         }
     }
     private compareObjects(obj1: Object, obj2: Object): boolean {
-        const keys1 = Object.keys(obj1).filter(key => key !== "offset");
-        const keys2 = Object.keys(obj2).filter(key => key !== "offset");
+        const keys1: string[] = Object.keys(obj1).filter((key: string) => key !== 'offset');
+        const keys2: string[] = Object.keys(obj2).filter((key: string) => key !== 'offset');
         if (keys1.length !== keys2.length) {
             return false;
         }
-        return keys1.every(key => obj1[key as string] === obj2[key as string]);
+        return keys1.every((key: string) => obj1[key as string] === obj2[key as string]);
     }
-
     private calculateOffset(record: IGanttData, isRecursive?: boolean): void {
-        if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand
+        if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand
             && this.parent.taskFields.hasChildMapping)) {
-            return
+            return;
         }
         if (record) {
             const prevPredecessor: IPredecessor[] = extend([], record.ganttProperties.predecessor, [], true) as IPredecessor[];
@@ -843,19 +842,23 @@ export class ConnectorLineEdit {
                     if (validPredecessor.length > 0) {
                         validPredecessor.forEach((element: IPredecessor) => {
                             if (this.validatedOffsetIds.indexOf(element.to) === -1) {
-                                this.calculateOffset(this.parent.getRecordByID(element.to),true);
+                                this.calculateOffset(this.parent.getRecordByID(element.to), true);
                             }
                         });
                     }
                 }
             }
-            if (!isRecursive) {
+            if (validPredecessor.length === 0) {
+                this.cumulativePredecessorChanges = [];
+            }
+            if (!isRecursive && this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed']) {
                 if (prevPredecessor && prevPredecessor.length > 0 && this.cumulativePredecessorChanges &&
                     this.cumulativePredecessorChanges.length > 0) {
-                    const matchingObjects: IPredecessor[] = prevPredecessor.map(objectToCompare => {
-                        const matchedObject = this.cumulativePredecessorChanges.find((obj: IPredecessor) => this.compareObjects(obj, objectToCompare));
+                    const matchingObjects: IPredecessor[] = prevPredecessor.map((objectToCompare: IPredecessor) => {
+                        const matchedObject: IPredecessor = this.cumulativePredecessorChanges.find(
+                            (obj: IPredecessor) => this.compareObjects(obj, objectToCompare));
                         return matchedObject ? { ...matchedObject } : null;
-                    }).filter(matchedObject => matchedObject !== null);
+                    }).filter((matchedObject: IPredecessor) => matchedObject !== null);
                     this.parent.setRecordValue('predecessor', matchingObjects, record.ganttProperties, true);
                 }
             } else {
@@ -1014,33 +1017,24 @@ export class ConnectorLineEdit {
             if (predecessor[i as number].type === 'FS') {
                 if (
                     this.parent.dateValidationModule.getDuration(
-                    startDate,
-                    ganttTaskData.startDate,
-                    this.parent.durationUnit,
-                    ganttTaskData.isAutoSchedule,
-                    ganttTaskData.isMilestone, true
-                    )!== 0
+                        startDate,
+                        ganttTaskData.startDate,
+                        this.parent.durationUnit,
+                        ganttTaskData.isAutoSchedule,
+                        ganttTaskData.isMilestone, true
+                    ) !== 0
                 ) {
-                    const endDateOlny = new Date(ganttTaskData.endDate);
-                    const startDateOlny =new Date(startDate);
                     if (ganttTaskData.startDate < startDate) {
                         this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                         violationType = 'taskBeforePredecessor_FS';
                     } else if (ganttTaskData.startDate > startDate) {
                         this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                         violationType = 'taskAfterPredecessor_FS';
-                    }  else if (this.parent.allowUnscheduledTasks && isNullOrUndefined(ganttTaskData.startDate) && isNullOrUndefined(ganttTaskData.duration) && endDateOlny.setHours(0, 0, 0, 0) > startDateOlny.setHours(0,0,0,0)) {
-                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                        violationType = 'taskAfterPredecessor_FS';
-                    }
-                    else if (this.parent.allowUnscheduledTasks && isNullOrUndefined(ganttTaskData.startDate) && isNullOrUndefined(ganttTaskData.duration) && endDateOlny.setHours(0, 0, 0, 0) < startDateOlny.setHours(0,0,0,0)) {
-                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                        violationType = 'taskAfterPredecessor_FS';
                     }
                 }
             } else if (predecessor[i as number].type === 'SS') {
-                const endDateOlny = new Date(ganttTaskData.endDate);
-                const startDateOlny =new Date(startDate);
+                const endDateOlny: Date = new Date(ganttTaskData.endDate);
+                const startDateOlny: Date = new Date(startDate);
                 if (ganttTaskData.startDate < startDate) {
                     this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                     violationType = 'taskBeforePredecessor_SS';
@@ -1048,44 +1042,38 @@ export class ConnectorLineEdit {
                     this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                     violationType = 'taskAfterPredecessor_SS';
                 }
-                else if (this.parent.allowUnscheduledTasks && isNullOrUndefined(ganttTaskData.startDate) && isNullOrUndefined(ganttTaskData.duration) && endDateOlny.setHours(0, 0, 0, 0) < startDateOlny.setHours(0,0,0,0)) {
+                else if (
+                    this.parent.allowUnscheduledTasks &&
+                    isNullOrUndefined(ganttTaskData.startDate) &&
+                    isNullOrUndefined(ganttTaskData.duration) &&
+                    endDateOlny.setHours(0, 0, 0, 0) < startDateOlny.setHours(0, 0, 0, 0)
+                ) {
                     this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                     violationType = 'taskBeforePredecessor_SS';
                 }
-                else if (this.parent.allowUnscheduledTasks && isNullOrUndefined(ganttTaskData.startDate) && isNullOrUndefined(ganttTaskData.duration) && endDateOlny.setHours(0, 0, 0, 0) > startDateOlny.setHours(0,0,0,0)) {
+                else if (
+                    this.parent.allowUnscheduledTasks &&
+                    isNullOrUndefined(ganttTaskData.startDate) &&
+                    isNullOrUndefined(ganttTaskData.duration) &&
+                    endDateOlny.setHours(0, 0, 0, 0) > startDateOlny.setHours(0, 0, 0, 0)
+                ) {
                     this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                     violationType = 'taskAfterPredecessor_SS';
                 }
             } else if (predecessor[i as number].type === 'FF') {
                 if (
                     this.parent.dateValidationModule.getDuration(
-                        ganttTaskData.endDate,
+                        startDate,
                         parentGanttRecord.ganttProperties.endDate,
                         this.parent.durationUnit,
                         parentGanttRecord.ganttProperties.isAutoSchedule,
                         parentGanttRecord.ganttProperties.isMilestone, true
-                    )!== 0
-                    ) {
-                        const endDateOlny = new Date(endDate);
-                        const startDateOlny =new Date(ganttTaskData.startDate);
-                    if (ganttTaskData.endDate < parentGanttRecord.ganttProperties.endDate) {
+                    ) !== 0
+                ) {
+                    if (endDate <= parentGanttRecord.ganttProperties.endDate) {
                         this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                         violationType = 'taskBeforePredecessor_FF';
-                    } else if (ganttTaskData.endDate > parentGanttRecord.ganttProperties.endDate) {
-                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                        violationType = 'taskAfterPredecessor_FF';
-                    }
-                    else if (this.parent.allowUnscheduledTasks && isNullOrUndefined(ganttTaskData.endDate) && isNullOrUndefined(ganttTaskData.duration) && endDateOlny.setHours(0,0,0,0) > startDateOlny.setHours(0,0,0,0)) {
-                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                        violationType = 'taskAfterPredecessor_FF';
-                    }
-                    else if (this.parent.allowUnscheduledTasks && isNullOrUndefined(ganttTaskData.endDate) && isNullOrUndefined(ganttTaskData.duration) && endDateOlny.setHours(0,0,0,0) < startDateOlny.setHours(0,0,0,0)) {
-                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                        violationType = 'taskAfterPredecessor_FF';
-                    }else if (endDate < ganttTaskData.endDate) {
-                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                        violationType = 'taskBeforePredecessor_FF';
-                    } else if (endDate > ganttTaskData.endDate) {
+                    } else if (endDate > parentGanttRecord.ganttProperties.endDate) {
                         this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                         violationType = 'taskAfterPredecessor_FF';
                     }
@@ -1093,33 +1081,18 @@ export class ConnectorLineEdit {
             } else if (predecessor[i as number].type === 'SF') {
                 if (
                     this.parent.dateValidationModule.getDuration(
-                        ganttTaskData.endDate,
                         parentGanttRecord.ganttProperties.startDate,
+                        endDate,
                         this.parent.durationUnit,
                         parentGanttRecord.ganttProperties.isAutoSchedule,
                         parentGanttRecord.ganttProperties.isMilestone, true
-                    )!== 0
-                    ) {
-                        const endDateOlny = new Date(endDate);
-                        const startDateOlny =new Date(ganttTaskData.startDate);
-                        const startDateOlnys =new Date(startDate);
-                    if (ganttTaskData.endDate < parentGanttRecord.ganttProperties.startDate) {
+                    ) !== 0
+                ) {
+                    if (endDate < parentGanttRecord.ganttProperties.startDate) {
                         this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                         violationType = 'taskBeforePredecessor_SF';
-                    } else if (ganttTaskData.endDate > parentGanttRecord.ganttProperties.startDate) {
+                    } else if (endDate >= parentGanttRecord.ganttProperties.startDate) {
                         this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                        violationType = 'taskAfterPredecessor_SF';
-                    }else if (this.parent.allowUnscheduledTasks && isNullOrUndefined(ganttTaskData.endDate) && isNullOrUndefined(ganttTaskData.duration) && endDateOlny.setHours(0,0,0,0) > startDateOlny.setHours(0,0,0,0)) {
-                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                        violationType = 'taskBeforePredecessor_SF';
-                    } else if (this.parent.allowUnscheduledTasks && isNullOrUndefined(ganttTaskData.endDate) && isNullOrUndefined(ganttTaskData.duration) && endDateOlny.setHours(0,0,0,0) < startDateOlny.setHours(0,0,0,0)) {
-                            this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                        violationType = 'taskAfterPredecessor_SF';
-                    }else  if (this.parent.allowUnscheduledTasks && isNullOrUndefined(ganttTaskData.startDate) && isNullOrUndefined(ganttTaskData.duration) && endDateOlny.setHours(0,0,0,0) > startDateOlnys.setHours(0,0,0,0)) {
-                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                        violationType = 'taskBeforePredecessor_SF';
-                    } else if (this.parent.allowUnscheduledTasks && isNullOrUndefined(ganttTaskData.startDate) && isNullOrUndefined(ganttTaskData.duration) && endDateOlny.setHours(0,0,0,0) < startDateOlnys.setHours(0,0,0,0)) {
-                            this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                         violationType = 'taskAfterPredecessor_SF';
                     }
                 }

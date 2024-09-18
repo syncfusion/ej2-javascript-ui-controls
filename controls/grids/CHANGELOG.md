@@ -2,185 +2,16 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 27.1.48 (2024-09-18)
 
 ### Grid
 
-#### Bug fixes
+#### Features
 
-- `#FB60596` - The issue with an extra border appearing on the last record during row drag-and-drop in the grid has been resolved.
-- `#FB60521` - The issue with the search button being a different size from the other buttons has been resolved.
-- `#I611432` - Additional request sent issue when checkbox column with field has been resolved.
-- `#FB60567` - Cookies could not be sent with the request headers when using `customAdaptor` that extends the `UrlAdaptor` is resolved.
-- `#F193989` - Resolved the issue where `Vue3` is not correctly printing and exporting custom templates.
-- `#I626077` - Resolved the issue where Batch edit through keyboard tab navigation is not working properly for numeric textbox template column.
-- `#I902432` - Accessibility issue with the `checkbox` when focusing on the `checkbox header` initially has been resolved.
-- `#FB60740` - Issue with initial grouping and sorting in the grid has been resolved.
-
-## 26.2.12 (2024-09-03)
-
-### Grid
-
-#### Bug fixes
-
-- `#FB60593` - The issue where setting `args.cancel` to true in the `rowDeselecting` event caused a script error when selection persistence was enabled without a checkbox column has been resolved.
-- `#FB60504` - The issue of the grid ignoring the stacked header during printing has been resolved.
-- `#I620165` - Focus issue when `enableColumnVirtualization` is enabled with freeze columns has been resolved.
-- `#FB60430` - The problem with the Shimmer effect behaviour during Pagination has been resolved.
-- `#I621511` - Resolved the script error that occurs when opening the column chooser in adaptive mode.
-- `#I624131` - The issue where the column `autoFit` property was ignored, even with `resizeSettings` mode set to normal when applying other column width property values as auto, has been resolved.
-- `#I621704` - The issue with tab navigation not working properly with the toolbar search has been resolved.
-- `#I621707` - The problem with the layout when using a custom toolbar in `Adaptive UI` has been resolved.
-- `#FB60195`, `#FB60319` - The issue where the hierarchy grid export was not working correctly when passing columns in the export properties has been resolved.
-
-## 26.2.11 (2024-08-27)
-
-### Grid
-
-#### Bug fixes
-
-- `#I620569` - XSS Vulnerability in the `filterByColumn` Method has been resolved.
-- `#I618398` - The issue with the 'Blanks' filter option has been resolved.
-- `#I604038` - The issue with maintaining text formatting in the edit dialog for a multiline TextBox in the Grid UI has been resolved.
-- `#I615271` - The issue with selected dropdown value is not saved in the grid when using `editTemplate` has been resolved.
-- `#I902455` - The issue with Dot character search as `NaN` issue has been resolved.
-- `#I621020` - Frozen grid with `columnVirtualization` not properly rendered issue has been resolved.
-- `#I617987` - Double request issue when `pageSize` higher than `totalRecordCount` is resolved.
-- `#I616111` - The issue with the foreign column using a remote data manager, where values were only retrieved when the column was displayed, has been resolved.
-- `#I617475` - When enabling AutoFit for certain columns, the aggregate row becomes misaligned issue has been resolved.
-
-## 26.2.10 (2024-08-20)
-
-### Grid
-
-#### Bug fixes
-
-- `#I616688` - The issue with Programmatic open column chooser dialog not opening with `OK` and `Cancel` buttons on adaptive vertical view has been resolved.
-- `#I615860` - The issue where invoking the `getPersistData` method in the `dataBound` event of the Grid removed the `groupCaptionTemplate` has been resolved.
-- `#I614425` - Resolved the issue with the inconsistent `isCountRequired` query in the Excel-like filter when using the `ODataV4Adaptor`.
-- `#I614381` - Resolved the issue where the column's `editTemplate` was not working in `ASP.NET Core`.
-- `#I617205` - The issue with column chooser checkbox is unselected once uncheck the selected all option and press `Esc` keyboard action has been resolved.
-- `#I616244` - The issue where the column resize was not resetting the frozen indicator, causing a non-frozen column to render behind a frozen column has been resolved.
-- `#I616244` - The problem with the frozen shadow effect during column resizing has been resolved.
-- `#I622755` - Filtering a column in Grid throws script error after `autoFitColumns` is invoked issue has been resolved.
-
-## 26.2.9 (2024-08-13)
-
-### Grid
-
-#### Bug fixes
-
-- `#F191300` - When freeze property is enabled the `minWidth` and `maxWidth` set to a column is not working properly issue has been resolved.
-- `#I615679` - search clear action does not reset the `pageSize` issue has been resolved.
-- `#FB59752` - In `rowDrag` event, the dragged data is not properly returned issue has been resolved.
-- `#I617335` - `ResponsiveBack` element not showing when search is aligned left in Toolbar with `AdaptiveUI` issue has been resolved.
-- `#FB59809` - The issue with editing a record of column that contains multiple aggregates throws a script error has been resolved.
-- `#I899326` - The script error related to `adaptiveUI` when selecting records with a toolbar rendered using a `template` has been resolved.
-- `#I600715` - The issue where the column width set to "auto", would revert to its minimum width when resized has been resolved.
-
-## 26.2.8 (2024-08-06)
-
-### Grid
-
-#### Bug fixes
-
-- `#F189384` - Provided comma separation to the pager message for all `locale`.
-- `#I610850` - Event triggered in case of identical filter data in grid date time type column has been resolved.
-- `#F189325` - The issue with "Not null", "Null", "Empty", and "Not empty" filters not working with the filter template has been resolved.
-
-## 26.2.7 (2024-07-30)
-
-### Grid
-
-#### Bug fixes
-
-- `#I608364` - Resolved the issue when `autoFitColumns` method does not modify the columns autoFit property to true.
-- `#FB59570` - Fixed the issue in filter items overlapping when `enableInfiniteScrolling` is enabled in `filterSettings`.
-- `#I610108` - The problem with the `date filter` in the grid component has been resolved.
-- `#F189307` - The issue where the edit dialog of the selected record does not open properly when the foreign key column is grouped has been resolved.
-- `#I610349` - Resolved the data repetition issue when scrolling up in a `virtualization` enabled grid.
-- `#I610521`, `#I609713` - Provided v-slot template support for `template`, `headerTemplate`, `pagerTemplate`, `rowTemplate`, stacked header template.
-- `#I607993` - The issue with the selection is not working properly when multi-select, drag and drop, and default sorting are all enabled has been resolved.
-- `#I604038` - The problem with Grid column multiline edit `params` in Chrome and Edge has been resolved.
-- `#I610011` - Resolved an issue where calling the `autoFitColumns` method caused a double border on the right side of the table.
-
-## 26.2.4 (2024-07-24)
-
-### Grid
-
-#### Bug fixes
-
-- `#I600715` - The issue where the column width set to "auto", would revert to its maximum width when resized has been resolved.
-- `#FB59210` - Border disappearance when `RowSpanning` in grid columns issue has been resolved.
-- `#I606869` - Inability to enable grid resize dynamically issue has been resolved.
-- `#I606503` - Resolved the script error that occurs when using `dialogTemplate` editing in both the parent and child grids.
-
-## 26.1.42 (2024-07-16)
-
-### Grid
-
-#### Bug fixes
-
-- `#I603505` - Resolved the issue where the keyboard interaction for `SelectAll` records not working properly.
-- `#I600155` - Resolved the issue where the script error is thrown when opening filter menu with filter template.
-- `#FB59205` - Unsubscribed `ResizeStop` event issue is resolved.
-
-## 26.1.41 (2024-07-09)
-
-### Grid
-
-#### Bug fixes
-
-- `#FB59206` - Resolved the issue where the column menu icons were overlapping with the column headers.
-- `#I590873` - Implemented tab key navigation functionality with the command column in edit mode.
-- `#I599720` - Resolved the issue where the click event triggers even if the page changes programmatically.
-- `#FB58882` - Fixed the issue where frozen columns with caption aggregates caused scrolling problems.
-- `#I601097` - The issue with Group by Format not working with Lazy Load Grouping has been resolved.
-
-## 26.1.40 (2024-07-02)
-
-### Grid
-
-#### Bug fixes
-
-- `#FB58829` - Resolved the `ColumnChooser` position misalignment issue.
-- `#FB58782` - Resolved the problem that arises when using the format option `N2` and setting the type as number.
-- `#I598304` - Resolved the issue where the date column Excel filter not includes previous selected value with `EnableInfiniteScrolling` in `filterSettings`.
-- `#I600803` - The issue of the `FilterBar` cell being misaligned in the checkbox column has been resolved.
-
-## 26.1.39 (2024-06-25)
-
-### Grid
-
-#### Bug fixes
-
-- `#I584245` - Programmatic `rowDeselect` with toggle as true not working properly when initially selected the toggle row index then select another row checkbox has been resolved.
-- `#FB58586` - Resolved the issue where the `SelectRow` method with toggle set to true does not selects the rows properly.
-- `#FB58744` - The issue where selecting multiple rows in a grid with multiple selection enabled and then clicking on the last selected row does not retain the selection has been resolved.
-- `#FB58571` - The issue where an unexpected `rowDeselect` event was triggered when using checkboxes in conjunction with the `persistSelection` functionality has been resolved.
-- `#I576241` - The memory leak issue occurring when using the `filterBarTemplate` in a grid column has been resolved.
-- `#FB58494` - Resolved the issue where the column's Default Value property only allowed `string` values.
-- `#FB58490` - Resolved the issue where setting the `numeric editType` before the `primaryKey` caused problems with tab navigation.
-- `#I596584` - Resolved the issues with sorting, `selectRow`, and up and down navigation in the `enableVirtualization` grid with grouping.
-- `#I592590` - Support has been provided for exporting grouped items in an expanded state with lazy load group in PDF.
-
-## 26.1.38 (2024-06-19)
-
-### Grid
-
-#### Bug fixes
-
-- `#I587156` - Resolved the issue where `enableVirtualization` grid becomes blank when sorting after scroll to bottom of grid.
-- `#I589142` - Resolved the issue where first selected record only deleted in `enableVirtualization` grid.
-- `#F188307` - Resolved the issue While adding the new record with `pageSizes` a new page is not created.
-- `#I594931` - Resolved the issue where the script error throws when adding the custom toolbar item dynamically.
-- `#I595192` - Resolved the issue where the script error throws when search is aligned left in toolbar with `AdaptiveUI`.
-- `#I586042` - The issue with support for `on-demand` in Excel and checkbox filtering for Adaptive UI has been resolved.
-- `#I594278` - Resolved the issue with persist selection not working properly when using `RowDragandDrop` with remote data.
-- `#FB57053` - Resolved the issue with `enableQueryString` in `pageSettings`.
-- `#I590873` - Implemented tab key navigation functionality with the command column.
-
-## 26.1.35 (2024-06-11)
+- `#FB52338` - Previously, the Grid Filter, Column Menu, and Column Chooser `popups` didn’t display fully when the grid height was less than the `popup` height, such as when the grid height was under `300px`. This issue has been fixed, and the `popups` now display fully without adjusting the grid height at any size.
+- The `DataGrid` Adaptive view now only renders an adaptive layout for mobile screens when the `AdaptiveUIMode` property is set to Mobile.
+- `#I586042` - `OnDemand` support for Checkbox and Excel-type filtering is now available in Adaptive UI [here](https://ej2.syncfusion.com/documentation/api/grid/#enableinfinitescrolling).
+- The Data Grid has improved the `Fluent 2` theme and added support for `Fluent2-high contrast`. Explore the demo [here](https://ej2.syncfusion.com/demos/#/fluent2-highcontrast/grid/grid-overview.html).
 
 ### Grid
 
@@ -188,7 +19,7 @@
 
 - `#FB3775` - The `ODataV4` functionality has been enhanced, enabling you to invoke custom URLs for data fetching and CRUD actions.
 - Lazy load grouping with sorting performance has been improved, allowing you to handle large datasets without performance lag.
-- The Fluent 2 theme and Fluent 2 High Contrast theme are now available in both light and dark modes on the EJ2 Grid.
+- The Fluent 2 theme are now available in both light and dark modes on the EJ2 Grid. Explore the demo [here](https://ej2.syncfusion.com/demos/#/fluent2/grid/grid-overview.html).
 
 ## 25.1.35 (2024-03-15)
 

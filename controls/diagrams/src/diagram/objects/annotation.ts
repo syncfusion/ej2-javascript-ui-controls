@@ -7,6 +7,8 @@ import { HyperlinkModel, AnnotationModel } from '../objects/annotation-model';
 import { HorizontalAlignment, VerticalAlignment, AnnotationAlignment, AnnotationTypes, TextDecoration, AnnotationType, LinkTarget, RotationReference } from '../enum/enum';
 import { AnnotationConstraints } from '../enum/enum';
 import { randomId } from '../utility/base-util';
+import { DiagramTooltipModel } from './tooltip-model';
+import { DiagramTooltip } from './tooltip';
 
 /**
  * Defines the hyperlink for the annotations in the nodes/connectors
@@ -233,6 +235,14 @@ export class Annotation extends ChildProperty<Annotation> {
      */
     @Property('Shape')
     public type: AnnotationTypes;
+
+    /**
+     * This property is used to show tooltip for annotation on mouse over.
+     *
+     * @default new DiagramToolTip();
+     */
+    @Complex<DiagramTooltipModel>({}, DiagramTooltip)
+    public tooltip: DiagramTooltipModel;
 
     /**
      * Allows the user to save custom information/data about an annotation

@@ -145,9 +145,9 @@ export class BulletChartLegend extends BaseLegend {
         const padding: number = legend.padding;
         let extraHeight: number = 0;
         if (!this.isVertical) {
-            extraHeight = !legend.height ? ((availableSize.height / 100) * 5) : 0;
+            extraHeight = ((availableSize.height / 100) * 5);
         } else {
-            extraWidth = !legend.width ? ((availableSize.width / 100) * 5) : 0;
+            extraWidth = ((availableSize.width / 100) * 5);
         }
         bulletLegendBounds.height += extraHeight;
         bulletLegendBounds.width += extraWidth;

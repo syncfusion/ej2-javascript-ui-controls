@@ -104,6 +104,10 @@
     content: '\e902';
   }
 
+  .e-de-ctnr-xml-mapping::before {
+    content: '\e904';
+  }
+
   .e-de-ctnr-strokestyle::before {
     content: '\eb62';
   }
@@ -341,7 +345,6 @@
   }
 
   .e-de-ctnr-upload::before {
-    color: $icon-color;
     content: '\e712';
   }
 

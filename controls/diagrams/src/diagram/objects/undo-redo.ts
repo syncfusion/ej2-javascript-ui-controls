@@ -67,7 +67,7 @@ export class UndoRedo {
      *
      * @private
      */
-    public addHistoryEntry(entry: HistoryEntry, diagram: Diagram): void {
+    public addHistoryEntry(entry: HistoryEntry, diagram: Diagram): boolean {
         // Bug: 903791-remove StartGroup & EndGroup entry when no actual changes wrapped between them.
         if (entry.type === 'EndGroup' && diagram.historyManager.currentEntry.type === 'StartGroup') {
             if (diagram.historyManager.currentEntry.previous) {
@@ -78,14 +78,14 @@ export class UndoRedo {
             if (!diagram.historyManager.currentEntry) {
                 diagram.historyManager.canUndo = false;
             }
-            return;
+            return false;
         }
         let entryObject: HistoryEntry = null;
         let nextEntry: HistoryEntry = null;
         if (diagram.historyManager.canLog) {
             const hEntry: HistoryEntry = diagram.historyManager.canLog(entry);
             if (hEntry.cancel === true) {
-                return;
+                return false;
             }
         }
         if (diagram.historyManager && diagram.historyManager.canUndo && diagram.historyManager.currentEntry) {
@@ -119,6 +119,7 @@ export class UndoRedo {
         this.getHistoryList(diagram);
         diagram.historyManager.canUndo = true;
         diagram.historyManager.canRedo = false;
+        return true;
     }
 
     /**
@@ -229,7 +230,7 @@ export class UndoRedo {
                 if (!isBlazor()) {
                     diagram.historyManager.undo(entry);
                 }
-                let arg: ICustomHistoryChangeArgs | IBlazorCustomHistoryChangeArgs = {
+                const arg: ICustomHistoryChangeArgs | IBlazorCustomHistoryChangeArgs = {
                     entryType: 'undo', oldValue: entry.undoObject, newValue: entry.redoObject
                 };
                 // Removed isBlazor code
@@ -1079,7 +1080,7 @@ export class UndoRedo {
                 if (!isBlazor()) {
                     diagram.historyManager.redo(entry);
                 }
-                let arg: ICustomHistoryChangeArgs | IBlazorCustomHistoryChangeArgs = {
+                const arg: ICustomHistoryChangeArgs | IBlazorCustomHistoryChangeArgs = {
                     entryType: 'redo', oldValue: entry.redoObject, newValue: entry.undoObject
                 };
                 //Removed isBlazor code

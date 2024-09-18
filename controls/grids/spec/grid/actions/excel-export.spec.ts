@@ -12,13 +12,14 @@ import { ForeignKey } from '../../../src/grid/actions/foreign-key';
 import { data, employeeData, customerData, image } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { ExcelExport } from '../../../src/grid/actions/excel-export';
+import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { createGrid, destroy} from '../base/specutil.spec';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { ExcelRow, ExcelExportProperties, ExportDetailTemplateEventArgs } from '../../../src';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
-Grid.Inject(Page, Group, Selection, Toolbar, ExcelExport, DetailRow, ForeignKey);
+Grid.Inject(Page, Group, Selection, Toolbar, ExcelExport, DetailRow, ForeignKey, Aggregate);
 
 describe('excel Export =>', () => {
     let exportComplete: () => void = () => true;
@@ -662,7 +663,6 @@ describe('excel Export =>', () => {
     // used for code coverage
     describe('Lazy load group excel export', () => {
         let gridObj: Grid;
-
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -754,14 +754,14 @@ describe('excel Export =>', () => {
                 }, done);
         });
 
-        it('Hierarchy export all mode', (done) => {
+        it('Hierarchy export all mode', (done: Function) => {
             gridObj.excelExport(null, true).then((Doc: Workbook) => {
                 expect(Doc).not.toBeUndefined();
                 done();
             });
         });
 
-        it('Hierarchy export none mode', (done) => {
+        it('Hierarchy export none mode', (done: Function) => {
             gridObj.excelExport({ hierarchyExportMode: 'None',
                 header: {
                     headerRows: 4,
@@ -1008,6 +1008,93 @@ describe('excel Export =>', () => {
                 expect(Doc).not.toBeUndefined();
                 done();
             });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+
+    // used for code coverage
+    describe('Excel export file code coverage', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 1),
+                    allowExcelExport: true,
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: '120px' },
+                        {
+                            field: 'OrderDate', headerText: 'Order Date', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: '15%', format: 'yMd'
+                        },
+                        { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 140 },
+                        { field: 'ShipRegion', width: 140 },
+                        { field: 'Verified', headerTextAlign: 'Justify', width: 140 },
+                    ],
+                   
+                }, done);
+        });
+
+        it('Excel export methodfile code coverage', () => {
+            gridObj.isDestroyed = true;
+            gridObj.element.id = '';
+            (gridObj as any).excelExportModule.init(gridObj);
+            (gridObj as any).excelExportModule.getColumnStyle();
+            (gridObj as any).excelExportModule.processExcelHeader({});
+            (gridObj as any).excelExportModule.processExcelHeader({ rows: (gridObj as any).headerModule.rows });
+            (gridObj as any).excelExportModule.processExcelFooter({});
+            (gridObj as any).excelExportModule.processExcelFooter({ rows: (gridObj as any).headerModule.rows });
+            (gridObj as any).excelExportModule.columns =  gridObj.columns;
+            (gridObj as any).excelExportModule.setImage({ image: {} }, 1);
+        });
+
+      
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    // used for code coverage
+    describe('904075: Vue3 is not correctly printing and exporting custom templates', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 4),
+                    allowPaging: true,
+                    pageSettings: { pageSize: 3 },
+                    toolbar: ['ExcelExport'],
+                    allowExcelExport: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'ShipCountry', headerText: 'Ship Country' },
+                        { field: 'CustomerID', headerText: 'Customer ID' },
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Count',
+                            field: 'ShipCountry',
+                            footerTemplate: 'Count: ${Count}'
+                        }]
+                    }]
+
+                }, done);
+        });
+
+        it('vue3 aggregates code coverage', () => {
+            gridObj.isVue = true;
+            (gridObj as any).isVue3 = true;
+        });
+
+        it('ExcelExport', () => {
+            gridObj.excelExport();
         });
 
         afterAll(() => {

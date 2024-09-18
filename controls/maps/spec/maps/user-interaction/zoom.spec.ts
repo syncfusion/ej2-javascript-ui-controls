@@ -911,6 +911,22 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.refresh();
         });
+        it('Checking with remove toolbar opacity', () => { 
+            map.loaded = (args: ILoadedEventArgs) => {
+                map.isDevice = true;
+                map.zoomModule.removeToolbarOpacity(1, map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                map.isDevice = false;
+                map.zoomModule.performZoomingByToolBar('zoom')
+                map.zoomModule.removeToolbarOpacity(1, map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                map.zoomModule.performZoomingByToolBar('zoom')
+                map.zoomSettings.enableSelectionZooming = false;
+                map.zoomModule.removeToolbarOpacity(1, map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+
+            };
+            map.zoomSettings.enableSelectionZooming = true;
+            map.zoomSettings.enablePanning = false;
+            map.refresh();
+        });
     });
 
     describe('Checking with mouse selection zooming', () => {
@@ -997,6 +1013,54 @@ describe('Zoom feature tesing for map control', () => {
             map.zoomModule.zoomingRect = { x: 0, y: 0, height: 0, width: 0 };
             map.zoomModule.mouseUpHandler(<PointerEvent>eventObj);
         });
+        it('Checking with mouse down event with touch', () => {
+            let element: Element = getElementByID(map.element.id + '_svg');
+            let rect: ClientRect = element.getBoundingClientRect();
+            let eventObj: Object = {
+                target: element,
+                type: 'mousedown',
+                preventDefault: prevent,
+                touches: [{ clientX: rect.left + 100, clientY: rect.top + 100 }],
+                pageX: element.getBoundingClientRect().left,
+                pageY: element.getBoundingClientRect().top
+            };
+            map.zoomModule.mouseDownHandler(<PointerEvent>eventObj);
+        });
+        it('Checking with mouse move event with mouse', () => {
+            let element: Element = getElementByID(map.element.id + '_svg');
+            let rect: ClientRect = element.getBoundingClientRect();
+            let down: ITouches[] = [{ pageX: rect.left + 100, pageY: rect.top + 100 }, { pageX: rect.left + 200, pageY: rect.top + 200 }]
+            map.zoomModule.isPanModeEnabled = true;
+            map.zoomModule.touchStartList = down;
+            let eventObj: Object = {
+                target: element,
+                type: 'mousemove',
+                preventDefault: prevent,
+                touches: [{ clientX: rect.left - 100, clientY: rect.top + 100 }, { clientX: rect.left + 300, clientY: rect.top + 200 }],
+                pageX: element.getBoundingClientRect().left,
+                pageY: element.getBoundingClientRect().top
+            };
+            map.zoomModule.mouseMoveHandler(<PointerEvent>eventObj);
+        });
+
+        it('Checking with mouse up event with mouse', () => {
+            let element: Element = getElementByID(map.element.id + '_svg');
+            let rect: ClientRect = element.getBoundingClientRect();
+            let eventObj: Object = {
+                target: element,
+                type: 'mouseup',
+                touches: [{ clientX: rect.left + 100, clientY: rect.top + 100 }],
+                changedTouches: [{ pageX: rect.left + 100, pageY: rect.top + 100 }],
+                pageX: element.getBoundingClientRect().left,
+                pageY: element.getBoundingClientRect().top
+            };
+            map.zoomSettings.enable = true;
+            let selection = document.getElementById(map.element.id + '_Secondary_Element').appendChild(
+                createElement('div', { id: map.element.id + '_Selection_Rect_Zooming' })
+            );
+            map.zoomModule.zoomingRect = { x: 0, y: 0, height: 0, width: 0 };
+            map.zoomModule.mouseUpHandler(<PointerEvent>eventObj);
+        });
 
         it('Checking with mouse cancel event', () => {
             let element: Element = getElementByID(map.element.id + '_svg');
@@ -1034,6 +1098,30 @@ describe('Zoom feature tesing for map control', () => {
                 };
                 map.zoomModule.mouseMoveHandler(<PointerEvent>eventObj);
             };
+            map.refresh();
+        });
+        it('Checking with remove toolbar opacity', () => { 
+            map.loaded = (args: ILoadedEventArgs) => {
+                map.isDevice = true;
+                map.zoomModule.removeToolbarOpacity(1, map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                map.isDevice = false;
+                map.zoomModule.performZoomingByToolBar('zoom')
+                map.zoomModule.removeToolbarOpacity(1, map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                map.zoomModule.performZoomingByToolBar('zoom')
+                map.zoomModule.removeToolbarOpacity(3, map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+
+            };
+            map.zoomSettings.enableSelectionZooming = true;
+            map.refresh();
+        });
+        it('Checking with remove toolbar opacity for zoom event', () => { 
+            map.loaded = (args: ILoadedEventArgs) => {
+                map.zoomModule.removeToolbarOpacity(1, map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                map.zoomModule.removeToolbarOpacity(1.1, map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');                
+                map.zoomModule.removeToolbarOpacity(3, map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                map.zoomModule.removeToolbarOpacity(3, map.element.id);
+            };
+            map.zoomSettings.enableSelectionZooming = false;
             map.refresh();
         });
     });
@@ -1987,6 +2075,101 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.refresh();
         });
+        it('Checking pan in zoom event', () => {
+            map.zoom = (args: IMapsEventArgs) => {
+                args.cancel = true;
+            };
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performZoomingByToolBar('pan');
+            };
+            map.load = (args: ILoadEventArgs) => {
+                let bing: BingMap = new BingMap(map);
+                bing.imageUrl = imageUrl;
+                bing.maxZoom = zoomMax;
+                bing.subDomains = subDomains;
+                map.mapLayerPanel["bing"] = bing;
+            };
+            map.zoomSettings.enablePanning = false;
+            map.refresh();
+        });
+        it('Checking zoom in zoom event', () => {
+            map.zoom = (args: IMapsEventArgs) => {
+                args.cancel = true;
+            };
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performZoomingByToolBar('zoom');
+            };
+            map.load = (args: ILoadEventArgs) => {
+                let bing: BingMap = new BingMap(map);
+                bing.imageUrl = imageUrl;
+                bing.maxZoom = zoomMax;
+                bing.subDomains = subDomains;
+                map.mapLayerPanel["bing"] = bing;
+            };
+            map.refresh();
+        });
+        it('Checking zoom out zoom event', () => {
+            map.zoom = (args: IMapsEventArgs) => {
+                args.cancel = true;
+            };
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performZoomingByToolBar('zoom');
+                map.zoomModule.performZoomingByToolBar('zoomout');                
+                map.zoomModule.performZoomingByToolBar('zoomout');
+            };
+            map.load = (args: ILoadEventArgs) => {
+                let bing: BingMap = new BingMap(map);
+                bing.imageUrl = imageUrl;
+                bing.maxZoom = zoomMax;
+                bing.subDomains = subDomains;
+                map.mapLayerPanel["bing"] = bing;
+            };
+            map.refresh();
+        });
+        it('Checking zoom out zoom event', () => {
+            map.zoom = (args: IMapsEventArgs) => {
+                args.cancel = true;
+            };
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performZoomingByToolBar('reset');
+            };
+            map.load = (args: ILoadEventArgs) => {
+                let bing: BingMap = new BingMap(map);
+                bing.imageUrl = imageUrl;
+                bing.maxZoom = zoomMax;
+                bing.subDomains = subDomains;
+                map.mapLayerPanel["bing"] = bing;
+            };
+            map.refresh();
+        });        
     });
 
     describe('Checking with mouse wheel event in Mozilla', () => {
@@ -2080,6 +2263,59 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.refresh();
         });
+        it('Checking zoom out zoom event with performToolBarAction', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                map.loaded = (args: ILoadedEventArgs) => {
+                    let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
+                    let eventObj: Object = {
+                        target: element,
+                        stopImmediatePropagation: prevent,
+                        pageX: element.getBoundingClientRect().left,
+                        pageY: element.getBoundingClientRect().top
+                    };
+                    map.zoomModule.performZoomingByToolBar('zoom');
+                    map.zoomSettings.enablePanning = false;
+                    map.zoomModule.performZoomingByToolBar('reset');
+                    map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                };
+            };
+            map.load = (args: ILoadEventArgs) => {
+                let bing: BingMap = new BingMap(map);
+                bing.imageUrl = imageUrl;
+                bing.maxZoom = zoomMax;
+                bing.subDomains = subDomains;
+                map.mapLayerPanel["bing"] = bing;
+            };
+            map.zoomSettings.enablePanning = false;
+            map.projectionType = 'Miller'
+            map.refresh();
+        });
+        it('Checking zoom out zoom event', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performZoomingByToolBar('reset');
+                map.zoomModule.performZoomingByToolBar('zoom');
+                map.zoomModule.performZoomingByToolBar('reset');                
+                map.zoomModule.performZoomingByToolBar('zoomin');
+                map.zoomModule.performZoomingByToolBar('zoomout');
+                map.zoomModule.performZoomingByToolBar('zoomin');
+            };
+            map.load = (args: ILoadEventArgs) => {
+                let bing: BingMap = new BingMap(map);
+                bing.imageUrl = imageUrl;
+                bing.maxZoom = zoomMax;
+                bing.subDomains = subDomains;
+                map.mapLayerPanel["bing"] = bing;
+            };
+            map.zoomSettings.enablePanning = false;
+            map.refresh();
+        });        
     });
 
     describe('Checking with OSM and Geometry sub layer', () => {

@@ -14,7 +14,6 @@ import { HyperlinkDialog } from '../../src/document-editor/implementation/dialog
 import { JsonAdaptor } from '@syncfusion/ej2-data';
 import { BookmarkDialog } from '../../src/document-editor/implementation/dialogs/bookmark-dialog';
 import { SfdtExport } from '../../src/document-editor/implementation/writer/sfdt-export';
-
 /**
  * Editor Spec
  */
@@ -134,7 +133,6 @@ describe('PasteMethod', () => {
         expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets.length).toBe(5);
     });
 
-
     //Paste Table and Content
 
     it('No pasteOption and  SFDT with both Table and Content ',() =>{
@@ -154,7 +152,6 @@ describe('PasteMethod', () => {
         expect(editor.selection.currentPasteAction).toBe('DefaultPaste');
         expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets.length).toBe(2);
     });
-
 });
 
  

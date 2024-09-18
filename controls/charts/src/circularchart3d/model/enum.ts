@@ -36,6 +36,8 @@ export type CircularChart3DTheme =
     'Fluent2' |
     /**  Render a circular 3D chart with the Fluent 2 dark theme. */
     'Fluent2Dark' |
+    /**  Render a circular 3D chart with the Fluent 2 highcontrast theme. */
+    'Fluent2HighContrast' |
     /**  Render a circular 3D chart with the Material 3 theme. */
     'Material3' |
     /**  Render a circular 3D chart with the Material 3 Dark theme. */
@@ -67,7 +69,6 @@ export type CircularChart3DHighlightMode =
  * Defines the Circular 3D data label positions. They can be:
  * * 'Inside': Define the data label position inside the circular 3D series.
  * * 'Outside': Define the data label position outside the circular 3D series.
- * *
  */
 export type CircularChart3DLabelPosition =
     /** Define the data label position inside the circular 3D series. */

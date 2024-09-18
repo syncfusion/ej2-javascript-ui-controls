@@ -1,0 +1,522 @@
+@mixin close-style($font-size, $height, $width) {
+  font-size: $font-size;
+  height: $height;
+  width: $width;
+}
+
+@mixin min-style($min-height, $min-width, $font-size, $line-height) {
+  min-height: $min-height;
+  min-width: $min-width;
+  line-height: $line-height;
+  &::before {
+    font-size: $font-size;
+    @if ($ddt-skin-name == 'fluent2') {
+      padding: 3px;
+    }
+  }
+}
+
+@mixin icon-style($bottom, $right) {
+  bottom: $bottom;
+  right: $right;
+}
+
+@mixin chip-last($margin-right, $max-width) {
+  .e-chips-wrapper .e-chips:last-child {
+    margin-right: $margin-right;
+    max-width: $max-width;
+  }
+}
+
+@mixin chip-last-margin($margin-right, $margin-left) {
+  .e-chips-wrapper .e-chips:last-child {
+    margin-right: $margin-right;
+    margin-left: $margin-left;
+  }
+}
+
+@include export-module('dropdowntree-bigger') {
+  .e-bigger .e-ddt,
+  .e-ddt.e-bigger {
+  
+    .e-chips {
+      height: $ddt-chip-bigger-height;
+
+      @if $ddt-skin-name == 'tailwind' {
+        padding: 3px 8px;
+
+        & > .e-chipcontent {
+          padding: $ddt-big-chip-content-padding;
+        }
+      }
+      @if $ddt-skin-name == 'FluentUI' {
+        font-size: $text-lg;
+      }
+    }
+  
+    &.e-input-group.e-control-wrapper,
+    &.e-float-input.e-control-wrapper {
+
+      &.e-show-chip,
+      &.e-show-text  {
+        &.e-show-dd-icon .e-clear-icon {
+          @if $ddt-skin-name == 'tailwind' {
+            @include icon-style(3px, 32px);
+          }
+          @else if $ddt-skin-name == 'bootstrap4' {
+            right: 33px;
+          }
+          @else if $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'bootstrap5.3' or $ddt-skin-name == 'FluentUI' {
+            @include icon-style(auto, 36px);
+          }
+          @else if $ddt-skin-name != 'Material3' {
+            right: $ddt-dd-icon-bigger-width;
+          }
+        }
+
+        @if $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
+          &.e-show-chip {
+            &.e-show-dd-icon .e-clear-icon {
+              bottom: 0;
+            }
+          }
+        }
+
+        .e-ddt-icon {
+          bottom: $ddt-dd-icon-bigger-bottom;
+        }
+      }
+
+      .e-input-group-icon.e-ddt-icon {
+        @if $ddt-skin-name == 'bootstrap4' {
+          font-size: 10px;
+        }
+        @else if $ddt-skin-name == 'fluent2' {
+          font-size: 18px;
+        }
+      }
+
+      .e-clear-icon {
+        @if $ddt-skin-name == 'tailwind' {
+          min-width: 0;
+          padding: 6px;
+        }
+        @else {
+          min-height: $ddt-close-icon-bigger-min-height;
+        }
+        @if $ddt-skin-name == 'fluent2' {
+          &::before {
+            font-size: 18px;
+          }
+        }
+      }
+    }
+  
+    &.e-show-chip {
+      .e-chips-close {
+        @if $ddt-skin-name == 'bootstrap4' {
+          @include min-style(30px, 30px, 10px, 27px);
+        }
+        @if $ddt-skin-name == 'tailwind' {
+          @include min-style(24px, 24px, 20px, 18px);
+        }
+        @if $ddt-skin-name == 'bootstrap5' {
+          @include min-style(24px, 24px, 12px, null);
+          &::before {
+            vertical-align: middle;
+          }
+        }
+        @if $ddt-skin-name == 'FluentUI' {
+          @include min-style(32px, 32px, 12px, 27px);
+        }
+      }
+
+      .e-overflow {
+        .e-remain {
+          &.e-wrap-count {
+            @if $ddt-skin-name == 'tailwind' {
+              line-height: 22px;
+              padding-top: 7px;
+            }
+            @if $ddt-skin-name == 'FluentUI' {
+              line-height: 38px;
+              padding-top: 0;
+            }
+          }
+        }
+
+        &.e-total-count {
+          .e-remain {
+            @if $ddt-skin-name == 'bootstrap5' {
+              line-height: 36px;
+              padding: 0 12px;
+            }
+            @else if $ddt-skin-name == 'tailwind' {
+              padding: 8px 12px;
+            }
+            @else if  $ddt-skin-name == 'FluentUI' {
+              line-height: 38px;
+              padding: 0 8px;
+            }
+          }
+        }
+      }
+    }
+  
+    .e-overflow {
+
+      &.e-show-text {
+        padding: $ddt-delim-bigger-padding;
+        @if $ddt-skin-name == 'bootstrap5' {
+          line-height: 37px;
+        }
+        @if $ddt-skin-name == 'FluentUI' {
+          line-height: 38px;
+        }
+      }
+
+      .e-remain {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
+          font-size: $ddt-remains-font-size;
+        }
+      }
+    }
+  
+    @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
+      &.e-outline {
+        .e-overflow {
+          &.e-show-text,
+          &.e-total-count {
+            padding: $ddt-outline-bigger-padding;
+          }
+        }
+
+        &.e-input-group.e-control-wrapper,
+        &.e-float-input.e-control-wrapper {
+          &.e-show-dd-icon .e-clear-icon {
+            right: 36px;
+          }
+        }
+      }
+
+      &.e-outline.e-show-chip {
+        .e-overflow {
+          padding: $ddt-bigger-outline-chip-padding;
+
+          &.e-total-count {
+            .e-remain {
+              padding-top: 10px;
+            }
+          }
+
+          .e-remain {
+            &.e-wrap-count {
+              padding-top: 10px;
+            }
+          }
+        }
+
+        .e-chips-wrapper {
+          padding: $ddt-bigger-outline-chip-padding;
+        }
+      }
+
+      &.e-filled {
+        &.e-float-input.e-control-wrapper {
+          .e-overflow {
+            &.e-show-text {
+              line-height: 30px;
+              padding: 19px 12px 0 0;
+            }
+
+            .e-remain {
+              &.e-wrap-count {
+                padding-top: 14px;
+              }
+            }
+          }
+        }
+
+        &.e-float-input.e-control-wrapper:not(.e-show-chip) {
+          .e-ddt-icon,
+          &.e-show-dd-icon .e-clear-icon {
+            padding-top: 8px;
+          }
+        }
+
+        &.e-float-input.e-control-wrapper.e-show-chip,
+        &.e-float-input.e-control-wrapper.e-show-text {
+          .e-ddt-icon {
+            @include icon-style(12px, 12px);
+          }
+
+          .e-clear-icon {
+            @include icon-style(11px, 44px);
+          }
+
+          &:not(.e-show-dd-icon) .e-clear-icon {
+            @include icon-style(14px, 12px);
+          }
+        }
+
+        .e-chips-wrapper,
+        .e-overflow {
+          .e-chips {
+            margin-top: 8px;
+            padding: 0 8px;
+          }
+        }
+
+        &.e-float-input.e-control-wrapper.e-show-chip {
+          .e-chips-wrapper,
+          .e-overflow {
+            padding-top: 19px;
+
+            .e-chips {
+              height: 24px;
+            }
+
+            .e-chips > .e-chipcontent {
+              font-size: 13px;
+            }
+
+            .e-chips-close::before  {
+              @include close-style(14px, 14px, 14px);
+            }
+          }
+        }
+
+        &.e-input-group.e-control-wrapper:not(.e-float-input) {
+          .e-overflow {
+            &.e-show-text {
+              line-height: 55px;
+            }
+
+            .e-remain {
+              &.e-wrap-count {
+                line-height: 55px;
+                padding-top: 0;
+              }
+            }
+          }
+
+          &.e-show-chip {
+            .e-chips-wrapper,
+            .e-overflow {
+              .e-chips {
+                height: 32px;
+                padding: 0 12px;
+
+                > .e-chipcontent {
+                  font-size: 14px;
+                }
+              }
+
+              .e-chips-close::before  {
+                @include close-style(16px, 16px, 16px);
+              }
+            }
+          }
+
+          &.e-show-dd-icon.e-show-text,
+          &.e-show-dd-icon.e-show-chip {
+            .e-ddt-icon,
+            &:not(.e-show-dd-icon) .e-clear-icon {
+              @include icon-style(16px, 12px);
+            }
+          }
+
+          .e-clear-icon {
+            @include icon-style(15px, 44px);
+          }
+        }
+      }
+    }
+  
+    &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
+      @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'Material3' {
+        margin-right: $ddt-dd-icon-bigger-width;
+      }
+      max-width: $ddt-big-chip-ddi-width;
+    }
+  
+    &.e-show-clear .e-chips-wrapper .e-chips:last-child {
+      @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'Material3' {
+        margin-right: $ddt-close-icon-bigger-width;
+      }
+      max-width: $ddt-big-chip-ci-width;
+    }
+  
+    &.e-show-clear.e-show-dd-icon {
+      @include chip-last($ddt-last-chip-bigger-right-margin, $ddt-big-chip-ddi-ci-width);
+    }
+  
+    &.e-popup {
+      @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
+        margin-top: $ddt-popup-margin;
+      }
+
+      .e-selectall-parent {
+        text-indent: $ddt-select-all-bigger-text-indent;
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
+          padding: $ddt-big-select-all-padding;
+
+          .e-all-text {
+            font-size: $text-base;
+            line-height: 24px;
+            @if $ddt-skin-name == 'bootstrap5' {
+              margin: 0 12px;
+            }
+            @else {
+              margin: 0 16px;
+            }
+          }
+        }
+      }
+
+      @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI'  {
+        .e-popup-content {
+          &.e-no-data {
+            @if $ddt-skin-name == 'bootstrap5' {
+              padding: 9px 16px;
+            }
+            @else {
+              padding: 10px 16px;
+            }
+
+            .e-ddt-nodata {
+              @if $ddt-skin-name == 'FluentUI' {
+                font-size: $text-lg;
+              }
+              @else {
+                font-size: $text-base;
+              }
+              line-height: 24px;
+            }
+          }
+        }
+
+        .e-filter-wrap {
+          padding: 8px;
+        }
+      }
+
+      .e-treeview {
+        .e-fullrow {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'Material3' {
+            height: $ddt-treeview-fullrow-bigger-height;
+          }
+        }
+
+        > .e-ul {
+          @if $ddt-skin-name == 'bootstrap5' {
+            padding: 8px 16px;
+          }
+          @if $ddt-skin-name == 'tailwind' {
+            padding: 8px 0 8px 16px;
+          }
+        }
+      }
+    }
+  
+    &.e-rtl {
+      .e-chips {
+        @if $ddt-skin-name == 'tailwind' {
+          & > .e-chipcontent {
+            padding: $ddt-rtl-big-chip-content-padding;
+          }
+        }
+      }
+
+      @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
+        &.e-outline {
+          &.e-input-group.e-control-wrapper,
+          &.e-float-input.e-control-wrapper {
+            &.e-show-dd-icon .e-clear-icon,
+            &.e-show-dd-icon.e-show-text .e-clear-icon,
+            &.e-show-dd-icon.e-show-chip .e-clear-icon {
+              left: 36px;
+            }
+          }
+        }
+
+        &.e-filled {
+          &.e-float-input.e-control-wrapper {
+            .e-overflow {
+              &.e-show-text {
+                padding: 19px 0 0 12px;
+              }
+            }
+
+            &.e-show-chip,
+            &.e-show-text {
+              .e-ddt-icon,
+              &:not(.e-show-dd-icon) .e-clear-icon {
+                left: 12px;
+                right: auto;
+              }
+
+              &.e-show-dd-icon .e-clear-icon {
+                left: 44px;
+                right: auto;
+              }
+            }
+          }
+
+          &.e-input-group.e-control-wrapper:not(.e-float-input) {
+            &.e-show-dd-icon:not(.e-input-focus),
+            &.e-show-dd-icon.e-show-chip {
+              .e-ddt-icon,
+              &:not(.e-show-dd-icon) .e-clear-icon {
+                left: 12px;
+                right: auto;
+              }
+            }
+
+            .e-clear-icon {
+              left: 44px;
+              right: auto;
+            }
+          }
+        }
+      }
+
+      &.e-show-dd-icon {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'bootstrap5.3' or $ddt-skin-name == 'FluentUI' {
+          @include chip-last-margin(4px, null);
+        }
+        @else if $ddt-skin-name != 'Material3' {
+          @include chip-last-margin(1px, $ddt-dd-icon-bigger-width);
+        }
+      }
+
+      &.e-show-clear {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'bootstrap5.3' or $ddt-skin-name == 'FluentUI' {
+          @include chip-last-margin(4px, null);
+        }
+        @else if $ddt-skin-name != 'Material3' {
+          @include chip-last-margin(1px, $ddt-close-icon-bigger-width);
+        }
+      }
+
+      &.e-show-clear.e-show-dd-icon {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
+          @include chip-last-margin($ddt-last-chip-bigger-right-margin, 4px);
+        }
+        @else {
+          @include chip-last-margin($ddt-last-chip-bigger-right-margin, 1px);
+        }
+      }
+
+      &.e-show-chip,
+      &.e-show-text  {
+        &.e-input-group.e-show-dd-icon .e-clear-icon {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'Material3' {
+            left: $ddt-dd-icon-bigger-width;
+          }
+          right: auto;
+        }
+      }
+    }
+  }
+}

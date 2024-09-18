@@ -59,7 +59,8 @@ export class Print {
             backgroundElement = backgroundElement.childNodes[0] as HTMLElement;
             if (!isNullOrUndefined(backgroundElement)) {
                 const backgroundColor: string = backgroundElement.getAttribute('fill');
-                if ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3' || maps.theme === 'Fluent2')
+                if ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3' ||
+                    maps.theme === 'Fluent2')
                     && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                     (backgroundElement as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
                 } else if ((maps.theme === 'TailwindDark' || maps.theme === 'Bootstrap5Dark' || maps.theme === 'FluentDark' || maps.theme === 'Material3Dark' ||

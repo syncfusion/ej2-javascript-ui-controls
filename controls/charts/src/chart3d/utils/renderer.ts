@@ -59,7 +59,7 @@ export class WallRenderer {
         }
         const topLeftFrontVector: Chart3DVector = chart.vector.vector3D(areaBounds.x + areaBounds.width, -chart.depth, y - 0.1);
         const bottomRightBackVector: Chart3DVector = chart.vector.vector3D(areaBounds.x, -0.1, offset);
-        const topSideWallPlans: Chart3DPolygon[] = chart.polygon.createBox(topLeftFrontVector, bottomRightBackVector, chart, 0, chart.wallColor || chart.themeStyle.leftWallColor, chart.wallColor || chart.themeStyle.leftWallColor, 0, 0.5, false, 'top-wall-brush', chart.chart3D);
+        const topSideWallPlans: Chart3DPolygon[] = chart.polygon.createBox(topLeftFrontVector, bottomRightBackVector, chart, 0, chart.wallColor || chart.themeStyle.leftWallColor, chart.wallColor || chart.themeStyle.leftWallColor, 0, chart.theme.indexOf('Fluent2') > -1 ? 0.3 : chart.theme.indexOf('Bootstrap5') > -1 ? 0.1 : 0.5, false, 'top-wall-brush', chart.chart3D);
 
         for (let i: number = 0; i < topSideWallPlans.length; i++) {
             chart.polygon.transform(chart.matrixObj.tilt(Math.PI / 2), topSideWallPlans[i as number]);
@@ -78,7 +78,7 @@ export class WallRenderer {
         const rightRect: Chart3DWallRect = { left: -chart.depth, top: areaBounds.y, bottom: areaBounds.height + areaBounds.y, right: 0 };
         const topLeftFrontVector: Chart3DVector = chart.vector.vector3D(rightRect.left, rightRect.top, x + 1.5);
         const bottomRightBackVector: Chart3DVector = chart.vector.vector3D(rightRect.right, rightRect.bottom, x + chart.wallSize);
-        const rightSideWallPlans: Chart3DPolygon[] = chart.polygon.createBox(topLeftFrontVector, bottomRightBackVector, chart, 0, chart.wallColor || chart.themeStyle.leftWallColor, chart.wallColor || chart.themeStyle.leftWallColor, 0, 0.5, false, 'right-wall-brush', chart.chart3D);
+        const rightSideWallPlans: Chart3DPolygon[] = chart.polygon.createBox(topLeftFrontVector, bottomRightBackVector, chart, 0, chart.wallColor || chart.themeStyle.leftWallColor, chart.wallColor || chart.themeStyle.leftWallColor, 0, chart.theme.indexOf('Fluent2') > -1 ? 0.3 : chart.theme.indexOf('Bootstrap5') > -1 ? 0.1 : 0.5, false, 'right-wall-brush', chart.chart3D);
         for (let i: number = 0; i < rightSideWallPlans.length; i++) {
             chart.polygon.transform(chart.matrixObj.turn(-Math.PI / 2), rightSideWallPlans[i as number]);
         }
@@ -96,7 +96,7 @@ export class WallRenderer {
                                                                         chart.depth === 0 ? 1.5 : chart.depth + chart.wallSize);
         const bottomRightBackVector: Chart3DVector = chart.vector.vector3D(
             (areaBounds.x + areaBounds.width), areaBounds.y + areaBounds.height, chart.depth === 0 ? 1.5 : chart.depth);
-        chart.polygon.createBox(topLeftFrontVector, bottomRightBackVector, chart, 0, chart.wallColor || chart.themeStyle.backWallColor, chart.wallColor || chart.themeStyle.backWallColor, 0, chart.theme.indexOf('Fluent2') > -1 ? 0.3 : 0.25, false, 'back-wall-brush', chart.chart3D);
+        chart.polygon.createBox(topLeftFrontVector, bottomRightBackVector, chart, 0, chart.wallColor || chart.themeStyle.backWallColor, chart.wallColor || chart.themeStyle.backWallColor, 0, chart.theme.indexOf('Fluent2') > -1 ? 0.3 : chart.theme.indexOf('Bootstrap5') > -1 ? 0.1 : 0.25, false, 'back-wall-brush', chart.chart3D);
     }
 
     /**
@@ -111,7 +111,7 @@ export class WallRenderer {
         const offset: number = areaBounds.x;
         const topLeftFrontVector: Chart3DVector = chart.vector.vector3D(leftRect.left, leftRect.top, offset - 0.1);
         const bottomRightBackVector: Chart3DVector = chart.vector.vector3D(leftRect.right, leftRect.bottom, offset - chart.wallSize);
-        const leftSideWallPlans: Chart3DPolygon[] = chart.polygon.createBox(topLeftFrontVector, bottomRightBackVector, chart, 0, chart.wallColor || chart.themeStyle.leftWallColor, chart.wallColor || chart.themeStyle.leftWallColor, 0, 0.5, false, 'left-wall-brush', chart.chart3D);
+        const leftSideWallPlans: Chart3DPolygon[] = chart.polygon.createBox(topLeftFrontVector, bottomRightBackVector, chart, 0, chart.wallColor || chart.themeStyle.leftWallColor, chart.wallColor || chart.themeStyle.leftWallColor, 0, chart.theme.indexOf('Fluent2') > -1 ? 0.3 : chart.theme.indexOf('Bootstrap5') > -1 ? 0.1 : 0.5, false, 'left-wall-brush', chart.chart3D);
         for (let i: number = 0; i < leftSideWallPlans.length; i++) {
             chart.polygon.transform(chart.matrixObj.turn(-Math.PI / 2), leftSideWallPlans[i as number]);
         }
@@ -130,7 +130,7 @@ export class WallRenderer {
                                                                         -chart.depth, chart.wallSize + y);
         const bottomRightBackVector: Chart3DVector = chart.vector.vector3D(areaBounds.x, -0.1, y + 1);
 
-        const bottomSideWallPlans: Chart3DPolygon[] = chart.polygon.createBox(bottomRightBackVector, topLeftFrontVector, chart, 0, chart.wallColor || chart.themeStyle.leftWallColor, chart.wallColor || chart.themeStyle.leftWallColor, 0, 0.5, false, 'bottom-wall-brush', chart.chart3D);
+        const bottomSideWallPlans: Chart3DPolygon[] = chart.polygon.createBox(bottomRightBackVector, topLeftFrontVector, chart, 0, chart.wallColor || chart.themeStyle.leftWallColor, chart.wallColor || chart.themeStyle.leftWallColor, 0, chart.theme.indexOf('Fluent2') > -1 ? 0.3 : chart.theme.indexOf('Bootstrap5') > -1 ? 0.1 : 0.5, false, 'bottom-wall-brush', chart.chart3D);
         for (let i: number = 0; i < bottomSideWallPlans.length; i++) {
             chart.polygon.transform(chart.matrixObj.tilt(Math.PI / 2), bottomSideWallPlans[i as number]);
         }

@@ -173,14 +173,14 @@ describe('Column chooser module', () => {
             setTimeout(() => {
                 gridObj.columnChooserModule.openColumnChooser();
                 (gridObj.columnChooserModule as any).columnChooserSearch('e');
-                (<HTMLElement>gridObj.element.querySelector('.e-cc-cancel')).click();
-                (<HTMLElement>gridObj.element.querySelector('.e-cc_okbtn')).click();
+                (<HTMLElement>document.querySelector('.e-cc-cancel')).click();
+                (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
                 gridObj.columnChooserModule.openColumnChooser();
                 (gridObj.columnChooserModule as any).columnChooserSearch('ghgh');
-                (<HTMLElement>gridObj.element.querySelector('.e-cc-cnbtn')).click();
+                (<HTMLElement>document.querySelector('.e-cc-cnbtn')).click();
                 gridObj.columnChooserModule.openColumnChooser();
                 (gridObj.columnChooserModule as any).columnChooserSearch('');
-                (<HTMLElement>gridObj.element.querySelector('.e-cc_okbtn')).click();
+                (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
                 (<any>gridObj).columnChooserModule.destroy();
                 (<any>gridObj).destroy();
                 done();
@@ -221,13 +221,13 @@ describe('Column chooser module', () => {
                 let e: Object;
                 e = { target: { value: 'ddc' } };
                 (gridObj.columnChooserModule as any).columnChooserManualSearch(e);
-                (<HTMLElement>gridObj.element.querySelector('.e-cc_okbtn')).click();
+                (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
                 e = { target: { value: 'ddc' }, keycode: 13 };
                 (gridObj.columnChooserModule as any).columnChooserManualSearch(e);
                 gridObj.columnChooserModule.openColumnChooser(100, 100);
                 (<any>gridObj).columnChooserModule.confirmDlgBtnClick();
                 (gridObj.columnChooserModule as any).columnChooserManualSearch(e);
-                let searchElement = gridObj.element.querySelector('.e-ccsearch');
+                let searchElement = document.querySelector('.e-ccsearch');
                 // (<any>gridObj).columnChooserModule.columnChooserSearch('e');
                 // (<any>gridObj).columnChooserModule.startTime({keycode: 13});
                 (<any>gridObj).columnChooserModule.destroy();
@@ -267,11 +267,11 @@ describe('Column chooser module', () => {
                 let e: Object;
                 e = { target: { value: 'f' } };
                 (gridObj.columnChooserModule as any).columnChooserManualSearch(e);
-                expect(gridObj.element.querySelector('.e-cc_okbtn').hasAttribute('disabled')).toBeFalsy();
-                gridObj.element.querySelector('.e-check').classList.add('e-uncheck');
-                gridObj.element.querySelector('.e-check').classList.remove('e-check');
-                expect(gridObj.element.querySelector('.e-cc_okbtn').hasAttribute('disabled')).toBeFalsy();
-                (<HTMLElement>gridObj.element.querySelector('.e-cc-cancel')).click();
+                expect(document.querySelector('.e-cc_okbtn').hasAttribute('disabled')).toBeFalsy();
+                document.querySelector('.e-check').classList.add('e-uncheck');
+                document.querySelector('.e-check').classList.remove('e-check');
+                expect(document.querySelector('.e-cc_okbtn').hasAttribute('disabled')).toBeFalsy();
+                (<HTMLElement>document.querySelector('.e-cc-cancel')).click();
                 (<any>gridObj).columnChooserModule.destroy();
                 (<any>gridObj).destroy();
                 done();
@@ -306,12 +306,12 @@ describe('Column chooser module', () => {
         it('change checkstate', (done: Function) => {
             setTimeout(() => {
                 gridObj.columnChooserModule.openColumnChooser();
-                expect(gridObj.element.querySelectorAll('.e-selectall.e-stop').length).toBe(1);
-                let cheEle: any = gridObj.element.querySelectorAll('.e-cc-chbox')[0];
-                let cheEle1: any = gridObj.element.querySelectorAll('.e-cc-chbox')[1];
+                expect(document.querySelectorAll('.e-selectall.e-stop').length).toBe(1);
+                let cheEle: any = document.querySelectorAll('.e-cc-chbox')[0];
+                let cheEle1: any = document.querySelectorAll('.e-cc-chbox')[1];
                 cheEle.click();
                 cheEle1.click();
-                (<HTMLElement>gridObj.element.querySelector('.e-cc_okbtn')).click();
+                (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
                 gridObj.columnChooserModule.openColumnChooser();
                 gridObj.columnChooserModule.openColumnChooser();
                 done();
@@ -320,8 +320,8 @@ describe('Column chooser module', () => {
         });
         it('change checkstate on focus out', (done: Function) => {
             gridObj.columnChooserModule.openColumnChooser();
-            let cheEle: any = gridObj.element.querySelectorAll('.e-cc-chbox')[0];
-            let cheEle1: any = gridObj.element.querySelectorAll('.e-cc-chbox')[1];
+            let cheEle: any = document.querySelectorAll('.e-cc-chbox')[0];
+            let cheEle1: any = document.querySelectorAll('.e-cc-chbox')[1];
             let checkbox1state = cheEle.checked;
             let checkbox2state = cheEle1.checked;
             cheEle.click();
@@ -329,8 +329,8 @@ describe('Column chooser module', () => {
             (<HTMLElement>gridObj.element).click();
             gridObj.columnChooserModule.openColumnChooser();
             gridObj.columnChooserModule.openColumnChooser();
-            cheEle = gridObj.element.querySelectorAll('.e-cc-chbox')[0];
-            cheEle1 = gridObj.element.querySelectorAll('.e-cc-chbox')[1];
+            cheEle = document.querySelectorAll('.e-cc-chbox')[0];
+            cheEle1 = document.querySelectorAll('.e-cc-chbox')[1];
             expect(cheEle.checked).toBe(checkbox1state);
             expect(cheEle1.checked).toBe(checkbox2state);
             done();
@@ -367,11 +367,11 @@ describe('Column chooser module', () => {
         it('change checkstate with Freeze pane', (done: Function) => {
             setTimeout(() => {
                 gridObj.columnChooserModule.openColumnChooser();
-                let cheEle: any = gridObj.element.querySelectorAll('.e-cc-chbox')[0];
-                let cheEle1: any = gridObj.element.querySelectorAll('.e-cc-chbox')[1];
+                let cheEle: any = document.querySelectorAll('.e-cc-chbox')[0];
+                let cheEle1: any = document.querySelectorAll('.e-cc-chbox')[1];
                 cheEle.click();
                 cheEle1.click();
-                (<HTMLElement>gridObj.element.querySelector('.e-cc_okbtn')).click();
+                (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
                 gridObj.columnChooserModule.openColumnChooser();
                 gridObj.columnChooserModule.openColumnChooser();
                 (<any>gridObj).columnChooserModule.destroy();
@@ -421,10 +421,10 @@ describe('Column chooser module', () => {
                 (<any>gridObj).columnChooserModule.clickHandler(e);
                 (<any>gridObj).columnChooserModule.clickHandler(e);
                 (<any>gridObj).columnChooserModule.openColumnChooser();
-                let ele: HTMLElement = (<any>gridObj).element.querySelectorAll('.e-cc-chbox')[0];
+                let ele: any = document.querySelectorAll('.e-cc-chbox')[0];
                 e = { event: { target: ele }, value: true };
                 (<any>gridObj).columnChooserModule.checkstatecolumn(e);
-                let ele1: HTMLElement = (<any>gridObj).element.querySelectorAll('.e-cc-chbox')[3];
+                let ele1: any = document.querySelectorAll('.e-cc-chbox')[3];
                 e = { event: { target: ele1 }, value: true };
                 (<any>gridObj).columnChooserModule.checkstatecolumn(e);
                 ele.click();
@@ -466,7 +466,7 @@ describe('Column chooser module', () => {
             gridObj.showColumnChooser = true;
             gridObj.dataBind();
             gridObj.columnChooserModule.openColumnChooser();
-            expect(gridObj.element.querySelectorAll('.e-ccdlg').length).toBe(1);
+            expect(document.querySelectorAll('.e-ccdlg').length).toBe(1);
         });
 
         it('EJ2-7683==>enabling rtl', () => {
@@ -475,14 +475,14 @@ describe('Column chooser module', () => {
         });
 
         it('EJ2-7683==>checking whether rtl is enabled', () => {
-            let columnChooser: any = (<any>gridObj.element.querySelector('.e-ccdlg'));
+            let columnChooser: any = (<any>document.querySelector('.e-ccdlg'));
             expect(columnChooser.querySelectorAll('.e-rtl').length).toBeGreaterThan(5);
             gridObj.enableRtl = false;
             gridObj.dataBind();
         });
 
         it('EJ2-7683==>checking whether rtl is disabled', () => {
-            let columnChooser: any = (<any>gridObj.element.querySelector('.e-ccdlg'));
+            let columnChooser: any = (<any>document.querySelector('.e-ccdlg'));
             expect(columnChooser.querySelectorAll('.e-rtl').length).toBe(0);
             gridObj.columnChooserModule.openColumnChooser();
         });
@@ -513,9 +513,9 @@ describe('Column chooser module', () => {
         it('button disabled', (done: Function) => {           
             setTimeout(() => {
                 gridObj.columnChooserModule.openColumnChooser();
-                let cheEle: any = gridObj.element.querySelectorAll('.e-cc-chbox')[1];
-                let cheEle1: any = gridObj.element.querySelectorAll('.e-cc-chbox')[2];
-                let cheEle2: any = gridObj.element.querySelectorAll('.e-cc-chbox')[3];
+                let cheEle: any = document.querySelectorAll('.e-cc-chbox')[1];
+                let cheEle1: any = document.querySelectorAll('.e-cc-chbox')[2];
+                let cheEle2: any = document.querySelectorAll('.e-cc-chbox')[3];
                 cheEle.click();
                 cheEle1.click();
                 cheEle2.click();
@@ -524,7 +524,7 @@ describe('Column chooser module', () => {
         });
 
         it('check button disabled case', () => {
-            let btn: Button = (gridObj.element.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
+            let btn: Button = (document.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
             expect(btn.disabled).toBe(true);
             (<any>gridObj).columnChooserModule.destroy();          
         });
@@ -613,17 +613,17 @@ describe('Column chooser module', () => {
         it('Update select all- uncheck', function () {
             (gridObj.columnChooserModule as any).openColumnChooser();
             (gridObj.columnChooserModule as any).updateSelectAll(false);
-            expect(gridObj.element.querySelectorAll('.e-uncheck.e-selectall').length).toBe(1);
+            expect(document.querySelectorAll('.e-uncheck.e-selectall').length).toBe(1);
             expect((gridObj.columnChooserModule as any).ulElement.querySelectorAll('.e-uncheck').length).toBe(4);
             expect((gridObj.columnChooserModule as any).ulElement.querySelectorAll('.e-check').length).toBe(0);
             (gridObj.columnChooserModule as any).updateIntermediateBtn();
-            let btn: Button = (gridObj.element.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
+            let btn: Button = (document.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
             expect(btn.disabled).toBe(true);
         });
         
         it('Update select all- check', function () {
             (gridObj.columnChooserModule as any).updateSelectAll(true);
-            expect(gridObj.element.querySelectorAll('.e-check.e-selectall').length).toBe(1);
+            expect(document.querySelectorAll('.e-check.e-selectall').length).toBe(1);
             expect((gridObj.columnChooserModule as any).ulElement.querySelectorAll('.e-uncheck').length).toBe(0);
             expect((gridObj.columnChooserModule as any).ulElement.querySelectorAll('.e-check').length).toBe(4);
 
@@ -632,17 +632,17 @@ describe('Column chooser module', () => {
         it('Update intermediate button', function () {
             (gridObj.columnChooserModule as any).ulElement.querySelectorAll('.e-check')[1].classList.remove('e-check');
             (gridObj.columnChooserModule as any).updateIntermediateBtn();
-            expect(gridObj.element.querySelectorAll('.e-stop.e-selectall').length).toBe(1);
+            expect(document.querySelectorAll('.e-stop.e-selectall').length).toBe(1);
         });
         
         it('enter key disabled', () => {
-            expect(gridObj.element.querySelector('.e-ccdlg').classList.contains('e-popup-close')).toBeTruthy();
+            expect(document.querySelector('.e-ccdlg').classList.contains('e-popup-close')).toBeTruthy();
             gridObj.columnChooserModule.openColumnChooser();
-            (gridObj.element.querySelectorAll('.e-cc-chbox')[0] as any).click();
+            (document.querySelectorAll('.e-cc-chbox')[0] as any).click();
             let action: any = 'enter';
             let args: Object = action;
             (gridObj.columnChooserModule as any).confirmDlgBtnClick(args);
-            expect(gridObj.element.querySelector('.e-ccdlg').classList.contains('e-popup-open')).toBeTruthy();
+            expect(document.querySelector('.e-ccdlg').classList.contains('e-popup-open')).toBeTruthy();
         });
         
         afterAll(() => {
@@ -672,23 +672,23 @@ describe('Column chooser module', () => {
             let colType: string = 'checkbox';
             expect(gridObj.getVisibleColumns()[0].type).toBe(colType); 
             gridObj.columnChooserModule.openColumnChooser();
-            (gridObj.element.querySelectorAll('.e-cc-chbox')[0] as any).click();
-            (gridObj.element.querySelectorAll('.e-cc-chbox')[2] as any).click();
-            let btn: Button = (gridObj.element.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
+            (document.querySelectorAll('.e-cc-chbox')[0] as any).click();
+            (document.querySelectorAll('.e-cc-chbox')[2] as any).click();
+            let btn: Button = (document.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
             btn.click();
             expect(gridObj.getVisibleColumns()[0].type).toBe(colType);
         });
 
         it('Column chooser open event testing', (done: Function) => {
             gridObj.columnChooserModule.openColumnChooser();
-            (gridObj.element.querySelectorAll('.e-cc-chbox')[2] as any).click();
+            (document.querySelectorAll('.e-cc-chbox')[2] as any).click();
             let columnChooserOpenedHandler : any = (args: any): void => {
                 let name: string = 'columnChooserOpened';
                 expect(args.name).toBe(name);
                 gridObj.off(events.columnChooserOpened, columnChooserOpenedHandler);  
             }
             gridObj.on(events.columnChooserOpened, columnChooserOpenedHandler);
-            (gridObj.element.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0].click();
+            (document.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0].click();
             done();
         });
         
@@ -715,9 +715,9 @@ describe('Column chooser module', () => {
         });
         it('check ok button click when unselect all with ShowInColumnChooser False', (done: Function) => {
             gridObj.columnChooserModule.openColumnChooser();
-            let cheEle: any = gridObj.element.querySelectorAll('.e-cc-selectall .e-selectall')[0];
+            let cheEle: any =document.querySelectorAll('.e-cc-selectall .e-selectall')[0];
             cheEle.click();
-            let okButton: any = gridObj.element.querySelector(".e-cc_okbtn");
+            let okButton: any = document.querySelector(".e-cc_okbtn");
             okButton.click();
             expect(gridObj.getVisibleColumns().length).toBe(1);
             done();
@@ -761,9 +761,9 @@ describe('Column chooser module', () => {
         });
         it('Check form is closed after column choooser action', (done: Function) => {
             gridObj.columnChooserModule.openColumnChooser();
-            let cheEle: any = gridObj.element.querySelectorAll('.e-icons.e-check')[2];
+            let cheEle: any = document.querySelectorAll('.e-icons.e-check')[2];
             cheEle.click();
-            let okButton: any = gridObj.element.querySelector(".e-cc_okbtn");
+            let okButton: any = document.querySelector(".e-cc_okbtn");
             okButton.click();
             expect(gridObj.getVisibleColumns().length).toBe(4);
             expect(isNullOrUndefined(document.querySelector(".e-gridform"))).toBe(true);
@@ -801,12 +801,12 @@ describe('Column chooser module', () => {
         it('check ok button are disable', (done: Function) => {
             let columnchooser: HTMLElement = select('#' + gridObj.element.id + '_columnchooser', gridObj.toolbarModule.getToolbar());
             columnchooser.click();
-            let cheEle: any = gridObj.element.querySelectorAll('.e-cc-selectall .e-selectall')[0];
+            let cheEle: any = document.querySelectorAll('.e-cc-selectall .e-selectall')[0];
             cheEle.click();
             cheEle.click();
             columnchooser.click();
             columnchooser.click();
-            expect(gridObj.element.querySelector('.e-cc_okbtn').hasAttribute('disabled')).toBeFalsy();
+            expect(document.querySelector('.e-cc_okbtn').hasAttribute('disabled')).toBeFalsy();
             done();
         });
 
@@ -923,13 +923,13 @@ describe('Column chooser module', () => {
                 }, done);
         });
         it('check highlight with mouse click', () => {
-            let cheEle: any = gridObj.element.querySelectorAll('.e-cc-chbox')[1];
+            let cheEle: any = document.querySelectorAll('.e-cc-chbox')[1];
             cheEle.click();
             let patentelem: any = cheEle.closest('.e-cclist');
             expect(patentelem.classList.contains('e-colfocus')).toBeTruthy();
         });
         it('Coverage Improvement -  column choooser action', () => {
-            let ccToolbar: any = gridObj.element.querySelector('.e-cc-toolbar');
+            let ccToolbar: any = document.querySelector('.e-cc-toolbar');
             ccToolbar.click();
             ccToolbar.click();
         });
@@ -991,7 +991,7 @@ describe('Column chooser module', () => {
         it('Coverage Improvement -  empty grid cc action', () => {
             let ccToolbar: any = gridObj.element.querySelector('.e-cc-toolbar');
             ccToolbar.click();
-            let ccOkbtn: any = gridObj.element.querySelector('.e-cc_okbtn');
+            let ccOkbtn: any = document.querySelector('.e-cc_okbtn');
             ccOkbtn.click();
         });
 
@@ -1022,7 +1022,7 @@ describe('Column chooser module', () => {
         it('Coverage Improvement -  cancel icon click ', () => {
             let ccToolbar: any = gridObj.element.querySelector('.e-cc-toolbar');
             ccToolbar.click();
-            let cancelIcon: any = gridObj.element.querySelector('.e-ccsearch');
+            let cancelIcon: any = document.querySelector('.e-ccsearch');
             cancelIcon.classList.add('e-cc-cancel');
             let args: any = { target: cancelIcon };
             (gridObj.columnChooserModule as any).clickHandler(args);

@@ -3374,3 +3374,181 @@ describe('EJ2-48023', function () {
         expect(isBlurTriggerd).toBe(true);
     });
 });
+describe('MaskedTextBox Null or undefined value testing', function (){
+    let maskedObj: any;
+    beforeEach(function() {
+        let inputElement: HTMLElement = createElement('input', { id: 'masked'});
+        document.body.appendChild(inputElement);
+    });
+    afterEach(function() {
+        document.body.innerHTML = '';
+    });
+    it('cssClass',function() {
+        maskedObj = new MaskedTextBox({ 
+            cssClass: null
+        },'#masked');
+        expect(maskedObj.cssClass).toBe(null);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            cssClass: undefined
+        },'#masked');
+        expect(maskedObj.cssClass).toBe(null);
+        maskedObj.destroy();
+     });
+     it('customCharacters',function() {
+        maskedObj = new MaskedTextBox({ 
+            customCharacters: null
+        },'#masked');
+        expect(maskedObj.customCharacters).toBe(null);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            customCharacters: undefined
+        },'#masked');
+        expect(maskedObj.customCharacters).toBe(null);
+        maskedObj.destroy();
+     });
+     it('enablePersistence',function() {
+        maskedObj = new MaskedTextBox({ 
+            enablePersistence: null
+        },'#masked');
+        expect(maskedObj.enablePersistence).toBe(null);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            enablePersistence: undefined
+        },'#masked');
+        expect(maskedObj.enablePersistence).toBe(false);
+        maskedObj.destroy();
+     });
+     it('enableRtl',function() {
+        maskedObj = new MaskedTextBox({ 
+            enableRtl: null
+        },'#masked');
+        expect(maskedObj.enableRtl).toBe(false);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            enableRtl: undefined
+        },'#masked');
+        expect(maskedObj.enableRtl).toBe(false);
+        maskedObj.destroy();
+     });
+     it('enabled',function() {
+        maskedObj = new MaskedTextBox({ 
+            enabled: null
+        },'#masked');
+        expect(maskedObj.enabled).toBe(null);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            enabled: undefined
+        },'#masked');
+        expect(maskedObj.enabled).toBe(false);
+        maskedObj.destroy();
+     });
+     it('floatLabelType',function() {
+        maskedObj = new MaskedTextBox({ 
+            floatLabelType: null
+        },'#masked');
+        expect(maskedObj.floatLabelType).toBe(null);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            floatLabelType: undefined
+        },'#masked');
+        expect(maskedObj.floatLabelType).toBe('Never');
+        maskedObj.destroy();
+     });
+     it('htmlAttributes',function() {
+        maskedObj = new MaskedTextBox({ 
+            htmlAttributes: null
+        },'#masked');
+        expect(maskedObj.htmlAttributes).toBe(null);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            htmlAttributes: undefined
+        },'#masked');
+        expect(JSON.stringify(maskedObj.htmlAttributes)).toBe('{}');
+        maskedObj.destroy();
+     });
+     it('mask',function() {
+        maskedObj = new MaskedTextBox({ 
+            mask: null
+        },'#masked');
+        expect(maskedObj.mask).toBe(null);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            mask: undefined
+        },'#masked');
+        expect(maskedObj.mask).toBe(null);
+        maskedObj.destroy();
+     });
+     it('placeholder',function() {
+        maskedObj = new MaskedTextBox({ 
+            placeholder: null
+        },'#masked');
+        expect(maskedObj.placeholder).toBe(null);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            placeholder: undefined
+        },'#masked');
+        expect(maskedObj.placeholder).toBe(null);
+        maskedObj.destroy();
+     });
+     it('promptChar',function() {
+        maskedObj = new MaskedTextBox({ 
+            promptChar: null
+        },'#masked');
+        expect(maskedObj.promptChar).toBe(null);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            promptChar: undefined
+        },'#masked');
+        expect(maskedObj.promptChar).toBe('_');
+        maskedObj.destroy();
+     });
+     it('readonly',function() {
+        maskedObj = new MaskedTextBox({ 
+            readonly: null
+        },'#masked');
+        expect(maskedObj.readonly).toBe(null);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            readonly: undefined
+        },'#masked');
+        expect(maskedObj.readonly).toBe(false);
+        maskedObj.destroy();
+     });
+     it('showClearButton',function() {
+        maskedObj = new MaskedTextBox({ 
+            showClearButton: null
+        },'#masked');
+        expect(maskedObj.showClearButton).toBe(null);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            showClearButton: undefined
+        },'#masked');
+        expect(maskedObj.showClearButton).toBe(false);
+        maskedObj.destroy();
+     });
+     it('value',function() {
+        maskedObj = new MaskedTextBox({ 
+            value: null
+        },'#masked');
+        expect(maskedObj.value).toBe('');
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            value: undefined
+        },'#masked');
+        expect(maskedObj.value).toBe('');
+        maskedObj.destroy();
+     });
+     it('width',function() {
+        maskedObj = new MaskedTextBox({ 
+            width: null
+        },'#masked');
+        expect(maskedObj.width).toBe(null);
+        maskedObj.destroy();
+        maskedObj = new MaskedTextBox({ 
+            width: undefined
+        },'#masked');
+        expect(maskedObj.width).toBe(null);
+        maskedObj.destroy();
+     });
+});

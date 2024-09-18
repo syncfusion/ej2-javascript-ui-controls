@@ -1,12 +1,10 @@
 @import 'definition.scss';
 
-$skin-name: 'bootstrap5';
-
 //layout variables
 $diagram-border-stroke-width: 2;
 $diagram-lane-border-stroke-width: 2;
 $diagram-highlighter-border-stroke-width: 2;
-$diagram-symbolpalette-shape-radius: 00px;/* stylelint-disable-line length-zero-no-unit */
+$diagram-symbolpalette-shape-radius: 4px;/* stylelint-disable-line length-zero-no-unit */
 $diagram-tooltip: none;
 
 //normal
@@ -30,7 +28,6 @@ $diagram-ruler-tick-stroke: $series-3;
 
 $palette-background-color: $diagram-palette-background;
 
-$diagram-background-color: $white;
 $diagram-editbox-fontcolor: $black;
 
 //end normal
@@ -39,7 +36,7 @@ $diagram-endpoint-handle-connected-color: $primary;
 
 $diagram-resize-handle-color: $primary;
 $diagram-resize-handle-stroke: $primary;
-
+$diagram-background-color: $white;
 $diagram-border-stroke: $primary;
 $diagram-bezier-line-color: $primary;
 
@@ -47,6 +44,7 @@ $diagram-highlighter-stroke: $primary;
 $diagram-selected-region-stroke: $primary;
 $diagram-pivot-line-stroke: $primary;
 $diagram-ruler-marker-stroke: $primary;
+$diagram-overview-resizer-color:$primary;
 
 $diagram-helper-stroke: $primary;
 
@@ -71,32 +69,7 @@ $diagram-multiselect-stroke: $diagram-resize-handle-stroke;
 }
 
 @include export-module('diagram-bootstrap-icons') {
-  .e-diagram-menu {
-    .e-bringforward::before{ content: '\e72f'; }
-    .e-bringfront::before{ content: '\e840'; }
-    .e-sendback::before{ content: '\e78a'; }
-    .e-sendbackward::before{ content: '\e7ed'; }
-    .e-delete::before{ content: '\e94a'; }
-    .e-ungroup::before{ content: '\e749'; }
-    .e-group::before{ content: '\e7f4'; }
-    .e-undo::before{ content: '\e713'; }
-    .e-redo::before{ content: '\e755'; }
-    .e-copy::before{ content: '\e77c'; }
-    .e-cut::before{ content: '\e7fb'; }
-    .e-save::before{ content: '\e7c8'; }
-    .e-paste::before{ content: '\e70b'; }
-    .e-zoomin::before{ content: '\e795'; }
-    .e-italic::before{ content: '\e75a'; }
-    .e-close::before{ content: '\e7e7'; }
-    .e-pan::before{ content: '\e7b1'; }
-    .e-bold::before{ content: '\e737'; }
-    .e-underline::before{ content: '\e82f'; }
-    .e-zoomout::before{ content: '\e825'; }
-    .e-export::before{ content: '\e72e'; }
-    .e-print::before{ content: '\e75d'; }
-    .e-order::before{ content: '\e809'; }
-  }
-
+ 
   .e-symbolpalette {
     .e-clear-searchtext::before{ content: '\e754'; }
   }

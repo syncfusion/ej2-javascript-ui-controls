@@ -120,13 +120,15 @@ export function toDate(
         text = text.toString();
         if (text && text.indexOf('/') > -1 || text.indexOf('-') > 0) {
             let cFormat: string = (cell && cell.format) || format;
-            const hyphenDate: boolean = cFormat.toLowerCase().includes('dd-mm-yy');
-            if (hyphenDate || cFormat.toLowerCase().includes('dd/mm/yy')) {
-                cFormat = hyphenDate ? 'd-M-y' : 'd/M/y';
-                dObj.dateObj = intl.parseDate(text as string, { format: cFormat, skeleton: 'yMd' });
-                if (dObj.dateObj) {
-                    dObj.type = 'date';
-                    return dObj;
+            if (cFormat) {
+                const hyphenDate: boolean = cFormat.toLowerCase().includes('dd-mm-yy');
+                if (hyphenDate || cFormat.toLowerCase().includes('dd/mm/yy')) {
+                    cFormat = hyphenDate ? 'd-M-y' : 'd/M/y';
+                    dObj.dateObj = intl.parseDate(text as string, { format: cFormat, skeleton: 'yMd' });
+                    if (dObj.dateObj) {
+                        dObj.type = 'date';
+                        return dObj;
+                    }
                 }
             }
         }

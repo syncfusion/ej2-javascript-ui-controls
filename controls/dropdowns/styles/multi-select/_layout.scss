@@ -174,16 +174,6 @@
   }
 }
 
-.e-bigger .e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon,
-.e-bigger.e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon {
-  @if $ddl-multiselect-skin-name != 'Material3' {
-    margin-top: $ddl-icon-margin-top-bigger;
-  }
-  @if $ddl-multiselect-skin-name == 'fluent2' {
-    padding: 11px;
-  }
-}
-
 .e-popup.e-multi-select-list-wrapper .e-list-item.e-disabled,
 .e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-disabled {
   opacity: .7;
@@ -198,10 +188,6 @@
 .e-multiselect.e-input-group .e-searcher .e-label-top,
 .e-multiselect.e-input-group .e-multi-searcher .e-label-top {
   top: $ddl-multiselect-label-position;
-}
-
-.e-bigger .e-multi-select-wrapper {
-  min-height: $ddl-control-bigger-height;
 }
 
 .e-multi-select-wrapper.e-close-icon-hide {
@@ -233,10 +219,6 @@
   white-space: nowrap;
 }
 
-.e-bigger .e-multi-select-wrapper .e-chips {
-  margin: $ddl-chip-margin-bigger;
-}
-
 .e-multi-select-wrapper .e-chips > .e-chipcontent {
   max-width: 100%;
   overflow: hidden;
@@ -244,7 +226,7 @@
   text-indent: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
+  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
     line-height: 1.5;
   }
 }
@@ -265,22 +247,11 @@
   }
 }
 
-.e-multi-select-wrapper .e-mob-chip.e-chips > .e-chipcontent,
-.e-bigger .e-multi-select-wrapper .e-chips > .e-chipcontent {
+.e-multi-select-wrapper .e-mob-chip.e-chips > .e-chipcontent {
   padding: $ddl-chip-mobile-content-padding;
 }
 
-.e-bigger .e-multi-select-wrapper .e-chips > .e-chipcontent {
-  @if $ddl-multiselect-skin-name == 'bootstrap4' or $ddl-multiselect-skin-name == 'bootstrap5' {
-    padding: $ddl-chip-bigger-content-padding;
-  }
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    font-size: $ddl-chip-bigger-font-size;
-  }
-}
-
-#{&}.e-multiselect.e-rtl .e-multi-select-wrapper .e-mob-chip.e-chips>.e-chipcontent,
-.e-bigger #{&}.e-multiselect.e-rtl .e-multi-select-wrapper .e-chips>.e-chipcontent {
+#{&}.e-multiselect.e-rtl .e-multi-select-wrapper .e-mob-chip.e-chips>.e-chipcontent {
   padding: $ddl-rtl-chip-mobile-content-padding;
 }
 
@@ -332,42 +303,6 @@
   right: $ddl-close-icon-left;
 }
 
-.e-bigger .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
-  @if $ddl-multiselect-skin-name == 'Material3' {
-    right: $ddl-close-icon-bigger-right;
-  }
-}
-
-.e-bigger .e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
-  @if $ddl-multiselect-skin-name == 'Material3' {
-    right: 41px;
-  }
-}
-
-.e-bigger.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
-.e-bigger .e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
-.e-bigger .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
-.e-bigger.e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
-.e-bigger.e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-.e-bigger .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
-  @if $ddl-multiselect-skin-name == 'FluentUI' {
-    font-size: $ddl-bigger-chip-down-icon-font;
-    right: $ddl-close-icon-bigger-right;
-  }
-}
-
-.e-bigger.e-small.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
-.e-bigger.e-small .e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
-.e-bigger.e-small .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
-.e-bigger.e-small.e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
-.e-bigger.e-small.e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-.e-bigger.e-small .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
-  @if $ddl-multiselect-skin-name == 'FluentUI' {
-    font-size: $ddl-biggersmall-chip-down-icon-font;
-    right: $ddl-close-icon-bigger-right;
-  }
-}
-
 .e-small.e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
 .e-small.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
 .e-small.e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
@@ -386,129 +321,16 @@
   }
 }
 
-.e-bigger .e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
-.e-bigger .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
-  @if $ddl-multiselect-skin-name == 'Fabric' or $ddl-multiselect-skin-name == 'highcontrast' {
-    right: 38px;
-  }
-}
-
-.e-bigger.e-small .e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
-  @if $ddl-multiselect-skin-name == 'FluentUI' or $ddl-multiselect-skin-name == 'bootstrap5'  {
-    right: $ddl-close-down-icon-left;
-  }
-}
-
 .e-multiselect.e-input-group.e-control-container.e-rtl .e-multi-select-wrapper.e-down-icon .e-clear-icon {
   left: $ddl-close-icon-left;
   right: auto;
 }
 
-.e-bigger.e-small .e-multiselect.e-input-group.e-control-container.e-rtl .e-multi-select-wrapper.e-down-icon .e-clear-icon,
-.e-bigger.e-small.e-multiselect.e-input-group.e-control-container.e-rtl .e-multi-select-wrapper.e-down-icon .e-clear-icon {
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
-    left: 45px;
-    right: auto;
-  }
-}
-
 .e-small .e-multiselect.e-rtl .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-.e-small.e-multiselect.e-rtl .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-.e-small.e-bigger .e-multiselect.e-rtl .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-.e-small.e-bigger.e-multiselect.e-rtl .e-multi-select-wrapper .e-chips-close.e-close-hooker {
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
+.e-small.e-multiselect.e-rtl .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
     left: 12px;
     right: auto;
-  }
-}
-
-.e-bigger .e-multiselect.e-input-group.e-control-container.e-rtl .e-multi-select-wrapper.e-down-icon .e-clear-icon,
-.e-bigger.e-multiselect.e-input-group.e-control-container.e-rtl .e-multi-select-wrapper.e-down-icon .e-clear-icon {
-  @if $ddl-multiselect-skin-name == 'Fabric' or $ddl-multiselect-skin-name == 'highcontrast' {
-    left: 38px;
-    right: auto;
-  }
-}
-
-.e-bigger .e-multi-select-wrapper .e-chips-close.e-close-hooker {
-  @if $ddl-multiselect-skin-name != 'Material3' {
-    margin-top: $ddl-closer-margin-top-bigger;
-  }
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    height: $ddl-bigger-clear-icon-height;
-    width: $ddl-bigger-clear-icon-width;
-  }
-  @if $ddl-multiselect-skin-name == 'FluentUI' {
-    font-size: $ddl-bigger-chip-down-icon-font;
-  }
-  @if $ddl-multiselect-skin-name == 'Material3' {
-    margin-top: -2.3em;
-    font-size: $ddl-bigger-chip-down-icon-font;
-    top: 100%;
-    border-radius: $ddl-bigger-closer-hooker-border-radius;
-    width: $ddl-bigger-closer-hooker-width;
-    height: $ddl-bigger-closer-hooker-height;
-    line-height: 28px;
-  }
-}
-
-.e-bigger .e-multi-select-wrapper .e-chips-close.e-close-hooker:hover {
-  @if $ddl-multiselect-skin-name == 'Material3' {
-    background: $ddl-bigger-closer-hooker-bg-color;
-    border: 1px;
-  }
-}
-
-.e-bigger.e-small .e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-clear-icon {
-  @if $ddl-multiselect-skin-name == 'Material3' {
-    height: $ddl-bigger-small-closer-hooker-height;
-    width: $ddl-bigger-small-closer-hooker-width;
-    margin-top: $ddl-closer-margin-top-bigger-small;
-  }
-}
-
-.e-bigger .e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-clear-icon {
-  @if $ddl-multiselect-skin-name == 'Material3' {
-    width: $ddl-bigger-closer-hooker-width;
-    height: $ddl-bigger-closer-hooker-width;
-  }
-}
-
-.e-bigger .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon,
-.e-bigger.e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
-  @if $skin-name != 'fluent2' {
-    margin-top: $ddl-closer-margin-top-bigger;
-  }
-  @if $skin-name == 'fluent2' {
-    margin-top: -2.5em;
-  }
-  @if $ddl-multiselect-skin-name == 'FluentUI' {
-    margin-top: $ddl-bigger-clear-margin-top;
-  }
-  @if $ddl-multiselect-skin-name == 'bootstrap' {
-    margin-top: -3.7em;
-  }
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
-    margin-top: -2.15em;
-  }
-  @if $ddl-multiselect-skin-name == 'highcontrast' or $ddl-multiselect-skin-name == 'fabric' {
-    margin-top: -3.2em;
-  }
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    height: $ddl-bigger-clear-icon-height;
-    margin-top: $ddl-clear-margin-top;
-    width: $ddl-bigger-clear-icon-width;
-  }
-}
-
-.e-bigger .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-.e-bigger.e-multiselect .e-down-icon .e-chips-close.e-close-hooker.e-multi-select-wrapper .e-chips-close.e-close-hooker {
-  @if $ddl-multiselect-skin-name == 'bootstrap4' or $ddl-multiselect-skin-name == 'tailwind' {
-    font-size: $ddl-closer-hooker-font-bigger;
-    margin-top: $ddl-closer-margin-top;
-  }
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    margin-top: $ddl-closer-margin-top-bigger;
   }
 }
 
@@ -548,23 +370,6 @@
   padding: 5px;
 }
 
-.e-bigger .e-multi-select-wrapper input[type = 'text'],
-.e-multi-select-wrapper.e-mob-wrapper input[type = 'text'] {
-  height: $ddl-input-height;
-  min-height: $ddl-input-height;
-}
-
-.e-bigger .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'bootstrap4' {
-    font-size: $ddl-chip-bigger-font-size;
-  }
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    font-size: $ddl-chip-bigger-font-size;
-  }
-  height: $ddl-input-bigger-height;
-  min-height: $ddl-input-bigger-height;
-}
-
 /* stylelint-disable property-no-vendor-prefix */
 .e-multi-select-wrapper input[type = 'text']::-ms-clear {
   display: none;
@@ -580,33 +385,14 @@
   width: $ddl-search-wrapper-width;
 }
 
-.e-bigger .e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
-.e-bigger.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
-  width: $ddl-bigger-search-wrapper-width;
-}
-
 .e-small .e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
 .e-small.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
   width: $ddl-small-search-wrapper-width;
 }
 
-.e-bigger.e-small .e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
-.e-bigger.e-small.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
-.e-bigger .e-small.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
-.e-small .e-bigger.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
-  width: $ddl-bigger-small-search-wrapper-width;
-}
-
 .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     width: $ddl-search-wrapper-width;
-  }
-}
-
-.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
-.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    width: $ddl-bigger-search-wrapper-width;
   }
 }
 
@@ -617,15 +403,6 @@
   }
 }
 
-.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
-.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
-.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
-.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    width: $ddl-bigger-small-search-wrapper-width;
-  }
-}
-
 .e-multi-select-wrapper .e-delim-values {
   font-family: $ddl-chip-font-family;
   font-size: $ddl-delim-font-size;
@@ -633,40 +410,14 @@
   max-width: 100%;
   padding-left: $ddl-delim-text-indent;
   padding-right: $ddl-delim-text-padding-right;
-  @if $ddl-multiselect-skin-name != 'bootstrap5' or $ddl-multiselect-skin-name != 'FluentUI' {
+  @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'bootstrap5.3' and $ddl-multiselect-skin-name != 'FluentUI' {
     vertical-align: middle;
-  }
-}
-
-.e-bigger .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    font-size: $ddl-delim-bigger-font-size;
-  }
-  line-height: $ddl-delimviewheight-bigger;
-  padding-left: $ddl-delimview-bigger-padding-left;
-}
-
-.e-bigger .e-multi-select-wrapper .e-delim-values .e-remain {
-  @if $ddl-multiselect-skin-name == 'bootstrap4' {
-    padding-left: 12px;
-  }
-  @else if $ddl-multiselect-skin-name == 'bootstrap5' {
-    padding-left: 0;
-  }
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    font-size: $ddl-chip-bigger-font-size;
   }
 }
 
 .e-small .e-multi-select-wrapper .e-delim-values .e-remain {
   @if $ddl-multiselect-skin-name == 'tailwind' {
     font-size: $ddl-chip-small-font-size;
-  }
-}
-
-.e-bigger.e-small .e-multi-select-wrapper .e-delim-values .e-remain {
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    font-size: $ddl-chip-bigger-small-font-size;
   }
 }
 
@@ -775,7 +526,7 @@
       left: $ddl-close-icon-left;
       position: absolute;
       right: auto;
-      @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'tailwind' {
+      @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' or $ddl-multiselect-skin-name == 'tailwind' {
         left: 0;
       }
     }
@@ -800,22 +551,8 @@
 
 .e-small.e-multiselect.e-rtl .e-multi-select-wrapper.e-down-icon .e-close-hooker::before,
 .e-small .e-multiselect.e-rtl .e-multi-select-wrapper.e-down-icon .e-close-hooker::before {
-  @if ($ddl-multiselect-skin-name == 'bootstrap5') {
+  @if ($ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3') {
     left: $ddl-chip-close-rtl-small-left;
-  }
-}
-
-.e-bigger.e-multiselect.e-rtl .e-multi-select-wrapper.e-down-icon .e-close-hooker::before,
-.e-bigger .e-multiselect.e-rtl .e-multi-select-wrapper.e-down-icon .e-close-hooker::before {
-  @if ($ddl-multiselect-skin-name == 'bootstrap5') {
-    left: $ddl-chip-close-rtl-bigger-left;
-  }
-}
-
-.e-bigger.e-small.e-multiselect.e-rtl .e-multi-select-wrapper.e-down-icon .e-close-hooker::before,
-.e-bigger.e-small .e-multiselect.e-rtl .e-multi-select-wrapper.e-down-icon .e-close-hooker::before {
-  @if ($ddl-multiselect-skin-name == 'bootstrap5') {
-    left: $ddl-chip-close-rtl-small-bigger-left;
   }
 }
 
@@ -845,39 +582,15 @@
   }
 }
 
-.e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-rtl .e-list-item .e-checkbox-wrapper {
-  @if ($ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'FluentUI') {
-    padding-right: $ddl-bigger-multiselect-group-list-item-rtl-padding-right;
-  }
-}
-
 .e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-list-group-item .e-checkbox-wrapper {
   bottom: 1px;
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
+  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
     bottom: 2px;
   }
   margin-right: $ddl-check-right-margin;
   position: relative;
   text-indent: 0;
   vertical-align: middle;
-}
-
-.e-bigger .e-popup.e-multi-select-list-wrapper .e-list-item .e-checkbox-wrapper,
-.e-bigger.e-popup.e-multi-select-list-wrapper .e-list-item .e-checkbox-wrapper {
-  bottom: 1px;
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
-    bottom: 2px;
-  }
-  margin-right: $ddl-bigger-check-right-margin;
-}
-
-.e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-list-group-item .e-checkbox-wrapper,
-.e-bigger.e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-list-group-item .e-checkbox-wrapper {
-  bottom: 1px;
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
-    bottom: 2px;
-  }
-  margin-right: $ddl-bigger-check-right-margin;
 }
 
 .e-popup.e-multi-select-list-wrapper.e-rtl .e-list-item .e-checkbox-wrapper {
@@ -905,24 +618,6 @@
 .e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-rtl .e-dropdownbase.e-rtl.e-dd-group .e-list-group-item {
   @if $ddl-multiselect-skin-name == 'highcontrast' or $ddl-multiselect-skin-name == 'fabric' {
     padding-right: $ddl-multiselect-group-list-group-item-rtl-padding-right;
-  }
-}
-
-.e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-rtl .e-dropdownbase.e-rtl.e-dd-group .e-list-group-item {
-  @if $ddl-multiselect-skin-name == 'highcontrast' or $ddl-multiselect-skin-name == 'fabric' {
-    padding-right: $ddl-list-padding-right;
-  }
-}
-
-.e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-dropdownbase.e-dd-group .e-list-group-item {
-  @if ($ddl-multiselect-skin-name != 'tailwind') {
-    padding-left: $ddl-multiselect-group-list-group-item-padding-left;
-  }
-}
-
-.e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group:not(.e-rtl) .e-dropdownbase.e-dd-group .e-list-item .e-checkbox-wrapper {
-  @if ($ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'FluentUI') {
-    padding-left: $ddl-bigger-multiselect-group-checkbox-wrapper-padding-left;
   }
 }
 
@@ -957,40 +652,10 @@
   font-size: $ddl-selectall-font-size;
 }
 
-.e-bigger.e-multi-select-list-wrapper .e-selectall-parent .e-all-text,
-.e-bigger .e-multi-select-list-wrapper .e-selectall-parent .e-all-text {
-  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
-    font-size: $ddl-bigger-selectall-font-size;
-  }
-}
-
 .e-small.e-multi-select-list-wrapper .e-selectall-parent .e-all-text,
 .e-small .e-multi-select-list-wrapper .e-selectall-parent .e-all-text {
   @if $ddl-multiselect-skin-name == 'tailwind' {
     font-size: $ddl-small-selectall-font-size;
-  }
-}
-
-.e-bigger.e-small.e-multi-select-list-wrapper .e-selectall-parent .e-all-text,
-.e-bigger.e-small .e-multi-select-list-wrapper .e-selectall-parent .e-all-text {
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    font-size: $ddl-bigger-small-selectall-font-size;
-  }
-}
-
-.e-bigger.e-multi-select-list-wrapper .e-selectall-parent,
-.e-bigger .e-multi-select-list-wrapper .e-selectall-parent {
-  font-size: $ddl-chip-font-size;
-  line-height: $ddl-bigger-select-all-height;
-  text-indent: $ddl-bigger-check-right;
-}
-
-.e-bigger .e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-selectall-parent,
-.e-bigger.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-selectall-parent {
-  @if $ddl-multiselect-skin-name == 'FluentUI' {
-    font-size: $ddl-chip-font-size;
-    line-height: $ddl-bigger-select-all-height;
-    text-indent: $ddl-bigger-check-right;
   }
 }
 
@@ -1000,15 +665,6 @@
   position: relative;
   text-indent: 0;
   vertical-align: middle;
-}
-
-.e-bigger.e-multi-select-list-wrapper .e-selectall-parent .e-checkbox-wrapper,
-.e-bigger .e-multi-select-list-wrapper .e-selectall-parent .e-checkbox-wrapper {
-  bottom: 1px;
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
-    bottom: 2px;
-  }
-  margin-right: $ddl-bigger-check-right-margin;
 }
 
 .e-multi-select-list-wrapper.e-rtl .e-selectall-parent .e-checkbox-wrapper {
@@ -1027,12 +683,6 @@
 .e-small .e-multiselect:not(.e-outline):not(.e-filled) .e-input-group-icon.e-ddl-icon {
   @if $ddl-multiselect-skin-name == 'Material3' {
     top: 6px;
-  }
-}
-
-.e-bigger.e-small .e-multiselect .e-input-group-icon.e-ddl-icon {
-  @if $ddl-multiselect-skin-name == 'Material3' {
-    top: 3px;
   }
 }
 
@@ -1069,20 +719,12 @@
 
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-filter,
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group.e-input-focus .e-input-filter {
-  @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'fluent2' {
+  @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'bootstrap5.3' and $ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'fluent2' {
     padding: $ddl-filterbar-padding;
   }
 }
 
-.e-bigger .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-filter,
-.e-bigger .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group.e-input-focus {
-  @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'Material3' {
-    padding: $ddl-bigger-filterbar-padding;
-  }
-}
-
-.e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group:not(.e-control-container) .e-clear-icon,
-.e-bigger .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group:not(.e-control-container) .e-clear-icon {
+.e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group:not(.e-control-container) .e-clear-icon {
   @if $ddl-multiselect-skin-name != 'Material3' {
     padding-left: 8px;
   }
@@ -1095,16 +737,10 @@
   padding: $ddl-back-icon-padding;
 }
 
-.e-bigger .e-checkbox .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name != 'highcontrast' {
-    line-height: $ddl-delimviewheight-check-bigger;
-  }
-}
-
 .e-checkbox .e-multi-select-wrapper .e-delim-values .e-remain {
   line-height: 20px;
   padding-left: 10px;
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
+  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
     padding-left: 0;
   }
 }
@@ -1129,19 +765,6 @@
 
 ejs-multiselect {
   display: block;
-}
-
-.e-bigger .e-multi-select-wrapper .e-chips-close {
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    height: $ddl-bigger-chip-close-square;
-    width: $ddl-bigger-chip-close-width;
-  }
-}
-
-.e-bigger .e-multi-select-wrapper .e-chips .e-chips-close::before {
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    font-size: $ddl-bigger-chip-close-font;
-  }
 }
 
 .e-small.e-multi-select-list-wrapper .e-selectall-parent,
@@ -1184,20 +807,6 @@ ejs-multiselect {
   }
 }
 
-.e-bigger.e-small .e-multi-select-wrapper.e-delimiter .e-searcher,
-.e-bigger.e-small .e-multi-select-wrapper.e-delimiter .e-multi-searcher {
-  @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
-    height: $ddl-bigger-small-input-height;
-  }
-}
-
-.e-bigger .e-multi-select-wrapper.e-delimiter .e-searcher,
-.e-bigger .e-multi-select-wrapper.e-delimiter .e-multi-searcher {
-  @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
-    height: $ddl-input-bigger-height;
-  }
-}
-
 .e-small .e-multi-select-wrapper input[type = 'text'] {
   @if $ddl-multiselect-skin-name == 'tailwind' {
     font-size: $ddl-chip-small-font-size;
@@ -1213,7 +822,7 @@ ejs-multiselect {
 
 .e-small .e-multi-select-wrapper .e-chips-close.e-close-hooker,
 .e-small .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
-  @if $skin-name != 'fluent2' {
+  @if $ddl-multiselect-skin-name != 'fluent2' {
     margin-top: $ddl-small-closer-margin-top;
   }
   @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' or $ddl-multiselect-skin-name == 'Material3' {
@@ -1248,106 +857,15 @@ ejs-multiselect {
   }
 }
 
-.e-bigger.e-small.e-multi-select-list-wrapper .e-selectall-parent,
-.e-bigger.e-small .e-multi-select-list-wrapper .e-selectall-parent {
-  line-height: $ddl-select-all-height-bigger-small;
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    font-size: $ddl-chip-bigger-small-font-size;
-    text-indent: $ddl-bigger-small-check-right;
-  }
-}
-
-.e-bigger.e-small .e-multiselect.e-control-container .e-multi-select-wrapper .e-ddl-icon,
-.e-bigger.e-small .e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon {
-  @if $ddl-multiselect-skin-name == 'Material3' {
-    margin-top: $ddl-bigger-small-ddl-icon-top;
-    top: 100%;
-  }
-}
-
-.e-bigger.e-small.e-multiselect.e-control-container .e-multi-select-wrapper .e-ddl-icon,
-.e-bigger.e-small.e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon {
-  margin-top: $ddl-bigger-small-ddl-icon-top;
-}
-
-.e-bigger.e-small .e-multi-select-wrapper .e-chips-close {
-  height: $ddl-bigger-small-chip-close-square;
-  width: $ddl-bigger-small-chip-close-width;
-  @if $ddl-multiselect-skin-name == 'bootstrap4' {
-    margin: 3px 10px 10px 0;
-  }
-}
-
-.e-bigger.e-small .e-multi-select-wrapper .e-chips-close.e-close-hooker {
-  @if $ddl-multiselect-skin-name == 'Material3' {
-    min-height: $ddl-bigger-small-close-hooker-height;
-    min-width: $ddl-bigger-small-close-hooker-width;
-  }
-}
-
-.e-bigger.e-small .e-multi-select-wrapper {
-  min-height: $ddl-control-bigger-small-height;
-}
-
-.e-bigger.e-small .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    font-size: $ddl-chip-bigger-small-font-size;
-  }
-  height: $ddl-bigger-small-input-height;
-  min-height: $ddl-bigger-small-input-height;
-}
-
-.e-small.e-bigger .e-multi-select-wrapper .e-delim-values {
-  font-size: $ddl-delim-bigger-small-font-size;
-  line-height: $ddl-delimviewheight-bigger-small;
-}
-
-.e-bigger.e-small .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
-  @if $ddl-multiselect-skin-name == 'Material3' {
-    right: $ddl-close-icon-bigger-small-right;
-  }
-}
-
 .e-small .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
   @if $ddl-multiselect-skin-name == 'Material3' {
     right: $ddl-close-icon-small-right;
   }
 }
 
-.e-bigger.e-small .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-.e-bigger.e-small .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
-  margin-top: $ddl-closer-margin-top-bigger-small;
-  @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'tailwind' {
-    right: $ddl-chip-hooker-right;
-  }
-  @if $ddl-multiselect-skin-name == 'Material3' {
-    right: $ddl-chip-hooker-bigger-small-right;
-  }
-  @if $ddl-multiselect-skin-name == 'tailwind' {
-    font-size: $ddl-closer-hooker-font-bigger-small;
-    height: $ddl-bigger-small-clear-icon-height;
-    width: $ddl-bigger-small-clear-icon-width;
-  }
-  @if $ddl-multiselect-skin-name == 'FluentUI' {
-    font-size: $ddl-biggersmall-chip-down-icon-font;
-  }
-}
-
-.e-small.e-bigger .e-multi-select-wrapper .e-chips > .e-chipcontent {
-  @if $ddl-multiselect-skin-name == 'bootstrap4' {
-    padding: $ddl-chip-bigger-content-padding;
-  }
-}
-
 .e-content-placeholder.e-multiselect.e-placeholder-multiselect {
   background-size: 300px 33px;
   min-height: 33px;
-}
-
-.e-bigger .e-content-placeholder.e-multiselect.e-placeholder-multiselect,
-.e-bigger.e-content-placeholder.e-multiselect.e-placeholder-multiselect {
-  background-size: 300px 40px;
-  min-height: 40px;
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'] {
@@ -1381,87 +899,12 @@ ejs-multiselect {
   }
 }
 
-.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'],
-.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'],
-.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'],
-.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    font-size: inherit;
-    min-height: $outline-multiselect-inner-input-height;
-    padding: 8px 12px 9px;
-  }
-}
-
-.e-bigger.e-small.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'],
-.e-bigger.e-small .e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'],
-.e-bigger .e-small.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'],
-.e-small .e-bigger.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    padding: 8px 12px 9px;
-  }
-}
-
-.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'],
-.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    font-size: inherit;
-    min-height: $outline-multiselect-bigger-inner-input-height;
-  }
-}
-
-.e-bigger {
-  .e-multiselect.e-outline .e-multi-select-wrapper,
-  #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
-    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-      min-height: $outline-multiselect-bigger-height;
-      padding: $outline-multiselect-bigger-overall-padding;
-    }
-  }
-
-  .e-small {
-    #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
-      @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-        min-height: $ddl-outline-multiselect-height;
-        padding: $outline-multiselect-overall-padding;
-      }
-    }
-  }
-
-  #{if(&, '&', '*')}.e-small {
-    .e-multiselect.e-outline .e-multi-select-wrapper,
-    #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
-      @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-        min-height: $ddl-outline-multiselect-height;
-        padding: $outline-multiselect-overall-padding;
-      }
-    }
-  }
-}
-
 .e-small {
   .e-multiselect.e-outline .e-multi-select-wrapper,
   #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
     @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
       min-height: $outline-multiselect-small-height;
       padding: $outline-multiselect-overall-padding;
-    }
-  }
-
-  .e-bigger {
-    #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
-      @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-        min-height: $ddl-outline-multiselect-height;
-        padding: $outline-multiselect-overall-padding;
-      }
-    }
-  }
-
-  #{if(&, '&', '*')}.e-bigger {
-    .e-multiselect.e-outline .e-multi-select-wrapper {
-      @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-        min-height: $ddl-outline-multiselect-height;
-        padding: $outline-multiselect-overall-padding;
-      }
     }
   }
 }
@@ -1474,11 +917,7 @@ ejs-multiselect {
 }
 
 .e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
-.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
-.e-bigger.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
-.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
-.e-bigger .e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
-.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon {
+.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding-right: 0;
   }
@@ -1488,30 +927,12 @@ ejs-multiselect {
 .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
 .e-rtl .e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
 .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
-.e-rtl.e-bigger.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
-.e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
-.e-bigger .e-rtl.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
-.e-bigger .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
-.e-rtl .e-bigger.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
-.e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
 .e-rtl.e-small.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
 .e-rtl.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
 .e-small .e-rtl.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
 .e-small .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
 .e-rtl .e-small.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
-.e-rtl .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
-.e-rtl.e-bigger .e-small.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
-.e-rtl.e-small .e-bigger.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
-.e-rtl .e-bigger .e-small.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
-.e-rtl .e-small .e-bigger.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
-.e-rtl.e-small.e-bigger .e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
-.e-rtl.e-small.e-bigger.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
-.e-rtl.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
-.e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
-.e-rtl .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
-.e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
-.e-rtl.e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
-.e-rtl.e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon {
+.e-rtl .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding-left: 0;
   }
@@ -1521,23 +942,9 @@ ejs-multiselect {
 .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper,
 .e-rtl .e-small.e-multiselect.e-outline .e-multi-select-wrapper,
 .e-rtl.e-small .e-multiselect.e-outline .e-multi-select-wrapper,
-.e-rtl.e-small.e-multiselect.e-outline .e-multi-select-wrapper,
-.e-rtl.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper,
-.e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper,
-.e-rtl .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper,
-.e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper,
-.e-rtl.e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper,
-.e-rtl.e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper {
+.e-rtl.e-small.e-multiselect.e-outline .e-multi-select-wrapper {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: $outline-rtl-multiselect-overall-padding;
-  }
-}
-
-.e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper,
-.e-rtl.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper,
-.e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    padding: $outline-rtl-multiselect-bigger-overall-padding;
   }
 }
 
@@ -1545,16 +952,7 @@ ejs-multiselect {
 .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
 .e-rtl .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
 .e-rtl.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-rtl.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-rtl.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-rtl .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-rtl.e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-rtl.e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-rtl.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide {
+.e-rtl.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding-left: 0;
   }
@@ -1562,13 +960,7 @@ ejs-multiselect {
 
 .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
 .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
-.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide {
+.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding-right: 0;
   }
@@ -1580,26 +972,10 @@ ejs-multiselect {
   }
 }
 
-.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
-.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    height: $outline-multiselect-bigger-height;
-  }
-}
-
 .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
 .e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $outline-multiselect-small-height;
-  }
-}
-
-.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
-.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
-.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
-.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    height: $ddl-outline-multiselect-height;
   }
 }
 
@@ -1608,15 +984,6 @@ ejs-multiselect {
     font-size: 14px;
     line-height: $ddl-outline-multiselect-height;
     padding: $outline-multiselect-delimeter-padding;
-  }
-}
-
-.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    font-size: 16px;
-    line-height: $outline-multiselect-bigger-height;
-    padding: $outline-multiselect-bigger-delimeter-padding;
   }
 }
 
@@ -1629,31 +996,9 @@ ejs-multiselect {
   }
 }
 
-.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    font-size: 14px;
-    line-height: $ddl-outline-multiselect-height;
-    padding: $outline-multiselect-delimeter-padding;
-  }
-}
-
 .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: $outline-rtl-multiselect-delimeter-padding;
-  }
-}
-
-.e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-rtl.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-bigger .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-bigger .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-rtl .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    padding: $outline-rtl-multiselect-bigger-delimeter-padding;
   }
 }
 
@@ -1665,23 +1010,6 @@ ejs-multiselect {
 .e-rtl .e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: $outline-rtl-multiselect-small-delimeter-padding;
-  }
-}
-
-.e-rtl.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-rtl.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-rtl .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-bigger.e-small .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-rtl.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-rtl .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-bigger .e-rtl.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-bigger .e-rtl .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-small .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
-.e-small .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    padding: $outline-rtl-multiselect-delimeter-padding;
   }
 }
 
@@ -1700,28 +1028,10 @@ ejs-multiselect {
   }
 }
 
-.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
-.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    height: $outline-multiselect-bigger-chip-height;
-    padding: $outline-multiselect-bigger-chip-padding;
-  }
-}
-
 .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
 .e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $outline-multiselect-small-chip-height;
-    padding: $outline-multiselect-chip-padding;
-  }
-}
-
-.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
-.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
-.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
-.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    height: $outline-multiselect-chip-height;
     padding: $outline-multiselect-chip-padding;
   }
 }
@@ -1739,20 +1049,9 @@ ejs-multiselect {
   }
 }
 
-.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent {
+.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: $outline-multiselect-chip-font-size;
-  }
-}
-
-.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    font-size: $outline-multiselect-bigger-chip-font-size;
   }
 }
 
@@ -1775,15 +1074,6 @@ ejs-multiselect {
   }
 }
 
-.e-bigger.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
-.e-bigger .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
-.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
-.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    font-size: 16px;
-  }
-}
-
 .e-small.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-small .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
@@ -1793,41 +1083,15 @@ ejs-multiselect {
   }
 }
 
-.e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
-.e-bigger.e-small .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
-.e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
-.e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
-.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
-.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
-.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
-.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    font-size: 14px;
-  }
-}
-
 .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper {
   padding: 0 12px 0 8px;
 }
 
-.e-small.e-filled:not(.e-bigger).e-multiselect:not(.e-float-input) .e-multi-select-wrapper,
-.e-small .e-filled:not(.e-bigger).e-multiselect:not(.e-float-input) .e-multi-select-wrapper {
-  padding: 3px 12px 0 4px;
-}
-
-.e-multiselect.e-filled.e-input-group.e-control-wrapper,
-.e-bigger.e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper,
-.e-bigger.e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper,
-.e-bigger .e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper,
-.e-small .e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper {
+.e-multiselect.e-filled.e-input-group.e-control-wrapper {
   padding: 0;
 }
 
-.e-filled.e-float-input .e-multi-select-wrapper,
-.e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper,
-.e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper,
-.e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper,
-.e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper {
+.e-filled.e-float-input .e-multi-select-wrapper {
   padding: 11px 12px 0;
 }
 
@@ -1836,25 +1100,12 @@ ejs-multiselect {
   padding: 12px 12px 0 8px;
 }
 
-.e-bigger.e-filled.e-float-input .e-multi-select-wrapper,
-.e-bigger .e-filled.e-float-input .e-multi-select-wrapper {
-  padding: 19px 12px 0 16px;
-}
-
-.e-bigger:not(.e-small).e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper {
-  padding-top: 3px;
-}
-
 .e-rtl.e-multiselect.e-filled.e-input-group.e-control-wrapper,
 .e-rtl.e-multiselect.e-filled.e-float-input.e-control-wrapper {
   padding: 0;
 }
 
-.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
-.e-bigger.e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
-.e-bigger.e-small .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
-.e-bigger .e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
-.e-small .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'] {
+.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'] {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     min-height: $ddl-multiselect-filled-input-min-height;
     padding-right: 10px;
@@ -1874,20 +1125,6 @@ ejs-multiselect {
     height: $ddl-multiselect-filled-float-input-min-height-small;
     min-height: $ddl-multiselect-filled-float-input-min-height-small;
     padding: 2px;
-  }
-}
-
-.e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
-.e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    min-height: $ddl-multiselect-filled-input-min-height-bigger;
-  }
-}
-
-.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper input[type = 'text'],
-.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    min-height: $ddl-multiselect-filled-float-input-min-height-bigger;
   }
 }
 
@@ -1911,79 +1148,23 @@ ejs-multiselect {
   }
 }
 
-.e-bigger.e-filled:not(.e-small).e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher,
-.e-bigger .e-filled:not(.e-small).e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    height: $ddl-multiselect-filled-input-min-height-bigger;
-  }
-}
-
-.e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
-.e-bigger .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    height: $ddl-multiselect-filled-float-input-min-height-bigger;
-  }
-}
-
-.e-bigger.e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
-.e-bigger.e-small .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher .e-bigger .e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
-.e-small .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    height: $ddl-multiselect-filled-float-input-min-height;
-  }
-}
-
-.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper.e-delimiter input[type = 'text'],
-.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper.e-delimiter input[type = 'text'] {
-  padding: 5px 0;
-}
-
-.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
-.e-bigger.e-small.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
-.e-bigger.e-small .e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
-.e-bigger .e-small.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
-.e-small .e-bigger.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase {
+.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     min-height: $ddl-multiselect-filled-float-input-min-height;
   }
 }
 
-.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
-.e-small.e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
-.e-small.e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
-.e-small .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
-.e-bigger .e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values {
+.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 13px;
     line-height: $ddl-multiselect-filled-input-min-height;
   }
 }
 
-.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
-.e-small.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
-.e-small.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
-.e-small .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
-.e-bigger .e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
+.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 14px;
     line-height: $ddl-multiselect-filled-float-input-min-height;
-  }
-}
-
-.e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
-.e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
-.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
-.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    font-size: 16px;
-    line-height: $ddl-multiselect-filled-input-min-height-bigger;
-  }
-}
-
-.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
-.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    line-height: $ddl-multiselect-filled-float-input-min-height-bigger;
   }
 }
 
@@ -2004,16 +1185,10 @@ ejs-multiselect {
   }
 }
 
-.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-bigger.e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-bigger.e-small .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-bigger .e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-small .e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
   height: 28px;
 }
 
-.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
 .e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
 .e-small .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
 .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper.e-mob-wrapper .e-chips.e-mob-chip,
@@ -2022,52 +1197,20 @@ ejs-multiselect {
   height: 24px;
 }
 
-.e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
-  height: 32px;
-}
-
-.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips {
+.e-filled.e-float-input .e-multi-select-wrapper .e-chips {
   height: 18px;
 }
 
 .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-bigger.e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-bigger.e-small .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-bigger .e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-small .e-bigger.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
   margin: 8px 8px 0 0;
   padding: 0 8px;
 }
 
 .e-rtl.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-rtl.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-rtl.e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-rtl.e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-rtl.e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-rtl.e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-rtl.e-bigger.e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-rtl.e-bigger.e-small .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-rtl.e-bigger .e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
-.e-rtl.e-small .e-bigger.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+.e-rtl.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
   margin: 8px 0 0 8px;
   padding: 0 8px;
-}
-
-.e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips {
-  padding-left: 8px;
 }
 
 .e-small .e-filled .e-multi-select-wrapper .e-chips,
@@ -2082,24 +1225,14 @@ ejs-multiselect {
   margin: 4px 0 0 4px;
 }
 
-.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
-.e-small.e-filled:not(.e-bigger).e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
-.e-small .e-filled:not(.e-bigger).e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
-.e-bigger.e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
-.e-bigger.e-small .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
-.e-bigger .e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
-.e-small .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close {
+.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close {
   @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
     width: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
   }
 }
 
-.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-bigger.e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-bigger.e-small .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-bigger .e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-small .e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent {
+.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent {
   font-size: 13px;
   padding: 0 8px 0 0;
 }
@@ -2109,20 +1242,12 @@ ejs-multiselect {
   font-size: 12px;
 }
 
-.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-bigger.e-small.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-bigger.e-small .e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-bigger .e-small.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-small .e-bigger.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent {
+.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent {
   font-size: 12px;
   padding: 0 4px 0 0;
 }
 
-.e-rtl.e-filled.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-rtl.e-bigger.e-small.e-filled.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-rtl.e-bigger.e-small .e-filled.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-rtl.e-bigger .e-small.e-filled.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-rtl.e-small .e-bigger.e-filled.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent {
+.e-rtl.e-filled.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent {
   padding: 0 0 0 4px;
 }
 
@@ -2131,35 +1256,9 @@ ejs-multiselect {
   font-size: 10px;
 }
 
-.e-bigger.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-bigger .e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent {
-  font-size: 13px;
-}
-
 .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-mob-wrapper .e-chips > .e-chipcontent {
   font-size: 13px;
   padding-right: 4px;
-}
-
-.e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
-.e-bigger .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent {
-  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
-    font-size: $ddl-multiselect-filled-chip-clear-icon-size;
-  }
-}
-
-.e-rtl.e-bigger.e-filled .e-multi-select-wrapper .e-chips,
-.e-rtl.e-bigger .e-filled .e-multi-select-wrapper .e-chips,
-.e-rtl.e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-rtl.e-bigger .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-bigger.e-filled .e-multi-select-wrapper .e-chips,
-.e-bigger .e-filled .e-multi-select-wrapper .e-chips {
-  padding: 0 12px;
-}
-
-.e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
-.e-bigger .e-filled.e-float-input .e-multi-select-wrapper .e-chips {
-  padding-right: 8px;
 }
 
 // Clear icon styles

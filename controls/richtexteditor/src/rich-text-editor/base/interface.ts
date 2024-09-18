@@ -1,7 +1,7 @@
 import { Component, Observer, L10n, KeyboardEventArgs, EmitType } from '@syncfusion/ej2-base';
 import { ItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
 import { ItemModel as DropDownItemModel, DropDownButton } from '@syncfusion/ej2-splitbuttons';
-import { ToolbarType, RenderType, ImageInputSource } from './enum';
+import { ToolbarType, RenderType, ImageInputSource, DialogType } from './enum';
 import { Toolbar } from '../actions/toolbar';
 import { UndoRedoManager } from '../../editor-manager/plugin/undo';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -10,7 +10,7 @@ import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
 import { NodeSelection } from '../../selection/selection';
 import { EditorMode, EnterKey, ShiftEnterKey } from './../../common/types';
 import { MarkdownSelection } from './../../markdown-parser/plugin/markdown-selection';
-import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel } from '../models/models';
+import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel } from '../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';
 import { Count } from '../actions/count';
 import { ColorPicker, ColorPickerEventArgs, ColorPickerModel, FileInfo } from '@syncfusion/ej2-inputs';
@@ -37,6 +37,7 @@ import { FileManager } from '../actions/file-manager';
 import { NodeCutter, DOMNode, IFormatPainterEditor } from '../../editor-manager';
 import { EnterKeyAction } from '../actions/enter-key';
 import { EmojiPicker } from '../actions/emoji-picker';
+import { SlashMenuSettingsModel } from '../models/slash-menu-settings-model';
 /**
  * Specifies Rich Text Editor interfaces.
  *
@@ -66,6 +67,33 @@ export interface IRichTextEditor extends Component<HTMLElement> {
      * }
      */
     insertImageSettings: ImageSettingsModel
+    /**
+     * Configures the import word of the RTE.
+     *
+     * @default
+     * {
+     * serviceUrl:null,
+     * }
+     */
+    importWord: ImportWordModel
+    /**
+     * Configures the export word of the RTE.
+     *
+     * @default
+     * {
+     * serviceUrl:null, fileName:Sample.docx, stylesheet: null,
+     * }
+     */
+    exportWord: ExportWordModel
+    /**
+     * Configures the export pdf of the RTE.
+     *
+     * @default
+     * {
+     * serviceUrl:null, fileName:Sample.pdf, stylesheet: null,
+     * }
+     */
+    exportPdf: ExportPdfModel
     /**
      * Configures the image settings of the RTE.
      *
@@ -221,6 +249,8 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     showEmojiPicker?(x?: number, y?: number): void
     addAnchorAriaLabel?(value: string): string
     autoSaveOnIdle: boolean
+    slashMenuSettings: SlashMenuSettingsModel
+    showDialog(type: DialogType): void
 }
 /**
  * @deprecated
@@ -602,6 +632,7 @@ export interface ITableNotifyArgs {
  * Provides information about a EditorModel.
  */
 export interface IEditorModel {
+    currentDocument?: Document
     execCommand?: Function
     observer?: Observer
     markdownSelection?: MarkdownSelection
@@ -612,6 +643,7 @@ export interface IEditorModel {
     nodeCutter?: NodeCutter
     formatPainterEditor?: IFormatPainterEditor
     destroy?(): void
+    beforeSlashMenuApplyFormat?(): void
 }
 
 /**
@@ -763,7 +795,7 @@ export interface ActionCompleteEventArgs {
 export interface ActionBeginEventArgs {
     /** Defines the current action. */
     requestType?: string
-    /** Cancel the print action */
+    /** Cancel the current action */
     cancel?: boolean
     /**
      * Defines the current item.
@@ -771,8 +803,8 @@ export interface ActionBeginEventArgs {
      * @deprecated
      */
     item?: IToolbarItemModel | IDropDownItemModel
-    /** Defines the current item. */
-    originalEvent?: MouseEvent | KeyboardEvent
+    /** Defines the event orignated the action. */
+    originalEvent?: MouseEvent | KeyboardEvent | DragEvent
     /** Defines the event name. */
     name?: string
     /** Defines the selection type is dropdown. */
@@ -789,6 +821,12 @@ export interface ActionBeginEventArgs {
      * @deprecated
      */
     emojiPickerArgs?: IEmojiPickerArgs
+    /**
+     * Defines the content to be exported.
+     *
+     * @deprecated
+     */
+    exportValue?: string
 }
 
 export interface IEmojiPickerArgs{
@@ -954,10 +992,13 @@ export interface IFormatter {
     process?: Function
     onKeyHandler?: Function
     editorManager?: IEditorModel
+    /** Retrieves the undo and redo stack arrays */
     getUndoRedoStack?: Function
     onSuccess?: Function
+    /** Saves the current state for undo and redo actions */
     saveData?: Function
     disableToolbarItem?(items: string | string[]): void
+    /** Enables the undo functionality */
     enableUndo?: Function
     setDocument?: Function
     getDocument?: Function
@@ -967,6 +1008,7 @@ export interface IFormatter {
     initializePlugin?: Function
     isAppliedCommand?(e?: MouseEvent): string
     mdSelectionFormat?: MDSelectionFormats
+    beforeSlashMenuApply(): void
 }
 /**
  * @deprecated
@@ -1595,6 +1637,11 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
     'escapeFormatPainter' : {
         command: 'FormatPainter',
         value: 'escape'
+    },
+    'InlineCode': {
+        command: 'Style',
+        subCommand: 'inlinecode',
+        value: 'inlinecode'
     }
 };
 
@@ -1607,7 +1654,7 @@ export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrou
 'formatBlock' | 'heading' | 'indent' | 'insertHTML' | 'insertOrderedList' | 'insertUnorderedList' |
 'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' | 'insertAudio' | 'insertVideo' |
 'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable' | 'editImage' | 'editLink' | 'applyFormatPainter'
-| 'copyFormatPainter' | 'escapeFormatPainter' | 'emojiPicker';
+| 'copyFormatPainter' | 'escapeFormatPainter' | 'emojiPicker' | 'InlineCode';
 
 /**
  * @hidden
@@ -1670,4 +1717,84 @@ export interface IBaseQuickToolbar {
      * Element of the Toolbar rendered inside the Popup.
      */
     toolbarElement: HTMLElement;
+}
+
+/**
+ * @hidden
+ * @private
+ */
+export interface MetaTag {
+    /**
+     * The name attribute of the meta tag.
+     */
+    name?: string;
+    /**
+     * The content attribute of the meta tag.
+     */
+    content?: string;
+    /**
+     * The charset attribute of the meta tag.
+     */
+    charset?: string;
+    /**
+     * The http-equiv attribute of the meta tag.
+     */
+    httpEquiv?: string;
+    /**
+     * The property attribute of the meta tag.
+     */
+    property?: string;
+}
+
+/**
+ * Specifies the custom slash menu item configuration.
+ *
+ */
+export interface ISlashMenuItem {
+    /**
+     * Specifies the text to be displayed in the slash menu item.
+     */
+    text: string
+    /**
+     * Specifies the command to be executed when the slash menu item is clicked.
+     */
+    command: string
+    /**
+     * Specifies the icon class to be added in the slash menu item.
+     */
+    iconCss: string
+    /**
+     * Specifies the description to be displayed in the slash menu item.
+     */
+    description?: string
+    /**
+     * Specifies the type of the slash menu item. Grouping will be done based on the tyoe.
+     */
+    type: string
+}
+
+/**
+ * Provides information about a SlashMenuItemSelect event.
+ */
+export interface SlashMenuItemSelectArgs{
+    /**
+     * If the event is triggered by interaction, it returns true. Otherwise, it returns false.
+     */
+    isInteracted: boolean;
+    /**
+     * Returns the selected list item of the slash menu list.
+     */
+    item: HTMLLIElement;
+    /**
+     * Returns the selected slash menu item data.
+     */
+    itemData: ISlashMenuItem;
+    /**
+     * Specifies the original event arguments.
+     */
+    originalEvent: MouseEvent | KeyboardEvent | TouchEvent;
+    /**
+     * Specifies to the boolean value to cancel the default action.
+     */
+    cancel?: boolean;
 }

@@ -29,13 +29,13 @@
       cursor: pointer;
       outline: none;
       position: absolute;
-      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'fluent2' or $skin-name == 'Material3') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5'  or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'fluent2' or $skin-name == 'Material3') {
         @include button-size($slider-button-size);
       }
       @else {
         @include button-size(18px);
       }
-      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
         border-radius: 10px;
         box-shadow: $slider-button-shadow;
       }
@@ -106,6 +106,9 @@
     .e-slider {
       .e-range {
         background-color: $slider-range-bar-color;
+        @if ($skin-name == 'fluent2')  {
+          border: 1px solid $slider-range-border-color;
+        }
         @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           border-radius: 4px;
         }
@@ -184,7 +187,7 @@
     }
 
     &.e-disabled {
-      @if ($skin-name == 'tailwind') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'fluent2') {
         .e-slider {
           .e-range {
             background: $slider-disabled-bg-color;
@@ -194,6 +197,25 @@
             background: $slider-disabled-bg-color;
             border-color: $slider-disabled-bg-color;
           }
+        }
+        @if ($skin-name == 'fluent2') {
+          .e-slider-button {
+            border: 1px solid $slider-button-disabled-border-color;
+            background-color: $slider-button-disabled-bg-color;
+          }
+        }
+      }
+    }
+
+    &.e-horizontal.e-disabled {
+      @if ($skin-name == 'fluent2') {
+        .e-slider-track {
+          background-color: $slider-disabled-track-bg-color;
+          border: 1px solid $slider-range-border-color;
+        }
+
+        .e-button-icon::before {
+          color: $slider-button-icon-disabled-bg-color;
         }
       }
     }

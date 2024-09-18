@@ -123,7 +123,7 @@ export class Formatter {
                 }
             }
         } else if (!isNOU(args) && args.item.command && args.item.subCommand && ((args.item.command !== args.item.subCommand
-            && args.item.command !== 'Font')
+            && args.item.command !== 'Font' && args.item.command !== 'Export')
             || ((args.item.subCommand === 'FontName' || args.item.subCommand === 'FontSize') && args.name === 'dropDownSelect')
             || ((args.item.subCommand === 'BackgroundColor' || args.item.subCommand === 'FontColor')
                 && args.name === 'colorPickerChanged') || args.item.subCommand === 'FormatPainter' || args.item.subCommand === 'EmojiPicker')) {
@@ -147,6 +147,9 @@ export class Formatter {
                         }
                     }
                     const command: string = actionBeginArgs.item.subCommand.toLocaleLowerCase();
+                    if (command === 'image') {
+                        value = actionBeginArgs.itemCollection;
+                    }
                     if (command === 'paste' || command === 'cut' || command === 'copy') {
                         self.clipboardAction(command, event);
                     } else {
@@ -281,5 +284,9 @@ export class Formatter {
                 updateUndoRedoStatus(self.toolbarModule.baseToolbar, status);
             }
         }
+    }
+
+    public beforeSlashMenuApply(): void {
+        this.editorManager.beforeSlashMenuApplyFormat();
     }
 }

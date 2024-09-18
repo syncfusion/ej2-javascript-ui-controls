@@ -8,7 +8,7 @@ import { IGrid, IAction, NotifyArgs, EJ2Intance } from '../base/interface';
 import * as events from '../base/constant';
 import { ShowHide } from './show-hide';
 import { Dialog, calculateRelativeBasedPosition, DialogModel } from '@syncfusion/ej2-popups';
-import { createCboxWithWrap, toogleCheckbox, parentsUntil, removeAddCboxClasses, setChecked } from '../base/util';
+import { createCboxWithWrap, toogleCheckbox, parentsUntil, removeAddCboxClasses, setChecked, resetDialogAppend } from '../base/util';
 import { ResponsiveDialogAction } from '../base/enum';
 import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
@@ -252,6 +252,9 @@ export class ColumnChooser implements IAction {
             const isSticky: boolean = this.parent.getHeaderContent().classList.contains('e-sticky');
             const toolbarItem: HTMLElement = <HTMLElement>closest(target, '.e-toolbar-item');
             let newpos: { top: number, left: number };
+            if (document.getElementById(this.parent.element.id + '_e-popup') && document.getElementById(this.parent.element.id + '_e-popup').querySelector('.e-ccdlg')) {
+                this.parent.element.appendChild(this.dlgObj.element);
+            }
             if (isSticky) {
                 newpos = toolbarItem.getBoundingClientRect();
                 this.dlgObj.element.classList.add('e-sticky');
@@ -279,6 +282,11 @@ export class ColumnChooser implements IAction {
             }
             this.removeCancelIcon();
             this.dlgObj.show();
+            if ((this.parent.getContent().firstElementChild as HTMLElement).offsetHeight < this.dlgObj.element.offsetHeight &&
+                !this.parent.element.classList.contains('e-drillthrough-grid')) {
+                resetDialogAppend(this.parent, this.dlgObj);
+                (this.dlgObj.element.querySelector('.e-ccsearch') as HTMLInputElement).select();
+            }
             this.parent.notify(events.columnChooserOpened, { dialog: this.dlgObj });
 
         } else {
@@ -338,6 +346,10 @@ export class ColumnChooser implements IAction {
         }
         this.dlgObj.beforeOpen = this.customDialogOpen.bind(this);
         this.dlgObj.show();
+        if ((this.parent.getContent().firstElementChild as HTMLElement).offsetHeight < this.dlgObj.element.offsetHeight &&
+            !this.parent.element.classList.contains('e-drillthrough-grid')) {
+            resetDialogAppend(this.parent, this.dlgObj);
+        }
         this.isInitialOpen = true;
         this.dlgObj.beforeClose = this.customDialogClose.bind(this);
     }
@@ -517,7 +529,7 @@ export class ColumnChooser implements IAction {
         this.hideColumn = [];
         this.changedColumns = [];
         this.filterColumns = [];
-        this.searchValue = "";
+        this.searchValue = '';
         this.hideDialog();
     }
 
@@ -666,7 +678,7 @@ export class ColumnChooser implements IAction {
             this.updateIntermediateBtn();
             const columnUid: string = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
             const column: Column[] =  (this.searchValue && this.searchValue.length) ? this.filterColumns : this.parent.getColumns();
-            if (columnUid === this.parent.element.id +'-selectAll') {
+            if (columnUid === this.parent.element.id + '-selectAll') {
                 this.changedColumns = [];
                 this.unchangedColumns = [];
                 for (let i: number = 0; i < column.length; i++) {
@@ -777,7 +789,7 @@ export class ColumnChooser implements IAction {
         this.ulElement = this.parent.createElement('ul', { className: 'e-ccul-ele e-cc' });
         const selectAllValue: string = this.l10n.getConstant('SelectAll');
         const cclist: HTMLElement = this.parent.createElement('li', { className: 'e-cclist e-cc e-cc-selectall' });
-        const selectAll: Element = this.createCheckBox(selectAllValue, false, this.parent.element.id +'-selectAll');
+        const selectAll: Element = this.createCheckBox(selectAllValue, false, this.parent.element.id + '-selectAll');
         if (gdCol.length) {
             selectAll.querySelector('.e-checkbox-wrapper').firstElementChild.classList.add('e-selectall');
             selectAll.querySelector('.e-frame').classList.add('e-selectall');

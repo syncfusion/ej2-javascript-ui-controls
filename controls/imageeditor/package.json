@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-image-editor",
-	"version": "26.2.10",
+	"version": "26.1.40",
 	"description": "Essential JS 2 ImageEditor",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -14,7 +14,8 @@
 		"@syncfusion/ej2-inputs": "*",
 		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-popups": "*",
-		"@syncfusion/ej2-splitbuttons": "*"
+		"@syncfusion/ej2-splitbuttons": "*",
+		"markdown-spellcheck": "^1.3.1"
 	},
 	"devDependencies": {
 		"@syncfusion/ej2-staging": "^1.0.1",

@@ -1,5 +1,5 @@
 import { SpreadsheetModel, CellRenderEventArgs, Spreadsheet, CellEditEventArgs, CellSaveEventArgs, onContentScroll } from '../../../src/spreadsheet/index';
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { CellModel, SheetModel, getCell, ImageModel } from '../../../src/index';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -283,6 +283,27 @@ describe('Editing ->', () => {
             });
         },0);
         });
+        it('EJ2-896098 - On typing the long text in border applied cell, border is also getting extended in edit mode', function (done) {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.cellFormat({ border: '1px solid #000000', backgroundColor: '#FFFF00' }, 'D13');
+            const cell: any = spreadsheet.sheets[0].rows[12].cells[3];
+            expect(cell.style.borderLeft).toEqual('1px solid #000000');
+            expect(cell.style.borderRight).toEqual('1px solid #000000');
+            expect(cell.style.borderTop).toEqual('1px solid #000000');
+            expect(cell.style.borderBottom).toEqual('1px solid #000000');
+            expect(cell.style.backgroundColor).toEqual('#FFFF00');
+            helper.edit('D13', 'Border wont be expand when type long text along with border applied');
+            expect(cell.value).toEqual('Border wont be expand when type long text along with border applied');
+            const editorElement: any = helper.getElement('.e-spreadsheet-edit');
+            helper.invoke('startEdit');
+            expect(editorElement.style.borderLeft).toBe('');
+            expect(editorElement.style.borderRight).toBe('');
+            expect(editorElement.style.borderTop).toBe('');
+            expect(editorElement.style.borderBottom).toBe('');
+            expect(editorElement.style.backgroundColor).toBe('rgb(255, 255, 0)');
+            helper.invoke('endEdit');
+            done();
+        });
     });
 
     describe('Edit formula in formula bar and cells ->', () => {
@@ -551,7 +572,7 @@ describe('Editing ->', () => {
         it('Edit the Hyperlink applied cell->', (done: Function) => {
             helper.invoke('selectRange', ['H11']);
             helper.invoke('addHyperlink', ['www.google.com', 'H11', '55']);
-            expect(helper.getInstance().sheets[0].rows[10].cells[7].value).toBe(55);
+            expect(helper.getInstance().sheets[0].rows[10].cells[7].value).toBe('55');
             expect(helper.getInstance().sheets[0].rows[10].cells[7].hyperlink).toBe('http://www.google.com');
             helper.triggerKeyNativeEvent(32);
             setTimeout(() => {
@@ -602,6 +623,25 @@ describe('Editing ->', () => {
                 expect(helper.invoke('getCell', [3, 7]).querySelector('e-3arrows-3')).toBeNull();
                 done();
             });
+        });
+    });
+
+    describe('Checking delete key with merged cells', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Deleting merged cell through Delete Key', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.merge('B4:C6');
+            spreadsheet.selectRange("A2:D7");
+            helper.triggerKeyNativeEvent(46);
+            expect(spreadsheet.sheets[0].rows[3].cells[1].rowSpan).toBe(3);
+            expect(spreadsheet.sheets[0].rows[3].cells[1].colSpan).toBe(2);
+            expect(spreadsheet.sheets[0].rows[3].cells[1].value).toBeUndefined();
+            done();
         });
     });
 
@@ -735,15 +775,14 @@ describe('Editing ->', () => {
                 helper.triggerKeyNativeEvent(13);
                 // setTimeout(() => {
                 //     expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toBe('Test 1');
-                //     expect(helper.getInstance().sheets[0].selectedRange).toBe('A2:A2');
-                //     done();
+                //     expect(helper.getInstance().sheets[0].selectedRange).toBe('A2:A2');       
                 // });
                 done();
             });
             it('Edit element is not showing cell value if it contains boolean value false', (done: Function) => {
                 helper.invoke('startEdit');
-                // expect(helper.getInstance().sheets[0].rows[1].cells[0].value.toString()).toBe('false');
-                // expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('FALSE');
+                expect(helper.getInstance().sheets[0].rows[1].cells[0].value.toString()).toBe('false');
+                expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('FALSE');
                 helper.triggerKeyNativeEvent(13);
                 done();
             });
@@ -865,7 +904,7 @@ describe('Editing ->', () => {
                         helper.edit('A2', '10/10/2020'); // Updated the date format value using Edting.
                         setTimeout((): void => {
                             expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('44114');
-                            expect(spreadsheet.sheets[0].rows[1].cells[0].format).toBe('mm-dd-yyyy');
+                            expect(spreadsheet.sheets[0].rows[1].cells[0].format).toBe('m/d/yyyy');
                             expect(helper.invoke('getCell', [1, 0]).textContent).toBe('10/10/2020');
                             done();
                         });
@@ -905,7 +944,7 @@ describe('Editing ->', () => {
                 helper.getElement('#' + helper.id + '_undo').click();
                 expect(spreadsheet.sheets[0].rows[0].cells[0].style.textDecoration).toBe('underline');
                 helper.getElement('#' + helper.id + '_undo').click();
-                expect(spreadsheet.sheets[0].rows[0].cells[0].style).toBeNull();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style).toBeUndefined();
                 helper.getElement('#' + helper.id + '_redo').click();
                 expect(spreadsheet.sheets[0].rows[0].cells[0].style.textDecoration).toBe('underline');
                 helper.getElement('#' + helper.id + '_redo').click();

@@ -163,34 +163,32 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
         break;
     case 'bootstrap5':
         style = {
-            heatMapTitle: '#343A40',
-            axisTitle: '#343A40',
-            axisLabel: '#495057',
-            cellBorder: '#D1D5DB',
+            heatMapTitle: '#212529',
+            axisTitle: '#212529',
+            axisLabel: '#212529',
+            cellBorder: 'transparent',
             background: 'transparent',
-            cellTextColor: '#111827',
-            toggledColor: 'transparent',
-            emptyCellColor: '#E5E7EB',
-            legendLabel: '#343A40',
-            palette: [{ 'color': '#D7E7FF' },
-                { 'color': '#0D6EFD' },
-                { 'color': '#013889' }]
+            toggledColor: '#E9ECEF',
+            emptyCellColor: '#E9ECEF',
+            legendLabel: '#212529',
+            palette: [{ 'color': '#DC3545' },
+                {'color': '#FFC107' },
+                {'color': '#D63384'}]
         };
         break;
     case 'bootstrap5dark':
         style = {
-            heatMapTitle: '#E9ECEF',
-            axisTitle: '#E9ECEF',
-            axisLabel: '#CED4DA',
-            cellBorder: '#4B5563',
+            heatMapTitle: '#DEE2E6',
+            axisTitle: '#DEE2E6',
+            axisLabel: '#DEE2E6',
+            cellBorder: 'transparent',
             background: 'transparent',
-            cellTextColor: '#FFFFFF',
-            toggledColor: 'transparent',
+            toggledColor: '#343A40',
             emptyCellColor: '#343A40',
-            legendLabel: '#E9ECEF',
-            palette: [{ 'color': '#A860F1' },
-                { 'color': '#5ECB9B' },
-                { 'color': '#557EF7' }]
+            legendLabel: '#DEE2E6',
+            palette: [{ 'color': '#DC3545' },
+                { 'color': '#FFC107' },
+                { 'color': '#D63384' }]
         };
         break;
     case 'fluent':

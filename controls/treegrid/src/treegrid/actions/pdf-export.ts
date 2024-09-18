@@ -115,7 +115,7 @@ export class PdfExport {
         let args: Object = {};
         //count not required for this query
         const isLocal: boolean = !isRemoteData(this.parent) && isOffline(this.parent);
-        setValue('query',  this.parent.grid.getDataModule().generateQuery(true), args);
+        setValue('query', this.parent.grid.getDataModule().generateQuery(true), args);
         setValue('isExport',  true, args);
         setValue('isPdfExport', true, args);
         if (!isNullOrUndefined(prop) && !isNullOrUndefined((prop as TreeGridPdfExportProperties).isCollapsedStatePersist)) {

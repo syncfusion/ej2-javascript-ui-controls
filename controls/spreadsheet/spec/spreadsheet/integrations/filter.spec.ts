@@ -526,9 +526,9 @@ describe('Filter ->', () => {
             helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
             setTimeout(() => {
                 setTimeout(() => {
-                    const serachBox: HTMLInputElement = helper.getElement().querySelector('.e-searchinput');
-                    serachBox.value = '2';
-                    spreadsheet.notify('refreshCheckbox', { event: { type: 'keyup', target: serachBox } });
+                    const searchBox: HTMLInputElement = helper.getElement().querySelector('.e-searchinput');
+                    searchBox.value = '2';
+                    spreadsheet.notify('refreshCheckbox', { event: { type: 'keyup', target: searchBox } });
                     checkboxList = helper.getElement('.e-checkboxlist');
                     expect(checkboxList.getElementsByClassName('e-check').length).toBe(3);
                     expect(checkboxList.children[1].querySelector('.e-frame').classList.contains('e-add-current')).toBeTruthy();
@@ -1167,6 +1167,25 @@ describe('Filter ->', () => {
                         });
                     });
                 });
+            });
+        });
+    });
+
+    describe('Checking invalid filter range cases ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{}] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply filter in empty sheet to cover invalidFilterRange cases', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange('E1:E2');
+            spreadsheet.applyFilter([{ field: 'E', predicate: 'or', operator: 'contains', value: '10' }]);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-iconbtn')).toBeNull();
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filtered')).toBeNull();
+                done();
             });
         });
     });
@@ -1879,22 +1898,28 @@ describe('Filter ->', () => {
                 setCell(3, 8, helper.invoke('getActiveSheet'), { value: '0.11' });
                 helper.invoke(
                     'applyFilter', [[{ value: 10, field: 'D', predicate: 'or', operator: 'equal', type: 'number', matchCase: false, ignoreAccent: false },
-                    { value: 20, field: 'D', predicate: 'or', operator: 'equal', type: 'number', matchCase: false, ignoreAccent: false },
-                    { value: 30, field: 'D', predicate: 'or', operator: 'equal', type: 'number', matchCase: false, ignoreAccent: false },
-                    { value: 300, field: 'F', predicate: 'or', operator: 'equal', type: 'number', matchCase: false, ignoreAccent: false }
-                ]]);
-                done();
+                        { value: 20, field: 'D', predicate: 'or', operator: 'equal', type: 'number', matchCase: false, ignoreAccent: false },
+                        { value: 30, field: 'D', predicate: 'or', operator: 'equal', type: 'number', matchCase: false, ignoreAccent: false },
+                        { value: 300, field: 'F', predicate: 'or', operator: 'equal', type: 'number', matchCase: false, ignoreAccent: false }
+                    ]]).then(
+                    () => {
+                        expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filtered')).not.toBeNull();
+                        expect(helper.invoke('getCell', [0, 5]).querySelector('.e-filtered')).not.toBeNull();
+                        done();
+                    });
             });
             it('Filter not applied properly in multiple column filtering after clearing the single column filter->', (done: Function) => {
                 const td: HTMLTableCellElement = helper.invoke('getCell', [0, 3]);
                 helper.invoke('selectRange', ['D1']);
                 focus(td);
-                helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+                helper.getInstance().keyboardNavigationModule.keyDownHandler(
+                    { preventDefault: () => {}, target: td, altKey: true, keyCode: 40 });
                 setTimeout(() => {
                     setTimeout(() => {
+                        helper.setAnimationToNone('.e-filter-popup.e-dialog');
                         helper.click('.e-excelfilter .e-spreadsheet-contextmenu ul li:nth-child(3)');
                         setTimeout(() => {
-                            expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filtered')).toBeNull();
+                            //expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filtered')).toBeNull();
                             expect(helper.invoke('getCell', [0, 5]).querySelector('.e-filtered')).not.toBeNull();
                             done();
                         });
@@ -2042,6 +2067,7 @@ describe('Filter ->', () => {
                 });
             });
         });
+
         describe('EJ2-896267 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({

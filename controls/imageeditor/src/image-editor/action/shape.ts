@@ -1,6 +1,7 @@
 /* eslint-disable no-constant-condition */
 import { EventHandler, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { CurrentObject, ImageEditor, Point, SelectionPoint, CropSelectionSettings, ShapeChangeEventArgs, ShapeSettings, ShapeType, StrokeSettings, TextSettings, ArrowheadType, ActivePoint } from '../index';
+import { CurrentObject, ImageEditor, Point, SelectionPoint, CropSelectionSettings, ShapeChangeEventArgs, ShapeSettings, ShapeType,
+    StrokeSettings, TextSettings, RedactType, RedactSettings, ArrowheadType, ActivePoint } from '../index';
 
 export class Shape {
     private parent: ImageEditor;
@@ -8,11 +9,12 @@ export class Shape {
     private upperContext: CanvasRenderingContext2D;
     private textSettings: TextSettings =
     {text: 'Enter Text', fontFamily: '', fontSize: null, fontRatio: null, bold: false, italic: false, underline: false};
-    private strokeSettings: StrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
+    private strokeSettings: StrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null, radius: null, outlineColor: '', outlineWidth: null};
     private keyHistory: string = '';  // text history
     private prevObj: CurrentObject;
     private shapeImg: HTMLImageElement;
     private preventFrameAnnotation: boolean = false;
+    private redactType: string = 'blur';
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -58,12 +60,12 @@ export class Shape {
         case 'drawRectangle':
             this.drawRectangle(args.value['x'], args.value['y'], args.value['width'], args.value['height'],
                                args.value['strokeWidth'], args.value['strokeColor'], args.value['fillColor'],
-                               args.value['degree'], args.value['isSelected']);
+                               args.value['degree'], args.value['isSelected'], args.value['radius']);
             break;
         case 'drawText':
             this.drawText(args.value['x'], args.value['y'], args.value['text'], args.value['fontFamily'],
                           args.value['fontSize'], args.value['bold'], args.value['italic'], args.value['color'],
-                          args.value['isSelected'], args.value['degree']);
+                          args.value['isSelected'], args.value['degree'], args.value['fillColor'], args.value['outlineColor'], args.value['outlineWidth']);
             break;
         case 'redrawActObj':
             this.redrawActObj(args.value['x'], args.value['y'], args.value['isMouseDown']);
@@ -72,7 +74,7 @@ export class Shape {
             this.apply(args.value['shape'], args.value['obj'], args.value['canvas']);
             break;
         case 'updateShapeChangeEventArgs':
-            this.updateShapeChangeEventArgs(args.value['shapeSettings']);
+            this.updateShapeChangeEventArgs(args.value['shapeSettings'], args.value['allowShapeOverflow']);
             break;
         case 'updSelChangeEventArgs':
             this.updSelChangeEventArgs(args.value['selectionSettings']);
@@ -148,6 +150,9 @@ export class Shape {
         case 'getShapeSettings':
             this.getShapeSettings(args.value['obj']);
             break;
+        case 'getRedactSettings':
+            this.getRedactSettings(args.value['obj']);
+            break;
         case 'isPointsInRange':
             this.isPointsInRange(args.value['x'], args.value['y'], args.value['obj']);
             break;
@@ -179,6 +184,8 @@ export class Shape {
                 this.textSettings.fontFamily = args.value['fontFamily'];
             } else if (args.value['fontSize']) {
                 this.textSettings.fontSize = args.value['fontSize'];
+            } else if (args.value['radius']) {
+                this.strokeSettings.radius = args.value['radius'];
             }
             break;
         case 'setStrokeSettings':
@@ -190,6 +197,12 @@ export class Shape {
                 this.strokeSettings.fillColor = args.value['fillColor'];
             } else if (args.value['strokeWidth']) {
                 this.strokeSettings.strokeWidth = args.value['strokeWidth'];
+            } else if (args.value['outlineColor']) {
+                this.strokeSettings.outlineColor = args.value['outlineColor'];
+            } else if (args.value['radius']) {
+                this.strokeSettings.radius = args.value['radius'];
+            } else if (args.value['outlineWidth']) {
+                this.strokeSettings.outlineWidth = args.value['outlineWidth'];
             }
             break;
         case 'getStrokeSettings':
@@ -212,7 +225,8 @@ export class Shape {
             break;
         case 'initializeTextShape':
             this.initializeTextShape(args.value['text'], args.value['fontFamily'], args.value['fontSize'],
-                                     args.value['bold'], args.value['italic'], args.value['strokeColor']);
+                                     args.value['bold'], args.value['italic'], args.value['strokeColor'],
+                                     args.value['fillColor'], args.value['outlineColor'], args.value['outlineWidth']);
             break;
         case 'stopPathDrawing':
             this.stopPathDrawing(args.value['e'], args.value['isApply']);
@@ -280,6 +294,13 @@ export class Shape {
         case 'getLowestOrder':
             args.value['obj']['order'] = this.getLowestOrder();
             break;
+        case 'drawRedact':
+            this.drawRedact(args.value['x'], args.value['y'], args.value['width'], args.value['height'],
+                            args.value['type'], args.value['value']);
+            break;
+        case 'setRedactType':
+            this.redactType = args.value['redactType'];
+            break;
         }
     }
 
@@ -304,7 +325,7 @@ export class Shape {
     private reset(): void {
         this.textSettings =
             {text: 'Enter Text', fontFamily: this.parent.fontFamily.default, fontSize: null, fontRatio: null, bold: false, italic: false, underline: false};
-        this.strokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
+        this.strokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null, radius: null, outlineColor: '', outlineWidth: null};
         this.preventFrameAnnotation = false;
     }
 
@@ -325,17 +346,9 @@ export class Shape {
     }
 
     private drawPath(pointColl: Point[], strokeWidth?: number, strokeColor?: string, isSelected?: boolean): void {
-        const parent: ImageEditor = this.parent;
         this.initializeShape('path');
         if (pointColl) {
             this.drawShape('path', strokeWidth, strokeColor, null, null, null, null, pointColl, null, null, null, null, isSelected);
-        } else {
-            this.drawShape('line', strokeWidth, strokeColor, null, null, null, null, null, null, null, null, null, isSelected);
-            const obj: SelectionPoint = extend({}, parent.objColl[parent.objColl.length - 1], null, true) as SelectionPoint;
-            obj.shape = 'path'; obj.lineDraw = null;
-            obj.pointColl = [{x: obj.activePoint.startX, y: obj.activePoint.startY},
-                {x: obj.activePoint.endX, y: obj.activePoint.endY }];
-            parent.objColl[parent.objColl.length - 1] = obj;
         }
     }
 
@@ -348,26 +361,32 @@ export class Shape {
     }
 
     private drawRectangle(x?: number, y?: number, width?: number, height?: number, strokeWidth?: number, strokeColor?: string,
-                          fillColor?: string, degree?: number, isSelected?: boolean): void {
+                          fillColor?: string, degree?: number, isSelected?: boolean, radius?: number): void {
         this.initializeShape('rectangle');
         const start: Point = x && y ? {x: x, y: y} : null;
         this.drawShape('rectangle', strokeWidth, strokeColor, fillColor, start, width, height, null,
-                       null, null, degree, null, isSelected);
+                       null, null, degree, null, isSelected, radius);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/tslint/config
+    private drawRedact(x?: number, y?: number, width?: number, height?: number, type?: RedactType, value?: number) {
+        this.initializeShape('redact');
+        const start: Point = x && y ? {x: x, y: y} : null;
+        this.drawShape('redact', null, null, null, start, width, height, null,
+                       null, null, null, null, null, null, type, value);
     }
 
     private drawText(x?: number, y?: number, text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
-                     color?: string, isSelected?: boolean, degree?: number): void {
-        this.drawShapeText(text, fontFamily, fontSize, bold, italic, color, x, y, isSelected, degree);
+                     color?: string, isSelected?: boolean, degree?: number, fillColor?: string, outlineColor?: string,
+                     outlineWidth?: number): void {
+        this.drawShapeText(text, fontFamily, fontSize, bold, italic, color, x, y, isSelected, degree, fillColor, outlineColor,
+                           outlineWidth);
     }
 
     private initializeShape(type: string): void {
         const parent: ImageEditor = this.parent;
         this.redrawActObj();
         parent.activeObj.shape = type;
-        if (parent.currObjType.shape === 'freehanddraw') {
-            this.apply(); parent.upperCanvas.style.cursor = parent.cursor = 'default';
-            parent.currObjType.shape = '';
-        }
         parent.currObjType.isCustomCrop = false;
     }
 
@@ -400,7 +419,7 @@ export class Shape {
 
     private drawShape(type: string, strokeWidth?: number, strokeColor?: string, fillColor?: string, start?: Point, width?: number,
                       height?: number, pointColl?: Point[], arrowStart?: ArrowheadType, arrowEnd?: ArrowheadType, degree?: number,
-                      opacity?: number, isSelected?: boolean): void {
+                      opacity?: number, isSelected?: boolean, radius?: number, redactType?: RedactType, value?: number): void {
         const parent: ImageEditor = this.parent;
         if (!parent.disabled && parent.isImageLoaded) {
             parent.notify('draw', { prop: 'setImageEdited', onPropertyChange: false });
@@ -409,81 +428,92 @@ export class Shape {
             parent.togglePen = false; this.keyHistory = '';
             parent.upperCanvas.style.display = 'block'; this.refreshActiveObj();
             parent.currObjType.shape = type = type.toLowerCase();
-            if (type === 'path' && isNullOrUndefined(pointColl)) {
+            if (type !== 'freehanddraw' && type !== '') {
                 parent.activeObj.shape = type;
-                parent.activeObj.pointColl = [];
-                parent.upperCanvas.style.cursor = parent.cursor = 'crosshair';
-                parent.notify('selection', { prop: 'setCurrentDrawingShape', onPropertyChange: false, value: {value: 'path' }});
-                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
-                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-            } else {
-                if (type !== 'freehanddraw' && type !== '') {
-                    parent.activeObj.shape = type;
-                    let strokeSettings: StrokeSettings = parent.activeObj.strokeSettings;
-                    this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
-                    if (isNullOrUndefined(strokeSettings)) {
-                        strokeSettings = this.strokeSettings;
-                    }
-                    if (type === 'path' && pointColl) {
-                        parent.activeObj.pointColl = pointColl;
-                    }
-                    if (opacity !== null && opacity !== undefined) {parent.activeObj.opacity = opacity; }
-                    strokeSettings.strokeWidth = strokeWidth ? strokeWidth : strokeSettings.strokeWidth;
-                    strokeSettings.strokeColor = strokeColor ? strokeColor : strokeSettings.strokeColor;
-                    strokeSettings.fillColor = fillColor ? fillColor : strokeSettings.fillColor;
-                    const tempWidth: number = parent.img.destWidth > 100 ? 100 : parent.img.destWidth / 2;
-                    const tempHeight: number = parent.img.destHeight > 100 ? 100 : parent.img.destHeight / 2;
-                    parent.activeObj.activePoint.width = tempWidth; parent.activeObj.activePoint.height = tempHeight;
-                    if (type === 'line' || type === 'arrow') {
-                        parent.activeObj.lineDraw = 'horizontal'; parent.activeObj.activePoint.height = 0;
-                        if (type === 'arrow') {
-                            parent.activeObj.activePoint.width += 50;
-                            parent.activeObj.start = this.getArrowType(arrowStart); parent.activeObj.end = this.getArrowType(arrowEnd);
-                        }
-                    } else if (type === 'rectangle') {
-                        parent.activeObj.activePoint.width += parent.activeObj.activePoint.width / 2;
-                    }
-                    this.setDimension(width, height);
-                    if (start) {
-                        parent.activeObj.activePoint.startX = start.x; parent.activeObj.activePoint.startY = start.y;
-                        parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX +
-                            parent.activeObj.activePoint.width;
-                        parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY +
-                            parent.activeObj.activePoint.height;
-                    } else {
-                        this.setCenterPoints();
-                    }
-                    this.setPointCollForLineAndArrow();
+                let strokeSettings: StrokeSettings = parent.activeObj.strokeSettings;
+                this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
+                if (isNullOrUndefined(strokeSettings)) {
+                    strokeSettings = this.strokeSettings;
+                }
+                if (type === 'path' && pointColl) {
+                    parent.activeObj.pointColl = pointColl;
+                }
+                if (opacity !== null && opacity !== undefined) {parent.activeObj.opacity = opacity; }
+                strokeSettings.strokeWidth = strokeWidth ? strokeWidth : strokeSettings.strokeWidth;
+                strokeSettings.strokeColor = strokeColor ? strokeColor : strokeSettings.strokeColor;
+                strokeSettings.fillColor = fillColor ? fillColor : strokeSettings.fillColor;
+                strokeSettings.radius = radius ? radius : strokeSettings.radius;
+                const tempWidth: number = parent.img.destWidth > 100 ? 100 : parent.img.destWidth / 2;
+                const tempHeight: number = parent.img.destHeight > 100 ? 100 : parent.img.destHeight / 2;
+                parent.activeObj.activePoint.width = tempWidth; parent.activeObj.activePoint.height = tempHeight;
+                if (type === 'line' || type === 'arrow') {
+                    parent.activeObj.lineDraw = 'horizontal'; parent.activeObj.activePoint.height = 0;
                     if (type === 'arrow') {
-                        parent.activeObj.triangleDirection = 'right';
+                        parent.activeObj.activePoint.width += 50;
+                        parent.activeObj.start = this.getArrowType(arrowStart); parent.activeObj.end = this.getArrowType(arrowEnd);
                     }
-                    parent.currObjType.isDragging = parent.currObjType.isCustomCrop = false;
-                    this.initShapeProps();
-                    const obj: Object = {shapeSettingsObj: {} as ShapeSettings };
-                    parent.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
-                    const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
-                    const shapeChangingArgs: ShapeChangeEventArgs = {cancel: false, action: 'insert', previousShapeSettings: shapeSettings,
-                        currentShapeSettings: shapeSettings};
-                    parent.trigger('shapeChanging', shapeChangingArgs);
-                    this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings);
-                    this.setDimension(width, height);
-                    parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate'}});
-                    if (degree) {
-                        parent.activeObj.rotatedAngle = degree * (Math.PI / 180);
-                        parent.notify('selection', {prop: 'updPtCollForShpRot', onPropertyChange: false, value: {obj: parent.activeObj }});
+                } else if (type === 'rectangle') {
+                    parent.activeObj.activePoint.width += parent.activeObj.activePoint.width / 2;
+                } else if (type === 'redact') {
+                    if (redactType) {
+                        parent.activeObj.redactType = redactType.toLowerCase();
+                        if (redactType === RedactType.Blur) {
+                            if (value) {
+                                parent.activeObj.redactBlur = value;
+                            }
+                        } else {
+                            if (value) {
+                                parent.activeObj.redactPixelate = value;
+                            }
+                        }
+                        parent.activeObj.redactImage = parent.createElement('canvas');
                     }
-                    parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
-                    parent.notify('selection', { prop: 'isShapeInserted', onPropertyChange: false, value: {bool: true} });
-                    parent.notify('undo-redo', { prop: 'updateUrObj', onPropertyChange: false, value: {objColl: objColl}});
+                }
+                this.setDimension(width, height);
+                if (start) {
+                    parent.activeObj.activePoint.startX = start.x; parent.activeObj.activePoint.startY = start.y;
+                    parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX +
+                        parent.activeObj.activePoint.width;
+                    parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY +
+                        parent.activeObj.activePoint.height;
+                } else {
+                    this.setCenterPoints();
+                }
+                this.setPointCollForLineAndArrow();
+                if (type === 'arrow') {
+                    parent.activeObj.triangleDirection = 'right';
+                }
+                parent.currObjType.isDragging = parent.currObjType.isCustomCrop = false;
+                this.initShapeProps();
+                const obj: Object = {shapeSettingsObj: {} as ShapeSettings };
+                parent.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
+                const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
+                const shapeChangingArgs: ShapeChangeEventArgs = {cancel: false, action: 'insert', previousShapeSettings: shapeSettings,
+                    currentShapeSettings: shapeSettings};
+                parent.trigger('shapeChanging', shapeChangingArgs);
+                parent.editCompleteArgs = shapeChangingArgs;
+                this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings, shapeChangingArgs.allowShapeOverflow);
+                this.setDimension(width, height);
+                parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate'}});
+                if (degree) {
+                    parent.activeObj.rotatedAngle = degree * (Math.PI / 180);
+                    parent.notify('selection', {prop: 'updPtCollForShpRot', onPropertyChange: false, value: {obj: parent.activeObj }});
+                }
+                parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
+                parent.notify('selection', { prop: 'isShapeInserted', onPropertyChange: false, value: {bool: true} });
+                parent.notify('undo-redo', { prop: 'updateUrObj', onPropertyChange: false, value: {objColl: objColl}});
+                if (type === 'redact') {
+                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'redact',
+                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                } else {
                     parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
                         isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                    parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-                    if (parent.isPublicMethod && !isSelected) {
-                        parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
-                    }
-                    parent.isPublicMethod = false;
                 }
+                parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
+                if (parent.isPublicMethod && !isSelected) {
+                    parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
+                }
+                parent.isPublicMethod = false;
             }
         }
     }
@@ -529,7 +559,8 @@ export class Shape {
     }
 
     private drawShapeText(text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
-                          strokeColor?: string, x?: number, y?: number, isSelected?: boolean, degree?: number): void {
+                          strokeColor?: string, x?: number, y?: number, isSelected?: boolean, degree?: number,
+                          fillColor?: string, outlineColor?: string, outlineWidth?: number): void {
         const parent: ImageEditor = this.parent;
         if (!parent.disabled && parent.isImageLoaded) {
             if (parent.currObjType.shape === 'freehanddraw') {
@@ -542,7 +573,7 @@ export class Shape {
             this.prevObjColl();
             this.refreshActiveObj(); parent.activeObj.shape = parent.currObjType.shape = 'text';
             parent.currObjType.isCustomCrop = false;
-            this.initializeTextShape(text, fontFamily, fontSize, bold, italic, strokeColor);
+            this.initializeTextShape(text, fontFamily, fontSize, bold, italic, strokeColor, fillColor, outlineColor, outlineWidth);
             parent.currObjType.isText = parent.currObjType.isInitialText = true;
             if (isNullOrUndefined(parent.activeObj.textSettings.fontSize)) {
                 parent.getFontSizes();
@@ -559,7 +590,7 @@ export class Shape {
             parent.activeObj.order = this.getNewOrder();
             const width: number = this.upperContext.measureText(parent.activeObj.textSettings.text).width +
             parent.activeObj.textSettings.fontSize * 0.5;
-            const height: number = parent.activeObj.textSettings.fontSize + parent.activeObj.textSettings.fontSize * 0.25;
+            const height: number = parent.activeObj.textSettings.fontSize;
             if (!isNullOrUndefined(x) && !isNullOrUndefined(y)) {
                 parent.activeObj.activePoint.startX = x; parent.activeObj.activePoint.startY = y;
                 parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX + width;
@@ -573,6 +604,7 @@ export class Shape {
             const shapeChangingArgs: ShapeChangeEventArgs = {cancel: false, action: 'insert', previousShapeSettings: shapeSettings,
                 currentShapeSettings: shapeSettings};
             parent.trigger('shapeChanging', shapeChangingArgs);
+            parent.editCompleteArgs = shapeChangingArgs;
             this.drawShapeTextEvent(shapeChangingArgs);
             if (degree) {
                 parent.activeObj.rotatedAngle = degree * (Math.PI / 180);
@@ -603,7 +635,7 @@ export class Shape {
 
     private drawShapeImageEvent(shapeChangingArgs: ShapeChangeEventArgs, isSelect: boolean): void {
         const parent: ImageEditor = this.parent;
-        this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings);
+        this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings, shapeChangingArgs.allowShapeOverflow);
         parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate' }});
         parent.objColl.push(parent.activeObj);
         const prevCropObj: CurrentObject = extend({}, parent.cropObj, {}, true) as CurrentObject;
@@ -626,7 +658,7 @@ export class Shape {
 
     private drawShapeTextEvent(shapeChangingArgs: ShapeChangeEventArgs): void {
         const parent: ImageEditor = this.parent;
-        this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings);
+        this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings, shapeChangingArgs.allowShapeOverflow);
         this.addLetter(parent.activeObj.textSettings.text);
         parent.activeObj.textFlip = parent.transform.currFlipState;
         this.updateFontRatio(parent.activeObj);
@@ -646,21 +678,18 @@ export class Shape {
     }
 
     private initializeTextShape(text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
-                                strokeColor?: string): void {
+                                strokeColor?: string, fillColor?: string, outlineColor?: string, outlineWidth?: number): void {
         const parent: ImageEditor = this.parent;
         this.keyHistory = ''; parent.upperCanvas.style.display = 'block';
-        if (isNullOrUndefined(parent.activeObj.textSettings)) {
-            parent.activeObj.textSettings = this.textSettings;
-        }
-        if (isNullOrUndefined(parent.activeObj.strokeSettings)) {
-            parent.activeObj.strokeSettings = this.strokeSettings;
-        }
         parent.activeObj.strokeSettings.strokeColor = strokeColor || parent.activeObj.strokeSettings.strokeColor;
+        parent.activeObj.strokeSettings.fillColor = fillColor || parent.activeObj.strokeSettings.fillColor;
         parent.activeObj.textSettings.text = text || parent.activeObj.textSettings.text;
         parent.activeObj.textSettings.fontFamily = fontFamily || parent.activeObj.textSettings.fontFamily;
         parent.activeObj.textSettings.fontSize = fontSize || parent.activeObj.textSettings.fontSize;
         parent.activeObj.textSettings.bold = bold || parent.activeObj.textSettings.bold;
         parent.activeObj.textSettings.italic = italic || parent.activeObj.textSettings.italic;
+        parent.activeObj.strokeSettings.outlineColor = outlineColor || parent.activeObj.strokeSettings.outlineColor;
+        parent.activeObj.strokeSettings.outlineWidth = outlineWidth || parent.activeObj.strokeSettings.outlineWidth;
     }
 
     private drawImage(x: number, y: number, width: number, height: number, src: string | ImageData, degree: number,
@@ -756,7 +785,7 @@ export class Shape {
         parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height;
     }
 
-    private updateShapeChangeEventArgs(shapeSettings: ShapeSettings): void {
+    private updateShapeChangeEventArgs(shapeSettings: ShapeSettings, allowShapeOverflow: boolean): void {
         const parent: ImageEditor = this.parent; let shapeId: number;
         if (shapeSettings.id && shapeSettings.id.indexOf('shape_') === -1 &&
             shapeSettings.id.indexOf('pen_') === -1) {
@@ -787,6 +816,7 @@ export class Shape {
             parent.activeObj.strokeSettings.strokeWidth = shapeSettings.strokeWidth;
             parent.activeObj.opacity = shapeSettings.opacity;
             parent.activeObj.order = shapeSettings.index;
+            parent.activeObj.preventShapeDragOut = !allowShapeOverflow;
             if (isNullOrUndefined(shapeSettings.degree)) { shapeSettings.degree = 0; }
             switch (parent.activeObj.shape) {
             case 'ellipse':
@@ -842,9 +872,6 @@ export class Shape {
                     case 'italic':
                         parent.activeObj.textSettings.italic = true;
                         break;
-                    case 'underline':
-                        parent.activeObj.textSettings.underline = true;
-                        break;
                     }
                 }
             }
@@ -860,7 +887,7 @@ export class Shape {
             this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
             this.updateFontStyles();
             const width: number = this.upperContext.measureText(this.keyHistory).width + fontSize * 0.5;
-            const height: number = fontSize + fontSize * 0.25;
+            const height: number = fontSize;
             this.upperContext.fillText(this.keyHistory, parent.activeObj.activePoint.startX,
                                        parent.activeObj.activePoint.startY + fontSize);
             this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
@@ -885,7 +912,8 @@ export class Shape {
         const text: string = (parent.textArea.style.display === 'block' || parent.textArea.style.display === 'inline-block') ?
             this.getMaxText(true) : this.getMaxText();
         const width: number = this.upperContext.measureText(text).width + fontSize * 0.5;
-        const height: number = rows.length * (fontSize + fontSize * 0.25);
+        let height: number = rows.length * fontSize;
+        if (rows.length > 1) {height += (fontSize * 0.50); }
         parent.notify('selection', { prop: 'setTextSelection', onPropertyChange: false,
             value: {width: width, height: height}});
         parent.notify('draw', { prop: 'updateActiveObject', onPropertyChange: false, value: {actPoint: parent.activeObj.activePoint, obj: parent.activeObj,
@@ -915,10 +943,12 @@ export class Shape {
         parent.activeObj.keyHistory = parent.textArea.value; parent.textArea.style.display = 'none';
         parent.textArea.value = ''; this.updateFontStyles();
         let width: number = this.upperContext.measureText(parent.activeObj.keyHistory).width + fontSize * 0.5;
-        let height: number = fontSize + fontSize * 0.25;
+        let height: number = fontSize;
         const rows: string[] = parent.activeObj.keyHistory.split('\n');
         if (rows.length > 1) {
-            height *= rows.length; const widthColl: number[] = [];
+            height *= rows.length;
+            height += (fontSize * 0.1 * rows.length);
+            const widthColl: number[] = [];
             for (let i: number = 0, len: number = rows.length; i < len; i++) {
                 widthColl.push(this.upperContext.measureText(rows[i as number]).width + fontSize * 0.5);
             }
@@ -979,6 +1009,14 @@ export class Shape {
                     }
                     if (currentObj.order === index) {
                         this.apply(currentObj.shape, currentObj);
+                        if (currentObj.shape === 'redact' && JSON.stringify(currentObj.activePoint) === JSON.stringify(parent.activeObj.activePoint) &&
+                            currentObj.redactImage !== parent.activeObj.redactImage) {
+                            currentObj.redactImage = parent.activeObj.redactImage;
+                            if (parent.objColl[i as number] && JSON.stringify(parent.objColl[i as number].activePoint) ===
+                                JSON.stringify(currentObj.activePoint)) {
+                                parent.objColl[i as number].redactImage = parent.activeObj.redactImage;
+                            }
+                        }
                         this.refreshActiveObj();
                         index++;
                         if (!this.isIndexInObjColl(index)) {index++; }
@@ -1139,12 +1177,14 @@ export class Shape {
         const selPointCollObj: Object = {selPointColl: null };
         parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false, value: {obj: selPointCollObj }});
         for (let i: number = 0, fLen: number = parent.freehandCounter; i < fLen; i++) {
-            const len: number = selPointCollObj['selPointColl'][i as number].points.length; let point: Point;
-            for (let l: number = 0; l < len; l++) {
-                point = this.straightenPoints(selPointCollObj['selPointColl'][i as number].points[l as number].x,
-                                              selPointCollObj['selPointColl'][i as number].points[l as number].y);
-                selPointCollObj['selPointColl'][i as number].points[l as number].x = point.x;
-                selPointCollObj['selPointColl'][i as number].points[l as number].y = point.y;
+            if (selPointCollObj['selPointColl'][i as number] && selPointCollObj['selPointColl'][i as number].points) {
+                const len: number = selPointCollObj['selPointColl'][i as number].points.length; let point: Point;
+                for (let l: number = 0; l < len; l++) {
+                    point = this.straightenPoints(selPointCollObj['selPointColl'][i as number].points[l as number].x,
+                                                  selPointCollObj['selPointColl'][i as number].points[l as number].y);
+                    selPointCollObj['selPointColl'][i as number].points[l as number].x = point.x;
+                    selPointCollObj['selPointColl'][i as number].points[l as number].y = point.y;
+                }
             }
         }
         const straightenObj: Object = { straightenPoint: null };
@@ -1555,28 +1595,50 @@ export class Shape {
         const dupElem: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_duplicate');
         const removeElem: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_remove');
         const editTextElem: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_editText');
-        if (zOrderElem) {zOrderElem.classList.add('e-disabled'); }
-        if (dupElem) {dupElem.classList.add('e-disabled'); }
-        if (removeElem) {removeElem.classList.add('e-disabled'); }
-        if (editTextElem) {editTextElem.classList.add('e-disabled'); }
+        const shadowColor: string = actObj.strokeSettings.outlineColor;
+        const outlineWidth: number = actObj.strokeSettings.outlineWidth;
+        const shadows: string[] = [];
+        if (zOrderElem) {zOrderElem.classList.add('e-overlay'); }
+        if (dupElem) {dupElem.classList.add('e-overlay'); }
+        if (removeElem) {removeElem.classList.add('e-overlay'); }
+        if (editTextElem) {editTextElem.classList.add('e-overlay'); }
+        if (actObj.strokeSettings.fillColor !== '') {
+            parent.textArea.style.backgroundColor = actObj.strokeSettings.fillColor;
+        } else {
+            parent.textArea.style.backgroundColor = 'transparent';
+        }
         parent.textArea.style.display = 'block'; parent.textArea.style.left = x + 'px';
         parent.textArea.style.top = y + 'px'; parent.textArea.style.fontFamily = actObj.textSettings.fontFamily;
         parent.textArea.style.fontSize = actObj.textSettings.fontSize + 'px';
         parent.textArea.style.color = actObj.strokeSettings.strokeColor;
+        const fontSize: number = actObj.textSettings.fontSize;
+        const baseWidth: number = Math.max(1, outlineWidth / 2);
+        const adjustedOutlineWidth: number = baseWidth * (Math.floor((fontSize - 1) / 16) * 0.5 + 0.5);
+        if (/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$|^[a-zA-Z]+$/.test(actObj.strokeSettings.outlineColor)) {
+            for (let x: number = -adjustedOutlineWidth; x <= adjustedOutlineWidth; x++) {
+                for (let y: number = -adjustedOutlineWidth; y <= adjustedOutlineWidth; y++) {
+                    if (x !== 0 || y !== 0) {
+                        shadows.push(`${x / 2}px ${y / 2}px 0 ${shadowColor}`);
+                    }
+                }
+            }
+            parent.textArea.style.textShadow = shadows.join(', ');
+        } else {
+            parent.textArea.style.textShadow = null;
+        }
         parent.textArea.style.fontWeight = actObj.textSettings.bold ? 'bold' : 'normal';
         parent.textArea.style.fontStyle = actObj.textSettings.italic ? 'italic' : 'normal';
         parent.textArea.style.border = '2px solid ' + parent.themeColl[parent.theme]['primaryColor'];
         parent.textArea.value = actObj.keyHistory; parent.textArea.style.overflow = 'hidden';
         parent.textArea.style.width = 'auto'; parent.textArea.style.height = 'auto';
         parent.textArea.focus();
-        const zoomFactor: number = parent.transform.zoomFactor;
         const { width, height } = actObj.activePoint;
         if (degree % 90 === 0 && degree % 180 !== 0 && degree !== 0) {
-            parent.textArea.style.width = (zoomFactor === 0 ? height : height) + 'px';
-            parent.textArea.style.height = (zoomFactor === 0 ? width : width) + 'px';
+            parent.textArea.style.width = height + (height * 0.25) + 'px';
+            parent.textArea.style.height = width + (width * 0.25) + 'px';
         } else {
-            parent.textArea.style.width = (zoomFactor === 0 ? width : width) + 'px';
-            parent.textArea.style.height = (zoomFactor === 0 ? height : height) + 'px';
+            parent.textArea.style.width = width + (width * 0.25) + 'px';
+            parent.textArea.style.height = height + (height * 0.25) + 'px';
         }
         this.setTextBoxWidth(); const obj: Object = {flipColl: null };
         parent.notify('transform', { prop: 'getFlipColl', onPropertyChange: false, value: {obj: obj }});
@@ -1818,11 +1880,22 @@ export class Shape {
                     parent.notify('selection', { prop: 'mouseUpEventHandler', value: {e: e }});
                     this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
                     parent.notify('draw', { prop: 'redrawImgWithObj', onPropertyChange: false});
+                    if (parent.objColl.length > 0) {
+                        const obj1: ActivePoint = parent.activeObj.activePoint;
+                        const obj2: ActivePoint = parent.objColl[parent.objColl.length - 1].activePoint;
+                        if (Math.floor(obj1.startX) === Math.floor(obj2.startX) &&
+                            Math.floor(obj1.startY) === Math.floor(obj2.startY) &&
+                            Math.floor(obj1.endX) === Math.floor(obj2.endX) &&
+                            Math.floor(obj1.endY) === Math.floor(obj2.endY)) {
+                            this.refreshActiveObj();
+                        }
+                    }
                 }
                 parent.notify('draw', { prop: 'setNewPath', value: {bool: true }});
                 if (parent.objColl[parent.objColl.length - 1]) {
                     const shape: string = parent.drawingShape;
                     parent.notify('selection', { prop: 'setCurrentDrawingShape', value: {value: '' }});
+                    parent.noRedact = true;
                     parent.selectShape(parent.objColl[parent.objColl.length - 1].currIndex);
                     parent.notify('selection', { prop: 'setCurrentDrawingShape', value: {value: 'path' }});
                     parent.drawingShape = shape;
@@ -1842,11 +1915,13 @@ export class Shape {
 
     private findTextTarget(e: MouseEvent & TouchEvent): void {
         const parent: ImageEditor = this.parent;
+        if (!e) {return; }
         if (parent.activeObj.shape !== 'text') {
             if (parent.activeObj.shape === 'path') {
                 this.stopPathDrawing(e, null);
                 return;
             } else if (e.type === 'dblclick') {
+                parent.notify('selection', { prop: 'setPanDown', onPropertyChange: false, value: {panDown: null }});
                 const activeObj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
                 const objColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
                 const obj: Object = {bool: null };
@@ -2012,7 +2087,7 @@ export class Shape {
         const filesData: FileList = (e.target as any).files[0];
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         const fileData: any = filesData;
-        const fileExtension: string = fileData.name && fileData.name.split('.')[1].toLowerCase();
+        const fileExtension: string = fileData.name && fileData.name.split('.').pop().toLowerCase();
         if (fileExtension && ['jpg', 'jpeg', 'png', 'svg'].indexOf(fileExtension) === -1) {
             this.refreshActiveObj();
             return;
@@ -2090,6 +2165,7 @@ export class Shape {
         const shapeChangingArgs: ShapeChangeEventArgs = {cancel: false, action: 'insert', previousShapeSettings: shapeSettings,
             currentShapeSettings: shapeSettings};
         parent.trigger('shapeChanging', shapeChangingArgs);
+        parent.editCompleteArgs = shapeChangingArgs;
         isSelect = isSelect ? isSelect : isSelected;
         this.drawShapeImageEvent(shapeChangingArgs, isSelect);
         if (parent.isPublicMethod && !isSelected) {
@@ -2330,6 +2406,7 @@ export class Shape {
         const shapeChangedArgs: ShapeChangeEventArgs = {action: 'font-style', currentShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings};
         shapeChangedArgs.currentShapeSettings.fontStyle = [item];
         parent.trigger('shapeChange', shapeChangedArgs);
+        parent.editCompleteArgs = shapeChangedArgs;
     }
 
     private updateFontStyle(item: string, objColl: SelectionPoint[], fontWeight: string, fontStyle: string): void {
@@ -2391,7 +2468,7 @@ export class Shape {
         const text: string = this.getMaxText(isTextArea);
         const width: number = this.upperContext.measureText(text).width +
             parent.activeObj.textSettings.fontSize * 0.5;
-        const height: number = (parent.activeObj.textSettings.fontSize + parent.activeObj.textSettings.fontSize * 0.25);
+        const height: number = parent.activeObj.textSettings.fontSize;
         const degree: number = this.getRotDegOfShape(obj);
         if (isNullOrUndefined(isTextArea)) {
             if (degree === 0 || Math.abs(degree) === 180) {
@@ -2485,6 +2562,9 @@ export class Shape {
         parent.activeObj.flipObjColl = []; parent.activeObj.strokeSettings = this.strokeSettings;
         parent.activeObj.textSettings = this.textSettings; parent.activeObj.rotatedAngle = 0;
         parent.activeObj.opacity = 1;
+        parent.activeObj.redactType = this.redactType;
+        parent.activeObj.redactBlur = parent.tempRedactBlur;
+        parent.activeObj.redactPixelate = parent.tempRedactPixel;
     }
 
     private applyActObj(isMouseDown?: boolean): void {
@@ -2655,6 +2735,23 @@ export class Shape {
         return width;
     }
 
+    private getRedactObjDetails(obj: SelectionPoint): RedactSettings {
+        const parent: ImageEditor = this.parent;
+        const redactDetails: RedactSettings = {} as RedactSettings; redactDetails.id = obj.currIndex;
+        redactDetails.type = parent.toPascalCase(obj.redactType) as RedactType;
+        redactDetails.startX = obj.activePoint.startX; redactDetails.startY = obj.activePoint.startY;
+        redactDetails.width = obj.activePoint.width; redactDetails.height = obj.activePoint.height;
+        switch (obj.redactType) {
+        case 'blur':
+            redactDetails.blurIntensity = obj.redactBlur;
+            break;
+        case 'pixelate':
+            redactDetails.pixelSize = obj.redactPixelate;
+            break;
+        }
+        return redactDetails;
+    }
+
     private getObjDetails(obj: SelectionPoint): ShapeSettings {
         const parent: ImageEditor = this.parent;
         const shapeDetails: ShapeSettings = {} as ShapeSettings; shapeDetails.id = obj.currIndex;
@@ -2776,6 +2873,22 @@ export class Shape {
         obj['shapeDetailsColl'] = shapeDetailsColl;
     }
 
+    private getRedactSettings(obj: Object): void {
+        const parent: ImageEditor = this.parent; const RedactDetailsColl: RedactSettings[] = [];
+        if (!parent.disabled && parent.isImageLoaded) {
+            if (parent.textArea.style.display !== 'none') {
+                parent.okBtn(null, true);
+            } else {
+                this.applyActObj(true);
+            }
+            for (let i: number = 0, len: number = parent.objColl.length; i < len; i++) {
+                const redactDetails: RedactSettings = this.getRedactObjDetails(parent.objColl[i as number]);
+                RedactDetailsColl.push(redactDetails);
+            }
+        }
+        obj['shapeDetailsColl'] = RedactDetailsColl;
+    }
+
     private isPointsInRange(x: number, y: number, obj: Object): void {
         let inRange: boolean = false; const parent: ImageEditor = this.parent;
         if (!isNullOrUndefined(x) && !isNullOrUndefined(y) && x >= parent.img.destLeft && y >= parent.img.destTop &&
@@ -2892,6 +3005,9 @@ export class Shape {
                             isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
                     } else if (parent.activeObj.shape === 'pen') {
                         parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
+                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    } else if (parent.activeObj.shape === 'redact') {
+                        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'redact',
                             isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
                     } else {
                         parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
@@ -3217,10 +3333,20 @@ export class Shape {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private reorderRedact(tempObjColl: SelectionPoint[] | any): SelectionPoint[] | any {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const nonRedact: any = tempObjColl.filter((item: SelectionPoint) => item.shape !== 'redact');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const redact: any = tempObjColl.filter((item: SelectionPoint) => item.shape === 'redact');
+        return redact.concat(nonRedact);
+    }
+
     private updateShapeColl(): void {
         const parent: ImageEditor = this.parent;
         let isOrdered: boolean = false; let tempOrder: number = 1;
         let tempObjColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
+        tempObjColl  = this.reorderRedact(tempObjColl);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let tempPointColl: any = extend([], parent.pointColl, [], true);
         if (parent.shapeColl.length > 0 &&
@@ -3316,9 +3442,16 @@ export class Shape {
         const tempObjColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const tempPointColl: any = extend([], parent.pointColl, [], true);
+        const tempSelPointCollObj: Object = {selPointColl: null };
+        parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
+            value: {obj: tempSelPointCollObj }});
+        const selPointCollObj: Object = {selPointColl: null };
+        parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
+            value: {obj: selPointCollObj }});
         this.updateShapeColl();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const tempShapeColl: any = extend([], parent.shapeColl, [], true);
+        let tempShapeColl: any = extend([], parent.shapeColl, [], true);
+        tempShapeColl = this.reorderRedact(tempShapeColl);
         let isPrevented: boolean = false;
         if (!this.preventFrameAnnotation) {this.preventFrameAnnotation = isPrevented = true; }
         for (let i: number = 0; i < tempShapeColl.length; i++) {
@@ -3353,7 +3486,10 @@ export class Shape {
                     }
                 } else if (tempShapeColl[i as number].id && tempShapeColl[i as number].id.indexOf('pen') > -1) {
                     parent.pointColl = []; parent.freehandCounter = 0;
+                    parent.notify('freehand-draw', { prop: 'setSelPointColl', onPropertyChange: false, value: {obj: {selPointColl: [] } }});
                     parent.pointColl.push(extend({}, tempShapeColl[i as number], {}, true));
+                    parent.notify('freehand-draw', { prop: 'pushSelPointColl', onPropertyChange: false,
+                        value: {obj: {selPointColl: selPointCollObj['selPointColl'][i as number] } }});
                     parent.freehandCounter = parent.pointColl.length;
                     if (pen === 'iterate') {
                         parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
@@ -3372,6 +3508,12 @@ export class Shape {
                                 break;
                             }
                         }
+                        for (let i: number = 0, len: number = tempSelPointCollObj['selPointColl'].length; i < len; i++) {
+                            if (tempSelPointCollObj['selPointColl'][i as number].id === selPointCollObj['selPointColl'][i as number].id) {
+                                tempSelPointCollObj['selPointColl'][i as number] = extend({}, selPointCollObj['selPointColl'][i as number], {}, true);
+                                break;
+                            }
+                        }
                     }
                 }
             } else if ((!tempShapeColl[i as number].shape && !isPenId) ||
@@ -3384,6 +3526,7 @@ export class Shape {
             parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: isPreventApply}});
         }
         parent.objColl = tempObjColl; parent.pointColl = tempPointColl; parent.freehandCounter = parent.pointColl.length;
+        parent.notify('freehand-draw', { prop: 'setSelPointColl', onPropertyChange: false, value: {obj: {selPointColl: tempSelPointCollObj['selPointColl'] } }});
         if (isPrevented && this.preventFrameAnnotation) {
             parent.notify('draw', { prop: 'applyFrame', value: { ctx: this.lowerContext, frame: parent.frameObj.type, preventImg: true } });
             this.preventFrameAnnotation = false;

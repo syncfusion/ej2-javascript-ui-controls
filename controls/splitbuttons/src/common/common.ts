@@ -89,6 +89,7 @@ function isValidLI(ul: HTMLElement, li: Element, index: number, keyCode: number,
     return index;
 }
 
+// eslint-disable-next-line jsdoc/require-param, valid-jsdoc
 /** @hidden
  * @param {HTMLElement} popup - Specifies the popup element.
  * @returns {void}

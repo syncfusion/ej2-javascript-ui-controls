@@ -37,7 +37,7 @@ import { LayerPanel } from './layers/layer-panel';
 import { GeoLocation, Rect, RectOption, measureText, getElementByID, MapAjax, processResult, getElementsByClassName } from '../maps/utils/helper';
 import { findPosition, textTrim, TextOption, renderTextElement, calculateZoomLevel, convertTileLatLongToPoint, convertGeoToPoint} from '../maps/utils/helper';
 import { Annotations } from '../maps/user-interaction/annotation';
-import { FontModel, DataLabel, MarkerSettings, IAnnotationRenderingEventArgs, IMarkerDragEventArgs } from './index';
+import { FontModel, DataLabel, MarkerSettings, IAnnotationRenderingEventArgs, IMarkerDragEventArgs, BingMap } from './index';
 import { NavigationLineSettingsModel, changeBorderWidth } from './index';
 import { NavigationLine } from './layers/navigation-selected-line';
 import { Polygon } from './layers/polygon';
@@ -147,6 +147,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public imageExportModule: ImageExport;
+    /**
+     * This module enables the bing map functionality in maps.
+     *
+     * @private
+     */
+    public bingMap: BingMap;
 
 
     // Maps pblic API Declaration
@@ -734,8 +740,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public previousZoomFactor: number;
     /** @private */
-    public isTileMapSubLayer: boolean = false;
-    /** @private */
     public shouldZoomCurrentFactor: number;
     /** @private */
     public shouldZoomPreviousFactor: number;
@@ -1149,37 +1153,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const tileElement: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
             const tileElement1: HTMLElement = document.getElementById(this.element.id + '_tiles');
             const tile: ClientRect = tileElement.getBoundingClientRect();
-            let bottom: number; let top: number; let left: number;
+            let top: number; let left: number;
             left = parseFloat(tileElement.style.left);
-            const titleTextSize: Size = measureText(
-                this.titleSettings.text,
-                this.titleSettings.textStyle
-            );
-            const subTitleTextSize: Size = measureText(
-                this.titleSettings.subtitleSettings.text,
-                this.titleSettings.subtitleSettings.textStyle
-            );
-            if (this.isTileMap && this.isTileMapSubLayer && this.legendSettings.position === 'Bottom' && this.legendSettings.visible) {
-                if (this.legendSettings.mode !== 'Default') {
-                    if (titleTextSize.width !== 0 && titleTextSize.height !== 0) {
-                        top = parseFloat(tileElement.style.top) + (subTitleTextSize.height / 2)
-                            - (this.legendModule.legendBorderRect.height / 2);
-                    } else {
-                        top = parseFloat(tileElement.style.top) - this.mapAreaRect.y;
-                    }
-                } else {
-                    left = this.legendModule.legendBorderRect.x;
-                    if (titleTextSize.width !== 0 && titleTextSize.height !== 0) {
-                        top = parseFloat(tileElement.style.top) + (subTitleTextSize['height'] / 2)
-                            - this.legendModule.legendBorderRect.y;
-                    } else {
-                        top = parseFloat(tileElement.style.top) + (subTitleTextSize['height'] / 2);
-                    }
-                }
-            } else {
-                bottom = svg.bottom - tile.bottom - element.offsetTop;
-                top = parseFloat(tileElement.style.top);
-            }
+            const bottom: number = svg.bottom - tile.bottom - element.offsetTop;
+            top = parseFloat(tileElement.style.top);
             top = (bottom <= 11) ? top : (!isNullOrUndefined(this.legendModule) && this.legendSettings.position === 'Bottom') ? this.mapAreaRect.y : (top * 2);
             left = (bottom <= 11) ? left : !isNullOrUndefined(this.legendModule) ? left : (left * 2);
             tileElement.style.top = top + 'px';
@@ -1717,13 +1694,20 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             removeClass(document.getElementsByClassName('highlightMapStyle')[0]);
         }
     }
-    private keyUpHandler(event: KeyboardEvent): void {
+    /**
+     * This method is used to perform operations when keyboard key from maps.
+     *
+     * @param {KeyboardEvent} event - Specifies the keyboard event on maps.
+     * @returns {void}
+     * @private
+     */
+    public keyUpHandler(event: KeyboardEvent): void {
         const id: string = event.target['id'];
         if (this.isTileMap) {
             this.removeTileMap();
         }
         if (event.code === 'Tab' && id.indexOf('_LayerIndex_') > -1 && id.indexOf('shapeIndex') > -1) {
-            this.keyboardHighlightSelection(id, event.type);
+            this.keyboardHighlightSelection(id, event);
         } else if (id.indexOf('_LayerIndex_') === -1 && id.indexOf('shapeIndex') === -1 &&
             getElementsByClassName('highlightMapStyle').length > 0) {
             removeClass(<Element>getElementsByClassName('highlightMapStyle')[0]);
@@ -1733,7 +1717,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    private keyboardHighlightSelection(id: string, key: string): void {
+    private keyboardHighlightSelection(id: string, event: KeyboardEvent): void {
+        const key: string = event.type;
         const layerIndex: number = parseInt(id.split('_LayerIndex_')[1].split('_')[0], 10);
         const shapeIndex: number = parseInt(id.split('_shapeIndex_')[1].split('_')[0], 10);
         //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1752,8 +1737,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.highlightModule.handleHighlight(<Element>event.target, layerIndex, data, shapeData);
         }
     }
-
-    private keyDownHandler(event: KeyboardEvent): void {
+    /**
+     * This method is used to perform operations when keyboard down from maps.
+     *
+     * @param {KeyboardEvent} event - Specifies the keyboard event on maps.
+     * @returns {void}
+     * @private
+     */
+    public keyDownHandler(event: KeyboardEvent): void {
         const zoom: Zoom = this.zoomModule;
         let id: string = event.target['id'];
         if ((event.code === 'ArrowUp' || event.code === 'ArrowDown' || event.code === 'ArrowLeft'
@@ -1813,7 +1804,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 }
             }
             if (id.indexOf('shapeIndex') > -1) {
-                this.keyboardHighlightSelection(id, event.type);
+                this.keyboardHighlightSelection(id, event);
             }
         }
         if (this.zoomModule) {
@@ -2748,6 +2739,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (!isNullOrUndefined(this.mapsTooltipModule)) {
             this.mapsTooltipModule.removeEventListener();
         }
+        if (!isNullOrUndefined(this.bingMap)) {
+            this.bingMap.destroy();
+        }
         super.destroy();
         this.shapeSelectionItem = [];
         this.toggledElementId = [];
@@ -3290,11 +3284,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (!this.isDestroyed) {
             const container: HTMLElement = document.getElementById(this.element.id);
             const elementClientRect: ClientRect = this.element.getBoundingClientRect();
-            const bodyClientRect: ClientRect = document.body.getBoundingClientRect();
-            const pageX: number = x - (isNullOrUndefined(this.markerDragArgument) ? container.offsetLeft ||
-                (elementClientRect.left - bodyClientRect.left) : 0);
-            const pageY: number = y - (isNullOrUndefined(this.markerDragArgument) ? container.offsetTop ||
-                (elementClientRect.top - bodyClientRect.top) : 0);
+            const pageX: number = x - container.offsetLeft - (elementClientRect.left - container.offsetLeft) - window.scrollX;
+            const pageY: number = y - container.offsetTop - (elementClientRect.top - container.offsetTop) - window.scrollY;
             const currentLayer: LayerSettings = <LayerSettings>this.layersCollection[layerIndex as number];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const translate: any = getTranslate(this, currentLayer, false);
@@ -3326,12 +3317,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let latitude: number = 0;
         let longitude: number = 0;
         if (!this.isDestroyed) {
-            const container: HTMLElement = document.getElementById(this.element.id);
             const ele: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const latLong: any = this.pointToLatLong(
-                x + this.mapAreaRect.x - (ele.offsetLeft - (isNullOrUndefined(this.markerDragArgument) ? container.offsetLeft : 0)),
-                y + this.mapAreaRect.y - (ele.offsetTop - (isNullOrUndefined(this.markerDragArgument) ? container.offsetTop : 0)));
+                x + this.mapAreaRect.x - ele.offsetLeft,
+                y + this.mapAreaRect.y - ele.offsetTop);
             latitude = latLong['latitude'];
             longitude = latLong['longitude'];
         }
@@ -3349,7 +3339,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let longitude: number = 0;
         if (!this.isDestroyed && !isNullOrUndefined(this.translatePoint)) {
             const padding: number = 10;
-            pageY = pageY + padding;
+            pageY = !isNullOrUndefined(this.markerDragArgument) ? pageY + padding : pageY;
             const mapSize: number = 256 * Math.pow(2, this.tileZoomLevel);
             const x1: number = (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;
             const y1: number = 0.5 - (this.clip(pageY - (this.translatePoint.y * this.scale), 0, mapSize - 1) / mapSize);

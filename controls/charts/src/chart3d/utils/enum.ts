@@ -40,7 +40,7 @@ export type Chart3DDataLabelPosition =
  * * none - Disable the selection.
  * * series - To select a series.
  * * point - To select a point.
- * * cluster - To select a cluster of point
+ * * cluster - To select a cluster of point.
  */
 export type Chart3DSelectionMode =
     /** Disable the selection. */

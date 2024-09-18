@@ -31,7 +31,7 @@ import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, Renderer
 import { BlazorAction, ScrollActions } from '../enum/enum';
 import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset, findParentInSwimlane, findPort } from '../utility/diagram-util';
 import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject, checkPort } from '../utility/diagram-util';
-import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection, canSingleSelect, canMultiSelect } from './../utility/constraints-util';
+import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection, canSingleSelect, canMultiSelect} from './../utility/constraints-util';
 import { selectionHasConnector } from '../utility/diagram-util';
 import { canMove, canEnablePointerEvents, canSelect, canEnableToolTip } from './../utility/constraints-util';
 import {
@@ -40,7 +40,7 @@ import {
 import { CommandModel } from '../diagram/keyboard-commands-model';
 import { updateTooltip } from '../objects/tooltip';
 import { DiagramTooltipModel } from '../objects/tooltip-model';
-import { PortVisibility, NodeConstraints, ConnectorConstraints, RealAction } from '../enum/enum';
+import { PortVisibility, NodeConstraints, ConnectorConstraints, AnnotationConstraints, RealAction } from '../enum/enum';
 import { addTouchPointer, measureHtmlText, getAdornerLayerSvg } from '../utility/dom-util';
 import { TextElement } from '../core/elements/text-element';
 import { Size } from '../primitives/size';
@@ -68,7 +68,6 @@ import { DiagramHtmlElement } from '../core/elements/html-element';
 import { PathElement, randomId } from '../index';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { isBlazor } from '@syncfusion/ej2-base';
-import { BlazorTooltip } from '../blazor-tooltip/blazor-Tooltip';
 import { PathPort, PointPort } from '../objects/port';
 import { Overview } from '../../overview/overview';
 import { FixedUserHandleModel } from '../objects/fixed-user-handle-model';
@@ -169,6 +168,8 @@ export class DiagramEventHandler {
     private isUserHandleHover: UserHandleModel | FixedUserHandleModel;
 
     private hoverNode: NodeModel;
+
+    private previousElement : NodeModel | ConnectorModel | PointPortModel = null;
 
     private isScrolling: boolean;
 
@@ -553,8 +554,8 @@ export class DiagramEventHandler {
                 const ctrlKey: boolean = this.isMetaKey(evt);
                 if (ctrlKey && evt.shiftKey && this.diagram.connectorEditingToolModule) {
                     this.action = 'SegmentEnd';
-                //Bug 892496: Unable to unselect selected node using CTRL+Click when zoompan is enabled.
-                //Added this condition whether single select or multi select is enabled in diagram tool.
+                    //Bug 892496: Unable to unselect selected node using CTRL+Click when zoompan is enabled.
+                    //Added this condition whether single select or multi select is enabled in diagram tool.
                 } else if ((ctrlKey || evt.shiftKey) && (canSingleSelect(this.diagram) || canMultiSelect(this.diagram))) {
                     this.action = 'Select';
                 }
@@ -631,7 +632,16 @@ export class DiagramEventHandler {
         if (this.hoverElement instanceof Connector && (this.hoverElement.ports.length > 0)) {
             this.diagram.updatePortVisibility(this.hoverElement, PortVisibility.Connect | PortVisibility.Hover, true);
         }
-        this.hoverElement = isNode ? null : obj;
+        // 890089: Unintended Port Visibility Issue Fix
+        // Updating port visibility based on the previous hoverElement
+        if (this.previousElement instanceof Node && this.hoverElement && (this.previousElement.id !== this.hoverElement.id)) {
+            this.diagram.updatePortVisibility(this.previousElement, PortVisibility.Connect | PortVisibility.Hover, true);
+        }
+        this.previousElement = this.hoverElement;
+        // Updating tooltip content on mouse relative mode
+        if (this.diagram.tooltip.content !== '') {
+            this.hoverElement = null;
+        }
         this.hoverNode = isNode ? null : obj;
     }
 
@@ -702,6 +712,13 @@ export class DiagramEventHandler {
                         if (sourceElement) {
                             tooltipTarget = this.commandHandler.findTarget(sourceElement, obj);
                         }
+                        //908569: Node Tooltip Flickers when hovering on Annotation
+                        //If the annotation does not have tooltip content, set the tooltip target as an object
+                        if (tooltipTarget instanceof ShapeAnnotation || tooltipTarget instanceof PathAnnotation) {
+                            if(!(tooltipTarget.tooltip && tooltipTarget.tooltip.content !== '')){
+                                tooltipTarget = obj;
+                            }
+                        }
                         if (tooltipTarget !== this.hoverElement) {
                             const content: string | HTMLElement = this.getContent();
                             if (this.hoverElement && this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
@@ -725,6 +742,15 @@ export class DiagramEventHandler {
                                 if ((portTarget instanceof PointPort || portTarget instanceof PathPort)
                                     && (this.hoverElement as PointPort).constraints & PortConstraints.ToolTip) {
                                     this.hoverElement = portTarget as object;
+                                }
+                            }
+                            //839511: Tooltip support for annotation - to set hoverelement as TextElement if hovered on annotation in Node/Connector
+                            let annotationTarget;
+                            if (portElement instanceof TextElement) {
+                                annotationTarget = this.commandHandler.findTarget(portElement, obj);
+                                if ((annotationTarget instanceof ShapeAnnotation || annotationTarget instanceof PathAnnotation)
+                                    && (annotationTarget as ShapeAnnotation | PathAnnotation).constraints & AnnotationConstraints.Tooltip) {
+                                    this.hoverElement = annotationTarget as object;
                                 }
                             }
                             if (canResetElement) {
@@ -827,7 +853,9 @@ export class DiagramEventHandler {
             && (this.hoverElement as Node).constraints & NodeConstraints.Tooltip) ||
             ((this.hoverElement instanceof Connector) && (this.hoverElement as Connector).constraints & ConnectorConstraints.Tooltip)
             || ((this.hoverElement instanceof PointPort || this.hoverElement instanceof PathPort)
-                && (this.hoverElement as PointPort).constraints & PortConstraints.ToolTip);
+                && (this.hoverElement as PointPort).constraints & PortConstraints.ToolTip) ||
+                ((this.hoverElement instanceof ShapeAnnotation || this.hoverElement instanceof PathAnnotation)
+                && (this.hoverElement as ShapeAnnotation | PathAnnotation).constraints & AnnotationConstraints.Tooltip);
         const node: NodeModel = this.hoverElement as Node;
         let childNode: NodeModel | ConnectorModel;
         if (node instanceof Node && node.children && node.children.length > 0) {
@@ -862,7 +890,10 @@ export class DiagramEventHandler {
                 || this.tool instanceof SelectTool || this.tool instanceof ConnectTool) && this.inAction) {
                 // eslint-disable-next-line @typescript-eslint/no-this-alias
                 const diagram: DiagramEventHandler = this;
-                const delay: number = 100;
+                let delay: number = this.diagram.scrollSettings.autoScrollFrequency;
+                if (delay < 10 || isNaN(delay)) {
+                    delay = 100;
+                }
                 if (this.diagram.scrollSettings.canAutoScroll && autoScrollPosition && !this.doingAutoScroll) {
                     this.doingAutoScroll = true;
                     this.timeOutValue = setInterval(
@@ -1051,8 +1082,9 @@ export class DiagramEventHandler {
                     const isInsideLane = this.isSwimlaneChild(this.diagram.selectedObject.actualObject);
                     //isSwimlaneChildHelper is used to check whether the helper object is child's helper of lane's helper. if it is lane's helper then we should not remove the DiagramAction.PublicMethod from diagram actions.
                     //If we remove the DiagramAction.PublicMethod from diagram actions then undo redo will not work properly after dropping child from diagram to swimlane.
-                    const isSwimlaneChildHelper = this.diagram.selectedObject.actualObject && this.diagram.selectedObject.actualObject.width === this.diagram.selectedObject.helperObject.width && 
-                            this.diagram.selectedObject.actualObject.height === this.diagram.selectedObject.helperObject.height;
+                    const isSwimlaneChildHelper = this.diagram.selectedObject.actualObject &&
+                    this.diagram.selectedObject.actualObject.width === this.diagram.selectedObject.helperObject.width &&
+                    this.diagram.selectedObject.actualObject.height === this.diagram.selectedObject.helperObject.height;
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
                     if(this.commandHandler.isTargetSubProcess(this.diagram.selectedObject.actualObject) && (this.diagram.selectedObject.actualObject as Node).parentId === ''){
                         this.swapProcessChildInDom(this.diagram.element.id+'_diagramLayer', this.diagram.selectedObject.actualObject);
@@ -1092,7 +1124,7 @@ export class DiagramEventHandler {
                  * EJ2-45543 Provide Event support to notify the port click
                  */
                 const targetObject = this.getTargetElement();
-                let arg: IClickEventArgs | IBlazorClickEventArgs = {
+                const arg: IClickEventArgs | IBlazorClickEventArgs = {
                     element: (targetObject.target instanceof PointPort)
                         ? targetObject.target : cloneBlazorObject(this.eventArgs.source) || cloneBlazorObject(this.diagram),
                     position: cloneBlazorObject(this.eventArgs.position), count: evt.detail,
@@ -1115,11 +1147,11 @@ export class DiagramEventHandler {
     //To check whether the node is child of swimlane or not.
     private isSwimlaneChild(node: NodeModel): boolean {
         if (node.shape && node.shape.type !== 'SwimLane') {
-            var parent = this.diagram.nameTable[(node as Node).parentId];
+            const parent = this.diagram.nameTable[(node as Node).parentId];
             if (!parent) {
                 return false;
             }
-            var swimlane = parent.parentId ? this.diagram.nameTable[parent.parentId] : parent;
+            const swimlane = parent.parentId ? this.diagram.nameTable[parent.parentId] : parent;
             return swimlane && swimlane.shape && swimlane.shape.type === 'SwimLane';
         } else {
             return false;
@@ -1185,24 +1217,6 @@ export class DiagramEventHandler {
             }
         }
         return padding || 0;
-    }
-    private getBlazorClickEventArgs(arg: IClickEventArgs | IBlazorClickEventArgs): IBlazorClickEventArgs {
-        arg = {
-            element: this.eventArgs.source ? { selector: cloneBlazorObject(this.eventArgs.source) } :
-                { diagram: cloneBlazorObject(this.diagram) },
-            position: cloneBlazorObject(this.eventArgs.position), count: arg.count,
-            actualObject: this.eventArgs.actualObject ? { selector: cloneBlazorObject(this.eventArgs.actualObject) } :
-                { diagram: cloneBlazorObject(this.diagram) },
-            button: arg.button
-        } as IBlazorClickEventArgs;
-        if (this.eventArgs.source instanceof Node) {
-            (arg as IBlazorClickEventArgs).element.selector.nodes = [];
-            (arg as IBlazorClickEventArgs).element.selector.nodes.push(cloneBlazorObject(this.eventArgs.source) as Node);
-        } else if (this.eventArgs.source instanceof Connector) {
-            (arg as IBlazorClickEventArgs).element.selector.connectors = [];
-            (arg as IBlazorClickEventArgs).element.selector.connectors.push(cloneBlazorObject(this.eventArgs.source) as Connector);
-        }
-        return arg;
     }
 
     public addSwimLaneObject(selectedNode: NodeModel): void {
@@ -1468,18 +1482,19 @@ export class DiagramEventHandler {
                     }
                     //898867: Diagram scrolling is not smooth while scrolling with Track Pad in Mac.
                     if (isMacOS) {
-                        const isHorizontalScroll = Math.abs(evt.deltaX) > Math.abs(evt.deltaY);
+                        const isHorizontalScroll: boolean = Math.abs(evt.deltaX) > Math.abs(evt.deltaY);
                         if (isHorizontalScroll) {
+                            // eslint-disable-next-line no-compare-neg-zero
                             if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0 && (isTrackpadScroll || !isMacOS))) {
                                 this.diagram.scroller.zoom(1, change, 0, mousePosition, canMouseWheel, undefined, isTrackpadScroll);
                             }
                         }
                         else {
+                            // eslint-disable-next-line no-compare-neg-zero
                             if ((evt.deltaY && evt.deltaY !== -0 && (isTrackpadScroll || !isMacOS))) {
                                 this.diagram.scroller.zoom(1, 0, change, mousePosition, canMouseWheel, undefined, isTrackpadScroll);
                             }
                         }
-                        evt.preventDefault();
                     }
                     //Bug 837940: In mac, scrollbar flickers on horizontal and vertical scroll using trackpad.
                     else {
@@ -1493,7 +1508,6 @@ export class DiagramEventHandler {
                             this.diagram.scroller.zoom(1, 0, change, mousePosition, canMouseWheel, undefined, isTrackpadScroll);
                         }
                     }
-                    
                 }
                 else {
                     // 878719: Resolve ESLint errors
@@ -1854,7 +1868,7 @@ export class DiagramEventHandler {
         //Removed isBlazor code
         if (this.lastObjectUnderMouse && this.diagram.mouseLeave
             && (!this.eventArgs.actualObject || (this.lastObjectUnderMouse !== this.eventArgs.actualObject))) {
-            let arg: IMouseEventArgs | IBlazorMouseEventArgs = {
+            const arg: IMouseEventArgs | IBlazorMouseEventArgs = {
                 targets: undefined, element: cloneBlazorObject(this.lastObjectUnderMouse), actualObject: undefined
             };
             //Removed isBlazor code
@@ -1872,18 +1886,6 @@ export class DiagramEventHandler {
         }
     }
 
-    private getBlazorCollectionObject(obj: (NodeModel | ConnectorModel)[], arg1: IBlazorMouseEventArgs): void {
-        if (obj) {
-            for (let i: number = 0; i < obj.length; i++) {
-                if (getObjectType(obj[parseInt(i.toString(), 10)]) === Connector) {
-                    arg1.targets.connector.push(cloneBlazorObject(obj[parseInt(i.toString(), 10)]));
-                } else {
-                    arg1.targets.node.push(cloneBlazorObject(obj[parseInt(i.toString(), 10)]));
-                }
-            }
-        }
-    }
-
     private elementEnter(mousePosition: PointModel, elementOver: boolean): void {
         if (!elementOver) {
             const isPrivateTooltip: number = ((this.hoverElement instanceof Node)
@@ -1891,7 +1893,9 @@ export class DiagramEventHandler {
                 || ((this.hoverElement instanceof Connector)
                     && (this.hoverElement as Connector).constraints & ConnectorConstraints.Tooltip)
                 || ((this.hoverElement instanceof PointPort || this.hoverElement instanceof PathPort)
-                    && (this.hoverElement as PointPort).constraints & PortConstraints.ToolTip);
+                    && (this.hoverElement as PointPort).constraints & PortConstraints.ToolTip)
+                || ((this.hoverElement instanceof ShapeAnnotation || this.hoverElement instanceof PathAnnotation)
+                    && (this.hoverElement as ShapeAnnotation | PathAnnotation).constraints & AnnotationConstraints.Tooltip);
             const content: string | HTMLElement = this.getContent();
             let children: NodeModel | ConnectorModel;
             if (this.hoverElement && (this.hoverElement as NodeModel).children && (this.hoverElement as NodeModel).children.length > 0) {
@@ -1934,6 +1938,10 @@ export class DiagramEventHandler {
                 if ((obj as Node | Connector).ports && (this.hoverElement instanceof PointPort || this.hoverElement instanceof PathPort)) {
                     //executed to set target as port
                     targetEle = document.getElementById((obj as Node).id + '_' + (this.hoverElement as any).id);
+                } else if ((obj as Node | Connector).annotations
+                          && (this.hoverElement instanceof ShapeAnnotation || this.hoverElement instanceof PathAnnotation)) {
+                    //executed to set target as annotation
+                    targetEle = document.getElementById((obj as Node).id + '_' + (this.hoverElement as any).id);
                 } else {
                     //executed to set target as Node or Connector
                     const idName: string = ((obj as Node).shape && (((obj as Node).shape) instanceof Native)) ? '_content_native_element' : '_groupElement';
@@ -1944,7 +1952,6 @@ export class DiagramEventHandler {
                     (this.diagram.tooltipObject as DiagramTooltipModel).openOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
                     //Removed isBlazor code
                     (this.diagram.tooltipObject as Tooltip).dataBind();
-                    
                 }
                 if (canEnableToolTip(this.hoverElement, this.diagram) && this.hoverElement.tooltip.openOn === 'Auto') {
                     (this.diagram.tooltipObject as Tooltip).target = this.hoverElement.id;
@@ -2011,7 +2018,7 @@ export class DiagramEventHandler {
                 annotation = this.diagram.findElementUnderMouse(obj, this.currentPosition, this.diagram);
                 if (this.tool && (this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool)) {
                     const arg: IDoubleClickEventArgs = {
-                        source: cloneBlazorObject(obj) || cloneBlazorObject(this.diagram),
+                        source: cloneBlazorObject(obj) ,
                         position: this.currentPosition, count: evt.detail
                     };
                     this.tool.mouseUp(this.eventArgs);
@@ -2032,7 +2039,7 @@ export class DiagramEventHandler {
                     }
                 }
             }
-            let arg: IDoubleClickEventArgs | IBlazorDoubleClickEventArgs = {
+            const arg: IDoubleClickEventArgs | IBlazorDoubleClickEventArgs = {
                 source: cloneBlazorObject(obj) || cloneBlazorObject(this.diagram),
                 position: this.currentPosition, count: evt.detail
             };
@@ -2086,10 +2093,8 @@ export class DiagramEventHandler {
             width = textBounds.width;
             width = ((minWidth > width) ? minWidth : width) * scale;
             height = ((minHeight > textBounds.height) ? minHeight : textBounds.height) * scale;
-            if (!(node instanceof Connector && node.type === 'Bezier')) {
-                editTextBoxDiv.style.left = ((((textWrapper.bounds.center.x + transforms.tx) * transforms.scale) - width / 2) - 2.5) + 'px';
-                editTextBoxDiv.style.top = ((((textWrapper.bounds.center.y + transforms.ty) * transforms.scale) - height / 2) - 3) + 'px';
-            }
+            editTextBoxDiv.style.left = ((((textWrapper.bounds.center.x + transforms.tx) * transforms.scale) - width / 2) - 2.5) + 'px';
+            editTextBoxDiv.style.top = ((((textWrapper.bounds.center.y + transforms.ty) * transforms.scale) - height / 2) - 3) + 'px';
             editTextBoxDiv.style.width = width + 'px';
             editTextBoxDiv.style.height = height + 'px';
             editTextBox.style.minHeight = minHeight + 'px';
@@ -2403,11 +2408,28 @@ export class DiagramEventHandler {
                                 (obj as Node).rotateAngle = helperObject.rotateAngle;
                             }
                         } else {
-                            (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
-                            if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
-                                (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
+                            // 902192: Diagram node resized wrongly while dragging with multiple selection Inside a swimlane Issue Fix
+                            if (this.diagram.selectedItems.nodes.length === 1 ) {
+                                // Single node move with helper
+                                (obj as Node).offsetX = helperObject.offsetX;
+                                (obj as Node).offsetY = helperObject.offsetY;
+                                if (obj && obj.shape && obj.shape.type !== 'UmlClassifier' ) {
+                                    (obj as Node).width = helperObject.width;
+                                    (obj as Node).height = helperObject.height;
+                                }
+                                (obj as Node).rotateAngle = helperObject.rotateAngle;
+                            } else if (this.diagram.selectedItems.nodes.length > 1
+                                && !(this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting))) {
+                                // Multi selected node move with helper
+                                const offsetX: number = (helperObject.offsetX - this.diagram.selectedItems.offsetX);
+                                const offsetY: number = (helperObject.offsetY - this.diagram.selectedItems.offsetY);
+                                const rotateAngle: number = (helperObject.rotateAngle - this.diagram.selectedItems.rotateAngle);
+                                for (let i: number = 0; i < this.diagram.selectedItems.nodes.length; i++) {
+                                    (this.diagram.selectedItems.nodes[parseInt(i.toString(), 10)] as Node).offsetX += offsetX;
+                                    (this.diagram.selectedItems.nodes[parseInt(i.toString(), 10)] as Node).offsetY += offsetY;
+                                    (this.diagram.selectedItems.nodes[parseInt(i.toString(), 10)] as Node).rotateAngle += rotateAngle;
+                                }
                             }
-                            (obj as Node).rotateAngle = helperObject.rotateAngle;
                         }
                     }
                     let undoElement: StackEntryObject;
@@ -2431,7 +2453,16 @@ export class DiagramEventHandler {
                         isChangeProperties = true;
                     }
                     if (checkParentAsContainer(this.diagram, obj, true) && parentNode && parentNode.container.type === 'Canvas') {
-                        checkChildNodeInContainer(this.diagram, obj as NodeModel);
+                        if (this.diagram.selectedItems.nodes.length > 1) {
+                            // 902192: Diagram node resized wrongly while dragging with multiple selection Inside a swimlane Issue Fix
+                            for (let i: number = 0; i < this.diagram.selectedItems.nodes.length; i++) {
+                                checkChildNodeInContainer(
+                                    this.diagram, this.diagram.selectedItems.nodes[parseInt(i.toString(), 10)] as NodeModel);
+                            }
+                        }
+                        else {
+                            checkChildNodeInContainer(this.diagram, obj as NodeModel);
+                        }
                     } else {
                         history = this.updateContainerPropertiesExtend(parentNode, obj, connectors, helperObject, history);
                     }

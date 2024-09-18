@@ -19,10 +19,10 @@ export class TextProperties {
      * @private
      */
     public paragraph: Paragraph;
-    private isInitial: boolean = true;
-    private get documentEditor(): DocumentEditor {
-        return this.container.documentEditor;
-    }
+    // private isInitial: boolean = true;
+    // private get documentEditor(): DocumentEditor {
+    //     return this.container.documentEditor;
+    // }
 
     /**
      * Initialize the Text properties pane.
@@ -39,45 +39,45 @@ export class TextProperties {
         this.initializeTextProperties(id, isTableProperties, isRtl);
         this.wireEvents();
     }
-
-    public enableDisableElements(enable: boolean): void {
-        if (enable) {
-            classList(this.element, [], ['e-de-overlay']);
-        } else {
-            classList(this.element, ['e-de-overlay'], []);
-        }
-    }
-    public updateStyles(): void {
-        this.paragraph.updateStyleNames();
-    }
-    public get appliedHighlightColor(): string {
-        return this.text.appliedHighlightColor;
-    }
-    public set appliedHighlightColor(value: string) {
-        this.text.appliedHighlightColor = value;
-    }
-    public get appliedBulletStyle(): string {
-        return this.paragraph.appliedBulletStyle;
-    }
-    public set appliedBulletStyle(value: string) {
-        this.paragraph.appliedBulletStyle = value;
-    }
-    public get appliedNumberingStyle(): string {
-        return this.paragraph.appliedNumberingStyle;
-    }
-    public set appliedNumberingStyle(value: string) {
-        this.paragraph.appliedNumberingStyle = value;
-    }
-    public showTextProperties(isShow: boolean): void {
-        if (isShow) {
-            this.onSelectionChange();
-        }
-        if (!isShow && this.element.style.display === 'none' || (isShow && this.element.style.display === 'block')) {
-            return;
-        }
-        this.element.style.display = isShow ? 'block' : 'none';
-        this.documentEditor.resize();
-    }
+    // Unsed methods
+    // public enableDisableElements(enable: boolean): void {
+    //     if (enable) {
+    //         classList(this.element, [], ['e-de-overlay']);
+    //     } else {
+    //         classList(this.element, ['e-de-overlay'], []);
+    //     }
+    // }
+    // public updateStyles(): void {
+    //     this.paragraph.updateStyleNames();
+    // }
+    // public get appliedHighlightColor(): string {
+    //     return this.text.appliedHighlightColor;
+    // }
+    // public set appliedHighlightColor(value: string) {
+    //     this.text.appliedHighlightColor = value;
+    // }
+    // public get appliedBulletStyle(): string {
+    //     return this.paragraph.appliedBulletStyle;
+    // }
+    // public set appliedBulletStyle(value: string) {
+    //     this.paragraph.appliedBulletStyle = value;
+    // }
+    // public get appliedNumberingStyle(): string {
+    //     return this.paragraph.appliedNumberingStyle;
+    // }
+    // public set appliedNumberingStyle(value: string) {
+    //     this.paragraph.appliedNumberingStyle = value;
+    // }
+    // public showTextProperties(isShow: boolean): void {
+    //     if (isShow) {
+    //         this.onSelectionChange();
+    //     }
+    //     if (!isShow && this.element.style.display === 'none' || (isShow && this.element.style.display === 'block')) {
+    //         return;
+    //     }
+    //     this.element.style.display = isShow ? 'block' : 'none';
+    //     this.documentEditor.resize();
+    // }
     private initializeTextProperties(id: string, isTableProperties: boolean, isRtl?: boolean): void {
         this.element = createElement('div', { className: 'e-de-prop-pane e-de-scrollbar-hide' });
         this.element.setAttribute('tabindex', '0');
@@ -88,9 +88,9 @@ export class TextProperties {
             this.container.propertiesPaneContainer.appendChild(this.element);
         }
     }
-    private generateUniqueID(): string {
-        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    }
+    // private generateUniqueID(): string {
+    //     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    // }
     public wireEvents(): void {
         this.text.wireEvent();
         this.paragraph.wireEvent();
@@ -111,5 +111,3 @@ export class TextProperties {
         this.container = undefined;
     }
 }
-
-

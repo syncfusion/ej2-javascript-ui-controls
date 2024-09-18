@@ -87,7 +87,9 @@ export class ExportUtils {
         if (type === 'SVG') {
             if (Browser.info.name === 'msie') {
                 const svg: Blob = new Blob([(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'application/octet-stream' });
-                window.navigator.msSaveOrOpenBlob(svg, fileName + '.' + type.toLocaleLowerCase());
+                if (!isNullOrUndefined(window.navigator.msSaveOrOpenBlob)) {
+                    window.navigator.msSaveOrOpenBlob(svg, fileName + '.' + type.toLocaleLowerCase());
+                }
             } else {
                 this.triggerDownload(fileName, type, url, isDownload);
             }
@@ -254,7 +256,7 @@ export class ExportUtils {
         }
         for (let j: number = 0; j < buffers.length; j++) {
             const b: Blob = new Blob([buffers[j as number]], { type: 'application/octet-stream' });
-            if (Browser.info.name === 'msie') {
+            if (Browser.info.name === 'msie' && !isNullOrUndefined(window.navigator.msSaveOrOpenBlob)) {
                 window.navigator.msSaveOrOpenBlob(b, fileName + '.' + fileType.toLocaleLowerCase());
             }
         }

@@ -18,9 +18,9 @@ import { bar, barData, datetimeData, categoryData, categoryData1, negativeDataPo
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { Export} from '../../../src/chart/print-export/export';
 
-
-Chart.Inject(BoxAndWhiskerSeries, Tooltip, Crosshair, Category, DataLabel, Selection);
+Chart.Inject(BoxAndWhiskerSeries, Tooltip, Crosshair, Category, DataLabel, Selection, Export);
 
 export interface wheel {
     preventDefault: Function,
@@ -727,8 +727,8 @@ describe('Chart Control - Box and Whisker Series', () => {
                 targetElement = getElement('container_Series_0_Point_3_BoxPath');
                 let pathElements: string[] = targetElement.getAttribute('d').split(' ');
                 let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
-                y = parseFloat(pathElements[57]) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
-                x = parseFloat(pathElements[56]) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                y = parseFloat(pathElements[54]) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = parseFloat(pathElements[53]) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
                 trigger.mousemovetEvent(targetElement, Math.ceil(x), Math.ceil(y));
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
@@ -748,8 +748,8 @@ describe('Chart Control - Box and Whisker Series', () => {
                 targetElement = getElement('container_Series_0_Point_3_BoxPath');
                 let pathElements: string[] = targetElement.getAttribute('d').split(' ');
                 let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
-                y = parseFloat(pathElements[57]) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
-                x = parseFloat(pathElements[56]) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                y = parseFloat(pathElements[54]) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = parseFloat(pathElements[53]) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
                 trigger.mousemovetEvent(targetElement, Math.ceil(x), Math.ceil(y));                
                 let crosshair: Element = <Element>document.getElementById('container_UserInteraction');
                 expect(crosshair.childNodes.length == 3).toBe(true);
@@ -895,6 +895,91 @@ describe('Chart Control - Box and Whisker Series', () => {
             chartObj.zoomSettings.enableMouseWheelZooming = true;
             chartObj.loaded = loaded;
             chartObj.refresh();
+        });
+        it('Checking a XLSX export', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                const element: Element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.enableExport = true
+            chartObj.export('XLSX', 'Chart');
+            chartObj.refresh();
+        });
+    });
+    describe('Box and whisker - checking animation on data changes', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        beforeAll(() => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', title: 'Department' },
+                    primaryYAxis: { title: 'Age' },
+                    series: [{
+                        dataSource: [
+                            { x: "Development", yValues: [22, 22, 23, 25, 25, 25, 26, 27, 27, 28, 28, 29, 30, 32, 34, 32, 34, 36, 35, 38] },
+                            { x: "Testing", yValues: [22, 33, 23, 25, 26, 28, 29, 30, 34, 33, 32, 31, 50] },
+                            { x: "HR", yValues: [22, 24, 25, 30, 32, 34, 36, 38, 39, 41, 35, 36, 40, 56] },
+                            { x: "Finance", yValues: [26, 27, 28, 30, 32, 34, 35, 37, 35, 37, 45] },
+                            { x: "R&D", yValues: [26, 27, 29, 32, 34, 35, 36, 37, 38, 39, 41, 43, 58] },
+                            { x: "Sales", yValues: [27, 26, 28, 29, 29, 29, 32, 35, 32, 38, 53] },
+                            { x: "Inventory", yValues: [21, 23, 24, 25, 26, 27, 28, 30, 34, 36, 38] },
+                            { x: "Graphics", yValues: [26, 28, 29, 30, 32, 33, 35, 36, 52] },
+                            { x: "Training", yValues: [28, 29, 30, 31, 32, 34, 35, 36] }
+                        ],
+                        xName: 'x', yName: 'yValues',
+                        animation: { enable: false }, type: 'BoxAndWhisker',
+                        marker: {
+                            visible: true,
+                            dataLabel:{
+                                visible: true
+                            }
+                        }
+                    },
+                    ], width: '800',
+                    legendSettings: { visible: false },
+                    title: 'Employees age group in various departments',
+                });
+            chartObj.appendTo('#container');
+            unbindResizeEvents(chartObj);
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            elem.remove();
+        });
+        it('Checking box plot updated direction', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element: Element = document.getElementById('container_Series_0_Point_0_BoxPath');
+                expect(element.getAttribute('d')).toBe('M 12.275000000000002 160.11428571428573 L 69.55833333333334 160.11428571428573 M 40.916666666666664 160.11428571428573 L 40.916666666666664 185.13214285714287 M 12.275000000000002 185.13214285714287 L 69.55833333333334 185.13214285714287 L 69.55833333333334 225.16071428571428 L 12.275000000000002 225.16071428571428 Z M 40.916666666666664 225.16071428571428 L 40.916666666666664 240.17142857142858 M 12.275000000000002 240.17142857142858 L 69.55833333333334 240.17142857142858 M 12.275000000000002 210.15 L 69.55833333333334 210.15 M 35.916666666666664 200.64678571428573 L 45.916666666666664 210.64678571428573 M 45.916666666666664 200.64678571428573 L 35.916666666666664 210.64678571428573');
+                done();
+            };
+            chartObj.loaded = loaded;
+            let data = [
+                { x: "Development", yValues: [22, 22, 23, 25, 25, 25, 26, 27, 27, 28, 28, 29, 30, 32, 34, 32, 34, 36, 35, 38] },
+                { x: "Testing", yValues: [22, 33, 23, 25, 26, 28, 29, 30, 34, 33, 32, 31, 50] },
+                { x: "HR", yValues: [22, 24, 25, 30, 32, 34, 36, 38, 39, 41, 35, 36, 40, 56] },
+                { x: "Finance", yValues: [26, 27, 28, 30, 32, 34, 35, 37, 35, 37, 45] },
+                { x: "R&D", yValues: [26, 27, 29, 32, 34, 35, 36, 37, 38, 39, 41, 43, 58] },
+                { x: "Sales", yValues: [27, 26, 28, 28, 28, 29, 32, 35, 32, 38, 53] },
+                { x: "Inventory", yValues: [21, 23, 24, 25, 26, 27, 28, 30, 34, 36, 38] },
+                { x: "Graphics", yValues: [26, 28, 29, 30, 32, 33, 35, 36, 52] },
+                { x: "Training", yValues: [28, 29, 30, 31, 32, 34, 35, 36] }
+            ];
+            chartObj.series[0].setData(data);
+            chartObj.refresh(); unbindResizeEvents(chartObj);
+        });
+        it('Box plot - checking remove point', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element: Element = document.getElementById('containerSeriesGroup0');
+                expect(element.children.length).toBe(9);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].removePoint(0);
+            chartObj.refresh(); unbindResizeEvents(chartObj);
         });
     });
     it('memory leak', () => {

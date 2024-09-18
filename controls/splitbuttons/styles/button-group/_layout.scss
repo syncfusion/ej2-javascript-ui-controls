@@ -16,7 +16,7 @@
     input:focus+label.e-btn,
     .e-btn:focus,
     .e-btn:hover {
-      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap4' {
+      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap4' {
         z-index: 2;
       }
     }
@@ -272,15 +272,6 @@
           }
         }
       }
-    }
-  }
-
-  .e-bigger .e-btn-group,
-  .e-bigger.e-btn-group,
-  .e-bigger .e-css.e-btn-group,
-  .e-bigger.e-css.e-btn-group  {
-    .e-btn-icon {
-      font-size: $btn-grp-icon-font-size-bigger;
     }
   }
 }

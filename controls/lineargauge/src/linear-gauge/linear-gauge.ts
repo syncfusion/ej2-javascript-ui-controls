@@ -706,17 +706,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Render the map area border
-     */
-    private renderArea(): void {
-        const size: Size = measureText(this.title, this.titleStyle);
-        const rectSize: Rect = new Rect(
-            this.actualRect.x, this.actualRect.y - (size.height / 2), this.actualRect.width, this.actualRect.height);
-        const rect: RectOption = new RectOption(
-            this.element.id + 'LinearGaugeBorder', this.background || this.themeStyle.backgroundColor, this.border, 1, rectSize);
-        this.svgObject.appendChild(this.renderer.drawRectangle(rect) as SVGRectElement);
-    }
-    /**
      * To calculate axes bounds
      *
      * @private
@@ -778,7 +767,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             height: size.height
         };
         const x: number = this.margin.left;
-        const y: number = (isNullOrUndefined(titleBounds)) ? this.margin.top : titleBounds.y;
+        const y: number = titleBounds.y;
         const height: number = (this.availableSize.height - y - this.margin.bottom);
         this.actualRect = { x: x, y: y, width: width, height: height };
         if (this.title) {
@@ -859,7 +848,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 currentSize: new Size(0, 0),
                 cancel: false
             };
-            args.currentSize = new Size(this.availableSize.width, this.availableSize.height);
+            const currentSize: ClientRect = this.element.getBoundingClientRect();
+            args.currentSize = new Size(currentSize.width, currentSize.height);
             this.trigger(resized, args);
             if (!args.cancel) {
                 if (this.resizeTo) {
@@ -925,7 +915,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let path: string = '';
         const fill: string = (this.container.backgroundColor !== 'transparent'
             || (this.theme !== 'Bootstrap4' && this.theme !== 'Material' && this.theme !== 'Material3' && this.theme !== 'Material3Dark'
-                && this.theme !== 'Fluent2' && this.theme !== 'Fluent2Dark'))
+                && this.theme !== 'Fluent2' && this.theme !== 'Fluent2Dark' && this.theme !== 'Bootstrap5' && this.theme !== 'Bootstrap5Dark'))
             ? this.container.backgroundColor : this.themeStyle.containerBackground;
         let rect: RectOption;
         const radius: number = this.container.width;
@@ -1225,7 +1215,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public mouseLeave(e: PointerEvent): boolean {
         this.activeAxis = null;
         this.activePointer = null;
-        this.getMouseArgs(e, 'touchmove', gaugeMouseLeave);
+        const args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseLeave);
+        this.trigger(gaugeMouseLeave, args);
         if (!isNullOrUndefined(this.mouseElement)) {
             this.mouseElement = null;
             this.pointerDrag = false;

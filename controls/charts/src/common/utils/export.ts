@@ -26,6 +26,7 @@ interface IControlValue {
     height: number;
     svg: Element;
 }
+/** @private */
 export class ExportUtils {
     private control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart | Chart3D | CircularChart3D;
 
@@ -362,7 +363,17 @@ export class ExportUtils {
         images = [image];
         this.exportImage(images, fileName, fileType, image);
     }
-    private exportImage(images: string[] | HTMLElement, fileName: string, fileType: string, image: string): void {
+    /**
+     * Exports the given images as a file with the specified name and type.
+     *
+     * @param {string[] | HTMLElement} images - The images to be exported. Can be an array of image URLs or an HTML element containing the image.
+     * @param {string} fileName - The name of the exported file.
+     * @param {string} fileType - The type of the exported file (e.g., 'png', 'jpeg').
+     * @param {string} image - The image data to be used for export.
+     * @returns {void}
+     * @private
+     */
+    public exportImage(images: string[] | HTMLElement, fileName: string, fileType: string, image: string): void {
         const buffers: ArrayBuffer[] = [];
         const length: number = (!(images instanceof HTMLElement)) ? images.length : 0;
         for (let g: number = 0; g < length; g++) {

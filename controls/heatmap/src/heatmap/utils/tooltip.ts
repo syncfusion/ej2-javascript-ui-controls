@@ -133,10 +133,10 @@ export class Tooltip {
             this.heatMap.setProperties({ tooltipSettings : { fill : '#F9FAFB', textStyle : { size: '12px', fontFamily : 'Inter', fontWeight : '500', color : '#1F2937' }}}, true);
         }
         if (this.heatMap.theme === 'Bootstrap5') {
-            this.heatMap.setProperties({ tooltipSettings : { textStyle : { size: '14px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"', fontWeight : '500' }}}, true);
+            this.heatMap.setProperties({ tooltipSettings : { fill: '#000000', textStyle : { size: '12px', fontFamily : 'Segoe UI', fontWeight : '400', color: '#FFFFFF' }}}, true);
         }
         if (this.heatMap.theme === 'Bootstrap5Dark') {
-            this.heatMap.setProperties({ tooltipSettings : { fill : '#E9ECEF', textStyle : { size: '14px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"', fontWeight : '500', color : '#212529' }}}, true);
+            this.heatMap.setProperties({ tooltipSettings : { fill : '#FFFFFF', textStyle : { size: '12px', fontFamily : 'Segoe UI', fontWeight : '400', color : '#212529' }}}, true);
         }
         if (this.heatMap.theme === 'Fluent') {
             this.heatMap.setProperties({ tooltipSettings : { textStyle : { size: '12px', fontFamily : '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif', fontWeight : '500' }}}, true);

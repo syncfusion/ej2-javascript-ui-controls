@@ -1,9 +1,10 @@
 /**
- * Open properties.
+ * Chart import statements.
  */
 import { Spreadsheet } from '../base/index';
 import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, Workbook, getSheet } from '../../workbook/index';
-import { initiateChart, ChartModel, getRangeIndexes, isNumber, LegendPosition, getSheetIndexFromAddress, DateFormatCheckArgs, checkDateFormat, refreshChartCellOnInit, workbookFormulaOperation, checkIsFormula } from '../../workbook/common/index';
+import { initiateChart, ChartModel, getRangeIndexes, isNumber, LegendPosition, getSheetIndexFromAddress } from '../../workbook/index';
+import { refreshChartCellOnInit } from '../../workbook/index';
 import { Overlay, Dialog } from '../services/index';
 import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData, addDPRValue, refreshChartCellModel } from '../common/index';
 import { BeforeImageRefreshData, BeforeChartEventArgs, completeAction, clearChartBorder, focusBorder } from '../common/index';
@@ -12,8 +13,8 @@ import { AreaSeries, StackingAreaSeries, AccumulationChart, IAccLoadedEventArgs,
 import { Legend, StackingBarSeries, SeriesModel, LineSeries, StackingLineSeries, AxisModel, ScatterSeries } from '@syncfusion/ej2-charts';
 import { AccumulationLegend, PieSeries, AccumulationTooltip, AccumulationDataLabel, AccumulationSeriesModel } from '@syncfusion/ej2-charts';
 import { L10n, isNullOrUndefined, getComponent, closest, detach, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
-import { isCustomDateTime } from '../../workbook/index';
-import { updateChart, deleteChartColl, getFormattedCellObject, setChart, getCellAddress, ChartTheme } from '../../workbook/common/index';
+import { isCustomDateTime, getAutoDetectFormatParser, calculateFormula, checkRange, inRange } from '../../workbook/index';
+import { refreshChart, deleteChartColl, getFormattedCellObject, setChart, getCellAddress, ChartTheme } from '../../workbook/common/index';
 import { insertChart, chartRangeSelection, addChartEle, chartDesignTab, removeDesignChart, insertDesignChart, getUpdateUsingRaf, focus } from '../common/index';
 import { DataLabel, DataLabelSettingsModel, IBeforeResizeEventArgs } from '@syncfusion/ej2-charts';
 import { LegendSettingsModel, LabelPosition, ChartType, isHiddenCol, beginAction, NumberFormatArgs } from '../../workbook/index';
@@ -49,7 +50,6 @@ export class SpreadsheetChart {
         this.parent.on(refreshChartCellObj, this.refreshChartCellObj, this);
         this.parent.on(refreshChartCellModel, this.refreshChartCellModel, this);
         this.parent.on(refreshChartCellOnInit, this.refreshChartCellObj, this);
-        this.parent.on(updateChart, this.updateChartHandler, this);
         this.parent.on(deleteChart, this.deleteChart, this);
         this.parent.on(clearChartBorder, this.clearBorder, this);
         this.parent.on(insertChart, this.insertChartHandler, this);
@@ -57,6 +57,7 @@ export class SpreadsheetChart {
         this.parent.on(chartDesignTab, this.chartDesignTabHandler, this);
         this.parent.on(addChartEle, this.updateChartElement, this);
         this.parent.on(undoRedoForChartDesign, this.undoRedoForChartDesign, this);
+        this.parent.on(refreshChart, this.refreshChartData, this);
     }
 
     private insertChartHandler(args: { action: string, id: string, isChart?: boolean }): void {
@@ -145,25 +146,57 @@ export class SpreadsheetChart {
             for (let idx: number = 0; idx < chartCollLen; idx++) {
                 const chartEle: HTMLElement = document.getElementById(chartColl[idx as number].id);
                 if (overlayEle && chartEle && chartColl[idx as number].id === chartId) {
-                    this.parent.notify(initiateChart, {
-                        option: chartColl[idx as number], isRefresh: true
-                    });
+                    this.initiateChartHandler(
+                        { option: chartColl[idx as number], isRefresh: true });
                 }
             }
         }
     }
 
-    private updateChartHandler(args: { chart: ChartModel }): void {
-        const series: SeriesModel[] = this.initiateChartHandler({ option: args.chart, isRefresh: true }) as SeriesModel[];
-        const chartObj: HTMLElement = this.parent.element.querySelector('.' + args.chart.id);
-        if (chartObj) {
-            let chartComp: Chart = getComponent(chartObj, 'chart');
-            if (isNullOrUndefined(chartComp)) {
-                chartComp = getComponent(chartObj, 'accumulationchart');
-            }
-            chartComp.series = series;
-            chartComp.refresh();
+    private refreshChartData(
+        args: { cell: CellModel, rIdx: number, cIdx: number, range?: number[], showHide?: string, viewportIndexes?: number[][] }): void {
+        if (!this.parent.chartColl || !this.parent.chartColl.length) {
+            return;
         }
+        let chart: ChartModel; let rangeArr: string[]; let range: string; let insideRange: boolean;
+        let chartEle: HTMLElement; let chartObj: Chart;
+        for (let i: number = 0, len: number = this.parent.chartColl.length; i < len; i++) {
+            chart = this.parent.chartColl[i as number];
+            if (chart.range.includes('!')) {
+                rangeArr = chart.range.split('!');
+                if (this.parent.activeSheetIndex !== getSheetIndex(this.parent, rangeArr[0])) {
+                    continue;
+                }
+                range = rangeArr[1];
+            } else {
+                range = chart.range;
+            }
+            if (args.viewportIndexes) {
+                for (let idx: number = 0; idx < args.viewportIndexes.length; idx++) {
+                    if (checkRange([args.viewportIndexes[idx as number]], range)) {
+                        insideRange = true;
+                        break;
+                    }
+                }
+            } else {
+                insideRange = args.range ? checkRange([args.range], range) : (args.showHide ? this.inRowColumnRange(
+                    getRangeIndexes(range), args.rIdx, args.showHide) : inRange(getRangeIndexes(range), args.rIdx, args.cIdx));
+            }
+            if (insideRange) {
+                chartEle = this.parent.element.querySelector('.' + chart.id);
+                if (chartEle) {
+                    chartObj = getComponent(chartEle, 'chart') || getComponent(chartEle, 'accumulationchart');
+                    if (chartObj) {
+                        chartObj.series = this.initiateChartHandler({ option: chart, isRefresh: true }) as SeriesModel[];
+                        chartObj.refresh();
+                    }
+                }
+            }
+        }
+    }
+
+    private inRowColumnRange(range: number[], index: number, showHide: string): boolean {
+        return showHide === 'rows' ? index >= range[0] && index <= range[2] : index >= range[1] && index <= range[3];
     }
 
     private refreshChartCellModel(args: {
@@ -239,43 +272,42 @@ export class SpreadsheetChart {
         }
     }
 
-    private processChartRange(range: number[], dataSheetIdx: number, opt: ChartModel): {
-        xRange: number[], yRange: number[], lRange: number[], isStringSeries: boolean } {
+    private processChartRange(
+        range: number[], dataSheetIdx: number, opt: ChartModel): { xRange: number[], yRange: number[], lRange: number[],
+            isStringSeries: boolean, isDateTime: boolean } {
         let xRange: number[];
         let yRange: number[];
         let lRange: number[];
         const minr: number = range[0];
         const minc: number = range[1]; let isStringSeries: boolean = false;
         const maxr: number = range[2]; const maxc: number = range[3]; const isSingleRow: boolean = minr === maxr;
-        const isSingleCol: boolean = minc === maxc; let isDateTimeFormat: boolean;
-        const getPropertyValue: Function = (rIdx: number, cIdx: number, sheetIndex: number, checkDateTime?: boolean): string | number => {
-            const cell: CellModel = getCell(rIdx, cIdx, getSheet(this.parent, sheetIndex));
+        const isSingleCol: boolean = minc === maxc; let isDateTimeFormat: boolean; let isDateTime: boolean;
+        const sheet: SheetModel = getSheet(this.parent, dataSheetIdx);
+        const autoDetectFormatFn: (cell: CellModel) => void = getAutoDetectFormatParser(this.parent);
+        const getPropertyValue: Function = (rIdx: number, cIdx: number, isFirstCol?: boolean, checkDateTime?: boolean): string | number => {
+            const cell: CellModel = getCell(rIdx, cIdx, sheet);
             if (cell) {
-                let value: string | number;
                 if (cell.formula && isNullOrUndefined(cell.value)) {
-                    this.parent.notify(workbookFormulaOperation, {
-                        action: 'refreshCalculate', value: cell.formula, rowIndex:
-                            rIdx, colIndex: cIdx, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIndex
-                    });
-                    value = cell.value || (<unknown>cell.value === 0 ? 0 : null);
+                    this.parent.notify(calculateFormula, { cell: cell, rowIdx: rIdx, colIdx: cIdx, sheetIndex: dataSheetIdx });
                 }
+                let value: string | number;
                 if (cell.format) {
                     const formatObj: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, cell: cell,
                         rowIndex: rIdx, colIndex: cIdx };
                     this.parent.notify(getFormattedCellObject, formatObj);
                     const isNum: boolean = isNumber(cell.value);
                     if (isNum && !isCustomDateTime(cell.format, true, null, true)) {
-                        // eslint-disable-next-line no-useless-escape
-                        const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,{}|\":<>~_-]', 'g');
-                        formatObj.formattedText = (formatObj.formattedText.toString()).replace(escapeRegx, '');
-                        value = parseInt(formatObj.formattedText.toString(), 10);
+                        value = Number(cell.value);
                     } else {
                         if (checkDateTime && isNum) {
                             isDateTimeFormat = true;
+                        } else if (isFirstCol && isNum) {
+                            isDateTime = true;
                         }
                         value = formatObj.formattedText && formatObj.formattedText.toString();
                     }
                 } else {
+                    autoDetectFormatFn(cell);
                     value = cell.value;
                 }
                 return isNullOrUndefined(value) ? '' : value;
@@ -283,9 +315,9 @@ export class SpreadsheetChart {
                 return '';
             }
         };
-        const trVal: number | string = getPropertyValue(minr, maxc, dataSheetIdx, true);
-        const blVal: number | string = getPropertyValue(maxr, minc, dataSheetIdx);
-        const tlVal: number | string = getPropertyValue(minr, minc, dataSheetIdx);
+        const trVal: number | string = getPropertyValue(minr, maxc, false, true);
+        const blVal: number | string = getPropertyValue(maxr, minc, true);
+        const tlVal: number | string = getPropertyValue(minr, minc, true);
         if (!isNumber(blVal) || !tlVal) {
             isStringSeries = true;
         }
@@ -307,7 +339,7 @@ export class SpreadsheetChart {
             if ((!isNullOrUndefined(trVal) && !isNumber(trVal) && !isDateTimeFormat)) {
                 lRange = [minr, minc, minr, maxc];
                 yRange[0] = yRange[0] + 1;
-            } else if (isNullOrUndefined(tlVal) && (isSingleRow || isSingleCol)) {
+            } else if ((isSingleRow || isSingleCol) && isNullOrUndefined(tlVal)) {
                 lRange = [minr, minc, minr, maxc];
                 if (isSingleRow) {
                     yRange[1] = yRange[1] + 1;
@@ -317,60 +349,66 @@ export class SpreadsheetChart {
                 }
             }
         }
-        return { xRange: xRange, yRange: yRange, lRange: lRange, isStringSeries: isStringSeries };
+        return { xRange: xRange, yRange: yRange, lRange: lRange, isStringSeries: isStringSeries, isDateTime: isDateTime };
     }
 
-    private toIntrnlRange(range: number[], sheetIdx: number): number[] {
-        if (!range) {
-            range = getRangeIndexes[this.parent.sheets[sheetIdx as number].selectedRange];
-        } else if (typeof (range) === 'string') {
-            range = getRangeIndexes[`${range}`];
+    private getRangeData(
+        options: { range: number[], sheet: SheetModel, isYvalue?: boolean, sheetIdx?: number }): { value: string, displayText?: string }[] {
+        const sheet: SheetModel = options.sheet;
+        if (!options.range) {
+            options.range = getRangeIndexes(sheet.selectedRange);
+        } else if (typeof (options.range) === 'string') {
+            options.range = getRangeIndexes(options.range);
         }
-        return range;
-    }
-
-    private getRangeData(options: { range: number[], sheetIdx: number, skipFormula: boolean, isYvalue: boolean }): { value: number }[] {
-        options.range = this.toIntrnlRange(options.range, options.sheetIdx);
-        const rowIdx: number[] = []; const arr: { value: number }[] = [];
-        this.pushRowData(
-            options, options.range[0], options.range[1], options.range[2], options.range[3], arr, rowIdx, true, options.isYvalue);
-        return arr;
-    }
-
-    private pushRowData(
-        options: { range: number[], sheetIdx: number, skipFormula: boolean }, minr: number,
-        minc: number, maxr: number, maxc: number, arr: object[], rowIdx: number[], isDataSrcEnsured: boolean, isYvalue: boolean): void {
-        const minCol: number = minc; const sheet: SheetModel = this.parent.sheets[options.sheetIdx]; let value: string | number;
-        while (minr <= maxr) {
-            if (isHiddenRow(sheet, minr)) { minr++; continue; }
-            minc = minCol;
-            while (minc <= maxc) {
-                if (isHiddenCol(sheet, minc)) { minc++; continue; }
-                const cell: CellModel = getCell(minr, minc, sheet, false, true);
+        const rangeData: { value: string, displayText?: string }[] = [];
+        let rObj: { value: string | number, displayText?: string }; let cIdx: number; let formatArgs: NumberFormatArgs;
+        let rIdx: number = options.range[0];
+        const autoDetectFormatFn: (cell: CellModel) => void = options.isYvalue && getAutoDetectFormatParser(this.parent);
+        while (rIdx <= options.range[2]) {
+            if (isHiddenRow(sheet, rIdx)) { rIdx++; continue; }
+            cIdx = options.range[1];
+            while (cIdx <= options.range[3]) {
+                if (isHiddenCol(sheet, cIdx)) { cIdx++; continue; }
+                const cell: CellModel = getCell(rIdx, cIdx, sheet, false, true);
                 if (cell.formula && isNullOrUndefined(cell.value)) {
-                    this.parent.notify(workbookFormulaOperation, {
-                        action: 'refreshCalculate', value: cell.formula, rowIndex:
-                            minr, colIndex: minc, isFormula: checkIsFormula(cell.formula), sheetIndex: options.sheetIdx
-                    });
-                    value = cell.value || (<unknown>cell.value === 0 ? 0 : null);
+                    this.parent.notify(calculateFormula, { cell: cell, rowIdx: rIdx, colIdx: cIdx, sheetIndex: options.sheetIdx });
                 }
-                if (cell.format && !isYvalue) {
-                    const forArgs: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, rowIndex: minr,
-                        colIndex: minc, cell: cell };
-                    this.parent.notify(getFormattedCellObject, forArgs);
-                    value = forArgs.formattedText ? forArgs.formattedText.toString() : null;
-                } else {
-                    value = cell.value || (<unknown>cell.value === 0 ? 0 : null);
+                if (options.isYvalue) {
+                    autoDetectFormatFn(cell);
                 }
-                arr.push({ value });
-                minc++;
+                rObj = { value: cell.value || (<unknown>cell.value === 0 ? 0 : null) };
+                if (cell.format) {
+                    formatArgs = { formattedText: cell.value, value: cell.value, format: cell.format, cell: cell, skipFormatCheck: true };
+                    this.parent.notify(getFormattedCellObject, formatArgs);
+                    if (options.isYvalue) {
+                        if (isNumber(cell.value)) {
+                            rObj.value = Number(cell.value);
+                            rObj.displayText = formatArgs.formattedText ? formatArgs.formattedText.toString() : '';
+                        } else {
+                            rObj.displayText = rObj.value === null ? '' : this.parent.getDisplayText({ format: cell.format, value: '0' });
+                            rObj.value = 0;
+                        }
+                    } else {
+                        rObj.value = formatArgs.formattedText ? formatArgs.formattedText.toString() : null;
+                    }
+                } else if (options.isYvalue) {
+                    if (isNumber(rObj.value)) {
+                        rObj.displayText = rObj.value.toString();
+                        rObj.value = Number(rObj.value);
+                    } else {
+                        rObj.displayText = rObj.value === null ? '' : '0';
+                        rObj.value = 0;
+                    }
+                }
+                rangeData.push(<{ value: string, displayText?: string }>rObj);
+                cIdx++;
             }
-            minr++;
+            rIdx++;
         }
-        rowIdx.push(minr);
+        return rangeData;
     }
 
-    private toArrayData(args: { value: number }[]): string[] {
+    private toArrayData(args: { value: string }[]): string[] {
         const prop: string = 'value'; let obj: object; let i: number = 0;
         const temp: string[] = []; const len: number = args.length;
         while (i < len) {
@@ -400,9 +438,9 @@ export class SpreadsheetChart {
         options: ChartModel, sheetIndex: number, xRange: number[], yRange: number[],
         lRange: number[]): { series: SeriesModel[] | AccumulationSeriesModel[], xRange: number[], yRange: number[], lRange: number[] } {
         options = options || {};
-        let seriesName: string = '';
-        const dataLabel: DataLabelSettingsModel = {};
-        let val: number | string; let xValue: string[];
+        let seriesName: string;
+        const dataLabel: DataLabelSettingsModel = { name: 'displayText' };
+        let xValue: string[];
         let lValue: string[]; let diff: number;
         let pArr: object[];
         let pObj: object = {};
@@ -410,27 +448,23 @@ export class SpreadsheetChart {
         let i: number = 0; let yInc: number = 0;
         const isPrint: boolean = this.parent.isPrintingProcessing;
         const sArr: SeriesModel[] = [];
-        sheetIndex = isNullOrUndefined(sheetIndex) ? this.parent.getActiveSheet().index : sheetIndex;
-        const sheet: SheetModel = this.parent.sheets[sheetIndex as number];
-        const yValue: { value: number }[] = this.getRangeData({ range: yRange, sheetIdx: sheetIndex, skipFormula: true, isYvalue: true });
+        sheetIndex = isNullOrUndefined(sheetIndex) ? this.parent.activeSheetIndex : sheetIndex;
+        const sheet: SheetModel = getSheet(this.parent, sheetIndex);
+        const yValue: { value: string, displayText?: string }[] = this.getRangeData(
+            { range: yRange, sheet: sheet, isYvalue: true, sheetIdx: sheetIndex });
         const rDiff: number = ((yRange[2] - yRange[0]) + 1) - this.parent.hiddenCount(yRange[0], yRange[2], 'rows', sheet);
         const cDiff: number = ((yRange[3] - yRange[1]) + 1) - this.parent.hiddenCount(yRange[1], yRange[3], 'columns', sheet);
         if (options.isSeriesInRows) {
-            xValue = lRange ? this.toArrayData(
-                this.getRangeData({ range: lRange, sheetIdx: sheetIndex, skipFormula: false, isYvalue: false })) :
+            xValue = lRange ? this.toArrayData(this.getRangeData({ range: lRange, sheet: sheet })) :
                 this.getVirtualXValues(cDiff + 1);
             if (xRange) {
-                lValue = this.toArrayData(this.getRangeData(
-                    { range: xRange, sheetIdx: sheetIndex, skipFormula: false, isYvalue: false }));
+                lValue = this.toArrayData(this.getRangeData({ range: xRange, sheet: sheet }));
             }
             diff = rDiff;
         } else {
-            xValue = xRange ? this.toArrayData(this.getRangeData(
-                { range: xRange, sheetIdx: sheetIndex, skipFormula: false, isYvalue: false })) :
-                this.getVirtualXValues(rDiff + 1);
+            xValue = xRange ? this.toArrayData(this.getRangeData({ range: xRange, sheet: sheet })) : this.getVirtualXValues(rDiff + 1);
             if (lRange) {
-                lValue = this.toArrayData(this.getRangeData(
-                    { range: lRange, sheetIdx: sheetIndex, skipFormula: false, isYvalue: false }));
+                lValue = this.toArrayData(this.getRangeData({ range: lRange, sheet: sheet }));
             }
             diff = cDiff;
         }
@@ -445,24 +479,10 @@ export class SpreadsheetChart {
             pArr = [];
             yInc = options.isSeriesInRows ? yInc : i;
             while (j < len) {
-                if (yValue[yInc as number]) {
-                    val = yValue[yInc as number].value;
-                    if (isNumber(val)) {
-                        val = Number(val);
-                    } else {
-                        const dateCheck: DateFormatCheckArgs = { value: isNullOrUndefined(val) ? '' : val.toString(), sheetIndex: sheetIndex, updatedVal: '' };
-                        this.parent.notify(checkDateFormat, dateCheck);
-                        if (dateCheck.isDate || dateCheck.isTime) {
-                            val = dateCheck.updatedVal;
-                        } else {
-                            val = 0;
-                        }
-                    }
-                    if (isNullOrUndefined(xValue[j as number]) && !isNullOrUndefined(val)) {
-                        xValue[j as number] = getUniqueID('spread-chart-empty-label-');
-                    }
-                    pArr.push({ x: xValue[j as number], y: val });
+                if (isNullOrUndefined(xValue[j as number])) {
+                    xValue[j as number] = getUniqueID('spread-chart-empty-label-');
                 }
+                pArr.push({ x: xValue[j as number], y: yValue[yInc as number].value, displayText: yValue[yInc as number].displayText });
                 yInc += inc;
                 j++;
             }
@@ -471,37 +491,35 @@ export class SpreadsheetChart {
             } else {
                 seriesName = options.type === 'Scatter' ? ('series' + (i + 1)) : ('series' + i);
             }
-            if (isNullOrUndefined(seriesName)) {
-                seriesName = '';
-            }
+            seriesName = isNullOrUndefined(seriesName) ? '' : seriesName.toString();
             if (options.type) {
                 const type: ChartType = options.type;
                 if (type === 'Line' || type === 'StackingLine' || type === 'StackingLine100') {
                     pObj = {
-                        dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString(), animation: { enable: !isPrint },
+                        dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName,
+                        animation: { enable: !isPrint }, tooltipMappingName: 'displayText',
                         marker: options.markerSettings ? { visible: options.markerSettings.visible, width: options.markerSettings.size,
                             height: options.markerSettings.size, shape: options.markerSettings.shape, dataLabel: dataLabel,
                             isFilled: options.markerSettings.isFilled, border: options.markerSettings.border,
                             fill: options.markerSettings.isFilled ? options.markerSettings.fill : null } : { dataLabel: dataLabel }
                     };
                 } else if (type === 'Scatter') {
-                    pObj = { dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString(), animation: { enable: !isPrint },
-                        marker: { visible: false, width: 12, height: 12, shape: 'Circle', dataLabel: dataLabel } };
-                } else if (type === 'Pie' || type === 'Doughnut') {
-                    const innerRadius: string = options.type === 'Pie' ? '0%' : '40%';
-                    const visible: boolean = dataLabel.visible;
-                    const position: AccumulationLabelPosition =  isNullOrUndefined(dataLabel.position) ? 'Inside' : dataLabel.position === 'Outer' ? 'Outside' : 'Inside';
                     pObj = {
-                        dataSource: pArr,
-                        dataLabel: {
-                            visible: !isNullOrUndefined(visible) ? visible : false, position: position, name: 'text', font: { fontWeight: '600' }
-                        }, animation: { enable: !isPrint },
-                        radius: '100%', xName: 'x', yName: 'y', innerRadius: innerRadius
+                        dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName,
+                        tooltipMappingName: 'displayText', animation: { enable: !isPrint },
+                        marker: { visible: false, width: 12, height: 12, shape: 'Circle', dataLabel: dataLabel }
+                    };
+                } else if (type === 'Pie' || type === 'Doughnut') {
+                    pObj = {
+                        dataSource: pArr, radius: '100%', xName: 'x', yName: 'y', innerRadius: options.type === 'Pie' ? '0%' : '40%',
+                        dataLabel: { visible: !!dataLabel.visible, position: dataLabel.position === 'Outer' ? 'Outside' : 'Inside',
+                            name: 'displayText', font: { fontWeight: '600' } },
+                        animation: { enable: !isPrint }, tooltipMappingName: 'displayText'
                     };
                 } else {
                     pObj = {
                         dataSource: pArr, type: options.type, xName: 'x', yName: 'y', animation: { enable: !isPrint },
-                        name: seriesName.toString(), marker: { dataLabel: dataLabel }
+                        name: seriesName, marker: { dataLabel: dataLabel }, tooltipMappingName: 'displayText'
                     };
                 }
             }
@@ -595,10 +613,9 @@ export class SpreadsheetChart {
         }
     }
 
-    private initiateChartHandler(argsOpt: {
-        option: ChartModel, isRefresh?: boolean, isInitCell?: boolean,
-        triggerEvent?: boolean, dataSheetIdx?: number, range?: string, isPaste?: boolean, isSwitchRowColumn?: boolean
-    }): SeriesModel[] | AccumulationSeriesModel[] {
+    private initiateChartHandler(
+        argsOpt: { option: ChartModel, isRefresh?: boolean, isInitCell?: boolean, triggerEvent?: boolean, dataSheetIdx?: number,
+            range?: string, isPaste?: boolean, isSwitchRowColumn?: boolean }): SeriesModel[] | AccumulationSeriesModel[] {
         const chart: ChartModel = argsOpt.option;
         let isRangeSelect: boolean = true;
         isRangeSelect = isNullOrUndefined(argsOpt.isInitCell) ? true : !argsOpt.isInitCell;
@@ -635,7 +652,7 @@ export class SpreadsheetChart {
         }
         options.isSeriesInRows = isRowLesser ? true : options.isSeriesInRows ? options.isSeriesInRows : false;
         argsOpt.dataSheetIdx = isNullOrUndefined(argsOpt.dataSheetIdx) ? sheetIdx : argsOpt.dataSheetIdx;
-        const chartRange: { xRange: number[], yRange: number[], lRange: number[], isStringSeries: boolean } =
+        const chartRange: { xRange: number[], yRange: number[], lRange: number[], isStringSeries: boolean, isDateTime: boolean } =
             this.processChartRange(rangeIdx, argsOpt.dataSheetIdx, options);
         const xRange: number[] = chartRange.xRange;
         const yRange: number[] = chartRange.yRange;
@@ -744,18 +761,12 @@ export class SpreadsheetChart {
                 primaryXAxis: primaryXAxis,
                 primaryYAxis: primaryYAxis,
                 background: this.getThemeBgColor(theme),
-                chartArea: {
-                    border: {
-                        width: 0
-                    }
-                },
+                chartArea: { border: { width: 0 } },
                 title: chart.title,
                 legendSettings: legendSettings,
                 theme: theme,
                 series: chartOptions.series as SeriesModel[],
-                tooltip: {
-                    enable: true
-                },
+                tooltip: { enable: true, format: '${point.x} : <b>${point.tooltip}</b>' },
                 width: overlayProps.element.style.width,
                 height: height,
                 enableRtl: this.parent.enableRtl,
@@ -766,13 +777,15 @@ export class SpreadsheetChart {
                     args.cancelResizedEvent = true; // This is for cancel the resized event.
                 },
                 axisLabelRender: (args: IAxisLabelRenderEventArgs) => {
-                    if (args.axis.name === 'primaryYAxis' && format && !isNullOrUndefined(args.value) && this.parent) {
+                    if (args.axis.name === 'primaryYAxis' && format && !chart.type.includes('100') && !isNullOrUndefined(args.value) &&
+                        this.parent) {
                         args.text = this.parent.getDisplayText({ format: format, value: args.value.toString()});
                     } else if (args.axis.name === 'primaryXAxis' && args.text.startsWith('spread-chart-empty-label-')) {
                         args.text = '';
                     }
-                    if (args.axis.name === 'primaryXAxis' && chart.type === 'Scatter' && args.axis.labels.length > 0) {
-                        args.text = !isNumber(args.text) ? (args.axis.labels.indexOf(args.text) + 1).toString() : args.text;
+                    if (args.axis.name === 'primaryXAxis' && chart.type === 'Scatter' && args.axis.labels.length > 0 &&
+                        !isNumber(args.text) && !chartRange.isDateTime) {
+                        args.text = (args.axis.labels.indexOf(args.text) + 1).toString();
                     }
                 }
             });
@@ -787,6 +800,7 @@ export class SpreadsheetChart {
                 width: overlayProps.element.style.width,
                 height: height,
                 center: { x: '50%', y: '50%' },
+                tooltip: { enable: true, format: '${point.x} : <b>${point.tooltip}</b>' },
                 enableSmartLabels: true,
                 enableAnimation: true,
                 enableRtl: this.parent.enableRtl,
@@ -1430,10 +1444,8 @@ export class SpreadsheetChart {
         let chartEle: HTMLElement = document.getElementById(this.parent.chartColl[chartCollId as number].id);
         let chartParEle: Element = closest(chartEle, '.e-datavisualization-chart');
         chartParEle.remove();
-        this.parent.notify(initiateChart, {
-            option: this.parent.chartColl[chartCollId as number], isInitCell: false, triggerEvent: false,
-            isPaste: false
-        });
+        this.initiateChartHandler(
+            { option: this.parent.chartColl[chartCollId as number], isInitCell: false, triggerEvent: false, isPaste: false });
         chartEle = document.getElementById(this.parent.chartColl[chartCollId as number].id);
         chartParEle = closest(chartEle, '.e-datavisualization-chart');
         if (!chartParEle.classList.contains('e-ss-overlay-active')) {
@@ -1510,7 +1522,6 @@ export class SpreadsheetChart {
             this.parent.off(refreshChartCellObj, this.refreshChartCellObj);
             this.parent.off(refreshChartCellOnInit, this.refreshChartCellModel);
             this.parent.off(refreshChartCellModel, this.refreshChartCellModel);
-            this.parent.off(updateChart, this.updateChartHandler);
             this.parent.off(deleteChart, this.deleteChart);
             this.parent.off(clearChartBorder, this.clearBorder);
             this.parent.off(insertChart, this.insertChartHandler);
@@ -1518,6 +1529,7 @@ export class SpreadsheetChart {
             this.parent.off(chartDesignTab, this.chartDesignTabHandler);
             this.parent.off(addChartEle, this.updateChartElement);
             this.parent.off(undoRedoForChartDesign, this.undoRedoForChartDesign);
+            this.parent.off(refreshChart, this.refreshChartData);
         }
     }
 

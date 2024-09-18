@@ -6,7 +6,7 @@ import { AnimationModel } from '../../common/model/base-model';
 import { Axis } from '../../chart/axis/axis';
 
 /**
- * `StepLineSeries` module is used to render the step line series.
+ * The `StepLineSeries` module is used to render the step line series.
  */
 
 export class StepLineSeries extends LineBase {
@@ -45,7 +45,7 @@ export class StepLineSeries extends LineBase {
                 if (prevPoint != null) {
                     point2 = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted);
                     point1 = getPoint(prevPoint.xValue, prevPoint.yValue, xAxis, yAxis, isInverted);
-                    direction = direction.concat(startPoint + ' ' + (point1.x) + ' ' + (point1.y) + this.GetStepLineDirection(point2, point1, series.step));
+                    direction = direction.concat(startPoint + ' ' + (point1.x) + ' ' + (point1.y) + this.GetStepLineDirection(point2, point1, series.step, 'L', series, true));
                     startPoint = 'L';
                 } else {
                     point1 = getPoint(point.xValue - lineLength, point.yValue, xAxis, yAxis, isInverted);
@@ -93,11 +93,8 @@ export class StepLineSeries extends LineBase {
             }
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -106,6 +103,7 @@ export class StepLineSeries extends LineBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         const option: AnimationModel = series.animation;

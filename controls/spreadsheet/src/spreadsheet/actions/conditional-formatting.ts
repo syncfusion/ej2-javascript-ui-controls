@@ -1,20 +1,24 @@
-import { ConditionalFormatEventArgs, Spreadsheet } from '../index';
-import { renderCFDlg, locale, dialog, focus } from '../common/index';
+import { ConditionalFormatEventArgs, Spreadsheet, DialogBeforeOpenEventArgs, getUpdateUsingRaf } from '../index';
+import { renderCFDlg, locale, dialog, focus, removeElements } from '../common/index';
 import { CellModel, SheetModel, getCell, isHiddenRow, isHiddenCol, getRowHeight, skipDefaultValue } from '../../workbook/base/index';
 import { getRangeIndexes, checkDateFormat, applyCF, isNumber, getCellIndexes, parseLocaleNumber } from '../../workbook/index';
-import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF, DataBar, ColorScale, IconSet } from '../../workbook/common/index';
+import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF } from '../../workbook/common/index';
 import { setCFRule, getCellAddress, DateFormatCheckArgs, CFArgs, checkRange, getViewportIndexes } from '../../workbook/common/index';
 import { extend, isNullOrUndefined, L10n, removeClass } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { HighlightCell, TopBottom, CFColor, ConditionalFormatModel, ApplyCFArgs, ConditionalFormat } from '../../workbook/common/index';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
+import { calculateFormula, rowFillHandler, getTypeFromFormat } from '../../workbook/index';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 /**
  * Represents Conditional Formatting support for Spreadsheet.
  */
 export class ConditionalFormatting {
     private parent: Spreadsheet;
+    private dupData: { [key: string]: Object }[];
+    private colorData: { [key: string]: Object }[];
 
     /**
      * Constructor for the Spreadsheet Conditional Formatting module.
@@ -33,6 +37,8 @@ export class ConditionalFormatting {
      */
     protected destroy(): void {
         this.removeEventListener();
+        if (this.dupData) { this.dupData = []; }
+        if (this.colorData) { this.colorData = []; }
         this.parent = null;
     }
 
@@ -69,8 +75,13 @@ export class ConditionalFormatting {
             let cfEle: HTMLElement;
             ['.e-cf-databar', '.e-iconsetspan'].forEach((clsSelector: string): void => {
                 cfEle = td.querySelector(clsSelector);
+                const wrapElement: HTMLElement = td.querySelector('.e-wrap-content');
                 if (cfEle) {
-                    td.removeChild(cfEle);
+                    if (wrapElement) {
+                        wrapElement.removeChild(cfEle);
+                    } else {
+                        td.removeChild(cfEle);
+                    }
                     td.textContent = this.parent.getDisplayText(cell);
                 }
             });
@@ -86,11 +97,25 @@ export class ConditionalFormatting {
         dialogInst.show({
             width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-conditionalformatting-dlg',
             header: args.action.replace('...', ''),
-            beforeOpen: (): void => {
-                dialogInst.dialogInstance.content = this.cfDlgContent(args.action);
-                dialogInst.dialogInstance.dataBind();
-                focus(this.parent.element);
+            beforeOpen: (beforeOpenArgs: BeforeOpenEventArgs): void => {
+                const dlgArgs: DialogBeforeOpenEventArgs = {
+                    dialogName: 'ConditionalFormatDialog',
+                    element: beforeOpenArgs.element, target: beforeOpenArgs.target, cancel: beforeOpenArgs.cancel
+                };
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.cancel) {
+                    beforeOpenArgs.cancel = true;
+                    getUpdateUsingRaf((): void => {
+                        dialogInst.hide(true);
+                        focus(this.parent.element);
+                    });
+                } else {
+                    dialogInst.dialogInstance.content = this.cfDlgContent(args.action);
+                    dialogInst.dialogInstance.dataBind();
+                    focus(this.parent.element);
+                }
             },
+            beforeClose: this.dialogBeforeClose.bind(this),
             buttons: [{
                 buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true },
                 click: (): void => {
@@ -101,34 +126,61 @@ export class ConditionalFormatting {
         });
     }
 
+    private dialogBeforeClose(): void {
+        const numeric: NumericTextBox = this.numericTBElements;
+        if (numeric && numeric.element) {
+            numeric.destroy();
+            numeric.element.remove();
+        }
+        this.numericTBElements = null;
+
+        this.dropDownListElements.forEach((dropDownList: DropDownList) => {
+            if (dropDownList && dropDownList.element) {
+                dropDownList.destroy();
+                dropDownList.element.remove();
+            }
+        });
+        this.dropDownListElements = [];
+
+        if (this.value1Inp) {
+            this.value1Inp.removeEventListener('input', this.validateCFInput.bind(this));
+            if (this.value1Inp.parentNode) {
+                this.value1Inp.parentNode.removeChild(this.value1Inp);
+            }
+            this.value1Inp = null;
+        }
+        if (this.value2Inp) {
+            this.value2Inp.removeEventListener('input', this.validateCFInput.bind(this));
+            if (this.value2Inp.parentNode) {
+                this.value2Inp.parentNode.removeChild(this.value2Inp);
+            }
+            this.value2Inp = null;
+        }
+        removeElements(this.spanElements); this.spanElements = [];
+        removeElements(this.inputElements); this.inputElements = [];
+        removeElements(this.divElements); this.divElements = [];
+    }
+
     private dlgClickHandler(action: string): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const cfValues: string[] = ['', ''];
-        let cfType: HighlightCell | TopBottom | DataBar | ColorScale | IconSet;
-        const dlgCont: HTMLElement = this.parent.element.querySelector('.e-conditionalformatting-dlg').
-            getElementsByClassName('e-dlg-content')[0].querySelector('.e-cf-dlg') as HTMLElement;
-        const mainCont: HTMLElement = dlgCont.querySelector('.e-cfmain');
-        let inpEle: HTMLInputElement;
-        if (mainCont) {
-            inpEle = mainCont.getElementsByTagName('input')[0];
-            if (inpEle && inpEle.parentElement.classList.contains('e-cfmain')) {
-                cfValues[0] = mainCont.getElementsByTagName('input')[0].value;
-            }
-            cfValues[1] = mainCont.getElementsByTagName('input')[1] ?
-                dlgCont.querySelector('.e-cfmain').getElementsByTagName('input')[1].value : '';
-            parseLocaleNumber(cfValues, this.parent.locale);
-        }
+        const cont: HTMLElement = this.parent.element.querySelector('.e-conditionalformatting-dlg .e-dlg-content .e-cf-dlg') as HTMLElement;
+        const cf: ConditionalFormatModel = { cFColor: this.getCFColor((cont.querySelector('.e-cfsub .e-input') as HTMLInputElement).value),
+            range: this.parent.getActiveSheet().selectedRange };
+        const cfInputs: NodeListOf<HTMLInputElement>  = cont.querySelectorAll('.e-cfmain .e-input') as NodeListOf<HTMLInputElement>;
         if (action === l10n.getConstant('DuplicateValues') + '...') {
-            cfType = inpEle.value === l10n.getConstant('Duplicate') ? 'Duplicate' : 'Unique';
+            cf.type = cfInputs[0].value === l10n.getConstant('Duplicate') ? 'Duplicate' : 'Unique';
         } else {
-            cfType = this.getType(action);
+            cf.type = this.getType(action);
+            const cfValues: string[] = [];
+            if (cfInputs[0]) {
+                cfValues.push(cfInputs[0].value);
+            }
+            if (cfInputs[1]) {
+                cfValues.push(cfInputs[1].value);
+            }
+            parseLocaleNumber(cfValues, this.parent);
+            cf.value = cfValues.join(',');
         }
-        const cf: ConditionalFormatModel = {
-            type: cfType,
-            cFColor: this.getCFColor(dlgCont.querySelector('.e-cfsub').getElementsByTagName('input')[0].value),
-            range: this.parent.getActiveSheet().selectedRange
-        };
-        cf.value = cfValues[0] !== '' ? (cfValues[0] + (cfValues[1] !== '' ? ',' + cfValues[1] : '')) : cfValues[1];
         this.parent.notify(setCFRule, <CFArgs>{ cfModel: cf, isAction: true });
     }
 
@@ -199,66 +251,78 @@ export class ConditionalFormatting {
         return result;
     }
 
+    private divElements: HTMLElement[] = [];
+    private spanElements: HTMLElement[] = [];
+    private inputElements: HTMLElement[] = [];
+    private dropDownListElements: DropDownList[] = [];
+    private numericTBElements: NumericTextBox;
+    private value1Inp: HTMLInputElement;
+    private value2Inp: HTMLElement;
+
     private cfDlgContent(action: string): HTMLElement {
         const dlgText: string = this.getDlgText(action);
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dlgContent: HTMLElement = this.parent.createElement('div', { className: 'e-cf-dlg' });
         const mainDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cfmain' });
         const subDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cfsub' });
-
+        this.divElements.push(dlgContent); this.divElements.push(mainDiv); this.divElements.push(subDiv);
         const value1Text: HTMLElement = this.parent.createElement('span', { className: 'e-header e-top-header' });
         value1Text.innerText = dlgText;
-        const value1Inp: HTMLInputElement =
+        this.value1Inp =
         this.parent.createElement('input', { className: 'e-input', id: 'valueInput', attrs: { type: 'text',
             'aria-label': dlgText } }) as HTMLInputElement;
         const duplicateSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
-
         const subDivText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
         subDivText.innerText = l10n.getConstant('With');
         const colorSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
+        this.spanElements.push(value1Text); this.inputElements.push(duplicateSelectEle);
+        this.spanElements.push(subDivText); this.inputElements.push(colorSelectEle);
         dlgContent.appendChild(mainDiv);
         dlgContent.appendChild(subDiv);
 
         mainDiv.appendChild(value1Text); let setValidation: boolean;
         if (action !== l10n.getConstant('DuplicateValues') + '...') {
             if (action !== l10n.getConstant('AboveAverage') + '...' && action !== l10n.getConstant('BelowAverage') + '...') {
-                mainDiv.appendChild(value1Inp); setValidation = true;
+                mainDiv.appendChild(this.value1Inp); setValidation = true;
                 const percent: boolean = action === l10n.getConstant('Top10') + ' %...' || action === l10n.getConstant('Bottom10') + ' %...';
                 if (action === l10n.getConstant('Top10Items') + '...' || action === l10n.getConstant('Bottom10Items') + '...' || percent) {
-                    value1Inp.maxLength = percent ? 3 : 4;
+                    this.value1Inp.maxLength = percent ? 3 : 4;
                     const numeric: NumericTextBox = new NumericTextBox({ value: 10, min: 1, max: percent ? 100 : 1000, format: '###' });
-                    numeric.appendTo(value1Inp);
+                    this.numericTBElements = numeric;
+                    numeric.appendTo(this.value1Inp);
                 }
             }
         } else {
             mainDiv.appendChild(duplicateSelectEle);
-            const dupData: { [key: string]: Object }[] = [
+            this.dupData = [
                 { text: l10n.getConstant('Duplicate'), id: 'duplicate' },
                 { text: l10n.getConstant('Unique'), id: 'unique' }
             ];
             const dupList: DropDownList = new DropDownList({
-                dataSource: dupData,
+                dataSource: this.dupData,
                 index: 0,
                 popupHeight: '200px'
             });
+            this.dropDownListElements.push(dupList);
             dupList.appendTo(duplicateSelectEle);
         }
         if (action === l10n.getConstant('Between') + '...') {
             const value2Text: HTMLElement = this.parent.createElement(
                 'span', { className: 'e-header e-header-2' });
             value2Text.innerText = l10n.getConstant('And');
-            const value2Inp: HTMLElement = this.parent.createElement('input', { className: 'e-input e-between' });
+            this.value2Inp = this.parent.createElement('input', { className: 'e-input e-between' });
+            this.spanElements.push(value2Text);
             mainDiv.appendChild(value2Text);
-            mainDiv.appendChild(value2Inp);
-            value2Inp.addEventListener('input', this.validateCFInput.bind(this));
+            mainDiv.appendChild(this.value2Inp);
+            this.value2Inp.addEventListener('input', this.validateCFInput.bind(this));
         }
         if (setValidation) {
-            this.validateCFInput({ target: value1Inp });
-            value1Inp.addEventListener('input', this.validateCFInput.bind(this));
+            this.validateCFInput({ target: this.value1Inp });
+            this.value1Inp.addEventListener('input', this.validateCFInput.bind(this));
         }
         subDiv.appendChild(subDivText);
         subDiv.appendChild(colorSelectEle);
-        const colorData: { [key: string]: Object }[] = [
+        this.colorData = [
             { text: l10n.getConstant('LightRedFillWithDarkRedText'), value: 'redft', id: 'redft' },
             { text: l10n.getConstant('YellowFillWithDarkYellowText'), id: 'yellowft' },
             { text: l10n.getConstant('GreenFillWithDarkGreenText'), id: 'greenft' },
@@ -266,10 +330,11 @@ export class ConditionalFormatting {
             { text: l10n.getConstant('RedText'), id: 'redt' }
         ];
         const colorList: DropDownList = new DropDownList({
-            dataSource: colorData,
+            dataSource: this.colorData,
             index: 0,
             popupHeight: '200px'
         });
+        this.dropDownListElements.push(colorList);
         colorList.appendTo(colorSelectEle);
         return dlgContent;
     }
@@ -422,7 +487,7 @@ export class ConditionalFormatting {
                         updateFn();
                     } else if (cell.formula) {
                         this.parent.notify(
-                            'calculateFormula', { cell: cell, rowIdx: i, colIdx: j, sheetIndex: this.parent.activeSheetIndex });
+                            calculateFormula, { cell: cell, rowIdx: i, colIdx: j, sheetIndex: this.parent.activeSheetIndex });
                         val = cell.value.toString().toLowerCase();
                         updateFn();
                     }
@@ -456,20 +521,20 @@ export class ConditionalFormatting {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cfRule: ConditionalFormatModel[] = args.cfModel || sheet.conditionalFormats;
         let indexes: number[][] = [args.indexes];
-        let isEditCellUpdated: boolean;
         if (args.refreshAll) {
             indexes = getViewportIndexes(this.parent, this.parent.viewport);
         }
+        const updatedCFCellRef: { [key: string]: boolean } = {};
         for (let i: number = cfRule.length - 1; i >= 0; i--) {
             if (rangeCheck && (indexes[0].length === 2 ? !this.checkCellHandler(args.indexes[0], args.indexes[1], cfRule[i as number]) :
                 !checkRange(indexes, cfRule[i as number].range))) {
                 continue;
             }
-            isEditCellUpdated = this.updateCF(args, sheet, <ConditionalFormat>cfRule[i as number], isEditCellUpdated);
+            this.updateCF(args, sheet, <ConditionalFormat>cfRule[i as number], updatedCFCellRef);
         }
     }
 
-    private updateCF(args: ApplyCFArgs, sheet: SheetModel, cf: ConditionalFormat, isEditCellUpdated?: boolean): boolean {
+    private updateCF(args: ApplyCFArgs, sheet: SheetModel, cf: ConditionalFormat, updatedCFCellRef: { [key: string]: boolean }): void {
         let value1: string; let value2: string;
         if (cf.value) {
             const valueArr: string[] = cf.value.split(',').filter((value: string) => !!value.trim());
@@ -534,11 +599,13 @@ export class ConditionalFormatting {
                 isApply = isNumber(cellVal) && this.isEqualTo(cf, cellVal, value1);
                 break;
             case 'ContainsText':
-                isApply = cellVal && this.isContainsText(cellVal, value1);
+                isApply = cellVal && value1 && this.isContainsText(cellVal, value1);
                 break;
             case 'DateOccur':
-                dateEventArgs = { value: value1, cell: {}, updatedVal: '' };
-                this.parent.notify(checkDateFormat, dateEventArgs);
+                dateEventArgs = { value: value1, cell: {}, updatedVal: value1 };
+                if (!isNumber(value1)) {
+                    this.parent.notify(checkDateFormat, dateEventArgs);
+                }
                 isApply = cellVal === dateEventArgs.updatedVal;
                 break;
             case 'Unique':
@@ -568,11 +635,47 @@ export class ConditionalFormatting {
             default:
                 isValueCFRule = false;
                 if (isDataBar) {
-                    this.applyDataBars(cellVal, cf, td, rIdx);
+                    if (!updatedCFCellRef[`${rIdx}_${cIdx}_bars`]) {
+                        updatedCFCellRef[`${rIdx}_${cIdx}_bars`] = true;
+                        this.applyDataBars(cellVal, cf, td, rIdx);
+                    }
                 } else if (isColorScale) {
-                    this.applyColorScale(cellVal, cf, td, cell, rIdx, cIdx);
+                    if (!updatedCFCellRef[`${rIdx}_${cIdx}`]) {
+                        const value: number = parseFloat(cellVal);
+                        if (isNaN(value)) {
+                            if (td.style.backgroundColor && !td.classList.contains('e-yellowft') && !td.classList.contains('e-greenft') && !td.classList.value.includes('e-redf')) {
+                                td.style.backgroundColor = '';
+                                const style: CellStyleModel = extend({}, this.parent.commonCellStyle, cell && cell.style);
+                                if (style.backgroundColor) {
+                                    this.parent.notify(
+                                        applyCellFormat, <CellFormatArgs>{
+                                            style: { backgroundColor: style.backgroundColor }, td: td, rowIdx: rIdx,
+                                            colIdx: cIdx
+                                        });
+                                }
+                            }
+                        } else {
+                            const valArr: number[] = <number[]>cf.result;
+                            const idx: number = valArr.indexOf(value);
+                            const colors: string[] = this.getColor(cf.type);
+                            td.style.backgroundColor = idx === 0 ? colors[0] :
+                                (idx === valArr.length - 1 ? colors[colors.length - 1] : (valArr.length === 3 && idx === 1 ? colors[1] :
+                                    this.getGradient(idx, colors[0], colors[1], colors[2], valArr.length)));
+                            updatedCFCellRef[`${rIdx}_${cIdx}`] = true;
+                        }
+                    }
                 } else {
-                    this.applyIconSet(cellVal, cf, td);
+                    if (!updatedCFCellRef[`${rIdx}_${cIdx}_icons`]) {
+                        updatedCFCellRef[`${rIdx}_${cIdx}_icons`] = true;
+                        const cfIcon: HTMLElement = this.parent.createElement('span', { className: 'e-icon e-iconsetspan' });
+                        const iconSetUpdated: boolean = this.applyIconSet(cellVal, cf, td, cfIcon);
+                        if (iconSetUpdated && cell && cell.format && cell.format.includes('*') &&
+                            getTypeFromFormat(cell.format) !== 'Accounting') {
+                            this.parent.notify(
+                                rowFillHandler, { cell: cell, cellEle: td, rowIdx: rIdx, colIdx: cIdx, updateFillSize: true,
+                                    iconSetSpan: cfIcon });
+                        }
+                    }
                 }
                 break;
             }
@@ -580,11 +683,8 @@ export class ConditionalFormatting {
                 this.parent.trigger(
                     'beforeConditionalFormat', <ConditionalFormatEventArgs>{ conditionalFormat: cf, cell: cell, element: td, apply: isApply,
                         address: getCellAddress(rIdx, cIdx) });
-                if (!isApply && args.isEdit && !isEditCellUpdated) {
+                if (!isApply && args.isEdit && !updatedCFCellRef[`${rIdx}_${cIdx}`]) {
                     let style: CellStyleModel;
-                    if (args.indexes && args.indexes[0] === rIdx && args.indexes[1] === cIdx) {
-                        isEditCellUpdated = true;
-                    }
                     if (cf.cFColor) {
                         if (td.className.includes('e-' + cf.cFColor.toLowerCase())) {
                             td.classList.remove('e-' + cf.cFColor.toLowerCase());
@@ -606,10 +706,8 @@ export class ConditionalFormatting {
                     }
                 }
             }
-            if (isApply) {
-                if (args.isEdit && args.indexes && (args.indexes[0] === rIdx && args.indexes[1] === cIdx)) {
-                    isEditCellUpdated = true;
-                }
+            if (isApply && !updatedCFCellRef[`${rIdx}_${cIdx}`]) {
+                updatedCFCellRef[`${rIdx}_${cIdx}`] = true;
                 removeClass([td], ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt']);
                 if (cf.cFColor) {
                     td.classList.add('e-' + cf.cFColor.toLowerCase());
@@ -628,7 +726,6 @@ export class ConditionalFormatting {
                 this.updateRange(sheet, getRangeIndexes(rangeArr[i as number]), frozenRow, frozenCol, topLeftIdx, updateCF);
             }
         }
-        return isEditCellUpdated;
     }
 
     private updateRange(
@@ -642,30 +739,31 @@ export class ConditionalFormatting {
         rangeIdx[3] = rangeIdx[3] < frozenCol ? (rangeIdx[3] < topLeftIdx[1] ? topLeftIdx[1] - 1 : rangeIdx[3]) :
             (rangeIdx[3] > this.parent.viewport.rightIndex ? this.parent.viewport.rightIndex : rangeIdx[3]);
         let td: HTMLElement;
-        for (let i: number = rangeIdx[0]; i <= rangeIdx[2]; i++) {
-            if (frozenRow && i === frozenRow) {
-                i = this.parent.viewport.topIndex + frozenRow;
+        for (let rowIdx: number = rangeIdx[0]; rowIdx <= rangeIdx[2]; rowIdx++) {
+            if (frozenRow && rowIdx === frozenRow) {
+                rowIdx = this.parent.viewport.topIndex + frozenRow;
             }
-            if (isHiddenRow(sheet, i)) {
+            if (isHiddenRow(sheet, rowIdx)) {
                 continue;
             }
-            for (let j: number = rangeIdx[1]; j <= rangeIdx[3]; j++) {
-                if (frozenCol && j === frozenCol) {
-                    j = this.parent.viewport.leftIndex + frozenCol;
+            for (let colIdx: number = rangeIdx[1]; colIdx <= rangeIdx[3]; colIdx++) {
+                if (frozenCol && colIdx === frozenCol) {
+                    colIdx = this.parent.viewport.leftIndex + frozenCol;
                 }
-                if (isHiddenCol(sheet, j)) {
+                if (isHiddenCol(sheet, colIdx)) {
                     continue;
                 }
-                td = this.parent.getCell(i, j);
+                td = this.parent.getCell(rowIdx, colIdx);
                 if (td) {
-                    invokeFn(i, j, getCell(i, j, sheet), td);
+                    invokeFn(rowIdx, colIdx, getCell(rowIdx, colIdx, sheet), td);
                 }
             }
         }
     }
 
-    private applyIconSet(val: string, cf: ConditionalFormat, cellEle: HTMLElement): void {
-        if (cellEle.classList.contains('e-iconset')) {
+    private applyIconSet(val: string, cf: ConditionalFormat, cellEle: HTMLElement, cfIcon: HTMLElement): boolean {
+        const iconSetExist: boolean = cellEle.classList.contains('e-iconset');
+        if (iconSetExist) {
             cellEle.classList.remove('e-iconset');
             const iconSpan: Element = cellEle.querySelector('.e-iconsetspan');
             if (iconSpan) {
@@ -675,7 +773,7 @@ export class ConditionalFormatting {
         const value: number = parseInt(val, 10);
         const result: number[] = <number[]>cf.result;
         if (isNaN(value) || (result[0] === undefined && result[1] === undefined)) {
-            return;
+            return iconSetExist;
         }
         const min: number = result[0];
         const max: number = result[1];
@@ -702,9 +800,10 @@ export class ConditionalFormatting {
                 'e-' + (value >= percent4 ? iconList[0].trim() : value >= percent3 ? iconList[1].trim() : value >= percent2 ?
                     iconList[2].trim() : value >= percent1 ? iconList[3].trim() : iconList[4].trim());
         }
-        const cfIcon: HTMLElement = this.parent.createElement('span', { className: `e-icon e-iconsetspan ${currentSymbol}` });
+        cfIcon.classList.add(currentSymbol);
         cellEle.insertBefore(cfIcon, cellEle.childNodes[0]);
         cellEle.classList.add('e-iconset');
+        return true;
     }
 
     private getIconList(iconName: string): string {
@@ -754,27 +853,6 @@ export class ConditionalFormatting {
         return result;
     }
 
-    private applyColorScale(val: string, cf: ConditionalFormat, td: HTMLElement, cell: CellModel, rIdx: number, cIdx: number): void {
-        const value: number = parseFloat(val);
-        if (isNaN(value)) {
-            if (td.style.backgroundColor) {
-                td.style.backgroundColor = '';
-                const style: CellStyleModel = extend({}, this.parent.commonCellStyle, cell && cell.style);
-                if (style.backgroundColor) {
-                    this.parent.notify(
-                        applyCellFormat, <CellFormatArgs>{ style: { backgroundColor: style.backgroundColor }, td: td, rowIdx: rIdx,
-                            colIdx: cIdx });
-                }
-            }
-            return;
-        }
-        const valArr: number[] = <number[]>cf.result;
-        const idx: number = valArr.indexOf(value);
-        const colors: string[] = this.getColor(cf.type);
-        td.style.backgroundColor = idx === 0 ? colors[0] : (idx === valArr.length - 1 ? colors[colors.length - 1] :
-            (valArr.length === 3 && idx === 1 ? colors[1] : this.getGradient(idx, colors[0], colors[1], colors[2], valArr.length)));
-    }
-
     private applyDataBars(val: string, cf: ConditionalFormat, td: HTMLElement, rIdx: number): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const result: number[] = cf.result as number[]; let leftStandardWidth: number = 0;
@@ -803,9 +881,6 @@ export class ConditionalFormatting {
         const rightSpan: HTMLElement = this.parent.createElement('span', { id: 'spreadsheet-rightspan', className: 'e-databar' });
         const dataSpan: HTMLElement = this.parent.createElement('span', { id: 'spreadsheet-dataspan', className: 'e-databar-value' });
         const iconSetSpan: HTMLElement = td.querySelector('.e-iconsetspan');
-        if (iconSetSpan) {
-            td.insertBefore(iconSetSpan, td.firstElementChild);
-        }
         const rowHeight: number = getRowHeight(sheet, rIdx, true);
         databar.style.height = rowHeight - 1 + 'px';
         let cfColor: string = cf.type[0];
@@ -859,6 +934,9 @@ export class ConditionalFormatting {
         databar.appendChild(rightSpan);
         databar.appendChild(dataSpan);
         td.textContent = '';
+        if (iconSetSpan) {
+            td.insertBefore(iconSetSpan, td.firstElementChild);
+        }
         td.appendChild(databar);
     }
 

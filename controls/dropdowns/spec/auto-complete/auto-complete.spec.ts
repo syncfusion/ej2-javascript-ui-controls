@@ -3223,4 +3223,45 @@ describe('keyboard interaction with disabled items', () => {
             done();
         }, 450);
     });
+
+    describe('Basic rendering', function () {
+        let atcObj: any;
+        let element: HTMLElement = createElement('input', { id: 'autocomplete' });
+        beforeAll(function () {
+            Browser.userAgent = navigator.userAgent;
+            document.body.appendChild(element);
+            atcObj = new AutoComplete({
+                dataSource: languageData,
+                fields: { value: 'text' },
+                autofill: true,
+                itemTemplate: 'Item template'
+            });
+            atcObj.appendTo(element);
+        });
+        afterAll(function () {
+            atcObj.destroy();
+            element.remove();
+        });
+        it('code coverage true', function () {
+            (<any>atcObj).highlight = true;
+            atcObj.showPopup();
+            (<any>atcObj).searchList = true;
+            (<any>atcObj).postBackAction();
+            (<any>atcObj).value = 'PHP';
+            (<any>atcObj).allowCustom = false;
+            (<any>atcObj).setInputValue();
+        });
+        it('code coverage', function () {
+            atcObj.showPopup();
+            (<any>atcObj).value = 'Value';
+            (<any>atcObj).allowCustom = false;
+            (<any>atcObj).setInputValue();
+        });
+        it('code coverage renderheight search', function () {
+            atcObj.showPopup();
+            (<any>atcObj).highlight = true;
+            (<any>atcObj).renderHightSearch();
+            
+        });
+    });
 });

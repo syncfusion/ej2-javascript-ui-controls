@@ -324,6 +324,14 @@ describe('Split Button', () => {
             expect(button.items).toEqual([]);
         });
 
+        it('SplitButton with locale', () => {
+            button = new SplitButton({ locale: null }, '#splitbtn');
+            expect(button.locale).toEqual('en-US');
+            button.destroy();
+            button = new SplitButton({ locale: undefined }, '#splitbtn');
+            expect(button.locale).toEqual('en-US');
+        });
+
     });
 
 

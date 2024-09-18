@@ -147,9 +147,12 @@ export interface TreeGridModel extends ComponentModel{
     allowPaging?: boolean;
 
     /**
-     * If `loadChildOnDemand` is enabled, parent records are render in expanded state.
+     * When enabled, only parent records would be rendered during the initial render and child records will be loaded only when expanding a parent record.
+     * This property is only applicable for remote data binding.
+     * Loading child records on demand can improve the performance of data-bound controls with a large number of records.
+     * Child records are only loaded when they are requested, rather than loading all child records at once.
      *
-     * @default false
+     * @default true
      */
     loadChildOnDemand?: boolean;
 

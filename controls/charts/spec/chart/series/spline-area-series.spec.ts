@@ -1190,6 +1190,169 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('Spline Area Series - Checking animation on data changes.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let seriesData: object[] = [
+            { x: "Jan", y: 54.481, text: "54.48%" },
+            { x: "Feb", y: 50.56382, text: "50.56%" },
+            { x: "Mar", y: 53.68715, text: "53.69%" },
+            { x: "Apr", y: 49.143363, text: "49.14%" },
+            { x: "May", y: 57.423575, text: "57.42%" },
+            { x: "Jun", y: 55.959774, text: "55.96%" },
+            { x: "Jul", y: 52.360737, text: "52.36%" },
+            { x: "Aug", y: 56.654956, text: "56.65%" },
+            { x: "Sep", y: 51.387971, text: "51.39%" },
+            { x: "Oct", y: 53.137774, text: "53.14%" },
+            { x: "Nov", y: 54.889794, text: "54.89%" }];
+        let chartContainerDiv: Element;
+        chartContainerDiv = createElement('div', { id: 'SplineAreaContainer', styles: 'height:250px;width:590px;float: left;' });
+        beforeAll(() => {
+            document.body.appendChild(chartContainerDiv);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category' },
+                    series: [
+                        {
+                            dataSource: seriesData, xName: 'x', yName: 'y', type: 'SplineArea', fill: 'red',
+                            animation: { enable: false }, name: 'series1', legendShape: 'Circle',
+                            border: { width: 2, color: 'blue' },
+                            marker: {
+                                visible: true,
+                                dataLabel: {
+                                    visible: true,
+                                    position: 'Outer',
+                                    font: { color: 'red', size: '12px' }
+                                }
+                            }
+                        }
+                    ],
+
+                });
+            chartObj.appendTo('#SplineAreaContainer');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            chartContainerDiv.remove();
+        });
+
+        it('Checking spline Area series updated direction', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('SplineAreaContainer_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            let dataSource: object[] = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 50.56382, text: "50.56%" },
+                { x: "Mar", y: 51.68715, text: "53.69%" },
+                { x: "Apr", y: 49.143363, text: "49.14%" },
+                { x: "May", y: 57.423575, text: "57.42%" },
+                { x: "Jun", y: 55.959774, text: "55.96%" },
+                { x: "Jul", y: 52.360737, text: "52.36%" },
+                { x: "Aug", y: 56.654956, text: "56.65%" },
+                { x: "Sep", y: 51.387971, text: "51.39%" },
+                { x: "Oct", y: 53.137774, text: "53.14%" },
+                { x: "Nov", y: 52.889794, text: "54.89%" },
+            ];
+            chartObj.series[0].setData(dataSource);
+            chartObj.refresh();unbindResizeEvents(chartObj);
+        });
+        it('Checking spline Area series - addPoint', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('SplineAreaContainer_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.series[0].addPoint({ x: "Dec", y: 56.760399, text: "56.76%" });
+            chartObj.refresh();unbindResizeEvents(chartObj);
+        });
+        it('Checking spline Area series - removePoint', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('SplineAreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].removePoint(0); chartObj.series[0].removePoint(1); chartObj.series[0].removePoint(2);
+            chartObj.series[0].removePoint(0); chartObj.series[0].removePoint(0); chartObj.series[0].removePoint(0);
+            chartObj.series[0].removePoint(0); chartObj.series[0].removePoint(0); chartObj.series[0].removePoint(0);
+            chartObj.series[0].removePoint(0); chartObj.series[0].removePoint(0); chartObj.series[0].removePoint(0);
+            chartObj.refresh();unbindResizeEvents(chartObj);
+        });
+        it('Checking spline Area series - addPoint with single data', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('SplineAreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].dataSource = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+            ];
+            chartObj.series[0].border.width = 1;
+            chartObj.refresh();
+            chartObj.series[0].addPoint({ x: "Dec", y: 56.760399, text: "56.76%" });
+            unbindResizeEvents(chartObj);
+        });
+        it('Checking spline Area series - removePoint with single data', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('SplineAreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].border.width = 1;
+            chartObj.refresh();
+            chartObj.series[0].removePoint(1);
+            unbindResizeEvents(chartObj);
+        });
+        it('Checking spline Area series - addPoint with single data', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('SplineAreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].dataSource = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 54.481, text: "54.48%" },
+                { x: "Mar", y: 54.481, text: "54.48%" },
+            ];
+            chartObj.series[0].border.width = 0;
+            chartObj.refresh();
+            chartObj.series[0].removePoint(2);
+            unbindResizeEvents(chartObj);
+        });
+        it('Checking spline Area series - addPoint with single data', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('SplineAreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].dataSource = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 54.481, text: "54.48%" },
+                { x: "Mar", y: 54.481, text: "54.48%" },
+            ];
+            chartObj.series[0].border.width = 1;
+            chartObj.refresh();
+            chartObj.series[0].removePoint(2);
+            unbindResizeEvents(chartObj);
+        });
+        it('Checking spline Area series - x axis empty point', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('SplineAreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].dataSource = [
+                { x: null, y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 54.481, text: "54.48%" },
+                { x: "Mar", y: 54.481, text: "54.48%" },
+            ];
+            chartObj.refresh();
+            unbindResizeEvents(chartObj);
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

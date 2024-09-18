@@ -701,6 +701,28 @@ describe('Chart Control', () => {  beforeAll(() => {
             chartObj.tooltip = { enable: true, shared: true };
             chartObj.refresh();
         });
+        it('chart tooltip format checking with keyboard navigation', (done: Function) => {
+            loaded = (args: Object): void => {
+                var element = document.getElementById('container_Series_1_Point_0_Symbol');
+                trigger.keyboardEvent('keydown', element, 'Space', 'Space');
+                trigger.keyboardEvent('keyup', element, 'ArrowUp', 'ArrowUp');
+                trigger.keyboardEvent('keydown', element, 'Escape', 'Escape');
+                trigger.keyboardEvent('keyup', element, 'ArrowDown', 'ArrowDown');
+                trigger.keyboardEvent('keyup', element, 'ArrowLeft', 'ArrowLeft');
+                trigger.keyboardEvent('keyup', element, 'ArrowRight', 'ArrowRight');
+                trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series = [
+                { type: 'Line', dataSource: [{ x: new Date(2012, 9, 11), y: 80 }, { x: new Date(2012, 10, 11), y: 90 }], xName: 'x', yName: 'y', animation: { enable: false }, marker: { visible: true } },
+                { type: 'Line', dataSource: [{ x: new Date(2012, 11, 11), y: 70 }], xName: 'x', yName: 'y', animation: { enable: false }, marker: { visible: true, shape: 'Circle' } },
+                { type: 'Line', dataSource: [{ x: new Date(2013, 1, 11), y: 70 }], xName: 'x', yName: 'y', animation: { enable: false }, marker: { visible: true, shape: 'Circle' } }
+            ];
+            // chartObj.series[0].dataSource = data;
+            chartObj.refresh();
+        });
     });
 
     describe('Chart template', () => {
@@ -871,7 +893,80 @@ describe('Chart Control', () => {  beforeAll(() => {
             chartObj.refresh();
         });
     });
+    describe('Chart- tooltip opacity and theme', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let targetElement: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let pointEvent: EmitType<IPointEventArgs>;
+        let loaded1: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let x: number;
+        let y: number;
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { title: 'PrimaryXAxis', labelFormat: 'C' },
+                    primaryYAxis: { title: 'PrimaryYAxis', rangePadding: 'Normal' },
 
+                    series: [{
+                        dataSource: data, xName: 'x', yName: 'y', animation: { enable: false },
+                        name: 'ChartSeriesNameGold', fill: 'rgba(135,206,235,1)',
+                        marker: {
+                            shape: 'Circle', visible: true, width: 10, height: 10, opacity: 1,
+                            border: { width: 1, color: null }
+                        }
+                    }], width: '800',
+                    tooltip: { enable: true, opacity: 0.5 },
+                    title: 'Chart TS Title', loaded: loaded, legendSettings: { visible: false }
+                });
+            chartObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            elem.remove();
+        });
+
+        it('Checking fadeout method', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                targetElement = chartObj.element.querySelector('#container_Series_0_Point_1_Symbol') as HTMLElement;
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(targetElement.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = parseFloat(targetElement.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(targetElement, Math.ceil(x), Math.ceil(y));
+                trigger.clickEvent(targetElement);
+                args.chart.tooltipModule.removeTooltip(0);
+                trigger.mousemovetEvent(chartArea, Math.ceil(0), Math.ceil(0));
+                expect(document.getElementById('container_tooltip') != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Checking tooltip module fade out method', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                targetElement = chartObj.element.querySelector('#container_Series_0_Point_1_Symbol') as HTMLElement;
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(targetElement.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = parseFloat(targetElement.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(targetElement, Math.ceil(x), Math.ceil(y));
+                trigger.clickEvent(targetElement);
+                args.chart.tooltipModule.removeTooltip(0);
+                trigger.mousemovetEvent(chartArea, Math.ceil(0), Math.ceil(0));
+                args.chart.tooltipModule.fadeOut((args.chart.series[0] as any).points[1]);
+                if (document.getElementById('container_tooltip_svg')) {
+                    document.getElementById('container_tooltip_svg').remove();
+                }
+                args.chart.tooltipModule.fadeOut((args.chart.series[0] as any).points[1]);
+                args.chart.tooltipModule.removeHighlightedMarker((args.chart.series[0] as any).points[1], true);
+                expect(document.getElementById('container') != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

@@ -134,9 +134,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const page: number = args.virtualInfo.page;
         args.virtualInfo.blockIndexes = [1, 2];
         args.virtualInfo.page = 1;
-        if (!args.renderMovableContent) {
-            args.virtualInfo.columnIndexes = [];
-        }
+        args.virtualInfo.columnIndexes = [];
         const recordslength: number = this.parent.getCurrentViewRecords().length;
         const firstRecords: object[] = this.parent.renderModule.data.dataManager.dataSource.json.slice(0, recordslength);
         const virtualRows: Row<Column>[] = this.vgenerator.generateRows(firstRecords, args);
@@ -1047,7 +1045,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             const scrollEleInfo: DOMRect | ClientRect = scrollEle.getBoundingClientRect();
             const row: Element = closest(ele, 'tr');
             const nextFocusRow: Element = e.action === 'downArrow' ? row.nextElementSibling : row.previousElementSibling;
-            const nextFocusRowInfo: DOMRect | ClientRect = !isNullOrUndefined(nextFocusRow) ? nextFocusRow.getBoundingClientRect() : undefined;
+            const nextFocusRowInfo: DOMRect | ClientRect = !isNullOrUndefined(nextFocusRow) ? nextFocusRow.getBoundingClientRect()
+                : undefined;
             if (isNullOrUndefined(nextFocusRow) || (e.action === 'downArrow' && nextFocusRowInfo.bottom > scrollEleInfo.bottom)
                 || (e.action === 'upArrow' && nextFocusRowInfo.top < scrollEleInfo.top)) {
                 this.activeKey = e.action;

@@ -1,15 +1,16 @@
 import { createElement, detach, getUniqueID, extend } from '@syncfusion/ej2-base';
 import { RichTextEditor } from './../../src/rich-text-editor/base/rich-text-editor';
 import { RichTextEditorModel } from './../../src/rich-text-editor/base/rich-text-editor-model';
-import { HtmlEditor, MarkdownEditor, Toolbar, QuickToolbar } from "../../src/rich-text-editor/index";
-import { Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, FormatPainter, EmojiPicker} from "../../src/rich-text-editor/index";
+import { HtmlEditor, MarkdownEditor, Toolbar, QuickToolbar, SlashMenu } from "../../src/rich-text-editor/index";
+import { Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, FormatPainter, EmojiPicker, ImportExport } from "../../src/rich-text-editor/index";
 
-RichTextEditor.Inject(HtmlEditor, MarkdownEditor,FormatPainter, Toolbar, QuickToolbar, Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, EmojiPicker);
+RichTextEditor.Inject(HtmlEditor, MarkdownEditor, FormatPainter, Toolbar, QuickToolbar, Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, EmojiPicker, SlashMenu, ImportExport);
 
 export let currentBrowserUA: string = navigator.userAgent;
 export let ieUA: string = 'Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko';
 export let androidUA: string = 'Mozilla/5.0 (Linux; <Android Version>; <Build Tag etc.>) AppleWebKit/<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Mobile Safari/<WebKit Rev>';
 export let iPhoneUA: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Mobile/11A465 Twitter for iPhone';
+export const hostURL: string = 'https://ej2services.syncfusion.com/js/development/'
 
 export function renderRTE(options: RichTextEditorModel): RichTextEditor {
     let element: HTMLElement = createElement('div', { id: getUniqueID('rte-test') });
@@ -60,6 +61,13 @@ export function clickImage(image: HTMLImageElement): void {
     image.dispatchEvent(mouseUp);
 };
 
+export function clickVideo(video: HTMLVideoElement): void {
+    const mouseDown: MouseEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+    video.dispatchEvent(mouseDown);
+    const mouseUp: MouseEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
+    video.dispatchEvent(mouseUp);
+};
+
 export function clickGripper(gripper: HTMLElement): void {
     const domRect: DOMRect = gripper.getBoundingClientRect() as DOMRect;
     const mouseDown: MouseEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window, clientX: domRect.left, clientY: domRect.top , screenX: domRect.left, screenY: domRect.top});
@@ -68,16 +76,17 @@ export function clickGripper(gripper: HTMLElement): void {
 
 export function moveGripper(gripper: HTMLElement, x: number, y: number): void{
     const mouseMove: MouseEvent = new MouseEvent('mousemove', { bubbles: true, cancelable: true, view: window, clientX: x, clientY: y });
-    gripper.dispatchEvent(mouseMove);
+    document.body.dispatchEvent(mouseMove);
 }
 
 export function leaveGripper(gripper: HTMLElement): void {
     const mouseUp: MouseEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
-    gripper.dispatchEvent(mouseUp);
+    document.body.dispatchEvent(mouseUp);
 }
 
 export type ImageResizeGripper = 'e-rte-botRight' | 'e-rte-botLeft' | 'e-rte-topRight' | 'e-rte-topLeft';
 
+export type VideoResizeGripper = 'e-rte-botRight' | 'e-rte-botLeft' | 'e-rte-topRight' | 'e-rte-topLeft';
 
 export function selectTableCell(table: HTMLTableElement, rowIndex: number, cellIndex: number): void {
     const rows: HTMLCollectionOf<HTMLTableRowElement> = table.rows;

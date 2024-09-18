@@ -1,7 +1,7 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, InventoryList } from '../util/datasource.spec';
-import { Spreadsheet, UsedRangeModel, clearViewer } from '../../../src/index';
-import { getComponent } from '@syncfusion/ej2-base';
+import { Spreadsheet, UsedRangeModel, clearViewer, DialogBeforeOpenEventArgs } from '../../../src/index';
+import { EmitType, getComponent } from '@syncfusion/ej2-base';
 
 
 describe('Conditional formatting ->', () => {
@@ -324,18 +324,33 @@ describe('Conditional formatting ->', () => {
         }); 
         it('undo after one Conditional Formatting Applied->', (done: Function) => {
             helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'H2:H11' }]);
-            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
-            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            const cellEle: any = helper.invoke('getCell', [1, 7]);
+            expect(cellEle.getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(cellEle.getElementsByClassName('e-databar')[1].style.height).toBe('17px');
             expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
             spreadsheet = helper.getInstance();
+            helper.invoke('numberFormat', ['0.00', 'H2:H11']);
+            let cell: any = spreadsheet.sheets[0].rows[1].cells[7];
+            expect(cell.format).toBe('0.00');
+            expect(cell.value).toBe(10);
+            expect(cell.formattedText).toBe('10.00');
+            expect(cellEle.textContent).toBe('10.00');
             spreadsheet.notify(clearViewer, { options: { type: 'Clear Formats', range: 'H2:H11' }, isAction: true });
-            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
-            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(cellEle.querySelector('.e-databar')).toBeNull();
             expect(helper.invoke('getCell', [9, 7]).querySelector('.e-databar')).toBeNull();
+            expect(cell.value).toBe(10);
+            expect(cell.format).toBeUndefined();
+            expect(cell.formattedText).toBeUndefined();
+            expect(cellEle.textContent).toBe('10');
             helper.invoke('undo');
-            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
-            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(cellEle.getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(cellEle.getElementsByClassName('e-databar')[1].style.height).toBe('17px');
             expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+            cell = spreadsheet.sheets[0].rows[1].cells[7];
+            expect(cell.format).toBe('0.00');
+            expect(cell.value).toBe(10);
+            expect(cell.formattedText).toBe('10.00');
+            expect(cellEle.textContent).toBe('10.00');
             done();
         });
 
@@ -997,7 +1012,7 @@ describe('Conditional formatting ->', () => {
         });
     });
 
-    describe('EJ2-60930, EJ2-831846 ->', () => {
+    describe('EJ2-60930, EJ2-831846, EJ2-878093 ->', () => {
         beforeEach((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: InventoryList }] }] }, done);
         });
@@ -1018,6 +1033,22 @@ describe('Conditional formatting ->', () => {
                 helper.invoke('paste', ['J2']);
                 expect(helper.invoke('getCell', [1, 9]).querySelector('.e-databar')).not.toBeNull();
                 expect(helper.invoke('getCell', [1, 9]).getElementsByClassName('e-databar')[1].style.width).toBe('95%');
+                done();
+            });
+        });
+        it('Issue in CF-dialog before open event', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const previousValue: EmitType<DialogBeforeOpenEventArgs> = spreadsheet.dialogBeforeOpen;
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                args.cancel = true;
+            };
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_lessthan_dlg').click();
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-conditionalformatting-dlg.e-dialog')).toBeNull();
+                spreadsheet.dialogBeforeOpen = previousValue;
                 done();
             });
         });
@@ -1180,18 +1211,19 @@ describe('Conditional formatting ->', () => {
                 helper.initializeSpreadsheet(
                     {
                         sheets: [{
-                            rows: [{ cells: [{ value: '444' }, { formula: '=SUM(A1,A2)' }, { formula: '=SUM(B1,B2)' }, { formula: '=SUM(C1,C2)' }] },
-                            { cells: [{ value: '555' }, { formula: '=A2+A3' }, { formula: '=B2+B3' }, { formula: '=C2+C3' }] },
-                            { cells: [{ value: '666' }, { value: '777' }, { value: '2109' }, { value: '4329' }] }
+                            rows: [{ cells: [{ value: '444' }, { formula: '=SUM(A1,A2)' }, { formula: '=SUM(B1,B2)' }, { formula: '=SUM(C1,C2)' }, { value: '2/4/2014' }, { value: '8/27/1994' }] },
+                                { cells: [{ value: '555' }, { formula: '=A2+A3' }, { formula: '=B2+B3' }, { formula: '=C2+C3' }, { value: '5/24/2014' }, { value: '3/18/1994' }] },
+                                { cells: [{ value: '666' }, { value: '777' }, { value: '2109' }, { value: '4329' }, { value: '7/18/2014' }, { value: '7/26/2023' }] }
                             ],
                             conditionalFormats: [
                                 { range: 'A1:A3', value: '444,', type: 'GreaterThan', cFColor: 'RedFT' },
                                 { type: 'GYRColorScale', range: 'B1:B3', cFColor: 'RedFT', value: '' },
                                 { type: 'LightBlueDataBar', range: 'C1:C3', cFColor: 'RedFT', value: '' },
-                                { type: 'ThreeArrows', range: 'D1:D3', cFColor: 'RedFT', value: '' }
+                                { type: 'ThreeArrows', range: 'D1:D3', cFColor: 'RedFT', value: '' },
+                                { type: 'Between', cFColor: 'RedFT', value: '4/20/2014,9/16/2014', range: 'E2:E3' },
+                                { type: 'EqualTo', cFColor: 'RedFT', value: '8/27/1994', range: 'F1:F3' }
                             ]
-                        },
-                        ]
+                        }]
                     }, done);
             });
             afterAll(() => {
@@ -1202,6 +1234,37 @@ describe('Conditional formatting ->', () => {
                 expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toContain('rgb(255, 235, 132)');
                 expect(helper.invoke('getCell', [0, 2]).querySelector('.e-databar')).not.toBeNull();
                 expect(helper.invoke('getCell', [0, 3]).querySelector('.e-3arrows-2')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 4]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [0, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [2, 5]).style.backgroundColor).toBe('');
+                done();
+            });
+            it('Adding multiple databar, colorscale, and iconsets', (done: Function) => {
+                helper.invoke('conditionalFormat', [{ type: 'BWRColorScale', range: 'B1:B3', cFColor: 'RedFT', value: '' }]);
+                expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toContain('rgb(90, 138, 198)');
+                helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'C1:C3', cFColor: 'RedFT', value: '' }]);
+                expect(helper.invoke('getCell', [0, 2]).querySelectorAll('.e-databar')[1].style.backgroundColor).toBe('rgb(99, 190, 123)');
+                helper.invoke('conditionalFormat', [{ type: 'ThreeTrafficLights1', range: 'D1:D3', cFColor: 'RedFT', value: '' }]);
+                expect(helper.invoke('getCell', [0, 3]).querySelector('.e-3trafficlights-2')).not.toBeNull();
+                helper.invoke('resize');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toContain('rgb(90, 138, 198)');
+                    expect(helper.invoke('getCell', [0, 2]).querySelectorAll('.e-databar')[1].style.backgroundColor).toBe('rgb(99, 190, 123)');
+                    expect(helper.invoke('getCell', [0, 3]).querySelector('.e-3trafficlights-2')).not.toBeNull();
+                    done();
+                });
+            });
+            it('Editing with invalid value on CF applied cells', (done: Function) => {
+                helper.edit('B2', 'Test');
+                const cellEle: HTMLElement = helper.invoke('getCell', [1, 1]);
+                expect(cellEle.style.backgroundColor).toBe('');
+                helper.invoke('cellFormat', [{ backgroundColor: '#4dff00' }, 'B2']);
+                expect(cellEle.style.backgroundColor).toBe('rgb(77, 255, 0)');
+                helper.edit('B2', '555');
+                expect(cellEle.style.backgroundColor).toContain('rgb(248, 105, 107)');
+                helper.edit('B2', 'text');
+                expect(cellEle.style.backgroundColor).toBe('rgb(77, 255, 0)');
                 done();
             });
         });
@@ -1435,6 +1498,130 @@ describe('Conditional formatting ->', () => {
                 expect(helper.invoke('getCell', [7, 5]).style.backgroundColor).toBe('');
                 expect(helper.invoke('getCell', [7, 5]).style.color).toBe('');
                 done();
+            });
+        });
+    });
+    describe('Apply conditional formatting with args.cancel in actionBegin event ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }], actionBegin: (args: {
+                    args: {
+                        eventArgs: any; cancel: boolean
+                    }
+                }) => {
+                    args.args.eventArgs.cancel = true;
+                },
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply conditional formatting with args.cancel in actionBegin event. ->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_greaterthan_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
+                const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn')
+                expect(btn.disabled).toBeTruthy();
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input') as HTMLInputElement;
+                input.value = '300';
+                const evt: Event = document.createEvent('Event');
+                evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                btn.click();
+                expect(helper.invoke('getCell', [1, 5]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [2, 5]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [2, 5]).style.color).toBe('');
+                expect(helper.invoke('getCell', [6, 5]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [6, 5]).style.color).toBe('');
+                done();
+            });
+        });
+    });
+
+    describe('EJ2-907552 ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('The icon set gets removed when applying the data bar to the same cells.', (done: Function) => {
+            helper.invoke('conditionalFormat', [{ type: 'ThreeArrows', range: 'D2:D11' }]);
+            expect(helper.invoke('getCell', [1, 3]).children[0].classList).toContain('e-3arrows-3');
+            expect(helper.invoke('getCell', [5, 3]).children[0].classList).toContain('e-3arrows-2');
+            expect(helper.invoke('getCell', [6, 3]).children[0].classList).toContain('e-3arrows-1');
+            helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'D2:D11' }]);
+            expect(helper.invoke('getCell', [1, 3]).children[0].classList).toContain('e-3arrows-3');
+            expect(helper.invoke('getCell', [5, 3]).children[0].classList).toContain('e-3arrows-2');
+            expect(helper.invoke('getCell', [6, 3]).children[0].classList).toContain('e-3arrows-1');
+            helper.invoke('selectRange', ['D2:D11']);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_Accounting').click();
+            expect(helper.invoke('getCell', [1, 3]).children[0].classList).toContain('e-3arrows-3');
+            expect(helper.invoke('getCell', [5, 3]).children[0].classList).toContain('e-3arrows-2');
+            expect(helper.invoke('getCell', [6, 3]).children[0].classList).toContain('e-3arrows-1');
+            done();
+        });
+    });
+
+    describe('EJ2-907559 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    conditionalFormats: [
+                        { type: "LessThan", cFColor: "RedFT", value: '1000', range: 'F1:F100' },
+                        { type: 'GYRColorScale', range: 'F1:F100' }
+                    ],
+                    ranges: [{ dataSource: defaultData }],
+                }, {}]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('The colorscale and Less than CF applied to the same range not working properly', (done: Function) => {
+            expect(helper.invoke('getCell', [7, 5]).style.backgroundColor).toBe('rgb(250, 157, 117)');
+            expect(helper.invoke('getCell', [9, 5]).style.backgroundColor).toBe('rgb(99, 190, 123)');
+            expect(helper.invoke('getCell', [10, 5]).style.backgroundColor).toBe('rgb(192, 217, 128)');
+            expect(helper.invoke('getCell', [11, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [11, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [11, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [12, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [13, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [14, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [15, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            helper.invoke('goTo', ['Sheet1!F70']);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [69, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [70, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [71, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                helper.invoke('goTo', ['Sheet1!F1']);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [7, 5]).style.backgroundColor).toBe('rgb(250, 157, 117)');
+                    expect(helper.invoke('getCell', [9, 5]).style.backgroundColor).toBe('rgb(99, 190, 123)');
+                    expect(helper.invoke('getCell', [10, 5]).style.backgroundColor).toBe('rgb(192, 217, 128)');
+                    expect(helper.invoke('getCell', [11, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    expect(helper.invoke('getCell', [11, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    expect(helper.invoke('getCell', [11, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    expect(helper.invoke('getCell', [12, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    expect(helper.invoke('getCell', [13, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    expect(helper.invoke('getCell', [14, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    expect(helper.invoke('getCell', [15, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    helper.edit('F14', '200');
+                    helper.edit('F15', '1210');
+                    helper.edit('F16', '200');
+                    helper.edit('F17', '500');
+                    expect(helper.invoke('getCell', [13, 5]).style.backgroundColor).toBe('rgb(251, 179, 121)');
+                    expect(helper.invoke('getCell', [14, 5]).style.backgroundColor).toBe('rgb(99, 190, 123)');
+                    expect(helper.invoke('getCell', [15, 5]).style.backgroundColor).toBe('rgb(251, 179, 121)');
+                    expect(helper.invoke('getCell', [16, 5]).style.backgroundColor).toBe('rgb(188, 215, 128)');
+                    done();
+                });
             });
         });
     });

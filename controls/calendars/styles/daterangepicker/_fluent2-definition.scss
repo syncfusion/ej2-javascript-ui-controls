@@ -213,6 +213,7 @@ $range-today-border-color: $range-calendar-active-border !default;
 $range-calendar-today-color: $content-text-color !default;
 $range-calendar-today-start-color: $range-calendar-active-border !default;
 $range-active-font-color: $primary-text-color !default;
+$range-calendar-hover-color: $content-text-color-selected !default;
 
 // Cancel flat button custom styling
 $range-cancel-flat-btn-bgcolor: $secondary-bg-color !default;
@@ -292,14 +293,9 @@ $range-header-font-size: 16px !default;
 
 $footer-top-border-color :1px solid $flyout-border !default;
 
-/* stylelint-disable */
-.e-daterangepicker.e-popup .e-footer{
-  border-top: $footer-top-border-color !important;
-}
-
 $range-icon-mouse-border-radius: 16px !default;
-$range-icon-bigger-container-min-height: 38px !default;
-$range-icon-bigger-container-min-width: 38px !default;
+$range-icon-bigger-container-min-height: 24px !default;
+$range-icon-bigger-container-min-width: 24px !default;
 $range-icon-bigger-border-radius: 20px !default;
 $range-small-icon-container-min-width: 22px !default;
 $range-small-icon-container-min-height: 22px !default;

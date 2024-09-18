@@ -92,9 +92,6 @@ export class Video {
     }
 
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.keyUp, this.onKeyUp);
         this.parent.off(events.insertVideo, this.insertingVideo);
@@ -117,7 +114,7 @@ export class Video {
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
             if (this.parent.insertVideoSettings.resize) {
                 EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
-                (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.docClick, true);
+                (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.docClick);
                 this.docClick = null;
                 EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
                 EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
@@ -130,7 +127,7 @@ export class Video {
         EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.videoClick, this);
         if (this.parent.insertVideoSettings.resize) {
             EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
-            (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick, true);
+            (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick);
             EventHandler.add(this.contentModule.getEditPanel(), 'cut', this.onCutHandler, this);
         }
     }
@@ -188,7 +185,7 @@ export class Video {
     }
 
     private undoStack(args?: { [key: string]: string }): void {
-        if (args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') {
+        if ((args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') && this.parent.editorMode === 'HTML') {
             for (let i: number = 0; i < this.parent.formatter.getUndoRedoStack().length; i++) {
                 const temp: Element = this.parent.createElement('div');
                 const contentElem: DocumentFragment = this.parent.formatter.getUndoRedoStack()[i as number].text as DocumentFragment;
@@ -1353,6 +1350,7 @@ export class Video {
         uploadParentEle.appendChild(uploadEle);
         let fileName: string;
         let selectArgs: SelectedEventArgs;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let filesData: FileInfo[];
         this.uploadObj = new Uploader({
             asyncSettings: { saveUrl: this.parent.insertVideoSettings.saveUrl, removeUrl: this.parent.insertVideoSettings.removeUrl },

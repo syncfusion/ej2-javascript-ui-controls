@@ -427,6 +427,8 @@ export type ChartTheme =
     'Fluent2' |
     /**  Render a chart with Fluent 2 dark theme. */
     'Fluent2Dark' |
+    /**  Render a chart with Fluent 2 highcontrast dark theme. */
+    'Fluent2HighContrast' |
     /**  Render a accumulation chart with Material 3 theme. */
     'Material3' |
     /**  Render a accumulation chart with Material 3 dark theme. */

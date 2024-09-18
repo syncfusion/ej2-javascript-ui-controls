@@ -2,7 +2,7 @@
 /// <reference path='../combo-box/combo-box-model.d.ts'/>
 import { Property, EventHandler, KeyboardEventArgs, isNullOrUndefined, detach, getValue } from '@syncfusion/ej2-base';
 import { Event, EmitType, Complex } from '@syncfusion/ej2-base';
-import { removeClass, attributes, NotifyPropertyChanges } from '@syncfusion/ej2-base';
+import { removeClass, NotifyPropertyChanges } from '@syncfusion/ej2-base';
 import { dropDownListClasses } from '../drop-down-list/drop-down-list';
 import { ComboBox } from '../combo-box/combo-box';
 import { AutoCompleteModel } from '../auto-complete/auto-complete-model';
@@ -252,14 +252,14 @@ export class AutoComplete extends ComboBox {
 
     protected getQuery(query: Query): Query {
         let filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
-        let value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+        const value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
         const filterType: string = (this.queryString === '' && !isNullOrUndefined(value)) ? 'equal' : this.filterType;
         const queryString: string = (this.queryString === '' && !isNullOrUndefined(value)) ? value as string : this.queryString;
         if (this.isFiltered) {
             if ((this.enableVirtualization && !isNullOrUndefined(this.customFilterQuery))) {
                 filterQuery = this.customFilterQuery.clone() as Query;
             }
-            else if(!this.enableVirtualization){
+            else if (!this.enableVirtualization){
                 return filterQuery;
             }
         }
@@ -273,7 +273,7 @@ export class AutoComplete extends ComboBox {
             }
         }
         if (!isNullOrUndefined(this.suggestionCount) && !this.enableVirtualization) {
-            // Since defualt value of suggestioncount is 20, checked the condition
+            // Since default value of suggestioncount is 20, checked the condition
             if (this.suggestionCount !== 20) {
                 for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
                     if (filterQuery.queries[queryElements as number].fn === 'onTake') {
@@ -284,48 +284,52 @@ export class AutoComplete extends ComboBox {
             filterQuery.take(this.suggestionCount);
         }
         if (this.enableVirtualization) {
-            let queryTakeValue = 0;
-            let querySkipValue = 0;
-            var takeValue = this.getTakeValue();
-            if(filterQuery && filterQuery.queries.length > 0){
+            let queryTakeValue: number = 0;
+            let querySkipValue: number = 0;
+            const takeValue: number = this.getTakeValue();
+            if (filterQuery && filterQuery.queries.length > 0) {
                 for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
                     if (filterQuery.queries[queryElements as number].fn === 'onSkip') {
                         querySkipValue = filterQuery.queries[queryElements as number].e.nos;
                     }
                     if (filterQuery.queries[queryElements as number].fn === 'onTake') {
-                        queryTakeValue = takeValue <= filterQuery.queries[queryElements as number].e.nos ? filterQuery.queries[queryElements as number].e.nos : takeValue;
+                        queryTakeValue = takeValue <= filterQuery.queries[queryElements as number].e.nos
+                            ? filterQuery.queries[queryElements as number].e.nos
+                            : takeValue;
                     }
                 }
             }
-            if(queryTakeValue <= 0 && this.query && this.query.queries.length > 0){
+            if (queryTakeValue <= 0 && this.query && this.query.queries.length > 0) {
                 for (let queryElements: number = 0; queryElements < this.query.queries.length; queryElements++) {
                     if (this.query.queries[queryElements as number].fn === 'onTake') {
-                        queryTakeValue = takeValue <= this.query.queries[queryElements as number].e.nos ? this.query.queries[queryElements as number].e.nos : takeValue;
+                        const currentTakeValue: number = this.query.queries[queryElements as number].e.nos;
+                        queryTakeValue = takeValue <= currentTakeValue ? currentTakeValue : takeValue;
                     }
                 }
             }
             if (filterQuery && filterQuery.queries.length > 0) {
                 for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
-                    if (filterQuery.queries[queryElements as number].fn === 'onSkip') {   
+                    if (filterQuery.queries[queryElements as number].fn === 'onSkip') {
                         querySkipValue = filterQuery.queries[queryElements as number].e.nos;
-                        filterQuery.queries.splice(queryElements,1);
+                        filterQuery.queries.splice(queryElements, 1);
                         --queryElements;
                         continue;
                     }
                     if (filterQuery.queries[queryElements as number].fn === 'onTake') {
-                        queryTakeValue = filterQuery.queries[queryElements as number].e.nos <= queryTakeValue  ? queryTakeValue : filterQuery.queries[queryElements as number].e.nos;
-                        filterQuery.queries.splice(queryElements,1);
+                        const currentQueryTakeValue: number = filterQuery.queries[queryElements as number].e.nos;
+                        queryTakeValue = currentQueryTakeValue <= queryTakeValue ? queryTakeValue : currentQueryTakeValue;
+                        filterQuery.queries.splice(queryElements, 1);
                         --queryElements;
                     }
                 }
             }
-            if(querySkipValue > 0 && this.virtualItemStartIndex <= querySkipValue){
+            if (querySkipValue > 0 && this.virtualItemStartIndex <= querySkipValue){
                 filterQuery.skip(querySkipValue);
             }
             else{
                 filterQuery.skip(this.virtualItemStartIndex);
             }
-            if(queryTakeValue > 0 && takeValue <= queryTakeValue){
+            if (queryTakeValue > 0 && takeValue <= queryTakeValue){
                 filterQuery.take(queryTakeValue);
             }
             else{
@@ -396,29 +400,31 @@ export class AutoComplete extends ComboBox {
         dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
         query?: Query, fields?: FieldSettingsModel, e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         this.beforePopupOpen = true;
-        let isNoDataElement  = this.list.classList.contains('e-nodata');
+        let isNoDataElement: boolean = this.list.classList.contains('e-nodata');
         if (this.queryString !== '' && (this.queryString.length >= this.minLength)) {
-            if(this.enableVirtualization && this.isFiltering() && this.isTyped) {
+            if (this.enableVirtualization && this.isFiltering() && this.isTyped) {
                 this.isPreventScrollAction = true;
                 this.list.scrollTop = 0;
                 this.previousStartIndex = 0;
                 this.virtualListInfo  = null;
             }
             this.resetList(dataSource, fields, query, e);
-            if(this.enableVirtualization && isNoDataElement && !this.list.classList.contains('e-nodata')) {
-                if (!this.list.querySelector('.e-virtual-ddl-content')) {
-                    this.list.appendChild(this.createElement('div', {
+            isNoDataElement = this.list.classList.contains('e-nodata');
+            if (this.enableVirtualization && !isNoDataElement) {
+                if (!this.list.querySelector('.e-virtual-ddl-content') && this.list.querySelector('.e-list-parent')) {
+                    const virtualElement: HTMLElement = this.createElement('div', {
                         className: 'e-virtual-ddl-content',
                         styles: this.getTransformValues()
-                    })).appendChild(this.list.querySelector('.e-list-parent'));
+                    });
+                    this.list.appendChild(virtualElement).appendChild(this.list.querySelector('.e-list-parent'));
                 }
-                if(!this.list.querySelector('.e-virtual-ddl')){
-                    var virualElement = this.createElement('div', {
+                if (!this.list.querySelector('.e-virtual-ddl') && document.getElementsByClassName('e-popup') && document.getElementsByClassName('e-popup')[0]){
+                    const virtualElement: HTMLElement = this.createElement('div', {
                         id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()});
-                    document.getElementsByClassName('e-popup')[0].querySelector('.e-dropdownbase').appendChild(virualElement);
+                    document.getElementsByClassName('e-popup')[0].querySelector('.e-dropdownbase').appendChild(virtualElement);
                 }
             }
-            if ((this.getModuleName() === 'autocomplete' && !(this.dataSource instanceof DataManager)) ||  (this.getModuleName() === 'autocomplete' && (this.dataSource instanceof DataManager) && this.totalItemCount !=0 )) {
+            if ((this.getModuleName() === 'autocomplete' && !(this.dataSource instanceof DataManager)) ||  (this.getModuleName() === 'autocomplete' && (this.dataSource instanceof DataManager) && this.totalItemCount !== 0 )) {
                 this.getFilteringSkeletonCount();
             }
         } else {
@@ -440,10 +446,10 @@ export class AutoComplete extends ComboBox {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected onActionComplete(ulElement: HTMLElement, list: { [key: string]: Object }[], e?: Object, isUpdated?: boolean): void {
-        if(!this.enableVirtualization){
+        if (!this.enableVirtualization){
             this.fixedHeaderElement = null;
         }
-        if ((this.getModuleName() === 'autocomplete' && !(this.dataSource instanceof DataManager)) || (this.getModuleName() === 'autocomplete' && (this.dataSource instanceof DataManager) && this.totalItemCount != 0)) {
+        if ((this.getModuleName() === 'autocomplete' && !(this.dataSource instanceof DataManager)) || (this.getModuleName() === 'autocomplete' && (this.dataSource instanceof DataManager) && this.totalItemCount !== 0)) {
             this.getFilteringSkeletonCount();
         }
         super.onActionComplete(ulElement, list, e);
@@ -521,7 +527,7 @@ export class AutoComplete extends ComboBox {
     }
 
     protected renderPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
-        if(!this.enableVirtualization){
+        if (!this.enableVirtualization){
             this.list.scrollTop = 0;
         }
         super.renderPopup(e);
@@ -541,37 +547,59 @@ export class AutoComplete extends ComboBox {
     }
 
     protected setInputValue(newProp?: any, oldProp?: any): void {
-        let oldValue = oldProp && oldProp.text ? oldProp.text : oldProp ? oldProp.value : oldProp;
-        let value = newProp && newProp.text ? newProp.text : newProp && newProp.value ? newProp.value : this.value;
-        if(this.allowObjectBinding){
-            oldValue = !isNullOrUndefined(oldValue) ? getValue((this.fields.value) ? this.fields.value : '', oldValue) : oldValue;
-            value = !isNullOrUndefined(value) ? getValue((this.fields.value) ? this.fields.value : '', value) : value;
+        let oldValue: string | number | boolean = oldProp && oldProp.text ? oldProp.text : oldProp ? oldProp.value : oldProp;
+        let value: string | number | boolean = newProp && newProp.text
+            ? newProp.text
+            : newProp && newProp.value
+                ? newProp.value
+                : this.value;
+        if (this.allowObjectBinding) {
+            oldValue = !isNullOrUndefined(oldValue)
+                ? getValue((this.fields.value) ? this.fields.value : '', oldValue)
+                : oldValue;
+            value = !isNullOrUndefined(value)
+                ? getValue((this.fields.value) ? this.fields.value : '', value)
+                : value;
         }
         if (value && this.typedString === '' && !this.allowCustom && !(this.dataSource instanceof DataManager)) {
-             let checkFields_1: string = this.typeOfData(this.dataSource).typeof === 'string' ? '' : this.fields.value;
-             const listLength: number = this.getItems().length;
-             let query: Query = new Query();
-             let _this = this;
-             new DataManager(this.dataSource).executeQuery(query.where(new Predicate(checkFields_1, 'equal', value)))
-                 .then(function (e: Object) {
-                 if ((e as ResultData).result.length > 0) {
-                     _this.value = checkFields_1 !== '' ? _this.allowObjectBinding ? (e as ResultData).result[0] : (e as ResultData).result[0][_this.fields.value].toString() : (e as ResultData).result[0].toString();
-                     _this.addItem((e as ResultData).result, listLength);
-                     _this.updateValues();
-                 }
-                 else {
-                     newProp && newProp.text ? _this.setOldText(oldValue) : newProp && newProp.value ? _this.setOldValue(oldValue) : _this.updateValues();
-                 }
-             });
+            const checkFields1: string = this.typeOfData(this.dataSource).typeof === 'string' ? '' : this.fields.value;
+            const listLength: number = this.getItems().length;
+            const query: Query = new Query();
+            // eslint-disable-next-line @typescript-eslint/tslint/config
+            const _this = null || this;
+            new DataManager(this.dataSource).executeQuery(query.where(new Predicate(checkFields1, 'equal', value)))
+                .then(function (e: Object): void {
+                    if ((e as ResultData).result.length > 0) {
+                        _this.value = checkFields1 !== '' ? _this.allowObjectBinding ? (e as ResultData).result[0] : (e as ResultData).result[0][_this.fields.value].toString() : (e as ResultData).result[0].toString();
+                        _this.addItem((e as ResultData).result, listLength);
+                        _this.updateValues();
+                    }
+                    else {
+                        if (newProp && newProp.text) {
+                            _this.setOldText(oldValue as string);
+                        }
+                        else if (newProp && newProp.value) {
+                            _this.setOldValue(oldValue as string | number | object);
+                        }
+                        else {
+                            _this.updateValues();
+                        }
+                    }
+                });
         }
-         else if (newProp) {
-             newProp.text ? this.setOldText(oldValue) : this.setOldValue(oldValue);
-         }
-     }
-     
+        else if (newProp) {
+            if (newProp.text) {
+                this.setOldText(oldValue as string);
+            } else {
+                this.setOldValue(oldValue as string | number | object);
+            }
+        }
+    }
+
     /**
      * Search the entered text and show it in the suggestion list if available.
      *
+     * @param {MouseEvent | KeyboardEventArgs | TouchEvent} e - The event object.
      * @returns {void}
      * @deprecated
      */
@@ -594,6 +622,7 @@ export class AutoComplete extends ComboBox {
     /**
      * Hides the popup if it is in open state.
      *
+     * @param {MouseEvent | KeyboardEventArgs | TouchEvent} e - The event object.
      * @returns {void}
      */
     public hidePopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {

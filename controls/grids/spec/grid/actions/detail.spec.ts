@@ -18,6 +18,7 @@ import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
+import { getParentIns } from '../../../src/grid/base/util';
 
 Grid.Inject(Sort, Page, Filter, DetailRow, Group, Selection, Edit, RowDD, Toolbar, Aggregate);
 
@@ -704,8 +705,19 @@ describe('Detail template module', () => {
                 }, done);
         });
 
-        it('Hierarchy row with expand-RowDD', () => {
+        it('EJ2-895366 - Error throws when using dialogTemplate editing in the Child grid', (done: Function) => {
+            // code coverage
+            let detailDataBound: (e: any) => void = (e: any) => {
+                e.childGrid.parentDetails.parentInstObj = gridObj;
+                let parentIns = getParentIns(e.childGrid);
+                parentIns = detailDataBound = gridObj.detailDataBound = null;
+                done();
+            };
+            gridObj.detailDataBound = detailDataBound;
             gridObj.detailRowModule.expand(gridObj.getDataRows()[1].querySelector('.e-detailrowcollapse'));
+        });
+        
+        it('Hierarchy row with expand-RowDD', () => {
             expect(gridObj.getContentTable().querySelectorAll('.e-detailrow').length).toBe(1);
             expect(gridObj.getDataRows()[1].querySelectorAll('.e-detailrowexpand').length).toBe(1);
             expect(gridObj.getContentTable().querySelectorAll('.e-detailrow')[0].children[1].getAttribute('colspan')).toBe('6');
@@ -1114,6 +1126,56 @@ describe('Detail template module', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = columns = dataBound = null;
+        });
+    });
+
+
+    describe('Code Coverage - Hierarchy Render testing', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData.slice(0, 3),
+                    allowPaging: true,
+                    allowFiltering: true,
+                    height: 700,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                        { field: 'FirstName', headerText: 'First Name', textAlign: 'Left', width: 100 },
+                        { field: 'Title', headerText: 'Title', textAlign: 'Left', width: 120 },
+                        { field: 'City', headerText: 'City', textAlign: 'Left', width: 100 },
+                        { field: 'Country', headerText: 'Country', textAlign: 'Left', width: 100 }
+                    ],
+                    childGrid: {
+                        dataSource: filterData.slice(0, 1),
+                        queryString: 'EmployeeID',
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 75 },
+                            { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                            { field: 'ShipCity', headerText: 'Ship City', textAlign: 'Left', width: 100 },
+                            { field: 'Freight', headerText: 'Freight', textAlign: 'Left', width: 120 },
+                            { field: 'ShipName', headerText: 'Ship Name', textAlign: 'Left', width: 100 }
+                        ]
+                    },
+                }, done);
+        });
+
+
+        it('auxilaryclickHandler coverage', () => {
+            (gridObj as any).detailRowModule.auxilaryclickHandler({ button: 1, preventDefault: () => { }, target: gridObj.element.querySelector('.e-icon-grightarrow')});
+            (gridObj as any).detailRowModule.auxilaryclickHandler({ button: 1, preventDefault: () => { }, target: gridObj.element.querySelector('.e-rowcell')});
+        });
+
+        it('auxilaryclickHandler coverage', () => {
+            (gridObj as any).detailRowModule.auxilaryclickHandler({ button: 1, preventDefault: () => { }, target: gridObj.element.querySelector('.e-rowcell')});
+            (gridObj as any).isReact = true;
+            (gridObj as any).detailRowModule.clickHandler({ button: 1, preventDefault: () => { }, target: gridObj.element.querySelector('.e-icon-grightarrow')});
+        });
+
+        afterAll(() => {
+            (gridObj.detailRowModule as any).destroy();
+            destroy(gridObj);
+            gridObj = null;
         });
     });
 });

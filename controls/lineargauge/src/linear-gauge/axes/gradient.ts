@@ -164,20 +164,20 @@ export class Gradient {
         const name: string = '_' + this.gauge.svgObject.id + '_' + this.gauge.gradientCount + '_' + 'radialGradient';
         const gradientPosition: Radial = {
             id: name,
-            r: !isNullOrUndefined(element.radialGradient.radius) ? 
+            r: !isNullOrUndefined(element.radialGradient.radius) ?
                 (element.radialGradient.radius.indexOf('%') === -1 ?
-                element.radialGradient.radius :
-                parseFloat(element.radialGradient.radius).toString()) + '%' : '0%',
-            cx: element.radialGradient.outerPosition == null ? "0%" : (element.radialGradient.outerPosition.x.indexOf('%') === -1 ?
+                    element.radialGradient.radius :
+                    parseFloat(element.radialGradient.radius).toString()) + '%' : '0%',
+            cx: element.radialGradient.outerPosition == null ? '0%' : (element.radialGradient.outerPosition.x.indexOf('%') === -1 ?
                 element.radialGradient.outerPosition.x :
                 parseFloat(element.radialGradient.outerPosition.x).toString()) + '%',
-            cy: element.radialGradient.outerPosition == null ? "0%" : (element.radialGradient.outerPosition.y.indexOf('%') === -1 ?
+            cy: element.radialGradient.outerPosition == null ? '0%' : (element.radialGradient.outerPosition.y.indexOf('%') === -1 ?
                 element.radialGradient.outerPosition.y :
                 parseFloat(element.radialGradient.outerPosition.y).toString()) + '%',
-            fx: element.radialGradient.innerPosition == null ? "0%" : (element.radialGradient.innerPosition.x.indexOf('%') === -1 ?
+            fx: element.radialGradient.innerPosition == null ? '0%' : (element.radialGradient.innerPosition.x.indexOf('%') === -1 ?
                 element.radialGradient.innerPosition.y :
                 parseFloat(element.radialGradient.innerPosition.x).toString()) + '%',
-            fy: element.radialGradient.innerPosition == null ? "0%" : (element.radialGradient.innerPosition.y.indexOf('%') === -1 ?
+            fy: element.radialGradient.innerPosition == null ? '0%' : (element.radialGradient.innerPosition.y.indexOf('%') === -1 ?
                 element.radialGradient.innerPosition.y :
                 parseFloat(element.radialGradient.innerPosition.y).toString()) + '%'
         };

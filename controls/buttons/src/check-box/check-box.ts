@@ -45,6 +45,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     private wrapper: Element;
     private clickTriggered: boolean = false;
     private validCheck: boolean = true;
+    private type: string = 'checkbox';
 
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
@@ -591,12 +592,10 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     protected unWireEvents(): void {
         const wrapper: Element = this.wrapper;
-        if (wrapper) {
-            EventHandler.remove(wrapper, 'click', this.clickHandler);
-            EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
-            EventHandler.remove(this.element, 'focus', this.focusHandler);
-            EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        }
+        EventHandler.remove(wrapper, 'click', this.clickHandler);
+        EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
+        EventHandler.remove(this.element, 'focus', this.focusHandler);
+        EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
         const label: Element = wrapper.getElementsByTagName('label')[0];
         if (label) {
             EventHandler.remove(label, 'mousedown', this.labelMouseDownHandler);

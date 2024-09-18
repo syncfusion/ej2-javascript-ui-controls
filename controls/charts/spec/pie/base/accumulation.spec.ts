@@ -10,15 +10,16 @@ import { AccumulationDataLabel} from '../../../src/accumulation-chart/renderer/d
 import { AccPoints, AccumulationSeries} from '../../../src/accumulation-chart/model/acc-base';
 import { getElement, removeElement} from '../../../src/common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
-import { IAccLoadedEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
+import { IAccLoadedEventArgs, IAccPointRenderEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
 import { IMouseEventArgs } from '../../../src/chart/model/chart-interface';
 import { data, datetimeData1, remoteData} from '../../chart/base/data.spec';
 import { MouseEvents} from '../../chart/base/events.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { piedata } from '../../chart/base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import { Export } from '../../../src/chart/print-export/export';
 
-AccumulationChart.Inject(AccumulationTooltip, AccumulationDataLabel);
+AccumulationChart.Inject(AccumulationTooltip, AccumulationDataLabel, Export);
 describe('Accumulation Chart Control', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;
@@ -569,6 +570,29 @@ describe('Checking RTL Behaviour for Title', () => {
         };
         accumulation.refresh();
     });
+    it('Subtitle anchor with enableRtl as true', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = getElement(subTitleId);
+            anchor = textEle.getAttribute('text-anchor');
+            expect(anchor).toBe('end');
+            done();
+        };
+        accumulation.title = 'Syncfusion';
+        accumulation.subTitle = 'Since 2012';
+        accumulation.subTitleStyle.textAlignment = 'Far';
+        accumulation.enableRtl = false;
+        accumulation.refresh();
+    });
+    it('Checking chart without element id', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            args.chart.isBlazor = true;
+            expect(args.chart.element !== null).toBe(true);
+            done();
+        };
+        accumulation.element.id = '';
+        accumulation.isBlazor = true;
+        accumulation.refresh();
+    });
   });
   describe('Checking RTL Behaviour for CenterLabel', () => {
     let element: HTMLElement;
@@ -588,7 +612,7 @@ describe('Checking RTL Behaviour for Title', () => {
             series: [
                 {
                     type: 'Pie',  innerRadius: '50%',
-                    dataSource: piedata, animation: { enable: false }, xName: 'x', yName: 'y'
+                    dataSource: piedata, animation: { enable: true }, xName: 'x', yName: 'y'
                 }
             ], 
             width: '600', 
@@ -599,7 +623,8 @@ describe('Checking RTL Behaviour for Title', () => {
                     size: '11px',
                 },
                 hoverTextFormat: '${point.x}'
-            }
+            },
+            enableExport: false,
         });
         accumulation.appendTo('#' + id);
     });
@@ -637,6 +662,364 @@ describe('Checking RTL Behaviour for Title', () => {
         };
         accumulation.refresh();
     });
-    
+    it('Checking HighContrast theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#FFD939');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };
+        accumulation.theme='HighContrast'
+        accumulation.refresh();
+    });  
+    it('Checking HighContrastLight theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#FFD939');
+            trigger.mouseleavetEvent(element, 200, 200)
+            done();
+        };
+        accumulation.theme='HighContrastLight'
+        accumulation.refresh();
+    }); 
+    it('Checking Bootstrap4 theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#007BFF');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };
+        accumulation.theme='Bootstrap4'
+        accumulation.refresh();
+    });
+    it('Checking TailwindDark theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#22D3EE');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };
+        accumulation.theme='TailwindDark'
+        accumulation.refresh();
+    });
+    it('Checking Bootstrap5Dark theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#0D6EFD');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };
+        accumulation.theme='Bootstrap5Dark'
+        accumulation.refresh();
+    });
+    it('Checking FluentDark theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#0078D4');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };
+        accumulation.theme='FluentDark'
+        accumulation.refresh();
+    });
+    it('Checking MaterialDark theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#00B0FF');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };
+        accumulation.theme='MaterialDark'
+        accumulation.refresh();
+    });
+    it('Checking FabricDark theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#0074CC');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };
+        accumulation.theme='FabricDark'
+        accumulation.refresh();
+    });
+    it('Checking Bootstrap theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#317AB9');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };
+        accumulation.theme='Bootstrap'
+        accumulation.refresh();
+    });
+    it('Checking Tailwind theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#4F46E5');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };
+        accumulation.theme='Tailwind'
+        accumulation.refresh();
+    });
+    it('Checking Bootstrap5 theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#0D6EFD');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };
+        accumulation.theme='Bootstrap5'
+        accumulation.refresh();
+    });
+    it('Checking Fluent theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#0078D4');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };  
+        accumulation.theme='Fluent'
+        accumulation.refresh();
+    });
+    it('Checking Fluent2 theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#0078D4');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };  
+        accumulation.centerLabel.text = 'Syncfusion deliver innovation with ease';
+        accumulation.centerLabel.textStyle.size = '30px';  
+        accumulation.theme='Fluent2';
+        accumulation.animate(10);
+        accumulation.refresh();
+    });
+    it('Checking Fluent2Dark theme', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            trigger.mousemoveEvent(element, 0, 0, 300, 300);
+            expect(accumulation.themeStyle.tabColor).toBe('#0078D4');
+            trigger.mouseleavetEvent(element, 200, 200);
+            done();
+        };  
+        accumulation.theme='Fluent2Dark';
+        accumulation.series[0].dataSource=[  {
+            OrderCount: 18, EmployeeID: 1, Freight: 12, Verified: !0
+        }]
+        accumulation.animate(500);
+        accumulation.refresh();
+    });
+    it('Cheking CenterLabel text with innerRadius as 0', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            let centerLabel: HTMLElement = document.getElementById('ej2-container_centerLabel');
+            expect(centerLabel.children[0].innerHTML === 'Syncfusion').toBe(true);
+            done();
+        };
+        accumulation.series[0].innerRadius = '0';
+        accumulation.refresh();
+    });
+    it('Cheking CenterLabel text with br tag', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            let centerLabel: HTMLElement = document.getElementById('ej2-container_centerLabel');
+            expect(centerLabel.children[0].innerHTML === '<b>Syncfusion</b> accumulation').toBe(false);
+            done();
+        };
+        accumulation.centerLabel.text = "Syncfusion<br>accumulation"
+        accumulation.refresh();
+    });
+    it('Cheking CenterLabel text with endAngle and startAngle', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            let centerLabel: HTMLElement = document.getElementById('ej2-container_centerLabel');
+            expect(centerLabel.children[0].innerHTML === 'Syncfusion accumulation').toBe(false);
+            done();
+        };
+        accumulation.series[0].startAngle = 270;
+        accumulation.series[0].endAngle = 90;
+        accumulation.refresh();
+    });
+      it('Checking chart animation with duration as zero', (done: Function) => {
+          accumulation.loaded = (args: IAccLoadedEventArgs) => {
+              expect(document.getElementById('ej2-container') !== null).toBe(true);
+              done();
+          };
+          accumulation.animate(0);
+          accumulation.refresh();
+      });
+      it('Checking accumulation chart elements', (done: Function) => {
+          accumulation.loaded = (args: IAccLoadedEventArgs) => {
+              accumulation.loaded = null;
+              if (args.accumulation.accBaseModule) {
+                  args.chart.isBlazor = true;
+                  args.chart.renderElements();
+                  args
+                  expect(document.getElementById('ej2-container') !== null).toBe(true);
+              }
+              expect(document.getElementById('ej2-container') !== null).toBe(true);
+              done();
+          };
+          accumulation.load = (args: IAccLoadedEventArgs) => {
+              args.chart.isBlazor = true;
+          };
+          accumulation.refresh();
+      });
+      it('Checking accumulation checking pointColormappings', (done: Function) => {
+          accumulation.loaded = (args: IAccLoadedEventArgs) => {
+              if (args.chart.accBaseModule) {
+                  args.chart.animate();
+              }
+              expect(document.getElementById('ej2-container') !== null).toBe(true);
+              done();
+          };
+          accumulation.series[0].pointColorMapping = 'color';
+          accumulation.series[0].dataSource = [{ y: 18, x: 1, name: 'Bald Eagle', color: 'red', text: 'Bald Eagle : 18', radius: '50%' }, { y: 23, x: 2, name: 'Bison', color: 'Blue', text: 'Bison : 23', radius: '60%' },
+          { y: 30, x: 3, name: 'Brown Bear', color: 'yellow', text: 'Brown Bear : 30', radius: '70%' }, { y: 44, x: 4, name: 'Elk', color: 'black', text: 'Elk : 44', radius: '100%' }];
+          accumulation.refresh();
+      });
   });
+    describe('Checking accumulation chart explode ', () => {
+        let element: HTMLElement;
+        let id: string = 'ej2-container';
+        let accumulation: AccumulationChart;
+        beforeAll((): void => {
+            element = createElement('div', { id: id });
+            document.body.appendChild(element);
+            accumulation = new AccumulationChart({
+                border: { width: 1, color: 'blue' },
+                series: [
+                    {
+                        type: 'Pie', innerRadius: '50%',
+                        dataSource: piedata, animation: { enable: true }, xName: 'x', yName: 'y'
+                    }
+                ],
+                width: '600',
+                height: '400',
+                centerLabel: {
+                    text: 'Syncfusion',
+                    textStyle: {
+                        size: '11px',
+                    },
+                    hoverTextFormat: '${point.x}'
+                },
+                enableExport: false,
+            });
+            accumulation.appendTo('#' + id);
+        });
+
+        afterAll((): void => {
+            accumulation.loaded = null;
+            accumulation.destroy();
+            removeElement(id);
+        });
+
+        it('Checking accumulation checking enableAnimation', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                expect(document.getElementById('ej2-container') !== null).toBe(true);
+                done();
+            };
+            expect(document.getElementById('ej2-container') !== null).toBe(true);
+            done();
+            accumulation.series[0].name = 'Animals';
+            accumulation.series[0].explode = true;
+            accumulation.series[0].explodeIndex = 3;
+            accumulation.dataBind();
+        });
+        it('Checking accumulation checking enable animation with explodeIndex', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                expect(document.getElementById('ej2-container') !== null).toBe(true);
+                done();
+            };
+            expect(document.getElementById('ej2-container') !== null).toBe(true);
+            done();
+            accumulation.series[0].name = 'Elements';
+            accumulation.series[0].explode = true;
+            accumulation.series[0].explodeIndex = -3;
+            accumulation.dataBind();
+        });
+    });
+    describe('Checking applyPattern', () => {
+        let element: HTMLElement;
+        let id: string = 'ej2-container1';
+        let accumulation: AccumulationChart;
+        beforeAll((): void => {
+            element = createElement('div', { id: id });
+            document.body.appendChild(element);
+            accumulation = new AccumulationChart({
+                border: { width: 1, color: 'blue' },
+                series: [
+                    {
+                        type: 'Pie',  innerRadius: '50%',
+                        dataSource: piedata, animation: { enable: true }, xName: 'x', yName: 'y'
+                    }
+                ], 
+                width: '600', 
+                height: '400', 
+                centerLabel: {
+                    text: 'Syncfusion',
+                    textStyle: {
+                        size: '11px',
+                    },
+                    hoverTextFormat: '${point.x}'
+                }
+            });
+            accumulation.appendTo('#' + id);
+        });
+        afterAll((): void => {
+            accumulation.loaded = null;
+            accumulation.destroy();
+            removeElement(id);
+        });
+        it('Different Patterns', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const array1: string[] = document.getElementById(id + '_svg').querySelectorAll('pattern')[0].id.split('_')
+                const array2: string[] = document.getElementById(id + '_svg').querySelectorAll('pattern')[1].id.split('_')
+                expect(array1[1]).not.toBe(array2[1]);
+                done();
+            };
+            accumulation.series[0].applyPattern=true
+            accumulation.refresh();
+        });
+        it('Different Patterns with high number of data', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const array1: string[] = document.getElementById(id + '_svg').querySelectorAll('pattern')[1].id.split('_')
+                const array2: string[] = document.getElementById(id + '_svg').querySelectorAll('pattern')[14].id.split('_')
+                expect(array1[1]).not.toBe(array2[1]);
+                done();
+            };
+            accumulation.series[0].dataSource= [{ x: 'English', y: 48.20, text: '18.20%' },
+            { x: 'Sanskrit', y: 27.3, text: '27.3%' },
+            { x: 'French', y: 27.3, text: '27.3%' },
+            { x: 'Tamil', y: 55.9, text: '55.9%' },
+            { x: 'Maths', y: 76.8, text: '76.8%' },
+            { x: 'Chemistry', y: 86.8, text: '76.8%' },
+            { x: 'Biology', y: 96.8, text: '76.8%' },
+            { x: 'Physics', y: 100, text: '100%' },{ x: 'English', y: 48.20, text: '18.20%' },
+            { x: 'Sanskrit', y: 27.3, text: '27.3%' },
+            { x: 'French', y: 27.3, text: '27.3%' },
+            { x: 'Tamil', y: 55.9, text: '55.9%' },
+            { x: 'Maths', y: 76.8, text: '76.8%' },
+            { x: 'Chemistry', y: 86.8, text: '76.8%' },
+            { x: 'Biology', y: 96.8, text: '76.8%' },
+            { x: 'Physics', y: 100, text: '100%' }]
+            accumulation.series[0].applyPattern=true
+            accumulation.refresh();
+        });
+        it('Preferred pattern', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const fillURL: string = document.getElementById(id + '_svg').querySelectorAll('pattern')[0].id;
+                expect(fillURL).toBe('ej2-container1_Pacman_Selection_0');
+                done();
+            };
+            accumulation.pointRender = (args:IAccPointRenderEventArgs) =>{
+                if(args.point.index==0  ){
+                  args.pattern = 'Pacman'     }
+              }
+            accumulation.series[0].applyPattern=true
+            accumulation.refresh();
+        });
+    })
 });

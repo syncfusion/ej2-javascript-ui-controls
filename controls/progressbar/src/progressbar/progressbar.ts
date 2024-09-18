@@ -734,6 +734,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
             break;
         case 'Fluent2':
         case 'Fluent2Dark':
+        case 'Fluent2HighContrast':
+        case 'Bootstrap5':
+        case 'Bootstrap5Dark':
             this.cornerRadius = this.cornerRadius === 'Auto' && this.type === 'Linear' ? 'Round' : this.cornerRadius;
             break;
         default:

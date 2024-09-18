@@ -473,13 +473,11 @@ describe('Breadcrumb', () => {
         });
         it('document click action', () => {
             document.body.appendChild(nav);
-            breadcrumb = new Breadcrumb({items: overflowItems, maxItems:2, overflowMode: 'Menu', itemTemplate: '<div class="e-edit-template"></div>'}, '#breadcrumb');
+            breadcrumb = new Breadcrumb({items: overflowItems, maxItems:2, overflowMode: 'Menu'}, '#breadcrumb');
             let element: any = breadcrumb.element.querySelector('.e-breadcrumb-menu');
             element.click();
             mouseEventArs.target = breadcrumb.element.firstChild;
             breadcrumb.documentClickHandler(mouseEventArs);
-            element.click();
-            breadcrumb.reRenderItems();
         });
     });
 

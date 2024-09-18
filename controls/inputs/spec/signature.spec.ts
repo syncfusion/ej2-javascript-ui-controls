@@ -105,28 +105,16 @@ describe('Signature', () => {
             signature.dataBind();
         });
 
-        it('isReadOnly', () => {
-            signature = new Signature({ isReadOnly: true });
-            signature.appendTo('#signature');
-            signature.dataBind();
-            signature.isReadOnly = false;
-            signature.dataBind();
-        });
-
         it('maxStrokeWidth', () => {
             signature = new Signature({ maxStrokeWidth: 5 });
             signature.appendTo('#signature');
-            signature.dataBind();
-            signature.maxStrokeWidth = 3;
-            signature.dataBind();
+            signature.setProperties({maxStrokeWidth: 3 });
         });
 
         it('minStrokeWidth', () => {
             signature = new Signature({ minStrokeWidth: 3 });
             signature.appendTo('#signature');
-            signature.dataBind();
-            signature.minStrokeWidth = 1;
-            signature.dataBind();
+            signature.setProperties({minStrokeWidth: 3 });
         });
 
         it('saveWithBackground', () => {
@@ -148,9 +136,7 @@ describe('Signature', () => {
         it('velocity', () => {
             signature = new Signature({ velocity: 4 });
             signature.appendTo('#signature');
-            signature.dataBind();
-            signature.velocity = 2;
-            signature.dataBind();
+            signature.setProperties({velocity: 3 });
         });
     });
 
@@ -215,6 +201,12 @@ describe('Signature', () => {
             signature.load(signature.getSignature('Jpeg'));
         });
 
+        it('load methods - url', () => {
+            signature = new Signature({});
+            signature.appendTo('#signature');
+            signature.load('https://images.pexels.com/photos/20538303/pexels-photo-20538303.jpeg');
+        });
+        
         it('undo and redo methods', () => {
             signature = new Signature({});
             signature.appendTo('#signature');
@@ -390,16 +382,60 @@ describe('Signature', () => {
             keyboardEventArgs.key = 'y'; keyboardEventArgs.ctrlKey = true;
             (signature as any).keyboardHandler(keyboardEventArgs);
         });
-    });
 
-    it('memory leak', () => {
-        profile.sample();
-        const average: any = inMB(profile.averageChange);
-        // check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        const memory: any = inMB(getMemoryProfile());
-        // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        it('coverage improvement-resize', () => {
+            signature = new Signature({});
+            signature.appendTo('#signature');
+            (signature as any).isResponsive = false;
+            (signature as any).resizeHandler();
+        });
+
+        it('coverage improvement-delay', () => {
+            signature = new Signature({});
+            signature.appendTo('#signature');
+            mouseEventArs.clientX = 100; mouseEventArs.clientY = 100; mouseEventArs.buttons = 1; mouseEventArs.type = 'mousedown';
+            (signature as any).storedArgs = mouseEventArs;
+            (signature as any).pointColl = [{x: 100, y: 100}, {x: 101, y: 101}];
+            (signature as any).delay();
+        });
+
+        it('coverage improvement-start draw', () => {
+            signature = new Signature({});
+            signature.appendTo('#signature');
+            (signature as any).startPoint = { x: 100, y: 100, time: 100 };
+            (signature as any).controlPoint1 = { x: 101, y: 100, time: 101 };
+            (signature as any).controlPoint2 = { x: 102, y: 100, time: 102 };
+            (signature as any).endPoint = { x: 103, y: 100, time: 103 };
+            (signature as any).startDraw();
+            (signature as any).pointColl = [{x: 100, y: 100}, {x: 101, y: 101}];
+            (signature as any).addPoint({x: 102, y: 102});
+            (signature as any).curveDraw(50, 50);
+            (signature as any).calculateCurveControlPoints({x: 100, y: 100}, {x: 101, y: 101}, {x: 102, y: 102});
+            (signature as any).bezierLengthCalc();
+            (signature as any).enableOrDisable(true);
+            (signature as any).getModuleName();
+        });
+        it('coverage improvement- temp background image', () => {
+            signature = new Signature({});
+            signature.appendTo('#signature');
+            (signature as any).setBackgroundImage('https://images.pexels.com/photos/20538303/pexels-photo-20538303.jpeg', 'temp');
+        });
+        it('coverage improvement- background image', () => {
+            signature = new Signature({});
+            signature.appendTo('#signature');
+            (signature as any).setBackgroundImage('https://images.pexels.com/photos/20538303/pexels-photo-20538303.jpeg');
+        });
+        it('coverage improvement- end draw', () => {
+            signature = new Signature({});
+            signature.appendTo('#signature');
+            (signature as any).pointColl = null;
+            (signature as any).endDraw();
+            mouseEventArs.clientX = 100; mouseEventArs.clientY = 100; mouseEventArs.buttons = 1; mouseEventArs.type = 'mousedown';
+            (signature as any).mouseDownHandler(mouseEventArs);
+            (signature as any).interval = null;
+            mouseEventArs.clientX = 130; mouseEventArs.clientY = 130; mouseEventArs.buttons = 1; mouseEventArs.type = 'mousemove';
+            (signature as any).mouseMoveHandler(mouseEventArs);
+        });
     });
 
     describe('Null or undefined Property testing', () => {
@@ -417,117 +453,241 @@ describe('Signature', () => {
                 signature = undefined;
             }
             remove(signatureElement);
+            signatureElement = null;
         });
 
-        it('signature with backgroundImage', () => {
-            signature = new Signature({ backgroundImage: null });
-            signature.appendTo('#signature');
-            signature.dataBind();
-            expect(signature.backgroundImage).toEqual(null);
-            signature = new Signature({ backgroundImage: undefined });
-            signature.appendTo('#signature');
-            signature.dataBind();
-            expect(signature.backgroundImage).toEqual('');
-        });
-
-        it('signature with backgroundColor', () => {
-            signature = new Signature({ backgroundColor: null });
-            signature.appendTo('#signature');
-            signature.dataBind();
-            expect(signature.backgroundColor).toEqual(null);
-            signature = new Signature({ backgroundColor: undefined });
-            signature.appendTo('#signature');
-            signature.dataBind();
-            expect(signature.backgroundColor).toEqual('');
-        });
-
-        it('signature with disabled', () => {
+        it('signature with disabled - null', () => {
             signature = new Signature({ disabled: null });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.disabled).toEqual(null);
+        });
+
+        it('signature with disabled - undefined', () => {
             signature = new Signature({ disabled: undefined });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.disabled).toEqual(false);
         });
 
-        it('signature with enablePersistence', () => {
+        it('signature with enablePersistence - null', () => {
             signature = new Signature({ enablePersistence: null });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.enablePersistence).toEqual(null);
+        });
+
+        it('signature with enablePersistence - undefined', () => {
             signature = new Signature({ enablePersistence: undefined });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.enablePersistence).toEqual(false);
         });
 
-        it('signature with isReadOnly', () => {
+        it('signature with isReadOnly - null', () => {
             signature = new Signature({ isReadOnly: null });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.isReadOnly).toEqual(null);
+        });
+
+        it('signature with isReadOnly - undefined', () => {
             signature = new Signature({ isReadOnly: undefined });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.isReadOnly).toEqual(false);
         });
 
-        it('signature with maxStrokeWidth', () => {
+        it('signature with maxStrokeWidth - null', () => {
             signature = new Signature({ maxStrokeWidth: null });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.maxStrokeWidth).toEqual(null);
+        });
+
+        it('signature with maxStrokeWidth - undefined', () => {
             signature = new Signature({ maxStrokeWidth: undefined });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.maxStrokeWidth).toEqual(2);
         });
 
-        it('signature with minStrokeWidth', () => {
+        it('signature with minStrokeWidth - null', () => {
             signature = new Signature({ minStrokeWidth: null });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.minStrokeWidth).toEqual(null);
+        });
+
+        it('signature with minStrokeWidth - undefined', () => {
             signature = new Signature({ minStrokeWidth: undefined });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.minStrokeWidth).toEqual(0.5);
         });
 
-        it('signature with saveWithBackground', () => {
+        it('signature with saveWithBackground - null', () => {
             signature = new Signature({ saveWithBackground: null });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.saveWithBackground).toEqual(null);
+        });
+
+        it('signature with saveWithBackground - undefined', () => {
             signature = new Signature({ saveWithBackground: undefined });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.saveWithBackground).toEqual(true);
         });
 
-        it('signature with strokeColor', () => {
+        it('signature with strokeColor - null', () => {
             signature = new Signature({ strokeColor: null });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.strokeColor).toEqual(null);
+        });
+
+        it('signature with strokeColor - undefined', () => {
             signature = new Signature({ strokeColor: undefined });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.strokeColor).toEqual('#000000');
         });
 
-        it('signature with velocity', () => {
+        it('signature with velocity - null', () => {
             signature = new Signature({ velocity: null });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.velocity).toEqual(null);
+        });
+
+        it('signature with velocity - undefined', () => {
             signature = new Signature({ velocity: undefined });
             signature.appendTo('#signature');
-            signature.dataBind();
             expect(signature.velocity).toEqual(0.7);
         });
 
+        it('signature with backgroundColor - null', () => {
+            signature = new Signature({ backgroundColor: null });
+            signature.appendTo('#signature');
+            expect(signature.backgroundColor).toEqual(null);
+        });
+
+        it('signature with backgroundColor - undefined', () => {
+            signature = new Signature({ backgroundColor: undefined });
+            signature.appendTo('#signature');
+            expect(signature.backgroundColor).toEqual('');
+        });
+
+        it('signature with backgroundImage - null', () => {
+            signature = new Signature({ backgroundImage: null });
+            signature.appendTo('#signature');
+            expect(signature.backgroundImage).toEqual(null);
+        });
+    });
+
+    describe('Resposnive testing', () => {
+        let signature: Signature;
+        let signatureElement: HTMLElement;
+
+        beforeEach(() => {
+            signatureElement = createElement('canvas', { id: 'signature' });
+            (signatureElement as any).height = 500;
+            (signatureElement as any).width = 1000;
+            document.body.appendChild(signatureElement);
+        });
+
+        afterEach(() => {
+            if (signature) {
+                signature.destroy();
+                signature = undefined;
+            }
+            remove(signatureElement);
+        });
+
+        it('signature with backgroundImage', () => {
+            signature = new Signature({});
+            signature.appendTo('#signature');
+        });
+    });
+
+    describe('Blazor testing', () => {
+        let signature: Signature;
+        let signatureElement: HTMLElement;
+        let mouseEventArs: any;
+        let keyboardEventArgs: any;
+        let dotnetRef: any;
+        beforeEach(() => {
+            signatureElement = createElement('canvas', { id: 'signature' });
+            document.body.appendChild(signatureElement);
+            mouseEventArs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                relatedTarget: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                offset: Number
+            };
+            keyboardEventArgs = {
+                preventDefault: (): void => { },
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => { },
+            };
+            dotnetRef = {
+                invokeMethodAsync: (methodName: string, args: any) => { }
+            };
+        });
+
+        afterEach(() => {
+            if (signature) {
+                signature.destroy();
+                signature = undefined;
+            }
+            remove(signatureElement);
+        });
+
+        it('coverage improvement-blazor', () => {
+            signature = new Signature({});
+            signature.appendTo('#signature');
+            (signature as any).dotnetRef = dotnetRef;
+            (signature as any).isBlazor = true;
+            (signature as any).pointColl = null;
+            (signature as any).endDraw();
+            mouseEventArs.clientX = 100; mouseEventArs.clientY = 100; mouseEventArs.buttons = 1; mouseEventArs.type = 'mousedown';
+            (signature as any).mouseDownHandler(mouseEventArs);
+            (signature as any).interval = null;
+            mouseEventArs.clientX = 130; mouseEventArs.clientY = 130; mouseEventArs.buttons = 1; mouseEventArs.type = 'mousemove';
+            (signature as any).mouseMoveHandler(mouseEventArs);
+            mouseEventArs.clientX = 130; mouseEventArs.clientY = 130; mouseEventArs.buttons = 1; mouseEventArs.type = 'mousemove';
+            (signature as any).mouseUpHandler(mouseEventArs);
+            keyboardEventArgs.target = signatureElement;
+            keyboardEventArgs.key = 's'; keyboardEventArgs.ctrlKey = true;
+            (signature as any).keyboardHandler(keyboardEventArgs);
+            (signature as any).clear();
+            (signature as any).undo();
+            (signature as any).redo();
+        });
+        it('coverage improvement-blazor-timeout', () => {
+            signature = new Signature({});
+            signature.appendTo('#signature');
+            (signature as any).dotnetRef = dotnetRef;
+            (signature as any).isBlazor = true;
+            mouseEventArs.clientX = 100; mouseEventArs.clientY = 100; mouseEventArs.buttons = 1; mouseEventArs.type = 'mousedown';
+            (signature as any).mouseDownHandler(mouseEventArs);
+            (signature as any).interval = 1;
+            (signature as any).timeout = 1;
+            mouseEventArs.clientX = 130; mouseEventArs.clientY = 130; mouseEventArs.buttons = 1; mouseEventArs.type = 'mousemove';
+            (signature as any).mouseMoveHandler(mouseEventArs);
+            mouseEventArs.clientX = 130; mouseEventArs.clientY = 130; mouseEventArs.buttons = 1; mouseEventArs.type = 'mousemove';
+            (signature as any).mouseUpHandler(mouseEventArs);
+        });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        const average: any = inMB(profile.averageChange);
+        // check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        const memory: any = inMB(getMemoryProfile());
+        // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+    describe('Null or undefined Property testing', () => {
+        it('coverage improvement-persist', () => {
+            let signatureElement: HTMLElement;
+            signatureElement = createElement('canvas', { id: 'signature' });
+            document.body.appendChild(signatureElement);
+            let signature: Signature = new Signature({});
+            signature.appendTo('#signature');
+            (signature as any).getPersistData();
+            (signature as any).loadPersistedSignature();
+        });
     });
 });

@@ -142,7 +142,7 @@ export class _PngDecoder extends _ImageDecoder {
             this._inputBands = 3;
             this._bitsPerPixel *= 3;
         } else if (this._header._colorType === 3) {
-            if (this._header._interlace === 1) {
+            if (this._header._interlace === 1 || this._header._interlace === 0) {
                 this._idatLength = Number.parseInt(((this._header._bitDepth * this._width + 7) / 8).toString(), 10) * this._height;
             }
             this._inputBands = 1;

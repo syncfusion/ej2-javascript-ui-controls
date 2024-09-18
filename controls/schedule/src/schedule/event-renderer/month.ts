@@ -351,7 +351,10 @@ export class MonthEvent extends EventBase {
         if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) {
             for (let i: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; i < len; i++) {
                 const sourceRes: TdData = this.parent.crudModule.crudObj.sourceEvent[parseInt(i.toString(), 10)];
-                this.renderEventsHandler(sourceRes.renderDates, sourceRes.workDays, sourceRes);
+                if (!this.parent.uiStateValues.isGroupAdaptive ||
+                    (this.parent.uiStateValues.groupIndex === sourceRes.groupIndex && this.parent.uiStateValues.isGroupAdaptive)) {
+                    this.renderEventsHandler(sourceRes.renderDates, sourceRes.workDays, sourceRes);
+                }
                 if (this.parent.crudModule.crudObj.sourceEvent[parseInt(i.toString(), 10)].groupIndex !==
                     this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)].groupIndex) {
                     const target: TdData = this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)];

@@ -5,7 +5,7 @@ import { appendElement, redrawElement } from '../../common/utils/helper';
 import { createElement } from '@syncfusion/ej2-base';
 import { ChartAnnotationSettingsModel } from '../index';
 /**
- * `ChartAnnotation` module handles the annotation for chart.
+ * The `ChartAnnotation` module handles annotations for the chart.
  */
 export class ChartAnnotation extends AnnotationBase {
 
@@ -42,6 +42,12 @@ export class ChartAnnotation extends AnnotationBase {
         this.annotations.map((annotation: ChartAnnotationSettings, index: number) => {
             this.processAnnotation(annotation, index, this.parentElement);
         });
+        for (let index: number = 0; this.chart.getModuleName() === 'chart' && !this.chart.enableCanvas && index < this.chart.visibleSeries.length; index++) {
+            if (this.chart.visibleSeries[index as number].animation.enable && this.chart.animateSeries) {
+                this.parentElement.style.visibility = 'hidden';
+                break;
+            }
+        }
         appendElement(this.parentElement, element, this.chart.redraw);
     }
 

@@ -687,6 +687,46 @@ describe('Chart Crosshair', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
+        it('Crosshair color checking with Bootstrap5 theme', (done: Function) => {
+            loaded = (args: Object): void => {
+                let chartArea: HTMLElement = document.getElementById('crosshairContainer_ChartAreaBorder');
+                y = parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height')) / 4 + elem.offsetTop;
+                x = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 4 + elem.offsetLeft;
+                trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
+                let crosshair: Element = <Element>document.getElementById('crosshairContainer_svg').lastChild;
+                let element1: HTMLElement;
+                let element2: HTMLElement;
+                expect(crosshair.childNodes.length == 3 || crosshair.childNodes.length == 2).toBe(true);
+                element1 = <HTMLElement>crosshair.childNodes[0];
+                element2 = <HTMLElement>crosshair.childNodes[1];
+                expect(element1.getAttribute('fill') == '#343A40' || element1.getAttribute('fill') == 'transparent' ).toBe(true);
+                expect(element2.getAttribute('fill') == '#343A40' || element2.getAttribute('fill') == null ).toBe(true); 
+                done();
+            };
+            chartObj.theme = 'Bootstrap5';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Crosshair color checking with Bootstrap5 dark theme', (done: Function) => {
+            loaded = (args: Object): void => {
+                let chartArea: HTMLElement = document.getElementById('crosshairContainer_ChartAreaBorder');
+                y = parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height')) / 4 + elem.offsetTop;
+                x = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 4 + elem.offsetLeft;
+                trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
+                let crosshair: Element = <Element>document.getElementById('crosshairContainer_svg').lastChild;
+                let element1: HTMLElement;
+                let element2: HTMLElement;
+                expect(crosshair.childNodes.length == 3 || crosshair.childNodes.length == 2).toBe(true);
+                element1 = <HTMLElement>crosshair.childNodes[0];
+                element2 = <HTMLElement>crosshair.childNodes[1];
+                expect(element1.getAttribute('fill') == '#ADB5BD' || element1.getAttribute('fill') == 'transparent' ).toBe(true);
+                expect(element2.getAttribute('fill') == '#ADB5BD' || element2.getAttribute('fill') == null ).toBe(true); 
+                done();
+            };
+            chartObj.theme = 'Bootstrap5';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
     });
 
     it('memory leak', () => {

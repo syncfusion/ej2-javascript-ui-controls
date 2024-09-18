@@ -1,14 +1,15 @@
 /**
  * Gantt taskbaredit spec
  */
-import { Gantt, Edit, Selection,VirtualScroll, IGanttData, Filter, IActionBeginEventArgs, ContextMenuClickEventArgs, CriticalPath, Toolbar, ColumnMenu } from '../../src/index';
-import { cellEditData,bug885565Holiday, resourcesData, projectData,normalResourceData, resourceCollection, stringTaskId, StringMultiTaskbarData, StringMultiResources, StringResourceData, StringResourceCollection, StringResourceSelefReferenceData, StringCellEditData, StringResourcesData, StringprojectData1, StringProjectResources, resourceviewData,crData1, exportData,editingData,editingResources, resourceResources, mileStoneData } from '../base/data-source.spec';
+import { Gantt, Edit, Selection,VirtualScroll, IGanttData, Filter, IActionBeginEventArgs, ContextMenuClickEventArgs, CriticalPath, Toolbar, ColumnMenu, ContextMenu, UndoRedo } from '../../src/index';
+import { cellEditData,bug885565Holiday, resourcesData, projectData,normalResourceData, resourceCollection, stringTaskId, StringMultiTaskbarData, StringMultiResources, StringResourceData, StringResourceCollection, StringResourceSelefReferenceData, StringCellEditData, StringResourcesData, StringprojectData1, StringProjectResources, resourceviewData,crData1, exportData,editingData,editingResources, resourceResources, mileStoneData, coverageParentData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
+import { TextBox } from '@syncfusion/ej2-inputs';
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
-Gantt.Inject(Edit, Selection, Filter,VirtualScroll);
+Gantt.Inject(Edit, Selection, Filter,VirtualScroll,ContextMenu,UndoRedo);
 describe('Gantt Edit support', () => {
     describe('Gantt Edit action', () => {
         let ganttObj: Gantt;
@@ -302,7 +303,7 @@ describe('Gantt Edit support', () => {
         it('Add record to bottom position', () => {
             let data: object[] = [{ TaskID: 9, TaskName: 'New Task', Duration: 5, Notes: 'Notes 6',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
-            ganttObj.editModule.addRecord(data[0],'Bottom');
+            ganttObj.addRecord(data[0],'Bottom');
             expect(ganttObj.flatData.length).toBe(9);
             expect(ganttObj.dataSource[5].TaskName).toBe('New Task');
         });
@@ -310,7 +311,7 @@ describe('Gantt Edit support', () => {
         it('Add record to above position', () => {
             let data: object[] = [{ TaskID: 10, TaskName: 'New Task', Notes: 'Notes 6',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
-            ganttObj.editModule.addRecord(data[0],'Above', 5);
+            ganttObj.addRecord(data[0],'Above', 5);
             expect(ganttObj.flatData.length).toBe(10);
             expect(ganttObj.dataSource[2].TaskName).toBe('New Task');
         });
@@ -318,7 +319,7 @@ describe('Gantt Edit support', () => {
         it('Add record to below position', () => {
             let data: object[] = [{ TaskID: 11, TaskName: 'New Task', Duration: 5, Notes: 'Notes 6',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Predecessor: "2", Resource: [2]  }];
-            ganttObj.editModule.addRecord(data[0],'Below',6);
+            ganttObj.addRecord(data[0],'Below',6);
             expect(ganttObj.flatData.length).toBe(11);
             expect(ganttObj.dataSource[4].TaskName).toBe('New Task');
         });
@@ -1136,7 +1137,7 @@ describe('Gantt Edit support', () => {
         });
         it('Rendering critical path ', () => {
             expect(ganttObj.flatData[1].isCritical).toBe(true);
-            expect(ganttObj.flatData[2].isCritical).toBe(false);
+            expect(ganttObj.flatData[2].isCritical).toBe(true);
             expect(ganttObj.flatData[7].isCritical).toBe(true);
             expect(ganttObj.flatData[9].isCritical).toBe(true);
         });
@@ -1457,11 +1458,11 @@ describe('Gantt Edit support', () => {
             let resourceCheckbox2: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
             triggerMouseEvent(resourceCheckbox1, 'click')
             triggerMouseEvent(resourceCheckbox2, 'click')
-            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
         });
         it('Adding task under unassigned task', () => {
-            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
             expect(ganttObj.currentViewData[8].childRecords.length).toBe(1)
         });
@@ -1692,7 +1693,7 @@ describe('Gantt Edit support', () => {
             let resourceCheckbox2: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
             triggerMouseEvent(resourceCheckbox1, 'click')
             triggerMouseEvent(resourceCheckbox2, 'click')
-            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
     
         });
@@ -1788,7 +1789,7 @@ describe('Gantt Edit support', () => {
             let resourceCheckbox2: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
             triggerMouseEvent(resourceCheckbox1, 'click')
             triggerMouseEvent(resourceCheckbox2, 'click')
-            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
         });
         it('Adding task under unassigned task', () => {
@@ -1797,7 +1798,7 @@ describe('Gantt Edit support', () => {
             work.dataBind();
             expect(ganttObj.currentViewData[1].ganttProperties.sharedTaskUniqueIds.length).toBe(2);
             expect(ganttObj.currentViewData[0].childRecords.length).toBe(1);
-            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
         });
         it('Left resizing the added record', () => {
@@ -1930,6 +1931,8 @@ describe('Gantt Edit support', () => {
             expect(ganttObj.currentViewData[2].ganttProperties.taskName).toBe('TaskName updated');       
         });
         it('Deleting the record', () => {
+            let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancelRecord, 'click');
             ganttObj.selectRow(1);
             let deleteRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_delete') as HTMLElement;
             triggerMouseEvent(deleteRecord, 'click');
@@ -1939,7 +1942,7 @@ describe('Gantt Edit support', () => {
             let resourceCheckbox2: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
             triggerMouseEvent(resourceCheckbox1, 'click')
             triggerMouseEvent(resourceCheckbox2, 'click')
-            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
             expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
         });
@@ -2675,7 +2678,7 @@ describe('check auto validation of parent taskbar', () => {
     });
     it('check auto start date & end date in manual taskmode', () => {
         ganttObj.openEditDialog("a1");
-        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
         triggerMouseEvent(saveButton, 'click');
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.autoStartDate, 'M/dd/yyyy')).toBe('2/26/2017');
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.autoEndDate, 'M/dd/yyyy')).toBe('3/03/2017');
@@ -2687,7 +2690,7 @@ describe('check auto validation of parent taskbar', () => {
         triggerMouseEvent(dragElement, 'mousemove', -70, 0);
         triggerMouseEvent(dragElement, 'mouseup');
         ganttObj.openEditDialog("a1");
-        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
         triggerMouseEvent(saveButton, 'click');
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.autoStartDate, 'M/dd/yyyy')).toBe('2/24/2017');
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.autoEndDate, 'M/dd/yyyy')).toBe('3/03/2017');
@@ -2700,7 +2703,7 @@ describe('check auto validation of parent taskbar', () => {
             let inputObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'isManual')).ej2_instances[0];
             inputObj.value = false;
             inputObj.dataBind();
-            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
         }
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].taskData['StartDate'], 'M/dd/yyyy')).toBe('2/23/2017');
@@ -2772,7 +2775,7 @@ describe('Start Date of Parent taskbar is not updated properly through dialog ed
         let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
         SD.value = new Date('04/04/2019');
         SD.dataBind();
-        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
         triggerMouseEvent(saveRecord, 'click');
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/4/2019');
     });
@@ -4074,6 +4077,816 @@ describe('Testin Issue Gantt stuck wile using holiday', () => {
             expect(true).toBe(true);
         };
         done()
+    }); 
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('Adding record with args.cancel', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: bug885565Holiday,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    child: 'subtasks',
+                    indicators: 'Indicators',
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'EndDate', headerText: 'EndDate', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' },
+                ],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'Search',
+                    'Undo',
+                    'Redo',
+                ],
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1,
+                    },
+                },
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2024'),
+            }, done);
+    });
+    it('Gantt rendering',(done: Function)=>{
+        function checkData() {
+            expect(ganttObj.flatData.length === 39).toBe(true);
+            done()
+        }
+        ganttObj.actionBegin = function(args?:any) {
+            if (args.requestType === "beforeAdd") {
+                args.cancel = true;
+                setTimeout(checkData, 500)
+            }
+        };
+        let record:any = {
+            TaskID: 10,
+            TaskName: 'Identify Site location',
+            StartDate: new Date('04/02/2019'),
+            Duration: 3,
+            Progress: 50
+        };
+        ganttObj.editModule.addRecord(record, 'Below', 2);
+    }); 
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('Covering DM success method', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: bug885565Holiday,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    durationUnit:'DurationUnit',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    child: 'subtasks',
+                    parentID:'ParentID',
+                    resourceInfo:'resource',
+                    indicators: 'Indicators',
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'EndDate', headerText: 'EndDate', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' },
+                ],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'Search',
+                    'Undo',
+                    'Redo',
+                ],
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1,
+                    },
+                },
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2024'),
+            }, done);
+    });
+    it('Check for task update',(done: Function)=>{
+        ganttObj.actionComplete = function(args?:any) {
+            if (args.requestType === "save") {
+                expect(ganttObj.flatData[3]['TaskID'] === 10).toBe(true)
+                done()
+            }
+        };
+        ganttObj.editedRecords[0] = ganttObj.flatData[3]
+        ganttObj.editModule['dmSuccess']({changedRecords:[{
+            TaskID: 10,
+            TaskName: 'Identify Site location',
+            StartDate: new Date('04/02/2019'),
+            Duration: 3,
+            Progress: 50
+        }]},{})
+    });
+    it('Covering client side method',()=>{
+        ganttObj.editModule.updateClientDataFromServer({
+            addedRecords: [{
+                TaskID: 100,
+                TaskName: 'Identify Site location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 50
+            }],
+            changedRecords: []
+        }, {data: ganttObj.flatData[3]});
+        expect(ganttObj.flatData.length).toBe(39)
+    }); 
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('Changing task Id using method', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coverageParentData,
+                dateFormat: 'MMM dd, y',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'parentID',
+                    notes: 'info',
+                    resourceInfo: 'resources',
+                },
+                enableContextMenu: true,
+                selectedRowIndex: 2,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    allowNextRowEdit: true,
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                gridLines: 'Both',
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                resources: editingResources,
+                height: '450px',
+                columns: [
+                    { field: 'TaskID', width: 200 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip', },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' },
+                ],
+                splitterSettings: { columnIndex: 6 },
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('07/28/2019'),
+            }, done);
+    });
+    it('Check for updated Id', (done: Function) => {
+        ganttObj.actionComplete = function (args?: any) {
+            if (args.requestType === "refresh") {
+                expect(ganttObj.flatData[2].ganttProperties.taskId).toBe("20")
+                done()
+            }
+        };
+        ganttObj.updateTaskId(3,"20")
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});
+describe('Changing Value in ActionBegin', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: bug885565Holiday,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    child: 'subtasks',
+                    indicators: 'Indicators',
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'EndDate', headerText: 'EndDate', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' },
+                ],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'Search',
+                    'Undo',
+                    'Redo',
+                ],
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1,
+                    },
+                },
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2024'),
+            }, done);
+    });
+    it('Checking Changed Task ID',(done: Function)=>{
+        ganttObj.actionBegin = function(args?:any) {
+            if (args.requestType === "beforeAdd") {
+                args.data.ganttProperties.taskId = 111
+                args.data.taskData.TaskID = 111
+                args.data.TaskID = 222
+            }
+        };
+        ganttObj.actionComplete = function(args?:any) {
+            if (args.requestType === "add") {
+                expect(args.data.ganttProperties.taskId).toBe(222)
+                done()
+            }
+        }
+        let record:any = {
+            TaskID: 111,
+            TaskName: 'Identify Site location',
+            StartDate: new Date('04/02/2019'),
+            Duration: 3,
+            Progress: 50
+        };
+        ganttObj.editModule.addRecord(record, 'Below', 2);
+    }); 
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('Setting edit type for Id column', () => {
+    let elem: HTMLElement;
+    let dropdownlistObj: TextBox;
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: bug885565Holiday,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    child: 'subtasks',
+                    indicators: 'Indicators',
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                },
+                columns: [
+                    {
+                        field: 'TaskID', headerText: 'Task ID', edit: {
+                            create: () => {
+                                elem = document.createElement('input');
+                                return elem;
+                            },
+                            read: () => {
+                                return dropdownlistObj.value;
+                            },
+                            destroy: () => {
+                                dropdownlistObj.destroy();
+                            },
+                            write: (args: Object) => {
+                                dropdownlistObj = new TextBox({
+                                    value: args['rowData'][args['column'].field]
+
+                                });
+                                dropdownlistObj.appendTo(elem);
+                            }
+                        }
+                    },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'EndDate', headerText: 'EndDate', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' },
+                ],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'Search',
+                    'Undo',
+                    'Redo',
+                ],
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1,
+                    },
+                },
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2024'),
+            }, done);
+    });
+    it('Checking of flat data',()=>{
+        expect(ganttObj.flatData.length).toBe(39)
+    }); 
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('Removing cell edit module', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: bug885565Holiday,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    child: 'subtasks',
+                    indicators: 'Indicators',
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    mode:"Auto"
+                },
+                columns: [
+                    {
+                        field: 'TaskID', headerText: 'Task ID'
+                    },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'EndDate', headerText: 'EndDate', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' },
+                ],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'Search',
+                    'Undo',
+                    'Redo',
+                ],
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1,
+                    },
+                },
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2024'),
+            }, done);
+    });
+    it('Removing cell and dialog module',()=>{
+        ganttObj.editModule.cellEditModule = null
+        ganttObj.editModule.dialogModule = null
+        ganttObj.editSettings = {
+            allowAdding: false,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            mode:"Auto"
+        }
+    }); 
+    it('Checking if the module is present',()=>{
+        expect(ganttObj.editModule.cellEditModule != null).toBe(true)
+        expect(ganttObj.editModule.dialogModule != null).toBe(true)
+    }); 
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('Update Record using method while context menu enabled', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: bug885565Holiday,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    child: 'subtasks',
+                    indicators: 'Indicators',
+                },
+                renderBaseline: true,
+                enableUndoRedo: true,
+                undoRedoActions:['Sorting','Add','ColumnReorder','ColumnResize','ColumnState','Delete','Edit','Filtering','Indent','Outdent','NextTimeSpan','PreviousTimeSpan','RowDragAndDrop','Search'],
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    mode:"Auto"
+                },
+                columns: [
+                    {
+                        field: 'TaskID', headerText: 'Task ID'
+                    },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'EndDate', headerText: 'EndDate', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' },
+                ],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'Search',
+                    'Undo',
+                    'Redo',
+                ],
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1,
+                    },
+                },
+                enableContextMenu: true,
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2024'),
+            }, done);
+    });
+    it('Check for edited record',(done:Function)=>{
+        ganttObj.contextMenuModule.item = "Task 1";
+        ganttObj.actionBegin = function(args?:any) {
+            if (args.requestType === "beforeSave") {
+                expect(args.data.ganttProperties.taskName).toBe('Updated by index value')
+                done()
+            }
+        };
+        let data = {
+            TaskID: 3,
+            TaskName: 'Updated by index value',
+            StartDate: new Date('04/02/2019'),
+            Duration: 4,
+            Progress: 50
+        }
+        ganttObj.updateRecordByID(data)
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('Update Record using method using undo redo', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: bug885565Holiday,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    child: 'subtasks',
+                    indicators: 'Indicators',
+                },
+                renderBaseline: true,
+                enableUndoRedo: true,
+                undoRedoActions:['Sorting','Add','ColumnReorder','ColumnResize','ColumnState','Delete','Edit','Filtering','Indent','Outdent','NextTimeSpan','PreviousTimeSpan','RowDragAndDrop','Search'],
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    mode:"Auto"
+                },
+                columns: [
+                    {
+                        field: 'TaskID', headerText: 'Task ID'
+                    },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'EndDate', headerText: 'EndDate', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' },
+                ],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'Search',
+                    'Undo',
+                    'Redo',
+                ],
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1,
+                    },
+                },
+                enableContextMenu: true,
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2024'),
+            }, done);
+    });
+    it('Check for updated value',(done:Function)=>{
+        ganttObj.actionBegin = function(args?:any) {
+            if (args.requestType === "beforeSave" && args.data.ganttProperties.taskName === "Defining target audience") {
+                expect(args.data.ganttProperties.taskName).toBe('Defining target audience')
+                done()
+            }
+        };
+        let data = {
+            TaskID: 3,
+            TaskName: 'Updated by index value',
+            StartDate: new Date('04/02/2019'),
+            Duration: 4,
+            Progress: 50,
+            Predecessor:2
+        }
+        ganttObj.updateRecordByID(data)
+        let undo: HTMLElement = document.querySelector('.e-toolbar-item[title="Undo"]').querySelector('button') as HTMLElement
+        triggerMouseEvent(undo, 'click');
+    });
+    it('Check taskmode value',()=>{
+        ganttObj.changeTaskMode(ganttObj.flatData[2]);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('row indent', () => {
+    let ganttObj: Gantt;
+    let taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            resources: [1],
+            'Children': [
+                { 'TaskID': 2, resources: [2, 3], 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'Progress': '40', 'isManual': true, 'Duration': 5, TaskType: 'Task with duration only',
+                    
+                },
+                { 'TaskID': 4, 'TaskName': 'Child Task 3', 'Duration': 5, 'Progress': '40',
+                    'StartDate': new Date('02/27/2017'), 'EndDate': new Date('03/03/2017')
+                }
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+    height: '450px',
+    allowSelection: true,
+    taskMode: 'Custom',
+    //enableContextMenu: true,
+    treeColumnIndex: 1,
+    highlightWeekends: true,
+    allowUnscheduledTasks: true,
+    taskType:'FixedWork',
+    taskFields: {
+        id: 'TaskID',
+        name: 'TaskName',
+        startDate: 'StartDate',
+        endDate: 'EndDate',
+        duration: 'Duration',
+        progress: 'Progress',
+        dependency: 'Predecessor',
+        child: 'Children',
+        manual: 'isManual',
+        resourceInfo: 'resources',
+        work: 'work',
+        baselineStartDate: 'BaselineStartDate',
+        baselineEndDate: 'BaselineEndDate',
+        notes: 'info',
+    },
+    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll' , 'ZoomToFit' , 'Indent' , 'Outdent'],
+    editSettings: {
+        allowAdding: true,
+        allowEditing: true,
+        allowDeleting: true,
+        allowTaskbarEditing: true,
+        showDeleteConfirmDialog: true
+    },
+    columns: [
+        { field: 'TaskID', headerText: 'ID', visible: false },
+        { field: 'TaskName', headerText: 'Name' },
+        { field: 'isManual', headerText: 'Task Mode'}
+    ],
+    labelSettings: {
+        leftLabel: 'TaskName',
+        rightLabel: 'resources',
+        taskLabel: '${Progress}%'
+    },
+    splitterSettings: {
+        position: "35%"
+    },
+    projectStartDate: new Date('02/20/2017'),
+    projectEndDate: new Date('04/06/2017'),
+    resourceNameMapping: 'resourceName',
+    resourceIDMapping: 'resourceId',
+    resources: [
+        { resourceId: 1, resourceName: 'Martin Tamer' },
+        { resourceId: 2, resourceName: 'Rose Fuller' },
+        { resourceId: 3, resourceName: 'Margaret Buchanan' },
+        { resourceId: 4, resourceName: 'Fuller King' },
+        { resourceId: 5, resourceName: 'Davolio Fuller' },
+        { resourceId: 6, resourceName: 'Van Jack' },
+        { resourceId: 7, resourceName: 'Fuller Buchanan' },
+        { resourceId: 8, resourceName: 'Jack Davolio' },
+        { resourceId: 9, resourceName: 'Tamer Vinet' },
+        { resourceId: 10, resourceName: 'Vinet Fuller' },
+        { resourceId: 11, resourceName: 'Bergs Anton' },
+        { resourceId: 12, resourceName: 'Construction Supervisor' }
+    ]
+            }, done);
+    });
+    it('task indent',()=>{
+       ganttObj.selectRow(2);
+       ganttObj.indent();
+       expect(ganttObj.getFormatedDate(ganttObj.flatData[1].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/27/2017');
     }); 
     afterAll(() => {
         destroyGantt(ganttObj);       

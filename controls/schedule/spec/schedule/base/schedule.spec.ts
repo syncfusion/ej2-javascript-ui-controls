@@ -1520,7 +1520,7 @@ describe('Schedule base module', () => {
                 (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
             dayElement.index = 0; dayElement.dataBind();
             expect(dayElement.value).toEqual('MO');
-            (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+            (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel') as HTMLElement).click();
         });
         it('Checking first day of week in week view.', (done: DoneFn) => {
             schObj.dataBound = () => {
@@ -1553,7 +1553,7 @@ describe('Schedule base module', () => {
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('SA');
-                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel') as HTMLElement).click();
                 done();
             };
             schObj.currentView = 'Week';
@@ -1590,7 +1590,7 @@ describe('Schedule base module', () => {
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('WE');
-                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel') as HTMLElement).click();
                 done();
             };
             schObj.currentView = 'WorkWeek';
@@ -1622,7 +1622,7 @@ describe('Schedule base module', () => {
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('TH');
-                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel') as HTMLElement).click();
                 done();
             };
             schObj.currentView = 'Month';
@@ -1665,7 +1665,7 @@ describe('Schedule base module', () => {
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('SA');
-                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel') as HTMLElement).click();
                 done();
             };
             schObj.currentView = 'MonthAgenda';
@@ -1700,7 +1700,7 @@ describe('Schedule base module', () => {
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('TH');
-                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel') as HTMLElement).click();
                 done();
             };
             schObj.currentView = 'TimelineDay';
@@ -1736,7 +1736,7 @@ describe('Schedule base module', () => {
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('MO');
-                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel') as HTMLElement).click();
                 done();
             };
             schObj.currentView = 'TimelineWeek';
@@ -1772,7 +1772,7 @@ describe('Schedule base module', () => {
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('TU');
-                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel') as HTMLElement).click();
                 done();
             };
             schObj.currentView = 'TimelineWorkWeek';
@@ -1803,7 +1803,7 @@ describe('Schedule base module', () => {
                     (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
                 dayElement.index = 0; dayElement.dataBind();
                 expect(dayElement.value).toEqual('WE');
-                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel') as HTMLElement).click();
                 done();
             };
             schObj.currentView = 'TimelineMonth';

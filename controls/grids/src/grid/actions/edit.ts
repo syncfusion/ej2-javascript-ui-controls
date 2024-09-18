@@ -24,6 +24,7 @@ import { TemplateEditCell } from '../renderer/template-edit-cell';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Row } from '../models/row';
 import { addRemoveEventListener, padZero, getParentIns } from '../base/util';
+import { Matrix } from '../services/focus-strategy';
 import * as literals from '../base/string-literals';
 
 /**
@@ -36,10 +37,6 @@ export class Edit implements IAction {
     public editModule: IEdit;
     /** @hidden */
     public formObj: FormValidator;
-    /** @hidden */
-    public mFormObj: FormValidator;
-    /** @hidden */
-    public frFormObj: FormValidator;
     /** @hidden */
     public virtualFormObj: FormValidator;
     /** @hidden */
@@ -392,10 +389,7 @@ export class Edit implements IAction {
      * @returns {boolean} returns whether the form is validated
      */
     public editFormValidate(): boolean {
-        const form1: boolean = this.formObj ? this.formObj.validate() : true;
-        const form2: boolean = this.mFormObj ? this.mFormObj.validate() : true;
-        const form3: boolean = this.frFormObj ? this.frFormObj.validate() : true;
-        return form1 && form2 && form3;
+        return this.formObj ? this.formObj.validate() : true;
     }
 
     /**
@@ -686,7 +680,7 @@ export class Edit implements IAction {
         for (let j: number = 0; j < col.length; j++) {
             if (form[getComplexFieldID(col[parseInt(j.toString(), 10)].field)]) {
                 let inputElements: HTMLInputElement[] = [].slice.call(form[getComplexFieldID(col[parseInt(j.toString(), 10)].field)])
-                    .filter((element: any) => element.tagName.toLowerCase() === 'input');
+                    .filter((element: HTMLInputElement) => element.tagName.toLowerCase() === 'input');
                 inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col[parseInt(j.toString(), 10)].field)]];
                 let temp: HTMLInputElement[] = inputElements.filter((e: HTMLInputElement) =>
                     !isNullOrUndefined(((<EJ2Intance>(e as Element)).ej2_instances)));
@@ -823,7 +817,7 @@ export class Edit implements IAction {
      */
     public destroyForm(): void {
         this.destroyToolTip();
-        const formObjects: FormValidator[] = [this.formObj, this.mFormObj, this.frFormObj, this.virtualFormObj];
+        const formObjects: FormValidator[] = [this.formObj, this.virtualFormObj];
         const col: Column[] = (<{columnModel?: Column[]}>this.parent).columnModel.filter((col: Column) => col.editTemplate);
         for (let i: number = 0; i < formObjects.length; i++) {
             if (formObjects[parseInt(i.toString(), 10)] && formObjects[parseInt(i.toString(), 10)].element
@@ -922,7 +916,7 @@ export class Edit implements IAction {
             if (editedRow) {
                 let focusableEditCells: HTMLElement[] = [].slice.call(editedRow.querySelectorAll('.e-input:not(.e-disabled)'));
                 const commandColCell: HTMLElement[] = [].slice.call(editedRow.querySelectorAll('.e-unboundcell'));
-                if (commandColCell) {
+                if (commandColCell && commandColCell.length) {
                     for (let i: number = 0; i < commandColCell.length; i++) {
                         focusableEditCells = focusableEditCells.concat([].slice
                             .call(commandColCell[parseInt(i.toString(), 10)].querySelectorAll('.e-btn:not(.e-hide)')));
@@ -937,10 +931,15 @@ export class Edit implements IAction {
                     (rowCell === parentsUntil(focusableEditCells[0], 'e-rowcell') && e.action === 'shiftTab' &&
                         !this.parent.editSettings.showAddNewRow)) {
                     const uid: string = editedRow.getAttribute('data-uid');
-                    const rows: Element[] = this.parent.getRows();
+                    const rows: Element[] = this.parent.allowGrouping ? (!isNullOrUndefined(this.parent.getContent()) ?
+                        [].slice.call(this.parent.getContent().querySelectorAll('tr')) : []) : this.parent.getRows();
                     let rowIndex: number = rows.map((m: HTMLTableRowElement) => m.getAttribute('data-uid')).indexOf(uid);
-                    if (this.parent.frozenRows && parentsUntil(editedRow, 'e-content')) {
-                        rowIndex = rowIndex - this.parent.frozenRows;
+                    if (this.parent.frozenRows) {
+                        if (parentsUntil(editedRow, 'e-gridheader')) {
+                            rowIndex = (editedRow as HTMLTableRowElement).rowIndex;
+                        } else if (parentsUntil(editedRow, 'e-gridcontent')) {
+                            rowIndex = rowIndex - this.parent.frozenRows;
+                        }
                     }
                     if (editedRow.classList.contains('e-addedrow')) {
                         rowIndex = 0;
@@ -958,11 +957,11 @@ export class Edit implements IAction {
                         (editedRow.classList.contains('e-addedrow') && isNullOrUndefined(this.parent.element.querySelector(
                             '.e-griderror:not([style*="display: none"])')))))) {
                         let firstCellIndex: number = 0;
-                        let matrix = this.parent.focusModule.active.matrix;
+                        const matrix: Matrix = this.parent.focusModule.active.matrix;
                         if (matrix && matrix.matrix.length && matrix.matrix[parseInt(rowIndex.toString(), 10)]) {
-                            let rowMatrix = matrix.matrix[parseInt(rowIndex.toString(), 10)];
+                            const rowMatrix: number[]  = matrix.matrix[parseInt(rowIndex.toString(), 10)];
                             for (let i: number = 0; i < rowMatrix.length; i++) {
-                                if (matrix[parseInt(i.toString(), 10)] > 0) {
+                                if (rowMatrix[parseInt(i.toString(), 10)] > 0) {
                                     firstCellIndex = i;
                                     break;
                                 }
@@ -1229,8 +1228,6 @@ export class Edit implements IAction {
                 } else {
                     formObj.appendChild(div);
                 }
-            } else {
-                this.mFormObj.element.appendChild(div);
             }
         } else {
             if (customForm) {

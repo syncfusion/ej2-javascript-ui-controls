@@ -838,6 +838,40 @@ describe('Point color mapping chart highlight and selection', function () {
         chartObj.highlightColor = 'Red'
         chartObj.refresh();
     });
+    it('selection with mouse leave event', function (done) {
+        loaded = function (args: Chart3DLoadedEventArgs) {
+            chartObj.loaded = null;
+            args.chart.selection3DModule.completeSelection();
+            args.chart.selection3DModule.selectedDataIndexes = [];
+            args.chart.selection3DModule.removeLegendHighlightStyles();
+            let element: HTMLElement = document.getElementById(id);
+            expect(element !== null).toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionMode = 'None';
+        chartObj.refresh();
+    });
+    it('selection checking index finder', function (done) {
+        loaded = function (args: Chart3DLoadedEventArgs) {
+            chartObj.loaded = null;
+            args.chart.selection3DModule.indexFinder('-border-');
+            args.chart.selection3DModule.indexFinder('-series-');
+            args.chart.selection3DModule.indexFinder('_legend_shape_');
+            args.chart.selection3DModule.highlightDataIndexes = [{ series: 0, point: 0 }] as any;
+            args.chart.selection3DModule.styleId = 'PointColorMapping_ej2_chart_highlight';
+            args.chart.selection3DModule.redrawSelection(args.chart, null, null);
+            let element: HTMLElement = document.getElementById(id);
+            args.chart.selectionMode = 'None';
+            args.chart.selection3DModule.isAlreadySelected(element, 'click', [{ series: 0, point: 0 }] as any);
+            expect(element !== null).toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionMode = 'Point';
+        chartObj.highlightMode = 'Point';
+        chartObj.refresh();
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

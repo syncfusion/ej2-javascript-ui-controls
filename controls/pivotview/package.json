@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-pivotview",
-	"version": "26.2.12",
+	"version": "26.1.35",
 	"description": "The pivot grid, or pivot table, is used to visualize large sets of relational data in a cross-tabular format, similar to an Excel pivot table.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -24,7 +24,8 @@
 		"@syncfusion/ej2-pdf-export": "*",
 		"@syncfusion/ej2-popups": "*",
 		"@syncfusion/ej2-splitbuttons": "*",
-		"@syncfusion/ej2-svg-base": "*"
+		"@syncfusion/ej2-svg-base": "*",
+		"markdown-spellcheck": "^1.3.1"
 	},
 	"devDependencies": {
 		"@syncfusion/ej2-staging": "^1.0.1",

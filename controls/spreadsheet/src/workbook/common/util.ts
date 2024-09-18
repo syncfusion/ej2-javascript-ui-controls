@@ -2,9 +2,10 @@ import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getShee
 import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs } from './index';
 import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel, clearFormulaDependentCells } from './index';
 import { isHiddenCol, isHiddenRow, VisibleMergeIndexArgs, checkDateFormat, checkNumberFormat, DateFormatCheckArgs } from './../index';
-import { isUndefined, defaultCurrencyCode, getNumberDependable, getNumericObject, Internationalization } from '@syncfusion/ej2-base';
+import { isUndefined, getNumberDependable, getNumericObject, Internationalization, defaultCurrencyCode } from '@syncfusion/ej2-base';
 import { parseThousandSeparator } from './internalization';
-import { AutoDetectGeneralFormatArgs, isNumber } from './../index';
+import { AutoDetectGeneralFormatArgs, isNumber, NumberFormatArgs, getFormattedCellObject, LocaleNumericSettings } from './../index';
+import { ExtendedWorkbook } from './index';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 
 /**
@@ -470,6 +471,9 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
                 delete cell.value;
                 delete cell.formula;
             }
+            if (cell.formattedText) {
+                delete cell.formattedText;
+            }
             const evtArgs: { [key: string]: string | boolean | number[] | number } = {
                 action: 'updateCellValue',
                 address: [args.rowIndex, args.colIndex], sheetIndex: getSheetIndex(context, sheet.name), value:
@@ -787,35 +791,35 @@ export function checkRange(indexes: number[][], range: string): boolean {
 }
 
 /**
+ * Parse the formatted text to get the actual cell value.
+ *
  * @param {string[]} valArr - Specifies the value array.
- * @param {string} locale - Specifies the locale.
- * @param {string} curSymbol - Specifies the currency symbol.
- * @param {Object} numObj - Specifies the number object.
- * @param {string} numObj.decimal - Specifies decimal.
- * @param {string} numObj.group - Specifies group separator.
- * @returns {string[]} - Returns parsed Local Number.
+ * @param {string} context - Specifies the workbook instance.
+ * @param {LocaleNumericSettings} numObj - Specifies the locale numeric options like decimal and group separators.
+ * @returns {string[]} - Returns the parsed number collection.
  * @hidden
  */
-export function parseLocaleNumber(
-    valArr: string[], locale: string, curSymbol?: string, numObj?: { decimal: string, group: string }): string[] {
-    let numVal: string; let groupArr: string[];
-    if (!curSymbol) {
-        curSymbol = getNumberDependable(locale, defaultCurrencyCode);
-    }
+export function parseLocaleNumber(valArr: string[], context: Workbook, numObj?: LocaleNumericSettings): string[] {
+    let formatArgs: NumberFormatArgs;
     if (!numObj) {
-        numObj = getNumericObject(locale) as { decimal: string, group: string };
+        numObj = <LocaleNumericSettings>getNumericObject(context.locale);
     }
     for (let idx: number = 0; idx < valArr.length; idx++) {
-        numVal = valArr[idx as number].toString().split(curSymbol).join('');
-        groupArr = numVal.split(numObj.group);
-        if (groupArr.length === 2 && parseThousandSeparator(numVal, locale, numObj.group, numObj.decimal)) {
-            numVal = groupArr.join('');
-        }
-        if (numObj.decimal !== '.' && numVal.includes(numObj.decimal)) {
-            numVal = numVal.replace(numObj.decimal, '.');
-        }
-        if (isNumber(numVal)) {
-            valArr[idx as number] = numVal;
+        if (isNumber(valArr[idx as number])) {
+            if (numObj.group === '.') {
+                valArr[idx as number] = valArr[idx as number].toString();
+                if (valArr[idx as number].indexOf('.') &&
+                    parseThousandSeparator(valArr[idx as number], context.locale, numObj.group, numObj.decimal)) {
+                    valArr[idx as number] = valArr[idx as number].split(numObj.group).join('');
+                }
+            }
+        } else {
+            formatArgs = { formattedText: valArr[idx as number], value: valArr[idx as number], format: 'General',
+                cell: { value: valArr[idx as number], format: 'General' }, isEdit: true };
+            context.notify(getFormattedCellObject, formatArgs);
+            if (isNumber(formatArgs.value)) {
+                valArr[idx as number] = formatArgs.value.toString();
+            }
         }
     }
     return valArr;
@@ -883,6 +887,17 @@ export function setVisibleMergeIndex(args: VisibleMergeIndexArgs): void {
 }
 
 /**
+ * Check whether the sheets are imported.
+ *
+ * @param {Workbook} context - Specifies the spreadsheet instance.
+ * @returns {boolean} - It returns true if the sheets are imported otherwise false.
+ * @hidden
+ */
+export function isImported(context: Workbook): boolean {
+    return (context as ExtendedWorkbook).workbookOpenModule && (context as ExtendedWorkbook).workbookOpenModule.preventFormatCheck;
+}
+
+/**
  * Return a function that will auto-detect the number format of the formatted cell value.
  *
  * @param {Workbook} context - Specifies the Workbook instance.
@@ -891,19 +906,28 @@ export function setVisibleMergeIndex(args: VisibleMergeIndexArgs): void {
  */
 export function getAutoDetectFormatParser(context: Workbook): (cell: CellModel) => void {
     const intl: Internationalization = new Internationalization();
-    const option: { currency?: string } = {};
-    intl.getNumberFormat(option);
-    const eventArgs: DateFormatCheckArgs = { intl: intl, updateValue: true, value: '' };
-    const options: AutoDetectGeneralFormatArgs = { args: eventArgs, intl: intl,
-        currencySymbol: getNumberDependable(context.locale, option.currency) };
+    const eventArgs: DateFormatCheckArgs = { intl: intl, updateValue: true, value: '',
+        curSymbol: getNumberDependable(context.locale, defaultCurrencyCode) };
+    const options: AutoDetectGeneralFormatArgs = { args: eventArgs, intl: intl };
+    const localeNumObj: LocaleNumericSettings = <LocaleNumericSettings>getNumericObject(context.locale);
     return (cell: CellModel): void => {
         if (!cell.format && cell.value && !isNumber(cell.value)) {
             eventArgs.cell = cell;
             eventArgs.value = cell.value;
             context.notify(checkDateFormat, eventArgs);
-            if (!cell.format && (cell.value.includes(options.currencySymbol) || cell.value.includes('%'))) {
-                options.fResult = cell.value;
-                context.notify(checkNumberFormat, options);
+            if (!cell.format) {
+                let cellVal: string = cell.value.toString();
+                if (cellVal.includes(options.args.curSymbol) || cellVal.includes(localeNumObj.group) || cellVal.includes('%')) {
+                    options.fResult = cellVal;
+                    context.notify(checkNumberFormat, options);
+                } else if (localeNumObj.decimal !== '.' && !isNumber(cellVal)) {
+                    if (cellVal.includes(localeNumObj.decimal)) {
+                        cellVal = cellVal.replace(localeNumObj.decimal, '.');
+                        if (isNumber(cellVal)) {
+                            cell.value = cellVal;
+                        }
+                    }
+                }
             }
         }
     };
@@ -946,15 +970,5 @@ export function applyPredicates(dataManager: DataManager, predicates: Predicate[
  * @hidden
  */
 export function isReadOnly(cell: CellModel, column: ColumnModel, row: RowModel): boolean {
-    if (!cell) {
-        cell = {};
-    }
-    if (cell.isReadOnly === true) {
-        return true;
-    } else if (row && row.isReadOnly === true) {
-        return true;
-    } else if (column && column.isReadOnly === true) {
-        return true;
-    }
-    return false;
+    return (cell && cell.isReadOnly) || (row && row.isReadOnly) || (column && column.isReadOnly);
 }

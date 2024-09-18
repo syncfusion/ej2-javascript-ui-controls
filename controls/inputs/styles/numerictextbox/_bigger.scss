@@ -1,0 +1,24 @@
+@include export-module('numerictextbox-bigger') {
+
+  .e-bigger.e-content-placeholder.e-numeric.e-placeholder-numeric,
+  .e-bigger .e-content-placeholder.e-numeric.e-placeholder-numeric {
+    background-size: 300px 40px;
+    min-height: 40px;
+  }
+  
+  .e-bigger {
+    #{if(&, '&', '*')} .e-control-wrapper.e-numeric.e-input-group .e-input-group-icon,
+    #{if(&, '&', '*')}.e-control-wrapper.e-numeric.e-input-group .e-input-group-icon {
+      font-size: $numeric-input-bigger-icon-size;
+    }
+  }
+
+  .e-small.e-bigger .e-control-wrapper.e-numeric.e-input-group .e-input-group-icon,
+  .e-small.e-bigger.e-control-wrapper.e-numeric.e-input-group .e-input-group-icon,
+  .e-small .e-bigger.e-control-wrapper.e-numeric.e-input-group .e-input-group-icon,
+  .e-bigger .e-small.e-control-wrapper.e-numeric.e-input-group .e-input-group-icon {
+    @if ($input-skin-name == 'FluentUI') {
+      font-size: $numeric-input-bigger-small-icon-size;
+    }
+  }
+}

@@ -892,6 +892,7 @@ export interface IFileManager extends Component<HTMLElement> {
     destinationPath: string;
     enableHtmlSanitizer: boolean;
     refreshLayout(): void;
+    traverseBackward(): void;
     isMac: boolean;
     oldView: string;
     oldPath: string;

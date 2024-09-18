@@ -3,7 +3,7 @@
  * Schedule Week view spec
  */
 import { createElement, L10n } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, Year, TimelineYear, CellClickEventArgs } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, Year, TimelineYear, CellClickEventArgs, ViewsModel } from '../../../src/schedule/index';
 import * as util from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -862,6 +862,41 @@ describe('Schedule year view', () => {
         it('Checking aria-label in horizontal orientation', () => {
             (schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[0] as HTMLElement).click();
             expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('aria-label')).toEqual('Wednesday, January 1, 2020 at 12:00:00 AM GMT Ends At Saturday, February 1, 2020 at 12:00:00 AM GMT');
+        });
+    });
+
+    describe('ES-907744 - FirstDayOfWeek property is not working in scheduler year view', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = {
+                views: [ { option: 'Year', firstDayOfWeek: 1 }],
+                selectedDate: new Date(2021, 1, 24)
+            };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking the firstDayOfWeek property in the year view for view-specific', () => {
+            expect(schObj.activeViewOptions.firstDayOfWeek).toEqual(1);
+            expect(schObj.element.querySelectorAll('.e-month-calendar.e-calendar')[0].querySelector('.e-work-cells .e-day').outerHTML)
+            .toBe('<span class="e-day" title="Monday, December 28, 2020" aria-disabled="true">28</span>');
+            expect(schObj.element.querySelectorAll('.e-month-calendar.e-calendar')[0].querySelector('.e-work-cells .e-day').getAttribute('title'))
+            .toBe('Monday, December 28, 2020');
+            (schObj.views[0] as ViewsModel).firstDayOfWeek = 2
+            schObj.refresh();
+            expect(schObj.activeViewOptions.firstDayOfWeek).toEqual(2); 
+            expect(schObj.element.querySelectorAll('.e-month-calendar.e-calendar')[0].querySelector('.e-work-cells .e-day').getAttribute('title'))
+            .toBe('Tuesday, December 29, 2020');
+        });
+        it('Checking the firstDayOfWeek property in the year view for component specific', () => {
+            schObj.views = [ { option: 'Year' }];
+            schObj.firstDayOfWeek = 1;
+            schObj.refresh();
+            expect(schObj.element.querySelectorAll('.e-month-calendar.e-calendar')[0].querySelector('.e-work-cells .e-day').outerHTML)
+            .toBe('<span class="e-day" title="Monday, December 28, 2020" aria-disabled="true">28</span>');
+            expect(schObj.element.querySelectorAll('.e-month-calendar.e-calendar')[0].querySelector('.e-work-cells .e-day').getAttribute('title'))
+            .toBe('Monday, December 28, 2020');
         });
     });
 

@@ -45,8 +45,7 @@ export class WorkbookConditionalFormat {
         const cf: ConditionalFormatModel = e.cfModel;
         const sheetIndex: number = e.sheetIdx === undefined ? getSheetIndexFromAddress(this.parent, cf.range) : e.sheetIdx;
         const sheet: SheetModel = getSheet(this.parent, sheetIndex);
-        cf.range = cf.range || sheet.selectedRange;
-        let indexes: number[] = getSwapRange(getRangeIndexes(cf.range));
+        let indexes: number[] = getSwapRange(getRangeIndexes(cf.range || sheet.selectedRange));
         cf.range = getRangeAddress(indexes);
         if (e.isAction) {
             const eventArgs: CFormattingEventArgs = { range: cf.range, type: cf.type, cancel: false, cFColor: cf.cFColor, value: cf.value,

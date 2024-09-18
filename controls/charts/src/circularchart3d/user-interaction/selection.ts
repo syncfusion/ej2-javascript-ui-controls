@@ -8,7 +8,7 @@ import { CircularChart3DSelectionMode, CircularChart3DHighlightMode } from '../m
 import { CircularChart3D } from '../circularchart3d';
 import { CircularChart3DPoints, CircularChart3DSeries } from '../renderer/series';
 import { CircularChart3DSeriesModel } from '../renderer/series-model';
-import { Indexes, Index } from '../../common/model/base';
+import { Index, Indexes } from '../../common/model/base';
 import { BaseSelection } from '../../common/user-interaction/selection';
 import { CircularChartTooltip3D } from './tooltip';
 import { CircularChart3DSelectionCompleteEventArgs } from '../model/pie-interface';

@@ -1,5 +1,5 @@
 import { BaseAttributes } from '../barcode/rendering/canvas-interface';
-import { MarginModel, } from '../barcode/primitives/margin-model';
+import { MarginModel } from '../barcode/primitives/margin-model';
 import { QRInputMode, QRCodeVersion, ErrorCorrectionLevel, QuietZone } from '../barcode/enum/enum';
 import { PdfQRBarcodeValues } from './qr-barcode-values';
 import { ErrorCorrectionCodewords } from './qr-error-correction';
@@ -166,9 +166,8 @@ export class QRCode {
     }
 
     /**
-     * Draw the QR cpde in SVG.\
+     * Draw the QR code in SVG.
      *
-     * @returns {boolean} Draw the barcode SVG .
      *  @param {HTMLElement} char - Provide the char to render .
      *  @param {HTMLElement} canvas - Provide the canvas element .
      *  @param {HTMLElement} height - Provide the height for the canvas element .
@@ -177,7 +176,9 @@ export class QRCode {
      *  @param {HTMLElement} displayText - Provide display text for the canvas element .
      *  @param {HTMLElement} mode - Provide the mode to render .
      *  @param {HTMLElement} foreColor - Provide the color for the barcode to render.
-     * @private
+     *  @param {HTMLElement} logo - Provide the logo for the QR code.
+     *  @returns {boolean} Draw the barcode SVG .
+     *  @private
      */
     public draw(
         char: string, canvas: HTMLElement, height: number, width: number,
@@ -225,24 +226,25 @@ export class QRCode {
             dimension = size / moduleCount;
 
             // Calculations to place the logo in the center of the QR code.
-            let imageBound = null;
-            let imageAttributes = null;
-            if (logo != null && logo.imageSource != '') {
+            let imageBound: Rect = null;
+            let imageAttributes: BaseAttributes = null;
+            if (logo !== null && logo.imageSource !== '') {
                 x = ((actualWidth >= size) ? (actualWidth - size) / 2 : 0) + margin.left;
 
-                let qrsize = size - (((2 * quietZone) + 1) * dimension)
-                const sizeRatio = 0.3;
-                let imgwidth = logo.width ? Math.min(logo.width, qrsize * sizeRatio) : qrsize * sizeRatio;
-                let imgheight = logo.height ? Math.min(logo.height, qrsize * sizeRatio) : qrsize * sizeRatio;
-                let ximg = (x + (quietZone * dimension)) + (qrsize / 2) - (imgwidth / 2);
-                let yimg = (y + (quietZone * dimension)) + (qrsize / 2) - (imgheight / 2);
+                const qrsize: number = size - (((2 * quietZone) + 1) * dimension);
+                const sizeRatio: number = 0.3;
+                const imgwidth: number = logo.width ? Math.min(logo.width, qrsize * sizeRatio) : qrsize * sizeRatio;
+                const imgheight: number = logo.height ? Math.min(logo.height, qrsize * sizeRatio) : qrsize * sizeRatio;
+                const ximg: number = (x + (quietZone * dimension)) + (qrsize / 2) - (imgwidth / 2);
+                const yimg: number = (y + (quietZone * dimension)) + (qrsize / 2) - (imgheight / 2);
 
                 imageAttributes = {
                     x: ximg,
                     y: yimg,
                     width: imgwidth,
                     height: imgheight,
-                    imageSource: logo.imageSource,
+                    color: 'transparent',
+                    imageSource: logo.imageSource
                 };
 
                 imageBound = {
@@ -276,11 +278,11 @@ export class QRCode {
                         const options: BaseAttributes = this.getBaseAttributes(
                             dimension, dimension, x,
                             displayText.position === 'Bottom' ? y : y + textBounds.height / 2, color);
-                        // To exclude options if options are contained by imageBounds.
-                        // if (imageBound == null || !this.containsRect(imageBound, { x: options.x, y: options.y, width: dimension, height: dimension})) {
-                        //     optionsCollection.push(options);
-                        // }
-                        optionsCollection.push(options);
+                        // To exclude options, if it is contained by imageBounds region.
+                        const currentBound: Rect = { x: options.x, y: options.y, width: dimension, height: dimension};
+                        if (imageBound == null || !this.containsRect(imageBound, currentBound)) {
+                            optionsCollection.push(options);
+                        }
                     }
                     x = x + dimension;
                 }
@@ -301,11 +303,11 @@ export class QRCode {
     }
 
     // Helper function to check if one rectangle contains another
-    private containsRect = function (rect1: Rect, rect2: Rect) {
+    private containsRect(rect1: Rect, rect2: Rect): boolean {
         return rect1.x <= rect2.x &&
             rect1.x + rect1.width >= rect2.x + rect2.width &&
             rect1.y <= rect2.y &&
-            rect1.y + rect1.height >= rect2.y + rect2.height
+            rect1.y + rect1.height >= rect2.y + rect2.height;
     }
 
     private drawText(canvas: HTMLCanvasElement, options: BaseAttributes): void {

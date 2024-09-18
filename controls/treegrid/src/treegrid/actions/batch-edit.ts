@@ -504,6 +504,9 @@ export class BatchEdit {
                 if (!isNullOrUndefined(addRowRecord)) {
                     addRowIndex = addRowRecord.index;
                 }
+                if (isNullOrUndefined(addRecords[parseInt(i.toString(), 10)].index)) {
+                    addRowIndex = 0;
+                }
                 if (this.parent.editSettings.newRowPosition !== 'Top' && this.parent.editSettings.newRowPosition !== 'Bottom') {
                     if (isNullOrUndefined(addRecords[parseInt(i.toString(), 10)].parentItem) && this.selectedIndex === -1) {
                         selectedIndex = -1;

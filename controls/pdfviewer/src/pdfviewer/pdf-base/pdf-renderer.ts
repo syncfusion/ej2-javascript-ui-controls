@@ -14,6 +14,10 @@ export class PdfRenderer {
      * @private
      */
     public loadedDocument: PdfDocument;
+    /**
+     * @private
+     */
+    public loadImportedDocument: PdfDocument;
     private pageCount: number;
     /**
      * @private
@@ -51,6 +55,7 @@ export class PdfRenderer {
     private restrictionList: string[] = [];
     private securityList: string[] = ['Print', 'EditContent', 'CopyContent', 'EditAnnotations', 'FillFields', 'AccessibilityCopyContent', 'AssembleDocument', 'FullQualityPrint'];
     private _fallbackFontCollection: { [key: string]: any; } = {};
+    private document: PdfDocument = null;
     /**
      * @private
      * @returns {void}
@@ -109,7 +114,9 @@ export class PdfRenderer {
     private pdfViewerBase: PdfViewerBase;
     private digitialByteArray: Uint8Array;
     private loadedByteArray: Uint8Array;
+    private loadImportedBase64String: string;
     private password: string;
+    private importedDocpassword: string;
     private isDummyInserted: boolean = false;
 
     /**
@@ -157,6 +164,42 @@ export class PdfRenderer {
         this.bookmarkStyles = [];
         this.bookmarkCollection = [];
         this.bookmarkDictionary = {};
+        return JSON.stringify(jsonResult);
+    }
+
+    /**
+     * @param {string} documentData - documentData
+     * @param {string} documentId - documentId
+     * @param {string} password - password
+     * @param {any} jsonObject - jsonObject
+     * @private
+     * @returns {void}
+     */
+    public loadImportDocument(documentData: any, documentId: string, password: string, jsonObject: any): string {
+        try {
+            if (jsonObject.action !== 'VirtualLoad') {
+                this.loadImportedDocument = new PdfDocument(documentData, password ? password : '');
+                this.loadImportedBase64String = documentData;
+                this.importedDocpassword = password;
+            }
+        }
+        catch (error) {
+            if (error.message === 'Invalid PDF structure.') {
+                return '3';
+            }
+            else if (error.message === 'Cannot open an encrypted document. The password is invalid.') {
+                return '4';
+            }
+            else if (error.message === 'Invalid cross reference') {
+                return '4';
+            }
+            else {
+                return error.message;
+            }
+        }
+        const jsonResult: object = { uniqueId: documentId, password: this.importedDocpassword};
+        this.loadImportedDocument.destroy();
+        this.loadImportedDocument = null;
         return JSON.stringify(jsonResult);
     }
 
@@ -253,36 +296,32 @@ export class PdfRenderer {
 
     private getPermissionArray(permission: PdfPermissionFlag): string[] {
         const permissionArray: string[] = [];
-        const length: number = !isNullOrUndefined((permission as any).count) ? (permission as any).count : 1;
-        for (let i: number = 0; i < length; i++) {
-            switch (permission) {
-                case PdfPermissionFlag.fullQualityPrint:
-                    permissionArray.push('FullQualityPrint');
-                    break;
-                case PdfPermissionFlag.assembleDocument:
-                    permissionArray.push('AssembleDocument');
-                    break;
-                case PdfPermissionFlag.accessibilityCopyContent:
-                    permissionArray.push('AccessibilityCopyContent');
-                    break;
-                case PdfPermissionFlag.fillFields:
-                    permissionArray.push('FillFields');
-                    break;
-                case PdfPermissionFlag.editAnnotations:
-                    permissionArray.push('EditAnnotations');
-                    break;
-                case PdfPermissionFlag.copyContent:
-                    permissionArray.push('CopyContent');
-                    break;
-                case PdfPermissionFlag.editContent:
-                    permissionArray.push('EditContent');
-                    break;
-                case PdfPermissionFlag.print:
-                    permissionArray.push('Print');
-                    break;
-                case PdfPermissionFlag.default:
-                    permissionArray.push('Default');
-                    break;
+        if (permission === PdfPermissionFlag.default) {
+            permissionArray.push('Default');
+        } else {
+            if (permission & PdfPermissionFlag.fullQualityPrint) {
+                permissionArray.push('FullQualityPrint');
+            }
+            if (permission & PdfPermissionFlag.assembleDocument) {
+                permissionArray.push('AssembleDocument');
+            }
+            if (permission & PdfPermissionFlag.accessibilityCopyContent) {
+                permissionArray.push('AccessibilityCopyContent');
+            }
+            if (permission & PdfPermissionFlag.fillFields) {
+                permissionArray.push('FillFields');
+            }
+            if (permission & PdfPermissionFlag.editAnnotations) {
+                permissionArray.push('EditAnnotations');
+            }
+            if (permission & PdfPermissionFlag.copyContent) {
+                permissionArray.push('CopyContent');
+            }
+            if (permission & PdfPermissionFlag.editContent) {
+                permissionArray.push('EditContent');
+            }
+            if (permission & PdfPermissionFlag.print) {
+                permissionArray.push('Print');
             }
         }
         return permissionArray;
@@ -363,7 +402,7 @@ export class PdfRenderer {
                 }
             }
             if (Object.prototype.hasOwnProperty.call(jsonObject, 'organizePages')) {
-                const savedBase64String: string = _encode(this.loadedDocument.save());
+                const savedBase64String: any = this.loadedDocument.save();
                 clonedDocument = new PdfDocument(savedBase64String, this.password);
                 const organizePages: any = JSON.parse(jsonObject.organizePages);
                 if (organizePages.length > 0) {
@@ -372,32 +411,40 @@ export class PdfRenderer {
                     this.insertPdfPages(organizePages);
                     this.copyPages(organizePages, clonedDocument);
                     this.rotatePages(organizePages);
+                    this.importPages(organizePages);
                     if (this.isDummyInserted) {
                         this.loadedDocument.removePage(this.loadedDocument.pageCount - 1);
                         this.isDummyInserted = false;
                     }
                 }
+                clonedDocument.destroy();
                 clonedDocument = null;
             }
-            return this.loadedDocument.save();
+            const documentSaved: any = this.loadedDocument.save();
+            if (this.document != null) {
+                this.document.destroy();
+                this.document = null;
+            }
+            return documentSaved;
         }
     }
 
     private rearrangePages(organizePages: any): number[] {
         let reorderedPageIndices: number[] = [];
         if (organizePages.length > 0) {
-            const clonedCollection = JSON.parse(JSON.stringify(organizePages));
-            const sortedCollection = clonedCollection.sort((a: any, b: any) => this.pdfViewer.pageOrganizer.sorting(a['currentPageIndex'], b['currentPageIndex']));
+            const clonedCollection: any = JSON.parse(JSON.stringify(organizePages));
+            const sortedCollection: any = clonedCollection.sort((a: any, b: any) => this.pdfViewer.pageOrganizer.sorting(a['currentPageIndex'], b['currentPageIndex']));
             for (let i: number = 0; i < sortedCollection.length; i++) {
-                let currentPageDetails = sortedCollection[parseInt(i.toString(), 10)];
-                if (!currentPageDetails.isInserted && !currentPageDetails.isCopied && currentPageDetails['currentPageIndex'] !== null && currentPageDetails['pageIndex'] !== null && parseInt(currentPageDetails['pageIndex'].toString(), 10) >= 0) {
+                const currentPageDetails: any = sortedCollection[parseInt(i.toString(), 10)];
+                if (!currentPageDetails.isInserted && !currentPageDetails.isCopied && !currentPageDetails.isImportedDoc && currentPageDetails['currentPageIndex'] !== null && currentPageDetails['pageIndex'] !== null && parseInt(currentPageDetails['pageIndex'].toString(), 10) >= 0) {
                     reorderedPageIndices.push(parseInt(currentPageDetails['pageIndex'].toString(), 10));
                 }
             }
-            const deltetedPages = sortedCollection.filter(function (item: any) { return item.isDeleted && item['currentPageIndex'] === null });
+            // eslint-disable-next-line
+            const deltetedPages: any = sortedCollection.filter(function (item: any) { return item.isDeleted && item['currentPageIndex'] === null; });
             for (let i: number = 0; i < deltetedPages.length; i++) {
-                const deletedPage = deltetedPages[parseInt(i.toString(), 10)];
-                    reorderedPageIndices = [...reorderedPageIndices.slice(0, deletedPage.pageIndex), deletedPage.pageIndex,
+                const deletedPage: any = deltetedPages[parseInt(i.toString(), 10)];
+                reorderedPageIndices = [...reorderedPageIndices.slice(0, deletedPage.pageIndex), deletedPage.pageIndex,
                     ...reorderedPageIndices.slice(deletedPage.pageIndex)];
             }
             if (reorderedPageIndices.length > 0) {
@@ -409,16 +456,21 @@ export class PdfRenderer {
 
     private rotatePages(organizePages: any): void {
         if (organizePages.length > 0) {
+            let importPageCount: number = 0;
             for (let i: number = 0; i < organizePages.length; i++) {
                 const pageNumber: number = organizePages[parseInt(i.toString(), 10)].pageIndex;
                 const currentPageNumber: number = organizePages[parseInt(i.toString(), 10)].currentPageIndex;
                 const isDeleted: boolean = organizePages[parseInt(i.toString(), 10)].isDeleted;
                 const isInserted: boolean = organizePages[parseInt(i.toString(), 10)].isInserted;
                 const isCopied: boolean = organizePages[parseInt(i.toString(), 10)].isCopied;
+                const isImportedDoc: boolean = organizePages[parseInt(i.toString(), 10)].isImportedDoc;
                 const rotation: number = organizePages[parseInt(i.toString(), 10)].rotateAngle;
+                if (isImportedDoc) {
+                    importPageCount++;
+                }
                 if (!isNullOrUndefined(currentPageNumber) && !isNullOrUndefined(rotation) &&
-                    !isDeleted && !isInserted && !isCopied && pageNumber !== -1) {
-                    const page: PdfPage = this.loadedDocument.getPage(currentPageNumber);
+                    !isDeleted && !isInserted && !isCopied && !isImportedDoc && pageNumber !== -1) {
+                    const page: PdfPage = this.loadedDocument.getPage(currentPageNumber - importPageCount);
                     page.rotation = this.getPdfRotationAngle(rotation);
                 }
             }
@@ -433,12 +485,13 @@ export class PdfRenderer {
                 const isDeleted: boolean = organizePages[parseInt(i.toString(), 10)].isDeleted;
                 const isInserted: boolean = organizePages[parseInt(i.toString(), 10)].isInserted;
                 const isCopied: boolean = organizePages[parseInt(i.toString(), 10)].isCopied;
+                const isImportedDoc: boolean = organizePages[parseInt(i.toString(), 10)].isImportedDoc;
                 let pageSize: number[];
                 if (!isNullOrUndefined(organizePages[parseInt(i.toString(), 10)].pageSize)) {
                     pageSize = [this.convertPixelToPoint(organizePages[parseInt(i.toString(), 10)].pageSize.width),
                         this.convertPixelToPoint(organizePages[parseInt(i.toString(), 10)].pageSize.height)];
                 }
-                if (isCopied) {
+                if (isCopied || isImportedDoc) {
                     copiedPageCount++;
                 }
                 if (!isNullOrUndefined(currentPageNumber) && !isDeleted && isInserted && pageNumber === -1) {
@@ -455,6 +508,7 @@ export class PdfRenderer {
     }
     private copyPages(organizePages: any, clonedDocument: PdfDocument): void {
         if (organizePages.length > 0) {
+            let importPageCount: number = 0;
             for (let i: number = 0; i < organizePages.length; i++) {
                 const pageNumber: number = organizePages[parseInt(i.toString(), 10)].pageIndex;
                 const currentPageNumber: number = organizePages[parseInt(i.toString(), 10)].currentPageIndex;
@@ -462,18 +516,55 @@ export class PdfRenderer {
                 const isDeleted: boolean = organizePages[parseInt(i.toString(), 10)].isDeleted;
                 const isInserted: boolean = organizePages[parseInt(i.toString(), 10)].isInserted;
                 const isCopied: boolean = organizePages[parseInt(i.toString(), 10)].isCopied;
+                const isImportedDoc: boolean = organizePages[parseInt(i.toString(), 10)].isImportedDoc;
                 const rotation: number = organizePages[parseInt(i.toString(), 10)].rotateAngle;
-                if (!isNullOrUndefined(currentPageNumber) && !isDeleted && !isInserted && isCopied && pageNumber === -1) {
+                if (isImportedDoc) {
+                    importPageCount++;
+                }
+                if (!isNullOrUndefined(currentPageNumber) && !isDeleted && !isInserted && !isImportedDoc && isCopied && pageNumber === -1) {
                     const pageToImport: PdfPage = clonedDocument.getPage(copiedPageIndex);
                     pageToImport.rotation = this.getPdfRotationAngle(rotation);
-                    this.loadedDocument.importPage(pageToImport, clonedDocument, currentPageNumber);
+                    const options: PdfPageImportOptions = new PdfPageImportOptions();
+                    options.targetIndex = currentPageNumber - importPageCount;
+                    options.groupFormFields = true;
+                    this.loadedDocument.importPage(pageToImport, clonedDocument, options);
+                }
+            }
+        }
+    }
+    private importPages(organizePages: any): void {
+        if (organizePages.length > 0) {
+            for (let i: number = organizePages.length - 1; i >= 0 ; i--) {
+                const pageNumber: number = organizePages[parseInt(i.toString(), 10)].pageIndex;
+                const currentPageNumber: number = organizePages[parseInt(i.toString(), 10)].currentPageIndex;
+                const isDeleted: boolean = organizePages[parseInt(i.toString(), 10)].isDeleted;
+                const isInserted: boolean = organizePages[parseInt(i.toString(), 10)].isInserted;
+                const isCopied: boolean = organizePages[parseInt(i.toString(), 10)].isCopied;
+                const isImportedDoc: boolean = organizePages[parseInt(i.toString(), 10)].isImportedDoc;
+                let documentData: any = organizePages[parseInt(i.toString(), 10)].documentData;
+                const password: string = organizePages[parseInt(i.toString(), 10)].password;
+                if (!isNullOrUndefined(currentPageNumber) && !isDeleted && !isInserted && !isCopied  && isImportedDoc &&
+                pageNumber === -1) {
+                    let importedDocCountBefore: number = 0;
+                    for (let j: number = 0; j < i; j++) {
+                        if (organizePages[parseInt(j.toString(), 10)].isImportedDoc) {
+                            importedDocCountBefore++;
+                        }
+                    }
+                    documentData = this.pdfViewerBase.convertBase64(documentData);
+                    this.document = null;
+                    this.document = new PdfDocument(documentData, password);
+                    const options: PdfPageImportOptions = new PdfPageImportOptions();
+                    options.targetIndex = currentPageNumber - importedDocCountBefore;
+                    options.groupFormFields = true;
+                    this.loadedDocument.importPageRange(this.document, 0, this.document.pageCount - 1, options);
                 }
             }
         }
     }
     private deletePdfPages(organizePages: any, reorderedPages: number[]): void {
         if (organizePages.length > 0) {
-            const clonedCollection = JSON.parse(JSON.stringify(organizePages));
+            const clonedCollection: any = JSON.parse(JSON.stringify(organizePages));
             const sortedCollection: any = [];
             let deleteCount: number = 0;
             const initialPageCount: number = this.loadedDocument.pageCount;
@@ -513,16 +604,16 @@ export class PdfRenderer {
 
     private getPdfRotationAngle(rotation: number): PdfRotationAngle {
         switch (rotation) {
-            case 0:
-                return PdfRotationAngle.angle0;
-            case 90:
-                return PdfRotationAngle.angle90;
-            case 180:
-                return PdfRotationAngle.angle180;
-            case 270:
-                return PdfRotationAngle.angle270;
-            default:
-                return PdfRotationAngle.angle0;
+        case 0:
+            return PdfRotationAngle.angle0;
+        case 90:
+            return PdfRotationAngle.angle90;
+        case 180:
+            return PdfRotationAngle.angle180;
+        case 270:
+            return PdfRotationAngle.angle270;
+        default:
+            return PdfRotationAngle.angle0;
         }
     }
 
@@ -540,14 +631,14 @@ export class PdfRenderer {
             if (typeof annotationDataFormat === 'string') {
                 this.loadedDocument._allowImportCustomData = true;
                 switch (annotationDataFormat.toLowerCase()) {
-                    case 'json':
-                        this.loadedDocument.importAnnotations(annotData, DataFormat.json);
-                        break;
-                    case 'xfdf':
-                        this.loadedDocument.importAnnotations(annotData, DataFormat.xfdf);
-                        break;
-                    default:
-                        break;
+                case 'json':
+                    this.loadedDocument.importAnnotations(annotData, DataFormat.json);
+                    break;
+                case 'xfdf':
+                    this.loadedDocument.importAnnotations(annotData, DataFormat.xfdf);
+                    break;
+                default:
+                    break;
                 }
                 for (let i: number = 0; i < this.loadedDocument.pageCount; i++) {
                     const pageNumber: number = i;
@@ -609,30 +700,30 @@ export class PdfRenderer {
         let exportObject: Uint8Array;
         if (typeof annotationDataFormat === 'string') {
             switch (annotationDataFormat.toLowerCase()) {
-                case 'json':
-                    settings.dataFormat = DataFormat.json;
-                    if (isObject) {
-                        settings.exportAppearance = isObject;
-                        exportObject = this.loadedDocument.exportAnnotations(settings);
-                        return exportObject;
-                    } else {
-                        fileName = this.changeFileExtension(this.pdfViewer.fileName, 'json');
-                        return this.loadedDocument.exportAnnotations(settings);
-                    }
-                case 'xfdf':
-                    settings.dataFormat = DataFormat.xfdf;
-                    if (isObject) {
-                        settings.exportAppearance = isObject;
-                        exportObject = this.loadedDocument.exportAnnotations(settings);
-                        return exportObject;
+            case 'json':
+                settings.dataFormat = DataFormat.json;
+                if (isObject) {
+                    settings.exportAppearance = isObject;
+                    exportObject = this.loadedDocument.exportAnnotations(settings);
+                    return exportObject;
+                } else {
+                    fileName = this.changeFileExtension(this.pdfViewer.fileName, 'json');
+                    return this.loadedDocument.exportAnnotations(settings);
+                }
+            case 'xfdf':
+                settings.dataFormat = DataFormat.xfdf;
+                if (isObject) {
+                    settings.exportAppearance = isObject;
+                    exportObject = this.loadedDocument.exportAnnotations(settings);
+                    return exportObject;
 
-                    } else {
-                        fileName = this.changeFileExtension(this.pdfViewer.fileName, 'xfdf');
-                        return this.loadedDocument.exportAnnotations(settings);
-                    }
+                } else {
+                    fileName = this.changeFileExtension(this.pdfViewer.fileName, 'xfdf');
+                    return this.loadedDocument.exportAnnotations(settings);
+                }
                 // Add more cases for other supported formats as needed
-                default:
-                    break;
+            default:
+                break;
             }
         }
         return null;
@@ -666,110 +757,110 @@ export class PdfRenderer {
                         annotationType = 'shapeAnnotation';
                     }
                     switch (annotationType) {
-                        case 'textMarkup':
-                            if (Object.prototype.hasOwnProperty.call(jsonObject, 'textMarkupAnnotations')) {
-                                const textMarkupDetails: any = JSON.parse(jsonObject.textMarkupAnnotations);
-                                const pageNumber: string = details['pageNumber'].toString();
-                                const annotationCount: { [key: string]: object } = textMarkupDetails[parseInt(pageNumber, 10)];
-                                const pageAnnotations: any = annotationCount;
-                                const textMarkup: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
-                                if (textMarkup) {
-                                    details = textMarkup;
-                                    annotationRenderer.addTextMarkup(details, this.loadedDocument);
+                    case 'textMarkup':
+                        if (Object.prototype.hasOwnProperty.call(jsonObject, 'textMarkupAnnotations')) {
+                            const textMarkupDetails: any = JSON.parse(jsonObject.textMarkupAnnotations);
+                            const pageNumber: string = details['pageNumber'].toString();
+                            const annotationCount: { [key: string]: object } = textMarkupDetails[parseInt(pageNumber, 10)];
+                            const pageAnnotations: any = annotationCount;
+                            const textMarkup: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
+                            if (textMarkup) {
+                                details = textMarkup;
+                                annotationRenderer.addTextMarkup(details, this.loadedDocument);
+                            }
+                        }
+                        break;
+                    case 'shapeAnnotation':
+                        if (Object.prototype.hasOwnProperty.call(jsonObject, 'shapeAnnotations')) {
+                            const shapeDetails: any = JSON.parse(jsonObject.shapeAnnotations);
+                            const pageNumber: string = details['pageNumber'].toString();
+                            const annotationCount: { [key: string]: object } = shapeDetails[parseInt(pageNumber, 10)];
+                            const pageAnnotations: any = annotationCount;
+                            const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
+                            const shape: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
+                            if (shape) {
+                                details = shape;
+                                annotationRenderer.addShape(details, page);
+                            }
+                        }
+                        break;
+                    case 'stamp':
+                        if (Object.prototype.hasOwnProperty.call(jsonObject, 'stampAnnotations')) {
+                            const stampdetails: any = JSON.parse(jsonObject.stampAnnotations);
+                            const pageNumber: string = details['pageNumber'].toString();
+                            const annotationCount: { [key: string]: object } = stampdetails[parseInt(pageNumber, 10)];
+                            const pageAnnotations: any = annotationCount;
+                            const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
+                            const stamp: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
+                            if (stamp) {
+                                details = stamp;
+                                annotationRenderer.addCustomStampAnnotation(details, page);
+                            }
+                        }
+                        break;
+                    case 'measureShapes':
+                        if (Object.prototype.hasOwnProperty.call(jsonObject, 'measureShapeAnnotations')) {
+                            const shapeDetails: any = JSON.parse(jsonObject.measureShapeAnnotations);
+                            const pageNumber: string = details['pageNumber'].toString();
+                            const annotationCount: { [key: string]: object } = shapeDetails[parseInt(pageNumber, 10)];
+                            const pageAnnotations: any = annotationCount;
+                            const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
+                            const shape: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
+                            if (shape) {
+                                details = shape;
+                                annotationRenderer.addMeasure(details, page);
+                            }
+                        }
+                        break;
+                    case 'sticky':
+                        if (Object.prototype.hasOwnProperty.call(jsonObject, 'stickyNotesAnnotation')) {
+                            const shapeDetails: any = JSON.parse(jsonObject.stickyNotesAnnotation);
+                            const pageNumber: string = details['pageNumber'].toString();
+                            const annotationCount: { [key: string]: object } = shapeDetails[parseInt(pageNumber, 10)];
+                            const pageAnnotations: any = annotationCount;
+                            const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
+                            const shape: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
+                            if (shape) {
+                                details = shape;
+                                annotationRenderer.addStickyNotes(details, page);
+                            }
+                        }
+                        break;
+                    case 'Ink':
+                        if (Object.prototype.hasOwnProperty.call(jsonObject, 'inkSignatureData')) {
+                            const shapeDetails: any = JSON.parse(jsonObject.inkSignatureData);
+                            const pageNumber: string = details['pageNumber'].toString();
+                            const annotationCount: { [key: string]: object } = shapeDetails[parseInt(pageNumber, 10)];
+                            const pageAnnotations: any = annotationCount;
+                            const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
+                            const shape: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
+                            if (shape) {
+                                details = shape;
+                                annotationRenderer.saveInkSignature(details, page);
+                            }
+                        }
+                        break;
+                    case 'FreeText':
+                        if (Object.prototype.hasOwnProperty.call(jsonObject, 'freeTextAnnotation')) {
+                            const freeTextDetails: any = JSON.parse(jsonObject.freeTextAnnotation);
+                            const pageNumber: string = details['pageNumber'].toString();
+                            const annotationCount: { [key: string]: object } = freeTextDetails[parseInt(pageNumber, 10)];
+                            const pageAnnotations: any = annotationCount;
+                            const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
+                            const freeText: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
+                            if (!isNullOrUndefined(freeText)) {
+                                details = freeText;
+                                if (!isNullOrUndefined(this.FallbackFontCollection) && this.FallbackFontCollection.length !== 0) {
+                                    annotationRenderer.addFreeText(details, page, this.FallbackFontCollection);
+                                }
+                                else {
+                                    annotationRenderer.addFreeText(details, page);
                                 }
                             }
-                            break;
-                        case 'shapeAnnotation':
-                            if (Object.prototype.hasOwnProperty.call(jsonObject, 'shapeAnnotations')) {
-                                const shapeDetails: any = JSON.parse(jsonObject.shapeAnnotations);
-                                const pageNumber: string = details['pageNumber'].toString();
-                                const annotationCount: { [key: string]: object } = shapeDetails[parseInt(pageNumber, 10)];
-                                const pageAnnotations: any = annotationCount;
-                                const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
-                                const shape: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
-                                if (shape) {
-                                    details = shape;
-                                    annotationRenderer.addShape(details, page);
-                                }
-                            }
-                            break;
-                        case 'stamp':
-                            if (Object.prototype.hasOwnProperty.call(jsonObject, 'stampAnnotations')) {
-                                const stampdetails: any = JSON.parse(jsonObject.stampAnnotations);
-                                const pageNumber: string = details['pageNumber'].toString();
-                                const annotationCount: { [key: string]: object } = stampdetails[parseInt(pageNumber, 10)];
-                                const pageAnnotations: any = annotationCount;
-                                const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
-                                const stamp: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
-                                if (stamp) {
-                                    details = stamp;
-                                    annotationRenderer.addCustomStampAnnotation(details, page);
-                                }
-                            }
-                            break;
-                        case 'measureShapes':
-                            if (Object.prototype.hasOwnProperty.call(jsonObject, 'measureShapeAnnotations')) {
-                                const shapeDetails: any = JSON.parse(jsonObject.measureShapeAnnotations);
-                                const pageNumber: string = details['pageNumber'].toString();
-                                const annotationCount: { [key: string]: object } = shapeDetails[parseInt(pageNumber, 10)];
-                                const pageAnnotations: any = annotationCount;
-                                const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
-                                const shape: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
-                                if (shape) {
-                                    details = shape;
-                                    annotationRenderer.addMeasure(details, page);
-                                }
-                            }
-                            break;
-                        case 'sticky':
-                            if (Object.prototype.hasOwnProperty.call(jsonObject, 'stickyNotesAnnotation')) {
-                                const shapeDetails: any = JSON.parse(jsonObject.stickyNotesAnnotation);
-                                const pageNumber: string = details['pageNumber'].toString();
-                                const annotationCount: { [key: string]: object } = shapeDetails[parseInt(pageNumber, 10)];
-                                const pageAnnotations: any = annotationCount;
-                                const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
-                                const shape: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
-                                if (shape) {
-                                    details = shape;
-                                    annotationRenderer.addStickyNotes(details, page);
-                                }
-                            }
-                            break;
-                        case 'Ink':
-                            if (Object.prototype.hasOwnProperty.call(jsonObject, 'inkSignatureData')) {
-                                const shapeDetails: any = JSON.parse(jsonObject.inkSignatureData);
-                                const pageNumber: string = details['pageNumber'].toString();
-                                const annotationCount: { [key: string]: object } = shapeDetails[parseInt(pageNumber, 10)];
-                                const pageAnnotations: any = annotationCount;
-                                const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
-                                const shape: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
-                                if (shape) {
-                                    details = shape;
-                                    annotationRenderer.saveInkSignature(details, page);
-                                }
-                            }
-                            break;
-                        case 'FreeText':
-                            if (Object.prototype.hasOwnProperty.call(jsonObject, 'freeTextAnnotation')) {
-                                const freeTextDetails: any = JSON.parse(jsonObject.freeTextAnnotation);
-                                const pageNumber: string = details['pageNumber'].toString();
-                                const annotationCount: { [key: string]: object } = freeTextDetails[parseInt(pageNumber, 10)];
-                                const pageAnnotations: any = annotationCount;
-                                const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
-                                const freeText: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
-                                if (!isNullOrUndefined(freeText)) {
-                                    details = freeText;
-                                    if (!isNullOrUndefined(this.FallbackFontCollection) && this.FallbackFontCollection.length !== 0) {
-                                        annotationRenderer.addFreeText(details, page, this.FallbackFontCollection);
-                                    }
-                                    else {
-                                        annotationRenderer.addFreeText(details, page);
-                                    }
-                                }
-                            }
-                            break;
-                        default:
-                            break;
+                        }
+                        break;
+                    default:
+                        break;
                     }
                 }
                 if (jsonObject.signatureData) {
@@ -895,14 +986,14 @@ export class PdfRenderer {
 
     private getPdfTextStyleString(textStyle: PdfTextStyle): string {
         switch (textStyle) {
-            case PdfTextStyle.bold:
-                return 'Bold';
-            case PdfTextStyle.italic:
-                return 'Italic';
-            case PdfTextStyle.regular:
-                return 'Regular';
-            default:
-                return 'Regular';
+        case PdfTextStyle.bold:
+            return 'Bold';
+        case PdfTextStyle.italic:
+            return 'Italic';
+        case PdfTextStyle.regular:
+            return 'Regular';
+        default:
+            return 'Regular';
         }
     }
 
@@ -1110,6 +1201,7 @@ export class PdfRenderer {
                 const encoder: TextEncoder = new TextEncoder();
                 const uint8ArrayLike: Uint8Array = encoder.encode(jsonObject['data']);
                 jsonObject['data'] = new Uint8Array(uint8ArrayLike);
+
             }
             if (Object.prototype.hasOwnProperty.call(jsonObject, 'formFieldDataFormat')) {
                 this.loadedDocument.importFormData(jsonObject['data'], dataFormat);
@@ -1174,7 +1266,9 @@ export class PdfRenderer {
     }
 
     /**
+     * @param {number} pageIndex - It sets the page index
      * @private
+     * @returns {Promise<string>} - promise
      */
     public exportAsImage(pageIndex: number): Promise<string> {
         return new Promise((resolve: Function, reject: Function) => {
@@ -1183,7 +1277,10 @@ export class PdfRenderer {
     }
 
     /**
+     * @param {number} startIndex - It gets the start index value
+     * @param {number} endIndex - It gets the end index value
      * @private
+     * @returns { Promise<string[]>} - Promise
      */
     public exportAsImages(startIndex: number, endIndex: number): Promise<string[]> {
         return new Promise((resolve: Function, reject: Function) => {
@@ -1192,16 +1289,23 @@ export class PdfRenderer {
     }
 
     /**
+     * @param {number} pageIndex - It gets the start index value
+     * @param {Size} size - It gets the size value
      * @private
+     * @returns { Promise<string[]>} - Promise
      */
     public exportAsImagewithSize(pageIndex: number, size: Size): Promise<string> {
         return new Promise((resolve: Function, reject: Function) => {
-            resolve(this.pdfiumExportAsImage(pageIndex,size));
+            resolve(this.pdfiumExportAsImage(pageIndex, size));
         });
     }
 
     /**
+     * @param {number} startIndex - It gets the start index value
+     * @param {number} endIndex - It gets the end index value
+     * @param {Size} size - It gets the size value
      * @private
+     * @returns { Promise<string[]>} - Promise
      */
     public exportAsImagesWithSize(startIndex: number, endIndex: number, size: Size): Promise<string[]> {
         return new Promise((resolve: Function, reject: Function) => {
@@ -1209,8 +1313,8 @@ export class PdfRenderer {
         });
     }
 
-
     private pdfiumExportAsImage(pageIndex: number, size?: Size): Promise<string> {
+        // eslint-disable-next-line
         const proxy: PdfRenderer = this;
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner) && !isNullOrUndefined(this.loadedDocument)) {
@@ -1239,6 +1343,7 @@ export class PdfRenderer {
     }
 
     private pdfiumExportAsImages(startIndex: number, endIndex: number, size?: Size): Promise<string[]> {
+        // eslint-disable-next-line
         const proxy: PdfRenderer = this;
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner) && !isNullOrUndefined(this.loadedDocument)) {
@@ -1251,9 +1356,9 @@ export class PdfRenderer {
                 if (startIndex > endIndex) {
                     reject('Invalid page index');
                 }
+                size = !isNullOrUndefined(size) ? size : null;
                 const imageUrls: string[] = [];
                 const count: number = endIndex - startIndex + 1;
-                size = !isNullOrUndefined(size) ? size : null;
                 for (let i: number = startIndex; i <= endIndex; i++) {
                     this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: i, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, size: size });
                 }
@@ -1293,7 +1398,7 @@ export class PdfRenderer {
         this.documentTextCollection = [];
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner)) {
-                this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'extractText', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: true, isRenderText: isRenderText, jsonObject: jsonObject, requestType: requestType, annotationObject: annotationObject });
+                this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'extractText', zoomFactor: this.pdfViewerBase.getZoomFactor(), isTextNeed: true, isRenderText: isRenderText, jsonObject: jsonObject, requestType: requestType, annotationObject: annotationObject });
             }
             else {
                 resolve(null);
@@ -1375,6 +1480,7 @@ export class PdfRenderer {
             let textDetails: any = textData;
             if (textData.isRenderText) {
                 textDetails = textData.extractedTextDetails;
+                textDetails.extractedText = textData.pageText;
             }
             pageTextDataCollection[textData.pageIndex] =
             new PageTextData(new SizeBase(this.getPageSize(textData.pageIndex).width,
@@ -1440,7 +1546,7 @@ export class PdfRenderer {
     }
 
     private extractTextDetailsWithPageSize(pageIndex: number, isRenderText?: boolean, jsonObject?: any, requestType?: string,
-        annotationObject?: any): void {
+                                           annotationObject?: any): void {
         const pageTextDataCollection: { [key: number]: PageTextData } = {};
         this.textExtraction(pageIndex, true, isRenderText, jsonObject, requestType, annotationObject);
 

@@ -1,21 +1,23 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { SpreadsheetModel, SheetModel, getCell, CellModel, showAggregate, Spreadsheet, setCell, ICellRenderer } from '../../../src/index';
-import { InventoryList, defaultData } from '../util/datasource.spec';
-import { L10n, setCurrencyCode } from '@syncfusion/ej2-base';
+import { convertToDefaultFormat, focus, configureLocalizedFormat, getFormatFromType, refreshRibbonIcons } from '../../../src/index';
+import { FormatOption, ValidationModel, DialogBeforeOpenEventArgs, getTypeFromFormat, clearRange } from '../../../src/index';
+import { InventoryList, defaultData, defaultGermanData } from '../util/datasource.spec';
+import { getComponent, L10n, setCurrencyCode, setCulture, onIntlChange, EmitType } from '@syncfusion/ej2-base';
 
 /**
- *  Spreadsheet Number Format spec
+ *  Spreadsheet Number Format test cases.
  */
 describe('Spreadsheet Number Format Module ->', (): void => {
-    let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+    const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
     let model: SpreadsheetModel;
     describe('Custom number format ->', (): void => {
         let sheet: any; let cell: any; let cellEle: HTMLElement;
         beforeAll((done: Function) => {
             model = {
                 sheets: [{ rows: [{ cells: [{ value: 'Mar-2020' }, { value: 'Apr-10' }, { value: '2020-May' }, { value: '22-jun' },
-                { value: '13-Jul-2020' }, { value: '11:34:32 AM' }, { value: '11:34:32' }, { value: '11:34' }, { value: '11:34 AM' },
-                { value: '11 AM' }] }] }]
+                    { value: '13-Jul-2020' }, { value: '11:34:32 AM' }, { value: '11:34:32' }, { value: '11:34' }, { value: '11:34 AM' },
+                    { value: '11 AM' }] }] }]
             };
             helper.initializeSpreadsheet(model, done);
         });
@@ -27,19 +29,19 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             const cells: CellModel[] = sheet.rows[0].cells;
             const cellEle: Element[] = helper.invoke('getRow', [0]).cells;
             expect(cells[0].value).toBe('43891');
-            expect(cells[0].format).toBe('MMM-yy');
+            expect(cells[0].format).toBe('mmm-yy');
             expect(cellEle[0].textContent).toBe('Mar-20');
             expect(cells[1].value).toBe('45392');
-            expect(cells[1].format).toBe('dd-MMM');
+            expect(cells[1].format).toBe('d-mmm');
             expect(cellEle[1].textContent).toBe('10-Apr');
             expect(cells[2].value).toBe('43952');
-            expect(cells[2].format).toBe('MMM-yy');
+            expect(cells[2].format).toBe('mmm-yy');
             expect(cellEle[2].textContent).toBe('May-20');
             expect(cells[3].value).toBe('45465');
-            expect(cells[3].format).toBe('dd-MMM');
+            expect(cells[3].format).toBe('d-mmm');
             expect(cellEle[3].textContent).toBe('22-Jun');
             expect(cells[4].value).toBe('44025');
-            expect(cells[4].format).toBe('d-MMM-yy');
+            expect(cells[4].format).toBe('d-mmm-yy');
             expect(cellEle[4].textContent).toBe('13-Jul-20');
             done();
         });
@@ -93,9 +95,16 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             helper.invoke('updateCell', [{ value: '13-Jul-2020', format: 'd-mmm-yy' }, 'D3']);
             expect(cells[3].value).toBe('44025');
             expect(cellElems[3].textContent).toBe('13-Jul-20');
+            setCell(2, 4, sheet, { value: '08/27/1994' });
+            expect(cells[4].value).toBe('08/27/1994');
+            expect(cells[4].format).toBeUndefined();
+            helper.invoke('numberFormat', ['m/d/yyyy', 'E3']);
+            expect(cells[4].value).toBe('34573');
+            expect(cells[4].format).toBe('m/d/yyyy');
+            expect(helper.invoke('getCell', [2, 4]).textContent).toBe('8/27/1994');
+            delete cells[4].format;
             done();
         });
-            
         it('EJ2-63249 -> $#,##0_);[Red]($#,##0) number format', (done: Function) => {
             helper.invoke('numberFormat', ['$#,##0_);[Red]($#,##0)', 'H1']);
             helper.invoke('updateCell', [{ value: '8529.22' }, 'H1']);
@@ -276,13 +285,13 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cellEle.textContent).toBe(' $  (4,234.57)');
             helper.invoke('numberFormat', ['_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)', 'A2']);
             expect(cell.value).toBe(-4234.567);
-            expect(cellEle.textContent).toBe('   (4,234.57)');
+            expect(cellEle.textContent).toBe(' (4,234.57)');
             helper.invoke('numberFormat', ['_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)', 'A2']);
             expect(cell.value).toBe(-4234.567);
-            expect(cellEle.textContent).toBe('   (4,235)');
+            expect(cellEle.textContent).toBe('    (4,235)');
             helper.invoke('updateCell', [{ value: '4234.567' }, 'A2']);
             expect(cell.value).toBe(4234.567);
-            expect(cellEle.textContent).toBe(' 4,235 ');
+            expect(cellEle.textContent).toBe('      4,235 ');
             helper.invoke('numberFormat', ['_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)', 'A2']);
             expect(cell.value).toBe(4234.567);
             expect(cellEle.textContent).toBe(' 4,234.57 ');
@@ -382,12 +391,12 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cellEle.classList.contains('e-right-align')).toBeFalsy();
             helper.invoke('updateCell', [{ value: '1/31' }, 'F2']);
             expect(row.cells[5].value).toBe('45322');
-            expect(row.cells[5].format).toBe('dd/MMM');
-            expect(cellEle.textContent).toBe('31/Jan');
+            expect(row.cells[5].format).toBe('d-mmm');
+            expect(cellEle.textContent).toBe('31-Jan');
             helper.invoke('updateCell', [{ value: '12/31' }, 'G2']);
             expect(row.cells[6].value).toBe('45657');
-            expect(row.cells[6].format).toBe('dd/MMM');
-            expect(helper.invoke('getCell', [1, 6]).textContent).toBe('31/Dec');
+            expect(row.cells[6].format).toBe('d-mmm');
+            expect(helper.invoke('getCell', [1, 6]).textContent).toBe('31-Dec');
             helper.invoke('updateCell', [{ value: '1:2 PM' }, 'H2']);
             expect(row.cells[7].value).toBe('0.5430555555555555');
             expect(row.cells[7].format).toBe('h:mm AM/PM');
@@ -416,7 +425,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cellEle.textContent).toBe('-0.19');
             helper.edit('A2', '=E3');
             expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('-0.18999999999869033');
-            expect(helper.invoke('getCell', [1, 0]).textContent).toBe('   (0.19)');
+            expect(helper.invoke('getCell', [1, 0]).textContent).toBe('      (0.19)');
             done();
         });
         it ('Auto deduct on general number format applied cells', (done: Function) => {
@@ -427,7 +436,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             helper.invoke('updateCell', [{ value: '2/10/2020' }, 'F3']);
             const row: any = helper.getInstance().sheets[0].rows[2];
             expect(row.cells[5].value).toBe('43871');
-            expect(row.cells[5].format).toBe('mm-dd-yyyy');
+            expect(row.cells[5].format).toBe('m/d/yyyy');
             expect(numFormatSelection.textContent).toBe('Short Date');
             const cellEle: HTMLElement = helper.invoke('getCell', [2, 5]);
             expect(cellEle.textContent).toBe('2/10/2020');
@@ -444,8 +453,8 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cellEle.textContent).toBe('0.557199074');
             helper.invoke('updateCell', [{ value: '10/2/2020 4:32:45' }, 'F3']);
             expect(row.cells[5].value).toBe('44106.189409722225');
-            expect(row.cells[5].format).toBe('mm-dd-yyyy h:mm:ss');
-            expect(cellEle.textContent).toBe('10/2/2020 4:32:45');
+            expect(row.cells[5].format).toBe('m/d/yyyy h:mm');
+            expect(cellEle.textContent).toBe('10/2/2020 4:32');
             expect(numFormatSelection.textContent).toBe('Custom');
             helper.invoke('updateCell', [{ format: 'General' }, 'F3']);
             expect(row.cells[5].value).toBe('44106.189409722225');
@@ -453,14 +462,14 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(numFormatSelection.textContent).toBe('General');
             helper.invoke('updateCell', [{ value: '09-02-23' }, 'F3']);
             expect(row.cells[5].value).toBe('45171');
-            expect(row.cells[5].format).toBe('mm-dd-yyyy');
+            expect(row.cells[5].format).toBe('m/d/yyyy');
             expect(cellEle.textContent).toBe('9/2/2023');
             helper.invoke('updateCell', [{ format: 'General' }, 'F3']);
             expect(row.cells[5].value).toBe('45171');
             expect(cellEle.textContent).toBe('45171');
             helper.invoke('updateCell', [{ value: 'June-2022' }, 'F3']);
             expect(row.cells[5].value).toBe('44713');
-            expect(row.cells[5].format).toBe('MMM-yy');
+            expect(row.cells[5].format).toBe('mmm-yy');
             expect(cellEle.textContent).toBe('Jun-22');
             expect(numFormatSelection.textContent).toBe('Custom');
             helper.invoke('updateCell', [{ format: 'General' }, 'F3']);
@@ -492,6 +501,20 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cell.value).toBe(-10);
             expect(cell.format).toBe('dd/MM/yyyy h:mm');
             expect(cellEle.textContent).toBe('########');
+            done();
+        });
+        it ('Applying improper number formats', (done: Function) => {
+            helper.invoke('numberFormat', ['"_"#', 'F3']);
+            const cell: any = helper.getInstance().sheets[0].rows[2].cells[5];
+            expect(cell.value).toBe(-10);
+            expect(cell.format).toBe('"_"#');
+            const cellEle: HTMLElement = helper.invoke('getCell', [2, 5]);
+            expect(cellEle.textContent).toBe('- 10');
+            helper.invoke('numberFormat', ['[Orange]#,##0', 'F3']);
+            expect(cell.value).toBe(-10);
+            expect(cell.format).toBe('[Orange]#,##0');
+            expect(cellEle.textContent).toBe('-[Orange]10');
+            expect(cellEle.style.color).toBe('');
             done();
         });
     });
@@ -661,6 +684,745 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(helper.invoke('getCell', [4, 9]).textContent).toBe('3:14');
             expect(sheet.rows[5].cells[9].value).toBe(1.1763888888888898);
             expect(helper.invoke('getCell', [5, 9]).textContent).toBe('4:14');
+            done();
+        });
+    });
+    describe('Culture based number format ->', (): void => {
+        let spreadsheet: Spreadsheet; let cell: any; let sheet: any; let cellEle: HTMLElement;
+        let formatBtn: HTMLElement; let customFormats: string[]; let localizedFormats: string[];
+        let listObj: { dataSource: string[], selectItem: (text: string) => void, getSelectedItems: () => { text: string, item: Element } };
+        beforeAll((done: Function) => {
+            helper.loadCultureFiles(['de']);
+            // Added below lines to clear the external bounded events which causing delay on setCulture & setCurrencyCode method execution.
+            (onIntlChange as any).boundedEvents.notifyExternalChange.length = 0;
+            delete (onIntlChange as any).boundedEvents['notifyExternalChange'];
+            setCulture('de');
+            setCurrencyCode('EUR');
+            configureLocalizedFormat(null, [{ id: 22, code: 'dd-MM-yyyy h:mm' }]);
+            model = { sheets: [{ ranges: [{ dataSource: defaultGermanData }] }], locale: 'de', listSeparator: ';' };
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterAll((): void => {
+            const germanCurrencyCode: string = customFormats[36];
+            expect(getTypeFromFormat(germanCurrencyCode, true)).toBe('Currency');
+            expect(getTypeFromFormat('$#,##0.00', true)).toBe('Custom');
+            helper.invoke('destroy');
+            // Added below lines to clear the external bounded events which causing delay on setCulture & setCurrencyCode method execution.
+            (onIntlChange as any).boundedEvents.notifyExternalChange.length = 0;
+            delete (onIntlChange as any).boundedEvents['notifyExternalChange'];
+            setCulture('en-US');
+            setCurrencyCode('USD');
+            expect(getTypeFromFormat(germanCurrencyCode, true)).toBe('Custom');
+            expect(getTypeFromFormat('$#,##0.00', true)).toBe('Currency');
+        });
+        it('Custom format dialog checking', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['E2']);
+            helper.getElement(`#${helper.id}_number_format`).click();
+            helper.getElement(`#${helper.id}_Custom`).click();
+            setTimeout(() => {
+                listObj = getComponent(helper.getElement('.e-custom-format-dlg .e-listview'), 'listview');
+                const formatInput: HTMLInputElement = helper.getElement('.e-custom-format-dlg .e-dialog-input');
+                expect(formatInput.value).toBe('');
+                expect(listObj.getSelectedItems()).toBeUndefined();
+                customFormats = (spreadsheet.workbookNumberFormatModule as any).customFormats;
+                expect(listObj.dataSource.length).toBe(36);
+                expect(customFormats.length).toBe(36);
+                localizedFormats = (spreadsheet.workbookNumberFormatModule as any).localizedFormats;
+                expect(localizedFormats === listObj.dataSource).toBeTruthy();
+                expect(listObj.dataSource[2]).toBe('0,00');
+                expect(listObj.dataSource[7]).toBe('#.##0,00_);(#.##0,00)');
+                expect(listObj.dataSource[10]).toBe('#.##0 €_);[Red](#.##0 €)');
+                expect(listObj.dataSource[14]).toBe('0,00%');
+                expect(listObj.dataSource[16]).toBe('##0,0E+0');
+                expect(listObj.dataSource[20]).toBe('d-mmm-yy');
+                expect(listObj.dataSource[26]).toBe('h:mm:ss');
+                expect(listObj.dataSource[29]).toBe('mm:ss,0');
+                expect(listObj.dataSource[33]).toBe('_(* #.##0_);_(* (#.##0);_(* \"-\"_);_(@_)');
+                expect(listObj.dataSource[34]).toBe('_(* #.##0,00 €_);_(* (#.##0,00) €;_(* \"-\"?? €_);_(@_)');
+                helper.setAnimationToNone('.e-custom-format-dlg.e-dialog');
+                listObj.selectItem('#.##0,00 €_);[Red](#.##0,00 €)');
+                expect(formatInput.value).toBe('#.##0,00 €_);[Red](#.##0,00 €)');
+                (formatInput.nextElementSibling as HTMLButtonElement).click();
+                sheet = helper.invoke('getActiveSheet');
+                cell = getCell(1, 4, sheet);
+                expect(cell.value).toBe(20);
+                expect(cell.format).toBe('#,##0.00 "€"_);[Red](#,##0.00 "€")');
+                cellEle = helper.invoke('getCell', [1, 4]);
+                expect(cellEle.textContent).toBe('20,00 € ');
+                formatBtn = helper.getElement(`#${helper.id}_number_format .e-tbar-btn-text`);
+                expect(formatBtn.textContent).toBe('Currency');
+                done();
+            });
+        });
+        it ('Culture-based format parsing using Util method', (done: Function) => {
+            let format: string = '#.##0,00 €';
+            format = convertToDefaultFormat(spreadsheet, format);
+            expect(format).toBe('#,##0.00 "€"');
+            helper.invoke('updateCell', [{ value: '20,278' }, 'E2']);
+            helper.invoke('numberFormat', [format, 'E2']);
+            expect(cell.value).toBe('20.278');
+            expect(cellEle.textContent).toBe('20,28 €');
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Currency');
+            format = '#.##0,00_);[Red](#.##0,00)';
+            format = convertToDefaultFormat(spreadsheet, format);
+            expect(format).toBe('#,##0.00_);[Red](#,##0.00)');
+            helper.invoke('numberFormat', [format, 'E2']);
+            expect(cellEle.textContent).toBe('20,28 ');
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Custom');
+            format = 'mm:ss,0';
+            format = convertToDefaultFormat(spreadsheet, format);
+            expect(format).toBe('mm:ss.0');
+            helper.invoke('numberFormat', [format, 'E2']);
+            expect(cellEle.textContent).toBe('40:19.0');
+            format = 'dd.MM.yyyy';
+            format = convertToDefaultFormat(spreadsheet, format);
+            expect(format).toBe('dd.MM.yyyy');
+            helper.invoke('numberFormat', [format, 'E2']);
+            expect(cellEle.textContent).toBe('20.01.1900');
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Custom');
+            format = '#,0.';
+            format = convertToDefaultFormat(spreadsheet, format);
+            expect(format).toBe('#.0,');
+            helper.invoke('numberFormat', [format, 'E2']);
+            //expect(cellEle.textContent).toBe(',0');
+            format = ',';
+            format = convertToDefaultFormat(spreadsheet, format);
+            expect(format).toBe('.');
+            helper.invoke('numberFormat', [format, 'E2']);
+            //expect(cellEle.textContent).toBe('20,');
+            format = '","00';
+            format = convertToDefaultFormat(spreadsheet, format);
+            expect(format).toBe('","00');
+            helper.invoke('numberFormat', [format, 'E2']);
+            expect(cellEle.textContent).toBe(',20');
+            format = '\\"_-* #.##0,# \\"';
+            format = convertToDefaultFormat(spreadsheet, format);
+            expect(format).toBe('\\"_-* #,##0.# \\"');
+            helper.invoke('numberFormat', [format, 'E2']);
+            //expect(cellEle.textContent).toBe('" 20,3 "');
+            format = '#"."';
+            format = convertToDefaultFormat(spreadsheet, format);
+            expect(format).toBe('#"."');
+            helper.invoke('numberFormat', [format, 'E2']);
+            expect(cellEle.textContent).toBe('20.');
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Custom');
+            done();
+        });
+        it('Custom format dialog checking after custom number formats are added', (done: Function) => {
+            helper.getElement(`#${helper.id}_number_format`).click();
+            helper.getElement(`#${helper.id}_Custom`).click();
+            setTimeout(() => {
+                listObj = getComponent(helper.getElement('.e-custom-format-dlg .e-listview'), 'listview');
+                expect(listObj.dataSource.length).toBe(43);
+                expect(customFormats.length).toBe(43);
+                expect(listObj.dataSource[4]).toBe('#.##0,00');
+                expect(listObj.dataSource[6]).toBe('#.##0_);[Red](#.##0)');
+                expect(listObj.dataSource[11]).toBe('#.##0,00 €_);(#.##0,00 €)');
+                expect(listObj.dataSource[18]).toBe('# ??/??');
+                expect(listObj.dataSource[22]).toBe('mmm-yy');
+                expect(listObj.dataSource[27]).toBe('dd-MM-yyyy h:mm');
+                expect(listObj.dataSource[30]).toBe('@');
+                expect(listObj.dataSource[32]).toBe('_(* #.##0 €_);_(* (#.##0) €;_(* \"-\" €_);_(@_)');
+                expect(listObj.dataSource[36]).toBe('#.##0,00 €');
+                expect(customFormats[36]).toBe('#,##0.00 "€"');
+                expect(listObj.dataSource[37]).toBe('dd.MM.yyyy');
+                expect(listObj.dataSource[38]).toBe('#,0.');
+                expect(customFormats[38]).toBe('#.0,');
+                expect(listObj.dataSource[39]).toBe(',');
+                expect(customFormats[39]).toBe('.');
+                expect(listObj.dataSource[40]).toBe('","00');
+                expect(customFormats[40]).toBe('","00');
+                expect(listObj.dataSource[41]).toBe('\\"_-* #.##0,# \\"');
+                expect(customFormats[41]).toBe('\\"_-* #,##0.# \\"');
+                expect(listObj.dataSource[42]).toBe('#"."');
+                expect(customFormats[42]).toBe('#"."');
+                done();
+            });
+        });
+        it('Selcting/deselecting custom number format from list and applying the selected format', (done: Function) => {
+            const formatInput: HTMLInputElement = helper.getElement('.e-custom-format-dlg .e-dialog-input');
+            expect(formatInput.value).toBe('#"."');
+            expect(listObj.getSelectedItems().text).toBe('#"."');
+            focus(formatInput);
+            formatInput.value = 'd';
+            helper.triggerKeyNativeEvent(null, false, false, formatInput, 'input', false, formatInput);
+            expect(listObj.getSelectedItems()).toBeUndefined();
+            formatInput.value = 'dd.MM.yyyy';
+            helper.triggerKeyNativeEvent(null, false, false, formatInput, 'input', false, formatInput);
+            expect(listObj.getSelectedItems()).toBeUndefined();
+            helper.setAnimationToNone('.e-custom-format-dlg.e-dialog');
+            (formatInput.nextElementSibling as HTMLButtonElement).click();
+            expect(cell.value).toBe('20.278');
+            expect(cell.format).toBe('dd.MM.yyyy');
+            expect(cellEle.textContent).toBe('20.01.1900');
+            expect(formatBtn.textContent).toBe('Custom');
+            done();
+        });
+        it('Custom format mapping with default number format ID', (done: Function) => {
+            let formatOptions: FormatOption[] = [{ id: 1, code: '#' }, { id: 2, code: '#,##' }, { id: 3, code: '0,000' },
+                { id: 4, code: '#,##0.0' }, { id: 37, code: '#,##0;-#,##0' }, { id: 38, code: '#,##0;[Red]-#,##0' },
+                { id: 39, code: '#,##0.00;-#,##0.00' }, { id: 40, code: '#,##0.00;[Red]-#,##0.00' },
+                { id: 5, code: '#,##0 "€";-#,##0 "€"' }, { id: 6, code: '#,##0 "€";[Red]-#,##0 "€"' },
+                { id: 7, code: '#,##0.00 "€";-#,##0.00 "€"' }, { id: 8, code: '#,##0.00 "€";[Red]-#,##0.00 "€"' },
+                { id: 41, code: '_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-' },
+                { id: 42, code: '_-* #,##0 "€"_-;-* #,##0 "€"_-;_-* "-" "€"_-;_-@_-' },
+                { id: 43, code: '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"??_-;_-@_-' },
+                { id: 44, code: '_-* #,##0.00 "€"_-;-* #,##0.00 "€"_-;_-* "-"?? "€"_-;_-@_-' }];
+            configureLocalizedFormat(spreadsheet, formatOptions);
+            formatOptions = [{ id: 14, code: 'dd.MM.yyyy' }, { id: 15, code: 'dd. MMM yy' }, { id: 16, code: 'dd. MMM' },
+                { id: 17, code: 'MMM yy' }, { id: 18, code: 'hh:mm AM/PM' }, { id: 19, code: 'hh:mm:ss AM/PM' }, { id: 20, code: 'hh:mm' },
+                { id: 21, code: 'hh:mm:ss' }, { id: 22, code: 'dd.MM.yyyy hh:mm' }, { id: 45, code: 'm:ss' }, { id: 46, code: '[h]:mm' },
+                { id: 47, code: 'h:mm:ss.0' }, { id: 10, code: '0.0#%' }, { id: 9, code: '#%' }, { id: 12, code: '#,##0 ?/?' },
+                { id: 13, code: '#,##0 ??/??' }, { id: 11, code: '0.00E+0' }, { id: 48, code: '##0.0E+00' }, { id: 49, code: ' @ ' }];
+            configureLocalizedFormat(spreadsheet, formatOptions, false);
+            let format: string = getFormatFromType('General');
+            expect(format).toBe('General');
+            format = getFormatFromType('Number');
+            expect(format).toBe('#,##');
+            helper.invoke('numberFormat', [format, 'E2']);
+            expect(cell.format).toBe('#,##');
+            expect(cellEle.textContent).toBe('20');
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Number');
+            format = getFormatFromType('ShortDate');
+            expect(format).toBe('dd.MM.yyyy');
+            helper.invoke('numberFormat', [format, 'E2']);
+            expect(cell.format).toBe('dd.MM.yyyy');
+            expect(cellEle.textContent).toBe('20.01.1900');
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Short Date');
+            format = getFormatFromType('Percentage');
+            expect(format).toBe('0.0#%');
+            helper.invoke('numberFormat', [format, 'G2:G11']);
+            expect(getCell(6, 6, sheet).format).toBe('0.0#%');
+            expect(helper.invoke('getCell', [6, 6]).textContent).toBe('13,2%');
+            helper.getElement(`#${helper.id}_number_format`).click();
+            helper.getElement(`#${helper.id}_Fraction`).click();
+            expect(cell.format).toBe('#,##0 ?/?');
+            expect(cellEle.textContent).toBe('20 139/500');
+            expect(formatBtn.textContent).toBe('Fraction');
+            format = getFormatFromType('Scientific');
+            expect(format).toBe('0.00E+0');
+            helper.invoke('updateCell', [{ format: format }, 'E2']);
+            expect(cell.format).toBe('0.00E+0');
+            expect(cellEle.textContent).toBe('2,03E+1');
+            expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
+            expect(formatBtn.textContent).toBe('Scientific');
+            format = getFormatFromType('Time');
+            expect(format).toBe('HH:mm:ss');
+            helper.invoke('numberFormat', [format, 'E2']);
+            expect(cell.format).toBe('HH:mm:ss');
+            expect(cellEle.textContent).toBe('06:40:19');
+            expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Time');
+            format = getFormatFromType('Text');
+            expect(format).toBe(' @ ');
+            helper.invoke('numberFormat', [format, 'E2']);
+            expect(cell.format).toBe(' @ ');
+            expect(cellEle.textContent).toBe(' 20,278 ');
+            expect(cellEle.classList.contains('e-right-align')).toBeFalsy();
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Text');
+            done();
+        });
+        it('Custom format dialog checking after custom number formats are mapped with default format ID', (done: Function) => {
+            helper.getElement(`#${helper.id}_number_format`).click();
+            helper.getElement(`#${helper.id}_Custom`).click();
+            setTimeout(()=> {
+                listObj = getComponent(helper.getElement('.e-custom-format-dlg .e-listview'), 'listview');
+                expect(listObj.dataSource.length).toBe(43);
+                expect(localizedFormats === listObj.dataSource).toBeTruthy();
+                expect(customFormats.length).toBe(43);
+                expect(listObj.dataSource[0]).toBe('General');
+                expect(listObj.dataSource[1]).toBe('#');
+                expect(listObj.dataSource[2]).toBe('#.##');
+                expect(customFormats[2]).toBe('#,##');
+                expect(listObj.dataSource[3]).toBe('0.000');
+                expect(customFormats[3]).toBe('0,000');
+                expect(listObj.dataSource[4]).toBe('#.##0,0');
+                expect(listObj.dataSource[5]).toBe('#.##0;-#.##0');
+                expect(listObj.dataSource[6]).toBe('#.##0;[Red]-#.##0');
+                expect(listObj.dataSource[7]).toBe('#.##0,00;-#.##0,00');
+                expect(listObj.dataSource[8]).toBe('#.##0,00;[Red]-#.##0,00');
+                expect(listObj.dataSource[9]).toBe('#.##0 €;-#.##0 €');
+                expect(customFormats[9]).toBe('#,##0 "€";-#,##0 "€"');
+                expect(listObj.dataSource[10]).toBe('#.##0 €;[Red]-#.##0 €');
+                expect(listObj.dataSource[11]).toBe('#.##0,00 €;-#.##0,00 €');
+                expect(listObj.dataSource[12]).toBe('#.##0,00 €;[Red]-#.##0,00 €');
+                expect(customFormats[12]).toBe('#,##0.00 "€";[Red]-#,##0.00 "€"');
+                expect(listObj.dataSource[13]).toBe('#%');
+                expect(listObj.dataSource[14]).toBe('0,0#%');
+                expect(customFormats[14]).toBe('0.0#%');
+                expect(listObj.dataSource[15]).toBe('0,00E+0');
+                expect(listObj.dataSource[16]).toBe('##0,0E+00');
+                expect(customFormats[16]).toBe('##0.0E+00');
+                expect(listObj.dataSource[17]).toBe('#.##0 ?/?');
+                expect(listObj.dataSource[18]).toBe('#.##0 ??/??');
+                expect(customFormats[18]).toBe('#,##0 ??/??');
+                expect(listObj.dataSource[19]).toBe('dd.MM.yyyy');
+                expect(listObj.dataSource[20]).toBe('dd. MMM yy');
+                expect(customFormats[20]).toBe('dd. MMM yy');
+                expect(listObj.dataSource[21]).toBe('dd. MMM');
+                expect(listObj.dataSource[22]).toBe('MMM yy');
+                expect(listObj.dataSource[23]).toBe('hh:mm AM/PM');
+                expect(listObj.dataSource[24]).toBe('hh:mm:ss AM/PM');
+                expect(listObj.dataSource[25]).toBe('hh:mm');
+                expect(listObj.dataSource[26]).toBe('hh:mm:ss');
+                expect(listObj.dataSource[27]).toBe('dd.MM.yyyy hh:mm');
+                expect(customFormats[27]).toBe('dd.MM.yyyy hh:mm');
+                expect(listObj.dataSource[28]).toBe('m:ss');
+                expect(listObj.dataSource[29]).toBe('h:mm:ss,0');
+                expect(customFormats[29]).toBe('h:mm:ss.0');
+                expect(listObj.dataSource[30]).toBe(' @ ');
+                expect(listObj.dataSource[31]).toBe('[h]:mm');
+                expect(listObj.dataSource[32]).toBe('_-* #.##0 €_-;-* #.##0 €_-;_-* "-" €_-;_-@_-');
+                expect(customFormats[32]).toBe('_-* #,##0 "€"_-;-* #,##0 "€"_-;_-* "-" "€"_-;_-@_-');
+                expect(listObj.dataSource[33]).toBe('_-* #.##0_-;-* #.##0_-;_-* "-"_-;_-@_-');
+                expect(listObj.dataSource[34]).toBe('_-* #.##0,00 €_-;-* #.##0,00 €_-;_-* "-"?? €_-;_-@_-');
+                expect(listObj.dataSource[35]).toBe('_-* #.##0,00_-;-* #.##0,00_-;_-* "-"??_-;_-@_-');
+                expect(customFormats[35]).toBe('_-* #,##0.00_-;-* #,##0.00_-;_-* "-"??_-;_-@_-');
+                expect(listObj.dataSource[36]).toBe('#.##0,00 €');
+                expect(listObj.dataSource[37]).toBe('#,0.');
+                expect(customFormats[37]).toBe('#.0,');
+                expect(listObj.dataSource[42]).toBe('HH:mm:ss');
+                expect(customFormats[42]).toBe('HH:mm:ss');
+                done();
+            });
+        });
+        it('Applying the mapped custom formats in the cell', (done: Function) => {
+            const formatInput: HTMLInputElement = helper.getElement('.e-custom-format-dlg .e-dialog-input');
+            expect(formatInput.value).toBe(' @ ');
+            // Listview trim the front and end spaces, so we are taking the textContent from selected element instead of using text.
+            expect(listObj.getSelectedItems().text).toBe('@');
+            expect(listObj.getSelectedItems().item.textContent).toBe(' @ ');
+            formatInput.value = '_-* #.##0,00 €_-;-* #.##0,00 €_-;_-* "-"?? €_-;_-@_-';
+            helper.triggerKeyNativeEvent(null, false, false, formatInput, 'input', false, formatInput);
+            expect(listObj.getSelectedItems()).toBeUndefined();
+            helper.setAnimationToNone('.e-custom-format-dlg.e-dialog');
+            (formatInput.nextElementSibling as HTMLButtonElement).click();
+            expect(cell.value).toBe('20.278');
+            expect(cell.format).toBe('_-* #,##0.00 "€"_-;-* #,##0.00 "€"_-;_-* "-"?? "€"_-;_-@_-');
+            expect(cellEle.textContent).toBe('   20,28 € ');
+            expect(formatBtn.textContent).toBe('Accounting');
+            helper.invoke('numberFormat', [customFormats[3], 'E2']);
+            expect(cell.format).toBe('0,000');
+            expect(cellEle.textContent).toBe('0.020');
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Number');
+            helper.invoke('updateCell', [{ format: customFormats[7] }, 'E2']);
+            expect(cell.format).toBe('#,##0.00;-#,##0.00');
+            expect(cellEle.textContent).toBe('20,28');
+            expect(formatBtn.textContent).toBe('Custom');
+            helper.invoke('updateCell', [{ value: '-20,278' }, 'E2']);
+            expect(cell.value).toBe('-20.278');
+            expect(cellEle.textContent).toBe('-20,28');
+            helper.invoke('numberFormat', [customFormats[8], 'E2']);
+            expect(cell.format).toBe('#,##0.00;[Red]-#,##0.00');
+            expect(cellEle.textContent).toBe('-20,28');
+            expect(cellEle.style.color).toBe('red');
+            helper.invoke('updateCell', [{ value: '20,278' }, 'E2']);
+            expect(cell.value).toBe('20.278');
+            expect(cellEle.textContent).toBe('20,28');
+            expect(cellEle.style.color).toBe('');
+            helper.invoke('numberFormat', [customFormats[21], 'E2']);
+            expect(cell.format).toBe('dd. MMM');
+            expect(cellEle.textContent).toBe('20. Jan');
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Custom');
+            helper.invoke('numberFormat', [customFormats[22], 'E2']);
+            expect(cell.format).toBe('MMM yy');
+            expect(cellEle.textContent).toBe('Jan 00');
+            helper.invoke('numberFormat', [customFormats[23], 'E2']);
+            expect(cell.format).toBe('hh:mm AM/PM');
+            expect(cellEle.textContent).toBe('06:40 AM');
+            helper.invoke('numberFormat', [customFormats[27], 'E2']);
+            expect(cell.format).toBe('dd.MM.yyyy hh:mm');
+            expect(cellEle.textContent).toBe('20.01.1900 06:40');
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Custom');
+            helper.invoke('numberFormat', [customFormats[29], 'E2']);
+            expect(cell.format).toBe('h:mm:ss.0');
+            expect(cellEle.textContent).toBe('6:40:19.0');
+            done();
+        });
+        it('Currency and accounting formats checking after mapping with default ID', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '-20,278' }, 'E2']);
+            expect(cell.value).toBe('-20.278');
+            helper.invoke('numberFormat', [customFormats[9], 'E2']);
+            expect(cell.format).toBe('#,##0 "€";-#,##0 "€"');
+            expect(cellEle.textContent).toBe('-20 €');
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Currency');
+            expect(cellEle.style.color).toBe('');
+            helper.invoke('numberFormat', [customFormats[12], 'E2']);
+            expect(cell.format).toBe('#,##0.00 "€";[Red]-#,##0.00 "€"');
+            expect(cellEle.textContent).toBe('-20,28 €');
+            expect(cellEle.style.color).toBe('red');
+            helper.invoke('updateCell', [{ value: '20,278' }, 'E2']);
+            expect(cell.value).toBe('20.278');
+            expect(cellEle.textContent).toBe('20,28 €');
+            expect(cellEle.style.color).toBe('');
+            helper.invoke('numberFormat', [customFormats[33], 'E2']);
+            expect(cell.format).toBe('_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-');
+            expect(cellEle.textContent).toBe('           20 ');
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Accounting');
+            helper.invoke('numberFormat', [customFormats[34], 'E2']);
+            done();
+        });
+        it('Autofill action with the mapped formats', (done: Function) => {
+            helper.invoke('numberFormat', [customFormats[3], 'E2']);
+            let model: any = getCell(10, 6, sheet);
+            expect(model.value).toBe('0.09');
+            expect(model.format).toBe('0.0#%');
+            expect(helper.invoke('getCell', [10, 6]).textContent).toBe('9,0%');
+            helper.invoke('autoFill', ['G12:G13', 'G11']);
+            model = getCell(11, 6, sheet);
+            expect(model.value).toBe(1.09);
+            expect(model.format).toBe('0.0#%');
+            expect(helper.invoke('getCell', [11, 6]).textContent).toBe('109,0%');
+            model = getCell(12, 6, sheet);
+            expect(model.value).toBe(2.09);
+            expect(model.format).toBe('0.0#%');
+            expect(helper.invoke('getCell', [12, 6]).textContent).toBe('209,0%');
+            done();
+        });
+        it('Editing auto-detect of date and time formats with the mapped formats', (done: Function) => {
+            helper.invoke('numberFormat', [customFormats[3], 'E2']);
+            let model: any = getCell(10, 6, sheet);
+            expect(model.value).toBe('0.09');
+            expect(model.format).toBe('0.0#%');
+            expect(helper.invoke('getCell', [10, 6]).textContent).toBe('9,0%');
+            helper.invoke('autoFill', ['G12:G13', 'G11']);
+            model = getCell(11, 6, sheet);
+            expect(model.value).toBe(1.09);
+            expect(model.format).toBe('0.0#%');
+            expect(helper.invoke('getCell', [11, 6]).textContent).toBe('109,0%');
+            model = getCell(12, 6, sheet);
+            expect(model.value).toBe(2.09);
+            expect(model.format).toBe('0.0#%');
+            expect(helper.invoke('getCell', [12, 6]).textContent).toBe('209,0%');
+            helper.edit('G14', '21.Mär.14');
+            model = getCell(13, 6, sheet);
+            expect(model.value).toBe('41719');
+            expect(model.format).toBe(customFormats[20]);
+            expect(helper.invoke('getCell', [13, 6]).textContent).toBe('21. Mär 14');
+            helper.edit('G15', 'Mär.94');
+            model = getCell(14, 6, sheet);
+            expect(model.value).toBe('34394');
+            expect(model.format).toBe(listObj.dataSource[22]);
+            expect(helper.invoke('getCell', [14, 6]).textContent).toBe('Mär 94');
+            helper.edit('G16', '7:22 PM');
+            model = getCell(15, 6, sheet);
+            expect(model.value).toBe('0.8069444444444445');
+            expect(model.format).toBe(customFormats[23]);
+            expect(helper.invoke('getCell', [15, 6]).textContent).toBe('07:22 PM');
+            helper.edit('G17', '3:34:55');
+            model = getCell(16, 6, sheet);
+            expect(model.value).toBe('0.1492476851851852');
+            expect(model.format).toBe(listObj.dataSource[26]);
+            expect(helper.invoke('getCell', [16, 6]).textContent).toBe('03:34:55');
+            spreadsheet.notify(refreshRibbonIcons, null);
+            expect(formatBtn.textContent).toBe('Custom');
+            done();
+        });
+        it ('Data validation dialog checking with formatted values', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                const dlg: HTMLElement = helper.getElementFromSpreadsheet('.e-datavalidation-dlg.e-dialog');
+                const minInput: HTMLInputElement = dlg.querySelector('.e-minimum .e-input');
+                minInput.value = '20,45 €';
+                let maxInput: HTMLInputElement = dlg.querySelector('.e-maximum .e-input');
+                maxInput.value = '50,75';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                const applyBtn: HTMLButtonElement = dlg.querySelector('.e-primary.e-btn');
+                applyBtn.click();
+                let dlgError: HTMLElement = dlg.querySelector('.e-dlg-error');
+                expect(dlgError).not.toBeNull();
+                expect(dlgError.textContent).toBe('Please enter a correct value.');
+                expect(applyBtn.disabled).toBeTruthy();
+                minInput.value = '20';
+                helper.triggerKeyEvent('keyup', 110, null, false, false, minInput);
+                expect(dlg.querySelector('.e-dlg-error')).toBeNull();
+                expect(applyBtn.disabled).toBeFalsy();
+                applyBtn.click();
+                dlgError = dlg.querySelector('.e-dlg-error');
+                expect(dlgError).not.toBeNull();
+                expect(dlgError.textContent).toBe('Please enter a correct value.');
+                expect(applyBtn.disabled).toBeTruthy();
+                minInput.value = '50.1';
+                maxInput.value = '1.125';
+                helper.triggerKeyEvent('keyup', 110, null, false, false, minInput);
+                expect(dlg.querySelector('.e-dlg-error')).toBeNull();
+                expect(applyBtn.disabled).toBeFalsy();
+                applyBtn.click();
+                dlgError = dlg.querySelector('.e-dlg-error');
+                expect(dlgError).not.toBeNull();
+                expect(dlgError.textContent).toBe('Please enter a correct value.');
+                expect(applyBtn.disabled).toBeTruthy();
+                const ddlObj: any = (dlg.querySelector('.e-allow .e-dropdownlist') as any).ej2_instances[0];
+                ddlObj.value = 'Decimal';
+                ddlObj.dataBind();
+                (dlg.querySelector('.e-minimum .e-input') as HTMLInputElement).value = '200,45 €';
+                maxInput = dlg.querySelector('.e-maximum .e-input');
+                maxInput.value = '1.000,75';
+                helper.triggerKeyEvent('keyup', 110, null, false, false, maxInput);
+                expect(dlg.querySelector('.e-dlg-error')).toBeNull();
+                expect(applyBtn.disabled).toBeFalsy();
+                applyBtn.click();
+                const validation: ValidationModel = getCell(1, 3, sheet).validation;
+                expect(validation.value1).toBe('200.45');
+                expect(validation.value2).toBe('1000.75');
+                done();
+            });
+        });
+        it ('Checking the validation with formatted values', (done: Function) => {
+            cell = getCell(1, 3, sheet);
+            helper.edit('D2', '200,45 €');
+            expect(cell.value).toBe('200.45');
+            expect(cell.format).toBe('#,##0.00 "€"');
+            cellEle = helper.invoke('getCell', [1, 3]);
+            expect(cellEle.textContent).toBe('200,45 €');
+            helper.edit('D2', '1.000,75');
+            expect(cell.value).toBe(1000.75);
+            expect(cellEle.textContent).toBe('1.000,75 €');
+            helper.edit('D2', '1.000');
+            expect(cell.value).toBe(1000);
+            expect(cellEle.textContent).toBe('1.000,00 €');
+            helper.edit('D2', '3,01E+02');
+            expect(cell.value).toBe(301);
+            expect(cellEle.textContent).toBe('301,00 €');
+            helper.edit('D2', '20.554,54%');
+            expect(cell.value).toBe(205.5454);
+            expect(cellEle.textContent).toBe('205,55 €');
+            helper.edit('D2', '2.000,35 €');
+            setTimeout(() => {
+                expect(helper.getElement('.e-validation-error-dlg.e-dialog')).not.toBeNull();
+                helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                helper.click('.e-validation-error-dlg.e-dialog .e-btn:not(.e-primary)');
+                done();
+            });
+        });
+        it('Opening the validation dialog again and checking the values and changing validation', (done: Function) => {
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                const dlg: HTMLElement = helper.getElementFromSpreadsheet('.e-datavalidation-dlg.e-dialog');
+                expect((dlg.querySelector('.e-minimum .e-input') as HTMLInputElement).value).toBe('200,45');
+                expect((dlg.querySelector('.e-maximum .e-input') as HTMLInputElement).value).toBe('1000,75');
+                const ddlObj: any = (dlg.querySelector('.e-allow .e-dropdownlist') as any).ej2_instances[0];
+                ddlObj.value = 'List';
+                ddlObj.dataBind();
+                const listInput: HTMLInputElement = dlg.querySelector('.e-values .e-input');
+                listInput.value = '10,75 €;20,35;3045%;20.325;50.124,67 €';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                (dlg.querySelector('.e-primary.e-btn') as HTMLButtonElement).click();
+                const validation: ValidationModel = getCell(1, 3, sheet).validation;
+                expect(validation.value1).toBe('10,75 €;20,35;3045%;20.325;50.124,67 €');
+                cellEle = helper.invoke('getCell', [1, 3]);
+                expect(cellEle.querySelector('.e-validation-list')).not.toBeNull();
+                done();
+            });
+        });
+        it('Checking the validation list values', (done: Function) => {
+            delete cell.format;
+            helper.edit('D2', '3045,00%');
+            expect(cell.value).toBe('30.45');
+            expect(cell.format).toBe('0.0#%');
+            expect(cellEle.textContent).toBe('3045,0%');
+            helper.edit('D2', '10,75 €');
+            expect(cell.value).toBe(10.75);
+            expect(cellEle.textContent).toBe('1075,0%');
+            delete cell.format;
+            helper.edit('D2', '20,35');
+            expect(cell.value).toBe('20.35');
+            expect(cellEle.textContent).toBe('20,35');
+            helper.edit('D2', '50.124,67 €');
+            expect(cell.value).toBe('50124.67');
+            expect(cell.format).toBe('#,##0.00 "€"');
+            expect(cellEle.textContent).toBe('50.124,67 €');
+            helper.edit('D2', '20.325');
+            expect(cell.value).toBe(20325);
+            expect(cellEle.textContent).toBe('20.325,00 €');
+            helper.edit('D2', '2,03E+04');
+            setTimeout(() => {
+                expect(helper.getElement('.e-validation-error-dlg.e-dialog')).not.toBeNull();
+                helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                helper.click('.e-validation-error-dlg.e-dialog .e-btn:not(.e-primary)');
+                done();
+            });
+        });
+        it ('Finding culture based formatted values', (done: Function) => {
+            expect(sheet.selectedRange).toBe('D2:D2');
+            helper.invoke('numberFormat', [convertToDefaultFormat(spreadsheet, '#.##0,00 €'), 'E2:E11']);
+            helper.invoke('updateCell', [{ value: '' }, 'E3']);
+            helper.invoke('updateCell', [{ value: 'test' }, 'E4']);
+            helper.invoke('find', [{ value: '20,45', findOpt: 'next', mode: 'Sheet', searchBy: 'By Row' }]);
+            expect(sheet.selectedRange).toBe('E5:E5');
+            helper.invoke('updateCell', [{ value: 30 }, 'E3']);
+            helper.invoke('updateCell', [{ value: 15 }, 'E4']);
+            cell = getCell(1, 1, sheet);
+            expect(cell.format).toBe('m/d/yyyy');
+            cellEle = helper.invoke('getCell', [1, 1]);
+            expect(cellEle.textContent).toBe('14.2.2014');
+            helper.invoke('numberFormat', [getFormatFromType('ShortDate'), 'B2:B11']);
+            expect(cellEle.textContent).toBe('14.02.2014');
+            expect(cell.value).toBe('41684');
+            helper.invoke('find', [{ value: '41684', findOpt: 'next', mode: 'Sheet', searchBy: 'By Row' }]);
+            expect(sheet.selectedRange).toBe('E5:E5');
+            helper.invoke('find', [{ value: '14.02', findOpt: 'next', mode: 'Sheet', searchBy: 'By Row' }]);
+            expect(sheet.selectedRange).toBe('B2:B2');
+            helper.invoke('find', [{ value: '21. Mär 14', findOpt: 'prev', mode: 'Sheet', searchBy: 'By Row' }]);
+            expect(sheet.selectedRange).toBe('G14:G14');
+            helper.invoke('find', [{ value: '0,1492476851851852', findOpt: 'next', mode: 'Sheet', searchBy: 'By Row' }]);
+            expect(sheet.selectedRange).toBe('G14:G14');
+            helper.invoke('find', [{ value: '03:34:55', findOpt: 'next', mode: 'Sheet', searchBy: 'By Row' }]);
+            expect(sheet.selectedRange).toBe('G17:G17');
+            helper.invoke('find', [{ value: '0,132', findOpt: 'prev', mode: 'Sheet', searchBy: 'By Row' }]);
+            expect(sheet.selectedRange).toBe('G17:G17');
+            helper.invoke('find', [{ value: '13,2%', findOpt: 'prev', mode: 'Sheet', searchBy: 'By Row' }]);
+            expect(sheet.selectedRange).toBe('G7:G7');
+            done();
+        });
+        it ('Applying iconSets in accounting formattted cells', (done: Function) => {
+            helper.invoke('numberFormat', [customFormats[35], 'H1:H3']);
+            let firstCell: HTMLElement = helper.invoke('getCell', [0, 7]);
+            expect(firstCell.textContent).toBe(' Profit ');
+            expect(firstCell.querySelector('.e-fill')).toBeNull();
+            let secondCell: HTMLElement = helper.invoke('getCell', [1, 7]);
+            expect(secondCell.querySelector('.e-fill').textContent).toBe('');
+            let thirdCell: HTMLElement = helper.invoke('getCell', [2, 7]);
+            let thirdCellText: string = thirdCell.querySelector('.e-fill').textContent;
+            helper.invoke('conditionalFormat', [{ type: 'ThreeTrafficLights2', range: 'H1:H3' }]);
+            expect(firstCell.classList.contains('e-iconset')).toBeFalsy();
+            expect(firstCell.querySelector('.e-iconsetspan')).toBeNull();
+            expect(secondCell.classList.contains('e-iconset')).toBeTruthy();
+            expect(secondCell.querySelector('.e-fill').textContent).toBe('');
+            expect(thirdCell.classList.contains('e-iconset')).toBeTruthy();
+            expect(thirdCell.querySelector('.e-fill').textContent).not.toBe(thirdCellText);
+            clearRange(spreadsheet, [1, 7, 1, 7], 0);
+            expect(secondCell.classList.contains('e-iconset')).toBeFalsy();
+            expect(secondCell.textContent).toBe('');
+            helper.invoke('numberFormat', [customFormats[33], 'H1:H3']);
+            expect(thirdCell.classList.contains('e-iconset')).toBeTruthy();
+            expect(thirdCell.querySelector('.e-fill').textContent).not.toBe(thirdCellText);
+            helper.invoke('numberFormat', ['* #', 'H4:H6']);
+            firstCell = helper.invoke('getCell', [3, 7]);
+            const firstCellText: string = firstCell.querySelector('.e-fill').textContent;
+            expect(firstCellText).not.toBe('');
+            secondCell = helper.invoke('getCell', [4, 7]);
+            const secondCellText: string = secondCell.querySelector('.e-fill').textContent;
+            expect(secondCellText).not.toBe('');
+            thirdCell = helper.invoke('getCell', [5, 7]);
+            thirdCellText = thirdCell.querySelector('.e-fill').textContent;
+            expect(thirdCellText).not.toBe('');
+            helper.invoke('conditionalFormat', [{ type: 'ThreeSymbols', range: 'H4:H6' }]);
+            expect(firstCell.classList.contains('e-iconset')).toBeTruthy();
+            expect(firstCell.querySelector('.e-fill').textContent).not.toBe(firstCellText);
+            expect(firstCell.querySelector('.e-fill-sec')).not.toBeNull();
+            expect(secondCell.classList.contains('e-iconset')).toBeTruthy();
+            expect(secondCell.querySelector('.e-fill').textContent).not.toBe(secondCellText);
+            expect(thirdCell.classList.contains('e-iconset')).toBeTruthy();
+            expect(thirdCell.querySelector('.e-fill').textContent).not.toBe(thirdCellText);
+            helper.invoke('updateCell', [{ notes: 'Test' }, 'H5']);
+            helper.invoke('numberFormat', ['* ', 'H5:H9']);
+            firstCell = helper.invoke('getCell', [4, 7]);
+            expect(firstCell.classList.contains('e-iconset')).toBeTruthy();
+            expect(firstCell.querySelector('.e-iconsetspan')).not.toBeNull();
+            expect(firstCell.querySelector('.e-fill-sec')).toBeNull();
+            expect(firstCell.querySelector('.e-addNoteIndicator')).not.toBeNull();
+            helper.invoke('conditionalFormat', [{ type: 'ThreeTriangles', range: 'H5:H9' }]);
+            expect(firstCell.classList.contains('e-iconset')).toBeTruthy();
+            expect(firstCell.querySelector('.e-iconsetspan')).not.toBeNull();
+            expect(firstCell.querySelector('.e-fill-sec')).toBeNull();
+            expect(firstCell.querySelector('.e-addNoteIndicator')).not.toBeNull();
+            done();
+        });
+    });
+    describe('Formatted text checking on UI interaction ->', (): void => {
+        let sheet: any; let cell: any; let cellEle: HTMLElement;
+        beforeAll((done: Function) => {
+            model = { sheets: [{ ranges: [{ dataSource: defaultData }] }] };
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterAll((): void => {
+            helper.invoke('destroy');
+        });
+        it('Formatted text update on cell rendering and updating format using the public methods', (done: Function) => {
+            sheet = helper.invoke('getActiveSheet');
+            expect(JSON.stringify(sheet.rows[1].cells[1])).toBe('{"value":"41684","format":"m/d/yyyy","formattedText":"2/14/2014"}');
+            expect(JSON.stringify(sheet.rows[1].cells[2])).toBe('{"value":"0.4823148148148148","format":"h:mm:ss AM/PM","formattedText":"11:34:32 AM"}');
+            helper.invoke('selectRange', ['E1:E100']);
+            expect(sheet.rows[0].cells[4].formattedText).toBeUndefined();
+            expect(sheet.rows[1].cells[4].formattedText).toBeUndefined();
+            helper.click(`#${helper.id}_number_format`);
+            helper.click(`#${helper.id}_Currency`);
+            expect(JSON.stringify(sheet.rows[1].cells[4])).toBe('{"value":20,"format":"$#,##0.00","formattedText":"$20.00"}');
+            expect(sheet.rows[0].cells[4].formattedText).toBeUndefined();
+            expect(sheet.rows[1].cells[6].formattedText).toBeUndefined();
+            helper.invoke('numberFormat', ['0%', 'G1:G100']);
+            expect(JSON.stringify(sheet.rows[1].cells[6])).toBe('{"value":1,"format":"0%","formattedText":"100%"}');
+            expect(sheet.rows[0].cells[7].formattedText).toBeUndefined();
+            helper.invoke('updateCell', [{ format: getFormatFromType('Accounting') }, 'H1']);
+            expect(sheet.rows[0].cells[7].formattedText).toBe(' Profit ');
+            expect(sheet.rows[1].cells[7].formattedText).toBeUndefined();
+            helper.invoke('updateCell', [{ format: getFormatFromType('Accounting') }, 'H2']);
+            expect(JSON.stringify(sheet.rows[1].cells[7])).toBe('{"value":10,"format":"_($* #,##0.00_);_($* (#,##0.00);_($* \\"-\\"??_);_(@_)","formattedText":" $10.00 "}');
+            done();
+        });
+        it('Formatted text update on Editing and changing values using public methods', (done: Function) => {
+            sheet = helper.invoke('getActiveSheet');
+            helper.edit('E2', '20.278');
+            expect(sheet.rows[1].cells[4].formattedText).toBe('$20.28');
+            helper.edit('E2', '');
+            expect(sheet.rows[1].cells[4].formattedText).toBeUndefined();
+            helper.invoke('updateCell', [{ value: '200%' }, 'G2']);
+            expect(sheet.rows[1].cells[6].formattedText).toBe('200%');
+            expect(sheet.rows[79].cells[6].value).toBeUndefined();
+            expect(sheet.rows[79].cells[6].formattedText).toBeUndefined();
+            helper.invoke('updateCell', [{ value: '3' }, 'G80']);
+            expect(sheet.rows[79].cells[6].formattedText).toBeUndefined();
+            expect(sheet.rows[11].cells[7]).toBeUndefined();
+            helper.invoke('updateCell', [{ format: getFormatFromType('Accounting') }, 'H12']);
+            expect(sheet.rows[11].cells[7].value).toBeUndefined();
+            expect(sheet.rows[11].cells[7].formattedText).toBeUndefined();
+            helper.invoke('updateCell', [{ value: '3' }, 'H80']);
+            expect(sheet.rows[79].cells[7].value).toBe(3);
+            expect(sheet.rows[79].cells[7].formattedText).toBeUndefined();
+            helper.invoke('numberFormat', [getFormatFromType('Accounting'), 'H80']);
+            expect(sheet.rows[79].cells[7].formattedText).toBe(' $3.00 ');
+            helper.invoke('updateCell', [{ value: '2.56' }, 'H79']);
+            expect(sheet.rows[78].cells[7].formattedText).toBeUndefined();
+            helper.invoke('numberFormat', ['_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)', 'H79:H80']);
+            expect(sheet.rows[78].cells[7].formattedText).toBe(' ');
+            expect(sheet.rows[79].cells[7].formattedText).toBe(' ');
+            helper.invoke('updateCell', [{ format: '$#,##0.00_);($#,##0.00)' }, 'H79']);
+            expect(sheet.rows[78].cells[7].formattedText).toBeUndefined();
+            helper.invoke('updateCell', [{ value: '10.45' }, 'H80']);
+            expect(sheet.rows[79].cells[7].formattedText).toBeUndefined();
+            helper.invoke('updateCell', [{ format: '$#,##0.00_);($#,##0.00)' }, 'H80']);
+            expect(sheet.rows[79].cells[7].formattedText).toBeUndefined();
+            done();
+        });
+        it('Formatted cells update when changing the allowNumberFormatting property', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const cellEle: HTMLElement = helper.invoke('getCell', [1, 1]);
+            expect(cellEle.textContent).toBe('2/14/2014');
+            spreadsheet.allowNumberFormatting = false;
+            spreadsheet.dataBind();
+            expect(cellEle.textContent).toBe('41684');
+            spreadsheet.allowNumberFormatting = true;
+            spreadsheet.dataBind();
+            expect(cellEle.textContent).toBe('2/14/2014');
             done();
         });
     });
@@ -955,9 +1717,141 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(cellEle.textContent).toBe('-');
                 done();
             });
+            it('EJ2-883693 -> Custom number format is not working properly like MS Excel when the format contains text with date time format in it', (done: Function) => {
+                helper.edit('A12', '33.43');
+                helper.invoke('numberFormat', ['"Largo: "0.00" metros"', 'A12']);
+                let td: HTMLElement = helper.invoke('getCell', [11, 0]);
+                expect(td.textContent).toBe('Largo: 33.43 metros');
+                helper.edit('A13', '33.43');
+                helper.invoke('numberFormat', ['"hm: "0.00" metros"', 'A13']);
+                td = helper.invoke('getCell', [12, 0]);
+                expect(td.textContent).toBe('hm: 33.43 metros');
+                helper.edit('A14', '33.43');
+                helper.invoke('numberFormat', ['"AM: "0.00" metros"', 'A14']);
+                td = helper.invoke('getCell', [13, 0]);
+                expect(td.textContent).toBe('AM: 33.43 metros');
+                helper.edit('A15', '33.43');
+                helper.invoke('numberFormat', ['"Hq/ "0.00" HR"', 'A15']);
+                td = helper.invoke('getCell', [14, 0]);
+                expect(td.textContent).toBe('Hq/ 33.43 HR');
+                helper.edit('A16', '33.43');
+                helper.invoke('numberFormat', ['"sSmd "0.00" metros"', 'A16']);
+                td = helper.invoke('getCell', [15, 0]);
+                expect(td.textContent).toBe('sSmd 33.43 metros');
+                helper.edit('A17', '33.43');
+                helper.invoke('numberFormat', ['"Hmia "0.00" Apa"', 'A17']);
+                td = helper.invoke('getCell', [16, 0]);
+                expect(td.textContent).toBe('Hmia 33.43 Apa');
+                done();
+            });
+            it('EJ2-855322 -> Date format gets changed when attempting to edit the data and saving it', (done: Function) => {
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('updateCell', [{ value: '23/01/1928', format: 'dd/MM/yyyy' }, 'A1']);
+                const spreadsheet: any = helper.getInstance();
+                // expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('10250');
+                const td: HTMLElement = helper.invoke('getCell', [0, 0]);
+                // expect(td.textContent).toEqual('23/01/1928');
+                helper.invoke('startEdit');
+                spreadsheet.notify(
+                    'editOperation', { action: 'refreshEditor', value: '1/23/1920', refreshCurPos: true, refreshFormulaBar: true,
+                        refreshEditorElem: true });
+                const editEle: HTMLElement = helper.getElementFromSpreadsheet('.e-spreadsheet-edit');
+                // expect(editEle.textContent).toBe('1/23/1920');
+                const formulaBar: HTMLInputElement = helper.getElement('#' + helper.id + '_formula_input');
+                // expect(formulaBar.value).toEqual('1/23/1920');
+                helper.invoke('endEdit');
+                setTimeout(() => {
+                    // expect(td.textContent).toEqual('23/01/1920');
+                    helper.invoke('selectRange', ['A1']);
+                    helper.invoke('updateCell', [{ value: '23-01-1928', format: 'dd-MM-yyyy' }, 'A1']);
+                    // expect(td.textContent).toEqual('23-01-1928');
+                    // expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('10250');
+                    helper.invoke('startEdit');
+                    spreadsheet.notify(
+                        'editOperation', { action: 'refreshEditor', value: '1/23/1920', refreshCurPos: true, refreshFormulaBar: true,
+                            refreshEditorElem: true });
+                    // expect(editEle.textContent).toBe('1/23/1920');
+                    // expect(formulaBar.value).toEqual('1/23/1920');
+                    helper.invoke('endEdit');
+                    setTimeout(() => {
+                        //expect(td.textContent).toEqual('23-01-1920');
+                        done();
+                    });
+                });
+            });
+            it('SF-354174 -> Showing formatted text in the editor and updating based on the format (dd/MM/yyyy or dd-MM-yyyy)', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                const cellEditHandler: any = spreadsheet.cellEdit;
+                spreadsheet.cellEdit = (args: any): void => {
+                    args.showFormattedText = true;
+                };
+                const cellEle: HTMLElement = helper.invoke('getCell', [0, 0]);
+                focus(cellEle);
+                const coords: ClientRect = cellEle.getBoundingClientRect();
+                helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, cellEle);
+                setTimeout(() => {
+                    const editEle: HTMLElement = helper.getElementFromSpreadsheet('.e-spreadsheet-edit');
+                    expect(editEle.textContent).toBe('23-01-1920');
+                    const formulaBar: HTMLInputElement = helper.getElement('#' + helper.id + '_formula_input');
+                    expect(formulaBar.value).toBe('1/23/1920');
+                    spreadsheet.notify(
+                        'editOperation', {
+                            action: 'refreshEditor', value: '27-08-1994', refreshCurPos: true, refreshFormulaBar: true,
+                            refreshEditorElem: true });
+                    expect(editEle.textContent).toBe('27-08-1994');
+                    expect(formulaBar.value).toBe('27-08-1994');
+                    helper.invoke('endEdit');
+                    const cell: CellModel = spreadsheet.sheets[0].rows[0].cells[0];
+                    expect(cell.value).toBe('34573');
+                    expect(cell.format).toBe('dd-MM-yyyy');
+                    expect(cellEle.textContent).toBe('27-08-1994');
+                    helper.invoke('numberFormat', ['dd/MM/yyyy', 'A1']);
+                    helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, cellEle);
+                    setTimeout((): void => {
+                        expect(editEle.textContent).toBe('27/08/1994');
+                        spreadsheet.notify(
+                            'editOperation', {
+                            action: 'refreshEditor', value: '26/07/2023', refreshCurPos: true, refreshFormulaBar: true,
+                            refreshEditorElem: true });
+                        expect(editEle.textContent).toBe('26/07/2023');
+                        expect(formulaBar.value).toBe('26/07/2023');
+                        helper.invoke('endEdit');
+                        expect(cell.value).toBe('45133');
+                        expect(cell.format).toBe('dd/MM/yyyy');
+                        expect(cellEle.textContent).toBe('26/07/2023');
+                        helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, cellEle);
+                        setTimeout((): void => {
+                            expect(editEle.textContent).toBe('26/07/2023');
+                            spreadsheet.notify(
+                                'editOperation', {
+                                action: 'refreshEditor', value: '3/2024', refreshCurPos: true, refreshFormulaBar: true,
+                                refreshEditorElem: true });
+                            expect(editEle.textContent).toBe('3/2024');
+                            expect(formulaBar.value).toBe('3/2024');
+                            helper.invoke('endEdit');
+                            expect(cell.value).toBe('45352');
+                            expect(cell.format).toBe('dd/MM/yyyy');
+                            expect(cellEle.textContent).toBe('01/03/2024');
+                            spreadsheet.cellEdit = cellEditHandler;
+                            done();
+                        });
+                    });
+                });
+            });
+            it ('Checking custom fill with merge and after the viewport cells', (done: Function) => {
+                helper.invoke('merge', ['A10:B10']);
+                helper.invoke('updateCell', [{ value: '-457', format: 'm/d/yyyy' }, 'A10']);
+                const cellEle: HTMLElement = helper.invoke('getCell', [9, 0]);
+                expect(cellEle.querySelector('.e-fill')).not.toBeNull();
+                expect(cellEle.textContent).toBe('################');
+                helper.invoke('updateCell', [{ value: '-10' }, 'A100']);
+                helper.invoke('numberFormat', ['m/d/yyyy', 'A100']);
+                expect(helper.invoke('getCell', [99, 0])).toBeUndefined();
+                done();
+            });
         });
         describe('EJ2-839539 ->', () => {
-            beforeEach((done: Function) => {
+            beforeAll((done: Function) => {
                 model = {
                     sheets: [{
                         rows: [{
@@ -977,7 +1871,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 };
                 helper.initializeSpreadsheet(model, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Formula cell that refers another formula valued cell in different sheet throws error while rendering in spreadsheet', (done: Function) => {
@@ -1059,158 +1953,156 @@ describe('Spreadsheet Number Format Module ->', (): void => {
         });
     });
 
-    describe('Localization is not updated for placeholder and dialog content in the number format ->',(): void =>{
-        describe('EJ2-55546 ->',()=>{
-            beforeEach((done: Function) => {
-                L10n.load({
-                    'de-DE': {
-                        'spreadsheet': {
-                            'Cut': 'Schneiden',
-                            'Copy': 'Kopieren',
-                            'Paste': 'Paste',
-                            'PasteSpecial': 'paste spezial',
-                            'All': 'Alles',
-                            'Values': 'Werte',
-                            'Formats': 'Formate',
-                            'Font': 'Schriftart',
-                            'FontSize': 'Schriftgröße',
-                            'Bold': 'Fett gedruckt',
-                            'Italic': 'Kursiv',
-                            'Underline': 'Unterstreichen',
-                            'Strikethrough': 'Durchgestrichen',
-                            'TextColor': 'Textfarbe',
-                            'FillColor': 'Füllfarbe',
-                            'HorizontalAlignment': 'Horizontale Ausrichtung',
-                            'AlignLeft': 'Linksbündig ausrichten',
-                            'AlignCenter': 'Center',
-                            'AlignRight': 'Rechtsbündig ausrichten',
-                            'VerticalAlignment': 'Vertikale Ausrichtung',
-                            'AlignTop': 'Oben ausrichten',
-                            'AlignMiddle': 'Mitte ausrichten',
-                            'AlignBottom': 'Unten ausrichten',
-                            'InsertFunction': 'Funktion einfügen',
-                            'Insert': 'Einfügen',
-                            'Delete': 'Löschen',
-                            'Rename': 'Umbenennen',
-                            'Hide': 'verbergen',
-                            'Unhide': 'Sichtbar machen',
-                            'NameBox': 'Namensfeld',
-                            'ShowHeaders': 'Kopfzeilen anzeigen',
-                            'HideHeaders': 'Header ausblenden',
-                            'ShowGridLines': 'Gitternetzlinien anzeigen',
-                            'HideGridLines': 'Gitternetzlinien ausblenden',
-                            'AddSheet': 'Blatt hinzufügen',
-                            'ListAllSheets': 'Alle Blätter auflisten',
-                            'FullScreen': 'Vollbild',
-                            'CollapseToolbar': 'Zusammenbruch symbolleiste',
-                            'ExpandToolbar': 'Erweitern Symbolleiste',
-                            'CollapseFormulaBar': 'Collapse Formelleiste',
-                            'ExpandFormulaBar': 'Expand Formelleiste',
-                            'File': 'Datei',
-                            'Home': 'Huis',
-                            'Formulas': 'Formeln',
-                            'View': 'Aussicht',
-                            'New': 'Neu',
-                            'Open': 'Öffnen',
-                            'SaveAs': 'Speichern als',
-                            'ExcelXlsx': 'Microsoft Excel',
-                            'ExcelXls': 'Microsoft Excel 97-2003',
-                            'CSV': 'Comma-separated values',
-                            'FormulaBar': 'Formelleiste',
-                            'Ok': 'OK',
-                            'Close': 'Schließen',
-                            'Cancel': 'Abbrechen',
-                            'Apply': 'Sich bewerben',
-                            'MoreColors': 'Mehr Farben',
-                            'StandardColors': 'Standard farben',
-                            'General': 'Allgemeines',
-                            'Number': 'Nummer',
-                            'Currency': 'Währung',
-                            'Accounting': 'Buchhaltung',
-                            'ShortDate': 'Kurzes Date',
-                            'LongDate': 'Langes Datum',
-                            'Time': 'Zeit',
-                            'Percentage': 'Prozentsatz',
-                            'Fraction': 'Fraktion',
-                            'Scientific': 'Wissenschaft',
-                            'Text': 'Text',
-                            'NumberFormat': 'Zahlenformat',
-                            'MobileFormulaBarPlaceHolder': 'Wert oder Formel eingeben',
-                            'PasteAlert': 'Sie können dies hier nicht einfügen, da der Kopierbereich und der Einfügebereich nicht dieselbe Größe haben. Bitte versuchen Sie es in einem anderen Bereich.',
-                            'DestroyAlert': 'Möchten Sie die aktuelle Arbeitsmappe wirklich löschen, ohne sie zu speichern, und eine neue Arbeitsmappe erstellen?',
-                            'SheetRenameInvalidAlert': 'Der Blattname enthält ein ungültiges Zeichen.',
-                            'SheetRenameEmptyAlert': 'Der Blattname darf nicht leer sein.',
-                            'SheetRenameAlreadyExistsAlert': 'Der Blattname ist bereits vorhanden. Bitte geben Sie einen anderen Namen ein.',
-                            'DeleteSheetAlert': 'Möchten Sie dieses Blatt wirklich löschen?',
-                            'DeleteSingleLastSheetAlert': 'Eine Arbeitsmappe muss mindestens ein sichtbares Arbeitsblatt enthalten.',
-                            'PickACategory': 'Wählen Sie eine Kategorie',
-                            'Description': 'Beschreibung',
-                            'UnsupportedFile': 'Nicht unterstützte Datei',
-                            'InvalidUrl': 'Ungültige URL',
-                            'SUM': 'Fügt eine Reihe von Zahlen und / oder Zellen hinzu.',
-                            'SUMIF': 'Fügt die Zellen basierend auf der angegebenen Bedingung hinzu.',
-                            'SUMIFS': 'Fügt die Zellen basierend auf den angegebenen Bedingungen hinzu.',
-                            'ABS': 'Gibt den Wert einer Zahl ohne Vorzeichen zurück.',
-                            'RAND': 'Gibt eine Zufallszahl zwischen 0 und 1 zurück.',
-                            'RANDBETWEEN': 'Gibt eine zufällige Ganzzahl basierend auf angegebenen Werten zurück.',
-                            'FLOOR': 'Rundet eine Zahl auf das nächste Vielfache eines bestimmten Faktors ab.',
-                            'CEILING': 'Rundet eine Zahl auf das nächste Vielfache eines bestimmten Faktors.',
-                            'PRODUCT': 'Multipliziert eine Reihe von Zahlen und / oder Zellen.',
-                            'AVERAGE': 'Berechnen Sie den Durchschnitt für die Reihe von Zahlen und / oder Zellen ohne Text.',
-                            'AVERAGEIF': 'Berechnet den Durchschnitt für die Zellen basierend auf der angegebenen Bedingung.',
-                            'AVERAGEIFS': 'Berechnet den Durchschnitt für die Zellen basierend auf den angegebenen Bedingungen.',
-                            'AVERAGEA': 'Berechnet den Durchschnitt für die Zellen, wobei WAHR als 1, text und FALSCH als 0 ausgewertet werden.',
-                            'COUNT': 'Zählt die Zellen, die numerische Werte in einem Bereich enthalten.',
-                            'COUNTIF': 'Zählt die Zellen basierend auf der angegebenen Bedingung.',
-                            'COUNTIFS': 'Zählt die Zellen basierend auf den angegebenen Bedingungen.',
-                            'COUNTA': 'Zählt die Zellen, die Werte in einem Bereich enthalten.',
-                            'MIN': 'Gibt die kleinste Anzahl der angegebenen Argumente zurück.',
-                            'MAX': 'Gibt die größte Anzahl der angegebenen Argumente zurück.',
-                            'DATE': 'Gibt das Datum basierend auf einem bestimmten Jahr, Monat und Tag zurück.',
-                            'DAY': 'Gibt den Tag ab dem angegebenen Datum zurück.',
-                            'DAYS': 'Gibt die Anzahl der Tage zwischen zwei Daten zurück.',
-                            'IF': 'Gibt einen Wert basierend auf dem angegebenen Ausdruck zurück.',
-                            'IFS': 'Gibt einen Wert zurück, der auf den angegebenen mehreren Ausdrücken basiert.',
-                            'AND': 'Gibt WAHR zurück, wenn alle Argumente WAHR sind, andernfalls wird FALSCH zurückgegeben.',
-                            'OR': 'Gibt WAHR zurück, wenn eines der Argumente WAHR ist, andernfalls wird FALSCH zurückgegeben.',
-                            'IFERROR': 'Gibt einen Wert zurück, wenn kein Fehler gefunden wurde. Andernfalls wird der angegebene Wert zurückgegeben.',
-                            'CHOOSE': 'Gibt einen Wert aus der Werteliste basierend auf der Indexnummer zurück.',
-                            'INDEX': 'Gibt einen Wert der Zelle in einem bestimmten Bereich basierend auf der Zeilen- und Spaltennummer zurück.',
-                            'FIND': 'Gibt die Position eines Strings innerhalb eines anderen Strings zurück, wobei die Groß- und Kleinschreibung beachtet wird.',
-                            'CONCATENATE': 'Kombiniert zwei oder mehr Zeichenfolgen.',
-                            'CONCAT': 'Verkettet eine Liste oder einen Bereich von Textzeichenfolgen.',
-                            'SUBTOTAL': 'Gibt die Zwischensumme für einen Bereich unter Verwendung der angegebenen Funktionsnummer zurück.',
-                            'RADIANS': 'Konvertiert Grad in Bogenmaß.',
-                            'MATCH': 'Gibt die relative Position eines angegebenen Wertes im angegebenen Bereich zurück.',
-                            'DefineNameExists': 'Dieser Name ist bereits vorhanden, versuchen Sie es mit einem anderen Namen.',
-                            'CircularReference': 'Wenn eine Formel auf einen oder mehrere Zirkelverweise verweist, kann dies zu einer falschen Berechnung führen.',
-                            'CustomFormat': 'Formats de nombre personnalisés',
-                            'APPLY':'Sich bewerben',
-                        }
+    describe('Localization is not updated for placeholder and dialog content in the number format -> EJ2-55546 ->', () => {
+        beforeAll((done: Function) => {
+            L10n.load({
+                'de': {
+                    'spreadsheet': {
+                        'Cut': 'Schneiden',
+                        'Copy': 'Kopieren',
+                        'Paste': 'Paste',
+                        'PasteSpecial': 'paste spezial',
+                        'All': 'Alles',
+                        'Values': 'Werte',
+                        'Formats': 'Formate',
+                        'Font': 'Schriftart',
+                        'FontSize': 'Schriftgröße',
+                        'Bold': 'Fett gedruckt',
+                        'Italic': 'Kursiv',
+                        'Underline': 'Unterstreichen',
+                        'Strikethrough': 'Durchgestrichen',
+                        'TextColor': 'Textfarbe',
+                        'FillColor': 'Füllfarbe',
+                        'HorizontalAlignment': 'Horizontale Ausrichtung',
+                        'AlignLeft': 'Linksbündig ausrichten',
+                        'AlignCenter': 'Center',
+                        'AlignRight': 'Rechtsbündig ausrichten',
+                        'VerticalAlignment': 'Vertikale Ausrichtung',
+                        'AlignTop': 'Oben ausrichten',
+                        'AlignMiddle': 'Mitte ausrichten',
+                        'AlignBottom': 'Unten ausrichten',
+                        'InsertFunction': 'Funktion einfügen',
+                        'Insert': 'Einfügen',
+                        'Delete': 'Löschen',
+                        'Rename': 'Umbenennen',
+                        'Hide': 'verbergen',
+                        'Unhide': 'Sichtbar machen',
+                        'NameBox': 'Namensfeld',
+                        'ShowHeaders': 'Kopfzeilen anzeigen',
+                        'HideHeaders': 'Header ausblenden',
+                        'ShowGridLines': 'Gitternetzlinien anzeigen',
+                        'HideGridLines': 'Gitternetzlinien ausblenden',
+                        'AddSheet': 'Blatt hinzufügen',
+                        'ListAllSheets': 'Alle Blätter auflisten',
+                        'FullScreen': 'Vollbild',
+                        'CollapseToolbar': 'Zusammenbruch symbolleiste',
+                        'ExpandToolbar': 'Erweitern Symbolleiste',
+                        'CollapseFormulaBar': 'Collapse Formelleiste',
+                        'ExpandFormulaBar': 'Expand Formelleiste',
+                        'File': 'Datei',
+                        'Home': 'Huis',
+                        'Formulas': 'Formeln',
+                        'View': 'Aussicht',
+                        'New': 'Neu',
+                        'Open': 'Öffnen',
+                        'SaveAs': 'Speichern als',
+                        'ExcelXlsx': 'Microsoft Excel',
+                        'ExcelXls': 'Microsoft Excel 97-2003',
+                        'CSV': 'Comma-separated values',
+                        'FormulaBar': 'Formelleiste',
+                        'Ok': 'OK',
+                        'Close': 'Schließen',
+                        'Cancel': 'Abbrechen',
+                        'Apply': 'Sich bewerben',
+                        'MoreColors': 'Mehr Farben',
+                        'StandardColors': 'Standard farben',
+                        'General': 'Allgemeines',
+                        'Number': 'Nummer',
+                        'Currency': 'Währung',
+                        'Accounting': 'Buchhaltung',
+                        'ShortDate': 'Kurzes Date',
+                        'LongDate': 'Langes Datum',
+                        'Time': 'Zeit',
+                        'Percentage': 'Prozentsatz',
+                        'Fraction': 'Fraktion',
+                        'Scientific': 'Wissenschaft',
+                        'Text': 'Text',
+                        'NumberFormat': 'Zahlenformat',
+                        'MobileFormulaBarPlaceHolder': 'Wert oder Formel eingeben',
+                        'PasteAlert': 'Sie können dies hier nicht einfügen, da der Kopierbereich und der Einfügebereich nicht dieselbe Größe haben. Bitte versuchen Sie es in einem anderen Bereich.',
+                        'DestroyAlert': 'Möchten Sie die aktuelle Arbeitsmappe wirklich löschen, ohne sie zu speichern, und eine neue Arbeitsmappe erstellen?',
+                        'SheetRenameInvalidAlert': 'Der Blattname enthält ein ungültiges Zeichen.',
+                        'SheetRenameEmptyAlert': 'Der Blattname darf nicht leer sein.',
+                        'SheetRenameAlreadyExistsAlert': 'Der Blattname ist bereits vorhanden. Bitte geben Sie einen anderen Namen ein.',
+                        'DeleteSheetAlert': 'Möchten Sie dieses Blatt wirklich löschen?',
+                        'DeleteSingleLastSheetAlert': 'Eine Arbeitsmappe muss mindestens ein sichtbares Arbeitsblatt enthalten.',
+                        'PickACategory': 'Wählen Sie eine Kategorie',
+                        'Description': 'Beschreibung',
+                        'UnsupportedFile': 'Nicht unterstützte Datei',
+                        'InvalidUrl': 'Ungültige URL',
+                        'SUM': 'Fügt eine Reihe von Zahlen und / oder Zellen hinzu.',
+                        'SUMIF': 'Fügt die Zellen basierend auf der angegebenen Bedingung hinzu.',
+                        'SUMIFS': 'Fügt die Zellen basierend auf den angegebenen Bedingungen hinzu.',
+                        'ABS': 'Gibt den Wert einer Zahl ohne Vorzeichen zurück.',
+                        'RAND': 'Gibt eine Zufallszahl zwischen 0 und 1 zurück.',
+                        'RANDBETWEEN': 'Gibt eine zufällige Ganzzahl basierend auf angegebenen Werten zurück.',
+                        'FLOOR': 'Rundet eine Zahl auf das nächste Vielfache eines bestimmten Faktors ab.',
+                        'CEILING': 'Rundet eine Zahl auf das nächste Vielfache eines bestimmten Faktors.',
+                        'PRODUCT': 'Multipliziert eine Reihe von Zahlen und / oder Zellen.',
+                        'AVERAGE': 'Berechnen Sie den Durchschnitt für die Reihe von Zahlen und / oder Zellen ohne Text.',
+                        'AVERAGEIF': 'Berechnet den Durchschnitt für die Zellen basierend auf der angegebenen Bedingung.',
+                        'AVERAGEIFS': 'Berechnet den Durchschnitt für die Zellen basierend auf den angegebenen Bedingungen.',
+                        'AVERAGEA': 'Berechnet den Durchschnitt für die Zellen, wobei WAHR als 1, text und FALSCH als 0 ausgewertet werden.',
+                        'COUNT': 'Zählt die Zellen, die numerische Werte in einem Bereich enthalten.',
+                        'COUNTIF': 'Zählt die Zellen basierend auf der angegebenen Bedingung.',
+                        'COUNTIFS': 'Zählt die Zellen basierend auf den angegebenen Bedingungen.',
+                        'COUNTA': 'Zählt die Zellen, die Werte in einem Bereich enthalten.',
+                        'MIN': 'Gibt die kleinste Anzahl der angegebenen Argumente zurück.',
+                        'MAX': 'Gibt die größte Anzahl der angegebenen Argumente zurück.',
+                        'DATE': 'Gibt das Datum basierend auf einem bestimmten Jahr, Monat und Tag zurück.',
+                        'DAY': 'Gibt den Tag ab dem angegebenen Datum zurück.',
+                        'DAYS': 'Gibt die Anzahl der Tage zwischen zwei Daten zurück.',
+                        'IF': 'Gibt einen Wert basierend auf dem angegebenen Ausdruck zurück.',
+                        'IFS': 'Gibt einen Wert zurück, der auf den angegebenen mehreren Ausdrücken basiert.',
+                        'AND': 'Gibt WAHR zurück, wenn alle Argumente WAHR sind, andernfalls wird FALSCH zurückgegeben.',
+                        'OR': 'Gibt WAHR zurück, wenn eines der Argumente WAHR ist, andernfalls wird FALSCH zurückgegeben.',
+                        'IFERROR': 'Gibt einen Wert zurück, wenn kein Fehler gefunden wurde. Andernfalls wird der angegebene Wert zurückgegeben.',
+                        'CHOOSE': 'Gibt einen Wert aus der Werteliste basierend auf der Indexnummer zurück.',
+                        'INDEX': 'Gibt einen Wert der Zelle in einem bestimmten Bereich basierend auf der Zeilen- und Spaltennummer zurück.',
+                        'FIND': 'Gibt die Position eines Strings innerhalb eines anderen Strings zurück, wobei die Groß- und Kleinschreibung beachtet wird.',
+                        'CONCATENATE': 'Kombiniert zwei oder mehr Zeichenfolgen.',
+                        'CONCAT': 'Verkettet eine Liste oder einen Bereich von Textzeichenfolgen.',
+                        'SUBTOTAL': 'Gibt die Zwischensumme für einen Bereich unter Verwendung der angegebenen Funktionsnummer zurück.',
+                        'RADIANS': 'Konvertiert Grad in Bogenmaß.',
+                        'MATCH': 'Gibt die relative Position eines angegebenen Wertes im angegebenen Bereich zurück.',
+                        'DefineNameExists': 'Dieser Name ist bereits vorhanden, versuchen Sie es mit einem anderen Namen.',
+                        'CircularReference': 'Wenn eine Formel auf einen oder mehrere Zirkelverweise verweist, kann dies zu einer falschen Berechnung führen.',
+                        'CustomFormat': 'Formats de nombre personnalisés',
+                        'CustomFormatPlaceholder': 'Geben Sie ein benutzerdefiniertes Format ein oder wählen Sie es aus',
+                        'APPLY':'Sich bewerben',
                     }
-                });
-                helper.initializeSpreadsheet({locale:'de-DE'},done);
+                }
             });
-            afterEach(()=>{
-                helper.invoke('destroy');
-            });
-            it('Locale is not applied for placeholder and dialog content',(done:Function):void => {
-                let inputElement:any;
-                helper.getElement('#'+helper.id+'_number_format').click();
-                helper.getElement('#'+helper.id+'_Custom').click();
-                setTimeout(()=> {
-                    inputElement=helper.getElementFromSpreadsheet('.e-input.e-dialog-input');
-                    expect(inputElement.placeholder).toEqual('Geben Sie ein benutzerdefiniertes Format ein oder wählen Sie es aus');
-                    done();
-                });  
-            });
-            it('Set custom time format with localized content',(done:Function):void => {
-                helper.invoke('updateCell', [{ value: '0.37' }, 'A1']);
-                helper.invoke('numberFormat', ['h:mm AM/PM', 'A1']);
-                expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toBe(0.37);
-                expect(helper.invoke('getCell', [0, 0]).textContent).toEqual('8:52 AM');
+            helper.initializeSpreadsheet({ locale: 'de' }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Locale is not applied for placeholder and dialog content', (done: Function): void => {
+            helper.getElement('#'+helper.id+'_number_format').click();
+            helper.getElement('#'+helper.id+'_Custom').click();
+            setTimeout(()=> {
+                const inputElement: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-input.e-dialog-input');
+                expect(inputElement.placeholder).toEqual('Geben Sie ein benutzerdefiniertes Format ein oder wählen Sie es aus');
                 done();
             });
+        });
+        it('Set custom time format with localized content', (done:Function): void => {
+            helper.invoke('updateCell', [{ value: '0.37' }, 'A1']);
+            helper.invoke('numberFormat', ['h:mm AM/PM', 'A1']);
+            expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toBe(0.37);
+            expect(helper.invoke('getCell', [0, 0]).textContent).toEqual('8:52 AM');
+            done();
         });
     });
 
@@ -1257,81 +2149,118 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             done();
         });
     });
-    describe('EJ2-855322 ->', () => {
-        beforeEach((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    rows: [
-                        { cells: [{ value: '23/01/1928', format: 'dd/MM/yyyy' }, { value: '23-01-1928', format: 'dd-MM-yyyy' }] }
-                    ]
-                }]
-            }, done);
+    describe('Testing number format with different cases ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
-        afterEach(() => {
+        afterAll(() => {
             helper.invoke('destroy');
         });
-        it('Date format gets changed when attempting to edit the data and saving it', (done: Function) => {
-            let td: HTMLElement = helper.invoke('getCell', [0, 0]);
-            let coords: ClientRect = td.getBoundingClientRect();
-            expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('1/23/1928');
-            helper.triggerMouseAction('dblclick', { x: coords.right, y: coords.top }, null, td);
-            let editEle: HTMLElement = helper.getElementFromSpreadsheet('.e-spreadsheet-edit');
-            expect(editEle.textContent).toBe('1/23/1928');
-            helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '1/23/1920', refreshCurPos: true, refreshEditorElem: true });
-            helper.triggerKeyNativeEvent(13);
-            setTimeout(() => {
-                expect(helper.invoke('getCell', [0, 0]).textContent).toEqual('23/01/1920');
-                helper.invoke('selectRange', ['B1']);
-                setTimeout((): void => {
-                    expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('1/23/1928');
-                    td = helper.invoke('getCell', [1, 0]);
-                    coords = td.getBoundingClientRect();
-                    helper.triggerMouseAction('dblclick', { x: coords.right, y: coords.top }, null, td);
-                    editEle = helper.getElementFromSpreadsheet('.e-spreadsheet-edit');
-                    expect(editEle.textContent).toBe('1/23/1928');
-                    helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '1/23/1920', refreshCurPos: true, refreshEditorElem: true });
-                    helper.triggerKeyNativeEvent(13);
-                    setTimeout(() => {
-                        expect(helper.invoke('getCell', [0, 1]).textContent).toEqual('23-01-1920');
-                        done();
-                    });
-                });
-            });
+        it('Apply number format without range. ', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['D2']);
+            helper.invoke('numberFormat', ['0%']);
+            expect(spreadsheet.sheets[0].rows[1].cells[3].format).toBe('0%');
+            done();
+        });
+        it('Apply custom number format with @ symbol. ', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('numberFormat', ['@ h:mm:ss AM/PM']);
+            expect(spreadsheet.sheets[0].rows[1].cells[3].format).toBe('@ h:mm:ss AM/PM');
+            done();
+        });
+        it('Apply custom number format with color values in already text colured cell. ', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.cellFormat({ fontWeight: 'bold', color: '#00ff00' }, 'A4:E4');
+            helper.invoke('numberFormat', ['[Black]', 'A4:E4']);
+            spreadsheet.cellFormat({ fontWeight: 'bold', color: '#00ff00' }, 'A4:E4');
+            expect(spreadsheet.sheets[0].rows[3].cells[3].format).toBe('[Black]');
+            expect(spreadsheet.sheets[0].rows[3].cells[3].format).toBe('[Black]');
+            done();
         });
     });
-    describe('EJ2-883693 ->', () => {
+    describe('EJ2-878093 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
         afterEach(() => {
             helper.invoke('destroy');
         });
-        it('Custom number format is not working properly like MS Excel when the format contains text with date time format in it', (done: Function) => {
-            helper.edit('A12', '33.43');
-            helper.invoke('numberFormat', ['"Largo: "0.00" metros"', 'A12']);
-            let td: HTMLElement = helper.invoke('getCell', [11, 0]);
-            expect(td.textContent).toBe('Largo: 33.43 metros');
-            helper.edit('A13', '33.43');
-            helper.invoke('numberFormat', ['"hm: "0.00" metros"', 'A13']);
-            td = helper.invoke('getCell', [12, 0]);
-            expect(td.textContent).toBe('hm: 33.43 metros');
-            helper.edit('A14', '33.43');
-            helper.invoke('numberFormat', ['"AM: "0.00" metros"', 'A14']);
-            td = helper.invoke('getCell', [13, 0]);
-            expect(td.textContent).toBe('AM: 33.43 metros');
-            helper.edit('A15', '33.43');
-            helper.invoke('numberFormat', ['"Hq/ "0.00" HR"', 'A15']);
-            td = helper.invoke('getCell', [14, 0]);
-            expect(td.textContent).toBe('Hq/ 33.43 HR');
-            helper.edit('A16', '33.43');
-            helper.invoke('numberFormat', ['"sSmd "0.00" metros"', 'A16']);
-            td = helper.invoke('getCell', [15, 0]);
-            expect(td.textContent).toBe('sSmd 33.43 metros');
-            helper.edit('A17', '33.43');
-            helper.invoke('numberFormat', ['"Hmia "0.00" Apa"', 'A17']);
-            td = helper.invoke('getCell', [16, 0]);
-            expect(td.textContent).toBe('Hmia 33.43 Apa');
+        it('Issue in NF-dialog before open event', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const previousValue: EmitType<DialogBeforeOpenEventArgs> = spreadsheet.dialogBeforeOpen;
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                args.cancel = true;
+            };
+            helper.invoke('selectRange', ['E5']);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_Custom').click();
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-custom-format-dlg.e-dialog')).toBeNull();
+                spreadsheet.dialogBeforeOpen = previousValue;
+                done();
+               });
+        });
+    });
+    describe('EJ2-880370, EJ2-907823 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Issue in custom formats while selecting the range in reverse direction', (done: Function) => {
+            var spreadsheet = helper.getInstance();
+            var cellEle: Element[] = helper.invoke('getRow', [1]).cells;
+            expect(spreadsheet.sheets[0].rows[1].cells[5].value).toEqual(200);
+            expect(cellEle[5].textContent).toBe('200');
+            cellEle = helper.invoke('getRow', [5]).cells;
+            expect(spreadsheet.sheets[0].rows[5].cells[5].value).toEqual(300);
+            expect(cellEle[5].textContent).toBe('300');
+            helper.invoke('numberFormat', ['$#,##0.00', 'F8:F2']);
+            cellEle = helper.invoke('getRow', [1]).cells;
+            expect(spreadsheet.sheets[0].rows[1].cells[5].value).toEqual(200);
+            expect(cellEle[5].textContent).toBe('$200.00');
+            cellEle = helper.invoke('getRow', [5]).cells;
+            expect(spreadsheet.sheets[0].rows[5].cells[5].value).toEqual(300);
+            expect(cellEle[5].textContent).toBe('$300.00');
             done();
+        });
+        it('Data not maintained properly after changing the number format', (done: Function) => {
+            var spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['G1:G200']);
+            var cellEle: Element[] = helper.invoke('getRow', [4]).cells;
+            spreadsheet.applyFilter([{ field: 'G', predicate: 'or', operator: 'greaterthan', value: '10' }], 'G1:G200');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].hidden).toEqual(true);
+                expect(spreadsheet.sheets[0].rows[2].hidden).toEqual(true);
+                expect(spreadsheet.sheets[0].rows[3].hidden).toEqual(true);
+                helper.invoke('numberFormat', ['$#,##0.00', 'G1:G200']);
+                expect(cellEle[6].textContent).toBe('$11.00');
+                expect(spreadsheet.sheets[0].rows[4].cells[6].value.toString()).toEqual('11');
+                cellEle = helper.invoke('getRow', [6]).cells;
+                expect(cellEle[6].textContent).toBe('$13.00');
+                expect(spreadsheet.sheets[0].rows[6].cells[6].value.toString()).toEqual('13');
+                cellEle = helper.invoke('getRow', [9]).cells;
+                expect(cellEle[6].textContent).toBe('$12.00');
+                expect(spreadsheet.sheets[0].rows[9].cells[6].value.toString()).toEqual('12');
+                helper.invoke('clearFilter');
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[1].hidden).toEqual(false);
+                    expect(spreadsheet.sheets[0].rows[2].hidden).toEqual(false);
+                    expect(spreadsheet.sheets[0].rows[3].hidden).toEqual(false);
+                    cellEle = helper.invoke('getRow', [1]).cells;
+                    expect(cellEle[6].textContent).toBe('$1.00');
+                    expect(spreadsheet.sheets[0].rows[1].cells[6].value.toString()).toEqual('1');
+                    cellEle = helper.invoke('getRow', [2]).cells;
+                    expect(cellEle[6].textContent).toBe('$5.00');
+                    expect(spreadsheet.sheets[0].rows[2].cells[6].value.toString()).toEqual('5');
+                    cellEle = helper.invoke('getRow', [3]).cells;
+                    expect(cellEle[6].textContent).toBe('$7.00');
+                    expect(spreadsheet.sheets[0].rows[3].cells[6].value.toString()).toEqual('7');
+                    done();
+                }, 5);
+            });
         });
     });
 });

@@ -25,7 +25,8 @@ import { tool1, tool2, datetimeData, categoryData, negativeDataPoint, rotateData
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
-Chart.Inject(ScatterSeries, LineSeries, DateTime, DataEditing, Category, Tooltip, DataLabel, ColumnSeries, AreaSeries, PolarSeries);
+import { Legend } from '../../../src/chart/legend/legend';
+Chart.Inject(ScatterSeries, LineSeries, DateTime, Legend, DataEditing, Category, Tooltip, DataLabel, ColumnSeries, AreaSeries, PolarSeries);
 let data: any = tool1;
 let data2: any = tool2;
 let datetime: any = datetimeData;
@@ -1256,4 +1257,99 @@ describe('Scatter Series Inversed axis', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
+    });
+    describe('Scatter series- animation on data changes', () => {
+        let chartObj: Chart; let x: number; let y: number;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let element1: HTMLElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element1);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'DateTime',
+                        labelFormat: 'y',
+                        intervalType: 'Years',
+                        edgeLabelPlacement: 'Shift',
+                        majorGridLines: { width: 0 }
+                    },
+
+                    //Initializing Primary Y Axis
+                    primaryYAxis:
+                    {
+                        labelFormat: '{value}%',
+                        rangePadding: 'None',
+                        minimum: 0,
+                        maximum: 100,
+                        interval: 20,
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 }
+                    },
+                    chartArea: {
+                        border: {
+                            width: 0
+                        }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Scatter',
+                            dataSource: [
+                                { x: new Date(2005, 0, 1), y: 21 }, { x: new Date(2006, 0, 1), y: 24  },
+                                { x: new Date(2007, 0, 1), y: 36 }, { x: new Date(2008, 0, 1), y: 38 },
+                                { x: new Date(2009, 0, 1), y: 54 }, { x: new Date(2010, 0, 1), y: 57 },
+                                { x: new Date(2011, 0, 1), y: 70 }
+                            ],
+                            animation: { enable: false },
+                            xName: 'x', marker: {
+                                visible: true,
+                                shape: 'Image',
+                                imageUrl: 'base/spec/img/img1.jpg',
+                                width: 10,
+                                height: 10
+                            },
+                            yName: 'y', name: 'Germany', dragSettings: { enable: true }
+                        }
+                    ],
+                    title: 'Inflation - Consumer Price',
+                    legendSettings: { mode: 'Point', visible: true },
+                    tooltip: {
+                        enable: true
+                    },
+                });
+            chartObj.appendTo('#container');
+
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            element1.remove();
+        });
+
+        it('Scatter series -checking updated direction', (done: Function) => {
+            loaded = (): void => {
+                let element: Element = document.getElementById('container_Series_0_Point_0');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            let dataSource = [
+                { x: new Date(2005, 0, 1), y: 21 }, { x: new Date(2006, 0, 1), y: 24 },
+                { x: new Date(2007, 0, 1), y: 38 }, { x: new Date(2008, 0, 1), y: 38 },
+                { x: new Date(2009, 0, 1), y: 54 }, { x: new Date(2010, 0, 1), y: 57 },
+                { x: new Date(2011, 0, 1), y: 70 }
+            ];
+            chartObj.series[0].setData(dataSource);
+            chartObj.refresh();
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });

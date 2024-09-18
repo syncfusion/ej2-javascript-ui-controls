@@ -502,7 +502,7 @@ export class CircularChartDataLabel3D extends ChildProperty<CircularChartDataLab
         saturatedColor = (saturatedColor === 'transparent') ? ((chart.theme.indexOf('Dark') > -1 || chart.theme.indexOf('HighContrast') > -1) ? 'black' : 'white') : saturatedColor;
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(saturatedColor));
         const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
-        return contrast >= 128 ? 'black' : 'white';
+        return chart.theme === 'Bootstrap5' ? '#212529' : chart.theme === 'Bootstrap5Dark' ? '#DEE2E6' : contrast >= 128 ? 'black' : 'white';
     }
 
     /**

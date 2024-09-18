@@ -58,6 +58,10 @@
       &:active,
       &:hover {
         background-color: $field-list-toggle-hover-color;
+        
+        @if ($skin-name =='fluent2'){
+          color: $field-list-icon-hover-color;
+        }
       }
     }
   }
@@ -67,28 +71,6 @@
 
     .e-select-table {
       padding: 8px 5px;
-    }
-  }
-
-  .e-bigger .e-pivotfieldlist,
-  .e-bigger.e-pivotfieldlist {
-    .e-select-table {
-      font-size: $field-list-toggle-icon-bigger-size;
-      height: $field-list-toggle-bigger-size;
-      max-height: $field-list-toggle-bigger-size;
-      max-width: $field-list-toggle-bigger-size;
-      min-height: $field-list-toggle-bigger-size;
-      min-width: $field-list-toggle-bigger-size;
-    }
-
-    .e-member-editor-dialog,
-    .e-olap-editor-dialog {
-      max-height: 440px !important;
-      min-width: 370px !important;
-
-      .e-member-editor-container-outer-div .e-list-parent .e-ul {
-        height: auto;
-      }
     }
   }
 
@@ -255,7 +237,7 @@
       }
 
       .e-dlg-content ul li .e-text-content .e-checkbox-wrapper {
-        @if ($skin-name =='Material3') or ($skin-name =='fluent2') {
+        @if ($skin-name =='Material3') {
           margin: 0 !important;
           /* stylelint-enable */
         }
@@ -263,12 +245,6 @@
         .e-ripple-container {
           @if ($skin-name =='Material3') {
             background: transparent;
-          }
-        }
-
-        .e-frame.e-icons{
-          @if ($skin-name =='fluent2') {
-            margin: 0;
           }
         }
       }
@@ -311,6 +287,11 @@
       display: flex;
       padding: 2px;
       width: 100%;
+
+      @if ($skin-name =='bootstrap5' or $skin-name =='bootstrap5.3')
+      {
+        align-items: center;
+      }
 
       .e-title-content {
         flex: auto;
@@ -465,6 +446,7 @@
 
                 @if ($skin-name =='fluent2') {
                   font-size: 16px;
+                  margin-right: 0;
                 }
 
                 @if ($skin-name =='bootstrap5') or ($skin-name =='FluentUI') {
@@ -485,7 +467,9 @@
               }
 
               .e-list-icon {
-                color: $field-list-tree-icon-color;
+                @if ($skin-name !='fluent2'){
+                  color: $field-list-tree-icon-color;
+                }
                 margin: 0;
               }
 
@@ -532,6 +516,12 @@
                 font-size: $field-list-icon-size;
                 height: auto;
                 width: auto;
+
+                @if ($skin-name =='fluent2'){
+                  &:hover {
+                    color: $field-list-icon-hover-color;
+                  }
+                }
               }
             }
 
@@ -677,7 +667,7 @@
                 text-transform: none;
                 width: 100%;
 
-                @if ($field-list-skin =='bootstrap4') or ($skin-name =='bootstrap5') {
+                @if ($field-list-skin =='bootstrap4') or ($skin-name =='bootstrap5') or ($skin-name =='bootstrap5.3') {
                   color: $field-list-button-font-color;
                 }
 
@@ -691,6 +681,16 @@
 
                   .e-pvt-btn-content {
                     background-color: transparent;
+                  }
+
+                  @if ($skin-name =='fluent2'){
+                    .e-sort,
+                    .e-pv-filter,
+                    .e-pv-filtered,
+                    .e-dropdown-icon,
+                    .e-edit {
+                      color: $field-list-button-active-color;
+                    }
                   }
                 }
 
@@ -945,6 +945,12 @@
 
       &.e-disable {
         display: none;
+      }
+
+      @if ($skin-name =='fluent2') {
+        &:hover {
+          color: $field-list-cal-button-text-color-hover;
+        }
       }
     }
 
@@ -1267,7 +1273,7 @@
                 text-transform: none;
                 width: 100%;
 
-                @if ($skin-name =='bootstrap5') {
+                @if ($skin-name =='bootstrap5') or ($skin-name =='bootstrap5.3') {
                   background-color: $field-list-default-bg-color;
                   color: $field-list-default-font-color;
                 }
@@ -1383,7 +1389,7 @@
               vertical-align: middle;
               width: 70%;
 
-              @if ($skin-name =='bootstrap5') {
+              @if ($skin-name =='bootstrap5') or ($skin-name =='fluent2') or ($skin-name =='fluent') or ($skin-name =='bootstrap5.3') or ($skin-name =='tailwind') {
                 color: $field-list-default-font-color;
               }
             }
@@ -1657,382 +1663,4 @@
       }
     }
   }
-
-  /* stylelint-disable */
-  .e-bigger .e-pivotfieldlist-container,
-  .e-bigger.e-pivotfieldlist-container {
-    .e-field-table {
-
-      .e-left-axis-fields,
-      .e-right-axis-fields {
-        padding-left: $field-list-default-bigger-padding-size;
-      }
-
-      .e-field-header {
-        background: $field-list-header-background-color;
-        color: $field-list-default-header-font-color;
-        font-size: $field-list-bigger-header-font-size;
-        font-weight: normal;
-        overflow: hidden;
-
-        @if ($field-list-skin =='bootstrap4') {
-          padding-left: 16px;
-        }
-      }
-
-      .e-field-header-container {
-        padding-right: $field-list-bigger-header-padding;
-
-        .e-sort-none,
-        .e-sort-ascend,
-        .e-sort-descend {
-          font-size: $field-list-bigger-header-icon-size;
-          padding: 0 0 0 $field-list-bigger-icon-to-icon-padding;
-          width: 24px;
-        }
-      }
-
-      .e-field-list {
-        padding-left: 5px;
-
-        &:not(.e-olap-field-list-tree) {
-          ul {
-            padding-left: $field-list-treeview-bigger-ul-padding;
-
-            li.e-pivot-parent {
-              @if ($skin-name =='bootstrap5') {
-                padding-left: 7px;
-              }
-
-              @if ($skin-name =='FluentUI') {
-                padding-left: 8px;
-              }
-            }
-
-            li:not(.e-pivot-parent):not(.e-pivot-child) {
-              .e-text-content {
-                padding-left: $field-list-treeview-bigger-li-padding;
-              }
-            }
-          }
-        }
-
-        ul {
-          li {
-            padding: 0;
-          }
-        }
-
-        .e-drag {
-          font-size: $field-list-bigger-icon-size !important;
-          height: 24px !important;
-          margin-bottom: $field-list-treeview-drag-bigger-padding !important;
-          margin-right: 4px !important;
-          width: 24px !important;
-
-          @if ($skin-name =='fluent2') {
-            font-size: 20px !important;
-            margin-bottom: 5px !important;
-          }
-        }
-
-        .e-calc-measure-icon,
-        .e-calc-dimension-icon,
-        .e-attributeCDB-icon,
-        .e-hierarchyCDB-icon,
-        .e-level-members,
-        .e-namedSetCDB-icon,
-        .e-measure-icon,
-        .e-kpiGoal-icon,
-        .e-kpiStatus-icon,
-        .e-kpiTrend-icon,
-        .e-kpiValue-icon {
-          margin-left: 10px;
-        }
-
-        &.e-olap-field-list-tree {
-          ul {
-            .e-list-icon {
-              font-size: $field-list-bigger-icon-size;
-            }
-          }
-        }
-      }
-
-      /* stylelint-enable */
-      .e-left-axis-fields .e-field-list-rows,
-      .e-right-axis-fields .e-field-list-values {
-        margin-top: $field-list-default-bigger-padding-size;
-      }
-    }
-
-    .e-axis-table {
-
-      .e-left-axis-fields .e-field-list-filters,
-      .e-left-axis-fields .e-field-list-rows,
-      .e-right-axis-fields .e-field-list-columns,
-      .e-right-axis-fields .e-field-list-values {
-        .e-axis-container {
-          height: $field-list-bigger-header-height;
-          padding: 0 $field-list-bigger-header-padding 0;
-
-          .e-axis-icon-container {
-            height: $field-list-bigger-header-icon-size;
-            width: 24px;
-
-            .e-axis-rows,
-            .e-axis-columns,
-            .e-axis-values,
-            .e-axis-filters {
-              font-size: $field-list-bigger-header-icon-size;
-            }
-          }
-
-          .e-axis-header {
-            font-size: $field-list-bigger-header-font-size;
-            padding: 0 12px;
-          }
-        }
-
-        .e-axis-content {
-          height: $field-list-popup-axis-content-bigger-height;
-
-          .e-pvt-btn-div {
-            .e-pivot-button {
-              /* stylelint-disable */
-              font-size: $field-list-bigger-button-font-size;
-              height: $field-list-bigger-button-height !important;
-              padding: $field-list-bigger-button-padding !important;
-
-              /* stylelint-enable */
-              .e-pvt-btn-content {
-                font-size: $field-list-bigger-button-font-size;
-                line-height: $field-list-bigger-button-line-height;
-                padding: 0 10px;
-              }
-
-              .e-draggable {
-                height: 24px;
-                width: 24px;
-              }
-
-              .e-sort,
-              .e-pv-filter,
-              .e-pv-filtered,
-              .e-dropdown-icon,
-              .e-edit {
-                cursor: pointer;
-                display: inline-block;
-                font-size: $field-list-bigger-icon-size;
-                height: 24px;
-                width: 24px;
-              }
-
-              .e-sort {
-                height: $field-list-bigger-icon-size;
-              }
-
-              .e-drag {
-                font-size: $field-list-bigger-icon-size;
-                width: 24px;
-
-                @if ($skin-name =='fluent2') {
-                  font-size: 20px;
-                }
-              }
-            }
-          }
-        }
-
-        .e-draggable-prompt {
-          @if ($field-list-skin =='bootstrap4') {
-            font-size: 16px;
-          }
-        }
-      }
-    }
-
-    .e-calculated-field {
-      font-size: $field-list-bigger-button-font-size;
-    }
-
-    &.e-static {
-      max-height: 735px;
-
-      .e-field-list-container {
-        .e-center-title {
-          color: $field-list-default-header-font-color;
-          font-size: $field-list-bigger-header-font-size;
-        }
-
-        .e-axis-table {
-          .e-right-axis-fields {
-            padding-left: $field-list-default-bigger-padding-size;
-          }
-
-          .e-left-axis-fields .e-field-list-rows,
-          .e-right-axis-fields .e-field-list-values {
-            margin-top: $field-list-default-bigger-padding-size;
-          }
-        }
-      }
-
-      &.e-rtl {
-        .e-axis-table {
-          .e-left-axis-fields {
-            padding-left: $field-list-default-bigger-padding-size;
-          }
-
-          /* stylelint-disable */
-          .e-right-axis-fields {
-            padding: 0 !important;
-          }
-        }
-      }
-
-      .e-layout-footer .e-checkbox-layout .e-checkbox-wrapper label .e-label {
-        width: calc(100% - 30px);
-      }
-    }
-
-    &.e-rtl {
-      .e-field-table {
-        .e-field-list {
-          padding-left: 0;
-          padding-right: 5px;
-
-          &:not(.e-olap-field-list-tree) {
-            ul {
-              padding-right: $field-list-treeview-bigger-ul-padding;
-
-              li.e-pivot-parent {
-                @if ($skin-name =='bootstrap5') {
-                  padding-right: 7px;
-                }
-
-                @if ($skin-name =='FluentUI') {
-                  padding-right: 8px;
-                }
-              }
-
-              li:not(.e-pivot-parent):not(.e-pivot-child) {
-                .e-text-content {
-                  padding-right: $field-list-treeview-bigger-li-padding;
-                }
-              }
-            }
-          }
-
-          .e-drag {
-            margin-left: 4px !important;
-            margin-right: 0 !important;
-          }
-
-          .e-calc-measure-icon,
-          .e-calc-dimension-icon,
-          .e-attributeCDB-icon,
-          .e-hierarchyCDB-icon,
-          .e-level-members,
-          .e-namedSetCDB-icon,
-          .e-measure-icon,
-          .e-kpiGoal-icon,
-          .e-kpiStatus-icon,
-          .e-kpiTrend-icon,
-          .e-kpiValue-icon {
-            margin-left: 0;
-            margin-right: 10px;
-          }
-          /* stylelint-enable */
-        }
-
-        .e-field-header {
-          padding-right: $field-list-bigger-header-padding;
-        }
-
-        .e-field-header-container {
-          padding-left: $field-list-bigger-header-padding;
-
-          .e-sort-none,
-          .e-sort-ascend,
-          .e-sort-descend {
-            padding: 0 $field-list-bigger-icon-to-icon-padding 0 0;
-          }
-        }
-      }
-
-      .e-axis-table {
-
-        .e-left-axis-fields,
-        .e-right-axis-fields {
-          padding-left: 0;
-          padding-right: $field-list-default-padding-size;
-        }
-
-        .e-left-axis-fields .e-field-list-filters,
-        .e-left-axis-fields .e-field-list-rows,
-        .e-right-axis-fields .e-field-list-columns,
-        .e-right-axis-fields .e-field-list-values {
-          .e-pivot-button {
-
-            .e-sort,
-            .e-pv-filter,
-            .e-pv-filtered,
-            .e-remove,
-            .e-dropdown-icon,
-            .e-edit {
-              padding-left: 0;
-              padding-right: $field-list-bigger-icon-to-icon-padding;
-            }
-          }
-        }
-      }
-    }
-
-    &.e-search-mode {
-      &.e-static {
-        max-height: 750px;
-
-        .e-field-list-container {
-          max-height: 800px;
-
-          .e-field-table {
-            height: 270px;
-          }
-        }
-      }
-
-      /* stylelint-disable */
-      &.e-popup {
-        max-height: 600px !important;
-        min-height: $field-list-search-popup-container-bigger-height !important;
-
-        .e-field-list-container {
-          height: 387px;
-
-          @if ($skin-name =='fluent2') {
-            height: 397px;
-          }
-          
-          .e-field-table {
-            height: $field-list-search-popup-table-bigger-height !important;
-          }
-
-          .e-axis-table {
-            height: $field-list-search-popup-axis-table-bigger-height;
-
-            .e-axis-content {
-              height: $field-list-search-popup-axis-content-bigger-height !important;
-            }
-          }
-        }
-      }
-    }
-
-    .e-adaptive-field-list-dialog {
-      .e-dlg-content .e-field-list-tree-outer-div {
-        max-height: $field-list-adaptive-outerdiv-height;
-      }
-    }
-  }
-  /* stylelint-enable */
 }

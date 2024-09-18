@@ -110,7 +110,7 @@ describe('Diagram Control', () => {
             done();
         });
     });
-
+    
     describe('Testing Undo Redo for Resizing', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -1614,6 +1614,54 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('Undo Redo canlog function', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+    
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'canlog' });
+            document.body.appendChild(ele);
+            let selArray: (NodeModel | ConnectorModel)[] = [];
+            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
+    
+            let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 200, y: 200 }, targetPoint: { x: 300, y: 300 } };
+    
+            diagram = new Diagram({
+                width: '600', height: '530px', nodes: [node],
+                connectors: [connector], snapSettings: { constraints: SnapConstraints.ShowLines },                
+            });
+            diagram.appendTo('#canlog');
+            diagram.historyManager.canLog = function (entry: HistoryEntry) {
+                entry.cancel = true;
+                return entry;
+            }
+            diagram.dataBind();
+        });
+    
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+    
+        it('Checking undo for single node dragging', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            mouseEvents.mouseDownEvent(diagramCanvas, 100, 100);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 150, 150);
+            mouseEvents.mouseUpEvent(diagramCanvas, 150, 150);
+            diagram.undo();
+            expect(diagram.historyManager.canLog != null).toBe(true);
+            done();
+        });
+    });
+
     describe('Code coverage-undo-redo', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -1651,11 +1699,28 @@ describe('Diagram Control', () => {
             expect(node.offsetX === nodeOffset).toBe(true);
             done();
         });
+
+        // it('Setting Stack limit 1', (done: Function) => {
+        //     let node = diagram.nodes[0];
+        //     diagram.drag(node,50,50);
+        //     diagram.drag(node,50,0);
+        //     diagram.drag(node,50,0);
+        //     diagram.setStackLimit(1);
+        //     expect(diagram.historyManager.undoStack.length === 1).toBe(true);
+        //     done();
+        // });
+
         it('Setting Stack limit 1', (done: Function) => {
             let node = diagram.nodes[0];
-            diagram.drag(node,50,50);
-            diagram.drag(node,50,0);
-            diagram.drag(node,50,0);
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseDownEvent(diagramCanvas,node.offsetX,node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.offsetX + 20,node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.offsetX + 20,node.offsetY);
+            mouseEvents.mouseUpEvent(diagramCanvas,node.offsetX  + 20,node.offsetY);
+            mouseEvents.mouseDownEvent(diagramCanvas,node.offsetX,node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.offsetX + 20,node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.offsetX + 20,node.offsetY);
+            mouseEvents.mouseUpEvent(diagramCanvas,node.offsetX  + 20,node.offsetY);
             diagram.setStackLimit(1);
             expect(diagram.historyManager.undoStack.length === 1).toBe(true);
             done();

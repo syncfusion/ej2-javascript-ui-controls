@@ -170,5 +170,15 @@ export class MouseEvents {
                             false, false, false, false, 0, null);
         element.dispatchEvent(move);
     }
-
+    public keyboardEvent(event: string, element: Element, key: string, code: string, ctrlKey: boolean = false): void {
+        const keyboardEvent = new KeyboardEvent(event, {
+            key: key,
+            code: code,
+            ctrlKey: ctrlKey,
+            bubbles: true,
+            cancelable: true,
+            view: window
+        });
+        element.dispatchEvent(keyboardEvent);
+    }
 }

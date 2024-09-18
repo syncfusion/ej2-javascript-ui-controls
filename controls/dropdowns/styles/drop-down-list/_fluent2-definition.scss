@@ -35,6 +35,7 @@ $ddl-filter-box-shadow-color: rgba(0, 0, 0, .3) !default;
 $ddl-popup-background-color: $flyout-bg-color !default;
 $ddl-filter-background-color: $flyout-bg-color !default;
 $ddl-filter-box-shadow: none !default;
+$ddl-list-disable-item-color: $flyout-text-color-disabled !default;
 
 @include export-module('dropdownlist-bds') {
   .e-ddl.e-control-wrapper .e-ddl-icon::before {
@@ -66,7 +67,7 @@ $ddl-filter-box-shadow: none !default;
 
   .e-ddl#{&}.e-popup {
     border: 0;
-    border-radius: 8px;
+    border-radius: 4px;
     box-shadow: $ddl-popup-shadow;
     margin-top: 4px;
   }
@@ -77,43 +78,9 @@ $ddl-filter-box-shadow: none !default;
     margin-top: 2px;
   }
 
-  .e-bigger .e-ddl#{&}.e-popup,
-  .e-bigger.e-ddl#{&}.e-popup {
-    border-radius: 8px;
-    margin-top: 8px;
-  }
-
-  .e-bigger.e-small .e-ddl#{&}.e-popup,
-  .e-small.e-bigger.e-ddl#{&}.e-popup {
-    border-radius: 8px;
-    margin-top: 6px;
-  }
-
   #{&}.e-popup.e-ddl .e-dropdownbase {
     min-height: 26px;
     padding: 6px 4px;
-  }
-
-  .e-bigger #{&}.e-popup.e-ddl-device-filter .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) {
-    border-color: $ddl-default-border-color;
-  }
-
-  .e-bigger #{&}.e-popup.e-ddl-device-filter {
-    margin-top: 0;
-  }
-
-  .e-bigger .e-ddl-device .e-input-group,
-  .e-bigger .e-ddl-device .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) {
-    background: $flyout-bg-color;
-    border-width: 0;
-    box-shadow: none;
-    margin-bottom: 0;
-  }
-
-  .e-bigger .e-ddl-device .e-input-group .e-back-icon,
-  .e-bigger .e-ddl-device .e-input-group input.e-input,
-  .e-bigger .e-ddl-device .e-input-group .e-clear-icon {
-    background-color: $flyout-bg-color;
   }
 
   .e-input-group.e-ddl,

@@ -1,4 +1,4 @@
-import { Rect, Size } from "@syncfusion/ej2-drawings";
+import { Rect, Size } from '@syncfusion/ej2-drawings';
 
 declare let importScripts: (...scripts: string[]) => void;
 /**
@@ -104,6 +104,25 @@ export function PdfiumRunner(): void {
     }
 
     /**
+     * @param {string} fontFile - Specifies the font path.
+     * @returns {void}
+     */
+    function registerFonts(fontFile: string): void {
+        fetch(fontFile).then((response: any) => {
+            if (response.ok) {
+                return response.arrayBuffer();
+            }
+        }).then((value: ArrayBuffer) => {
+            if (value) {
+                const parts: string[] = fontFile.split('/');
+                const fileName: string = parts.pop();
+                const name: string = '/usr/share/fonts/' + fileName;
+                PDFiumModule.FS.createDataFile(name, null, new Int8Array(value), true, true, true);
+            }
+        });
+    }
+
+    /**
      *@returns {void}
      */
     function checkIfEverythingWasLoaded(): void {
@@ -145,6 +164,19 @@ export function PdfiumRunner(): void {
             PDFiumModule.onRuntimeInitialized = function (): void {
                 moduleLoaded = true;
                 checkIfEverythingWasLoaded();
+                if (event.data.fonts && event.data.fonts.length > 0) {
+                    PDFiumModule.FS.createPath('/', '/usr/share/fonts/', true, true);
+                    for (let i: number = 0; i < event.data.fonts.length; i++) {
+                        let fontpath: string;
+                        if (event.data.fonts[parseInt(i.toString(), 10)].startsWith('http://') || event.data.fonts[parseInt(i.toString(), 10)].startsWith('https://')) {
+                            fontpath = event.data.fonts[parseInt(i.toString(), 10)];
+                        }
+                        else {
+                            fontpath = PDFiumModule.url + '/' + event.data.fonts[parseInt(i.toString(), 10)];
+                        }
+                        registerFonts(fontpath);
+                    }
+                }
             };
             (this as any)['PDFiumModule'](PDFiumModule);
         }
@@ -184,6 +216,14 @@ export function PdfiumRunner(): void {
             (data as any).rubberStampAnnotationPageNumber = event.data.rubberStampAnnotationPageNumber;
             (data as any).annotationOrder = event.data.annotationOrder;
             (data as any).collectionOrder = event.data.collectionOrder;
+            (data as any).isFormField = event.data.isFormField;
+            if ((data as any).isFormField) {
+                (data as any).message = 'LoadedStampForFormFields';
+                (data as any).formFieldName = event.data.formFieldName;
+                (data as any).formFieldList = event.data.formFieldList;
+                (data as any).formFields = event.data.rubberStampAnnotation;
+                (data as any).PageIndex = event.data.PageIndex;
+            }
             ctx.postMessage(data);
         }
         if (documentDetails) {
@@ -198,7 +238,7 @@ export function PdfiumRunner(): void {
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 const ImageData: any = event.data;
                 const data: object = firstPage.render(null, ImageData.zoomFactor, ImageData.isTextNeed, null, null,
-                                                      ImageData.textDetailsId,null,event.data.cropBoxRect);
+                                                      ImageData.textDetailsId, null, event.data.cropBoxRect);
                 (data as any).message = 'imageRenderedSearch';
                 ctx.postMessage(data);
             }
@@ -216,7 +256,8 @@ export function PdfiumRunner(): void {
                 ctx.postMessage(data);
             }
             else if (event.data.message === 'renderThumbnail') {
-                let thumbnail: Promise<any> = new Promise((resolve, reject) => {
+                // eslint-disable-next-line
+                const thumbnail: Promise<any> = new Promise((resolve, reject) => {
                     // Simulate an asynchronous task
                     setTimeout(() => {
                         try {
@@ -231,7 +272,7 @@ export function PdfiumRunner(): void {
                     }, 1000);
                 });
 
-                thumbnail.then(results => {
+                thumbnail.then((results: any) => {
                     ctx.postMessage(results);
                 });
             }
@@ -252,7 +293,7 @@ export function PdfiumRunner(): void {
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 const ImageData: any = event.data;
                 const data: object = firstPage.render(null, ImageData.zoomFactor, ImageData.isTextNeed, null, null,
-                                                      ImageData.textDetailsId,null, null,null, event.data.size);
+                                                      ImageData.textDetailsId, null, null, null, event.data.size);
                 (data as any).message = 'imageExtracted';
                 ctx.postMessage(data);
             }
@@ -260,14 +301,16 @@ export function PdfiumRunner(): void {
                 const values: any = event.data;
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 const data: object = firstPage.renderTileImage(values.tileX, values.tileY, values.tileXCount, values.tileYCount,
-                                                               values.zoomFactor, event.data.isTextNeed, event.data.textDetailsId, event.data.cropBoxRect, event.data.mediaBoxRect);
+                                                               values.zoomFactor, event.data.isTextNeed, event.data.textDetailsId,
+                                                               event.data.cropBoxRect, event.data.mediaBoxRect);
                 ctx.postMessage(data);
             }
             else if (event.data.message === 'renderImageAsTileSearch') {
                 const values: any = event.data;
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 const data: object = firstPage.renderTileImage(values.tileX, values.tileY, values.tileXCount, values.tileYCount,
-                                                               values.zoomFactor, event.data.isTextNeed, event.data.textDetailsId, event.data.cropBoxRect, event.data.mediaBoxRect);
+                                                               values.zoomFactor, event.data.isTextNeed, event.data.textDetailsId,
+                                                               event.data.cropBoxRect, event.data.mediaBoxRect);
                 (data as any).message = 'renderTileImageSearch';
                 ctx.postMessage(data);
             }
@@ -292,13 +335,15 @@ export function PdfiumRunner(): void {
             this.processor = processor;
         }
         public render(message: any, zoomFactor?: number, isTextNeed?: boolean, printScaleFactor?: any,
-                      printDevicePixelRatio?: number, textDetailsId?: any, isTransparent?: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size): object {
+                      printDevicePixelRatio?: number, textDetailsId?: any, isTransparent?: boolean,
+                      cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size): object {
             return this.processor.render(this.index, message, zoomFactor, isTextNeed, printScaleFactor,
                                          printDevicePixelRatio, textDetailsId, isTransparent, cropBoxRect, mediaBoxRect, size);
         }
         public renderTileImage(x: any, y: any, tileX: any, tileY: any, zoomFactor?: number, isTextNeed?: boolean,
                                textDetailsId?: any, cropBoxRect?: Rect, mediaBoxRect?: Rect): object {
-            return this.processor.renderTileImage(this.index, x, y, tileX, tileY, zoomFactor, isTextNeed, textDetailsId, cropBoxRect, mediaBoxRect);
+            return this.processor.renderTileImage(this.index, x, y, tileX, tileY, zoomFactor, isTextNeed, textDetailsId,
+                                                  cropBoxRect, mediaBoxRect);
         }
     }
 
@@ -348,7 +393,8 @@ export function PdfiumRunner(): void {
                 GetCharBox(pagePointer, i, left, right, bottom, top));
         }
 
-        public getRender(i: number = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect): any {
+        public getRender(i: number = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean,
+                         cropBoxRect?: Rect, mediaBoxRect?: Rect): any {
             const flag: any = (FPDF as any).REVERSE_BYTE_ORDER;
             const heap: any = PDFiumModule.asm.malloc(w * h * 4);
             PDFiumModule.HEAPU8.fill(0, heap, heap + (w * h * 4));
@@ -364,6 +410,7 @@ export function PdfiumRunner(): void {
 
         public textExtraction(pagePointer: any, pageIndex: number, isTextNeed: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect): void {
             if (isTextNeed) {
+                // eslint-disable-next-line
                 let [pageWidth, pageHeight] = this.getPageSize(pageIndex);
                 pageHeight = pageHeight + this.pointerToPixelConverter(mediaBoxRect && mediaBoxRect.y ? mediaBoxRect.y : 0);
                 const textPage: any = (FPDF as any).LoadTextPage(pagePointer, pageIndex);
@@ -398,8 +445,10 @@ export function PdfiumRunner(): void {
                     let rotationRadian: any = (FPDF as any).GetCharAngle(textPage, charCount);
                     const character: string = String.fromCharCode(result);
                     let [charLeft, charRight, charBottom, charTop] = this.getCharBounds(textPage, charCount);
-                    let X: number = this.pointerToPixelConverter(charLeft) - this.pointerToPixelConverter(cropBoxRect && cropBoxRect.x ? cropBoxRect.x : 0);
-                    let Y: number = (pageHeight + this.pointerToPixelConverter(cropBoxRect && cropBoxRect.y ? cropBoxRect.y : 0)) - this.pointerToPixelConverter(charTop);
+                    let X: number = this.pointerToPixelConverter(charLeft) -
+                    this.pointerToPixelConverter(cropBoxRect && cropBoxRect.x ? cropBoxRect.x : 0);
+                    let Y: number = (pageHeight + this.pointerToPixelConverter(cropBoxRect && cropBoxRect.y ? cropBoxRect.y : 0)) -
+                    this.pointerToPixelConverter(charTop);
                     let Width: number = this.pointerToPixelConverter(charRight - charLeft);
                     let Height: number = this.pointerToPixelConverter(charTop - charBottom);
                     let rotationAngle: number = parseInt((rotationRadian * 180 / Math.PI).toString(), 10);
@@ -977,7 +1026,8 @@ export function PdfiumRunner(): void {
             return rtlDirCheck.test(text);
         }
 
-        public getPageRender(n: number = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect): any {
+        public getPageRender(n: number = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean,
+                             cropBoxRect?: Rect, mediaBoxRect?: Rect): any {
             const pageRenderPtr: any = this.getRender(n, w, h, isTextNeed, isTransparent, cropBoxRect, mediaBoxRect);
             let pageRenderData: any[] = [];
             pageRenderData = PDFiumModule.HEAPU8.slice(pageRenderPtr, pageRenderPtr + (w * h * 4));
@@ -986,7 +1036,8 @@ export function PdfiumRunner(): void {
         }
 
         public render(n: number = 0, message: any, zoomFactor: number, isTextNeed: boolean, printScaleFactor: any,
-                      printDevicePixelRatio: number, textDetailsId: any, isTransparent?: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size): object {
+                      printDevicePixelRatio: number, textDetailsId: any, isTransparent?: boolean,
+                      cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size): object {
             const [w, h] = this.getPageSize(n);
             const scaleFactor: number = 1.5;
             const thumbnailWidth: number = 99.7;
@@ -1021,8 +1072,8 @@ export function PdfiumRunner(): void {
                 return { value: data, width: newWidth, height: newHeight, pageIndex: n, pageWidth: w, pageHeight: h, message: 'printImage', printDevicePixelRatio };
             }
             else {
-                let newWidth: number = Math.round(((size && size!== null) ? size.width : w) * scaleFactor * zoomFactor);
-                let newHeight: number = Math.round(((size && size!== null) ? size.height : h) * scaleFactor * zoomFactor);
+                let newWidth: number = Math.round(((size && size !== null) ? size.width : w) * scaleFactor * zoomFactor);
+                let newHeight: number = Math.round(((size && size !== null) ? size.height : h) * scaleFactor * zoomFactor);
                 // Reduce the zoom factor if the new image size exceeds the memory limit
                 while (((newWidth * newHeight * 4) * 2) >= 2147483648) {
                     zoomFactor = zoomFactor - 0.1;

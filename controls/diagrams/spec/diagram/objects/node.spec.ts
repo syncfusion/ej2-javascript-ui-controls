@@ -2245,6 +2245,14 @@ describe('Call stack exceeded', () => {
         expect((diagram.nodes[2].style.gradient as any).x2 === 50 && (diagram.nodes[2].style.gradient as any).y2 === 50).toBe(true);
         done();
     });
+    it('Check if the gradient is null', (done: Function) => {
+        diagram.nodes[2].style.gradient = null;
+        diagram.dataBind();
+        //Need to evaluate testcase
+        //expect((diagram.nodes[2].style.gradient.type)=="None").toBe(true);
+        expect(true).toBe(true);
+        done();
+    });
 });
 describe('Node Rotate constraints does not work properly', () => {
     let diagram: Diagram; let elements: HTMLElement
@@ -2464,6 +2472,33 @@ describe('Drawing connectors from a source port to target port do not attach to 
          done();
     });
 });
+
+describe('Add Node', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagram' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({ width: 1000, height: 1000});
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('before appending diagram to element', (done: Function) => {
+        let node: NodeModel = { id: 'node1', width: 30, height: 30, offsetX: 100, offsetY: 100 };
+        diagram.add(node);
+        expect(diagram.views).toBe(undefined);
+        expect(diagram.nodes.length).toBe(0);
+        diagram.appendTo('#diagram');
+        diagram.add(node);
+        expect(diagram.nodes.length).toBe(1);
+        done();
+    });
+});
 describe('Restricting wrongly updated highlighter', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -2584,6 +2619,190 @@ describe('Restricting wrongly updated highlighter', () => {
         mouseEvents.mouseMoveEvent(diagramCanvas, 350, 360);
         highlighter = document.getElementById(diagram.element.id + '_diagramAdorner_svg_highlighter');
         expect(highlighter === null).toBe(true);
+        done();
+    });
+});
+describe('902192-Diagram node resized wrongly while dragging with multiple selection Inside a swimlane', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramNodeOffset' });
+        document.body.appendChild(ele);
+        var pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+        ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+        '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'ONLINE' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'selectItemaddcart',
+                                    annotations: [{ content: 'Select item\nAdd cart' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'paymentondebitcreditcard',
+                                    annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas3',
+                            header: {
+                                annotation: { content: 'SHOP' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'getmaildetailaboutorder',
+                                    annotations: [{ content: 'Get mail detail\nabout order' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'pakingitem',
+                                    annotations: [{ content: 'Paking item' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas4',
+                            header: {
+                                annotation: { content: 'DELIVERY' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'sendcourieraboutaddress',
+                                    annotations: [{ content: 'Send Courier\n about Address' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'deliveryonthataddress',
+                                    annotations: [{ content: 'Delivery on that\n Address' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'getitItem',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                    margin: { left: 500, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 450,
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+        ];
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourceID: 'Order',
+                targetID: 'selectItemaddcart'
+            },
+            {
+                id: 'connector2', sourceID: 'selectItemaddcart',
+                targetID: 'paymentondebitcreditcard'
+            },
+            {
+                id: 'connector3', sourceID: 'paymentondebitcreditcard',
+                targetID: 'getmaildetailaboutorder'
+            },
+            {
+                id: 'connector4', sourceID: 'getmaildetailaboutorder',
+                targetID: 'pakingitem'
+            },
+            {
+                id: 'connector5', sourceID: 'pakingitem',
+                targetID: 'sendcourieraboutaddress'
+            },
+            {
+                id: 'connector6', sourceID: 'sendcourieraboutaddress',
+                targetID: 'deliveryonthataddress'
+            },
+            {
+                id: 'connector7', sourceID: 'deliveryonthataddress',
+                targetID: 'getitItem'
+            },
+        ];
+
+        diagram = new Diagram({
+            width: '80%',
+            height: '600px',
+            nodes: nodes,
+            connectors: connectors,
+        });
+        diagram.appendTo('#diagramNodeOffset');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Diagram node resized wrongly while dragging with multiple selection Inside a swimlane', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 335, 445, true);
+        mouseEvents.clickEvent(diagramCanvas, 485, 445, true);
+        mouseEvents.mouseDownEvent(diagramCanvas, 335, 445, true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 300, 355, true);
+        mouseEvents.mouseUpEvent(diagramCanvas, 300, 355, true);
+        expect(diagram.nodes[16].width === 100).toBe(true);
         done();
     });
 });

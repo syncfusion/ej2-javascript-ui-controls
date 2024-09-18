@@ -6,10 +6,10 @@ import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfFont, PdfStandardFont, PdfTrueTypeFont } from './../fonts/pdf-standard-font';
 import { _PdfStringLayouter, _PdfStringLayoutResult, _LineInfo, _LineType, _StringTokenizer } from './../fonts/string-layouter';
-import { PdfTextAlignment, _PdfGraphicsUnit, PdfTextDirection, PdfSubSuperScript, PdfBlendMode, PdfLineJoin, PdfLineCap, PdfDashStyle, PdfFillMode } from './../enumerator';
+import { PdfTextAlignment, _PdfGraphicsUnit, PdfTextDirection, PdfSubSuperScript, PdfBlendMode, PdfLineJoin, PdfLineCap, PdfDashStyle, PdfFillMode, PathPointType } from './../enumerator';
 import { PdfStringFormat, PdfVerticalAlignment } from './../fonts/pdf-string-format';
 import { PdfTemplate } from './pdf-template';
-import { _PdfPath, _PathPointType } from './pdf-path';
+import { PdfPath } from './pdf-path';
 import { _UnicodeTrueTypeFont } from '../fonts/unicode-true-type-font';
 import { _TrueTypeReader } from './../fonts/ttf-reader';
 import { _RtlRenderer } from './../graphics/rightToLeft/text-renderer';
@@ -260,13 +260,14 @@ export class PdfGraphics {
         return state;
     }
     /**
-     * Draw rectangle on the page graphics.
+     * Draw a rectangle on the page graphics.
      *
-     * @param {number} x value.
-     * @param {number} y value.
-     * @param {number} width value.
-     * @param {number} height value.
-     * @param {PdfPen} pen value.
+     * @param {number} x The x-coordinate of the upper-left corner of the rectangular region.
+     * @param {number} y The y-coordinate of the upper-left corner of the rectangular region.
+     * @param {number} width The width of the rectangular region.
+     * @param {number} height The height of the rectangular region.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the rectangle.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -274,9 +275,9 @@ export class PdfGraphics {
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Create a new pen.
+     * // Create a new pen.
      * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * //Draw rectangle on the page graphics.
+     * // Draw a rectangle on the page graphics.
      * graphics.drawRectangle(10, 20, 100, 200, pen);
      * // Save the document
      * document.save('output.pdf');
@@ -286,23 +287,25 @@ export class PdfGraphics {
      */
     drawRectangle(x: number, y: number, width: number, height: number, pen: PdfPen): void
     /**
-     * Draw rectangle on the page graphics.
+     * Draw a rectangle on the page graphics.
      *
-     * @param {number} x value.
-     * @param {number} y value.
-     * @param {number} width value.
-     * @param {number} height value.
-     * @param {PdfBrush} brush value.
+     * @param {number} x The x-coordinate of the upper-left corner of the rectangular region.
+     * @param {number} y The y-coordinate of the upper-left corner of the rectangular region.
+     * @param {number} width The width of the rectangular region.
+     * @param {number} height The height of the rectangular region.
+     * @param {PdfBrush} brush Brush that determines the fill color and texture of the rectangle.
+     * @returns {void} Nothing
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Create a new brush.
+     * // Create a new brush.
      * let brush: PdfBrush = new PdfBrush([0, 0, 255]);
-     * //Draw rectangle on the page graphics.
+     * // Draw a filled rectangle on the page graphics.
      * graphics.drawRectangle(10, 20, 100, 200, brush);
      * // Save the document
      * document.save('output.pdf');
@@ -312,26 +315,28 @@ export class PdfGraphics {
      */
     drawRectangle(x: number, y: number, width: number, height: number, brush: PdfBrush): void
     /**
-     * Draw rectangle on the page graphics.
+     * Draw a rectangle on the page graphics.
      *
-     * @param {number} x value.
-     * @param {number} y value.
-     * @param {number} width value.
-     * @param {number} height value.
-     * @param {PdfPen} pen value.
-     * @param {PdfBrush} brush value.
+     * @param {number} x The x-coordinate of the upper-left corner of the rectangular region.
+     * @param {number} y The y-coordinate of the upper-left corner of the rectangular region.
+     * @param {number} width The width of the rectangular region.
+     * @param {number} height The height of the rectangular region.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the rectangle.
+     * @param {PdfBrush} brush Brush that determines the fill color and texture of the rectangle.
+     * @returns {void} Nothing
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Create a new pen.
+     * // Create a new pen.
      * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * //Create a new brush.
+     * // Create a new brush.
      * let brush: PdfBrush = new PdfBrush([0, 0, 255]);
-     * //Draw rectangle on the page graphics.
+     * // Draw a rectangle with both stroke and fill on the page graphics.
      * graphics.drawRectangle(10, 20, 100, 200, pen, brush);
      * // Save the document
      * document.save('output.pdf');
@@ -341,37 +346,167 @@ export class PdfGraphics {
      */
     drawRectangle(x: number, y: number, width: number, height: number, pen: PdfPen, brush: PdfBrush): void
     drawRectangle(x: number, y: number, width: number, height: number, first?: PdfPen| PdfBrush, second?: PdfBrush): void {
-        let pen: PdfPen;
-        let brush: PdfBrush;
-        if (first instanceof PdfPen) {
-            pen = first;
-            if (second) {
-                brush = second;
-            }
-        } else {
-            brush = first;
-        }
-        this._stateControl(pen, brush);
+        const result: {pen: PdfPen, brush: PdfBrush} = this._setPenBrush(first, second);
         this._sw._appendRectangle(x, y, width, height);
-        this._drawGraphicsPath(pen, brush);
+        this._drawGraphicsPath(result.pen, result.brush);
+    }
+    /**
+     * Draws a Bezier curve using a specified pen and coordinates for the start point, two control points, and end point.
+     *
+     * @param {number} startX The x-coordinate of the starting point of the Bezier curve.
+     * @param {number} startY The y-coordinate of the starting point of the Bezier curve.
+     * @param {number} firstX The x-coordinate of the first control point of the Bezier curve.
+     * @param {number} firstY The y-coordinate of the first control point of the Bezier curve.
+     * @param {number} secondX The x-coordinate of the second control point of the Bezier curve.
+     * @param {number} secondY The y-coordinate of the second control point of the Bezier curve.
+     * @param {number} endX The x-coordinate of the ending point of the Bezier curve.
+     * @param {number} endY The y-coordinate of the ending point of the Bezier curve.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the Bezier curve.
+     * @returns {void} Nothing
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * // Draw a Bezier curve on the page graphics
+     * graphics.drawBezier(50, 100, 200, 50, 100, 150, 150, 100, pen);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawBezier(startX: number, startY: number, firstX: number, firstY: number, secondX: number,
+               secondY: number, endX: number, endY: number, pen: PdfPen): void {
+        this._stateControl(pen, null, null);
+        this._sw._beginPath(startX, startY);
+        this._sw._appendBezierSegment(firstX, firstY, secondX, secondY, endX, endY);
+        this._drawGraphicsPath(pen);
+    }
+    /**
+     * Draws a pie slice on a PDF graphics.
+     *
+     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle.
+     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle.
+     * @param {number} width The width of the bounding rectangle.
+     * @param {number} height The height of the bounding rectangle.
+     * @param {number} startAngle The angle in degrees measured clockwise from the x-axis to the start of the pie slice.
+     * @param {number} sweepAngle The angle in degrees measured clockwise from the startAngle to the end of the pie slice.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the pie slice.
+     * @returns {void} Nothing
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * // Draw a pie slice on the page graphics
+     * graphics.drawPie(10, 50, 200, 200, 180, 60, pen);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawPie(x: number, y: number, width: number, height: number, startAngle: number, sweepAngle: number, pen: PdfPen): void
+    /**
+     * Draws a pie slice on PDF graphics.
+     *
+     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle.
+     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle.
+     * @param {number} width The width of the bounding rectangle.
+     * @param {number} height The height of the bounding rectangle.
+     * @param {number} startAngle The angle in degrees, measured clockwise from the x-axis to the start of the pie slice.
+     * @param {number} sweepAngle The angle in degrees, measured clockwise from the startAngle to the end of the pie slice.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the pie slice.
+     * @returns {void} Nothing
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new brush
+     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * // Draw a pie slice on the page graphics
+     * graphics.drawPie(10, 50, 200, 200, 180, 60, brush);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawPie(x: number, y: number, width: number, height: number, startAngle: number, sweepAngle: number, brush: PdfBrush): void
+    /**
+     * Draws a pie slice on PDF graphics.
+     *
+     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle.
+     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle.
+     * @param {number} width The width of the bounding rectangle.
+     * @param {number} height The height of the bounding rectangle.
+     * @param {number} startAngle The angle in degrees, measured clockwise from the x-axis to the start of the pie slice.
+     * @param {number} sweepAngle The angle in degrees, measured clockwise from the startAngle to the end of the pie slice.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the pie slice.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the pie slice.
+     * @returns {void} Nothing
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new brush
+     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * // Draw a pie slice on the page graphics
+     * graphics.drawPie(10, 50, 200, 200, 180, 60, pen, brush);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawPie(x: number, y: number, width: number, height: number, startAngle: number, sweepAngle: number, pen: PdfPen, brush: PdfBrush): void
+    drawPie(x: number, y: number, width: number, height: number, startAngle: number,
+            sweepAngle: number, first?: PdfPen | PdfBrush, second?: PdfBrush): void {
+        const result: {pen: PdfPen, brush: PdfBrush} = this._setPenBrush(first, second);
+        this._constructPiePath(x, y, x + width, y + height, startAngle, sweepAngle);
+        this._sw._appendLineSegment(x + width / 2, y + height / 2);
+        this._drawGraphicsPath(result.pen, result.brush, null, true);
     }
     /**
      * Draw polygon on the page graphics.
      *
-     * @param {Array<number[]>} points value.
-     * @param {PdfPen} pen value.
-     * ```typescript
+     * @param {Array<number[]>} points The points of the polygon.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the polygon.
+     * @returns {void} Nothing.
+     *
+     *  ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics of the PDF page
+     * // Get the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Create a new pen.
+     * // Create a new pen
      * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * //Create the polygon points.
+     * // Define the polygon points
      * let points: number[][] = [[10, 100], [10, 200], [100, 100], [100, 200], [55, 150]];
-     * //Draw polygon on the page graphics.
+     * // Draw the polygon on the page graphics
      * graphics.drawPolygon(points, pen);
      * // Save the document
      * document.save('output.pdf');
@@ -383,20 +518,22 @@ export class PdfGraphics {
     /**
      * Draw polygon on the page graphics.
      *
-     * @param {Array<number[]>} points value.
-     * @param {PdfBrush} brush value.
-     * ```typescript
+     * @param {Array<number[]>} points The points of the polygon.
+     * @param {PdfBrush} brush Brush that determines the fill color and texture of the polygon.
+     * @returns {void} Nothing
+     *
+     *```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Create a new brush.
+     * // Create a new brush
      * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
-     * //Create the polygon points.
+     * // Define the polygon points
      * let points: number[][] = [[10, 100], [10, 200], [100, 100], [100, 200], [55, 150]];
-     * //Draw polygon on the page graphics.
+     * // Draw the polygon on the page graphics
      * graphics.drawPolygon(points, brush);
      * // Save the document
      * document.save('output.pdf');
@@ -408,23 +545,25 @@ export class PdfGraphics {
     /**
      * Draw polygon on the page graphics.
      *
-     * @param {Array<number[]>} points value.
-     * @param {PdfPen} pen value.
-     * @param {PdfBrush} brush value.
+     * @param {Array<number[]>} points The points of the polygon.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the polygon.
+     * @param {PdfBrush} brush Brush that determines the fill color and texture of the polygon.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Create a new pen.
+     * // Create a new pen
      * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * //Create a new brush.
+     * // Create a new brush
      * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
-     * //Create the polygon points.
+     * // Define the polygon points
      * let points: number[][] = [[10, 100], [10, 200], [100, 100], [100, 200], [55, 150]];
-     * //Draw polygon on the page graphics.
+     * // Draw the polygon on the page graphics
      * graphics.drawPolygon(points, pen, brush);
      * // Save the document
      * document.save('output.pdf');
@@ -435,42 +574,34 @@ export class PdfGraphics {
     drawPolygon(points: Array<number[]>, pen: PdfPen, brush: PdfBrush): void
     drawPolygon(points: Array<number[]>, first?: PdfPen| PdfBrush, second?: PdfBrush): void {
         if (points.length > 0) {
-            let pen: PdfPen;
-            let brush: PdfBrush;
-            if (first instanceof PdfPen) {
-                pen = first;
-                if (second) {
-                    brush = second;
-                }
-            } else {
-                brush = first;
-            }
-            this._stateControl(pen, brush);
+            const result: {pen: PdfPen, brush: PdfBrush} = this._setPenBrush(first, second);
             this._sw._beginPath(points[0][0], points[0][1]);
             for (let i: number = 1; i < points.length; i++) {
                 this._sw._appendLineSegment(points[Number.parseInt(i.toString(), 10)][0], points[Number.parseInt(i.toString(), 10)][1]);
             }
-            this._drawGraphicsPath(pen, brush, PdfFillMode.winding, true);
+            this._drawGraphicsPath(result.pen, result.brush, PdfFillMode.winding, true);
         }
     }
     /**
      * Draw ellipse on the page graphics.
      *
-     * @param {number} x value.
-     * @param {number} y value.
-     * @param {number} width value.
-     * @param {number} height value.
-     * @param {PdfPen} pen value.
+     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.
+     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle that defines ellipse.
+     * @param {number} width The width of the bounding rectangle that defines ellipse.
+     * @param {number} height The height of the bounding rectangle that defines ellipse.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the ellipse.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Create a new pen.
+     * // Create a new pen
      * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * //Draw ellipse on the page graphics.
+     * // Draw an ellipse on the page graphics
      * graphics.drawEllipse(10, 20, 100, 200, pen);
      * // Save the document
      * document.save('output.pdf');
@@ -482,21 +613,23 @@ export class PdfGraphics {
     /**
      * Draw ellipse on the page graphics.
      *
-     * @param {number} x value.
-     * @param {number} y value.
-     * @param {number} width value.
-     * @param {number} height value.
-     * @param {PdfBrush} brush value.
+     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.
+     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.
+     * @param {number} width The width of the bounding rectangle that defines ellipse.
+     * @param {number} height The height of the bounding rectangle that defines ellipse.
+     * @param {PdfBrush} brush Brush that determines the fill color and texture of the ellipse.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Create a new brush.
+     * // Create a new brush
      * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
-     * //Draw ellipse on the page graphics.
+     * // Draw an ellipse on the page graphics
      * graphics.drawEllipse(10, 20, 100, 200, brush);
      * // Save the document
      * document.save('output.pdf');
@@ -508,24 +641,26 @@ export class PdfGraphics {
     /**
      * Draw ellipse on the page graphics.
      *
-     * @param {number} x value.
-     * @param {number} y value.
-     * @param {number} width value.
-     * @param {number} height value.
-     * @param {PdfPen} pen value.
-     * @param {PdfBrush} brush value.
+     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.
+     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.
+     * @param {number} width The width of the bounding rectangle that defines ellipse.
+     * @param {number} height The height of the bounding rectangle that defines ellipse.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the ellipse.
+     * @param {PdfBrush} brush Brush that determines the fill color and texture of the ellipse.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Create a new pen.
+     * // Create a new pen
      * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * //Create a new brush.
+     * // Create a new brush
      * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
-     * //Draw ellipse on the page graphics.
+     * // Draw an ellipse on the page graphics
      * graphics.drawEllipse(10, 20, 100, 200, pen, brush);
      * // Save the document
      * document.save('output.pdf');
@@ -535,41 +670,32 @@ export class PdfGraphics {
      */
     drawEllipse(x: number, y: number, width: number, height: number, pen: PdfPen, brush: PdfBrush): void
     drawEllipse(x: number, y: number, width: number, height: number, first?: PdfPen| PdfBrush, second?: PdfBrush): void {
-        let pen: PdfPen;
-        let brush: PdfBrush;
-        if (first instanceof PdfPen) {
-            pen = first;
-            if (second) {
-                brush = second;
-            }
-        } else {
-            brush = first;
-        }
-        this._stateControl(pen, brush);
+        const result: {pen: PdfPen, brush: PdfBrush} = this._setPenBrush(first, second);
         this._constructArcPath(x, y, x + width, y + height, 0, 360);
-        this._drawGraphicsPath(pen, brush, PdfFillMode.winding, true);
+        this._drawGraphicsPath(result.pen, result.brush, PdfFillMode.winding, true);
     }
     /**
      * Draw arc on the page graphics.
      *
-     * @param {number} x value.
-     * @param {number} y value.
-     * @param {number} width value.
-     * @param {number} height value.
-     * @param {number} startAngle value.
-     * @param {number} sweepAngle value.
-     * @param {PdfPen} pen value.
-     * @returns {void} draw a arc.
+     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse from which the arc shape comes.
+     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse from which the arc shape comes.
+     * @param {number} width Width of the bounding rectangle that defines the ellipse from which the arc shape comes.
+     * @param {number} height Height of the bounding rectangle that defines the ellipse from which the arc shape comes.
+     * @param {number} startAngle Angle measured in degrees clockwise from the x-axis to the first side of the arc shape.
+     * @param {number} sweepAngle Angle measured in degrees clockwise from the startAngle parameter to the second side of the arc shape.
+     * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the arc.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Create a new pen.
+     * // Create a new pen
      * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * //Draw arc on the page graphics.
+     * // Draw an arc on the page graphics
      * graphics.drawArc(10, 20, 100, 200, 20, 30, pen);
      * // Save the document
      * document.save('output.pdf');
@@ -585,22 +711,23 @@ export class PdfGraphics {
         }
     }
     /**
-     * Draw image on the page graphics.
+     * Draws an image on the page graphics.
      *
-     * @param {PdfImage} image value.
-     * @param {number} x value.
-     * @param {number} y value.
-     * @returns {void} Draws a image on the page graphics.
+     * @param {PdfImage} image The image to be drawn on the page.
+     * @param {number} x The x-coordinate of the upper-left corner where the image will be drawn.
+     * @param {number} y The y-coordinate of the upper-left corner where the image will be drawn.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * // Create new image object by using JPEG image data as Base64 string format
+     * // Create a new image object using JPEG image data as a Base64 string
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
-     * //Draw image on the page graphics.
+     * // Draw the image on the page graphics
      * graphics.drawImage(image, 10, 20);
      * // Save the document
      * document.save('output.pdf');
@@ -610,24 +737,25 @@ export class PdfGraphics {
      */
     drawImage(image: PdfImage, x: number, y: number) : void
     /**
-     * Draw image on the page graphics.
+     * Draws an image on the page graphics.
      *
-     * @param {PdfImage} image value.
-     * @param {number} x value.
-     * @param {number} y value.
-     * @param {number} width value.
-     * @param {number} height value.
-     * @returns {void} Draws a image on the page graphics.
+     * @param {PdfImage} image The image to be drawn on the page.
+     * @param {number} x The x-coordinate of the upper-left corner where the image will be drawn.
+     * @param {number} y The y-coordinate of the upper-left corner where the image will be drawn.
+     * @param {number} width The width of the image to be drawn.
+     * @param {number} height The height of the image to be drawn.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * // Create new image object by using JPEG image data as Base64 string format
+     * // Create a new image object using JPEG image data as a Base64 string
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
-     * //Draw image on the page graphics.
+     * // Draw the image on the page graphics with specified width and height
      * graphics.drawImage(image, 10, 20, 400, 400);
      * // Save the document
      * document.save('output.pdf');
@@ -683,28 +811,29 @@ export class PdfGraphics {
         }
     }
     /**
-     * Draw the PDF template onto the page graphics.
+     * Draws a PDF template onto the page graphics.
      *
-     * @param {PdfTemplate} template PDF template.
-     * @param {{x: number, y: number, width: number, height: number}} bounds Bounds.
-     * @param {number} bounds.x value.
-     * @param {number} bounds.y value.
-     * @param {number} bounds.width value.
-     * @param {number} bounds.height value.
+     * @param {PdfTemplate} template The PDF template to be drawn.
+     * @param {{x: number, y: number, width: number, height: number}} bounds The bounds of the template.
+     * @param {number} bounds.x The x-coordinate of the upper-left corner where the template will be drawn.
+     * @param {number} bounds.y The y-coordinate of the upper-left corner where the template will be drawn.
+     * @param {number} bounds.width The width of the area where the template will be drawn.
+     * @param {number} bounds.height The height of the area where the template will be drawn.
      * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Get the first annotation of the page
      * let annotation: PdfRubberStampAnnotation = page.annotations.at(0) as PdfRubberStampAnnotation;
-     * // Gets the appearance template of the annotation.
+     * // Get the appearance template of the annotation
      * let template: PdfTemplate = annotation.createTemplate();
-     * // Gets the graphics of the PDF page
+     * // Get the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Draw image on the page graphics.
-     * graphics.drawTemplate(template, 10, 20, template.size[0], template.size[1]);
+     * // Draw the template on the page graphics within the specified bounds
+     * graphics.drawTemplate(template, { x: 10, y: 20, width: template.size[0], height: template.size[1] });
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -929,36 +1058,129 @@ export class PdfGraphics {
             }
         }
     }
-    _drawPath(path: _PdfPath, pen?: PdfPen, brush?: PdfBrush): void {
-        if (pen || brush) {
-            this._stateControl(pen, brush, null);
-            this._buildUpPath(path._points, path._pathTypes);
-            this._drawGraphicsPath(pen, brush, path._fillMode, false);
-        }
-    }
     /**
-     * Draw rounded rectangle on the page graphics.
+     * Draws a graphics path defined by a pen and path.
      *
-     * @param {number} x value.
-     * @param {number} y value.
-     * @param {number} width value.
-     * @param {number} height value.
-     * @param {number} radius value.
-     * @param {PdfPen} pen value.
-     * @param {PdfBrush} brush value.
-     * @returns {void} draw a rounded rectangle.
+     * @param {PdfPath} path The path to be drawn.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the path.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Create a new path
+     * let path: PdfPath = new PdfPath();
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * // Add lines to the path
+     * path.addLine(10, 100, 50, 100);
+     * path.addLine(50, 100, 50, 150);
+     * path.addLine(50, 150, 10, 100);
+     * // Draw the path on the page graphics
+     * graphics.drawPath(path, pen);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawPath(path: PdfPath, pen: PdfPen): void
+    /**
+     * Draws a graphics path defined by a brush and path.
+     *
+     * @param {PdfPath} path The path to be drawn.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the path.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Create a new path
+     * let path: PdfPath = new PdfPath();
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new brush
+     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * // Add an ellipse to the path
+     * path.addEllipse(200, 200, 100, 50);
+     * // Draw the path on the page graphics
+     * graphics.drawPath(path, brush);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawPath(path: PdfPath, brush: PdfBrush): void
+    /**
+     * Draws a graphics path defined by a pen, brush, and path.
+     *
+     * @param {PdfPath} path The path to be drawn.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the path.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the path.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Create a new path
+     * let path: PdfPath = new PdfPath();
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * // Create a new brush
+     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * // Add an ellipse to the path
+     * path.addEllipse(200, 200, 100, 50);
+     * // Draw the path on the page graphics with both pen and brush
+     * graphics.drawPath(path, pen, brush);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawPath(path: PdfPath, pen: PdfPen, brush: PdfBrush): void
+    drawPath(path: PdfPath, first?: PdfPen | PdfBrush, second?: PdfBrush): void {
+        const result: {pen: PdfPen, brush: PdfBrush} = this._setPenBrush(first, second);
+        if (result.pen || result.brush) {
+            this._buildUpPath(path._points, path._pathTypes);
+            this._drawGraphicsPath(result.pen, result.brush, path.fillMode, false);
+        }
+    }
+    /**
+     * Draws a rounded rectangle on the page graphics.
+     *
+     * @param {number} x The x-coordinate of the upper-left corner of the rounded rectangle.
+     * @param {number} y The y-coordinate of the upper-left corner of the rounded rectangle.
+     * @param {number} width The width of the rounded rectangle.
+     * @param {number} height The height of the rounded rectangle.
+     * @param {number} radius The radius of the rounded corners of the rectangle.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the rectangle.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the rectangle.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Create a new pen.
+     * // Create a new pen
      * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * //Create a new brush.
+     * // Create a new brush
      * let brush: PdfBrush = new PdfBrush([0, 0, 255]);
-     * //Draw rounded rectangle on the page graphics.
+     * // Draw a rounded rectangle on the page graphics
      * graphics.drawRoundedRectangle(10, 20, 100, 200, 5, pen, brush);
      * // Save the document
      * document.save('output.pdf');
@@ -977,21 +1199,21 @@ export class PdfGraphics {
         const diameter: number = radius * 2;
         const size: number[] = [diameter, diameter];
         const arc: number[] = [bounds[0], bounds[1], size[0], size[1]];
-        const path: _PdfPath = new _PdfPath();
+        const path: PdfPath = new PdfPath();
         if (radius === 0) {
-            path._addRectangle(bounds[0], bounds[1], bounds[2], bounds[3]);
-            this._drawPath(path, pen, brush);
+            path.addRectangle(bounds[0], bounds[1], bounds[2], bounds[3]);
+            this.drawPath(path, pen, brush);
         } else {
             path._isRoundedRectangle = true;
-            path._addArc(arc[0], arc[1], arc[2], arc[3], 180, 90);
+            path.addArc(arc[0], arc[1], arc[2], arc[3], 180, 90);
             arc[0] = (bounds[0] + bounds[2]) - diameter;
-            path._addArc(arc[0], arc[1], arc[2], arc[3], 270, 90);
+            path.addArc(arc[0], arc[1], arc[2], arc[3], 270, 90);
             arc[1] = (bounds[1] + bounds[3]) - diameter;
-            path._addArc(arc[0], arc[1], arc[2], arc[3], 0, 90);
+            path.addArc(arc[0], arc[1], arc[2], arc[3], 0, 90);
             arc[0] = bounds[0];
-            path._addArc(arc[0], arc[1], arc[2], arc[3], 90, 90);
-            path._closeFigure();
-            this._drawPath(path, pen, brush);
+            path.addArc(arc[0], arc[1], arc[2], arc[3], 90, 90);
+            path.closeFigure();
+            this.drawPath(path, pen, brush);
         }
     }
     _constructArcPath(x1: number, y1: number, x2: number, y2: number, start: number, sweep: number): void {
@@ -1013,6 +1235,24 @@ export class PdfGraphics {
             this._sw._appendBezierSegment(point[2], point[3], point[4], point[5], point[6], point[7]);
         }
     }
+    _constructPiePath(x1: number, y1: number, x2: number, y2: number, start: number, sweep: number): void {
+        const points: number[] = _getBezierArc(x1, y1, x2, y2, start, sweep);
+        if (points.length === 8) {
+            let point: number[] = [points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]];
+            this._sw._beginPath(point[0], point[1]);
+            for (let i: number = 0; i < points.length; i = i + 8) {
+                point = [points[Number.parseInt(i.toString(), 10)],
+                    points[i + 1],
+                    points[i + 2],
+                    points[i + 3],
+                    points[i + 4],
+                    points[i + 5],
+                    points[i + 6],
+                    points[i + 7]];
+                this._sw._appendBezierSegment(point[2], point[3], point[4], point[5], point[6], point[7]);
+            }
+        }
+    }
     _writePen(pen: PdfPen): void {
         const lineWidth: number = pen._width;
         const pattern: number[] = pen._dashPattern;
@@ -1031,28 +1271,29 @@ export class PdfGraphics {
     /**
      * Draw text on the page graphics.
      *
-     * @param {string} value draw string.
-     * @param {PdfFont} font value.
-     * @param {number[]} bounds value.
-     * @param {PdfPen} pen value.
-     * @param {PdfBrush} brush value.
-     * @param {PdfStringFormat} format value.
-     * @returns {void} draw a string.
+     * @param {string} value The string to be drawn.
+     * @param {PdfFont} font The font used to draw the string.
+     * @param {number[]} bounds An array specifying the bounds [x, y, width, height] where the string will be drawn.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the string.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the string.
+     * @param {PdfStringFormat} format The format that specifies text layout information such as alignment, line spacing, and trimming.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * // Create a new pen.
+     * // Create a new pen
      * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * // Create a new font.
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.symbol, 10);
+     * // Create a new font
+     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 12);
      * // Create a new string format
      * let format: PdfStringFormat = new PdfStringFormat();
      * format.alignment = PdfTextAlignment.center;
-     * // Draw text on the page graphics.
+     * // Draw text on the page graphics
      * graphics.drawString('Hello World', font, [10, 20, 100, 200], pen, new PdfBrush([0, 0, 255]), format);
      * // Save the document
      * document.save('output.pdf');
@@ -1082,15 +1323,15 @@ export class PdfGraphics {
         }
         _addProcSet('Text', this._resourceObject);
     }
-    _buildUpPath(points: Array<number[]>, types: _PathPointType[]): void {
+    _buildUpPath(points: Array<number[]>, types: PathPointType[]): void {
         for (let i: number = 0; i < points.length; i++) {
             const point: number[] = points[Number.parseInt(i.toString(), 10)];
-            let type: _PathPointType = types[Number.parseInt(i.toString(), 10)];
+            let type: PathPointType = types[Number.parseInt(i.toString(), 10)];
             switch (type & 0xf) {
-            case _PathPointType.start:
+            case PathPointType.start:
                 this._sw._beginPath(point[0], point[1]);
                 break;
-            case _PathPointType.bezier:
+            case PathPointType.bezier:
                 let result: { index: number, point: number[] } = this._getBezierPoint(points, types, i); // eslint-disable-line
                 i = result.index;
                 const first: number[] = result.point; // eslint-disable-line
@@ -1099,20 +1340,20 @@ export class PdfGraphics {
                 const second: number[] = result.point; // eslint-disable-line
                 this._sw._appendBezierSegment(point[0], point[1], first[0], first[1], second[0], second[1]);
                 break;
-            case _PathPointType.line:
+            case PathPointType.line:
                 this._sw._appendLineSegment(point[0], point[1]);
                 break;
             default:
                 throw new Error('Incorrect path formation.');
             }
             type = types[Number.parseInt(i.toString(), 10)];
-            if ((type & _PathPointType.closePath) === _PathPointType.closePath) {
+            if ((type & PathPointType.closePath) === PathPointType.closePath) {
                 this._sw._closePath();
             }
         }
     }
-    _getBezierPoint(points: Array<number[]>, types: _PathPointType[], index: number): {index: number, point: number[]} {
-        if (types[Number.parseInt(index.toString(), 10)] !== _PathPointType.bezier) {
+    _getBezierPoint(points: Array<number[]>, types: PathPointType[], index: number): {index: number, point: number[]} {
+        if (types[Number.parseInt(index.toString(), 10)] !== PathPointType.bezier) {
             throw new Error('Malforming path.');
         }
         index++;
@@ -1228,6 +1469,22 @@ export class PdfGraphics {
         }
         this._sw._setFont(keyName.name, size);
     }
+    _setPenBrush(first?: PdfPen | PdfBrush, second?: PdfBrush): {pen: PdfPen, brush: PdfBrush} {
+        let pen: PdfPen;
+        let brush: PdfBrush;
+        if (first) {
+            if (first instanceof PdfPen) {
+                pen = first;
+            } else {
+                brush = first;
+            }
+        }
+        if (second && second instanceof PdfBrush) {
+            brush = second;
+        }
+        this._stateControl(pen, brush, null);
+        return {pen, brush};
+    }
     _stateControl(pen?: PdfPen, brush?: PdfBrush, font?: PdfFont, format?: PdfStringFormat): void {
         if (pen || brush) {
             this._initializeCurrentColorSpace();
@@ -1323,8 +1580,10 @@ export class PdfGraphics {
     _getNextPage(): PdfPage {
         let page: PdfPage;
         const pageCount: number = this._crossReference._document.pageCount;
-        if (this._page._pageIndex < pageCount - 2) {
+        if (this._page._pageIndex <= pageCount - 2) {
             page = this._crossReference._document.getPage(this._page._pageIndex + 1);
+        } else {
+            page = this._crossReference._document.addPage();
         }
         return page;
     }
@@ -1618,24 +1877,25 @@ export class PdfGraphics {
         }
     }
     /**
-     * Draw line on the page graphics.
+     * Draws a line on the page graphics.
      *
-     * @param {PdfPen} pen pen value.
-     * @param {number} x1 value.
-     * @param {number} y1 value.
-     * @param {number} x2 value.
-     * @param {number} y2 value.
-     * @returns {void} draw a line.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the line.
+     * @param {number} x1 The x-coordinate of the starting point of the line.
+     * @param {number} y1 The y-coordinate of the starting point of the line.
+     * @param {number} x2 The x-coordinate of the ending point of the line.
+     * @param {number} y2 The y-coordinate of the ending point of the line.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
-     * //Create a new pen.
+     * // Create a new pen
      * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * //Draw line on the page graphics.
+     * // Draw a line on the page graphics
      * graphics.drawLine(pen, 10, 10, 100, 100);
      * // Save the document
      * document.save('output.pdf');
@@ -1764,23 +2024,24 @@ export class PdfGraphics {
      *
      * @param {number} scaleX Scale factor in the x direction.
      * @param {number} scaleY Scale factor in the y direction.
-     * @returns {void} scale transform.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new font
      * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * // Save the graphics
+     * // Save the current graphics state
      * let state: PdfGraphicsState = graphics.save();
-     * //Set graphics scale transform.
+     * // Apply scale transform
      * graphics.scaleTransform(0.5, 0.5);
-     * //Draws the String.
+     * // Draw a string with the scaled transformation
      * graphics.drawString("Hello world!", font, [10, 20, 100, 200], undefined, new PdfBrush([0, 0, 255]));
-     * //Restore the graphics.
+     * // Restore the graphics to its previous state
      * graphics.restore(state);
      * // Save the document
      * document.save('output.pdf');
@@ -1799,23 +2060,24 @@ export class PdfGraphics {
      *
      * @param {number} x x-coordinate of the translation.
      * @param {number} y y-coordinate of the translation.
-     * @returns {void} translate transform.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new font
      * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * // Save the graphics
+     * // Save the current graphics state
      * let state: PdfGraphicsState = graphics.save();
-     * //Set graphics translate transform.
+     * // Apply translate transform
      * graphics.translateTransform(100, 100);
-     * //Draws the String.
+     * // Draw a string with the translation applied
      * graphics.drawString("Hello world!", font, [10, 20, 100, 200], undefined, new PdfBrush([0, 0, 255]));
-     * //Restore the graphics.
+     * // Restore the graphics to its previous state
      * graphics.restore(state);
      * // Save the document
      * document.save('output.pdf');
@@ -1832,24 +2094,25 @@ export class PdfGraphics {
     /**
      * Represents a rotate transform of the graphics.
      *
-     * @param {number} angle Angle of rotation in degrees
-     * @returns {void} rotate transform.
+     * @param {number} angle Angle of rotation in degrees.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new font
      * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * // Save the graphics
+     * // Save the current graphics state
      * let state: PdfGraphicsState = graphics.save();
-     * //Set graphics rotate transform.
+     * // Apply rotate transform
      * graphics.rotateTransform(-90);
-     * //Draws the String.
+     * // Draw a string with the rotation applied
      * graphics.drawString("Hello world!", font, [10, 20, 100, 200], undefined, new PdfBrush([0, 0, 255]));
-     * //Restore the graphics.
+     * // Restore the graphics to its previous state
      * graphics.restore(state);
      * // Save the document
      * document.save('output.pdf');
@@ -1866,21 +2129,22 @@ export class PdfGraphics {
     /**
      * Represents a clipping region of this graphics.
      *
-     * @param {number[]} bounds Rectangle structure that represents the new clip region.
+     * @param {number[]} bounds Rectangle structure that represents the new clip region, specified as [x, y, width, height].
      * @param {PdfFillMode} mode Member of the PdfFillMode enumeration that specifies the filling operation to use.
-     * @returns {void} clipping region.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new font
      * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * //Set clip.
+     * // Set clipping region
      * graphics.setClip([0, 0, 50, 12], PdfFillMode.alternate);
-     * //Draws the String.
+     * // Draw a string within the clipping region
      * graphics.drawString("Hello world!", font, [0, 0, 100, 200], undefined, new PdfBrush([0, 0, 255]));
      * // Save the document
      * document.save('output.pdf');
@@ -1898,19 +2162,21 @@ export class PdfGraphics {
     /**
      * Represents a transparency of this graphics.
      *
-     * @param {number} stroke transparency value.
+     * @param {number} stroke The transparency value for the stroke.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new font
      * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * //Set transparency.
+     * // Set transparency
      * graphics.setTransparency(0.5);
-     * //Draws the String.
+     * // Draw a string with transparency
      * graphics.drawString("Hello world!", font, [0, 0, 100, 200], undefined, new PdfBrush([0, 0, 255]));
      * // Save the document
      * document.save('output.pdf');
@@ -1920,24 +2186,25 @@ export class PdfGraphics {
      */
     setTransparency(stroke: number): void
     /**
-     * Represents a transparency of this graphics.
+     * Represents a transparency setting for the graphics.
      *
-     * @param {number} stroke transparency value.
-     * @param {number} fill transparency value.
-     * @param {PdfBlendMode} mode blend mode.
-     * @returns {void} transparency of this graphics.
+     * @param {number} stroke The transparency value for strokes.
+     * @param {number} fill The transparency value for fills.
+     * @param {PdfBlendMode} mode The blend mode to use.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new font
      * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * //Set transparency.
+     * // Set transparency
      * graphics.setTransparency(0.5, 0.5, PdfBlendMode.multiply);
-     * //Draws the String.
+     * // Draw the string
      * graphics.drawString("Hello world!", font, [0, 0, 100, 200], undefined, new PdfBrush([0, 0, 255]));
      * // Save the document
      * document.save('output.pdf');
@@ -1947,24 +2214,25 @@ export class PdfGraphics {
      */
     setTransparency(stroke: number, fill: number, mode: PdfBlendMode): void
     /**
-     * Represents a transparency of this graphics.
+     * Sets the transparency for the graphics.
      *
-     * @param {number} stroke transparency value.
-     * @param {number} fill transparency value.
-     * @param {PdfBlendMode} mode blend mode.
-     * @returns {void} transparency of this graphics.
+     * @param {number} stroke The transparency value for strokes.
+     * @param {number} fill The transparency value for fills.
+     * @param {PdfBlendMode} mode The blend mode to use.
+     * @returns {void} Nothing.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
+     * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new font
      * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * //Set transparency.
+     * // Set transparency
      * graphics.setTransparency(0.5, 0.5, PdfBlendMode.multiply);
-     * //Draws the String.
+     * // Draw the string
      * graphics.drawString("Hello world!", font, [0, 0, 100, 200], undefined, new PdfBrush([0, 0, 255]));
      * // Save the document
      * document.save('output.pdf');
@@ -2151,6 +2419,7 @@ export class _Matrix {
 }
 /**
  * Represents a state of the graphics from a PDF page.
+ *
  * ```typescript
  * // Load an existing PDF document
  * let document: PdfDocument = new PdfDocument(data, password);
@@ -2160,13 +2429,13 @@ export class _Matrix {
  * let graphics: PdfGraphics = page.graphics;
  * // Create a new font
  * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
- * // Save the graphics
+ * // Save the graphics state
  * let state: PdfGraphicsState = graphics.save();
- * //Set graphics translate transform.
+ * // Set graphics translate transform
  * graphics.translateTransform(100, 100);
- * //Draws the String.
+ * // Draw the string
  * graphics.drawString("Hello world!", font, [10, 20, 100, 200], undefined, new PdfBrush([0, 0, 255]));
- * //Restore the graphics.
+ * // Restore the graphics state
  * graphics.restore(state);
  * // Save the document
  * document.save('output.pdf');
@@ -2222,6 +2491,7 @@ export enum _TextRenderingMode {
 }
 /**
  * Represents a brush for the PDF page.
+ *
  * ```typescript
  * // Load an existing PDF document
  * let document: PdfDocument = new PdfDocument(data, password);
@@ -2266,6 +2536,7 @@ export class PdfBrush {
      * Initializes a new instance of the `PdfBrush` class.
      *
      * @param {number[]} color Color.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -2288,6 +2559,7 @@ export class PdfBrush {
      * Initializes a new instance of the `PdfBrush` class.
      *
      * @param {number[]} color Color.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -2311,6 +2583,7 @@ export class PdfBrush {
 }
 /**
  * Represents a pen for the PDF page.
+ *
  * ```typescript
  * // Load an existing PDF document
  * let document: PdfDocument = new PdfDocument(data, password);
@@ -2342,6 +2615,7 @@ export class PdfPen{
      *
      * @param {number[]} color Color.
      * @param {number} width Width.
+     *
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);

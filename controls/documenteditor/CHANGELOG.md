@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 27.1.48 (2024-09-18)
+
+### DocumentEditor
+
+#### Features
+
+- `#I420700`, `#I425501`, `#I476988`, `#I508922`, `#I542244`, `#I556252`, `#I600435` - Added shapes support feature which allows you to preserve shapes in Word documents when opening and saving them in the Word Processor. Please refer to the [documentation](https://ej2.syncfusion.com/documentation/document-editor/shapes) and [demo](https://ej2.syncfusion.com/demos/#/fluent2/document-editor/autoshapes.html) for more details.
+- `#F155458`, `#I329106`, `#I324222`, `#I315874`, `#I295727`, `#I291743`, `#I282998`, `#I280778`, `#I277336`, `#I275144`, `#I274602`, `#I273391`, `#I269063`, `#I268167`, `#I269063`, `#I361328`, `#I438671`, `#I546241`, `#I582321` - Added XML mapped content controls feature which allows you to insert content controls in your document that are linked to custom XML data. By mapping specific parts of your document to XML data, you can ensure that the content within these controls is automatically updated whenever the underlying XML data changes, making it ideal for dynamic documents. Please refer to the [documentation](https://ej2.syncfusion.com/documentation/document-editor/content-control) for more details.
+
+## 26.2.12 (2024-09-10)
 
 ### DocumentEditor
 

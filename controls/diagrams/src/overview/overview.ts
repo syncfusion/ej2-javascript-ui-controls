@@ -455,7 +455,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             shape = 'circle';
         }
-        const innerrect: SVGElement = createSvgElement(shape, { 'id': this.canvas.id + 'visible' + name });
+        const innerrect: SVGElement = createSvgElement(shape, { 'id': this.canvas.id + 'visible' + name, 'class': 'overview-resizer' });
         parent.appendChild(innerrect);
         const transrect: SVGElement = createSvgElement(shape, {
             'id': this.canvas.id + name, 'class': 'overviewresizer', 'fill': 'transparent'

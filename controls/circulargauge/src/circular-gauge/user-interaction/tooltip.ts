@@ -365,7 +365,7 @@ export class GaugeTooltip {
      */
     private svgTooltipCreate(svgTooltip: Tooltip, tooltipArg: ITooltipRenderEventArgs, template: string | Function, arrowInverted: boolean,
                              tooltipRect: Rect, gauge: CircularGauge, fill: string, textStyle: FontModel, border: BorderModel ): Tooltip {
-        let borderObject: BorderModel = {
+        const borderObject: BorderModel = {
             color: border.color || this.gauge.themeStyle.tooltipBorderColor || '', width: border.width, dashArray: border.dashArray
         };
         svgTooltip = new Tooltip({

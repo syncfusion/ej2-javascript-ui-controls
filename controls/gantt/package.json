@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-gantt",
-	"version": "26.2.12",
+	"version": "26.1.35",
 	"description": "Essential JS 2 Gantt Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -22,7 +22,8 @@
 		"@syncfusion/ej2-popups": "*",
 		"@syncfusion/ej2-richtexteditor": "*",
 		"@syncfusion/ej2-svg-base": "*",
-		"@syncfusion/ej2-treegrid": "*"
+		"@syncfusion/ej2-treegrid": "*",
+		"markdown-spellcheck": "^1.3.1"
 	},
 	"devDependencies": {
 		"@syncfusion/ej2-staging": "^1.0.1",

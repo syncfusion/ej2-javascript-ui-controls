@@ -98,6 +98,18 @@
         }
       }
 
+      & .e-calculation {
+        &::before {
+          content: '\e7fa';
+        }
+      }
+
+      & .e-calculate-sheet {
+        &::before {
+          content: '\e7fa';
+        }
+      }
+
       & .e-hyperlink-icon {
         &::before {
           content: '\e757';
@@ -118,6 +130,18 @@
     }
 
     & .e-insert-function .e-btn-icon {
+      &::before {
+        content: '\e7fa';
+      }
+    }
+
+    & .e-calculation .e-btn-icon {
+      &::before {
+        content: '\e7fa';
+      }
+    }
+
+    & .e-calculate-sheet .e-btn-icon {
       &::before {
         content: '\e7fa';
       }

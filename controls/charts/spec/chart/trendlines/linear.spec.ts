@@ -17,7 +17,8 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/chart/model/chart-interface';
 import { Category } from '../../../src/chart/axis/category-axis';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-Chart.Inject(Legend, SplineSeries, Trendlines, LineSeries, ScatterSeries, Category, Tooltip, Crosshair);
+import { Export} from '../../../src/chart/print-export/export';
+Chart.Inject(Legend, SplineSeries, Trendlines, LineSeries, ScatterSeries, Category, Tooltip, Crosshair, Export);
 
 let prevent: Function = (): void => {
     //Prevent Function
@@ -443,6 +444,15 @@ describe('Chart', () => {
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Checking a XLSX export', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                const element: Element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.enableExport = true
+            chartObj.export('XLSX', 'Chart');
             chartObj.refresh();
         });
     });

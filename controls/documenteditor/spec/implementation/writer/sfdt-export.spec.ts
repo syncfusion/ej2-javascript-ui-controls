@@ -1,5 +1,5 @@
 import { createElement } from "@syncfusion/ej2-base";
-import { Editor, ParagraphWidget } from "../../../src/index";
+import { Editor, ParagraphWidget, WordExport } from "../../../src/index";
 import { DocumentEditor  } from "../../../src/document-editor/document-editor";
 import { TestHelper } from "../../test-helper.spec";
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
@@ -11,8 +11,8 @@ describe('Sfdt Export auto spacing properties', () => {
     beforeAll(() : void => {
         let ele : HTMLElement = createElement('div', { id : 'container' });
         document.body.appendChild(ele);
-        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSfdtExport: true });
-        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSfdtExport: true , enableWordExport: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport, WordExport);
         editor.enableEditorHistory = true;
         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
@@ -49,5 +49,17 @@ describe('Sfdt Export auto spacing properties', () => {
         let paragraphFormat : any = (editor.sfdtExportModule as any).writeParagraphFormat(editor.selection.start.paragraph.paragraphFormat);
         expect(paragraphFormat.spaceBeforeAuto).toEqual(undefined);
         expect(paragraphFormat.spaceAfterAuto).toEqual(undefined);
+    });
+    it('Dotx -validation', () => {
+        console.log('Dotx -validation');
+        editor.openBlank();
+        editor.editorModule.insertText('Syncfusion Software');
+        expect(() => { editor.save('Sample','Docx'); }).not.toThrowError();
+    });
+    it('Dotx  save as blob-validation', () => {
+        console.log('Dotx - save as blob validation');
+        editor.openBlank();
+        editor.editorModule.insertText('Syncfusion Software');
+        expect(() => { editor.saveAsBlob('Dotx') }).not.toThrowError();
     });
 })

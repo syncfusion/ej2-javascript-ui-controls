@@ -131,6 +131,23 @@ $cpicker-handler-shadow: 0 0 3px rgba($black, .7), inset 0 0 2px rgba($black, .7
 $cpicker-handler-tooltip-color: $white !default;
 $cpicker-btn-border-radius: 0 !default;
 $cpikcer-btn-bg-disabled: $secondary-bg-color-disabled !default;
+$cpicker-recent-color-wrap-pad: 0 !default;
+$cpicker-recent-color-span-hgt: 40px !default;
+$cpicker-recent-color-span-pad: 9px 16px !default;
+$cpicker-recent-color-span-line-hgt: 22px !default;
+$cpicker-recent-color-tile-pad: 10px 10.5px !default;
+$cpicker-recent-color-tile-dim: 20px !default;
+$cpicker-recent-color-tile-margin: 0 2.5px;
+$cpicker-bigger-recent-color-wrap-pad: 0 !default;
+$cpicker-bigger-recent-color-span-hgt: 48px !default;
+$cpicker-bigger-recent-color-span-pad: 12px 16px 14px !default;
+$cpicker-bigger-recent-color-span-line-hgt: 22px !default;
+$cpicker-bigger-recent-color-tile-pad: 13px 10px !default;
+$cpicker-bigger-recent-color-tile-dim: 25px !default;
+$cpicker-bigger-recent-color-tile-margin: 0 1px;
+$cpicker-recent-color-span-color: $gray-700 !default;
+$cpicker-recent-color-span-weight: bold !default;
+$cpicker-recent-color-tile-border: $gray-700 !default;
 
 /* stylelint-disable */
 .e-colorpicker-wrapper{

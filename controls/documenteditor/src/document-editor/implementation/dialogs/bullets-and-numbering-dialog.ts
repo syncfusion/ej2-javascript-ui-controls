@@ -354,8 +354,8 @@ export class BulletsAndNumberingDialog {
             this.abstractList.abstractListId = 0;
         }
         this.listFormat.list.abstractListId = this.abstractList.abstractListId;
-        const nsid: number = HelperMethods.generateUniqueId(this.documentHelper.lists);
-        this.listFormat.nsid = this.listFormat.list.nsid = this.abstractList.nsid = nsid;
+        //const nsid: number = HelperMethods.generateUniqueId(this.documentHelper.lists);
+        this.listFormat.nsid = this.listFormat.list.nsid = this.abstractList.nsid;
         const listLevel: WListLevel = new WListLevel(this.abstractList);
         listLevel.listLevelPattern = !isNullOrUndefined(this.listLevelPattern) ? this.listLevelPattern : 'Bullet';
         listLevel.numberFormat = this.isBullet ? this.symbol : this.numberFormat;

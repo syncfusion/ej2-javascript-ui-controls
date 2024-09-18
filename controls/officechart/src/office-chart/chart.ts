@@ -1,3 +1,4 @@
+/* eslint-disable */
 /* tslint:disable:no-any */
 import {
     Chart, AccumulationChart, AccumulationLegend, PieSeries, AccumulationTooltip, AccumulationDataLabel, DateTime, BarSeries,
@@ -41,7 +42,7 @@ export class ChartComponent {
      * @private
      */
     public chartRender(chart: any, keywordIndex?: number): void {
-        this.keywordIndex = !isNullOrUndefined(keywordIndex)? keywordIndex : 0;
+        this.keywordIndex = !isNullOrUndefined(keywordIndex) ? keywordIndex : 0;
         this.chartType = chart[chartTypeProperty[this.keywordIndex]];
         this.isPieType = (this.chartType === 'Pie' || this.chartType === 'Doughnut');
         let chartData: object[] = this.chartData(chart, this.chartType);
@@ -72,24 +73,24 @@ export class ChartComponent {
         return promise = new Promise((resolve: Function, reject: Function) => {
             let width: number = 0;
             let height: number = 0;
-            let dataInfo: ChartImageInfo = this.getControlsValue([chart], elementWidth, elementHeight);
+            const dataInfo: ChartImageInfo = this.getControlsValue([chart], elementWidth, elementHeight);
             width = width ? width : dataInfo.width;
             height = height ? height : dataInfo.height;
-            let element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas');
-            let displayPixelRatio: number = Math.max(1, window.devicePixelRatio || 1);
+            const element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas');
+            const displayPixelRatio: number = Math.max(1, window.devicePixelRatio || 1);
             element.width = width * (displayPixelRatio);
             element.height = height * (displayPixelRatio);
             element.style.width = width + 'px';
             element.style.height = height + 'px';
             // tslint:disable-next-line:max-line-length
-            let url: string = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(dataInfo.svg)], { type: 'image/svg+xml' }));
-            let image: HTMLImageElement = new Image();
-            let canvasContext: CanvasRenderingContext2D = element.getContext('2d');
+            const url: string = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(dataInfo.svg)], { type: 'image/svg+xml' }));
+            const image: HTMLImageElement = new Image();
+            const canvasContext: CanvasRenderingContext2D = element.getContext('2d');
             canvasContext.scale(displayPixelRatio, displayPixelRatio);
             image.onload = (() => {
                 canvasContext.drawImage(image, 0, 0);
                 window.URL.revokeObjectURL(url);
-                let dataURL: string = element.toDataURL('image/png');
+                const dataURL: string = element.toDataURL('image/png');
                 resolve(dataURL);
             });
             image.onerror = (() => {
@@ -103,14 +104,14 @@ export class ChartComponent {
         let width: number = 0;
         let height: number = 0;
         let content: string = '';
-        let svgRenderer: Element = new SvgRenderer('').createSvg({
+        const svgRenderer: Element = new SvgRenderer('').createSvg({
             id: 'Image_Export',
             width: 200, height: 200
         });
         controls.map((control: Chart | AccumulationChart) => {
             if (control) {
-                let svgElement: Node = control.svgObject.cloneNode(true);
-                let groupElement: Element = control.renderer.createGroup({
+                const svgElement: Node = control.svgObject.cloneNode(true);
+                const groupElement: Element = control.renderer.createGroup({
                     style: 'transform: translateY(' + height + 'px)'
                 });
                 groupElement.appendChild(svgElement);
@@ -189,20 +190,20 @@ export class ChartComponent {
 
     private chartSeries(series: any[], data: any[], type: string): object[] {
         // json data
-        let chartSeries: object[] = [];
+        const chartSeries: object[] = [];
         for (let i: number = 0; i < series.length; i++) {
-            let seriesData: any = series[parseInt(i.toString(), 10)];
-            let seriesValue: any = this.writeChartSeries(seriesData, data, type, i);
+            const seriesData: any = series[parseInt(i.toString(), 10)];
+            const seriesValue: any = this.writeChartSeries(seriesData, data, type, i);
             chartSeries.push(seriesValue);
         }
         return chartSeries;
     }
 
     private writeChartSeries(seriesData: any, data: any[], type: string, count: number): any {
-        let chartType: string = this.officeChartType(type);
+        const chartType: string = this.officeChartType(type);
         // let isAreaType: boolean = (type === 'Area_Stacked_100' || type === 'Area' || type === 'Area_Stacked');
-        let seriesFormat: any = seriesData[dataPointsProperty[this.keywordIndex]][parseInt(count.toString(), 10)];        
-        let series: any = {};
+        let seriesFormat: any = seriesData[dataPointsProperty[this.keywordIndex]][parseInt(count.toString(), 10)];
+        const series: any = {};
         let fill: string;
         series.type = chartType;
         series.dataSource = data;
@@ -219,7 +220,7 @@ export class ChartComponent {
                 series.radius = '70%';
             }
         } else {
-            if(isNullOrUndefined(seriesFormat)){
+            if (isNullOrUndefined(seriesFormat)) {
                 seriesFormat = seriesData[dataPointsProperty[this.keywordIndex]][0];
             }
             fill = this.chartFormat(seriesFormat, chartType);
@@ -235,17 +236,17 @@ export class ChartComponent {
             if (this.isPieType) {
                 series.dataLabel = this.parseDataLabels(seriesData[dataLabelProperty[this.keywordIndex]]);
             } else {
-                let data: any = {};
+                const data: any = {};
                 data.dataLabel = this.parseDataLabels(seriesData[dataLabelProperty[this.keywordIndex]]);
                 series.marker = data;
             }
         }
         if (seriesData.hasOwnProperty(errorBarProperty[this.keywordIndex])) {
-            let errorBarData: any = seriesData[errorBarProperty[this.keywordIndex]];
+            const errorBarData: any = seriesData[errorBarProperty[this.keywordIndex]];
             series.errorBar = this.parseErrorBars(errorBarData);
         }
         if (seriesData.hasOwnProperty(trendLinesProperty[this.keywordIndex])) {
-            let trendLines: any = seriesData[trendLinesProperty[this.keywordIndex]];
+            const trendLines: any = seriesData[trendLinesProperty[this.keywordIndex]];
             let trendLinesData: any[] = [];
             for (let count: number = 0; count < trendLines.length; count++) {
                 let trendLine: any = trendLines[parseInt(count.toString(), 10)];
@@ -460,11 +461,13 @@ export class ChartComponent {
         }
         for (let j: number = 0; j < series.length; j++) {
             const yData: any = data[chartDataProperty[this.keywordIndex]][parseInt(j.toString(), 10)];
-            const yValue: any = yData[yValueProperty[this.keywordIndex]];
-            this.chartYValues.push(yValue);
-            plotValue['y' + j] = yValue;
-            if (type === 'Bubble') {
-                plotValue['size' + j] = yData[sizeProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(yData)) {
+                const yValue: any = yData[yValueProperty[this.keywordIndex]];
+                this.chartYValues.push(yValue);
+                plotValue['y' + j] = yValue;
+                if (type === 'Bubble') {
+                    plotValue['size' + j] = yData[sizeProperty[this.keywordIndex]];
+                }
             }
             if (chart[chartTypeProperty[this.keywordIndex]] === 'Pie' || chart[chartTypeProperty[this.keywordIndex]] === 'Doughnut' || chart[chartTypeProperty[this.keywordIndex]] === 'Column_Stacked') {
                 let seriesData: any = series[parseInt(j.toString(), 10)];
@@ -502,7 +505,7 @@ export class ChartComponent {
         return color;
     }
     private parseChartLegend(data: any): any {
-        let legendSettings: any = {};
+        const legendSettings: any = {};
         let position: string = data[positionProperty[this.keywordIndex]];
         if (position === 'Corner') {
             position = 'right';
@@ -516,14 +519,14 @@ export class ChartComponent {
         return legendSettings;
     }
     private parseBoolValue(value: any): boolean {
-        if (value instanceof String) {
-            if (isNullOrUndefined(value) || value == "f" || value == "0" || value == "off" || value == "false") {
+        if (typeof value === 'string' || value instanceof String) {
+            if (isNullOrUndefined(value) || value === 'f' || value === '0' || value === 'off' || value === 'false') {
                 return false;
             } else {
                 return true;
             }
         } else {
-            if (value == 1) {
+            if (value === 1 || value === true) {
                 return true;
             } else {
                 return false;

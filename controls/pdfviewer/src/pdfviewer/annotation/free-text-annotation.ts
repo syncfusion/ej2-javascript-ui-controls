@@ -588,11 +588,14 @@ export class FreeTextAnnotation {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[parseInt(i.toString(), 10)].id) {
                     if (property === 'bounds') {
-                        this.pdfViewerBase.isBounds = this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds, annotationBase.wrapper.bounds);
+                        this.pdfViewerBase.isBounds =
+                        this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds,
+                                                             annotationBase.wrapper.bounds);
                         if (this.pdfViewerBase.isBounds) {
                             pageAnnotations[parseInt(i.toString(), 10)].bounds = {
                                 left: annotationBase.bounds.x, top: annotationBase.bounds.y,
-                                width: annotationBase.bounds.width, height: annotationBase.bounds.height, right: annotationBase.bounds.right,
+                                width: annotationBase.bounds.width, height: annotationBase.bounds.height,
+                                right: annotationBase.bounds.right,
                                 bottom: annotationBase.bounds.bottom
                             };
                         }
@@ -855,7 +858,8 @@ export class FreeTextAnnotation {
                 if (commentsDivid) {
                     document.getElementById(commentsDivid).id = annotationName;
                 }
-                const annotationSelectorSettings: AnnotationSelectorSettingsModel = this.pdfViewer.freeTextSettings.annotationSelectorSettings;
+                const annotationSelectorSettings: AnnotationSelectorSettingsModel =
+                this.pdfViewer.freeTextSettings.annotationSelectorSettings;
                 this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
                 const annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
                 this.author = this.author ? this.author : this.pdfViewer.freeTextSettings.author ? this.pdfViewer.freeTextSettings.author : 'Guest';
@@ -970,6 +974,7 @@ export class FreeTextAnnotation {
     public onKeyDownInputBox(event: KeyboardEvent): void {
         // eslint-disable-next-line
         if (event.which !== 18) {
+            // eslint-disable-next-line
             const inuptEleObj: FreeTextAnnotation = this;
             if (event.which === 9 || (isNullOrUndefined(this.pdfViewer.selectedItems.annotations[0]) && !this.isNewFreeTextAnnot)) {
                 event.preventDefault();

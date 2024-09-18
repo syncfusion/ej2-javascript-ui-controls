@@ -80,17 +80,17 @@ describe('FileManager control single selection LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            expect(document.getElementById('file_largeicons').style.height).toEqual('321px');
+            expect(document.getElementById('file_largeicons').offsetHeight).toEqual(321);
             expect(document.getElementById('file_toolbar').classList.contains('e-toolbar')).toEqual(true);
             feObj.toolbarSettings = { visible: false };
             feObj.dataBind();
             expect(document.getElementById('file_toolbar').classList.contains('e-toolbar')).toEqual(false);
             expect(feObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(0);
-            expect(document.getElementById('file_largeicons').style.height).toEqual('364px');
+            expect(document.getElementById('file_largeicons').offsetHeight).toEqual(364);
             feObj.toolbarSettings = { visible: true };
             feObj.dataBind();
             expect(document.getElementById('file_toolbar').classList.contains('e-toolbar')).toEqual(true);
-            expect(document.getElementById('file_largeicons').style.height).toEqual('321px');
+            expect(document.getElementById('file_largeicons').offsetHeight).toEqual(321);
         });
         it('for toolbarSettings', () => {
             feObj = new FileManager({

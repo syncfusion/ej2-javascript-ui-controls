@@ -4,6 +4,7 @@ import { MenuEventArgs, OpenCloseMenuEventArgs, BeforeOpenCloseMenuEventArgs } f
 import { ItemModel } from '../src/common/common-model';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
+import { SplitButton } from '../src/split-button/split-button';
 
 /**
  * @param  {} 'DropDownButton'
@@ -93,7 +94,15 @@ describe('DropDownButton', () => {
         });
 
         it('DropdownButton popup without icon', () => {
-            drpButton = new DropDownButton({ items: [{ text: 'cut' }, { text: 'copy' }, { text: 'paste' }] });
+            drpButton = new DropDownButton({ items: [{ text: 'cut' }, { text: 'copy' }, { text: 'paste', disabled: true }],
+                beforeItemRender: (args: MenuEventArgs) => {
+                    if (args.item.text === 'copy') {
+                        args.item.disabled = true;
+                    } else if (args.item.text === 'paste') {
+                        args.item.disabled = false;
+                    }
+                } 
+            });
             drpButton.appendTo('#drp-button');
             element.click();
             expect(drpButton.dropDown.element.querySelectorAll('li')[0].classList.contains('e-blank-icon')).toBeFalsy();
@@ -257,6 +266,7 @@ describe('DropDownButton', () => {
             drpButton.appendTo('#drp-button');
             drpButton.enableRtl = true;
             drpButton.dataBind();
+            drpButton.element.click();
             expect(element.classList.contains('e-rtl')).toEqual(true);
             drpButton.enableRtl = false;
             drpButton.dataBind();
@@ -324,6 +334,7 @@ describe('DropDownButton', () => {
             drpButton = new DropDownButton({ content: 'default', createPopupOnClick: true });
             drpButton.appendTo('#drp-button');
             expect(drpButton.dropDown).toEqual(undefined);
+            drpButton.toggle();
             drpButton.createPopupOnClick = false;
             drpButton.dataBind();
             expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toEqual(false);                     
@@ -387,9 +398,26 @@ describe('DropDownButton', () => {
             drpButton.windowResize();
         });
         it('focusoutHandler method', () => {
-            drpButton = new DropDownButton();
+            drpButton = new DropDownButton({items: items, closeActionEvents: 'mousedown'});
             drpButton.appendTo('#drp-button');
-            drpButton.focusoutHandler();
+            drpButton.element.click();
+            const ele: HTMLElement = drpButton.dropDown.element.querySelector('.e-item');
+            const EventArgs: any = { preventDefault: (): void => { /** NO Code */ }, target: ele };
+            drpButton.focusoutHandler(EventArgs);
+        });
+        it('splitbutton code coverage', () => {
+            drpButton = new SplitButton({target: '#target' });
+            drpButton.appendTo('#drp-button');
+            drpButton.isReact = true;
+            drpButton.dropDown = null;
+            drpButton.openPopUp(null);
+            drpButton.windowResize();
+        });
+        it('dropdown button react template', () => {
+            drpButton = new DropDownButton({target: '#target' });
+            drpButton.appendTo('#drp-button');
+            drpButton.isReact = true;
+            drpButton.openPopUp(null);
         });
     });
 
@@ -801,6 +829,15 @@ describe('DropDownButton', () => {
             drpButton = new DropDownButton({ items: undefined });
             drpButton.appendTo('#drp-button');
             expect(drpButton.items).toEqual([]);
+        });
+
+        it('DropDownButton with cssClass', () => {
+            drpButton = new DropDownButton({ cssClass: null });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.cssClass).toEqual('');
+            drpButton = new DropDownButton({ cssClass: undefined });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.CssClass).toEqual(undefined);
         });
 
         it('DropDownButton with locale', () => {

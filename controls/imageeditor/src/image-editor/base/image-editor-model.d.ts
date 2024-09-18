@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, ModuleDeclaration, extend } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, getComponent, isNullOrUndefined, getUniqueID, setValue } from '@syncfusion/ej2-base';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { Dialog, createSpinner } from '@syncfusion/ej2-popups';import { Complex, Browser, ChildProperty, compile as templateCompiler, compile } from '@syncfusion/ej2-base';import { ToolbarModule, Crop, Draw, Filter, FreehandDrawing, Selection, Shape, Transform, UndoRedo, Export, SelectionChangeEventArgs, Transition, ArrowheadType, ResizeEventArgs, FrameType, FrameLineStyle, FrameChangeEventArgs, FrameSettings, ShapeType } from './../index';import { ZoomEventArgs, PanEventArgs, CropEventArgs, RotateEventArgs, FlipEventArgs, ShapeChangeEventArgs } from './../index';import { ToolbarEventArgs, OpenEventArgs, SaveEventArgs, BeforeSaveEventArgs, Point, ShapeSettings, ImageFilterEventArgs } from './../index';import { FinetuneEventArgs, QuickAccessToolbarEventArgs, CurrentObject, ImageDimension, TransformValue, PanPoint } from './../index';import { Interaction, SelectionPoint, ImageFinetuneValue, Dimension, ActivePoint, ImageEditorClickEventArgs, FrameValue } from './../index';import { Direction, ZoomTrigger, Theme, ImageEditorCommand, ImageFilterOption, ImageFinetuneOption } from './../index';import { ItemModel as DropDownButtonItemModel } from '@syncfusion/ej2-splitbuttons';import { ChangeEventArgs, NumericTextBox, Uploader } from '@syncfusion/ej2-inputs';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, ModuleDeclaration, extend } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, getComponent, isNullOrUndefined, getUniqueID, setValue } from '@syncfusion/ej2-base';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { Dialog, createSpinner } from '@syncfusion/ej2-popups';import { Complex, Browser, ChildProperty, compile as templateCompiler, compile } from '@syncfusion/ej2-base';import { ToolbarModule, Crop, Draw, Filter, FreehandDrawing, Selection, Shape, Transform, UndoRedo, Export, SelectionChangeEventArgs, Transition, ArrowheadType, ResizeEventArgs, FrameType, FrameLineStyle, FrameChangeEventArgs, FrameSettings, ShapeType, ImageSettings, RedactType } from './../index';import { ZoomEventArgs, PanEventArgs, CropEventArgs, RotateEventArgs, FlipEventArgs, ShapeChangeEventArgs } from './../index';import { ToolbarEventArgs, OpenEventArgs, SaveEventArgs, BeforeSaveEventArgs, Point, ShapeSettings, ImageFilterEventArgs, RedactSettings } from './../index';import { FinetuneEventArgs, QuickAccessToolbarEventArgs, CurrentObject, ImageDimension, TransformValue, PanPoint } from './../index';import { Interaction, SelectionPoint, ImageFinetuneValue, Dimension, ActivePoint, ImageEditorClickEventArgs, FrameValue } from './../index';import { Direction, ZoomTrigger, Theme, ImageEditorCommand, ImageFilterOption, ImageFinetuneOption, EditCompleteEventArgs  } from './../index';import { ItemModel as DropDownButtonItemModel } from '@syncfusion/ej2-splitbuttons';import { ChangeEventArgs, NumericTextBox, Uploader } from '@syncfusion/ej2-inputs';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -678,5 +678,17 @@ export interface ImageEditorModel extends ComponentModel{
      * @event frameChange
      */
     frameChange?: EmitType<FrameChangeEventArgs>
+
+    /**
+     * Event callback that is triggered after the completion of an editing action in the image editor.
+     *
+     * This event occurs after the image editor canvas has been updated through following actions such as cropping, drawing annotations, applying filters, fine-tuning, or other customizations.
+     *
+     * It provides an opportunity to perform additional tasks, such as comparing the current image data with previous states or triggering further processing based on the changes.
+     *
+     * @event editComplete
+     *
+     */
+    editComplete?: EmitType<EditCompleteEventArgs >
 
 }

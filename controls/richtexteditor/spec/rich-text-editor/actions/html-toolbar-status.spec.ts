@@ -537,7 +537,7 @@ describe(' HTML editor update toolbar ', () => {
 
     describe('HTML Editor coverage issue ', () => {
         let rteObj: RichTextEditor;
-        beforeAll(()=> {
+        beforeAll((done: DoneFn)=> {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['RemoveLink']
@@ -545,8 +545,10 @@ describe(' HTML editor update toolbar ', () => {
                 value : "<a>Link</a>",
                 saveInterval: 0
             });
+            done();
         });
         it('Click the toolbar button', (done: Function) => {
+            rteObj.focusIn();
             const event = new MouseEvent('click', { bubbles: true, cancelable: true });
             const toolbarEle = document.querySelector('[title="Remove Link"]')
             toolbarEle.dispatchEvent(event);
@@ -555,8 +557,9 @@ describe(' HTML editor update toolbar ', () => {
                 done();
             }, 100);
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
-       });
+            done();
+        });
     });
 });

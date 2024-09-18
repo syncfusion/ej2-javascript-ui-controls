@@ -3115,6 +3115,7 @@ describe('Editing - double click on icon', () => {
 
 describe('EJ2-54664 - delete the parent and child record using deleteRecord method', () => {
   let gridObj: TreeGrid;
+  let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
@@ -3142,6 +3143,7 @@ describe('EJ2-54664 - delete the parent and child record using deleteRecord meth
                     field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100,
                 }
             ],
+            actionFailure: actionFailedFunction
       },
       done
     );
@@ -3149,6 +3151,12 @@ describe('EJ2-54664 - delete the parent and child record using deleteRecord meth
   it('Delete -  Parent and Child record', (done: Function) => {
     gridObj.deleteRecord('taskID', {taskID:1});
     expect(gridObj.flatData.length === 31).toBe(true);
+    done();
+  });
+
+  it('Delete without selection', (done: Function) => {
+    gridObj.deleteRecord();
+    expect(actionFailedFunction).toHaveBeenCalled();
     done();
   });
 });

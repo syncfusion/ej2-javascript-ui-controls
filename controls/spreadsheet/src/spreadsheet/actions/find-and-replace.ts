@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { findDlg, locale, dialog, gotoDlg, findHandler, focus, getUpdateUsingRaf, activeSheetChanged } from '../common/index';
+import { findDlg, locale, dialog, gotoDlg, findHandler, focus, getUpdateUsingRaf, activeSheetChanged, removeElements } from '../common/index';
 import { DialogBeforeOpenEventArgs } from '../common/index';
 import { L10n, getComponent, isNullOrUndefined, closest, select, EventHandler, detach, Browser } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -360,6 +360,7 @@ export class FindAndReplace {
                         focus(findInput);
                     });
                 },
+                beforeClose: this.dialogBeforeClose.bind(this),
                 close: (): void => dialogInst.hide()
             };
             dialogInst.show(dlg);
@@ -367,6 +368,36 @@ export class FindAndReplace {
             dialogInst.hide();
         }
     }
+
+    private dialogBeforeClose(): void {
+        const checkBox: CheckBox = this.checkBoxElements;
+        if (checkBox && checkBox.element) {
+            checkBox.destroy();
+            checkBox.element.remove();
+        }
+        this.checkBoxElements = null;
+
+        this.textBoxElements.forEach((textBox: TextBox) => {
+            if (textBox && textBox.element) {
+                textBox.destroy();
+                textBox.element.remove();
+            }
+        });
+        this.textBoxElements = [];
+
+        this.dropDownListElements.forEach((dropDownList: DropDownList) => {
+            if (dropDownList && dropDownList.element) {
+                dropDownList.destroy();
+                dropDownList.element.remove();
+            }
+        });
+        this.dropDownListElements = [];
+
+        removeElements(this.paraElements); this.paraElements = [];
+        removeElements(this.inputElements); this.inputElements = [];
+        removeElements(this.divElements); this.divElements = [];
+    }
+
     private dialogMessage(): void {
         if (this.parent.element.querySelector('.e-replace-alert-span')) {
             this.parent.element.querySelector('.e-replace-alert-span').remove();
@@ -588,6 +619,13 @@ export class FindAndReplace {
         }
     }
 
+    private divElements: HTMLElement[] = [];
+    private paraElements: HTMLElement[] = [];
+    private inputElements: HTMLElement[] = [];
+    private textBoxElements: TextBox[] = [];
+    private dropDownListElements: DropDownList[] = [];
+    private checkBoxElements: CheckBox;
+
     private findandreplaceContent(): HTMLElement {
         if (this.parent.element.querySelector('.e-text-findNext-short') as HTMLInputElement) {
             this.shortValue = (this.parent.element.querySelector('.e-text-findNext-short') as HTMLInputElement).value;
@@ -595,6 +633,7 @@ export class FindAndReplace {
         const dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-link-dialog' });
         const findElem: HTMLElement = this.parent.createElement('div', { className: 'e-find' });
         const findCheck: HTMLElement = this.parent.createElement('div', { className: 'e-findCheck' });
+        this.divElements.push(dialogElem); this.divElements.push(findElem); this.divElements.push(findCheck);
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         dialogElem.appendChild(findElem);
         const findTextE: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
@@ -606,10 +645,12 @@ export class FindAndReplace {
                 'value': this.shortValue
             }
         });
+        this.divElements.push(findTextE); this.paraElements.push(findTextH); this.inputElements.push(findTextIp);
         findTextE.appendChild(findTextIp);
         findTextE.insertBefore(findTextH, findTextIp);
         findElem.appendChild(findTextE);
         const findTextBox: TextBox = new TextBox({ width: '70%' });
+        this.textBoxElements.push(findTextBox);
         findTextBox.createElement = this.parent.createElement;
         findTextBox.appendTo(findTextIp);
         const replaceTextE: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
@@ -618,10 +659,12 @@ export class FindAndReplace {
         const replaceTextIp: HTMLElement = this.parent.createElement('input', {
             className: 'e-input e-text-replaceInp', attrs: { 'type': 'Text', 'placeholder': l10n.getConstant('ReplaceValue') }
         });
+        this.divElements.push(replaceTextE); this.paraElements.push(replaceTextH); this.inputElements.push(replaceTextIp);
         replaceTextE.appendChild(replaceTextIp);
         replaceTextE.insertBefore(replaceTextH, replaceTextIp);
         findElem.appendChild(replaceTextE);
         const replaceTextBox: TextBox = new TextBox({ width: '70%' });
+        this.textBoxElements.push(replaceTextBox);
         replaceTextBox.createElement = this.parent.createElement;
         replaceTextBox.appendTo(replaceTextIp);
         const withinData: { [key: string]: Object }[] = [
@@ -634,12 +677,14 @@ export class FindAndReplace {
                 cssClass: 'e-search-within',
                 fields: { value: 'Id', text: 'Within' }, width: '50%', index: 0
             });
+        this.dropDownListElements.push(withInDDL);
         let label: string = l10n.getConstant('SearchWithin');
         const withIn: HTMLElement = this.parent.createElement('input', {
             className: 'e-findnreplace-searchwithin', attrs: { type: 'select', label: label }
         });
         const withinTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header' });
         withinTextH.innerText = label;
+        this.inputElements.push(withIn); this.paraElements.push(withinTextH);
         findElem.appendChild(withinTextH);
         findElem.appendChild(withIn);
         withInDDL.createElement = this.parent.createElement;
@@ -654,12 +699,14 @@ export class FindAndReplace {
                 cssClass: 'e-searchby',
                 fields: { value: 'Id', text: 'Search' }, width: '50%', index: 0
             });
+        this.dropDownListElements.push(searchDDL);
         label = l10n.getConstant('SearchBy');
         const searchIn: HTMLElement = this.parent.createElement('input', {
             className: 'e-findnreplace-searchby', attrs: { type: 'select', label: label }
         });
         const searchTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header' });
         searchTextH.innerText = label;
+        this.inputElements.push(searchIn); this.paraElements.push(searchTextH);
         findElem.appendChild(searchTextH);
         findElem.appendChild(searchIn);
         searchDDL.createElement = this.parent.createElement;
@@ -672,6 +719,7 @@ export class FindAndReplace {
         const caaseCheckbox: HTMLElement = this.parent.createElement('input', {
             className: 'e-findnreplace-checkcase', attrs: { type: 'checkbox' }
         });
+        this.inputElements.push(caaseCheckbox);
         findCheck.appendChild(caaseCheckbox);
         isCSen.createElement = this.parent.createElement;
         isCSen.appendTo(caaseCheckbox);
@@ -679,9 +727,11 @@ export class FindAndReplace {
             label: l10n.getConstant('MatchExactCellElements'), checked: false,
             cssClass: 'e-findnreplace-exactmatchcheckbox'
         });
+        this.checkBoxElements = isEMatch;
         const entirematchCheckbox: HTMLElement = this.parent.createElement('input', {
             className: 'e-findnreplace-checkmatch', attrs: { type: 'checkbox' }
         });
+        this.inputElements.push(entirematchCheckbox);
         findCheck.appendChild(entirematchCheckbox);
         isEMatch.createElement = this.parent.createElement;
         isEMatch.appendTo(entirematchCheckbox);

@@ -284,12 +284,14 @@ export class Grouping implements IAction {
             buttons: [
                 {
                     click: this.updateGroupSettings.bind(this, selectedCellsInfo),
+                    isFlat: false,
                     buttonModel: { cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
                 },
                 {
                     click: () => {
                         groupDialog.hide();
                     },
+                    isFlat: false,
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],

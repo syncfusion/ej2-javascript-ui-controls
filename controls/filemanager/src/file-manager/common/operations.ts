@@ -508,6 +508,7 @@ function triggerSearchOperation(parent: IFileManager, data: Object, eventArgs: B
         showHiddenItems: getValue('showHiddenItems', data)
     };
     parent.trigger('search', searchEventArgs, function (args: SearchEventArgs): void {
+        setValue('data', args.searchResults, data);
         if (args.cancel) {
             eventArgs.cancel = true;
         }

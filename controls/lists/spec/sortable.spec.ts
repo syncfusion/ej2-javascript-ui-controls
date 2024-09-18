@@ -459,6 +459,13 @@ describe('Sortable', () => {
             sortable.destroy(); sortable2.destroy();
             remove(element2);
         });
+        it('Keyboard event handler', () => {
+            let element2: any = createElement('div');
+            document.body.appendChild(element2);
+            let sortable = new Sortable(element2, {});
+            let e: any = { keyCode: 27 };
+            (sortable as any).keyDownHandler(e);
+        });
     });
     it('memory leak', () => {
         profile.sample();

@@ -205,7 +205,8 @@ export class PasteCleanup {
                     (e.args as ClipboardEvent).preventDefault();
                     this.pasteDialog(value, args, isClipboardHTMLDataNull);
                 }
-            } else if (this.parent.pasteCleanupSettings.plainText) {
+            }
+            else if (this.parent.pasteCleanupSettings.plainText) {
                 (e.args as ClipboardEvent).preventDefault();
                 this.plainFormatting(value, args, isClipboardHTMLDataNull);
             } else if (this.parent.pasteCleanupSettings.keepFormat) {
@@ -443,14 +444,14 @@ export class PasteCleanup {
                 }
             });
         }
-        this.popupCloseTime = setTimeout(function() : void {
+        this.popupCloseTime = setTimeout(() => {
             popupObj.close();
             (imgElem as HTMLElement).style.opacity = '1';
             this.toolbarEnableDisable(false);
             if (uploadObj && document.body.contains(uploadObj.element)) {
                 uploadObj.destroy();
             }
-        }.bind(this), 1500);
+        }, 1500);
     }
     private refreshPopup(imageElement: HTMLElement, popupObj: Popup): void {
         const imgPosition: number = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +
@@ -1047,7 +1048,7 @@ export class PasteCleanup {
 
     private findDetachEmptyElem(element: Element): HTMLElement {
         let removableElement: HTMLElement;
-        if (!isNOU(element.parentElement)) {
+        if (!isNOU(element) && !isNOU(element.parentElement)) {
             const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g)
                 && element.parentElement.textContent.match(/\u00a0/g).length > 0;
             if (!hasNbsp && element.parentElement.textContent.trim() === '' &&

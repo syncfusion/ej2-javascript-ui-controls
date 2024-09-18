@@ -2,7 +2,7 @@
 /* eslint-disable radix */
 import { extend, isNullOrUndefined, Browser, getComponent } from '@syncfusion/ej2-base';
 import { ActivePoint, Dimension } from '@syncfusion/ej2-inputs';
-import { ImageEditor, Point, SelectionPoint, OpenEventArgs, Direction, CurrentObject, ShapeSettings, FileType, StrokeSettings, Transition, TextSettings, CropSelectionSettings, SelectionChangeEventArgs, FrameValue, FrameChangeEventArgs, FrameSettings, FrameType, FrameLineStyle, ImageDimension, ShapeType } from '../index';
+import { ImageEditor, Point, SelectionPoint, OpenEventArgs, Direction, CurrentObject, ShapeSettings, FileType, StrokeSettings, Transition, TextSettings, CropSelectionSettings, SelectionChangeEventArgs, FrameValue, FrameChangeEventArgs, FrameSettings, FrameType, FrameLineStyle, ImageDimension, ShapeType, EditCompleteEventArgs  } from '../index';
 import { Dialog, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 export class Draw {
     private parent: ImageEditor;
@@ -16,7 +16,7 @@ export class Draw {
     private isShapeTextInserted: boolean = false;
     private currSelPoint: SelectionPoint; // To store current crop selection point (while changing crop selection dynamically)
     private isRotateZoom: boolean = false; // To restore zoomed image on selection crop selection
-    private tempStrokeSettings: StrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null}; // restore stroke settings on cancel
+    private tempStrokeSettings: StrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null, outlineColor: '', radius: null, outlineWidth: null}; // restore stroke settings on cancel
     private tempTextSettings: TextSettings =
     {text: 'Enter Text', fontFamily: '', fontSize: null, fontRatio: null, bold: false, italic: false, underline: false}; // restore text settings on cancel
     private tempAdjValue: string = ''; // for temp internal slider value
@@ -61,6 +61,9 @@ export class Draw {
     private tempObjColl: SelectionPoint[] = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private tempPointColl: any = {};
+    private imageBackgroundColor: string = '';
+    private tempStrokeWidth: number;
+    private allowRedactStraighten: boolean = true;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -141,7 +144,7 @@ export class Draw {
             this.redrawImgWithObj();
             break;
         case 'setCurrentObj':
-            this.setCurrentObj(args.value['obj'], args.value['isUndoRedo']);
+            this.setCurrentObj(args.value['obj'], args.value['isUndoRedo'], args.value['isCircleCrop']);
             break;
         case 'performPointZoom':
             this.performPointZoom(args.value['x'], args.value['y'], args.value['type'], args.value['isResize']);
@@ -341,6 +344,18 @@ export class Draw {
         case 'resetTempPointColl':
             this.tempPointColl = {};
             break;
+        case 'showDialogPopup':
+            this.showDialogPopup();
+            break;
+        case 'imageBackgroundColor':
+            this.imageBackgroundColor = args.value['color'];
+            break;
+        case 'getImageBackgroundColor':
+            args.value['obj']['color'] = this.imageBackgroundColor;
+            break;
+        case 'setTempStrokeWidth':
+            this.tempStrokeWidth = args.value['strokeWidth'];
+            break;
         }
     }
 
@@ -365,7 +380,7 @@ export class Draw {
         this.isShapeTextInserted = false; this.isImageApply = false;
         this.initZoomValue = null; this.tempFilter = ''; this.origDim = {width: 0, height: 0 };
         this.currSelPoint = null; this.isRotateZoom = false; this.tempAdjValue = '';
-        this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
+        this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null, radius: null, outlineColor: '', outlineWidth: null};
         this.tempTextSettings =
             {text: 'Enter Text', fontFamily: this.parent.fontFamily.default, fontSize: null, fontRatio: null, bold: false, italic: false, underline: false};
         this.tempUndoRedoStep = this.tempFreehandCounter = this.tempCurrFhdIndex = 0; this.tempZoomFactor = null;
@@ -373,8 +388,8 @@ export class Draw {
         this.arrowDimension = {bar: {width: 10, height: 32, ratioX: null, ratioY: null},
             arrow: {width: 24, height: 24, ratioX: null, ratioY: null}, arrowSolid: {width: 32, height: 32, ratioX: null, ratioY: null},
             circle: {width: 10, height: 10, ratioX: null, ratioY: null}, square: {width: 20, height: 20, ratioX: null, ratioY: null }};
-        this.straightenActObj = null; this.imgCanvasPoints = []; this.straightenInitZoom = null;
-        this.tempObjColl = []; this.tempPointColl = {};
+        this.straightenActObj = null; this.imgCanvasPoints = []; this.straightenInitZoom = null; this.allowRedactStraighten = true;
+        this.tempObjColl = []; this.tempPointColl = {}; this.imageBackgroundColor = ''; this.tempStrokeWidth = null;
         this.straightenDestPoints = null; this.isCropSelect = this.isDownScale = this.preventStraightening = false;
     }
 
@@ -519,7 +534,7 @@ export class Draw {
     private setDragLimit(): void {
         const parent: ImageEditor = this.parent; const actPoint: ActivePoint = parent.activeObj.activePoint;
         const {shape, rotatedAngle} = parent.activeObj;
-        if (actPoint && shape !== 'image' && shape !== 'line' && rotatedAngle === 0) {
+        if (actPoint && shape !== 'image' && shape !== 'line' && rotatedAngle === 0 && parent.activeObj.preventShapeDragOut) {
             const { destLeft, destTop, destWidth, destHeight } = parent.img;
             if (actPoint.startX < destLeft) {
                 actPoint.startX = destLeft;
@@ -543,7 +558,6 @@ export class Draw {
     private drawCropRatio(): void {
         const parent: ImageEditor = this.parent; let actPoint: ActivePoint = parent.activeObj.activePoint;
         let x: number; let y: number; let width: number; let height: number;
-        const canvasWidth: number = parent.lowerCanvas.clientWidth; const canvasHeight: number = parent.lowerCanvas.clientHeight + 1;
         const { destLeft, destTop, destWidth, destHeight } = parent.img;
         if (parent.transform.zoomFactor > 0 && this.currSelPoint) {
             const activeObj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
@@ -555,16 +569,7 @@ export class Draw {
                 width = actPoint.width < actPoint.height ? actPoint.width : actPoint.height;
                 height = width;
             } else {
-                if (destLeft + destLeft + destWidth <= canvasWidth) {
-                    width = actPoint.width;
-                } else {
-                    width = parent.transform.straighten === 0 ? canvasWidth - destLeft : actPoint.width;
-                }
-                if (destTop + destTop + destHeight <= canvasHeight) {
-                    height = actPoint.height;
-                } else {
-                    height = parent.transform.straighten === 0 ? canvasHeight - destTop : actPoint.height;
-                }
+                width = actPoint.width; height = actPoint.height;
             }
             parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
             parent.activeObj = activeObj; parent.currObjType.shape = activeObj.shape;
@@ -863,7 +868,9 @@ export class Draw {
                 canvasDraw.closePath();
                 canvasDraw.lineWidth /= 2;
             } else {
-                this.drawCenterCircles(canvasDraw);
+                if (parent.activeObj.shape !== 'redact') {
+                    this.drawCenterCircles(canvasDraw);
+                }
             }
             canvasDraw.strokeStyle = strokeColor; canvasDraw.fillStyle = fillColor;
         }
@@ -913,7 +920,7 @@ export class Draw {
         else if (canvas.toLowerCase() === 'duplicate') {canvasDraw = this.upperContext; }
         else if (saveContext) {canvasDraw = saveContext; }
         const shapeType: string = parent.currObjType.shape.toLowerCase();
-        const shapeColl: string[] = ['rectangle', 'ellipse', 'line', 'arrow', 'path', 'image'];
+        const shapeColl: string[] = ['rectangle', 'ellipse', 'line', 'arrow', 'path', 'image', 'redact'];
         if (shapeColl.indexOf(shapeType) !== -1) {
             actObj.shape = parent.currObjType.shape;
         }
@@ -935,6 +942,13 @@ export class Draw {
             if (isNullOrUndefined(isPreventSelection) && canvasDraw === this.upperContext) {
                 this.drawOuterSelection(canvasDraw);
             }
+            break;
+        case 'redact':
+            this.drawRedact(canvasDraw, actObj);
+            if (isNullOrUndefined(isPreventSelection) && canvasDraw === this.upperContext) {
+                this.drawOuterSelection(canvasDraw);
+            }
+            parent.currObjType.isRedact = true;
             break;
         case 'ellipse':
             selectionWidth = Math.abs(selectionWidth); selectionHeight = Math.abs(selectionHeight);
@@ -958,9 +972,6 @@ export class Draw {
             }
             break;
         case 'crop-circle':
-            if (canvasDraw === this.lowerContext) {
-                canvasDraw = this.upperContext;
-            }
             this.shapeCircle(canvasDraw, selectionWidth, selectionHeight);
             break;
         case 'line':
@@ -999,7 +1010,7 @@ export class Draw {
             if (activeObj.pointColl.length > 1) {
                 const obj: Object = {shape: null };
                 parent.notify('selection', { prop: 'getCurrentDrawingShape', value: {obj: obj }});
-                if (obj['shape'] === 'path') {
+                if (obj['shape'] === 'path' && parent.isShapeDrawing) {
                     const nextPoint: Point = {x: 0, y: 0 };
                     for (let i: number = 0, len: number = activeObj.pointColl.length; i < len; i++) {
                         if (isNullOrUndefined(activeObj.pointColl[i + 1])) {
@@ -1012,6 +1023,9 @@ export class Draw {
                         actPoint.endX = nextPoint.x; actPoint.endY = nextPoint.y;
                         parent.activeObj = this.updateWidthHeight(parent.activeObj);
                         this.shapeLine(canvasDraw, actPoint.startX, actPoint.startY, actPoint.endX, actPoint.endY);
+                        if (Browser.isDevice) {
+                            activeObj.activePoint.endX = nextPoint.x; activeObj.activePoint.endY = nextPoint.y;
+                        }
                     }
                 } else {
                     for (let i: number = 1, len: number = activeObj.pointColl.length; i < len; i++) {
@@ -1231,17 +1245,36 @@ export class Draw {
     private drawSquareLines(canvasDraw: CanvasRenderingContext2D): void {
         let splitWords: string[]; const parent: ImageEditor = this.parent; const actObj: SelectionPoint = parent.activeObj;
         const {startX, startY, width, height} = actObj.activePoint;
-        const { fillColor, strokeColor, strokeWidth } = actObj.strokeSettings;
+        const { fillColor, strokeColor, strokeWidth, radius } = actObj.strokeSettings;
         if (actObj.shape) {splitWords = actObj.shape.split('-'); }
         if (splitWords[0] === 'crop') {canvasDraw.strokeStyle = '#fff'; }
         else {canvasDraw.strokeStyle = strokeColor; }
         canvasDraw.beginPath();
-        canvasDraw.rect(startX, startY, width, height);
+        const obj: Object = {width: 0, height: 0 };
+        let ratio: Dimension = {width: 1, height: 1 };
+        parent.notify('crop', { prop: 'calcRatio', onPropertyChange: false,
+            value: {obj: obj, dimension: {width: canvasDraw.canvas.width, height: canvasDraw.canvas.height }}});
+        ratio = obj as Dimension;
+        const isTempCanvas: boolean = canvasDraw.canvas.id === parent.element.id + '_tempCanvas';
+        const zoomFactor: number = parent.transform.zoomFactor;
+        const baseRadius: number = isTempCanvas ? radius * 10 * ((ratio.width + ratio.height) / 2) : radius * 10;
+        const adjustedRadius: number = baseRadius + (baseRadius * zoomFactor);
+        if (radius !== null) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (canvasDraw as any).roundRect(startX, startY, width, height, adjustedRadius);
+        } else {
+            canvasDraw.rect(startX, startY, width, height);
+        }
         if (fillColor !== '') {
             canvasDraw.fillStyle = fillColor; canvasDraw.fill();
         }
-        canvasDraw.rect(startX + strokeWidth, startY + strokeWidth,
-                        width - (2 * strokeWidth), height - (2 * strokeWidth));
+        if (radius !== null) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (canvasDraw as any).roundRect(startX + strokeWidth, startY + strokeWidth, width - (2 * strokeWidth),
+                                          height - (2 * strokeWidth), adjustedRadius);
+        } else {
+            canvasDraw.rect(startX + strokeWidth, startY + strokeWidth, width - (2 * strokeWidth), height - (2 * strokeWidth));
+        }
         canvasDraw.fillStyle = strokeColor;
         canvasDraw.fill('evenodd'); canvasDraw.closePath();
     }
@@ -1516,6 +1549,9 @@ export class Draw {
                 this.shapeLine(canvasDraw, this.squareEndIntersectX1, this.squareEndIntersectY1,
                                this.squareStartIntersectX1, this.squareStartIntersectY1);
             }
+            else if (actObj.end === 'squareSolid' && actObj.start === 'none') {
+                this.shapeLine(canvasDraw, startX, startY, endX, endY);
+            }
         }
     }
 
@@ -1750,6 +1786,14 @@ export class Draw {
         const lHeight: number = fontSize + fontSize * 0.25;
         const lineHeight: number = ((lHeight * rows.length) - (fontSize * rows.length)) / rows.length;
         canvasDraw.filter = 'none';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const tempFill: any = canvasDraw.fillStyle;
+        if (actObj.strokeSettings.fillColor !== '' ) {
+            canvasDraw.fillStyle = actObj.strokeSettings.fillColor;
+            canvasDraw.fillRect(actObj.activePoint.startX, actObj.activePoint.startY,
+                                actObj.activePoint.width, actObj.activePoint.height);
+        }
+        canvasDraw.fillStyle = tempFill;
         for (let i: number = 0; i < rows.length; i++) {
             const text: string = rows[i as number];
             const yPoint: number = ((i + 1) * fontSize * 0.85) + (i * lineHeight);
@@ -1764,8 +1808,28 @@ export class Draw {
                     fontSize = actObj.textSettings.fontSize = width - (width * 0.1);
                 }
             }
-            canvasDraw.strokeStyle = actObj.strokeSettings.strokeColor;
+            canvasDraw.strokeStyle = actObj.strokeSettings.outlineColor;
             canvasDraw.fillStyle = actObj.strokeSettings.strokeColor;
+            const tempWidth: number = canvasDraw.lineWidth;
+            const obj: Object = {width: 0, height: 0 };
+            let ratio: Dimension = {width: 1, height: 1 };
+            parent.notify('crop', { prop: 'calcRatio', onPropertyChange: false,
+                value: {obj: obj, dimension: {width: canvasDraw.canvas.width, height: canvasDraw.canvas.height }}});
+            ratio = obj as Dimension;
+            const isTempCanvas: boolean = canvasDraw.canvas.id === parent.element.id + '_tempCanvas';
+            const baseWidth: number = Math.max(1, actObj.strokeSettings.outlineWidth / 2);
+            if (/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$|^[a-zA-Z]+$/.test(actObj.strokeSettings.outlineColor)) {
+                canvasDraw.lineWidth = baseWidth * ((isTempCanvas ? Math.floor((fontSize - 1) / 60) :
+                    Math.floor((fontSize - 1) / 16)) * 0.5 + 0.5);
+                if (isTempCanvas) {
+                    canvasDraw.lineWidth *= ((ratio.width + ratio.height) / 2);
+                    if (parent.transform.degree !== 0) {
+                        canvasDraw.lineWidth /= 1.8;
+                    }
+                }
+            } else {
+                canvasDraw.lineWidth = 0;
+            }
             let textStyle: string = '';
             if (bold) {textStyle = 'bold '; }
             if (italic) {textStyle = 'italic '; }
@@ -1777,11 +1841,16 @@ export class Draw {
             if (actObj.rotateFlipColl && actObj.rotateFlipColl.length > 0) {
                 this.rotateText(canvasDraw);
             } else {
+                canvasDraw.strokeText(text, startX + fontSize * 0.1, startY + yPoint);
                 canvasDraw.fillText(text, startX + fontSize * 0.1, startY + yPoint);
             }
+            canvasDraw.lineWidth = tempWidth;
         }
         canvasDraw.filter = filter;
         parent.currObjType.isText = false;
+        if (this.upperContext === canvasDraw) {
+            this.drawOuterSelection(canvasDraw);
+        }
     }
 
     private updateActPoint(degree: string, canvasDraw: CanvasRenderingContext2D): ActivePoint {
@@ -1981,6 +2050,8 @@ export class Draw {
                 }
                 yPoint += fontSize + fontSize * 0.15;
             }
+            canvasDraw.strokeText(text, startX + fontSize * 0.15, startY +
+                yPoint + (i > 0 ? fontSize * 0.25 : -fontSize * 0.35));
             canvasDraw.fillText(text, startX + fontSize * 0.15, startY +
                 yPoint + (i > 0 ? fontSize * 0.25 : -fontSize * 0.35));
         }
@@ -2195,7 +2266,9 @@ export class Draw {
         parent.baseImg.src = src;
         parent.baseImg.onload = () => {
             parent.imgSrc = src;
-            parent.notify('filter', { prop: 'update-finetunes', onPropertyChange: false });
+            if (!parent.isUndoRedo) {
+                parent.notify('filter', { prop: 'update-finetunes', onPropertyChange: false });
+            }
             proxy.lowerContext.drawImage(parent.baseImg, 0, 0, proxy.parent.lowerCanvas.width, proxy.parent.lowerCanvas.height);
             hideSpinner(parent.element); parent.element.style.opacity = '1'; proxy.updateBaseImgCanvas();
             const fileOpened: OpenEventArgs = {fileName: this.fileName, fileType: this.fileType, isValidImage: true };
@@ -2218,6 +2291,8 @@ export class Draw {
             }
             if (parent.isImageLoaded && parent.element.style.opacity !== '0.5') {
                 parent.trigger('fileOpened', fileOpened);
+                const action: EditCompleteEventArgs  = { action: 'file-open', actionEventArgs: fileOpened };
+                parent.triggerEditCompleteEvent(action);
             }
         };
         parent.baseImg.onerror = () => {
@@ -2241,7 +2316,9 @@ export class Draw {
 
     private updateCanvas(): void {
         const parent: ImageEditor = this.parent;
-        parent.img.srcWidth = parent.baseImgCanvas.width; parent.img.srcHeight = parent.baseImgCanvas.height;
+        if (!parent.isImageUpdated) {
+            parent.img.srcWidth = parent.baseImgCanvas.width; parent.img.srcHeight = parent.baseImgCanvas.height;
+        }
         const obj: Object = {width: 0, height: 0 };
         parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
             value: {width: parent.img.srcWidth, height: parent.img.srcHeight, obj: obj, isImgShape: null}});
@@ -2310,11 +2387,14 @@ export class Draw {
             this.renderImage(null, null, true);
         }
         this.resetFrameZoom(false);
+        const editCompleteArgs: object = {action: '' };
         if (obj['bool']) {
+            editCompleteArgs['action'] = 'freehand-draw';
             parent.notify('freehand-draw', {prop: 'cancelFhd', onPropertyChange: false});
             parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
             parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok' }});
         } else if (parent.textArea.style.display === 'block' || parent.textArea.style.display === 'inline-block') {
+            editCompleteArgs['action'] = 'text-editing';
             parent.textArea.style.display = 'none'; parent.textArea.value = ''; parent.textArea.style.transform = '';
             if (this.prevActObj) {
                 parent.activeObj = this.prevActObj; this.prevActObj = null;
@@ -2331,8 +2411,9 @@ export class Draw {
             if (parent.drawingShape) {
                 parent.enableShapeDrawing(parent.toPascalCase(parent.drawingShape) as ShapeType, true);
             }
-        } else if (((!Browser.isDevice || (Browser.isDevice && !straightenObj['bool'])) &&
-            document.querySelector('#' + parent.element.id + '_sliderWrapper')) || parent.currObjType.isFiltered) {
+        } else if ((!parent.activeObj.shape || parent.activeObj.shape !== 'redact') && (((!Browser.isDevice || (Browser.isDevice && !straightenObj['bool'])) &&
+            document.querySelector('#' + parent.element.id + '_sliderWrapper')) || parent.currObjType.isFiltered)) {
+            editCompleteArgs['action'] = parent.isFinetuneBtnClick ? 'fine-tune' : 'filter';
             this.lowerContext.filter = this.tempAdjValue; parent.canvasFilter = this.tempAdjValue;
             parent.notify('filter', { prop: 'setAdjustmentValue', onPropertyChange: false, value: {adjustmentValue: this.tempAdjValue }});
             parent.initialAdjustmentValue = this.tempAdjValue;
@@ -2350,7 +2431,7 @@ export class Draw {
                 value: {adjustmentLevel: extend({}, obj['tempAdjustmentLevel'], {}, true )}});
             parent.notify('undo-redo', { prop: 'setUndoRedoStep', onPropertyChange: false, value: {step: this.tempUndoRedoStep }});
             parent.upperCanvas.style.cursor = parent.cursor = 'default'; parent.currObjType.isCustomCrop = false;
-            this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
+            this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null, radius: null, outlineColor: '', outlineWidth: null};
             this.clearOuterCanvas(this.lowerContext);
             if ((parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') || parent.isCircleCrop) {
                 parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
@@ -2365,12 +2446,16 @@ export class Draw {
             parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'cancel' }});
             parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
             this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
+            if (parent.drawingShape) {
+                parent.drawingShape = null;
+                parent.notify('selection', { prop: 'setCurrentDrawingShape', onPropertyChange: false, value: { value: '' } });
+            }
         } else {
-            if (isContextualToolbar && (!Browser.isDevice || (Browser.isDevice && !straightenObj['bool']))) {
+            if ((!parent.activeObj.shape || parent.activeObj.shape !== 'redact') && isContextualToolbar && (!Browser.isDevice || (Browser.isDevice && !straightenObj['bool']))) {
                 const eventargs: object = { type: 'main', isApplyBtn: null, isCropping: null, isZooming: null};
                 parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: eventargs});
             } else {
-                this.cancelItems();
+                this.cancelItems(editCompleteArgs);
                 if (parent.transform.zoomFactor > 0) {
                     parent.togglePan = true;
                     parent.notify('selection', {prop: 'setDragCanvas', value: {bool: true }});
@@ -2390,14 +2475,17 @@ export class Draw {
         parent.drawingShape = null;
         parent.notify('draw', { prop: 'resetTempObjColl'});
         parent.notify('draw', { prop: 'resetTempPointColl'});
+        parent.isMaskImage = parent.isFinetuneBtnClick = false;
+        const actionArgs: EditCompleteEventArgs  = { action: 'cancel', actionEventArgs: editCompleteArgs as object };
+        parent.triggerEditCompleteEvent(actionArgs);
     }
 
-    private cancelItems(): void {
+    private cancelItems(editCompleteArgs?: object): void {
         const parent: ImageEditor = this.parent; let isCropSelection: boolean = false;
         const id: string = parent.element.id;
         const ascpectIcon: HTMLInputElement = (parent.element.querySelector('#' + id + '_aspectratio') as HTMLInputElement);
         const nonAspectIcon: HTMLInputElement = (parent.element.querySelector('#' + id + '_nonaspectratio') as HTMLInputElement);
-        let splitWords: string[]; const shapes: string[] = ['rectangle', 'ellipse', 'line', 'arrow', 'path', 'image'];
+        let splitWords: string[]; const shapes: string[] = ['rectangle', 'ellipse', 'line', 'arrow', 'path', 'image', 'redact'];
         if (parent.activeObj.shape !== undefined) {splitWords = parent.activeObj.shape.split('-'); }
         if (splitWords === undefined && parent.currObjType.isCustomCrop) {isCropSelection = true; }
         else if (splitWords !== undefined && splitWords[0] === 'crop'){isCropSelection = true; }
@@ -2408,6 +2496,7 @@ export class Draw {
         if (parent.isResize) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             if (ascpectIcon || nonAspectIcon || (parent as any).currentToolbar === 'resize-toolbar') {
+                editCompleteArgs['action'] = 'resize';
                 const obj: Object = {width: null, height: null };
                 parent.notify('selection', { prop: 'getNumTextValue', onPropertyChange: false, value: { obj: obj } });
                 const point: Point = {x: obj['width'], y: obj['height'] };
@@ -2459,15 +2548,20 @@ export class Draw {
         }
         switch (true) {
         case parent.togglePen:
+            editCompleteArgs['action'] = 'freehand-draw';
             this.cancelPen();
             break;
         case parent.activeObj.shape === 'text':
+            editCompleteArgs['action'] = 'text';
             this.cancelText();
             break;
         case shapes.indexOf(parent.activeObj.shape) !== -1:
+            editCompleteArgs['action'] = parent.activeObj.shape;
             this.cancelShape();
+            parent.currObjType.isRedact = false;
             break;
         case isCropSelection:
+            editCompleteArgs['action'] = 'crop-selection';
             this.cancelSelection();
             break;
         default:
@@ -2478,7 +2572,7 @@ export class Draw {
         }
         parent.notify('selection', { prop: 'setCurrentDrawingShape', onPropertyChange: false, value: {value: '' }});
         parent.upperCanvas.style.cursor = parent.cursor = 'default'; parent.currObjType.isCustomCrop = false;
-        this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
+        this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null, radius: null, outlineColor: '', outlineWidth: null};
         const eventargs: object = { type: 'main', isApplyBtn: null, isCropping: false, isZooming: null};
         parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: eventargs});
     }
@@ -2497,8 +2591,9 @@ export class Draw {
         parent.freehandCounter = this.tempFreehandCounter;
         parent.notify('freehand-draw', {prop: 'setCurrentFreehandDrawIndex', value: {value: this.tempCurrFhdIndex}});
         parent.activeObj.strokeSettings = this.tempStrokeSettings;
-        parent.notify('shape', {prop: 'setStrokeSettings',
-            value: {strokeSettings: parent.activeObj.strokeSettings, strokeColor: null, fillColor: null, strokeWidth: null }});
+        parent.notify('shape', {prop: 'setStrokeSettings', value: {strokeSettings: parent.activeObj.strokeSettings, strokeColor: null,
+            fillColor: null, strokeWidth: null, radius: null }});
+        parent.notify('freehand-draw', { prop: 'setPenStrokeWidth', onPropertyChange: false, value: { value: this.tempStrokeWidth } });
         parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'cancel'}});
         parent.notify('selection', {prop: 'setFreehandDrawCustomized', value: {isFreehandDrawCustomized: false }});
         parent.objColl = extend([], this.tempObjColl, [], true) as SelectionPoint[];
@@ -2514,7 +2609,7 @@ export class Draw {
         parent.notify('shape', { prop: 'setTextSettings', onPropertyChange: false,
             value: {textSettings: this.tempTextSettings, fontFamily: null, fontSize: null }});
         parent.notify('shape', {prop: 'setStrokeSettings',
-            value: {strokeSettings: this.tempStrokeSettings, strokeColor: null, fillColor: null, strokeWidth: null }});
+            value: {strokeSettings: this.tempStrokeSettings, strokeColor: null, fillColor: null, strokeWidth: null, radius: null }});
         if (isNullOrUndefined(parent.activeObj.currIndex)) {
             parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
             this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
@@ -2545,7 +2640,7 @@ export class Draw {
     private cancelShape(): void {
         const parent: ImageEditor = this.parent;
         parent.notify('shape', {prop: 'setStrokeSettings',
-            value: {strokeSettings: this.tempStrokeSettings, strokeColor: null, fillColor: null, strokeWidth: null }});
+            value: {strokeSettings: this.tempStrokeSettings, strokeColor: null, fillColor: null, strokeWidth: null, radius: null }});
         if (isNullOrUndefined(parent.activeObj.currIndex)) {
             parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
             this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
@@ -2782,6 +2877,7 @@ export class Draw {
         const selectionChangingArgs: SelectionChangeEventArgs = {action: 'insert', previousSelectionSettings: selectionSettings,
             currentSelectionSettings: selectionSettings};
         parent.trigger('selectionChanging', selectionChangingArgs);
+        parent.editCompleteArgs = selectionChangingArgs;
         parent.notify('shape', { prop: 'updSelChangeEventArgs', onPropertyChange: false,
             value: {selectionSettings: selectionChangingArgs.currentSelectionSettings}});
         if (selectionChangingArgs.currentSelectionSettings.type === 'Custom') {
@@ -2947,8 +3043,11 @@ export class Draw {
         }
         this.isRotateZoom = false; parent.objColl = tempObjColl; const tempTogglePen: boolean = parent.togglePen;
         parent.togglePen = false; this.lowerContext.filter = 'none';
+        const widthObj: Object = {penStrokeWidth: null };
+        parent.notify('freehand-draw', {prop: 'getPenStrokeWidth', onPropertyChange: false, value: {obj: widthObj }});
         parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
             value: {ctx: this.lowerContext, shape: 'iterate', pen: 'iterate', isPreventApply: null }});
+        parent.notify('freehand-draw', {prop: 'setPenStrokeWidth', onPropertyChange: false, value: {value: widthObj['penStrokeWidth'] }});
         parent.img.destLeft += parent.panPoint.totalPannedInternalPoint.x; parent.img.destTop += parent.panPoint.totalPannedInternalPoint.y;
         parent.img.destLeft -= parent.panPoint.totalPannedInternalPoint.x; parent.img.destTop -= parent.panPoint.totalPannedInternalPoint.y;
         parent.togglePen = tempTogglePen; this.lowerContext.filter = temp; parent.activeObj = tempActiveObj;
@@ -2996,7 +3095,7 @@ export class Draw {
         }
     }
 
-    private setCurrentObj(obj?: CurrentObject, isUndoRedo?: boolean): void {
+    private setCurrentObj(obj?: CurrentObject, isUndoRedo?: boolean, isCircleCropped?: boolean): void {
         const parent: ImageEditor = this.parent;
         const isObj: boolean = obj ? true : false;
         if (!isObj) {
@@ -3039,6 +3138,7 @@ export class Draw {
         if (obj.afterCropActions) {parent.afterCropActions = obj.afterCropActions; }
         this.lowerContext.filter = obj.filter;
         parent.notify('filter', { prop: 'setBrightnessAdjusted', onPropertyChange: false, value: {isBrightnessAdjusted: obj.isBrightAdjust }});
+        parent.notify('draw', { prop: 'imageBackgroundColor', onPropertyChange: false, value: {color: obj.bgColor }});
         const isCircleCrop: boolean = parent.isCircleCrop;
         let currSelectionPoint: SelectionPoint;
         if (isNullOrUndefined(parent.currSelectionPoint)) {currSelectionPoint = null; }
@@ -3046,7 +3146,11 @@ export class Draw {
             currSelectionPoint = extend({}, parent.currSelectionPoint, {}, true) as SelectionPoint;
             parent.currSelectionPoint = null;
         }
-        parent.isCircleCrop = false; this.drawCropSelectionImage(obj, false);
+        parent.isCircleCrop = false;
+        if (isCircleCropped) {
+            parent.frameObj.type = 'none';
+        }
+        this.drawCropSelectionImage(obj, false);
         if (parent.transform.degree !== 0) {
             if (parent.transform.currFlipState === '') {
                 parent.notify('transform', { prop: 'rotatePan', onPropertyChange: false,
@@ -3142,6 +3246,16 @@ export class Draw {
 
     private performPointZoom(x: number, y: number, type: string, isResize: boolean, value?: number): void {
         const parent: ImageEditor = this.parent; const { destLeft, destTop, destWidth, destHeight } = parent.img;
+        let isCropSelection: boolean = false;
+        if (parent.activeObj.shape && parent.activeObj.shape.indexOf('crop-') > -1) {
+            isCropSelection = true;
+        }
+        if (parent.element.querySelector('.e-contextual-toolbar-wrapper') && !isCropSelection) {
+            if (!parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.contains('e-hide')) {
+                parent.okBtn();
+                parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
+            }
+        }
         const ratioX: number = (x - destLeft) / destWidth;
         const ratioY: number = (y - destTop) / destHeight;
         const isUndoRedo: boolean = parent.isUndoRedo; parent.isUndoRedo = true;
@@ -3259,6 +3373,7 @@ export class Draw {
         const parent: ImageEditor = this.parent;
         const activeObj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
         const { startX, startY, width, height } = activeObj.activePoint;
+        this.allowRedactStraighten = true;
         const straightenObj: Object = {straightenPoint: null };
         parent.notify('freehand-draw', { prop: 'getStraightenPoint', onPropertyChange: false,
             value: {obj: straightenObj }});
@@ -3383,7 +3498,8 @@ export class Draw {
             const imageSizeMB: number | null = contentLength;
             callback(imageSizeMB);
         } catch (ex) {
-            /* action on catch */
+            // eslint-disable-next-line no-console
+            console.log(ex.message);
         }
     }
 
@@ -3683,6 +3799,10 @@ export class Draw {
             if (isImgAnnotation) {
                 tempCanvas.getContext('2d').drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
             } else {
+                if (this.imageBackgroundColor !== '') {
+                    ctx.fillStyle = this.imageBackgroundColor;
+                    ctx.fillRect(parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
+                }
                 tempCanvas.getContext('2d').drawImage(canvas, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth,
                                                       parent.img.srcHeight, 0, 0, tempCanvas.width, tempCanvas.height);
             }
@@ -3731,9 +3851,16 @@ export class Draw {
         } else {
             if ((isNullOrUndefined(isImgAnnotation) || !isImgAnnotation) && parent.baseImgCanvas.width !== 0 &&
                 parent.baseImgCanvas.height !== 0) {
+                if (this.imageBackgroundColor !== '') {
+                    ctx.fillStyle = this.imageBackgroundColor;
+                    ctx.fillRect(parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
+                }
                 ctx.drawImage(parent.baseImgCanvas, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth, parent.img.srcHeight,
                               parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
             }
+        }
+        if (parent.isSafari) {
+            parent.notify('filter', { prop: 'apply-filter', onPropertyChange: false, value: {context: ctx}});
         }
     }
 
@@ -4056,6 +4183,7 @@ export class Draw {
         const frameChange: FrameChangeEventArgs = {cancel: false, previousFrameSetting: prevFrameSettings,
             currentFrameSetting: currFrameSettings };
         parent.trigger('frameChange', frameChange);
+        parent.editCompleteArgs = frameChange;
         if (!frameChange.cancel) {this.setFrameObj(frameChange.currentFrameSetting); }
         return frameChange;
     }
@@ -4077,6 +4205,7 @@ export class Draw {
         const parent: ImageEditor = this.parent;
         if (this.straightenActObj && JSON.stringify(this.straightenActObj.activePoint) === JSON.stringify(activeObj.activePoint)) {
             parent.activeObj = extend({}, this.straightenActObj, null, true) as SelectionPoint;
+            this.allowRedactStraighten = false;
             if (parent.transform.straighten === 0) {
                 const destWidth: number = parent.img.destWidth; const destHeight: number = parent.img.destHeight;
                 parent.transform.straighten = 360;
@@ -4228,11 +4357,16 @@ export class Draw {
             p2 = {x: destLeft + destWidth, y: destTop + (points[1].y / height)};
             p3 = {x: destLeft + destWidth - (points[0].x / width), y: destTop + destHeight};
             p4 = {x: destLeft, y: destTop + destHeight - (points[1].y / height)};
-        } else {
+        } else if (parent.transform.straighten < 0) {
             p1 = {x: destLeft, y: destTop + (points[0].y / height)};
             p2 = {x: destLeft + (points[1].x / width), y: destTop};
             p3 = {x: destLeft + destWidth, y: destTop + destHeight - (points[0].y / height)};
             p4 = {x: destLeft + destWidth - (points[1].x / width), y: destTop + destHeight};
+        } else if (parent.transform.straighten === 0) {
+            p1 = {x: destLeft, y: destTop};
+            p2 = {x: destLeft + destWidth, y: destTop};
+            p3 = {x: destLeft + destWidth, y: destTop + destHeight};
+            p4 = {x: destLeft, y: destTop + destHeight};
         }
         p1.ratioX = (p1.x - destLeft) / destWidth; p1.ratioY = (p1.y - destTop) / destHeight;
         p2.ratioX = (p2.x - destLeft) / destWidth; p2.ratioY = (p2.y - destTop) / destHeight;
@@ -4244,6 +4378,28 @@ export class Draw {
     private isLinesIntersect(obj?: Object): boolean {
         const parent: ImageEditor = this.parent;
         const point: ActivePoint = parent.activeObj.activePoint;
+        if (parent.activeObj.rotatedAngle !== 0) {
+            const { startX, startY, endX, endY, width, height } = parent.activeObj.activePoint;
+            const center: Point = {x: startX + (width / 2), y: startY +
+                (height / 2)};
+            const cosAngle: number = Math.cos(parent.activeObj.rotatedAngle);
+            const sinAngle: number = Math.sin(parent.activeObj.rotatedAngle);
+            const p1: Point = { x: cosAngle * (startX - center.x) - sinAngle * (startY - center.y) + center.x,
+                y: sinAngle * (startX - center.x) + cosAngle * (startY - center.y) + center.y };
+            const p2: Point = { x: cosAngle * (endX - center.x) - sinAngle * (startY - center.y) + center.x,
+                y: sinAngle * (endX - center.x) + cosAngle * (startY - center.y) + center.y };
+            const p3: Point = { x: cosAngle * (startX - center.x) - sinAngle * (endY - center.y) + center.x,
+                y: sinAngle * (startX - center.x) + cosAngle * (endY - center.y) + center.y };
+            const p4: Point = { x: cosAngle * (endX - center.x) - sinAngle * (endY - center.y) + center.x,
+                y: sinAngle * (endX - center.x) + cosAngle * (endY - center.y) + center.y };
+            const imgPoints: Point[] = this.imgCanvasPoints;
+            const isTopIntersect: boolean = this.doIntersect(p1, p2, imgPoints[0], imgPoints[1]);
+            const isRightIntersect: boolean = this.doIntersect(p2, p4, imgPoints[1], imgPoints[2]);
+            const isBottomIntersect: boolean = this.doIntersect(p3, p4, imgPoints[2], imgPoints[3]);
+            const isLeftIntersect: boolean = this.doIntersect(p1, p3, imgPoints[3], imgPoints[0]);
+            if (obj) {obj['arr'] = [isTopIntersect, isRightIntersect, isBottomIntersect, isLeftIntersect]; }
+            return isTopIntersect || isRightIntersect || isBottomIntersect || isLeftIntersect;
+        }
         const imgPoints: Point[] = this.imgCanvasPoints;
         const isTopIntersect: boolean = this.doIntersect({x: point.startX, y: point.startY},
                                                          {x: point.endX, y: point.startY}, imgPoints[0], imgPoints[1]);
@@ -4385,6 +4541,159 @@ export class Draw {
             this.straightenDestPoints = extend({}, parent.img, {}, true) as ImageDimension;
             parent.img.destLeft = destLeft; parent.img.destTop = destTop;
             parent.img.destWidth = destWidth; parent.img.destHeight = destHeight;
+        }
+    }
+
+    private drawRedact(canvasDraw: CanvasRenderingContext2D, obj: SelectionPoint): void {
+        let {startX, startY, endX, endY} = obj.activePoint;
+        const {width, height} = obj.activePoint;
+        let isSaveCtx: boolean = false; const canvas: HTMLCanvasElement = canvasDraw.canvas;
+        if (canvas.id.indexOf('_tempCanvas') !== -1) {isSaveCtx = true; }
+        const img: ImageDimension = this.parent.img;
+        if (width <= 0 || height <= 0) {
+            return;
+        } else if (this.parent.isCropTab) {
+            canvasDraw.drawImage(obj.redactImage, 0, 0, obj.redactImage.width, obj.redactImage.height,
+                                 startX, startY, width, height);
+        } else {
+            const offscreenCanvas: HTMLCanvasElement = document.createElement('canvas');
+            const offscreenCtx: CanvasRenderingContext2D = offscreenCanvas.getContext('2d');
+            const imageWidth: number = canvas.width;
+            const imageHeight: number = canvas.height;
+            const tempRatio: number = Math.min(imageWidth, imageHeight) / 1000;
+            const straighten: number = this.parent.transform.straighten !== 0 ? this.parent.transform.straighten :
+                this.parent.cropObj.straighten;
+            if (this.allowRedactStraighten && straighten !== 0) {
+                const tempCanvas: HTMLCanvasElement = document.createElement('canvas');
+                const tempCtx: CanvasRenderingContext2D = tempCanvas.getContext('2d');
+                if (isSaveCtx) {
+                    tempCanvas.width = canvas.width;
+                    tempCanvas.height = canvas.height;
+                    tempCtx.drawImage(canvas, 0, 0);
+                } else {
+                    tempCanvas.width = img.destWidth; tempCanvas.height = img.destHeight;
+                    tempCtx.drawImage(this.lowerContext.canvas, img.destLeft, img.destTop, img.destWidth, img.destHeight,
+                                      0, 0, img.destWidth, img.destHeight);
+                }
+                const radians: number = -straighten * Math.PI / 180;
+                const straightenCanvas: HTMLCanvasElement = document.createElement('canvas');
+                const straightenCtx: CanvasRenderingContext2D = straightenCanvas.getContext('2d');
+                straightenCanvas.width = tempCanvas.width; straightenCanvas.height = tempCanvas.height;
+                if (img.destWidth > canvas.width && !isSaveCtx) {
+                    straightenCanvas.width = canvas.width;
+                }
+                if (img.destHeight > canvas.height && !isSaveCtx) {
+                    straightenCanvas.height = canvas.height;
+                }
+                straightenCtx.save();
+                straightenCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+                straightenCtx.rotate(radians);
+                straightenCtx.drawImage(tempCanvas, -tempCanvas.width / 2, -tempCanvas.height / 2);
+                straightenCtx.restore();
+                if (img.destLeft > 0 && !isSaveCtx) {startX -= img.destLeft; endX -= img.destLeft; }
+                if (img.destTop > 0 && !isSaveCtx) {startY -= img.destTop; endY -= img.destTop; }
+                let center: Point = {x: startX + (width / 2), y: startY + (height / 2)};
+                let cosAngle: number = Math.cos(straighten * Math.PI / 180);
+                let sinAngle: number = Math.sin(straighten * Math.PI / 180);
+                const p1: Point = { x: cosAngle * (startX - center.x) - sinAngle * (startY - center.y) + center.x,
+                    y: sinAngle * (startX - center.x) + cosAngle * (startY - center.y) + center.y };
+                const p2: Point = { x: cosAngle * (endX - center.x) - sinAngle * (startY - center.y) + center.x,
+                    y: sinAngle * (endX - center.x) + cosAngle * (startY - center.y) + center.y };
+                const p3: Point = { x: cosAngle * (startX - center.x) - sinAngle * (endY - center.y) + center.x,
+                    y: sinAngle * (startX - center.x) + cosAngle * (endY - center.y) + center.y };
+                if (!isSaveCtx) {
+                    center = { x: img.destWidth / 2, y: img.destHeight / 2 };
+                    if (img.destWidth > canvas.width) {
+                        center.x = canvas.width / 2;
+                    }
+                    if (img.destHeight > canvas.height) {
+                        center.y = canvas.height / 2;
+                    }
+                } else {
+                    center = { x: canvas.width / 2, y: canvas.height / 2 };
+                }
+                cosAngle = Math.cos(radians);
+                sinAngle = Math.sin(radians);
+                const newP1: Point = { x: cosAngle * (p1.x - center.x) - sinAngle * (p1.y - center.y) + center.x,
+                    y: sinAngle * (p1.x - center.x) + cosAngle * (p1.y - center.y) + center.y };
+                const newP2: Point = { x: cosAngle * (p2.x - center.x) - sinAngle * (p2.y - center.y) + center.x,
+                    y: sinAngle * (p2.x - center.x) + cosAngle * (p2.y - center.y) + center.y };
+                const newP3: Point = { x: cosAngle * (p3.x - center.x) - sinAngle * (p3.y - center.y) + center.x,
+                    y: sinAngle * (p3.x - center.x) + cosAngle * (p3.y - center.y) + center.y };
+                if (this.parent.activeObj.redactType === 'blur') {
+                    offscreenCanvas.width = width;
+                    offscreenCanvas.height = height;
+                    offscreenCtx.drawImage(straightenCanvas, newP1.x, newP1.y, newP2.x - newP1.x, newP3.y - newP2.y, 0, 0, width, height);
+                } else {
+                    let pixelSize: number = (obj.redactPixelate / 100) * 20;
+                    if (isSaveCtx) {
+                        pixelSize = tempRatio * (obj.redactPixelate / 100) * 35;
+                    }
+                    offscreenCanvas.width = Math.ceil(width / pixelSize);
+                    offscreenCanvas.height = Math.ceil(height / pixelSize);
+                    offscreenCtx.drawImage(straightenCanvas, newP1.x, newP1.y, newP2.x - newP1.x, newP3.y - newP2.y,
+                                           0, 0, offscreenCanvas.width, offscreenCanvas.height);
+                }
+            }
+            if (this.parent.activeObj.redactType === 'blur') {
+                if (straighten === 0) {
+                    offscreenCanvas.width = width;
+                    offscreenCanvas.height = height;
+                    offscreenCtx.drawImage(
+                        (isSaveCtx) ? canvas : this.lowerContext.canvas,
+                        startX, startY, width, height, 0, 0, width, height
+                    );
+                }
+                if (isSaveCtx) {
+                    const blur: number = tempRatio * ((obj.redactBlur / 100) * 34);
+                    offscreenCtx.filter = `blur(${blur}px)`;
+                } else {
+                    offscreenCtx.filter = `blur(${(obj.redactBlur / 100) * 17}px)`;
+                }
+                offscreenCtx.drawImage(offscreenCanvas, 0, 0);
+                if (straighten === 0) {
+                    offscreenCtx.drawImage((isSaveCtx) ? canvas : this.lowerContext.canvas, startX, startY, width, height,
+                                           0, 0, width, height);
+                } else {
+                    if (img.destLeft > 0 && !isSaveCtx) {startX += img.destLeft; endX += img.destLeft; }
+                    if (img.destTop > 0 && !isSaveCtx) {startY += img.destTop; endY += img.destTop; }
+                }
+                if (this.parent.isSafari) {
+                    this.parent.notify('filter', { prop: 'apply-filter', onPropertyChange: false, value: {context: offscreenCtx }});
+                }
+                canvasDraw.drawImage(offscreenCanvas, 0, 0, width, height, startX, startY, width, height);
+            } else {
+                let pixelSize: number = (obj.redactPixelate / 100) * 20;
+                if (isSaveCtx) {
+                    pixelSize = tempRatio * (obj.redactPixelate / 100) * 35;
+                }
+                if (straighten === 0) {
+                    offscreenCanvas.width = Math.ceil(width / pixelSize);
+                    offscreenCanvas.height = Math.ceil(height / pixelSize);
+                    offscreenCtx.drawImage((isSaveCtx) ? canvas : this.lowerContext.canvas, startX, startY, width, height,
+                                           0, 0, offscreenCanvas.width, offscreenCanvas.height);
+                } else {
+                    if (img.destLeft > 0 && !isSaveCtx) {
+                        startX += img.destLeft;
+                        endX += img.destLeft;
+                    }
+                    if (img.destTop > 0 && !isSaveCtx) {
+                        startY += img.destTop;
+                        endY += img.destTop;
+                    }
+                }
+                canvasDraw.imageSmoothingEnabled = false;
+                canvasDraw.drawImage(offscreenCanvas, 0, 0, offscreenCanvas.width, offscreenCanvas.height, startX, startY, width, height);
+            }
+            obj.redactImage = this.parent.createElement('canvas');
+            obj.redactImage.width = offscreenCanvas.width;
+            obj.redactImage.height = offscreenCanvas.height;
+            obj.redactImage.getContext('2d').drawImage(offscreenCanvas, 0, 0);
+            canvasDraw.beginPath();
+            canvasDraw.rect(startX, startY, width, height);
+            canvasDraw.rect(startX, startY, width, height);
+            canvasDraw.fill('evenodd');
+            canvasDraw.closePath();
         }
     }
 }

@@ -8,7 +8,7 @@ import {
     CallbackFunction, EventRenderedArgs, EJ2Instance
 } from '../../../src/schedule/index';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
-import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { triggerMouseEvent } from '../util.spec';
 import { testData, moreIndicatorData } from '../base/datasource.spec';
@@ -656,6 +656,166 @@ describe('Month Event Render Module', () => {
             };
             schObj.rowAutoHeight = true;
             schObj.dataBind();
+        });
+    });
+
+    describe('Multiple resource grouping rendering in adaptive mode', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const resourceData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Nancy',
+                StartTime: new Date(2018, 3, 1, 10, 0),
+                EndTime: new Date(2018, 3, 1, 12, 30),
+                IsAllDay: false,
+                HallId: 1,
+                RoomId: 1,
+                OwnerId: 1
+            }
+            ];
+            const model: ScheduleModel = {
+                width: 300, height: '500px',
+                selectedDate: new Date(2018, 3, 1),
+                views: ['Day', 'Week', 'WorkWeek', 'Month', 'Agenda', 'MonthAgenda', 'TimelineMonth'],
+                group: { resources: ['Rooms', 'Owners'] },
+                enableAdaptiveUI: true,
+
+                resources: [{
+                    field: 'RoomId', name: 'Rooms', allowMultiple: true,
+                    dataSource: [
+                        { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
+                        { Text: 'Room 2', Id: 2, Color: '#f8a398' }
+                    ]
+                }, {
+                    field: 'OwnerId', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { Text: 'Nancy', Id: 1, GroupID: 1, workDays: [0, 1, 2, 3], Color: '#ffaa00' },
+                        { Text: 'Steven', Id: 2, GroupID: 2, workDays: [0, 2, 3], Color: '#f8a398' },
+                        { Text: 'Michael', Id: 3, GroupID: 1, workDays: [0, 1, 2, 3, 4], Color: '#7499e1' }
+                    ]
+                }]
+            };
+            schObj = util.createSchedule(model, resourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('testing for adaptive grouping sample saving event in multiple resource', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
+                done();
+            };
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
+            const workCell: HTMLTableCellElement = schObj.element.querySelector('.e-work-cells');
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
+            const editor: HTMLElement = document.querySelector('.e-schedule-dialog.e-popup-open');
+            const ownerDropDown: MultiSelect =
+                (editor.querySelector('.e-' + schObj.resourceBase.resourceCollection[1].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+            ownerDropDown.value = [1, 3];
+            ownerDropDown.dataBind();
+            const saveButton: HTMLElement = editor.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
+        });
+
+        it('testing for adaptive grouping sample saving event in different resource', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(4);
+                done();
+            };
+            const workCell: HTMLTableCellElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLTableCellElement;
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
+            const editor: HTMLElement = document.querySelector('.e-schedule-dialog.e-popup-open');
+            const ownerDropDown: MultiSelect =
+                (editor.querySelector('.e-' + schObj.resourceBase.resourceCollection[1].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+            ownerDropDown.value = [3];
+            ownerDropDown.dataBind();
+            const saveButton: HTMLElement = editor.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
+        });
+
+        it('testing for adaptive grouping sample saving event with all parent in different resource', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
+                expect(schObj.eventsData.length).toEqual(7);
+                schObj.currentView = 'TimelineMonth';
+                schObj.dataBind();
+                done();
+            };
+            const workCell: HTMLTableCellElement = schObj.element.querySelectorAll('.e-work-cells')[2] as HTMLTableCellElement;
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
+            const editor: HTMLElement = document.querySelector('.e-schedule-dialog.e-popup-open');
+            const roomDropDown: MultiSelect =
+                (editor.querySelector('.e-' + schObj.resourceBase.resourceCollection[0].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+            roomDropDown.value = [1, 2];
+            roomDropDown.dataBind();
+            const ownerDropDown: MultiSelect =
+                (editor.querySelector('.e-' + schObj.resourceBase.resourceCollection[1].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+            ownerDropDown.value = [1, 2, 3];
+            ownerDropDown.dataBind();
+            const saveButton: HTMLElement = editor.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
+        });
+
+        it('testing for adaptive grouping sample saving event in multiple resource timeline view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(4);
+                expect(schObj.eventsData.length).toEqual(9);
+                done();
+            };
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
+            const workCell: HTMLTableCellElement = schObj.element.querySelector('.e-work-cells');
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
+            const editor: HTMLElement = document.querySelector('.e-schedule-dialog.e-popup-open');
+            const ownerDropDown: MultiSelect =
+                (editor.querySelector('.e-' + schObj.resourceBase.resourceCollection[1].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+            ownerDropDown.value = [1, 3];
+            ownerDropDown.dataBind();
+            const saveButton: HTMLElement = editor.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
+        });
+
+        it('testing for adaptive grouping sample saving event in different resource timeline view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(10);
+                done();
+            };
+            const workCell: HTMLTableCellElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLTableCellElement;
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
+            const editor: HTMLElement = document.querySelector('.e-schedule-dialog.e-popup-open');
+            const ownerDropDown: MultiSelect =
+                (editor.querySelector('.e-' + schObj.resourceBase.resourceCollection[1].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+            ownerDropDown.value = [3];
+            ownerDropDown.dataBind();
+            const saveButton: HTMLElement = editor.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
+        });
+
+        it('testing for adaptive grouping sample saving event with all parent in different resource timeline view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                expect(schObj.eventsData.length).toEqual(13);
+                done();
+            };
+            const workCell: HTMLTableCellElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLTableCellElement;
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
+            const editor: HTMLElement = document.querySelector('.e-schedule-dialog.e-popup-open');
+            const roomDropDown: MultiSelect =
+                (editor.querySelector('.e-' + schObj.resourceBase.resourceCollection[0].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+            roomDropDown.value = [1, 2];
+            roomDropDown.dataBind();
+            const ownerDropDown: MultiSelect =
+                (editor.querySelector('.e-' + schObj.resourceBase.resourceCollection[1].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+            ownerDropDown.value = [1, 2, 3];
+            ownerDropDown.dataBind();
+            const saveButton: HTMLElement = editor.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
         });
     });
 

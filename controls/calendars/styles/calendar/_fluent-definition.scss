@@ -36,6 +36,7 @@ $calendar-icon-focus-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
 $calendar-title-border-radius: 2px !default;
 $calendar-title-hover-bg-color: $secondary-bg-color-hover !default;
 $calendar-focused-cell-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
+$calendar-active-font-colour: $flyout-text-color-selected !default;
 
 // common size properties
 $calendar-wrapper-border-radius: 0 !default;
@@ -123,9 +124,9 @@ $calendar-week-normal-min-width: 288px !default;
 $calendar-week-bigger-max-width: 320px !default;
 $calendar-week-bigger-min-width: 314px !default;
 $calendar-icon-padding: 5px !default;
-$calendar-icon-button-margin: 0 !default;
+$calendar-icon-button-margin: 2px !default;
 $calendar-bigger-icon-padding: 0 !default;
-$calendar-bigger-icon-margin: 0 !default;
+$calendar-bigger-icon-margin: 2px !default;
 
 //thead style
 $calendar-thead-padding: 0 0 6px !default;
@@ -169,6 +170,7 @@ $calendar-device-icon-hover-bg-color: none !default;
 $calendar-default-border-color: none !default;
 $calendar-icon-hover-border-color: $content-bg-color-hover !default;
 $calendar-active-state-icon-bg-color: $secondary-border-color-pressed !default;
+$calendar-selected-month-font-color: $content-text-color !default;
 
 //popup styles
 $calendar-border-style: 1px solid $border-light !default;

@@ -13,9 +13,7 @@
     }
   }
 
-  #{&}.e-daterangepicker,
-  .e-bigger.e-small #{&}.e-daterangepicker,
-  .e-bigger.e-small#{&}.e-daterangepicker {
+  #{&}.e-daterangepicker {
     #{if(&, '&', '*')}.e-popup {
       background: $range-background;
 
@@ -71,6 +69,11 @@
             background: $range-hover-color;
             border: $range-calendar-selection-border;
             color: $range-calendar-dark-color;
+          }
+          @if $skin-name == 'fluent2' {
+            background: $range-hover-color;
+            border: $range-calendar-selection-border;
+            color: $range-calendar-hover-color;
           }
           @if $skin-name == 'Material3' {
             background: $range-hover-bg-color;
@@ -265,6 +268,10 @@
         @if $skin-name != 'Material3' {
           background-color: $range-footer-background;
         }
+        @if $skin-name == 'fluent2' {
+          border-bottom-left-radius: inherit;
+          border-bottom-right-radius: inherit;
+        }
         @if $skin-name == 'Material3' {
           background: $range-footer-background;
           border-bottom-left-radius: $range-popup-border-radius;
@@ -294,50 +301,9 @@
     }
   }
 
-  .e-bigger #{&}.e-daterangepicker,
-  #{if(&, '&', '*')}.e-bigger#{&}.e-daterangepicker,
-  #{if(&, '&', '*')}.e-device#{&}.e-daterangepicker {
-    @if $skin-name == 'material' {
-      background-color: initial;
-    }
-    @else if $skin-name == 'Material3' {
-      background: initial;
-    }
-    @else if $skin-name == 'bootstrap-dark' {
-      background-color: $range-background;
-    }
-    @else {
-      background-color: $range-bg-color;
-    }
-    padding: $range-popup-padding;
-
-    #{if(&, '&', '*')} .e-calendar th {
-      color: $range-calendar-light-color;
-    }
-    #{if(&, '&', '*')} .e-start-btn,
-    #{if(&, '&', '*')} .e-end-btn {
-      background: $range-bg-color;
-      @if $skin-name == 'bootstrap4' {
-        color: $range-button-font-color;
-      }
-      @if $skin-name == 'bootstrap5'{
-        color: $range-button-font-color;
-      }
-    }
-    #{if(&, '&', '*')} .e-start-btn.e-active,
-    #{if(&, '&', '*')} .e-start-btn.e-active:active,
-    #{if(&, '&', '*')} .e-end-btn.e-active,
-    #{if(&, '&', '*')} .e-end-btn.e-active:active:not([disabled]),
-    #{if(&, '&', '*')} .e-start-btn.e-active:hover,
-    #{if(&, '&', '*')} .e-end-btn.e-active:hover {
-      background: $range-primary-color;
-      color: $range-primary-font-color;
-    }
-  }
-
   .e-daterangepicker.e-popup .e-footer .e-btn.e-apply.e-flat.e-primary,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary {
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
       background-color: $apply-buuton-bg;
       border-color: $apply-buuton-bg-border-color;
       color: $apply-buuton-text-color;
@@ -346,7 +312,7 @@
 
   .e-daterangepicker.e-popup .e-footer .e-btn.e-apply.e-flat.e-primary:hover,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary:hover {
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
       background-color: $apply-buuton-hover-bg;
       border-color: $apply-buuton-bg-border-hover-color;
       color: $apply-buuton-text-hover-color;
@@ -357,7 +323,7 @@
   .e-daterangepicker.e-popup .e-footer .e-btn.e-apply.e-flat.e-primary.e-active,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary:active,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary.e-active {
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
       background-color: $apply-buuton-active-bg;
       border-color: $apply-buuton-bg-border-active-color;
       color: $apply-buuton-text-active-color;
@@ -368,7 +334,7 @@
   .e-daterangepicker.e-popup .e-footer .e-btn.e-apply.e-flat.e-primary:disabled,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary:disabled,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-apply.e-flat.e-primary:disabled {
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
       background-color: $range-apply-disabled-background-style;
       border-color: $range-apply-disabled-border-style;
       color: $range-apply-disabled-color;
@@ -377,7 +343,7 @@
 
   .e-daterangepicker.e-popup .e-footer .e-btn.e-flat,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat {
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
       background-color: $cancel-buuton-bg;
       border-color: $cancel-buuton-bg-border-color;
       color: $cancel-buuton-text-color;
@@ -386,7 +352,7 @@
 
   .e-daterangepicker.e-popup .e-footer .e-btn.e-flat:hover,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat:hover {
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
       background-color: $cancel-buuton-hover-bg;
       border-color: $cancel-buuton-bg-border-hover-color;
       color: $cancel-buuton-text-hover-color;
@@ -397,7 +363,7 @@
   .e-daterangepicker.e-popup .e-footer .e-btn.e-flat.e-active,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat:active,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat.e-active {
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
       background-color: $cancel-buuton-active-bg;
       border-color: $cancel-buuton-bg-border-active-color;
       color: $cancel-buuton-text-active-color;
@@ -408,7 +374,7 @@
   .e-daterangepicker.e-popup .e-footer .e-btn.e-flat:disabled,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat:disabled,
   .e-daterangepicker.e-popup .e-footer .e-css.e-btn.e-flat:disabled {
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
       background-color: $range-cancel-disabled-background-style;
       border-color: $range-cancel-disabled-border-style;
       color: $range-cancel-disabled-color;
@@ -416,15 +382,13 @@
   }
 }
 
-.e-daterangepicker.e-popup .e-calendar .e-content.e-month .e-today.e-range-hover span,
-.e-bigger.e-small .e-calendar .e-content.e-month td.e-today.e-range-hover span.e-day {
+.e-daterangepicker.e-popup .e-calendar .e-content.e-month .e-today.e-range-hover span {
   @if $skin-name == 'FluentUI' {
     line-height: $range-today-hover-line-height;
   }
 }
 
-.e-daterangepicker.e-popup .e-calendar .e-content .e-other-month.e-today.e-range-hover span,
-.e-bigger.e-small .e-calendar .e-content.e-month td.e-today.e-other-month.e-range-hover span.e-day {
+.e-daterangepicker.e-popup .e-calendar .e-content .e-other-month.e-today.e-range-hover span {
   @if $skin-name == 'FluentUI' {
     line-height: $range-other-hover-line-height;
   }
@@ -434,18 +398,6 @@
 .e-small .e-calendar .e-content.e-month td.e-other-month.e-today.e-range-hover span.e-day {
   @if $skin-name == 'FluentUI' {
     line-height: $range-small-today-hover-line-height;
-  }
-}
-
-.e-bigger .e-calendar .e-content.e-month td.e-today.e-range-hover span.e-day {
-  @if $skin-name == 'FluentUI' {
-    line-height: $range-bigger-today-hover-line-height;
-  }
-}
-
-.e-bigger .e-calendar .e-content.e-month td.e-other-month.e-today.e-range-hover span.e-day {
-  @if $skin-name == 'FluentUI' {
-    line-height: $range-bigger-other-hover-line-height;
   }
 }
 

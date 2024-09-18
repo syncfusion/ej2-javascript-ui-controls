@@ -877,11 +877,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         const tbItems: HTMLElement[] = Array.prototype.slice.call(selectAll('.e-tab-header .' + CLS_TB_ITEM, this.element));
         let maxId: number = this.lastIndex;
         if (!this.isReplace && tbItems.length > 0) {
-            const idList: number[] = [];
-            tbItems.forEach((item: HTMLElement) => {
-                idList.push(this.getIndexFromEle(item.id));
-            });
-            maxId = Math.max(...idList);
+            maxId = this.getMaxIndicesFromItems(tbItems);
         }
         const tItems: Object[] = [];
         let txtWrapEle: HTEle;
@@ -1172,6 +1168,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
     private extIndex(id: string): string {
         return id.replace(CLS_ITEM + this.tabId + '_', '');
+    }
+    private getMaxIndicesFromItems(tbItems: HTMLElement[]): number {
+        const idList: number[] = [];
+        tbItems.forEach((item: HTMLElement) => {
+            idList.push(this.getIndexFromEle(item.id));
+        });
+        return Math.max(...idList);
     }
     private expTemplateContent(): void {
         this.templateEle.forEach((eleStr: Str): void => {
@@ -2149,9 +2152,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.reRenderItems();
             this.bindDraggable();
         } else {
-            const itemsCount: number = selectAll('.e-tab-header .' + CLS_TB_ITEM, this.element).length;
+            const tbItems: HTMLElement[] = Array.from(selectAll('.e-tab-header .' + CLS_TB_ITEM, this.element));
+            const itemsCount: number = tbItems.length;
             if (itemsCount !== 0) {
-                lastEleIndex = this.lastIndex + 1;
+                lastEleIndex = this.getMaxIndicesFromItems(tbItems) + 1;
             }
             if (isNOU(index)) {
                 index = itemsCount - 1;

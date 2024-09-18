@@ -1,4 +1,4 @@
-﻿import { Component, EventHandler, Property, Event, EmitType, Complex, Collection } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Property, Event, EmitType, Complex, Collection } from '@syncfusion/ej2-base';
 import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';
@@ -452,7 +452,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private scaleTransform: string = 'transform .4s cubic-bezier(.25, .8, .25, 1)';
     private previousVal: number | number[];
     private previousChanged: number | number[];
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line
     private repeatInterval: any;
     private isMaterial: boolean;
     private isMaterial3: boolean;
@@ -462,6 +462,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private isBootstrap5: boolean;
     private isFluent: boolean;
     private isFluent2: boolean;
+    private isBootstrap5Dot3: boolean;
     private zIndex: number;
     private l10n: L10n;
     private internationalization: Internationalization;
@@ -901,7 +902,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.type === 'Range') {
             this.rangeValueUpdate();
         } else {
-            this.value = isNullOrUndefined(this.value) ? (isNullOrUndefined(this.min) ? 0 : parseFloat(formatUnit(this.min.toString()))) : this.value;
+            this.value = isNullOrUndefined(this.value) ? (isNullOrUndefined(this.min) ? 0 :
+                parseFloat(formatUnit(this.min.toString()))) : this.value;
         }
         this.previousVal = this.type !== 'Range' ? this.checkHandleValue(parseFloat(formatUnit(this.value.toString()))) :
             [this.checkHandleValue(parseFloat(formatUnit((this.value as number[])[0].toString()))),
@@ -944,6 +946,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.isBootstrap5 = this.getTheme(this.sliderContainer) === 'bootstrap5';
         this.isFluent = this.getTheme(this.sliderContainer) === 'FluentUI';
         this.isFluent2 = this.getTheme(this.sliderContainer) === 'fluent2';
+        this.isBootstrap5Dot3 = this.getTheme(this.sliderContainer) === 'bootstrap5.3';
         this.isMaterialTooltip = (this.isMaterial || this.isMaterial3) && this.type !== 'Range' && this.tooltip.isVisible;
     }
 
@@ -1460,7 +1463,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private renderTooltip(): void {
         this.tooltipObj = new Tooltip({
             showTipPointer: this.isBootstrap || this.isMaterial || this.isMaterial3 ||
-                this.isBootstrap4 || this.isTailwind || this.isBootstrap5 || this.isFluent || this.isFluent2,
+                this.isBootstrap4 || this.isTailwind || this.isBootstrap5 || this.isFluent || this.isFluent2 || this.isBootstrap5Dot3,
             cssClass: classNames.sliderTooltip,
             height: (this.isMaterial || this.isMaterial3) ? 30 : 'auto',
             animation: { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } },
@@ -1610,7 +1613,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.noOfDecimals = this.numberOfDecimals(this.step);
         this.ul = this.createElement('ul', {
             className: classNames.scale + ' ' + 'e-' + orien + '-scale ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
-            attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
+            attrs: { role: 'presentation', 'aria-hidden': 'true' }
         });
         this.ul.style.zIndex = '-1';
         if (Browser.isAndroid && orien === 'h') {
@@ -1646,7 +1649,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 this.customValues.length - 1 : 0, k: number = 0; i <= count; i++) {
             li = (this.createElement('li', {
                 attrs: {
-                    class: classNames.tick, role: 'presentation', tabIndex: '-1',
+                    class: classNames.tick, role: 'presentation',
                     'aria-hidden': 'true'
                 }
             }));
@@ -1692,7 +1695,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             const repeat: number = islargeTick ? (this.ticks.placement === 'Both' ? 2 : 1) : 0;
             if (islargeTick) {
                 for (let j: number = 0; j < repeat; j++) {
-                    this.createTick(li, start, tickWidth);
+                    this.createTick(li, start);
                 }
             } else if (isNullOrUndefined(this.customValues)) {
                 this.formatTicksValue(li, start);
@@ -1742,10 +1745,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.scaleAlignment();
     }
 
-    private createTick(li: HTMLElement, start: number | string, tickWidth: number): void {
+    private createTick(li: HTMLElement, start: number | string): void {
         const span: HTMLElement = this.createElement('span', {
             className: classNames.tickValue + ' ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
-            attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
+            attrs: { role: 'presentation', 'aria-hidden': 'true' }
         });
         li.appendChild(span);
         if (isNullOrUndefined(this.customValues)) {
@@ -2614,15 +2617,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             const { clientX: eventX, clientY: eventY } = evt;
             behindElement = document.elementFromPoint(eventX, eventY);
         }
-        if (evt.target === handle && behindElement !== handle) {
-            if ((this.isMaterial || this.isMaterial3) && !this.tooltip.isVisible &&
-                !(this.getHandle() as HTMLElement).classList.contains(classNames.sliderTabHandle)) {
-                this.materialChange();
-            }
-            this.sliderBarUp(evt);
-            this.tooltipToggle(this.getHandle());
-            return;
-        }
         if (!this.checkRepeatedValue(handleVal)) {
             return;
         }
@@ -3138,9 +3132,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
         this.setHandler();
         this.setOrientClass();
-        this.wireFirstHandleEvt(false);
+        this.wireFirstHandleEvt(!this.enabled);
         if (this.type === 'Range') {
-            this.wireSecondHandleEvt(false);
+            this.wireSecondHandleEvt(!this.enabled);
         }
         this.setValue();
         if (this.tooltip.isVisible) {

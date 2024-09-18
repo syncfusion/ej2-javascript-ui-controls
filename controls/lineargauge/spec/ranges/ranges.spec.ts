@@ -481,6 +481,69 @@ describe('Linear gauge control', () => {
             gauge.rangePalettes = null;
             gauge.refresh();
         });
+        it('checking the radius as string', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe("url(#_container_svg_0_radialGradient)");
+            };
+            gauge.axes[0].ranges = [{
+                    start: 0,
+                    end: 30,
+                    startWidth: 50,
+                    endWidth: 50,
+                    radialGradient:{
+                        radius: '0%',
+                        outerPosition: null,
+                        innerPosition: null,                
+                       colorStop: null,
+                    }
+                },
+            ]
+            gauge.rangePalettes = null;
+            gauge.refresh();
+        });
+        it('checking the colorStop as empty', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe("url(#_container_svg_0_radialGradient)");
+            };
+            gauge.axes[0].ranges = [{
+                start: 0,
+                end: 30,
+                startWidth: 50,
+                endWidth: 50,
+                radialGradient:{
+                    radius: null,
+                    outerPosition: null,
+                    innerPosition: null,                
+                   colorStop: [],
+                }
+            }];
+            gauge.rangePalettes = null;
+            gauge.refresh();
+        });
+        it('checking the colorStop value', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe("url(#_container_svg_0_radialGradient)");
+            };
+            gauge.axes[0].ranges = [{
+                start: 0,
+                end: 30,
+                startWidth: 50,
+                endWidth: 50,
+                radialGradient:{
+                    radius: null,
+                    outerPosition: null,
+                    innerPosition: null,                
+                   colorStop: [
+                    {color:"white", offset:"0%", opacity:1,style:"vergo"},
+                   {color:"blue", offset:"50%", opacity:1,style:"vergo"},
+                   {color:"yellow", offset:"100%", opacity:1}],
+                }
+            }];
+            gauge.refresh();
+        });
      });
 
 

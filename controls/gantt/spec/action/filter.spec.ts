@@ -1053,3 +1053,581 @@ describe('Filter in duration', () => {
         expect(ganttObj.currentViewData.length === 7).toBe(true);
     });
 });
+describe('Opening Excel Filter', () => {
+    Gantt.Inject(Filter, Toolbar, ColumnMenu);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: baselineData1,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate : 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                renderBaseline: true,
+                filterSettings: {
+                    type: 'Excel'
+                },
+            }, done);
+    });
+    it('Checking for filter element', function () {
+        let filterMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-icon-filter')[1] as HTMLElement;
+        triggerMouseEvent(filterMenuIcon, 'click');
+        expect(document.getElementsByClassName('e-excelfilter').length > 0).toBe(true);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Filtering duration Column', () => {
+    Gantt.Inject(Filter, Toolbar, ColumnMenu);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: baselineData1,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate : 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                renderBaseline: true,
+                filterSettings: {
+                    type: 'Menu'
+                },
+            }, done);
+    });
+    it('Checking After Filter Days', function (done:Function) {
+        ganttObj.actionComplete = function (args: any): void {
+            if(args.requestType == 'filtering') {
+               expect(args.rows.length).toBe(10);
+               done()
+            }
+        }
+        let filterMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-icon-filter')[4] as HTMLElement;
+        triggerMouseEvent(filterMenuIcon, 'click');
+        let input = (ganttObj.element.querySelector('.e-filter-popup').querySelectorAll('input')[1] as any).ej2_instances[0];
+        input.value = 5;
+        input.dataBind()
+        let button: HTMLElement = ganttObj.element.querySelector('.e-filter-popup').querySelector('button') as HTMLElement
+        triggerMouseEvent(button, 'click');
+    });
+    it('Checking After Filter minute', function (done:Function) {
+        ganttObj.actionComplete = function (args: any): void {
+            if(args.requestType == 'filtering') {
+               expect(ganttObj.currentViewData.length).toBe(0);
+               done()
+            }
+        }
+        let filterMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-icon-filter')[4] as HTMLElement;
+        triggerMouseEvent(filterMenuIcon, 'click');
+        let input = (ganttObj.element.querySelector('.e-filter-popup').querySelectorAll('input')[1] as any).ej2_instances[0];
+        input.value = '5 minute';
+        input.dataBind()
+        let button: HTMLElement = ganttObj.element.querySelector('.e-filter-popup').querySelector('button') as HTMLElement
+        triggerMouseEvent(button, 'click');
+    });
+    it('Checking After Filter hour', function (done:Function) {
+        ganttObj.actionComplete = function (args: any): void {
+            if(args.requestType == 'filtering') {
+               expect(ganttObj.currentViewData.length).toBe(0);
+               done()
+            }
+        }
+        let filterMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-icon-filter')[4] as HTMLElement;
+        triggerMouseEvent(filterMenuIcon, 'click');
+        let input = (ganttObj.element.querySelector('.e-filter-popup').querySelectorAll('input')[1] as any).ej2_instances[0];
+        input.value = '5 hour';
+        input.dataBind()
+        let button: HTMLElement = ganttObj.element.querySelector('.e-filter-popup').querySelector('button') as HTMLElement
+        triggerMouseEvent(button, 'click');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Filtering duration Column With Negative value', () => {
+    Gantt.Inject(Filter, Toolbar, ColumnMenu);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: baselineData1,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate : 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                renderBaseline: true,
+                filterSettings: {
+                    type: 'Menu'
+                },
+            }, done);
+    });
+    it('Checking After Filter Negative Days', function (done:Function) {
+        ganttObj.actionComplete = function (args: any): void {
+            if(args.requestType == 'filtering') {
+               expect(ganttObj.currentViewData.length).toBe(0);
+               done()
+            }
+        }
+        let filterMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-icon-filter')[4] as HTMLElement;
+        triggerMouseEvent(filterMenuIcon, 'click');
+        let input = (ganttObj.element.querySelector('.e-filter-popup').querySelectorAll('input')[1] as any).ej2_instances[0];
+        input.value = -5;
+        input.dataBind()
+        let button: HTMLElement = ganttObj.element.querySelector('.e-filter-popup').querySelector('button') as HTMLElement
+        triggerMouseEvent(button, 'click');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Filtering duration Column With Parent Div element', () => {
+    Gantt.Inject(Filter, Toolbar, ColumnMenu);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        let outerContainer = document.getElementById('outerContainer');
+        if (!outerContainer) {
+            outerContainer = document.createElement('div');
+            outerContainer.id = 'outerContainer';
+            document.body.appendChild(outerContainer);
+        }
+        const ganttContainer = document.createElement('div');
+        ganttContainer.id = 'ganttContainer';
+        outerContainer.appendChild(ganttContainer);
+        ganttObj = new Gantt({
+            dataSource: baselineData1,
+            allowFiltering: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators'
+            },
+            projectStartDate: new Date('02/01/2017'),
+            projectEndDate: new Date('12/30/2017'),
+            rowHeight: 40,
+            taskbarHeight: 30,
+            showColumnMenu:true,
+            renderBaseline: true,
+            filterSettings: {
+                type: 'Menu'
+            }
+        });
+        ganttObj.appendTo('#ganttContainer');
+        done();
+    });
+    it('Checking Updated Top Position', function () {
+        const columnMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-columnmenu')[4] as HTMLElement;
+        triggerMouseEvent(columnMenuIcon, 'click');
+        const filterMenuIcon: HTMLElement = document.getElementsByClassName('e-filter-item')[0] as HTMLElement;
+        triggerMouseEvent(filterMenuIcon, 'click');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+        const outerContainer = document.getElementById('outerContainer');
+        if (outerContainer) {
+            document.body.removeChild(outerContainer);
+        }
+    });
+});
+describe('Filtering Task Name with mouse click', () => {
+    Gantt.Inject(Filter, Toolbar, ColumnMenu);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: baselineData1,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate : 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                columns: [
+                    {field: 'TaskID'},
+                    { field: 'TaskName'},
+                    { field: 'StartDate'},
+                    { field: 'EndDate'},
+
+                ],
+                rowHeight: 40,
+                taskbarHeight: 30,
+                renderBaseline: true,
+                filterSettings: {
+                    type: 'Excel'
+                },
+            }, done);
+    });
+    it('Checking Filtered Data', function () {
+        let filterMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-icon-filter')[1] as HTMLElement;
+        triggerMouseEvent(filterMenuIcon, 'click');
+    });
+    it('Checking Filtered Data', function (done:Function) {
+        ganttObj.actionComplete = function (args: any): void {
+            if(args.requestType == 'filtering') {
+               expect(ganttObj.currentViewData.length).toBe(38);
+               done()
+            }
+        }
+        let filetRecord: HTMLElement = document.getElementsByClassName('e-checkboxlist')[0].querySelectorAll('input')[1] as HTMLElement
+        triggerMouseEvent(filetRecord, 'click');
+        let button: HTMLElement = ganttObj.element.querySelector('.e-filter-popup').querySelector('button') as HTMLElement
+        triggerMouseEvent(button, 'click');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Filtering Start Date with mouse click', () => {
+    Gantt.Inject(Filter, Toolbar, ColumnMenu);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: baselineData1,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate : 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                columns: [
+                    {field: 'TaskID'},
+                    { field: 'TaskName'},
+                    { field: 'StartDate'},
+                    { field: 'EndDate'},
+
+                ],
+                rowHeight: 40,
+                taskbarHeight: 30,
+                renderBaseline: true,
+                filterSettings: {
+                    type: 'Menu'
+                },
+            }, done);
+    });
+    it('Opening Filter', function () {
+        let filterMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-icon-filter')[2] as HTMLElement;
+        triggerMouseEvent(filterMenuIcon, 'click');
+    });
+    it('Checking Filter Value', function (done:Function) {
+        ganttObj.actionComplete = function (args: any): void {
+            if(args.requestType == 'filtering') {
+               expect(ganttObj.currentViewData.length).toBe(0);
+               done()
+            }
+        }
+        let input = (document.getElementsByClassName('e-filter-popup')[0].querySelectorAll('input')[1] as any).ej2_instances[0]
+        input.value = '8/2/2024';
+        input.dataBind()
+        let button: HTMLElement = ganttObj.element.querySelector('.e-filter-popup').querySelector('button') as HTMLElement
+        triggerMouseEvent(button, 'click');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Closing Filter using method', () => {
+    Gantt.Inject(Filter, Toolbar, ColumnMenu);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: baselineData1,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate : 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                columns: [
+                    {field: 'TaskID'},
+                    { field: 'TaskName'},
+                    { field: 'StartDate'},
+                    { field: 'EndDate'},
+
+                ],
+                rowHeight: 40,
+                taskbarHeight: 30,
+                renderBaseline: true,
+                filterSettings: {
+                    type: 'Menu'
+                },
+            }, done);
+    });
+    it('Checking filter element', function () {
+        let filterMenuElement: HTMLElement = document.createElement('div');
+        filterMenuElement.className = 'filter-menu';
+        document.body.appendChild(filterMenuElement);
+        ganttObj.filterModule.filterMenuElement = filterMenuElement;
+        document.querySelectorAll('body > div.e-datepicker, body > div.e-datetimepicker').forEach(el => el.remove());
+        let divElement: HTMLElement = document.createElement('div');
+        document.body.appendChild(divElement);
+        divElement.classList.remove('e-dropdownbase');
+        ganttObj.element.id = 'ganttElement';
+        ganttObj.filterModule.closeFilterOnContextClick(divElement);
+        expect(document.getElementsByClassName(' e-filter-popup').length).toBe(0)
+    });
+    it('Checking filter element HTML', function () {
+        let filterMenuElement: HTMLElement = document.createElement('div');
+        filterMenuElement.className = 'filter-menu';
+        document.body.appendChild(filterMenuElement);
+        ganttObj.filterModule.filterMenuElement = filterMenuElement;
+        document.querySelectorAll('body > div.e-datepicker, body > div.e-datetimepicker').forEach(el => el.remove());
+        let htmlElement: HTMLElement = document.documentElement;
+        ganttObj.filterModule.closeFilterOnContextClick(htmlElement);
+        expect(document.getElementsByClassName(' e-filter-popup').length).toBe(0)
+    });
+    it('Checking filter element SPAN', function () {
+        let filterMenuElement: HTMLElement = document.createElement('div');
+        filterMenuElement.className = 'filter-menu';
+        document.body.appendChild(filterMenuElement);
+        ganttObj.filterModule.filterMenuElement = filterMenuElement;
+        document.querySelectorAll('body > div.e-datepicker, body > div.e-datetimepicker').forEach(el => el.remove());
+        let spanElement: HTMLElement = document.createElement('span');
+        document.body.appendChild(spanElement);
+        spanElement.classList.remove('e-dropdownbase');
+        ganttObj.filterModule.closeFilterOnContextClick(spanElement);
+        expect(document.getElementsByClassName(' e-filter-popup').length).toBe(0)
+    });
+    it('Checking filter element Button', function () {
+        let filterMenuElement: HTMLElement = document.createElement('div');
+        filterMenuElement.className = 'filter-menu';
+        document.body.appendChild(filterMenuElement);
+        ganttObj.filterModule.filterMenuElement = filterMenuElement;
+        document.querySelectorAll('body > div.e-datepicker, body > div.e-datetimepicker').forEach(el => el.remove());
+        let buttonElement:HTMLElement = document.createElement('button');
+        document.body.appendChild(buttonElement);
+        buttonElement.classList.remove('e-dropdownbase');
+        ganttObj.filterModule.closeFilterOnContextClick(buttonElement);
+        expect(document.getElementsByClassName(' e-filter-popup').length).toBe(0)
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Setting top position using column menu', () => {
+    Gantt.Inject(Filter, Toolbar, ColumnMenu);
+    let ganttObj: Gantt;
+    let parentDiv: HTMLElement;
+    let nestedParentDiv: HTMLElement;
+    let nestedParentDiv2: HTMLElement;
+    beforeAll((done: Function) => {
+        parentDiv = document.createElement('div');
+        parentDiv.id = 'parentElement';
+        nestedParentDiv = document.createElement('div');
+        nestedParentDiv.id = 'nestedParentElement';
+        nestedParentDiv2 = document.createElement('div');
+        nestedParentDiv2.id = 'nestedParentElement2';
+        parentDiv.style.position = 'absolute';
+        parentDiv.style.left = '1px';
+        nestedParentDiv.style.position = 'absolute';
+        nestedParentDiv.style.left = '1px';
+        parentDiv.appendChild(nestedParentDiv);
+        nestedParentDiv.appendChild(nestedParentDiv2);
+        document.body.appendChild(parentDiv);
+        ganttObj = createGantt(
+            {
+                dataSource: baselineData1,
+                allowFiltering: true,
+                showColumnMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                ],
+                rowHeight: 40,
+                taskbarHeight: 30,
+                renderBaseline: true,
+                filterSettings: {
+                    type: 'Menu'
+                },
+            }, done);
+        nestedParentDiv2.appendChild(ganttObj.element);
+    });
+    it('Checking filter element top position', function () {
+        const columnMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-columnmenu')[1] as HTMLElement;
+        triggerMouseEvent(columnMenuIcon, 'click');
+        const filterMenuIcon: HTMLElement = document.getElementsByClassName('e-filter-item')[0] as HTMLElement;
+        triggerMouseEvent(filterMenuIcon, 'click');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+        if (parentDiv) {
+            document.body.removeChild(parentDiv);
+        }
+    });
+});
+describe('Filtering duration Column With Parent Div element', () => {
+    Gantt.Inject(Filter, Toolbar, ColumnMenu);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        let outerContainer = document.getElementById('outerContainer');
+        if (!outerContainer) {
+            outerContainer = document.createElement('div');
+            outerContainer.id = 'outerContainer';
+            document.body.appendChild(outerContainer);
+        }
+        const ganttContainer = document.createElement('div');
+        ganttContainer.id = 'ganttContainer';
+        outerContainer.appendChild(ganttContainer);
+        ganttObj = new Gantt({
+            dataSource: baselineData1,
+            allowFiltering: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators'
+            },
+            projectStartDate: new Date('02/01/2017'),
+            projectEndDate: new Date('12/30/2017'),
+            rowHeight: 40,
+            taskbarHeight: 30,
+            showColumnMenu:true,
+            renderBaseline: true,
+            filterSettings: {
+                type: 'Menu'
+            }
+        });
+        ganttObj.appendTo('#ganttContainer');
+        done();
+    });
+    beforeEach((done) => {
+        setTimeout(done, 100);
+    });
+    it('Opening Column Menu', function () {
+        const columnMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-columnmenu')[0] as HTMLElement;
+        triggerMouseEvent(columnMenuIcon, 'click');
+    });
+    it('Opening Filter', function () {
+        const filterMenuIcon: HTMLElement = document.getElementsByClassName('e-filter-item')[0] as HTMLElement;
+        triggerMouseEvent(filterMenuIcon, 'click');
+    });
+    it('Opening Filter', function () {
+        const filterMenuIcon: HTMLElement = document.getElementsByClassName('e-filter-item')[0] as HTMLElement;
+        triggerMouseEvent(filterMenuIcon, 'click');
+    });
+    it('Checking Filter element', function () {
+        expect(document.querySelectorAll('.e-filter-popup').length != 0).toBe(true)
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+        const outerContainer = document.getElementById('outerContainer');
+        if (outerContainer) {
+            document.body.removeChild(outerContainer);
+        }
+    });
+});

@@ -1,4 +1,4 @@
-import { L10n, Browser, detach, closest, isNullOrUndefined as isNOU, EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { L10n, Browser, detach, closest, isNullOrUndefined as isNOU, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { ButtonPropsModel, Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { ContextMenu, DetailsView, FileManager as EJ2FileManager } from '@syncfusion/ej2-filemanager';
@@ -28,6 +28,11 @@ export class FileManager {
     private dialogRenderObj: DialogRenderer;
     private rendererFactory: RendererFactory;
     private isDestroyed: boolean;
+    private insertImageBoundFn: () => void;
+    private cancelDialogBoundFn: () => void;
+    private renderFileManagerBoundFn: () => void;
+    private dialogClosedBoundFn: () => void;
+    private onDocumentClickBoundFn: (e: MouseEvent) => void;
 
     private constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
         EJ2FileManager.Inject(ContextMenu, DetailsView, NavigationPane, Toolbar);
@@ -37,10 +42,14 @@ export class FileManager {
         this.rendererFactory = locator.getService<RendererFactory>('rendererFactory');
         this.addEventListener();
         this.isDestroyed = false;
+        this.insertImageBoundFn = this.insertImageUrl.bind(this);
+        this.cancelDialogBoundFn = this.cancelDialog.bind(this);
+        this.renderFileManagerBoundFn = this.renderFileManager.bind(this);
+        this.dialogClosedBoundFn = this.dialogClosed.bind(this);
+        this.onDocumentClickBoundFn = this.onDocumentClick.bind(this);
     }
 
     private initialize(): void {
-        this.parent.fileManagerModule = this;
         this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
     }
 
@@ -54,17 +63,13 @@ export class FileManager {
         const dlgHeader: string = this.parent.localeObj.getConstant('fileDialogHeader');
         const dlgCancel: string = this.i10n.getConstant('dialogCancel');
         this.dlgButtons = [{
-            click: this.insertImageUrl.bind(this),
-            buttonModel: { content: dlgInsert, cssClass: 'e-flat e-insertImage', isPrimary: true }
+            click: this.insertImageBoundFn,
+            buttonModel: { content: dlgInsert, cssClass: 'e-flat e-insertImage', isPrimary: true, disabled: true }
         },
         {
-            // eslint-disable-next-line
-            click: (e: MouseEvent) => {
-                this.cancelDialog();
-            },
+            click: this.cancelDialogBoundFn,
             buttonModel: { cssClass: 'e-flat e-cancel', content: dlgCancel }
         }];
-        this.dlgButtons[0].buttonModel.disabled = true;
         this.selectObj = { selection: e.selection, args: e.args, selectParent: e.selectParent };
         const dlgTarget: HTMLElement = this.parent.createElement('div', {
             className: 'e-rte-file-manager-dialog', id: this.parent.getID() + '_file-manager-dialog',
@@ -85,15 +90,8 @@ export class FileManager {
             showCloseIcon: true, closeOnEscape: true, width: '720px', height: 'auto',
             position: { X: 'center', Y: 'center' },
             buttons: this.dlgButtons,
-            created: this.renderFileManager.bind(this),
-            close: (e: { [key: string]: object }) => {
-                this.parent.isBlur = false;
-                if (e && (e.event as { [key: string]: string }).returnValue) {
-                    this.selectObj.selection.restore();
-                }
-                this.destroyComponents();
-                this.dialogRenderObj.close(e);
-            }
+            created: this.renderFileManagerBoundFn,
+            close: this.dialogClosedBoundFn
         };
         this.dialogObj = this.dialogRenderObj.render(dialogModel);
         this.dialogObj.createElement = this.parent.createElement;
@@ -113,9 +111,18 @@ export class FileManager {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private dialogClosed(e: any): void {
+        this.parent.isBlur = false;
+        if (e && (e.event as { [key: string]: string }).returnValue) {
+            this.selectObj.selection.restore();
+        }
+        this.destroyComponents();
+        this.parent.element.ownerDocument.removeEventListener('mousedown', this.onDocumentClickBoundFn);
+        this.dialogRenderObj.close(e);
+    }
+
     private renderFileManager(): void {
-        // eslint-disable-next-line
-        const proxy: FileManager = this;
         this.fileObj = new EJ2FileManager({
             allowMultiSelection: false,
             locale: this.parent.locale,
@@ -140,15 +147,15 @@ export class FileManager {
             beforeSend: this.parent.fileManagerSettings.beforeSend,
             fileSelect: (e: FileSelectEventArgs) => {
                 const selectedFile: { [key: string]: string } = e.fileDetails as { [key: string]: string };
-                if (selectedFile.isFile && proxy.parent.insertImageSettings.allowedTypes.indexOf(selectedFile.type) > -1) {
-                    proxy.inputUrl.value = proxy.parent.fileManagerSettings.ajaxSettings.getImageUrl + '?path=' +
+                if (selectedFile.isFile && this.parent.insertImageSettings.allowedTypes.indexOf(selectedFile.type) > -1) {
+                    this.inputUrl.value = this.parent.fileManagerSettings.ajaxSettings.getImageUrl + '?path=' +
                     (selectedFile.filterPath && selectedFile.filterPath.replace(/\\/g, '/')) + selectedFile.name;
                     this.dlgButtons[0].buttonModel.disabled = false;
                 } else {
-                    proxy.inputUrl.value = '';
+                    this.inputUrl.value = '';
                     this.dlgButtons[0].buttonModel.disabled = true;
                 }
-                this.dialogObj.buttons = this.dlgButtons;
+                this.dialogObj.setProperties({ buttons: this.dlgButtons });
             },
             created: () => {
                 this.inputUrl.removeAttribute('disabled');
@@ -161,7 +168,7 @@ export class FileManager {
             this.fileObj.height = '85%';
         }
         this.fileObj.appendTo(this.fileWrap);
-        EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
+        this.parent.element.ownerDocument.addEventListener('mousedown', this.onDocumentClickBoundFn);
     }
 
     private getInputUrlElement(): HTMLElement {
@@ -245,7 +252,7 @@ export class FileManager {
     }
 
     private removeEventListener(): void {
-        EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
+        this.parent.element.ownerDocument.removeEventListener('mousedown', this.onDocumentClickBoundFn);
         this.parent.off(events.initialEnd, this.initialize);
         this.parent.off(events.renderFileManager, this.render);
         this.parent.off(events.bindCssClass, this.setCssClass);
@@ -260,7 +267,6 @@ export class FileManager {
         if (this.dialogObj) {
             this.dialogObj.destroy();
             detach(this.dialogObj.element);
-            this.dialogObj = null;
         }
     }
 
@@ -268,7 +274,13 @@ export class FileManager {
         if (this.isDestroyed) { return; }
         this.destroyComponents();
         this.removeEventListener();
+        this.dlgButtons = null;
         this.isDestroyed = true;
+        this.insertImageBoundFn = null;
+        this.cancelDialogBoundFn = null;
+        this.renderFileManagerBoundFn = null;
+        this.dialogClosedBoundFn = null;
+        this.onDocumentClickBoundFn = null;
     }
 
     /**

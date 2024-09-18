@@ -125,14 +125,14 @@ describe('Datepicker', () => {
             document.body.appendChild(inputEle);
             datepicker = new DatePicker({ format: 'd/M/yy' });
             datepicker.appendTo('#datepicker');
-            expect(datepicker.max.toDateString()).toBe(new Date('3/3/17').toDateString());
+            expect(datepicker.max.toDateString()).toBe(new Date('3/3/17').toDateString())
         });
         it('Input element min attributes test case', () => {
             let inputEle: HTMLElement = createElement('input', { id: 'datepicker', attrs: { "min": "3/3/17" } });
             document.body.appendChild(inputEle);
             datepicker = new DatePicker({ format: 'd/M/yy' });
             datepicker.appendTo('#datepicker');
-            expect(datepicker.min.toDateString()).toBe(new Date('3/3/17').toDateString());
+            expect(datepicker.min.toDateString()).toBe(new Date('3/3/17').toDateString())
         });
         it('Input element value html attributes along with control value property defined test case', () => {
             let inputEle: HTMLElement = createElement('input', { id: 'datepicker', attrs: { "value": "3/3/17" } });
@@ -5201,6 +5201,400 @@ describe('EJ2CORE-779 - Month reset to first month after clearing the selected m
         expect(datePicker.inputElement.value === "05-month-2020").toBe(true)
         datePicker.inputBlurHandler();
         expect(datePicker.inputElement.value === "05-05-2020").toBe(true)
+    });
+});
+describe('Null or undefined value testing', () => {
+    let datepickerObj : any;
+    beforeEach(()=>{
+        let ele : HTMLElement = createElement('div', { id : 'datepicker'});
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+    it('allowEdit', () => {
+        datepickerObj = new DatePicker({
+            allowEdit: null
+        },'#datepicker');
+        expect(datepickerObj.allowEdit).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            allowEdit: undefined
+        },'#datepicker');
+        expect(datepickerObj.allowEdit).toBe(true);
+        datepickerObj.destroy();
+    });
+    it('calendarMode', () => {
+        datepickerObj = new DatePicker({
+            calendarMode: null
+        },'#datepicker');
+        expect(datepickerObj.calendarMode).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            calendarMode: undefined
+        },'#datepicker');
+        expect(datepickerObj.calendarMode).toBe('Gregorian');
+        datepickerObj.destroy();
+    });
+    it('cssClass', () => {
+        datepickerObj = new DatePicker({
+            cssClass: null
+        },'#datepicker');
+        expect(datepickerObj.cssClass).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            cssClass: undefined
+        },'#datepicker');
+        expect(datepickerObj.cssClass).toBe(null);
+        datepickerObj.destroy();
+    });
+    it('dayHeaderFormat', () => {
+        datepickerObj = new DatePicker({
+            dayHeaderFormat: null
+        },'#datepicker');
+        expect(datepickerObj.dayHeaderFormat).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            dayHeaderFormat: undefined
+        },'#datepicker');
+        expect(datepickerObj.dayHeaderFormat).toBe('Short');
+        datepickerObj.destroy();
+    });
+    it('depth', () => {
+        datepickerObj = new DatePicker({
+            depth: null
+        },'#datepicker');
+        expect(datepickerObj.depth).toBe('Month');
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            depth: undefined
+        },'#datepicker');
+        expect(datepickerObj.depth).toBe('Month');
+        datepickerObj.destroy();
+    });
+    it('enableMask', () => {
+        datepickerObj = new DatePicker({
+            enableMask: null
+        },'#datepicker');
+        expect(datepickerObj.enableMask).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            enableMask: undefined
+        },'#datepicker');
+        expect(datepickerObj.enableMask).toBe(false);
+        datepickerObj.destroy();
+    });
+    it('enablePersistence', () => {
+        datepickerObj = new DatePicker({
+            enablePersistence: null
+        },'#datepicker');
+        expect(datepickerObj.enablePersistence).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            enablePersistence: undefined
+        },'#datepicker');
+        expect(datepickerObj.enablePersistence).toBe(false);
+        datepickerObj.destroy();
+    });
+    it('enableRtl', () => {
+        datepickerObj = new DatePicker({
+            enableRtl: null
+        },'#datepicker');
+        expect(datepickerObj.enableRtl).toBe(false);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            enableRtl: undefined
+        },'#datepicker');
+        expect(datepickerObj.enableRtl).toBe(false);
+        datepickerObj.destroy();
+    });
+    it('enabled', () => {
+        datepickerObj = new DatePicker({
+            enabled: null
+        },'#datepicker');
+        expect(datepickerObj.enabled).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            enabled: undefined
+        },'#datepicker');
+        expect(datepickerObj.enabled).toBe(true);
+        datepickerObj.destroy();
+    });
+    it('firstDayOfWeek', () => {
+        datepickerObj = new DatePicker({
+            firstDayOfWeek: null
+        },'#datepicker');
+        expect(datepickerObj.firstDayOfWeek).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            firstDayOfWeek: undefined
+        },'#datepicker');
+        expect(datepickerObj.firstDayOfWeek).toBe(null);
+        datepickerObj.destroy();
+    });
+    it('floatLabelType', () => {
+        datepickerObj = new DatePicker({
+            floatLabelType: null
+        },'#datepicker');
+        expect(datepickerObj.floatLabelType).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            floatLabelType: undefined
+        },'#datepicker');
+        expect(datepickerObj.floatLabelType).toBe('Never');
+        datepickerObj.destroy();
+    });
+    it('format', () => {
+        datepickerObj = new DatePicker({
+            format: null
+        },'#datepicker');
+        expect(datepickerObj.format).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            format: undefined
+        },'#datepicker');
+        expect(datepickerObj.format).toBe(null);
+        datepickerObj.destroy();
+    });
+    it('fullScreenMode', () => {
+        datepickerObj = new DatePicker({
+            fullScreenMode: null
+        },'#datepicker');
+        expect(datepickerObj.fullScreenMode).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            fullScreenMode: undefined
+        },'#datepicker');
+        expect(datepickerObj.fullScreenMode).toBe(false);
+        datepickerObj.destroy();
+    });
+    it('htmlAttributes', () => {
+        datepickerObj = new DatePicker({
+            htmlAttributes: null
+        },'#datepicker');
+        expect(datepickerObj.htmlAttributes).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            htmlAttributes: undefined
+        },'#datepicker');
+        expect(JSON.stringify(datepickerObj.htmlAttributes)).toBe('{}');
+        datepickerObj.destroy();
+    });
+    it('keyConfigs', () => {
+        datepickerObj = new DatePicker({
+            keyConfigs: null
+        },'#datepicker');
+        expect(datepickerObj.keyConfigs).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            keyConfigs: undefined
+        },'#datepicker');
+        expect(datepickerObj.keyConfigs).toBe(null);
+        datepickerObj.destroy();
+    });
+    it('locale', () => {
+        datepickerObj = new DatePicker({
+            locale: null
+        },'#datepicker');
+        expect(datepickerObj.locale).toBe('en-US');
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            locale: undefined
+        },'#datepicker');
+        expect(datepickerObj.locale).toBe('en-US');
+        datepickerObj.destroy();
+    });
+    it('maskPlaceholder', () => {
+        datepickerObj = new DatePicker({
+            maskPlaceholder: null
+        },'#datepicker');
+        expect(datepickerObj.maskPlaceholder).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            maskPlaceholder: undefined
+        },'#datepicker');
+        expect(JSON.stringify(datepickerObj.maskPlaceholder)).toBe('{"day":"day","month":"month","year":"year","hour":"hour","minute":"minute","second":"second","dayOfTheWeek":"day of the week"}');
+        datepickerObj.destroy();
+    });
+    it('max', () => {
+        datepickerObj = new DatePicker({
+            max: null
+        },'#datepicker');
+        expect(datepickerObj.max).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            max: undefined
+        },'#datepicker');
+        expect(datepickerObj.max.valueOf()).toBe(new Date(2099, 11, 31).valueOf());
+        datepickerObj.destroy();
+    });
+    it('min', () => {
+        datepickerObj = new DatePicker({
+            min: null
+        },'#datepicker');
+        expect(datepickerObj.min).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            min: undefined
+        },'#datepicker');
+        expect(datepickerObj.min.valueOf()).toBe(new Date(1900, 0, 1).valueOf());
+        datepickerObj.destroy();
+    });
+    it('openOnFocus', () => {
+        datepickerObj = new DatePicker({
+            openOnFocus: null
+        },'#datepicker');
+        expect(datepickerObj.openOnFocus).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            openOnFocus: undefined
+        },'#datepicker');
+        expect(datepickerObj.openOnFocus).toBe(false);
+        datepickerObj.destroy();
+    });
+    it('placeholder', () => {
+        datepickerObj = new DatePicker({
+            placeholder: null
+        },'#datepicker');
+        expect(datepickerObj.placeholder).toBe('');
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            placeholder: undefined
+        },'#datepicker');
+        expect(datepickerObj.placeholder).toBe('');
+        datepickerObj.destroy();
+    });
+    it('readonly', () => {
+        datepickerObj = new DatePicker({
+            readonly: null
+        },'#datepicker');
+        expect(datepickerObj.readonly).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            readonly: undefined
+        },'#datepicker');
+        expect(datepickerObj.readonly).toBe(false);
+        datepickerObj.destroy();
+    });
+    it('serverTimezoneOffset', () => {
+        datepickerObj = new DatePicker({
+            serverTimezoneOffset: null
+        },'#datepicker');
+        expect(datepickerObj.serverTimezoneOffset).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            serverTimezoneOffset: undefined
+        },'#datepicker');
+        expect(datepickerObj.serverTimezoneOffset).toBe(null);
+        datepickerObj.destroy();
+    });
+    it('showClearButton', () => {
+        datepickerObj = new DatePicker({
+            showClearButton: null
+        },'#datepicker');
+        expect(datepickerObj.showClearButton).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            showClearButton: undefined
+        },'#datepicker');
+        expect(datepickerObj.showClearButton).toBe(true);
+        datepickerObj.destroy();
+    });
+    it('showTodayButton', () => {
+        datepickerObj = new DatePicker({
+            showTodayButton: null
+        },'#datepicker');
+        expect(datepickerObj.showTodayButton).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            showTodayButton: undefined
+        },'#datepicker');
+        expect(datepickerObj.showTodayButton).toBe(true);
+        datepickerObj.destroy();
+    });
+    it('start', () => {
+        datepickerObj = new DatePicker({
+            start: null
+        },'#datepicker');
+        expect(datepickerObj.start).toBe('Month');
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            start: undefined
+        },'#datepicker');
+        expect(datepickerObj.start).toBe('Month');
+        datepickerObj.destroy();
+    });
+    it('strictMode', () => {
+        datepickerObj = new DatePicker({
+            strictMode: null
+        },'#datepicker');
+        expect(datepickerObj.strictMode).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            strictMode: undefined
+        },'#datepicker');
+        expect(datepickerObj.strictMode).toBe(false);
+        datepickerObj.destroy();
+    });
+    it('value', () => {
+        datepickerObj = new DatePicker({
+            value: null
+        },'#datepicker');
+        expect(datepickerObj.value).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            value: undefined
+        },'#datepicker');
+        expect(datepickerObj.value).toBe(null);
+        datepickerObj.destroy();
+    });
+    it('weekNumber', () => {
+        datepickerObj = new DatePicker({
+            weekNumber: null
+        },'#datepicker');
+        expect(datepickerObj.weekNumber).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            weekNumber: undefined
+        },'#datepicker');
+        expect(datepickerObj.weekNumber).toBe(false);
+        datepickerObj.destroy();
+    });
+    it('weekRule', () => {
+        datepickerObj = new DatePicker({
+            weekRule: null
+        },'#datepicker');
+        expect(datepickerObj.weekRule).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            weekRule: undefined
+        },'#datepicker');
+        expect(datepickerObj.weekRule).toBe('FirstDay');
+        datepickerObj.destroy();
+    });
+    it('width', () => {
+        datepickerObj = new DatePicker({
+            width: null
+        },'#datepicker');
+        expect(datepickerObj.width).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            width: undefined
+        },'#datepicker');
+        expect(datepickerObj.width).toBe(null);
+        datepickerObj.destroy();
+    });
+    it('zIndex', () => {
+        datepickerObj = new DatePicker({
+            zIndex: null
+        },'#datepicker');
+        expect(datepickerObj.zIndex).toBe(null);
+        datepickerObj.destroy();
+        datepickerObj = new DatePicker({
+            zIndex: undefined
+        },'#datepicker');
+        expect(datepickerObj.zIndex).toBe(1000);
+        datepickerObj.destroy();
     });
 });
 });

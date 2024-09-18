@@ -1611,7 +1611,6 @@ describe('Diagram Control', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
-            console.log(average)
             expect(average).toBeLessThan(10);
             let memory: any = inMB(getMemoryProfile())
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
@@ -1669,6 +1668,147 @@ describe('Diagram Control', () => {
         });
     });
 });
+
+
+describe('Remove Previous Segment', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'AllowPrevRemove' });
+        document.body.appendChild(ele);
+        var nodes:NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
+            },
+            {
+                id: 'node2', width: 100, height: 100, offsetX: 500, offsetY: 250,
+            },
+        ]
+        var connectors: ConnectorModel[] = [{
+            id: 'connector1',
+            type: 'Orthogonal',
+            sourceID:'node1',
+            targetID:'node2',
+            constraints: (ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb),
+            segments: [
+                {
+                    type: 'Orthogonal',
+                    length: 100,
+                    direction: 'Left',
+                },
+                
+            ],
+        }];
+        diagram = new Diagram({
+            width: '900px', height: '500px', nodes: nodes, connectors: connectors,
+            snapSettings: {
+                constraints: SnapConstraints.All & ~(SnapConstraints.SnapToHorizontalLines |
+                    SnapConstraints.SnapToVerticalLines | SnapConstraints.SnapToLines)
+            }
+        });
+        diagram.appendTo('#AllowPrevRemove');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Remove Previous Segment', function (done) {
+        diagram.select([diagram.connectors[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas, 425, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 425, 107);
+        mouseEvents.mouseUpEvent(diagramCanvas, 425, 107);
+        expect(diagram.connectors[0].segments.length < 5).toBe(true);
+        done();
+    });
+
+    it('Remove Next Segment', function (done) {
+        diagram.select([diagram.connectors[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas, 500, 150);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 600, 150);
+        mouseEvents.mouseUpEvent(diagramCanvas, 600, 150);
+        mouseEvents.mouseDownEvent(diagramCanvas, 600, 140);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 504, 140);
+        mouseEvents.mouseUpEvent(diagramCanvas, 504, 140);
+        expect(diagram.connectors[0].segments.length < 5).toBe(true);
+        done();
+    });
+});
+
+describe('Conectors Segments - Ortho node to node connection', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    beforeAll((): void => {
+    const isDef = (o: any) => o !== undefined && o !== null;
+    if (!isDef(window.performance)) {
+        console.log("Unsupported environment, window.performance.memory is unavailable");
+        this.skip(); //Skips test (in Chai)
+        return;
+    }
+    ele = createElement('div', { id: 'diagramOrthoNodeToNode' });
+    document.body.appendChild(ele);
+    diagram = new Diagram({
+        width: 1000, height: 1000,
+        nodes: [{ id: 'node1', offsetX: 307.5, offsetY: 211.5, width: 237, height: 213, },
+        {
+            id: 'node2', offsetX: 572, offsetY: 142, width: 50, height: 50,
+        }
+        ],
+        connectors: [{
+            id: 'connector1', sourceID: 'node1', targetID: 'node2', type: 'Orthogonal',
+            segments: [{ type: 'Orthogonal', direction: 'Right', length: 80 },
+            { type: 'Orthogonal', direction: 'Bottom', length: 89.5 },
+            { type: 'Orthogonal', direction: 'Right', length: 131 },
+            { type: 'Orthogonal', direction: 'Top', length: 114 },]
+        },
+        {
+            id: 'connector2', sourceID: 'node1', targetPoint: { x: 20, y: 60 }, type: 'Orthogonal',
+            segments: [{ type: 'Orthogonal', direction: 'Top', length: 80 },
+            { type: 'Orthogonal', direction: 'Left', length: 70 },
+            { type: 'Orthogonal', direction: 'Top', length: 9 },]
+        }],
+        getConnectorDefaults: (obj: ConnectorModel) => {
+            let connector: ConnectorModel = {};
+            connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+            return connector;
+        },
+        snapSettings: { constraints: SnapConstraints.ShowLines }
+    });
+    diagram.appendTo('#diagramOrthoNodeToNode');
+    diagramCanvas = document.getElementById(diagram.element.id + 'content');
+    });
+    afterAll((): void => {
+    diagram.destroy();
+    ele.remove();
+    });
+    it('Checking Orthogonal - when drag segment thumb less node width or node height', function (done) {
+    let mouseEvents: MouseEvents = new MouseEvents();
+    mouseEvents.clickEvent(diagramCanvas, 10 + diagram.element.offsetLeft, 10 + diagram.element.offsetTop);
+    diagram.select([diagram.connectors[0]]);
+    let startX = (diagram.connectors[0] as Connector).intermediatePoints[1].x;
+    let startY = ((diagram.connectors[0] as Connector).intermediatePoints[1].y + (diagram.connectors[0] as Connector).intermediatePoints[2].y) / 2;
+    expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 426 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 211.5 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 506 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 211.5 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 506 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 301 && (diagram.connectors[0] as Connector).intermediatePoints[3].x == 637 && (diagram.connectors[0] as Connector).intermediatePoints[3].y == 301 && (diagram.connectors[0] as Connector).intermediatePoints[4].x == 637 && (diagram.connectors[0] as Connector).intermediatePoints[4].y == 187 && (diagram.connectors[0] as Connector).intermediatePoints[5].x == 572 && (diagram.connectors[0] as Connector).intermediatePoints[5].y == 187 && (diagram.connectors[0] as Connector).intermediatePoints[6].x == 572 && (diagram.connectors[0] as Connector).intermediatePoints[6].y == 167).toBe(true);
+    mouseEvents.clickEvent(diagramCanvas, startX + diagram.element.offsetLeft, startY + diagram.element.offsetTop);
+    mouseEvents.dragAndDropEvent(diagramCanvas, startX + diagram.element.offsetLeft, startY + diagram.element.offsetTop, (startX - 200) + diagram.element.offsetLeft, startY + diagram.element.offsetTop);
+    expect((diagram.connectors[0] as Connector).intermediatePoints.length == 6).toBe(true);
+    diagram.select([diagram.connectors[1]]);
+    startX = ((diagram.connectors[1] as Connector).intermediatePoints[1].x + (diagram.connectors[1] as Connector).intermediatePoints[2].x) / 2;
+    startY = ((diagram.connectors[1] as Connector).intermediatePoints[1].y);
+    expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 307.5 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 105 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 307.5 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 25 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 237.5 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 25 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 237.5 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 16 && (diagram.connectors[1] as Connector).intermediatePoints[4].x == 20 && (diagram.connectors[1] as Connector).intermediatePoints[4].y == 16 && (diagram.connectors[1] as Connector).intermediatePoints[5].x == 20 && (diagram.connectors[1] as Connector).intermediatePoints[5].y == 60).toBe(true);
+    mouseEvents.clickEvent(diagramCanvas, startX + diagram.element.offsetLeft, startY + diagram.element.offsetTop);
+    mouseEvents.dragAndDropEvent(diagramCanvas, startX + diagram.element.offsetLeft, startY + diagram.element.offsetTop, startX + diagram.element.offsetLeft, (startY + 80) + diagram.element.offsetTop);
+    expect((diagram.connectors[0] as Connector).intermediatePoints.length == 6).toBe(true);
+    done();
+    });
+    
+    
+});
+
+
 describe('Connector Segment shapes and style', () => {
   
     describe(' Segment thumb and segment Thumb shape', () => {
@@ -1676,7 +1816,7 @@ describe('Connector Segment shapes and style', () => {
         let ele: HTMLElement;
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagramConSeg' });
             document.body.appendChild(ele);
 
             let connector2: ConnectorModel = {};
@@ -1694,7 +1834,7 @@ describe('Connector Segment shapes and style', () => {
                     connector.constraints = (ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb) &~ ConnectorConstraints.InheritSegmentThumbShape;
                 }
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagramConSeg');
             diagramCanvas = document.getElementById(diagram.element.id + 'content');
             
             
@@ -1730,7 +1870,7 @@ describe('Connector Segment shapes and style', () => {
             diagram.select([diagram.connectors[0]]);
             diagram.connectors[0].segmentThumbShape = "OpenArrow";
             diagram.dataBind();
-            expect(document.getElementById("orthoThumb_1_1").getAttribute("d") === "M15.9,23 L5,16 L15.9,9 L17,10.7 L8.7,16 L17,21.3 Z ").toBe(true);
+            expect(document.getElementById("orthoThumb_1_1").getAttribute("d") === "M9.08,10 L0,5 L9.08,0 L10,1.21 L3.08,5 L10,8.79 Z ").toBe(true);
             done();
             }); 
     });
@@ -1741,7 +1881,7 @@ describe('Connector Segment shapes and style', () => {
         let diagramCanvas: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagramSTS' });
             document.body.appendChild(ele);
 
             let connector2: ConnectorModel = {};
@@ -1773,7 +1913,7 @@ describe('Connector Segment shapes and style', () => {
                 snapSettings: { constraints: SnapConstraints.ShowLines },
                 segmentThumbShape:'Rectangle'
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagramSTS');
             diagramCanvas = document.getElementById(diagram.element.id + 'content');
             
             
@@ -1793,7 +1933,7 @@ describe('Connector Segment shapes and style', () => {
             expect(diagram.connectors[1].segmentThumbShape).toBe('Circle');
             diagram.connectors[1].segmentThumbShape ='Ellipse'
             diagram.dataBind();
-            expect(document.getElementById("segementThumb_1").getAttribute("d") === "M15,5 C15,7.76,11.64,10,7.5,10 C3.36,10,0,7.76,0,5 C0,2.24,3.36,0,7.5,0 C11.64,0,15,2.24,15,5 Z ").toBe(true);
+            expect(document.getElementById("segementThumb_1").getAttribute("d") === "M10,5 C10,7.76,7.76,10,5,10 C2.24,10,0,7.76,0,5 C0,2.24,2.24,0,5,0 C7.76,0,10,2.24,10,5 Z ").toBe(true);
             diagram.connectors[1].segmentThumbShape = 'Fletch';
             diagram.dataBind();
             expect(document.getElementById("segementThumb_1").getAttribute("d") === "M9.82,0 C9.82,0,6.61,5,10,10 C10,10,7.71,5,0,5 C0,5,6.61,5,9.82,0 Z ").toBe(true);
@@ -1802,9 +1942,9 @@ describe('Connector Segment shapes and style', () => {
         it('Checking bezier thumb shape icon by constraints', function (done) {
             diagram.select([diagram.connectors[1]]);
             expect(diagram.connectors[1].segmentThumbShape).toBe('Fletch');
-            diagram.connectors[1].segmentThumbShape ='Ellipse'
+            diagram.connectors[1].segmentThumbShape ='Arrow'
             diagram.dataBind();
-            expect(document.getElementById("segementThumb_1").getAttribute("d") === "M15,5 C15,7.76,11.64,10,7.5,10 C3.36,10,0,7.76,0,5 C0,2.24,3.36,0,7.5,0 C11.64,0,15,2.24,15,5 Z ").toBe(true);
+            expect(document.getElementById("segementThumb_1").getAttribute("d") === "M0,10 L10,10 L5,0 Z ").toBe(true);
             diagram.connectors[1].constraints = (ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb) & ~ConnectorConstraints.InheritSegmentThumbShape;
             diagram.dataBind();
             diagram.connectors[1].segmentThumbShape = 'Circle';
@@ -1816,13 +1956,12 @@ describe('Connector Segment shapes and style', () => {
         it('Checking Orthogonal thumb shape icon by constraints', function (done) {
             diagram.select([diagram.connectors[0]]);
             expect(diagram.segmentThumbShape).toBe('Rectangle');
-            diagram.segmentThumbShape ='Ellipse'
+            diagram.segmentThumbShape ='Arrow'
             diagram.dataBind();
-            expect(document.getElementById("orthoThumb_1_1").getAttribute("d") === "M15,5 C15,7.76,11.64,10,7.5,10 C3.36,10,0,7.76,0,5 C0,2.24,3.36,0,7.5,0 C11.64,0,15,2.24,15,5 Z ").toBe(true);
+            expect(document.getElementById("orthoThumb_1_1").getAttribute("d") === "M10,0 L10,10 L0,5 Z ").toBe(true);
             diagram.connectors[0].constraints = (ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb) & ~ConnectorConstraints.InheritSegmentThumbShape;
             diagram.dataBind();
             expect(document.getElementById("orthoThumb_1_1").getAttribute("d") === "M10,5 C10,7.76,7.76,10,5,10 C2.24,10,0,7.76,0,5 C0,2.24,2.24,0,5,0 C7.76,0,10,2.24,10,5 Z ").toBe(true);
-            
             expect(diagram.connectors[0].segmentThumbShape).toBe('Circle');
             done();
         });
@@ -2103,4 +2242,118 @@ describe('Orthogonal connector segment routing issue-1', () => {
         done();
     });
 
+});
+describe('Bezier control points are draggable', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramBezBidirectional' });
+        document.body.appendChild(ele);
+        var nodes:NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
+            },
+            {
+                id: 'node2', width: 100, height: 100, offsetX: 500, offsetY: 300,
+            },
+        ]
+        var connectors: ConnectorModel[] = [{
+            id: 'connector3',
+            type: 'Bezier',
+            sourceID:'node1',
+            targetID:'node2',
+            annotations: [{ content: 'bezier' }],
+            constraints: (ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb),
+        }];
+        diagram = new Diagram({
+            width: '900px', height: '500px', nodes: nodes, connectors: connectors,
+            segmentThumbShape: 'Ellipse'
+        });
+        diagram.appendTo('#diagramBezBidirectional');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking bezier control points after connecting the node when the segmentEditOrientation is bidirectional', function (done) {
+        diagram.connectors[0].bezierSettings.segmentEditOrientation='BiDirectional';
+        diagram.select([diagram.connectors[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas,400,200);
+        mouseEvents.mouseMoveEvent(diagramCanvas,480,300);
+        mouseEvents.mouseUpEvent(diagramCanvas,480,300);
+        let curSegment = diagram.connectors[0].segments;
+        expect(curSegment.length===2).toBe(true);
+        done();
+    });
+});
+describe('Bezier control points are draggable while segment orientation is horizontal', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramBezHorizontal' });
+        document.body.appendChild(ele);
+        var nodes:NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
+            },
+            {
+                id: 'node2', width: 100, height: 100, offsetX: 500, offsetY: 300,
+            },
+        ]
+        var connectors: ConnectorModel[] = [{
+            id: 'connector3',
+            type: 'Bezier',
+            sourceID:'node1',
+            targetID:'node2',
+            annotations: [{ content: 'bezier' }],
+            segments: [
+                {type: 'Bezier', point: { x: 200, y: 350 }},
+                {type: 'Bezier', point: { x: 220, y: 300 }},
+                {type: 'Bezier', point: { x: 260, y: 350 }},
+            ],
+            constraints: (ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb),
+        }];
+        diagram = new Diagram({
+            width: '900px', height: '500px', nodes: nodes, connectors: connectors,
+            segmentThumbShape: 'Ellipse'
+        });
+        diagram.appendTo('#diagramBezHorizontal');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking bezier segment points dragging when the segment orientation is horizontal', function (done) {
+        diagram.connectors[0].bezierSettings.segmentEditOrientation='BiDirectional';
+        diagram.select([diagram.connectors[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas,200,350);
+        mouseEvents.mouseMoveEvent(diagramCanvas,100,300);
+        mouseEvents.mouseUpEvent(diagramCanvas,100,300);
+        let curSegment = diagram.connectors[0].segments;
+        expect(curSegment.length===3).toBe(true);
+        done();
+    });
+    it('Checking bezier segment points dragging when there is more than 3 segment points', function (done) {
+        diagram.connectors[0].bezierSettings.segmentEditOrientation='BiDirectional';
+        diagram.connectors[0].segments=[
+            {type: 'Bezier', point: { x: 200, y: 350 }},
+            {type: 'Bezier', point: { x: 220, y: 300 }},
+            {type: 'Bezier', point: { x: 260, y: 350 }},
+            {type: 'Bezier', point: { x: 300, y: 250 }}
+        ];
+        diagram.dataBind();
+        diagram.select([diagram.connectors[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas,200,350);
+        mouseEvents.mouseMoveEvent(diagramCanvas,100,300);
+        mouseEvents.mouseUpEvent(diagramCanvas,100,300);
+        let curSegment = diagram.connectors[0].segments;
+        expect(curSegment.length===4).toBe(true);
+        done();
+    });
 });

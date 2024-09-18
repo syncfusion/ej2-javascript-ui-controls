@@ -25,7 +25,7 @@ import { AggregateColumnModel } from '../models/aggregate-model';
 import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 import { RowRenderer } from '../renderer/row-renderer';
 
-// eslint-disable-next-line valid-jsdoc
+// eslint-disable-next-line valid-jsdoc, jsdoc/require-param, jsdoc/require-returns
 /**
  *
  * The `Group` module is used to handle group action.
@@ -942,6 +942,9 @@ export class Group implements IAction {
             this.addColToGroupDrop(this.colName);
         } else {
             this.removeColFromGroupDrop(this.colName);
+        }
+        if (this.groupSettings.showDropArea && this.parent.height === '100%') {
+            this.parent.scrollModule.refresh();
         }
         const args: Object = this.groupSettings.columns.indexOf(this.colName) > -1 ? {
             columnName: this.colName, requestType: 'grouping', type: events.actionComplete

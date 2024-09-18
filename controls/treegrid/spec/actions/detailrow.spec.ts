@@ -10,9 +10,10 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CellSaveEventArgs, actionComplete } from '../../src';
 import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
 import { CellEditArgs, dataBound } from '@syncfusion/ej2-grids';
+import { Freeze } from '../../src/treegrid/actions/freeze-column';
 
 
-TreeGrid.Inject(Page, DetailRow, Toolbar, Sort, Filter, VirtualScroll);
+TreeGrid.Inject(Page, DetailRow, Toolbar, Sort, Filter, VirtualScroll, Freeze);
 let template : string = `<table id = "table1">
 <colgroup>
     <col width="35%">
@@ -741,6 +742,7 @@ describe('Detail template with virtualization', () => {
                 treeColumnIndex: 0,
                 detailTemplate: template,
                 enableVirtualization: true,
+                frozenRows: 2,
                 height: 335,
                 width: 'auto',
                 columns: [

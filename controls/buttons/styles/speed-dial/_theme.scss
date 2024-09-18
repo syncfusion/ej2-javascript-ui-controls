@@ -62,7 +62,7 @@
       .e-speeddial-li-icon {
         background: $sd-focus-li-bg;
         border-color: $sd-focus-li-border-color;
-        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
           box-shadow: $sd-focus-box-shadow;
         }
       }

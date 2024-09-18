@@ -4,9 +4,9 @@
 import { createElement, EmitType, debounce } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { MultiColoredLineSeries, ILoadedEventArgs, DateTime, Category } from '../../../src/index';
-import { MultiColoredAreaSeries, Legend, Series, Points, Chart, getElement } from '../../../src/index';
+import { MultiColoredAreaSeries, Legend, Series, Points, Chart, getElement,DataLabel } from '../../../src/index';
 import { seriesData1 } from '../base/data.spec';
-Chart.Inject(DateTime, Category, MultiColoredLineSeries, MultiColoredAreaSeries, Legend);
+Chart.Inject(DateTime, Category, MultiColoredLineSeries, MultiColoredAreaSeries, Legend, DataLabel);
 
 export interface series1 {
     series: Series;
@@ -899,6 +899,154 @@ describe('Chart Control Multi Colored Series', () => {
             };
             chartObj.loaded = loaded;
             chartObj.series[0].emptyPointSettings.mode = 'Zero';
+            chartObj.refresh();
+        });
+    });
+    describe('MultiColored line series - Checking setData', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: Element;
+        let chartElement: Element;
+        chartElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(chartElement);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category' },
+                    series: [{
+                        animation: { enable: false },
+                        dataSource: getData(colors, categoryData, false),
+                        pointColorMapping: 'color',
+                        width: 3,
+                        xName: 'XValue', yName: 'YValue', name: 'India',
+                        fill: '#E94649', type: 'MultiColoredLine',
+                        marker: { visible: true, width: 10, height: 10, dataLabel: { visible: true}}
+                    }],
+                    width: '800',
+                    title: 'Chart TS Title', loaded: loaded,
+                    legendSettings: { visible: true }
+                });
+            chartObj.appendTo('#container');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            chartElement.remove();
+        });
+
+        it('MultiColored line - checking updated direction', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = getElement('containerSeriesGroup0');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            let MultiColoredData: any = getData(colors, categoryData, false);
+            MultiColoredData[1].YValue = 56;
+            chartObj.series[0].setData(MultiColoredData);
+            chartObj.refresh();
+        });
+        it('MultiColored line - checking updated direction with XAxis Inversed', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = getElement('containerSeriesGroup0');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            let MultiColoredData: any = getData(colors, categoryData, false);
+            MultiColoredData[1].YValue = 56;
+            chartObj.primaryXAxis.isInversed = true;
+            chartObj.primaryYAxis.isInversed = true;
+            chartObj.series[0].setData(MultiColoredData);
+            chartObj.refresh();
+        });
+        it('MultiColored line - checking remove point', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = getElement('containerSeriesGroup0');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].removePoint(0);
+            chartObj.series[0].pointColorMapping = '';
+            chartObj.refresh();
+        });
+        it('MultiColored line - checking remove point without pointColor mapping', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = getElement('containerSeriesGroup0');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].removePoint(0);
+            chartObj.refresh();
+        });
+    });
+    describe('MultiColored area series - Checking setData', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: Element;
+        let chartElement: Element;
+        chartElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(chartElement);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category' },
+                    series: [{
+                        animation: { enable: false },
+                        dataSource: getData(colors, categoryData, false),
+                        pointColorMapping: 'color',
+                        width: 3,
+                        xName: 'XValue', yName: 'YValue', name: 'India',
+                        fill: '#E94649', type: 'MultiColoredArea',
+                        marker: { visible: true, width: 10, height: 10, dataLabel: { visible: true}}
+                    }],
+                    width: '800',
+                    title: 'Chart TS Title', loaded: loaded,
+                    legendSettings: { visible: true }
+                });
+            chartObj.appendTo('#container');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            chartElement.remove();
+        });
+
+        it('MultiColored area - checking updated direction', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = getElement('containerSeriesGroup0');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            let MultiColoredData: any = getData(colors, categoryData, false);
+            MultiColoredData[1].YValue = 56;
+            chartObj.series[0].setData(MultiColoredData);
+            chartObj.refresh();
+        });
+        it('MultiColored area - checking remove point', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = getElement('containerSeriesGroup0');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].removePoint(0);
+            chartObj.series[0].pointColorMapping = '';
+            chartObj.refresh();
+        });
+        it('MultiColored area - checking remove point without pointColor mapping', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = getElement('containerSeriesGroup0');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].removePoint(0);
             chartObj.refresh();
         });
     });

@@ -25,11 +25,6 @@
       content: '\e7b9';
     }
 
-    
-    .e-ccsearch-icon.e-cc-cancel::before,
-    .e-chkcancel-icon::before,
-    .e-cancel-icon::before,
-    .e-cancel::before,
     .e-icon-hide::before,
     .e-ungroupbutton.e-icon-hide::before {
       content: '\e745';
@@ -139,14 +134,25 @@
       content: '\e74d';
     }
 
-    .e-search-icon::before,
-    .e-ccsearch-icon::before {
-      content: '\e724';
-    }
-
     .e-columnchooser::before {
       content: '\e21e';
     }
+  }
+}
+
+#{&}.e-grid,
+.e-grid-menu,
+.e-grid-popup {
+  .e-search-icon::before,
+  .e-ccsearch-icon::before {
+    content: '\e724';
+  }
+
+  .e-ccsearch-icon.e-cc-cancel::before,
+  .e-chkcancel-icon::before,
+  .e-cancel-icon::before,
+  .e-cancel::before {
+    content: '\e745';
   }
 }
 

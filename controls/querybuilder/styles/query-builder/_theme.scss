@@ -16,7 +16,7 @@
     .e-deletegroup,
     & .e-group-header .e-clone-grp-btn,
     & .e-group-header .e-lock-grp-btn {
-      @if $skin-name == 'bootstrap5' {
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
         background: $qrybldr-btngroup-bgcolor;
         box-shadow: none;
         color: $qrybldr-icon-color;
@@ -133,7 +133,7 @@
       @if $skin-name == 'bootstrap4' {
         background: $qrybldr-btngroup-bgcolor;
       }
-      @else if $skin-name == 'bootstrap5' {
+      @else if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
         background: $qrybldr-btngroup-bgcolor;
         color: $qrybldr-icon-color;
       }
@@ -197,7 +197,7 @@
 }
 
 .e-query-builder .e-btn.e-round.e-small {
-  @if $theme-name == 'fluent2' {
+  @if $theme-name == 'fluent2' or $theme-name == 'fluent2-dark' or $theme-name == 'fluent2-highcontrast' {
     &:hover {
       background: $content-bg-color-hover !important; /* stylelint-disable-line declaration-no-important */
     }
@@ -212,6 +212,13 @@
 
     &:disabled {
       background: $content-bg-color-alt1 !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
+  @if $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
+    &:focus-visible {
+      background-color: $content-bg-color !important; /* stylelint-disable-line declaration-no-important */
+      color: $icon-color !important; /* stylelint-disable-line declaration-no-important */
+      box-shadow: $keyboard-focus-shadow !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 }

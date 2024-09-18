@@ -461,4 +461,49 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             });
         });
     });
+
+    describe('Checking update action method with sheet tabs cases. ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {}, {}], activeSheetIndex: 1 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Sheet Switch through update action method', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const args = { action: 'gotoSheet', eventArgs: { currentSheetIndex: 0, previousSheetIndex: 1 } };
+            helper.getInstance().updateAction(args);
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(0);
+                done();
+            });
+        });
+        it('Sheet Delete through update action method', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const args = { action: 'delete', eventArgs: { modelType: 'Sheet', startIndex: 1, endIndex: 1 } };
+            helper.getInstance().updateAction(args);
+            setTimeout(() => {
+                expect(spreadsheet.sheets.length).toBe(2);
+                done();
+            });
+        });
+        it('Delete Row through update action method with wrong activeSheetIndex', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const args = { action: 'delete', eventArgs: { modelType: 'Row', activeSheetIndex: 5 } };
+            helper.getInstance().updateAction(args);
+            setTimeout(() => {
+                expect(spreadsheet.sheets.length).toBe(2);
+                done();
+            });
+        });
+        it('Insert Row through update action method with wrong activeSheetIndex', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const args = { action: 'insert', eventArgs: { modelType: 'Row', activeSheetIndex: 5 } };
+            helper.getInstance().updateAction(args);
+            setTimeout(() => {
+                expect(spreadsheet.sheets.length).toBe(2);
+                done();
+            });
+        });
+    });
 });

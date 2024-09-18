@@ -6,7 +6,7 @@ import { Axis } from '../../chart/axis/axis';
 
 
 /**
- * `SplineSeries` module is used to render the spline series.
+ * The `SplineSeries` module is used to render the spline series.
  */
 
 export class SplineSeries extends SplineBase {
@@ -22,6 +22,7 @@ export class SplineSeries extends SplineBase {
      * @param {boolean} pointAnimate - Specifies whether the chart is inverted.
      * @param {boolean} pointUpdate - Specifies whether the chart is inverted.
      * @returns {void}
+     * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean, pointAnimate?: boolean, pointUpdate?: boolean): void {
         let firstPoint: Points = null;
@@ -92,6 +93,7 @@ export class SplineSeries extends SplineBase {
      * @param {Function} getCoordinate getCoordinate
      * @param {string} direction direction
      * @returns {string} - Returns the direct of spline using points.
+     * @private
      */
     private getSplineDirection(
         data: ControlPoints, firstPoint: Points, point: Points, xAxis: Axis, yAxis: Axis, isInverted: boolean, series: Series,
@@ -116,11 +118,8 @@ export class SplineSeries extends SplineBase {
             }
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -133,6 +132,7 @@ export class SplineSeries extends SplineBase {
      * @param {string} clipRect - The clip rectangle for the path.
      * @param {ChartLocation[]} [firstSymbol] - The location of the first symbol.
      * @returns {void}
+     * @private
      */
     public addPath (options: PathOption, series: Series, clipRect: string): void {
         const points: { element: Element; previousDirection: string; } =

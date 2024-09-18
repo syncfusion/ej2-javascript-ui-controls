@@ -1,7 +1,7 @@
 /**
  * Specifies the print spec.
  */
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { Browser, createElement, remove } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
 import { Legend } from '../../../src/chart/legend/legend';
 import { ColumnSeries } from '../../../src/chart/series/column-series';
@@ -61,6 +61,7 @@ describe('Chart Control', () => {
                     width: '800',
                     title: 'Chart TS Title',
                     legendSettings: { visible: true },
+                    enableExport: true,
                     annotations: [{
                         content: '#print_template',
                         region: 'Series',
@@ -145,6 +146,128 @@ describe('Chart Control', () => {
                 expect(args.htmlContent.outerHTML.indexOf('<div id="container_Annotation_0"') > -1).toBe(true);
                 done();
             };
+            chartObj.refresh();
+        });
+        it('Checking a PDF', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.export('PDF', 'Chart');
+            chartObj.refresh();
+        });
+        it('Checking a CSV Export ', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.export('CSV', 'Chart');
+            chartObj.refresh();
+        });
+        it('Checking a JPEG export', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                const element: Element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.export('JPEG', 'Chart');
+            chartObj.refresh();
+        });
+        it('Checking a Print', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.export('Print', 'Chart');
+            chartObj.refresh();
+        });
+        it('Checking a PNG Export ', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.export('PNG', 'Chart');
+            chartObj.refresh();
+        });
+        it('Checking a SVG export', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                const element: Element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.export('SVG', 'Chart');
+            chartObj.refresh();
+        });
+        it('Export: Checking a JPEG export with browser', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                const element: Element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.export('JPEG', 'Chart');
+            chartObj.refresh();
+        });
+        it('Checking a XLSX export', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                const element: Element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.export('XLSX', '');
+            chartObj.refresh();
+            Browser.info.name = 'msie';
+        });
+        it('Export: Checking a PDF with browser ', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            Browser.info.name = 'msie';
+            chartObj.export('PDF', 'Chart');
+            chartObj.refresh();
+        });
+        it('Export: Checking a CSV Export with browser ', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            Browser.info.name = 'msie';
+            chartObj.export('CSV', 'Chart');
+            chartObj.refresh();
+        });
+        it('Export: Checking a XLSX export with browser', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                const element: Element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            Browser.info.name = 'msie';
+            chartObj.export('XLSX', '');
+            chartObj.width = '85%';
+            chartObj.refresh();
+        });
+        it('Export: Checking a PDF with vertical ', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            Browser.info.name = 'msie';
+            const header = {
+                content: 'Chart Header',
+                fontSize: 15
+            };
+        
+            const footer = {
+                content: 'Chart Footer',
+                fontSize: 15,
+            };
+            chartObj.exportModule.export('PDF', 'Chart', 1, [chartObj], 80, null, true, header, footer, true);
+            chartObj.refresh();
+        });
+        it('Export: Checking a PDF with vertical wit event ', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.beforeExport = (args: IExportEventArgs): void => {
+                args.cancel = true;
+            }
+            chartObj.exportModule.export('PDF', 'Chart');
             chartObj.refresh();
         });
     });

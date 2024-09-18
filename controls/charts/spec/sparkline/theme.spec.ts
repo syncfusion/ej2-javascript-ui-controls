@@ -523,4 +523,248 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
             sparkline.appendTo('#' + id);
         })
     });
+    describe('Sparkline Fluent2Highcontrast theme Spec', () => {
+        let trigger: MouseEvents = new MouseEvents();
+        let element: Element;
+        let sparkline: Sparkline;
+        let id: string = 'sparks';
+        let ele: Element;
+        let rect: Rect;
+        let d: string[];
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            document.body.appendChild(element);
+            sparkline = new Sparkline({
+                theme: 'Fluent2HighContrast',
+                width: '400', height: '100',
+                type: 'Column',
+                containerArea: {
+                    border: {                
+                        width: 4
+                    }
+                },
+                dataSource: [
+                    { id: 10, value: 50 },
+                    { id: 20, value: 30 },
+                    { id: 30, value: -40 },
+                    { id: 40, value: 10 },
+                    { id: 50, value: -60 },
+                    { id: 60, value: 20 },
+                    { id: 70, value: 70 },
+                    { id: 80, value: -55 },
+                    { id: 90, value: 80 },
+                    { id: 100, value: 45 }
+                ], yName: 'value', xName: 'id',
+                axisSettings:{
+                    lineSettings:{
+                        visible: true
+                    }
+                },
+                rangeBandSettings: [
+                    {
+                        startRange: 1, endRange: 3, 
+                    }
+                ],
+                dataLabelSettings:{
+                    visible: ['All']
+                },
+                tooltipSettings: {
+                    visible: true,
+                    trackLineSettings: {
+                        visible: true,
+                        width: 2
+                    }
+                }
+            });
+        });
+        afterAll(() => {
+            sparkline.destroy();
+            removeElement(id);
+        });
+        it('checking the rangeBandColor for fluent2Highcontrast theme',() =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                sparkline.theme = 'Fluent2HighContrast';
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#9BB449');
+            }
+            sparkline.appendTo('#' + id);
+        })
+    });
+    describe('Sparkline theme Spec for series', () => {
+        let trigger: MouseEvents = new MouseEvents();
+        let element: Element;
+        let sparkline: Sparkline;
+        let id: string = 'sparks';
+        let ele: Element;
+        let rect: Rect;
+        let d: string[];
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            document.body.appendChild(element);
+            sparkline = new Sparkline({
+                theme: 'BootstrapDark',
+                width: '400', height: '100',
+                type: 'Column',
+                containerArea: {
+                    border: {                
+                        width: 4
+                    }
+                },
+                dataSource: [
+                    { id: 10, value: 50 },
+                    { id: 20, value: 30 },
+                    { id: 30, value: -40 },
+                    { id: 40, value: 10 },
+                    { id: 50, value: -60 },
+                    { id: 60, value: 20 },
+                    { id: 70, value: 70 },
+                    { id: 80, value: -55 },
+                    { id: 90, value: 80 },
+                    { id: 100, value: 45 }
+                ], yName: 'value', xName: 'id',
+                axisSettings:{
+                    lineSettings:{
+                        visible: true
+                    }
+                },
+                rangeBandSettings: [
+                    {
+                        startRange: 1, endRange: 3, 
+                    }
+                ],
+                dataLabelSettings:{
+                    visible: ['All']
+                },
+                tooltipSettings: {
+                    visible: true,
+                    trackLineSettings: {
+                        visible: true,
+                        width: 2
+                    }
+                }
+            });
+            sparkline.appendTo('#' + id);
+        });
+        afterAll(() => {
+            sparkline.destroy();
+            removeElement(id);
+        });
+        it('checking the rangeBandColor for bootstrap dark theme', (done: Function) => {
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                sparkline.theme = 'BootstrapDark';
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#a16ee5');
+                done();
+            }
+            sparkline.refresh();
+        });
+        it('checking the rangeBandColor for Fabric dark theme',(done: Function) =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#4472c4');
+                done();
+            }
+            sparkline.theme = 'FabricDark';
+            sparkline.refresh();
+        });
+        it('checking the rangeBandColor for Fabrictheme',(done: Function) =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#4472c4');
+                done();
+            }
+            sparkline.theme = 'Fabric';
+            sparkline.refresh();
+        });
+        it('checking the rangeBandColor for bootstrap theme',(done: Function) =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#a16ee5');
+                done();
+            }
+            sparkline.theme = 'Bootstrap';
+            sparkline.refresh();
+        });
+        it('checking the rangeBandColor for High contrast dark theme',(done: Function) =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#79ECE4');
+                done();
+            }
+            sparkline.theme = 'HighContrast';
+            sparkline.refresh();
+        });
+        it('checking the rangeBandColor for Tailwind dark theme',(done: Function) =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#5A61F6');
+                done();
+            }
+            sparkline.theme = 'Tailwind';
+            sparkline.refresh();
+        });
+        it('checking the rangeBandColor for Tailwind dark theme',(done: Function) =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#8B5CF6');
+                done();
+            }
+            sparkline.theme = 'TailwindDark';
+            sparkline.refresh();
+        });
+        it('checking the rangeBandColor for bootstrap5theme',(done: Function) =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#FD7E14');
+                done();
+            }
+            sparkline.theme = 'Bootstrap5';
+            sparkline.refresh();
+        });
+        it('checking the rangeBandColor for bootstrap5dark theme',(done: Function) =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#FD7E14');
+                done();
+            }
+            sparkline.theme = 'Bootstrap5Dark';
+            sparkline.refresh();
+        });
+        it('checking the rangeBandColor for Fluent dark theme',(done: Function) =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#1AC9E6');
+                done();
+            }
+            sparkline.theme = 'FluentDark';
+            sparkline.refresh();
+        });
+        it('checking the rangeBandColor for Fluent theme',(done: Function) =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#1AC9E6');
+                done();
+            }
+            sparkline.theme = 'Fluent';
+            sparkline.refresh();
+        });
+        it('checking the rangeBandColor for material3 theme',(done: Function) =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#6355C7');
+                done();
+            }
+            sparkline.theme = 'Material3';
+            sparkline.refresh();
+        });
+        it('checking the rangeBandColor for Material3dark theme',(done: Function) =>{
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_column_0');
+                expect(ele.getAttribute('fill')).toBe('#4EAAFF');
+                done();
+            }
+            sparkline.theme = 'Material3Dark';
+            sparkline.refresh();
+        });
+    });
 });

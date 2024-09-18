@@ -23,55 +23,37 @@ export class PortProperties {
                 const port: PortModel = oldPorts[parseInt(i.toString(), 10)];
                 const newPort: PortModel = {};
                 newPort.style = {};
-                if ((port as EJ1Port).name) {
-                    newPort.id = (port as EJ1Port).name;
-                }
+                newPort.id = (port as EJ1Port).name;
                 if (port.addInfo) {
                     newPort.addInfo = port.addInfo;
                 }
-                if (port.height) {
-                    newPort.height = port.height;
-                }
-                if (port.width) {
-                    newPort.width = port.width;
-                }
+                newPort.height = (port as EJ1Port).size;
+                newPort.width = (port as EJ1Port).size;
                 if (port.horizontalAlignment) {
-                    newPort.horizontalAlignment = (port.horizontalAlignment);
+                    newPort.horizontalAlignment = port.horizontalAlignment.charAt(0).toUpperCase() +
+                    port.horizontalAlignment.slice(1) as HorizontalAlignment;
                 }
                 if (port.verticalAlignment) {
-                    newPort.verticalAlignment = port.verticalAlignment;
+                    newPort.verticalAlignment = port.verticalAlignment.charAt(0).toUpperCase() +
+                    port.verticalAlignment.slice(1) as VerticalAlignment;
                 }
-                if (port.margin) {
-                    // eslint-disable-next-line max-len
-                    newPort.margin = { left: port.margin.left, right: port.margin.right, top: port.margin.top, bottom: port.margin.bottom };
-                }
-                if ((port as EJ1Port).offset) {
-                    (newPort as any).offset = { x: (port as any).offset.x, y: (port as any).offset.y };
-                }
-                if ((port as EJ1Port).borderColor) {
-                    newPort.style.strokeColor = (port as EJ1Port).borderColor;
-                }
-                if ((port as EJ1Port).borderWidth) {
-                    newPort.style.strokeWidth = (port as EJ1Port).borderWidth;
-                }
-                if ((port as EJ1Port).fillColor) {
-                    newPort.style.fill = (port as EJ1Port).fillColor;
-                }
-                if (port.constraints) {
-                    newPort.constraints = this.setPortConstraints(port.constraints as any);
-                }
+                // eslint-disable-next-line max-len
+                newPort.margin = { left: port.margin.left, right: port.margin.right, top: port.margin.top, bottom: port.margin.bottom };
+                (newPort as any).offset = { x: (port as any).offset.x, y: (port as any).offset.y };
+                newPort.style.strokeColor = (port as EJ1Port).borderColor;
+                newPort.style.strokeWidth = (port as EJ1Port).borderWidth;
+                newPort.style.fill = (port as EJ1Port).fillColor;
+                newPort.constraints = this.setPortConstraints(port.constraints as any);
                 if (port.pathData) {
                     newPort.pathData = port.pathData;
                 }
-                if (port.shape === 'Custom') {
+                if (((port as EJ1Port).shape as EJ1PortShapes) === 'path') {
                     newPort.shape = 'Custom';
                 }
                 else {
-                    newPort.shape = port.shape;
+                    newPort.shape = port.shape.charAt(0).toUpperCase() + (port.shape).slice(1) as PortShapes;
                 }
-                if (port.visibility) {
-                    newPort.visibility = this.setPortVisibility(port.visibility);
-                }
+                newPort.visibility = this.setPortVisibility(port.visibility);
                 portCollection.push(newPort);
             }
         }
@@ -81,17 +63,16 @@ export class PortProperties {
     //(EJ2-272287) Provide support to convert the EJ1 diagram to EJ2 diagram
     //Sets the port constraints from EJ1 to EJ2
     public setPortConstraints(constraints: number): number {
-        let portConstraints: number = PortConstraints.None;
-        if (constraints & PortConstraints.Drag) {
-            portConstraints = portConstraints | PortConstraints.Drag;
-        }
+        let portConstraints: number = PortConstraints.Default;
+        // if (constraints & PortConstraints.Drag) {
+        //     portConstraints = portConstraints | PortConstraints.Drag;
+        // }
         if (constraints & PortConstraints.Draw) {
             portConstraints = portConstraints | PortConstraints.Draw;
         }
         if (constraints & PortConstraints.None) {
             portConstraints = PortConstraints.None;
         }
-        portConstraints = PortConstraints.Default;
         return portConstraints;
     }
 
@@ -112,18 +93,6 @@ export class PortProperties {
             portVisibility = portVisibility | PortVisibility.Connect;
         }
         return portVisibility;
-    }
-
-
-    /**
-     * To destroy the ruler
-     *
-     * @returns {void} To destroy the ruler
-     */
-    public destroy(): void {
-        /**
-         * Destroys the Port properties module
-         */
     }
 
     /**
@@ -157,5 +126,17 @@ export interface EJ1Port extends PortModel {
     shape: PortShapes;
 
     offset: PointModel;
+
+    size: number;
 }
+
+export type EJ1PortShapes =
+    /** Path - sets the port shape as path */
+    'path' |
+    /** X - sets the port shape as x */
+    'x' |
+    /** Circle - sets the port shape as circle */
+    'circle' |
+    /** Square - sets the port shape as square */
+    'square'
 

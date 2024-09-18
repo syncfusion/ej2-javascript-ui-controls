@@ -679,7 +679,7 @@ describe('Dialog Editing module', () => {
             gridObj = createGrid(
                 {
                     dataSource: data,
-                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Dialog' },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Dialog', footerTemplate:'<div></div>' },
                     allowPaging: true,
                     pageSettings: { pageCount: 5 },
                     toolbar: ['Add', 'Edit', 'Delete'],
@@ -735,6 +735,43 @@ describe('Dialog Editing module', () => {
         });
     });
 
+    describe('Coverage Imrovement => ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Dialog', headerTemplate:'<div></div>' },
+                    allowPaging: true,
+                    pageSettings: { pageCount: 5 },
+                    toolbar: ['Add', 'Edit', 'Delete'],
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 140, validationRules: { required: true } },
+                        { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150,
+                            edit: { params: { popupHeight: '300px' } } }
+                    ]
+                }, done);
+        });
+
+        it('Edit Start', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            let tr: Element = gridObj.getContent().querySelectorAll('.e-row')[0];
+            (<any>gridObj.editModule).editModule.startEdit(tr);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
     describe('EJ2-897585 - When the foreign key column is grouped, the edit dialog of the selected record does not open properly with those records => ', ()=>{
         let gridObj: Grid;
         let actionComplete: () => void;
@@ -756,7 +793,7 @@ describe('Dialog Editing module', () => {
                     ],
                 }, done);
         });
-        
+
         it('Verify the presence of the clicked row for editing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {

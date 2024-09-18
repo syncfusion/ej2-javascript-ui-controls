@@ -98,7 +98,7 @@
         color: $fe-bc-link-color;
 
         &:focus .e-list-text {
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' and $fm-skin-name != 'bootstrap5.3' {
             background: $fe-bc-hover-bg-color;
           }
           color: $fe-bc-hover-font-color;
@@ -112,13 +112,27 @@
 
         &:not(:last-child) {
           .e-list-text {
-            &:hover,
-            &:active,
-            &:focus {
-              @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
-                background: $fe-bc-hover-bg-color;
+            @if ($fm-skin-name == 'bootstrap5.3') {
+              &:hover {
+                background-color: $content-bg-color-hover;
+                color: $primary-bg-color-hover;
+                text-decoration: underline $primary-bg-color-hover;
               }
-              color: $fe-bc-hover-font-color;
+              &:active {
+                color: $primary-bg-color-hover;
+                border: 1px solid $primary-bg-color-hover;
+                text-decoration: underline $primary-bg-color-hover;
+              }
+            }
+            @else {
+              &:hover,
+              &:active,
+              &:focus {
+                @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
+                  background: $fe-bc-hover-bg-color;
+                }
+                color: $fe-bc-hover-font-color;
+              }
             }
             @if $fm-skin-name == 'fluent2' {
               &:active {
@@ -126,6 +140,17 @@
               }
             }
           }
+        }
+      }
+
+      .e-address-list-item:focus .e-list-text {
+        @if ($fm-skin-name == 'bootstrap5.3') {
+          color: $primary-bg-color-hover;
+          border: 1px solid $primary-bg-color-hover;
+          text-decoration: underline $primary-bg-color-hover;
+        }
+        @else {
+          color: $fe-bc-hover-font-color;
         }
       }
 
@@ -280,11 +305,17 @@
         &.e-hover,
         &:hover {
           @include bg-border($fe-hover-bg-color, $fe-hover-border-color);
+          @if ($fm-skin-name == 'fluent2') {
+            color: $fe-lg-hover-font-color;
+          }
         }
 
         &.e-active.e-hover,
         &.e-active:hover {
           @include bg-border($fe-ah-bg-color, $fe-ah-border-color);
+          @if ($fm-skin-name == 'fluent2') {
+            color: $fe-lg-active-font-color;
+          }
         }
 
         &.e-focus {

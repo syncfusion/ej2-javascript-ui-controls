@@ -2,7 +2,7 @@ $stepper-ol-padding: 0 !default;
 $stepper-step-radius: 9999px !default;
 $stepper-step-width: 32px !default;
 $stepper-icon-size: 16px !default;
-$stepper-progress-bar-height: 1.6px !default;
+$stepper-progress-bar-height: 2px !default;
 $stepper-progress-value-height: 100% !default;
 $stepper-progress-position: 50% !default;
 $stepper-temp-outline-width: 2px solid !default;
@@ -44,7 +44,7 @@ $step-error-li-shadow: 0 0 0 2px $content-bg-color, 0 0 0 4px $danger-bg-color, 
 $step-li-shadow: $shadow-stepper-small !default;
 $step-border-color: $border-dark !default;
 $step-hover-text-color: $primary-text-color !default;
-$step-hover-not-text-color: $content-text-color !default;
+$step-hover-not-text-color: $content-text-color-hover !default;
 $step-hover-border-color: $secondary-border-color-hover !default;
 $step-active-border-color: $secondary-border-color-hover !default;
 $stepper-outline-color: $content-bg-color !default;

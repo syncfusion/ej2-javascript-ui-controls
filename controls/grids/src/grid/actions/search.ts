@@ -30,9 +30,9 @@ export class Search implements IAction {
 
     /**
      * Checks if the input string contains non-numeric characters.
-     * 
-     * @param input The string to be checked for non-numeric characters.
-     * @returns `true` if the input string contains non-numeric characters, `false` otherwise.
+     *
+     * @param {string} searchString - The string to be checked for non-numeric characters.
+     * @returns {boolean} - `true` if the input string contains non-numeric characters, `false` otherwise.
      */
     private hasNonNumericCharacters(searchString: string): boolean {
         let decimalFound: boolean = false;

@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { data1, idData1, filterData, data4, data5, data6a, rename2 } from '../data';
+import { data1, idData1, filterData, data4, data5, data6a, rename2, pastesuccess } from '../data';
 import { data1Delete, idData1Delete, folderRename, rename, idData1Rename1, idData1Rename, data17, idData4 } from '../data';
 import { ColumnModel } from '@syncfusion/ej2-grids';
 
@@ -51,7 +51,7 @@ describe('FileManager control LargeIcons view', () => {
             setTimeout(function () {
                 (document.getElementById('file_wrap2') as any).style = "display: block";
                 expect((<any>document.getElementById("file2").getElementsByClassName('e-layout')[0]).style.height).toBe('0px');
-                expect((<any>document.getElementById("file2").getElementsByClassName('e-large-icons')[0]).style.height).toBe('0px');
+                expect((<any>document.getElementById("file2").getElementsByClassName('e-large-icons')[0]).offsetHeight).toBe(0);
                 feObj.refreshLayout();
                 expect((<any>document.getElementById("file2").getElementsByClassName('e-layout')[0]).style.height).not.toBe('0px');
                 expect((<any>document.getElementById("file2").getElementsByClassName('e-large-icons')[0]).style.height).not.toBe('0px');
@@ -548,6 +548,32 @@ describe('FileManager control LargeIcons view', () => {
             setTimeout(function () {
                 feObj.downloadFiles();
                 feObj.downloadFiles(['12']);
+                done();
+            }, 400);
+        });
+        it('for traverse backward', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                path: '/Food/'
+            });
+            feObj.appendTo("#file1");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(pastesuccess)
+            });
+            setTimeout(function () {
+                debugger;
+                feObj.traverseBackward();
                 done();
             }, 400);
         });

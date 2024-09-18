@@ -5,7 +5,7 @@ import { EmitType, EventHandler, select } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { createElement } from '@syncfusion/ej2-base';
-import { Grid } from '../../../src/grid/base/grid';
+import { Grid, InfiniteScrollSettings } from '../../../src/grid/base/grid';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Group } from '../../../src/grid/actions/group';
 import { Selection } from '../../../src/grid/actions/selection';
@@ -1659,6 +1659,10 @@ describe('EJ2-873384-When the Grid height is set in pixels, whitespaces are show
             }, done);
     });
 
+    it('getCurrentBatchRecordChanges coverage', () => {
+        gObj.selectionModule.getCurrentBatchRecordChanges();
+    }); 
+
     it('vertical scroll in down direction', (done: Function) => {
         (<HTMLElement>gObj.getContent().firstChild).scrollTop = 700;
         setTimeout(done, 200);
@@ -1677,7 +1681,7 @@ describe('EJ2-873384-When the Grid height is set in pixels, whitespaces are show
 
 
  // used for code coverage
- describe('VirtualScroll code coverage', () => {
+ describe('VirtualScroll code coverage 1', () => {
     let gObj: Grid;
     beforeAll((done: Function) => {
         gObj = createGrid(
@@ -1710,6 +1714,214 @@ describe('EJ2-873384-When the Grid height is set in pixels, whitespaces are show
         contentModule.virtualEle.setFreezeWrapperWidth(gObj.element, '100', false);
         contentModule.virtualEle.setFreezeWrapperWidth(gObj.element, null, true);
         contentModule.virtualEle.setFreezeWrapperWidth(gObj.element, null, false);
+    });
+
+
+
+    afterAll(() => {
+        destroy(gObj);
+        gObj = null;
+    });
+});
+
+describe('VirtualScroll code coverage 2', () => {
+    let gObj: Grid;
+    beforeAll((done: Function) => {
+        gObj = createGrid(
+            {
+                dataSource: filterData,
+                height: '100%',
+                enableVirtualization: true,
+                selectionSettings: { checkboxOnly: true },
+                columns: [    
+                    {field: 'OrderID', headerText:'OrderID', width:120, isPrimaryKey:true},
+                    {field: 'CustomerID', headerText:'CustomerID', width:120},        
+                    {field: 'ShipCity', headerText:'ShipCity', width:130}    
+                ], 
+            }, done);
+    });
+
+    
+    it('refreshVirtualLazyLoadCache  coevarge', () => {
+        let contentModule: VirtualContentRenderer = <VirtualContentRenderer>gObj.contentModule;
+        let row = gObj.getRowsObject()[0];
+        (contentModule as any).refreshVirtualLazyLoadCache({});
+        (contentModule as any).refreshVirtualLazyLoadCache({ count: 1, uid: row.uid });
+        (contentModule as any).refreshVirtualLazyLoadCache({ rows: [row],  uid: row.uid });
+    });
+
+    it('virtual content renderer coverage', () => {
+        let contentModule: VirtualContentRenderer = <VirtualContentRenderer>gObj.contentModule;
+        (contentModule as any).rowIndex = 1;
+        (contentModule as any).cellIndex = 1;
+        (contentModule as any).activeKey = 'downArrow';
+        (contentModule as any).focusCell(); 
+        (contentModule as any).resetStickyLeftPos();
+        (contentModule as any).isNormaledit = false;
+        (contentModule as any).editSuccess();
+        (contentModule as any).addActionBegin();
+        (contentModule as any).actionBegin({ cancel : true });
+        gObj.enableVirtualization = false;
+        (contentModule as any).actionComplete();
+    });
+
+    afterAll(() => {
+        destroy(gObj);
+        gObj = null;
+    });
+});
+
+
+
+describe('VirtualScroll code coverage 3', () => {
+    let gObj: Grid;
+    beforeAll((done: Function) => {
+        gObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                enableVirtualMaskRow: false,
+                enableVirtualization: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, showAddNewRow: true, newRowPosition: 'Top'},
+                columns: [    
+                    {field: 'OrderID', headerText:'OrderID', width:120, isPrimaryKey:true},
+                    {field: 'CustomerID', headerText:'CustomerID', width:120},        
+                    {field: 'ShipCity', headerText:'ShipCity', width:130}    
+                ], 
+            }, done);
+    });
+
+    
+    it('scrollToEdit   coevarge', () => {
+        let contentModule: VirtualContentRenderer = <VirtualContentRenderer>gObj.contentModule;
+        (contentModule as any).editedRowIndex = 5;
+        (contentModule as any).scrollToEdit(gObj.columns[0]);
+        (contentModule as any).editedRowIndex = 67;
+        (contentModule as any).scrollToEdit();
+    });
+
+    it('setVirtualPageQuery  coevarge', () => {
+        let contentModule: VirtualContentRenderer = <VirtualContentRenderer>gObj.contentModule;
+        contentModule.requestType === 'virtualscroll';
+        contentModule.vgenerator.currentInfo = {};
+        contentModule.vgenerator.currentInfo.blockIndexes = [];
+        (contentModule as any).setVirtualPageQuery();
+    });
+
+    it('vertical scroll in down 1 direction', (done: Function) => {
+        let contentModule: VirtualContentRenderer = <VirtualContentRenderer>gObj.contentModule;
+        (contentModule as any).refreshMaxPage();
+        (contentModule as any).isBottom = true;
+        (contentModule as any).isTop = true;
+        (<HTMLElement>gObj.getContent().firstChild).scrollTop = 1000;
+        setTimeout(done, 200);
+    });
+
+
+    afterAll(() => {
+        destroy(gObj);
+        gObj = null;
+    });
+});
+
+
+
+
+describe('Grouping VirtualScroll code coverage', () => {
+    let gObj: Grid;
+    let preventDefault: Function = new Function();
+    let captions: NodeListOf<Element>;
+    beforeAll((done: Function) => {
+        gObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                allowGrouping: true,
+                enableVirtualization: true,
+                groupSettings: { columns: ['CustomerID'] },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Top'},
+                columns: [    
+                    {field: 'OrderID', headerText:'OrderID', width:120, isPrimaryKey:true},
+                    {field: 'CustomerID', headerText:'CustomerID', width:120},      
+                    { field: 'Freight',textAlign: 'Right',width:110 ,format:'C2',headerText:"Freight"},
+                    {field: 'ShipCity', headerText:'ShipCity', width:130}    
+                ], 
+            }, done);
+    });
+
+    it('coverage for grouping with hide/show column in virtualscroll', () => {
+        captions = gObj.element.querySelectorAll('.e-groupcaption');
+    });
+
+
+    it('coverage for grouping with hide/show column in virtualscroll', () => {
+        let captions: NodeListOf<Element> = gObj.element.querySelectorAll('.e-groupcaption');
+        gObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault: preventDefault, target: captions[0] } as any);
+        gObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault: preventDefault, target: captions[1] } as any);
+        gObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault: preventDefault, target: captions[2] } as any);
+        gObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault: preventDefault, target: captions[3] } as any);
+        gObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault: preventDefault, target: captions[4] } as any);
+        gObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault: preventDefault, target: captions[5] } as any);
+    });
+
+    it('coverage for grouping with hide/show column in virtualscroll', () => {
+        gObj.hideColumns(['Freight']);
+    });
+
+
+    afterAll(() => {
+        destroy(gObj);
+        gObj = preventDefault = captions = null;
+    });
+});
+
+
+
+describe('enableColumnVirtualization code coverage', () => {
+    let gObj: Grid;
+    beforeAll((done: Function) => {
+        gObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                width: 800,
+                enableColumnVirtualization: true,
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { enableCache: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Top'},
+                columns: [    
+                    {field: 'OrderID', headerText:'OrderID', width:120, isPrimaryKey:true},
+                    {field: 'CustomerID', headerText:'CustomerID', width:120},      
+                    { field: 'Freight',textAlign: 'Right',width:110 ,format:'C2',headerText:"Freight"},
+                    {field: 'ShipCity', headerText:'ShipCity', width:130}    
+                ], 
+            }, done);
+    });
+
+
+    it('coverage for editActionBegin', () => {
+        (gObj as any).updateMediaColumns(); 
+        let contentModule: VirtualContentRenderer = <VirtualContentRenderer>gObj.contentModule;
+        (contentModule as any).refreshCache();
+        (contentModule as any).editActionBegin({  data: {OrderID: 101 }, index: 1, isScroll: false });
+        gObj.enableInfiniteScrolling = false;
+        gObj.groupSettings.columns = ['CustomerID'];
+        (contentModule as any).refreshCache({});
+        (contentModule as any).editedRowIndex = 1;
+        gObj.allowPaging = true;
+        (contentModule as any).refreshCache({});
+        (gObj as any).virtualscrollModule.refreshVirtualElement({ module:'resize' });
+        gObj.editModule.virtualFormObj = null;
+        (gObj as any).virtualscrollModule.virtualEditFormValidation();
+    });
+
+    it('virtual content renderer coverage', () => {
+        gObj.isDestroyed = true;
+        (gObj as any).virtualscrollModule.addEventListener();
+        gObj.isDestroyed = false;
     });
 
 

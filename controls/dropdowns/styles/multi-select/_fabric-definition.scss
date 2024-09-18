@@ -167,13 +167,11 @@ $ddl-closer-margin-top-bigger-small: -3.2em !default;
     width: 30px;
   }
 
-  .e-small .e-multi-select-wrapper .e-chips,
-  .e-small.e-bigger .e-multi-select-wrapper .e-chips {
+  .e-small .e-multi-select-wrapper .e-chips {
     padding: 0;
   }
 
-  .e-small .e-multi-select-wrapper .e-chips > .e-chipcontent,
-  .e-small.e-bigger .e-multi-select-wrapper .e-chips > .e-chipcontent {
+  .e-small .e-multi-select-wrapper .e-chips > .e-chipcontent {
     padding: 0 8px;
   }
 

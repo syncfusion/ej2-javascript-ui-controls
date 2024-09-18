@@ -707,6 +707,94 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('StepLine Series - Checking animation on data changes.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let seriesData: object[] = [
+            { x: "Jan", y: 54.481, text: "54.48%" },
+            { x: "Feb", y: 50.56382, text: "50.56%" },
+            { x: "Mar", y: 53.68715, text: "53.69%" },
+            { x: "Apr", y: 49.143363, text: "49.14%" },
+            { x: "May", y: 57.423575, text: "57.42%" },
+            { x: "Jun", y: 55.959774, text: "55.96%" },
+            { x: "Jul", y: 52.360737, text: "52.36%" },
+            { x: "Aug", y: 56.654956, text: "56.65%" },
+            { x: "Sep", y: 51.387971, text: "51.39%" },
+            { x: "Oct", y: 53.137774, text: "53.14%" },
+            { x: "Nov", y: 54.889794, text: "54.89%" }];
+        let chartContainerDiv: Element;
+        chartContainerDiv = createElement('div', { id: 'StepLineContainer', styles: 'height:250px;width:590px;float: left;' });
+        beforeAll(() => {
+            document.body.appendChild(chartContainerDiv);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category' },
+                    series: [
+                        {
+                            dataSource: seriesData, xName: 'x', yName: 'y', type: 'StepLine', fill: 'red',
+                            animation: { enable: false }, name: 'series1', legendShape: 'Circle',
+                            marker: {
+                                visible: true,
+                                dataLabel: {
+                                    visible: true,
+                                    position: 'Outer',
+                                    font: { color: 'red', size: '12px' }
+                                }
+                            }
+                        }
+                    ],
+
+                });
+            chartObj.appendTo('#StepLineContainer');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            chartContainerDiv.remove();
+        });
+
+        it('Checking stepLine series updated direction', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('StepLineContainer_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            let dataSource: object[] = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 50.56382, text: "50.56%" },
+                { x: "Mar", y: 51.68715, text: "53.69%" },
+                { x: "Apr", y: 49.143363, text: "49.14%" },
+                { x: "May", y: 57.423575, text: "57.42%" },
+                { x: "Jun", y: 55.959774, text: "55.96%" },
+                { x: "Jul", y: 52.360737, text: "52.36%" },
+                { x: "Aug", y: 56.654956, text: "56.65%" },
+                { x: "Sep", y: 51.387971, text: "51.39%" },
+                { x: "Oct", y: 53.137774, text: "53.14%" },
+                { x: "Nov", y: 52.889794, text: "54.89%" },
+            ];
+            chartObj.series[0].setData(dataSource);
+            chartObj.refresh();
+        });
+        it('Checking StepLine series - addPoint', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('StepLineContainer_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.series[0].addPoint({ x: "Dec", y: 56.760399, text: "56.76%" });
+            chartObj.refresh();
+        });
+        it('Checking step line series - removePoint', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('StepLineContainer_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.series[0].removePoint(0);
+            chartObj.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -716,7 +804,77 @@ describe('Chart Control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+    describe('Chart Stepline series without vertical risers', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement;
+        let svg: HTMLElement;
+        let marker: HTMLElement;
+        let datalabel: HTMLElement;
+        let targetElement: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        beforeAll(() => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { title: 'PrimaryXAxis', interval : 2000 },
+                    primaryYAxis: { title: 'PrimaryYAxis', rangePadding: 'Normal' },
+                    series: [{
+                        dataSource: data, xName: 'x', yName: 'y', animation: { enable: false }, type: 'StepLine',
+                        name: 'ChartSeriesNameGold', fill: 'green',
+                        noRisers : true
+                    },
+                    ], width: '800',
+                    title: 'Chart TS Title', legendSettings: { visible: false }
+                });
+            chartObj.appendTo('#container');
+
+        });
+        afterAll((): void => {
+            elem.remove();
+            chartObj.destroy();
+        });
+        it('Checking with step as Right', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125M 0 175.125 L 105.21428571428571 175.125 L 105.21428571428571 175.125M 105.21428571428571 43.78125 L 210.42857142857142 43.78125 L 210.42857142857142 43.78125M 210.42857142857142 87.5625 L 315.6428571428571 87.5625 L 315.6428571428571 87.5625M 315.6428571428571 131.34375 L 420.85714285714283 131.34375 L 420.85714285714283 131.34375M 420.85714285714283 175.125 L 526.0714285714286 175.125 L 526.0714285714286 175.125M 526.0714285714286 175.125 L 631.2857142857142 175.125 L 631.2857142857142 175.125M 631.2857142857142 43.78125 L 736.5 43.78125 L 736.5 43.78125 ')
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].dataSource = [{ x: 1000, y: 70 }, { x: 2000, y: 40 },
+                { x: 3000, y: 70 }, { x: 4000, y: 60 },
+                { x: 5000, y: 50 }, { x: 6000, y: 40 },
+                { x: 7000, y: 40 }, { x: 8000, y: 70 }]
+            chartObj.series[0].step = 'Right'
+            chartObj.refresh();
+        });
+
+        it('Checking with step as Left', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125L 105.21428571428571 43.78125 M 105.21428571428571 175.125 L 105.21428571428571 175.125L 210.42857142857142 175.125 M 210.42857142857142 43.78125 L 210.42857142857142 43.78125L 315.6428571428571 43.78125 M 315.6428571428571 87.5625 L 315.6428571428571 87.5625L 420.85714285714283 87.5625 M 420.85714285714283 131.34375 L 420.85714285714283 131.34375L 526.0714285714286 131.34375 M 526.0714285714286 175.125 L 526.0714285714286 175.125L 631.2857142857142 175.125 M 631.2857142857142 175.125 L 631.2857142857142 175.125L 736.5 175.125 M 736.5 43.78125 L 736.5 43.78125 ')
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Left'
+            chartObj.refresh();
+        });
+
+        it('Checking with step as Center', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('d')).toBe('M 0 43.78125 L 0 43.78125L 52.607142857142854 43.78125 M 52.607142857142854 175.125 L 105.21428571428571 175.125 L 105.21428571428571 175.125L 157.82142857142856 175.125 M 157.82142857142856 43.78125 L 210.42857142857142 43.78125 L 210.42857142857142 43.78125L 263.0357142857143 43.78125 M 263.0357142857143 87.5625 L 315.6428571428571 87.5625 L 315.6428571428571 87.5625L 368.25 87.5625 M 368.25 131.34375 L 420.85714285714283 131.34375 L 420.85714285714283 131.34375L 473.46428571428567 131.34375 M 473.46428571428567 175.125 L 526.0714285714286 175.125 L 526.0714285714286 175.125L 578.6785714285713 175.125 M 578.6785714285713 175.125 L 631.2857142857142 175.125 L 631.2857142857142 175.125L 683.8928571428571 175.125 M 683.8928571428571 43.78125 L 736.5 43.78125 L 736.5 43.78125 ')
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Center'
+            chartObj.refresh();
+        });
+
+    });
+
 });
+
 export interface series1 {
     series: Series;
 }

@@ -176,11 +176,10 @@ export class BaseTooltip extends ChartData {
             removeElement(this.chart.element.id + '_tooltip');
             return;
         }
-
         if (isFirst) {
             this.svgTooltip = new SVGTooltip(
                 {
-                    opacity: chart.tooltip.opacity ?  chart.tooltip.opacity : ((this.chart.theme === 'Material3' || this.chart.theme === 'Material3Dark') ? 1 : 0.75),
+                    opacity: chart.tooltip.opacity ?  chart.tooltip.opacity : ((this.chart.theme === 'Material3' || this.chart.theme === 'Material3Dark' || this.chart.theme.indexOf('Bootstrap5') > -1) ? 1 : 0.75),
                     header: this.headerText,
                     content: this.text,
                     fill: chart.tooltip.fill,

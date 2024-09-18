@@ -11,7 +11,9 @@ import { Series } from '../series/chart-series';
 
 
 /**
- * `Category` module is used to render category axis.
+ * The `Category` module is used to render the category axis in charts.
+ *
+ * @private
  */
 
 export class Category extends NiceInterval {
@@ -29,6 +31,7 @@ export class Category extends NiceInterval {
     /**
      * The function to calculate the range and labels for the axis.
      *
+     * @private
      * @returns {void}
      */
 

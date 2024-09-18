@@ -12,7 +12,9 @@ import { LabelIntersectAction } from '../../common/utils/enum';
 import { VisibleRangeModel } from '../../common/model/interface';
 
 /**
- * Specifies the polar axis layout.
+ * Specifies the layout for polar axis panels.
+ *
+ * @private
  */
 
 export class PolarRadarPanel extends LineBase {

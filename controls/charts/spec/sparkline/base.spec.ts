@@ -4,6 +4,7 @@ import { removeElement, getIdElement, TextOption } from '../../src/sparkline/uti
 import { ISparklineLoadedEventArgs, ISparklineResizeEventArgs } from '../../src/sparkline/model/interface';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { DataManager } from '@syncfusion/ej2-data';
+import { MouseEvents } from '../../spec/chart/base/events.spec';
 Sparkline.Inject(SparklineTooltip);
 /**
  * Sparkline Test case file
@@ -260,6 +261,24 @@ describe('Sparkline Component Base Spec', () => {
                 done();
             };
             sparkline.sparklineResize();
+        });
+        it('Checking sparkline tab index and actual index', () => {
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                args.sparkline.loaded = null;
+                let element: any = getIdElement(id);
+                args.sparkline.getActualIndex(1, 2);
+                args.sparkline.getActualIndex(0, 0);
+                args.sparkline.setTabIndex(element, element);
+                let keyElement = document.getElementById(id + 'Keyboard_sparkline_focus');
+                if (keyElement) { keyElement.remove(); }
+                args.sparkline.destroy();
+                let trigger: MouseEvents = new MouseEvents();
+                let events: any = <KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100);
+                events.code = 'Enter';
+                args.sparkline.chartKeyUp(events);
+                expect(element !== null).toBe(true);
+            };
+            sparkline.refresh();
         });
     });
     it('memory leak', () => {

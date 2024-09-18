@@ -5,7 +5,6 @@
 import { compile as templateComplier, remove, merge, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { FontModel, BorderModel } from '../model/base-model';
-import { AxisModel } from '../axes/axis-model';
 import { IVisiblePointer } from '../model/interface';
 import { Axis, Pointer, Range } from '../axes/axis';
 import { Orientation, MarkerType, LinearGaugeTheme } from './enum';
@@ -18,10 +17,7 @@ import { ExportType } from '../utils/enum';
 
 /** @private */
 export function stringToNumber(value: string, containerSize: number): number {
-    if (value !== null && value !== undefined) {
-        return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
-    }
-    return null;
+    return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
 }
 
 /** @private */
@@ -153,19 +149,6 @@ export function removeElement(id: string): void {
 }
 
 /** @private */
-export function isPointerDrag(axes: AxisModel[]): boolean {
-    let pointerEnable: boolean = false;
-    axes.map((axis: Axis) => {
-        axis.pointers.map((pointer: Pointer) => {
-            if (pointer.enableDrag) {
-                pointerEnable = true;
-            }
-        });
-    });
-    return pointerEnable;
-}
-
-/** @private */
 export function valueToCoefficient(value: number, axis: Axis, orientation: Orientation, range: VisibleRange): number {
     let result: number = (value - <number>range.min) / range.delta;
     result = (orientation === 'Vertical') ? (!axis.isInversed) ? (1 - result) : result : (!axis.isInversed) ? result : (1 - result);
@@ -183,9 +166,6 @@ export function getFontStyle(font: FontModel): string {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function textFormatter(format: string, data: any, gauge: LinearGauge): string {
-    if (isNullOrUndefined(format)) {
-        return null;
-    }
     const keys: string[] = Object.keys(data);
     for (const key of keys) {
         format = format.split('{' + key + '}').join(formatValue(data[key as string], gauge).toString());
@@ -544,14 +524,6 @@ export function getRangePalette(theme: LinearGaugeTheme): string[] {
         palette = ['#10B981', '#22D3EE', '#2DD4BF', '#4ADE80', '#8B5CF6',
             '#E879F9', '#F472B6', '#F87171', '#F97316', '#FCD34D'];
         break;
-    case 'bootstrap5':
-        palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
-            '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
-        break;
-    case 'bootstrap5dark':
-        palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
-            '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
-        break;
     case 'fluent':
         palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
             '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
@@ -569,13 +541,18 @@ export function getRangePalette(theme: LinearGaugeTheme): string[] {
             '#FF9E45', '#B3F32F', '#B93CE4', '#FC5664', '#9B55FF'];
         break;
     case 'fluent2':
-        palette = ['#6200EE', '#09AF74', '#0076E5', '#CB3587', '#E7910F', '#0364DE', 
+        palette = ['#6200EE', '#09AF74', '#0076E5', '#CB3587', '#E7910F', '#0364DE',
             '#66CD15', '#F3A93C', '#107C10', '#C19C00'];
         break;
     case 'fluent2dark':
     case 'fluent2highcontrast':
-        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6', '#E85F9C', 
+        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6', '#E85F9C',
             '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
+        break;
+    case 'bootstrap5':
+    case 'bootstrap5dark':
+        palette = ['#6610F2', '#6f42C1', '#D63384', '#DC3545',
+            '#FD7E14', '#FFC107', '#198754', '#0DCAF0'];
         break;
     default:
         palette = ['#ff5985', '#ffb133', '#fcde0b', '#27d5ff', '#50c917'];

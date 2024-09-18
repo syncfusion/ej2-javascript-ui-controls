@@ -9,7 +9,9 @@ import { Font } from '../../common/model/base';
 import { RangeIntervalType } from '../../common/utils/enum';
 
 /**
- * Category module is used to render category axis.
+ * The `DateTimeCategory` module is used to render the datetime category axis in charts.
+ *
+ * @private
  */
 
 export class DateTimeCategory extends Category {
@@ -144,6 +146,7 @@ export class DateTimeCategory extends Category {
      * @param {string} value value
      * @param {Function} format format
      * @returns {string} Indexed axis label text
+     * @private
      */
     public getIndexedAxisLabel(value: string, format: Function): string {
         const texts: string[] = value.split(',');
@@ -160,6 +163,7 @@ export class DateTimeCategory extends Category {
      * @param {RangeIntervalType} type - The type of range interval.
      * @param {number} index - The index of the interval.
      * @returns {boolean} - Indicates if the intervals are the same.
+     * @private
      */
     public sameInterval(currentDate: number, previousDate: number, type: RangeIntervalType, index: number): boolean {
         let sameValue: boolean;
@@ -240,6 +244,7 @@ export class DateTimeCategory extends Category {
      * @param {number} previousIndex - The previous index.
      * @param {Axis} axis - The axis.
      * @returns {boolean} - Indicates if the distance between labels exceeds the maximum length.
+     * @private
      */
     public isMaximum(index: number, previousIndex: number, axis: Axis): boolean {
         if (index === 0) {

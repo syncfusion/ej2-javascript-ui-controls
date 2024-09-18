@@ -16,6 +16,7 @@ import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Selection } from '../../../src/grid/actions/selection';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { createGrid, destroy } from '../base/specutil.spec';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Query } from '@syncfusion/ej2-data';
 import { data, employeeData, filterData, normalData, foreigndata } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -24,8 +25,11 @@ import * as events from '../../../src/grid/base/constant';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { RowDD } from '../../../src/grid/actions/row-reorder';
 import { ForeignKey } from '../../../src/grid/actions/foreign-key';
+import { CommandColumn } from '../../../src/grid/actions/command-column';
+import { Freeze } from '../../../src/grid/actions/freeze';
+import { parentsUntil } from '../../../src/grid/base/util';
 
-Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, DetailRow, VirtualScroll, RowDD, ForeignKey);
+Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, DetailRow, VirtualScroll, RowDD, ForeignKey, CommandColumn, Freeze);
 
 let virtualData: Object[] = [];
 function virtualdataSource() {
@@ -3887,6 +3891,10 @@ describe('Coverage Improvement', () => {
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
     });
 
+    it('renderRowElement complete coverage', () => {
+        (gridObj as any).renderRowElement({}, 0);
+    });
+
     it('check the addEventListener Binding', () => {
         gridObj.isDestroyed = true;
         gridObj.editModule.addEventListener();
@@ -4207,7 +4215,7 @@ describe('EJ2- 871212 - grid’s edit type datepicker with enable mask for date 
                 ],
             }, done);
         });
-
+    
         it('In Edit method isWidgetsDestroyed false testing  while calling the currertRowFocus', () => {
             const editModule = gridObj.editModule;
             const curretRowFocusSpy = spyOn(editModule, 'curretRowFocus' as keyof typeof editModule).and.callFake(() => {
@@ -4222,31 +4230,27 @@ describe('EJ2- 871212 - grid’s edit type datepicker with enable mask for date 
             gridObj = null;
         });
     });
-    
-    describe('EJ2-895689: Issue with Grid Column Multiline Edit Params in Chrome and Edge =>', () => {
-        let gridObj: Grid;
-        let stringParams: any = {
-            params: {
-                multiline: true,
-                showClearButton: true
-            }
-        }
-        beforeAll((done: Function) => {
+});
+
+
+describe('code coverage - Boolean edit cell', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
         gridObj = createGrid(
             {
-                dataSource: data,
-                editSettings: {
-                allowEditing: true,
-                allowAdding: true,
-                allowDeleting: true,
-                mode: 'Normal',
-                },
-                toolbar: ['Add','Edit', 'Delete', 'Update', 'Cancel'],
+                dataSource: filterData,
+                height: 300,
+                allowSorting: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                cssClass: 'e-grid',
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Top' },
                 columns: [
                     {
                         field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
                         validationRules: { required: true, number: true }, width: 140
                     },
+                    { field:'Verified', headerText: 'Verified', width: '50',  editType:'booleanedit', type: 'checkbox' },
                     {
                         field: 'CustomerID', headerText: 'Customer ID',
                         validationRules: { required: true }, width: 140
@@ -4255,30 +4259,619 @@ describe('EJ2- 871212 - grid’s edit type datepicker with enable mask for date 
                         field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
                         width: 140, format: 'C2', validationRules: { required: true }
                     },
-                    {  field: 'ShipAddress', headerText: 'ShipAddress', width: 170, edit: stringParams},
+                    { field: 'OrderDate', headerText: 'Order Date', editType: "datepickeredit", width: 130, format: 'yMd', textAlign: 'Right' },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150,
+                        edit: { params: { popupHeight: '300px' } }
+                    }
                 ],
             }, done);
-        });
+    });
 
-        it('Editing the row', function (done) {
-            gridObj.actionComplete = function (args: any) {
-                if (args.requestType == 'beginEdit') {
-                    args.form.elements[4].ej2_instances[0].value = 'Updated';
-                    gridObj.endEdit();
-                    done();
-                }
-            };
-            (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[1].firstElementChild });
-        });
+    it('CheckBox Boolean Edit', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.getContent().querySelectorAll('.e-row')[1].querySelectorAll('.e-rowcell')[0] as any).click();
+        gridObj.selectRow(0, true);
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+    });
 
-        it('Updating the row', function (done) {
-            expect((gridObj.getCurrentViewRecords()[1] as any).ShipAddress).toBe('Updated');
-            done();
-        });
+    it('CheckBox change event Edit check', () => {
+        (gridObj as any).element.querySelector('.e-edit-checkselect').click();
+        (gridObj as any).element.querySelector('.e-edit-checkselect').click();
+    });
 
-        afterAll(() => {
-            destroy(gridObj);
-            gridObj = null;
-        });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        actionComplete = null;
+    });
+});
+
+
+describe('code coverage - dropdown edit cell', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    let dropdown: DropDownList;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                enableVirtualization: true,
+                allowSorting: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                cssClass: 'e-grid',
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Top', mode:'Dialog'},
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 140
+                    },
+                    {
+                        field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                        width: 140, format: 'C2', validationRules: { required: true }
+                    },
+                    { field: 'OrderDate', headerText: 'Order Date', editType: "datepickeredit", width: 130, format: 'yMd', textAlign: 'Right' },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, foreignKeyField: 'CustomerName', foreignKeyValue: 'ShipCountry', dataSource: foreigndata,
+                        edit: { params: { popupHeight: '300px' } }
+                    }
+                ],
+            }, done);
+    });
+
+    it('DropDown Boolean Edit', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {
+                dropdown = document.querySelector('.e-gridform').querySelectorAll('.e-dropdownlist')[0]['ej2_instances'][0];
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.getContent().querySelectorAll('.e-row')[1].querySelectorAll('.e-rowcell')[0] as any).click();
+        gridObj.selectRow(0, true);
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+    });
+
+    it('DropDown edit testing', () => {
+        dropdown.showPopup();       
+    });
+
+    it('DropDown edit remove eventlister', () => {
+        (<any>gridObj).columns[3].edit.obj.isDestroyed = true;
+        (<any>gridObj).columns[3].edit.removeEventListener(); 
+        (<any>gridObj).columns[3].edit.obj.isDestroyed = false;
+    });
+
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = dropdown = null;
+        actionComplete = null;
+    });
+});
+
+
+
+describe('code coverage - dropdown edit cell', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    let dropdown: DropDownList;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                enableVirtualization: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Top' },
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 140
+                    },
+                    { field: 'OrderDate', headerText: 'Order Date', editType: "datepickeredit", width: 130, format: 'yMd', textAlign: 'Right' },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, foreignKeyField: 'CustomerName', foreignKeyValue: 'ShipCountry',
+                        edit: { params: { popupHeight: '300px' } }
+                    }
+                ],
+            }, done);
+    });
+
+    it('DropDown Boolean Edit', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {
+                dropdown = document.querySelector('.e-gridform').querySelectorAll('.e-dropdownlist')[0]['ej2_instances'][0];
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.getContent().querySelectorAll('.e-row')[1].querySelectorAll('.e-rowcell')[0] as any).click();
+        gridObj.selectRow(0, true);
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+    });
+
+    it('DropDown edit testing', () => {
+        dropdown.showPopup();       
+    });
+
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = dropdown = null;
+        actionComplete = null;
+    });
+});
+
+
+
+describe('code coverage for Add New record navigation', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                allowPaging: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Top' },
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                         width: 140
+                    },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', validationRules: { required: true }, width: 150
+                    }
+                ],
+                actionComplete: actionComplete,
+            }, done);
+    });
+  
+    it('Add complete coverage', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'add') {
+                done();
+            }
+        };       
+        gridObj.actionComplete = actionComplete;
+        gridObj.editModule.addRecord();
+    });
+
+    it('add record Navigation coevarge', () => {
+        let input = gridObj.element.querySelectorAll('.e-input');
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: input[0] } as any);
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: input[1] } as any);
+    });
+
+    it('closeForm coevarge', () => {
+        gridObj.isEdit = false;
+        (gridObj as any).editModule.editModule.cloneRow = gridObj.element.querySelector('.e-normaledit');
+        (gridObj as any).editModule.editModule.originalRow = gridObj.element.querySelector('.e-row');
+        (gridObj as any).editModule.editModule.closeForm();
+    });
+
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = preventDefault = null;
+    });
+});
+
+
+
+describe('code coverage for Add New record navigation', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowPaging: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, showAddNewRow: true, allowAdding: true, allowDeleting: true },
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                         width: 140
+                    },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', validationRules: { required: true }, width: 150
+                    }
+                ],
+                actionComplete: actionComplete,
+            }, done);
+    });
+  
+    it('add record Navigation coevarge', () => {
+        let input = gridObj.element.querySelectorAll('.e-input');
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: input[0] } as any);
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: input[1] } as any);
+    });
+
+     
+    it('addEventListener and closeForm coevarge', () => {
+        gridObj.isDestroyed = true;
+        (gridObj as any).editModule.editModule.addEventListener();
+        gridObj.isDestroyed = false;
+        (gridObj as any).editModule.editModule.closeForm();
+        (gridObj as any).editModule.editModule.editFailure({ cancel : true });
+    });
+
+
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = preventDefault = null;
+    });
+});
+
+
+
+describe('code coverage for Normal Edit file', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowPaging: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, showAddNewRow: true, allowAdding: true, allowDeleting: true },
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                         width: 140
+                    },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', validationRules: { required: true }, width: 150
+                    },
+                    { headerText: 'Manage Records', width: 160,
+                        commands: [{ type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' } },
+                            { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } },
+                            { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' } },
+                            { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' } }]
+                    }
+                ],
+                actionComplete: actionComplete,
+            }, done);
+    });
+  
+    it('show add new row with command column edit start covearge', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectRow(0, true);
+        gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
+    });
+
+    it('show add new row with command column  Edit complete coverage', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (select('#' + gridObj.element.id + 'ShipCountry', gridObj.element) as any).value = 'updated';
+        gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
+    });
+
+    it('renderRowElement complete coverage', () => {
+        (gridObj as any).renderRowElement({}, 0);
+    });
+
+    it('destroyElements and disabledShowAddRow coverage', () => {
+        (gridObj as any).editModule.editModule.disabledShowAddRow();
+        (gridObj as any).editModule.editModule.destroyElements();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = preventDefault = actionComplete = null;
+    });
+});
+
+
+describe('code coverage - Edit - onPropertyChanged', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                editSettings: { allowAdding: true },
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 140
+                    },
+                    { field: 'OrderDate', headerText: 'Order Date', editType: "datepickeredit", width: 130, format: 'yMd', textAlign: 'Right' },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, foreignKeyField: 'CustomerName', foreignKeyValue: 'ShipCountry',
+                        edit: { params: { popupHeight: '300px' } }
+                    }
+                ],
+            }, done);
+    });
+
+    it('Edit settings property changed case', () => {
+        gridObj.editSettings.allowAdding = false;
+        gridObj.editModule.onPropertyChanged({ module: 'edit', properties: { allowAdding: false } });
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('code coverage - Edit - frozen last row', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 2),
+                height: 300,
+                editSettings: { allowEditing: true },
+                frozenRows: 2,
+                frozenColumns: 1,
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 140
+                    },
+                    { field: 'OrderDate', headerText: 'Order Date', editType: "datepickeredit", width: 130, format: 'yMd', textAlign: 'Right', type: 'dateonly' },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, foreignKeyField: 'CustomerName', foreignKeyValue: 'ShipCountry',
+                        edit: { params: { popupHeight: '300px' } }
+                    }
+                ],
+            }, done);
+    });
+
+    it('Start edit for frozen last row', () => {
+        gridObj.selectRow(1);
+        gridObj.startEdit();
+    });
+
+    it('End edit for frozen last row', () => {
+        gridObj.endEdit();
+    });
+
+    it('Destroy tooltip', () => {
+        gridObj.element.removeChild(gridObj.getHeaderContent());
+        (gridObj.editModule as any).destroyToolTip();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('code coverage - Edit - startEdit, deleteRow, RTL in dialog alert', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 2),
+                height: 300,
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                enableRtl: true,
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 140
+                    },
+                    { field: 'OrderDate', headerText: 'Order Date', editType: "datepickeredit", width: 130, format: 'yMd', textAlign: 'Right' },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, foreignKeyField: 'CustomerName', foreignKeyValue: 'ShipCountry',
+                        edit: { params: { popupHeight: '300px' } }
+                    }
+                ],
+            }, done);
+    });
+
+    it('Delete row for no row object', () => {
+        const tr: HTMLTableRowElement = gridObj.getContentTable().querySelector('tr');
+        tr.setAttribute('data-uid', '1');
+        gridObj.editModule.deleteRow(tr);
+    });
+
+    it('RTL in dialog alert', () => {
+        gridObj.startEdit();
+    });
+
+    it('After Edit', () => {
+        gridObj.endEdit();
+        (gridObj.editModule as any).validationComplete();
+        (gridObj.editModule as any).valErrorPlacement();
+    });
+
+    it('Curret row focus', () => {
+        gridObj.addRecord();
+        const contentTable: Element = gridObj.getContentTable();
+        (gridObj.editModule as any).curretRowFocus({ target: contentTable.querySelectorAll('tr')[2] });
+        const addedRow: HTMLElement = contentTable.querySelector('.e-addedrow');
+        const focusableEditCells = addedRow.querySelectorAll('.e-input:not(.e-disabled)');
+        parentsUntil(focusableEditCells[focusableEditCells.length - 1], 'e-rowcell').classList.add('e-unboundcell');
+        (gridObj.editModule as any).curretRowFocus({ target: addedRow, action: 'tab' });
+        (gridObj.editModule as any).curretRowFocus({ target: focusableEditCells[0], action: 'shiftTab' });
+        gridObj.editSettings.showAddNewRow = true;
+        (focusableEditCells[0] as HTMLInputElement).value = '1';
+        (gridObj.editModule as any).curretRowFocus({ target: focusableEditCells[focusableEditCells.length - 1], action: 'tab' });
+    });
+
+    it('Edit for display none row', () => {
+        gridObj.getContentTable().querySelector('tbody').innerHTML = '';
+        const tr: HTMLTableRowElement = createElement('tr') as HTMLTableRowElement;
+        tr.style.display = 'none';
+        gridObj.editModule.startEdit(tr);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('code coverage - Edit - destroyWidgets, AddEditors, resetElemPosition', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                editSettings: { allowAdding: true, template: "<div>template</div>" },
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 140, editTemplate: "<div>template</div>"
+                    },
+                ],
+            }, done);
+    });
+
+    it('React template destroy', () => {
+        gridObj.isReact = true;
+        gridObj.editModule.formObj = { element: { elements: [] } } as any;
+        gridObj.editModule.destroyWidgets(gridObj.getColumns());
+    });
+
+    it('Add editors object', () => {
+        Edit.AddEditors({});
+    });
+
+    it('Reset element position', () => {
+        const row: HTMLElement = gridObj.getContentTable().querySelector('tr');
+        gridObj.editModule.resetElemPosition(row, { element: row } as any);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-895689: Issue with Grid Column Multiline Edit Params in Chrome and Edge =>', () => {
+    let gridObj: Grid;
+    let stringParams: any = {
+        params: {
+            multiline: true,
+            showClearButton: true
+        }
+    }
+    beforeAll((done: Function) => {
+    gridObj = createGrid(
+        {
+            dataSource: data,
+            editSettings: {
+            allowEditing: true,
+            allowAdding: true,
+            allowDeleting: true,
+            mode: 'Normal',
+            },
+            toolbar: ['Add','Edit', 'Delete', 'Update', 'Cancel'],
+            columns: [
+                {
+                    field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                    validationRules: { required: true, number: true }, width: 140
+                },
+                {
+                    field: 'CustomerID', headerText: 'Customer ID',
+                    validationRules: { required: true }, width: 140
+                },
+                {
+                    field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                    width: 140, format: 'C2', validationRules: { required: true }
+                },
+                {  field: 'ShipAddress', headerText: 'ShipAddress', width: 170, edit: stringParams},
+            ],
+        }, done);
+    });
+
+    it('Editing the row', function (done) {
+        gridObj.actionComplete = function (args: any) {
+            if (args.requestType == 'beginEdit') {
+                args.form.elements[4].ej2_instances[0].value = 'Updated';
+                gridObj.endEdit();
+                done();
+            }
+        };
+        (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[1].firstElementChild });
+    });
+
+    it('Updating the row', function (done) {
+        expect((gridObj.getCurrentViewRecords()[1] as any).ShipAddress).toBe('Updated');
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-907682: The focus moves to the previous row on tabbing an editable row =>', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+    gridObj = createGrid(
+        {
+            dataSource: data,
+            allowGrouping: true,
+            groupSettings: { columns: ['ShipCountry'] },
+            editSettings: {
+            allowEditing: true,
+            allowAdding: true,
+            allowDeleting: true,
+            },
+            toolbar: ['Add','Edit', 'Delete', 'Update', 'Cancel'],
+            columns: [
+                {
+                    field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                    validationRules: { required: true, number: true }, width: 140
+                },
+                {
+                    field: 'CustomerID', headerText: 'Customer ID',
+                    validationRules: { required: true }, width: 140
+                },
+                {
+                    field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150,
+                    edit: { params: { popupHeight: '300px' } } }
+            ],
+        }, done);
+    });
+
+    it('Edit the row', function (done) {
+        (gridObj as any).dblClickHandler({ target: (gridObj.element.querySelectorAll('.e-row')[3] as any).cells[2] });
+        (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updated';
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelectorAll('.e-input')[1] } as any);
+        done();
+    });
+
+    it('Update the row', function (done) {
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault });
+        expect((gridObj.getContent().querySelectorAll('.e-row')[3] as any).cells[2].classList.contains('e-focused')).toBeTruthy();
+        done();
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

@@ -328,10 +328,27 @@ export abstract class Widget implements IWidget {
             return widget.getPreviousSplitWidget();
         } else {
             let previous: Widget = widget.previousRenderedWidget;
-            if (widget instanceof BodyWidget && previous instanceof BodyWidget && widget.equals(previous)) {
+            if (widget instanceof BodyWidget && previous instanceof BodyWidget && widget.equals(previous) && !(widget.containerWidget instanceof FootNoteWidget && widget.containerWidget.footNoteType === 'Endnote')) {
                 return previous;
             } else if (previous instanceof BlockWidget && widget.index === previous.index && widget.equals(previous)) {
                 return previous;
+            } else if (widget instanceof BodyWidget && widget.containerWidget instanceof FootNoteWidget
+                && widget.containerWidget.footNoteType === 'Endnote' && !isNullOrUndefined(widget.page.previousPage)
+                && !isNullOrUndefined(widget.page.previousPage.endnoteWidget)) {
+                previous = widget.page.previousPage.endnoteWidget.bodyWidgets[widget.page.previousPage.endnoteWidget.bodyWidgets.length - 1];
+                if (previous && previous instanceof BodyWidget && widget.index === previous.index && widget.equals(previous)) {
+                    return previous;
+                }
+            } else if (widget instanceof BlockWidget && widget.bodyWidget
+                && widget.bodyWidget.containerWidget instanceof FootNoteWidget && widget.bodyWidget.containerWidget.footNoteType === 'Endnote'
+                && !isNullOrUndefined(widget.bodyWidget.page.previousPage) && !isNullOrUndefined(widget.bodyWidget.page.previousPage.endnoteWidget)
+                && widget.bodyWidget.page.previousPage.endnoteWidget.bodyWidgets.length > 0) {
+                const previousEndnotePage = widget.bodyWidget.page.previousPage.endnoteWidget;
+                const lastBodyWidget = previousEndnotePage.bodyWidgets[previousEndnotePage.bodyWidgets.length - 1];
+                previous = lastBodyWidget.childWidgets[lastBodyWidget.childWidgets.length - 1] as BlockWidget;
+                if (previous && previous instanceof BlockWidget && widget.index === previous.index && widget.equals(previous)) {
+                    return previous;
+                }
             }
         }
         return undefined;
@@ -342,10 +359,25 @@ export abstract class Widget implements IWidget {
             return widget.getNextSplitWidget();
         } else {
             let next: Widget = widget.nextRenderedWidget;
-            if (widget instanceof BodyWidget && next instanceof BodyWidget && widget.equals(next)) {
+            if (widget instanceof BodyWidget && next instanceof BodyWidget && widget.equals(next) && !(widget.containerWidget instanceof FootNoteWidget && widget.containerWidget.footNoteType === 'Endnote')) {
                 return next;
             } else if (next instanceof BlockWidget && widget.index === next.index && widget.equals(next)) {
                 return next;
+            } else if (widget instanceof BodyWidget && widget.containerWidget instanceof FootNoteWidget
+                && widget.containerWidget.footNoteType === 'Endnote' && !isNullOrUndefined(widget.page.nextPage)
+                && !isNullOrUndefined(widget.page.nextPage.endnoteWidget)) {
+                next = widget.page.nextPage.endnoteWidget.bodyWidgets[0];
+                if (next && next instanceof BodyWidget && widget.index === next.index && widget.equals(next)) {
+                    return next;
+                }
+            } else if (widget instanceof BlockWidget && widget.bodyWidget
+                && widget.bodyWidget.containerWidget instanceof FootNoteWidget && widget.bodyWidget.containerWidget.footNoteType === 'Endnote'
+                && !isNullOrUndefined(widget.bodyWidget.page.nextPage) && !isNullOrUndefined(widget.bodyWidget.page.nextPage.endnoteWidget)
+                && widget.bodyWidget.page.nextPage.endnoteWidget.bodyWidgets.length > 0) {
+                next = widget.bodyWidget.page.nextPage.endnoteWidget.bodyWidgets[0].childWidgets[0] as BlockWidget;
+                if (next && next instanceof BlockWidget && widget.index === next.index && widget.equals(next)) {
+                    return next;
+                }
             }
         }
         return undefined;
@@ -2127,6 +2159,8 @@ export class TableWidget extends BlockWidget {
             cellWidth = (preferredWidth * containerWidth) / 100;
         } else if (preferredWidthType === 'Point') {
             cellWidth = preferredWidth;
+        } else if (!isNullOrUndefined(cell) && cell.cellFormat.cellWidth === 0 && cell.cellFormat.preferredWidth === 0 && cell.cellFormat.preferredWidthType === 'Auto' && cell.ownerTable.tableFormat.preferredWidthType === 'Percent' && cell.ownerTable.isInsideTable) {
+            cellWidth = containerWidth - this.tableHolder.getTotalWidth(0);
         }
         // For grid before and grid after with auto width, no need to calculate minimum preferred width.
         else if (!isNullOrUndefined(cell)) {
@@ -2491,8 +2525,14 @@ export class TableWidget extends BlockWidget {
             }
             for (let j: number = 0; j < rw.childWidgets.length; j++) {
                 let cell: TableCellWidget = rw.childWidgets[j] as TableCellWidget;
-                cell.cellFormat.cellWidth = this.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth);
-                //By default, if cell preferred widthType is auto , width set based on table width and type is changed to 'Point'
+                if (!(this.tableFormat.preferredWidthType === 'Auto' && cell.cellFormat.preferredWidthType === 'Percent') &&
+                    !(this.isInsideTable && this.tableFormat.preferredWidthType === 'Percent' && cell.cellFormat.preferredWidthType === 'Point'
+                    && ((this.containerWidget as TableCellWidget).cellFormat.preferredWidthType ==='Auto' 
+                    || (this.containerWidget as TableCellWidget).cellFormat.preferredWidthType === 'Percent')) 
+                    || cell.cellFormat.cellWidth === 0) {
+                    cell.cellFormat.cellWidth = this.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth);
+                    //By default, if cell preferred widthType is auto , width set based on table width and type is changed to 'Point'
+                }
             }
             if (rowFormat.gridAfter > 0) {
                 rowFormat.afterWidth = this.tableHolder.getCellWidth(0, rowFormat.gridAfter, tableWidth);
@@ -4629,6 +4669,17 @@ export class LineWidget implements IWidget {
         return { 'element': inlineElement, 'index': indexInInline };
     }
 
+    /**
+     * @private
+     */
+    public isEndnoteLineWidget(): boolean {
+        if (!isNullOrUndefined(this.paragraph.containerWidget)
+            && this.paragraph.containerWidget.containerWidget instanceof FootNoteWidget
+            && this.paragraph.containerWidget.containerWidget.footNoteType === 'Endnote') {
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Method to retrieve next element
@@ -6670,6 +6721,10 @@ export class ShapeBase extends ShapeCommon {
      * @private
      */
     public isHorizontalRule: boolean;
+     /**
+     * @private
+     */
+     public editingPoints: {};
 }
 /** 
  * @private
@@ -6722,6 +6777,7 @@ export class ShapeElementBox extends ShapeBase {
         shape.distanceLeft = this.distanceLeft;
         shape.distanceRight = this.distanceRight;
         shape.distanceTop = this.distanceTop;
+        shape.editingPoints  = this.editingPoints;
         shape.layoutInCell = this.layoutInCell;
         shape.lockAnchor = this.lockAnchor;
         shape.autoShapeType = this.autoShapeType;

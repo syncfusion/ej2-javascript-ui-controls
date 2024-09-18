@@ -12,7 +12,7 @@ import { PageSettingsModel, AggregateRowModel, ColumnChooserSettingsModel } from
 import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel, LoadingIndicatorModel } from './grid-model';
 import { Cell } from '../models/cell';
 import { Row } from '../models/row';
-import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem, ExcelBorderLineStyle } from './enum';
+import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem, ExcelBorderLineStyle, FocusType } from './enum';
 import { MultipleExportType, MultiplePdfExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem, AggregateTemplateType } from './enum';
 import { PredicateModel } from './grid-model';
 import { SentinelType, Offsets } from './type';
@@ -65,8 +65,8 @@ export interface IGrid extends Component<HTMLElement> {
      * Specifies whether the inline edit form widgets are destroyed or not.
      * @default false
      */
-    isWidgetsDestroyed: boolean; 
-    
+    isWidgetsDestroyed: boolean;
+
     /**
      * Specifies the columns for Grid.
      *
@@ -541,6 +541,13 @@ export interface IGrid extends Component<HTMLElement> {
      * @default false
      */
     enableAdaptiveUI?: boolean;
+
+    /**
+     * One of the adaptiveUIMode enumeration that specifies the Adaptive Mode. The default value is Both.
+     *
+     * @default 'Both'
+     */
+    adaptiveUIMode?: string;
 
     /**
      * Defines the frozen columns for the grid content
@@ -2571,6 +2578,9 @@ export interface IFocus {
     onFocus?: Function;
     lastIdxCell: boolean;
     target?: HTMLElement;
+    focusType?: FocusType;
+    currentTarget?: HTMLElement;
+    action?: string;
     jump?: (action: string, current: number[]) => SwapInfo;
     getFocusInfo?: () => FocusInfo;
     getFocusable?: (element: HTMLElement) => HTMLElement;

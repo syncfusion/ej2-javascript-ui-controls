@@ -767,6 +767,7 @@ describe('Command Column ', () => {
             grid = createGrid(
                 {
                     dataSource: data,
+                    cssClass: 'e-custom-class',
                     columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
                     { field: 'ShipCity' },
                     {
@@ -874,6 +875,95 @@ describe('Command Column ', () => {
         });
 
         afterAll(() => {
+            destroy(gridObj);
+            gridObj = preventDefault = null;
+        });
+    });
+
+    describe('Code coverage for command columns => ', function () {
+        let gridObj: Grid;
+        beforeAll(function (done: Function) {
+            gridObj = createGrid({
+                dataSource: data.slice(0, 30),
+                height: 270,
+                enableVirtualization: true,
+                editSettings: { allowEditing: true, showAddNewRow: true, allowAdding: true, allowDeleting: true },
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+
+                    { headerText: 'Manage Records', width: 160,commandsTemplate: '<button class="e-edit">Edit</button>', commands: [] },
+                    {
+                        headerText: 'Manage Records', width: 160,
+                        commands: [{ type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' } },
+                        { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } },
+                        { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' } },
+                        { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' } }]
+                    }
+                ],
+            }, done);
+        });
+
+        it('refresh the command column', (done: Function) => {
+            let dataBound = () => {
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.refreshColumns();
+        });
+
+        it('destroy the command column', function () {
+            gridObj.destroy();
+        });
+
+
+        afterAll(function () {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+
+    describe('Code coverage for command columns => ', function () {
+        let gridObj: Grid;
+        let preventDefault: Function = new Function();
+        beforeAll(function (done: Function) {
+            gridObj = createGrid({
+                dataSource: data.slice(0, 30),
+                allowGrouping: true,
+                height: 270,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true },
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+
+                    {
+                        headerText: 'Manage Records', width: 160,
+                        commands: [{ type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' } },
+                        { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } },
+                        { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' } },
+                        { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' } }]
+                    }
+                ],
+            }, done);
+        });
+
+        it('commandColumnFocusElement coverage', () => {
+            gridObj.focusModule.currentInfo.skipAction = true;
+            let elem: Element = gridObj.element.querySelector('.e-deletebutton');
+            (gridObj as any).focusModule.skipOn({ target: elem, action: 'tab' });
+            gridObj.focusModule.currentInfo.skipAction = true;
+            (gridObj as any).focusModule.skipOn({ target: gridObj.element.querySelector('.e-editbutton'), action: 'shiftTab' }) ;
+            (gridObj as any).focusModule.focusOutFromHeader({ preventDefault: preventDefault });
+            gridObj.focusModule.findNextCellFocus([0, 0, 1], 1);
+            gridObj.focusModule.content.previousRowFocusValidate(-1);
+        });
+
+
+
+        afterAll(function () {
             destroy(gridObj);
             gridObj = null;
         });

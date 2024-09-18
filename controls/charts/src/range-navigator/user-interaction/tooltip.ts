@@ -145,7 +145,7 @@ export class RangeTooltip {
                     areaBounds: bounds, fill: tooltip.fill ? tooltip.fill : this.control.themeStyle.tooltipBackground,
                     theme: this.control.theme,
                     clipBounds: { x: left },
-                    border: tooltip.border, opacity: tooltip.opacity ?  tooltip.opacity : ((this.control.theme === 'Material3' || this.control.theme === 'Material3Dark') ? 1 : 0.75),
+                    border: tooltip.border, opacity: tooltip.opacity ?  tooltip.opacity : ((this.control.theme === 'Material3' || this.control.theme === 'Material3Dark' || this.control.theme.indexOf('Bootstrap5') > -1) ? 1 : 0.75),
                     template: tooltip.template as string | Function,
                     textStyle: argsData.textStyle,
                     availableSize: control.availableSize,

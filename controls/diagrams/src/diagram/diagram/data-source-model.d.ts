@@ -109,7 +109,6 @@ export interface ConnectionDataSourceModel {
      *
      * @aspDefaultValueIgnore
      * @default undefined
-     * @deprecated
      */
     crudAction?: CrudActionModel;
 
@@ -180,7 +179,6 @@ export interface DataSourceModel {
      *
      * @aspDefaultValueIgnore
      * @default undefined
-     * @deprecated
      */
     crudAction?: CrudActionModel;
 

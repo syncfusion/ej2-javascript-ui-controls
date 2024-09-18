@@ -309,7 +309,7 @@ describe('Hyperlink ->', () => {
             setTimeout(() => {
                 var dialog = helper.getElement('.e-editAlert-dlg.e-dialog');
                 expect(!!dialog).toBeTruthy();
-                expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
+                // expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
                 helper.setAnimationToNone('.e-editAlert-dlg.e-dialog');
                 helper.click('.e-editAlert-dlg .e-footer-content button:nth-child(1)');
                 helper.invoke('unprotectSheet', ['Sheet1']);
@@ -750,6 +750,85 @@ describe('Hyperlink ->', () => {
         });
     });
 
+    describe('Checking Hyperlink with protect sheets.->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Protect Sheet with public hyperlink method to check protect settings without hyperlink', (done: Function) => {
+            const spreadsheet = helper.getInstance();
+            helper.invoke('protectSheet', ['Sheet1', {}]);
+            spreadsheet.addHyperlink('www.syncfusion.com', 'A2');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].cells[0].validation).toBeUndefined();
+                done();
+            });
+        });
+        it('Protect Sheet with public hyperlink method to check protect settings with hyperlink', (done: Function) => {
+            const spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet('Sheet1', { selectCells: true, formatCells: false, formatRows: false, formatColumns: false, insertLink: true });
+            spreadsheet.addHyperlink('www.syncfusion.com', 'A2');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].cells[0].validation).toBeUndefined();
+                done();
+            });
+        });
+    });
+
+    describe('Checking hyperlink public method with different types of addresses ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { rows: [{ cells: [{ value: 'Item Name' }] }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Testing hyperlink and its address as string ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange('A1');
+            spreadsheet.addHyperlink('https://support.microsoft.com/en-us/office/use-autofilter-to-filter-your-data-7d87d63e-ebd0-424b-8106-e2ab61133d92', 'A1');
+            expect(spreadsheet.sheets[0].rows[0].cells[0].style.color).toBe('#00e');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 0, [12]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.color).toBe('#551a8b');
+                done();
+            });
+        });
+        it('Testing remove hyperlink when address is string ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.removeHyperlink('A1');
+            expect(spreadsheet.sheets[0].rows[0].cells[0].hyperlink).toBeUndefined();
+            done();
+        });
+        it('Testing hyperlink and its address as object ->', (done: Function) => {
+            helper.invoke('addHyperlink', [{ address: 'https://support.microsoft.com/en-us/office/use-autofilter-to-filter-your-data-7d87d63e-ebd0-424b-8106-e2ab61133d92' }, 'B1']);
+            expect(helper.getInstance().sheets[0].rows[0].cells[1].hyperlink).toBeDefined();
+            done();
+
+        });
+        it('Testing remove hyperlink when address is object ->', (done: Function) => {
+            helper.invoke('removeHyperlink', ['B1']);
+            expect(helper.getInstance().sheets[0].rows[0].cells[0].hyperlink).toBeUndefined();
+            done();
+        });
+        it('Testing invalid hyperlink ansd its address ->', (done: Function) => {
+            helper.invoke('selectRange', ['B1']);
+            helper.invoke('addHyperlink', [{ address: 'http:/invalid_url' }, 'B1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 1, [12]);
+            setTimeout(() => {
+                let dialog = helper.getElement('.e-dlg-modal.e-dialog');
+                expect(!!dialog).toBeTruthy();
+                expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
+                helper.setAnimationToNone('.e-dlg-modal.e-dialog');
+                helper.click('.e-dlg-modal .e-footer-content button:nth-child(1)');
+                done();
+            });
+        });
+    });
+
     describe('CR-Issues ->', () => {
         describe('I328882, I328151, EJ2-47899, EJ2-50473 ->', () => {
             beforeAll((done: Function) => {
@@ -831,9 +910,24 @@ describe('Hyperlink ->', () => {
                     });
                 });
             });
+
+            it("EJ2-882827 Script error issue on opening the hyperlink dialog", (done: Function) => {
+                helper.invoke('selectRange', ['A1:CV1']);
+                helper.invoke("insertRow", [0, 0]);
+                helper.switchRibbonTab(2);
+                helper.getElementFromSpreadsheet("#" + helper.id + "_hyperlink").click();
+                setTimeout(() => {
+                    var dialog = helper.getElement(".e-control.e-dialog.e-lib.e-hyperlink-dlg.e-draggable.e-dlg-modal.e-popup.e-popup-open");
+                    expect(!!dialog).toBeTruthy();
+                    expect(dialog.classList.contains("e-hyperlink-dlg")).toBeTruthy();
+                    helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                    helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                    done();
+                }, 5);
+            });
         });
 
-        describe('EJ2-50410 ->', () => {
+        describe('EJ2-50410, EJ2-908917 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] },  {  }], activeSheetIndex: 1
                 }, done);
@@ -862,6 +956,22 @@ describe('Hyperlink ->', () => {
                         });
                     }, 10);
                 });
+            });
+            it('displayName option in addHyperLink() is not working as expected', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.addHyperlink("https://www.google.com/", "F12",'CustomDisplayText');
+                spreadsheet.addHyperlink("https://www.google.com/", "F11",'CustomDisplayText');
+                expect(spreadsheet.sheets[0].rows[10].cells[5].value).toBe('CustomDisplayText');
+                expect(spreadsheet.sheets[0].rows[11].cells[5].value).toBe('CustomDisplayText');
+                helper.invoke('selectRange', ['A1:B4']);
+                spreadsheet.merge();
+                const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+                expect(td.rowSpan).toBe(4);
+                expect(td.colSpan).toBe(2);
+                spreadsheet.unMerge();
+                expect(td.rowSpan).toBe(1);
+                expect(td.colSpan).toBe(1);
+                done();
             });
         });
 

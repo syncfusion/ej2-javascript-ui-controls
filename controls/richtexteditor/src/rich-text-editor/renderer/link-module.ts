@@ -77,9 +77,6 @@ export class Link {
         }
     }
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.insertLink, this.linkDialog);
         this.parent.off(events.showLinkDialog, this.showDialog);
         this.parent.off(events.closeLinkDialog, this.closeDialog);
@@ -382,7 +379,7 @@ export class Link {
             e.selection.range.endOffset)) || e.module === 'Markdown') {
             linkText.value = selectText;
         }
-        (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.mouseDown, true);
+        (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.mouseDown);
         if (this.quickToolObj) {
             this.hideLinkQuickToolbar();
             if (this.quickToolObj.inlineQTBar && document.body.contains(this.quickToolObj.inlineQTBar.element)) {
@@ -571,7 +568,7 @@ export class Link {
         ) {
             this.parent.notify(events.documentClickClosedBy, { closedBy: 'outside click' });
             this.dialogObj.hide({ returnValue: true } as Event);
-            (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.mouseDown, true);
+            (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.mouseDown);
             this.mouseDown = null;
             this.parent.isBlur = true;
             dispatchEvent(this.parent.element, 'focusout');
@@ -587,7 +584,7 @@ export class Link {
      */
     public destroy(): void {
         if (this.isDestroyed) { return; }
-        (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.mouseDown, true);
+        (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.mouseDown);
         this.mouseDown = null;
         this.removeEventListener();
         this.isDestroyed = true;

@@ -12,10 +12,10 @@ import { StockChart } from '../../stock-chart/index';
 import { Axis } from '../../chart/axis/axis';
 import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
 import { ContainerPadding, Location } from '../../common/model/base';
-import { ContainerPaddingModel } from '../../common/model/base-model';
 import { StockChartLegendSettingsModel } from './legend-model';
 import { StockChartFontModel, StockChartBorderModel, StockMarginModel } from '../model/base-model';
 import { LocationModel } from '../../common';
+import { ContainerPaddingModel } from '../../common/model/base-model';
 
 /**
  * Configures the legends in charts.

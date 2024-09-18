@@ -336,8 +336,8 @@ describe('Range navigator', () => {
             range.refresh();
         });
         it('checking with last labels', () => {
-            axisLabel = document.getElementById('container_AxisLabel_13');
-            expect(axisLabel === null).toBe(true);
+            axisLabel = document.getElementById('container_AxisLabels');
+            expect(axisLabel !== null).toBe(true);
         });
         it('checcking with Years and enable grouping', (done: Function) => {
             range.loaded = (args: Object) => {

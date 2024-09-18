@@ -8,7 +8,7 @@ import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { animationMode } from '@syncfusion/ej2-base';
 
 /**
- * `WaterfallSeries` module is used to render the waterfall series.
+ * The `WaterfallSeries` module is used to render the waterfall series.
  */
 
 export class WaterfallSeries extends ColumnBase {
@@ -64,7 +64,7 @@ export class WaterfallSeries extends ColumnBase {
                     let currentBottom: number;
                     let currentYValue: number = currentRegion.y;
                     let currentXValue: number = currentRegion.x;
-                    const beforePoint: Points = series.points[point.index - 1];
+                    const beforePoint: Points = series.points[(point.index - 1 === -1) ? 1 : point.index - 1];
                     if (point.yValue === 0) {
                         prevBottom = isInversed ? prevRegion.x + prevRegion.width : prevRegion.y + prevRegion.height;
                         currentBottom = isInversed ?
@@ -124,19 +124,23 @@ export class WaterfallSeries extends ColumnBase {
      * Updates the direction of rendering for the specified series.
      *
      * @param {Series} series - The series to be rendered.
+     * @param {number} point - Specifies the point.
      * @returns {void}
+     * @private
      */
-    public updateDirection(series: Series): void {
+    public updateDirection(series: Series, point: number[]): void {
         this.render(series);
         if (series.marker.visible) {
             appendChildElement(series.chart.enableCanvas, series.chart.seriesElements, series.symbolElement, true);
         }
         if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
-            series.chart.dataLabelCollections = [];
-            series.chart.dataLabelModule.render(series, series.chart, series.marker.dataLabel);
-            if (series.textElement) {
-                appendChildElement(series.chart.enableCanvas, series.chart.dataLabelElements, series.shapeElement, true);
-                appendChildElement(series.chart.enableCanvas, series.chart.dataLabelElements, series.textElement, true);
+            for (let i: number = 0; i < point.length; i++) {
+                series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
+                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                                                                 null, series.marker.dataLabel);
+                for (let j: number = 0; j < dataLabelElement.length; j++) {
+                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
+                }
             }
         }
     }
@@ -196,6 +200,7 @@ export class WaterfallSeries extends ColumnBase {
      * @param {Object[]} json - The internal data JSON array.
      * @param {Series} series - The series for which to process the data.
      * @returns {Object[]} - The processed internal data array.
+     * @private
      */
     public processInternalData(json: Object[], series: Series): Object[] {
         const data: Object[] = json; let index: number; let sumValue : number = 0;
@@ -242,6 +247,7 @@ export class WaterfallSeries extends ColumnBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         this.animate(series);

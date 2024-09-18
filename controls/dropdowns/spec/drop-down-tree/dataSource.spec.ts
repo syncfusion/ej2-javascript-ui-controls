@@ -432,6 +432,22 @@ export let listData: { [key: string]: Object }[] = [
     { id: 24, pid: 21, name: 'Tamil Nadu' },
     { id: 25, pid: 21, name: 'Punjab' }
 ];
+export let disabledListData: { [key: string]: Object }[] = [
+    { id: 1, name: 'Australia', hasChild: true, expanded: true },
+    { id: 2, pid: 1, name: 'New South Wales', isSelected: true },
+    { id: 3, pid: 1, name: 'Victoria', htmlAttributes: { class: 'e-disable' }},
+    { id: 4, pid: 1, name: 'South Australia' },
+    { id: 6, pid: 1, name: 'Western Australia' },
+    { id: 7, name: 'Brazil', hasChild: true },
+    { id: 8, pid: 7, name: 'Paraná',htmlAttributes: { class: 'e-disable' } },
+    { id: 9, pid: 7, name: 'Ceará' ,isSelected: true }, 
+    { id: 10, pid: 7, name: 'Acre' },
+    { id: 11, name: 'China', hasChild: true },
+    { id: 12, pid: 11, name: 'Guangzhou' },
+    { id: 13, pid: 11, name: 'Shanghai' },
+    { id: 14, pid: 11, name: 'Beijing' },
+    { id: 15, pid: 11, name: 'Shantou' },
+];
 export let filteredlistData: { [key: string]: Object }[] = [
     { id: 21, name: 'India', hasChild: true,expanded: true },
     { id: 22, pid: 21, name: 'Assam' },

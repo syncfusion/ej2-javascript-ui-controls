@@ -1,9 +1,10 @@
-import { Gantt, Selection,UndoRedo, Edit, Toolbar,Filter, Sort } from '../../src/index';
+import { Gantt, Selection,UndoRedo, Edit, Toolbar,Filter, Sort, ContextMenu } from '../../src/index';
 import { projectData1, splitTasksData,exportData, editingData, resourcesData, cellEditData} from '../base/data-source.spec';
 import { IKeyPressedEventArgs } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt, triggerMouseEvent, getKeyUpObj, triggerKeyboardEvent } from '../base/gantt-util.spec';
 import { Browser, getValue } from '@syncfusion/ej2-base';
 import { RowSelectingEventArgs } from '@syncfusion/ej2-grids';
+import { TextBox } from '@syncfusion/ej2-inputs';
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
@@ -403,17 +404,7 @@ describe('Gantt Selection support', () => {
                 expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe("2/4/2019");
 
             });
-
-           
-
         });
-
-
-
-
-        
-
-
     });
 
     describe('Navigation Up and Down Arrow', () => {
@@ -813,10 +804,11 @@ describe('Gantt Selection support', () => {
             let args: any = { action: 'undo', preventDefault: preventDefault };
             ganttObj.keyboardModule.keyAction(args);
         });
-        it('Redo actin for add record', () => {
+        it('Redo actin for add record', (done:Function) => {
             ganttObj.actionComplete = function (args: any): void {
                 if(args.requestType === 'add') {
                     expect(ganttObj.flatData.length).toBe(42);
+                    done()
                 }
             };
             let args: any = { action: 'redo', preventDefault: preventDefault };
@@ -824,7 +816,710 @@ describe('Gantt Selection support', () => {
             
         });
     });
- describe('shift Tab action', function () {
+    describe('Cell selection keyboard navigation', () => {
+        Gantt.Inject(Sort, Edit, Toolbar, Selection);
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true
+                    },
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    selectionSettings: {
+                        mode: 'Cell',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        it('Selecting record', () => {
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+        });
+        it('Checking for selecting record', () => {
+            let args: any = { action: 'downArrow', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Duration edit with edit template', () => {
+        Gantt.Inject(Sort, Edit, Toolbar, Selection);
+        let elem: HTMLElement;
+        let dropdownlistObj: TextBox;
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true
+                    },
+                    selectedRowIndex:2,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    columns: [
+                        { field: 'TaskID', width: 80 },
+                        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                        { field: 'StartDate' },
+                        {
+                            field: 'Duration',
+                            edit: {
+                                create: () => {
+                                    elem = document.createElement('input');
+                                    return elem;
+                                },
+                                read: () => {
+                                    return dropdownlistObj.value;
+                                },
+                                destroy: () => {
+                                    dropdownlistObj.destroy();
+                                },
+                                write: (args: any) => {
+                                    dropdownlistObj = new TextBox({
+                                        value: args.rowData[args.column.field],
+                                        floatLabelType: 'Auto'
+                                    });
+                                    dropdownlistObj.appendTo(elem);
+                                }
+                            }
+                        },
+                        { field: 'Progress' },
+                        { field: 'Predecessor' }
+                    ],
+                    splitterSettings: {
+                        position: "70%"
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        it('Editing duration column', (done:Function) => {
+            ganttObj.actionComplete = function (args: any): void {
+                if (args.requestType === "save") {
+                    expect(args.data.ganttProperties.duration).toBe(50)
+                    done()
+                }
+            };
+            let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(4)') as HTMLElement;
+            triggerMouseEvent(duration, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+            input.value = 50;
+            let args1: any = { action: 'saveRequest', preventDefault: preventDefault,target: input };
+            ganttObj.keyboardModule.keyAction(args1); 
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Sorting using keyboard event', () => {
+        Gantt.Inject(Sort, Edit, Toolbar, Selection);
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true
+                    },
+                    selectedRowIndex:2,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    columns: [
+                        { field: 'TaskID', width: 80 },
+                        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                        { field: 'StartDate' },
+                        {
+                            field: 'Duration'
+                        },
+                        { field: 'Progress' },
+                        { field: 'Predecessor' }
+                    ],
+                    splitterSettings: {
+                        position: "70%"
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        beforeEach((done) => {
+            setTimeout(done, 200);
+        });
+        it('Sorting Column', () => {
+            ganttObj.actionComplete = function (args: any): void {
+                if (args.requestType === "sorting") {
+                    expect(parseInt(ganttObj.currentViewData[1].ganttProperties.taskId)).toBe(2);
+                }
+            };
+            let headerCell: HTMLElement = document.getElementsByClassName('e-headercell')[0] as HTMLElement;
+            let args1 = { action: 'saveRequest', preventDefault: preventDefault, target: headerCell, key: 'Enter' };
+            ganttObj.keyboardModule.keyAction(args1);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    // describe('Down arrow key navigation in chart row', () => {
+    //     Gantt.Inject(Sort, Edit, Toolbar, Selection);
+    //     let ganttObj: Gantt;
+    //     let preventDefault: Function = new Function();
+    //     beforeAll((done: Function) => {
+    //         ganttObj = createGantt(
+    //             {
+    //                 dataSource: projectData1,
+    //                 editSettings: {
+    //                     allowAdding: true,
+    //                     allowEditing: true,
+    //                     allowDeleting: true
+    //                 },
+    //                 selectedRowIndex:2,
+    //                 allowSorting: true,
+    //                 taskFields: {
+    //                     id: 'TaskID',
+    //                     name: 'TaskName',
+    //                     startDate: 'StartDate',
+    //                     endDate: 'EndDate',
+    //                     duration: 'Duration',
+    //                     progress: 'Progress',
+    //                     child: 'subtasks',
+    //                     dependency: 'Predecessor'
+    //                 },
+    //                 columns: [
+    //                     { field: 'TaskID', width: 80 },
+    //                     { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+    //                     { field: 'StartDate' },
+    //                     {
+    //                         field: 'Duration'
+    //                     },
+    //                     { field: 'Progress' },
+    //                     { field: 'Predecessor' }
+    //                 ],
+    //                 splitterSettings: {
+    //                     position: "70%"
+    //                 },
+    //                 selectionSettings: {
+    //                     mode: 'Row',
+    //                     type: 'Single',
+    //                     enableToggle: false
+    //                 },
+    //                 projectStartDate: new Date('02/01/2017'),
+    //                 projectEndDate: new Date('12/30/2017'),
+    //                 rowHeight: 40,
+    //                 taskbarHeight: 30
+    //             }, done);
+    //     });
+    //     beforeEach((done) => {
+    //         setTimeout(done, 200);
+    //     });
+    //     it('Check selection row', () => {
+    //         let taskbar: HTMLElement = document.getElementsByClassName('e-taskbar-main-container')[2] as HTMLElement;
+    //         triggerMouseEvent(taskbar, 'click');
+    //         triggerMouseEvent(taskbar, 'mousedown');
+    //         triggerMouseEvent(taskbar, 'mouseup');
+    //         taskbar.focus()
+    //         let args1 = { action: 'downArrow', preventDefault: preventDefault, target: taskbar };
+    //         ganttObj.keyboardModule.keyAction(args1);
+    //     });
+    //     it('Check selection row1', (done:Function) => {
+    //         ganttObj.rowSelected = function (args: any): void {
+    //             if (args.rowIndex === 3) {
+    //                 done()
+    //             }
+    //         };
+    //         let taskbar: HTMLElement = document.getElementsByClassName('e-taskbar-main-container')[2] as HTMLElement;
+    //         triggerMouseEvent(taskbar, 'click');
+    //         triggerMouseEvent(taskbar, 'mousedown');
+    //         triggerMouseEvent(taskbar, 'mouseup');
+    //         taskbar.focus()
+    //         let args1 = { action: 'downArrow', preventDefault: preventDefault, target: taskbar };
+    //         ganttObj.keyboardModule.keyAction(args1);
+    //     });
+    //     afterAll(() => {
+    //         if (ganttObj) {
+    //             destroyGantt(ganttObj);
+    //         }
+    //     });
+    // });
+    describe('Opening add dialog using keyboard', () => {
+        Gantt.Inject(Sort, Edit, Toolbar, Selection);
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true
+                    },
+                    selectedRowIndex:2,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    columns: [
+                        { field: 'TaskID', width: 80 },
+                        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                        { field: 'StartDate' },
+                        {
+                            field: 'Duration'
+                        },
+                        { field: 'Progress' },
+                        { field: 'Predecessor' }
+                    ],
+                    splitterSettings: {
+                        position: "70%"
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        beforeEach((done) => {
+            setTimeout(done, 500);
+            ganttObj.openAddDialog()
+        });
+        it('checking if dialog open', () => {
+            let button: HTMLElement =  document.getElementById(ganttObj.element.id + '_dialog').querySelector('button') as HTMLElement;
+            triggerMouseEvent(button, 'click');
+            let args: any = { action: 'addRowDialog', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+            expect(document.getElementById(ganttObj.element.id + '_dialog') != null).toBe(true)
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Deleting record after dialog open', () => {
+        Gantt.Inject(Sort, Edit, Toolbar, Selection);
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true
+                    },
+                    selectedRowIndex:2,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    columns: [
+                        { field: 'TaskID', width: 80 },
+                        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                        { field: 'StartDate' },
+                        {
+                            field: 'Duration'
+                        },
+                        { field: 'Progress' },
+                        { field: 'Predecessor' }
+                    ],
+                    splitterSettings: {
+                        position: "70%"
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        beforeEach((done) => {
+            setTimeout(done, 500);
+            ganttObj.openAddDialog()
+        });
+        it('Record after delete action', (done: Function) => {
+            ganttObj.actionComplete = function (args: any): void {
+                if (args.requestType === "delete") {
+                    expect(ganttObj.flatData.length).toBe(40)
+                    done()
+                }
+            };
+            let button: HTMLElement =  document.getElementById(ganttObj.element.id + '_dialog').querySelector('button') as HTMLElement;
+            triggerMouseEvent(button, 'click');
+            let args: any = { action: 'delete', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Focus task keyboard action', () => {
+        Gantt.Inject(Sort, Edit, Toolbar, Selection);
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true
+                    },
+                    selectedRowIndex:2,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    columns: [
+                        { field: 'TaskID', width: 80 },
+                        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                        { field: 'StartDate' },
+                        {
+                            field: 'Duration'
+                        },
+                        { field: 'Progress' },
+                        { field: 'Predecessor' }
+                    ],
+                    splitterSettings: {
+                        position: "70%"
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        beforeEach((done) => {
+            setTimeout(done, 500);
+        });
+        it('Checked focused task', () => {
+            let args: any = { action: 'focusTask', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+            expect(document.getElementsByClassName('e-selectionbackground').length > 0).toBe(true)
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Up arrow key navigation', () => {
+        Gantt.Inject(Sort, Edit, Toolbar, Selection,ContextMenu);
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true
+                    },
+                    enableContextMenu:true,
+                    selectedRowIndex:2,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    columns: [
+                        { field: 'TaskID', width: 80 },
+                        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                        { field: 'StartDate' },
+                        {
+                            field: 'Duration'
+                        },
+                        { field: 'Progress' },
+                        { field: 'Predecessor' }
+                    ],
+                    splitterSettings: {
+                        position: "70%"
+                    },
+                    selectionSettings: {
+                        mode: 'Cell',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        beforeEach((done) => {
+            setTimeout(done, 500);
+        });
+        it('Selected cell index', (done: Function) => {
+            let targetCell: HTMLElement = document.getElementsByClassName('e-rowcell')[25] as HTMLElement;
+            triggerMouseEvent(targetCell, 'click');
+            targetCell.focus()
+            let args: any = { action: 'upArrow', preventDefault: preventDefault};
+            ganttObj.keyboardModule.keyAction(args);
+            done()
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Collapse key', () => {
+        Gantt.Inject(Sort, Edit, Toolbar, Selection,ContextMenu);
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true
+                    },
+                    enableContextMenu:true,
+                    selectedRowIndex:2,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    columns: [
+                        { field: 'TaskID', width: 80 },
+                        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                        { field: 'StartDate' },
+                        {
+                            field: 'Duration'
+                        },
+                        { field: 'Progress' },
+                        { field: 'Predecessor' }
+                    ],
+                    splitterSettings: {
+                        position: "70%"
+                    },
+                    selectionSettings: {
+                        mode: 'Cell',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        beforeEach((done) => {
+            setTimeout(done, 500);
+        });
+        it('Collapsed record', () => {
+            ganttObj.collapsed = function (args: any): void {
+                expect(args.data.expanded).toBe(false)
+            };
+            let targetCell: HTMLElement = document.getElementsByClassName('e-rowcell')[7] as HTMLElement;
+            triggerMouseEvent(targetCell, 'click');
+            targetCell.focus()
+            let args: any = { action: "collapseRow", preventDefault: preventDefault,target:targetCell};
+            ganttObj.keyboardModule.keyAction(args);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    // describe('Pressing enter key on taskbar', () => {
+    //     Gantt.Inject(Sort, Edit, Toolbar, Selection);
+    //     let ganttObj: Gantt;
+    //     let preventDefault: Function = new Function();
+    //     beforeAll((done: Function) => {
+    //         ganttObj = createGantt(
+    //             {
+    //                 dataSource: projectData1,
+    //                 editSettings: {
+    //                     allowAdding: true,
+    //                     allowEditing: true,
+    //                     allowDeleting: true
+    //                 },
+    //                 selectedRowIndex:2,
+    //                 allowSorting: true,
+    //                 taskFields: {
+    //                     id: 'TaskID',
+    //                     name: 'TaskName',
+    //                     startDate: 'StartDate',
+    //                     endDate: 'EndDate',
+    //                     duration: 'Duration',
+    //                     progress: 'Progress',
+    //                     child: 'subtasks',
+    //                     dependency: 'Predecessor'
+    //                 },
+    //                 columns: [
+    //                     { field: 'TaskID', width: 80 },
+    //                     { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+    //                     { field: 'StartDate' },
+    //                     {
+    //                         field: 'Duration'
+    //                     },
+    //                     { field: 'Progress' },
+    //                     { field: 'Predecessor' }
+    //                 ],
+    //                 splitterSettings: {
+    //                     position: "70%"
+    //                 },
+    //                 selectionSettings: {
+    //                     mode: 'Row',
+    //                     type: 'Single',
+    //                     enableToggle: false
+    //                 },
+    //                 projectStartDate: new Date('02/01/2017'),
+    //                 projectEndDate: new Date('12/30/2017'),
+    //                 rowHeight: 40,
+    //                 taskbarHeight: 30
+    //             }, done);
+    //     });
+    //     beforeEach((done) => {
+    //         setTimeout(done, 200);
+    //     });
+    //     it('Check selection row after enter', (done: Function) => {
+    //         let taskbar: HTMLElement = document.getElementsByClassName('e-taskbar-main-container')[2] as HTMLElement;
+    //         triggerMouseEvent(taskbar, 'click');
+    //         triggerMouseEvent(taskbar, 'mousedown');
+    //         triggerMouseEvent(taskbar, 'mouseup');
+    //         taskbar.focus()
+    //         let args1 = { action: 'saveRequest', preventDefault: preventDefault, target: taskbar, key: 'Enter' };
+    //         ganttObj.keyboardModule.keyAction(args1);
+    //         done()
+    //     });
+    //     it('Check selection row after enter1', (done: Function) => {
+    //         let taskbar: HTMLElement = document.getElementsByClassName('e-taskbar-main-container')[2] as HTMLElement;
+    //         triggerMouseEvent(taskbar, 'click');
+    //         triggerMouseEvent(taskbar, 'mousedown');
+    //         triggerMouseEvent(taskbar, 'mouseup');
+    //         taskbar.focus()
+    //         let args1 = { action: 'saveRequest', preventDefault: preventDefault, target: taskbar, key: 'Enter' };
+    //         ganttObj.keyboardModule.keyAction(args1);
+    //         done()
+    //     });
+    //     afterAll(() => {
+    //         if (ganttObj) {
+    //             destroyGantt(ganttObj);
+    //         }
+    //     });
+    // });
+    
+    describe('shift Tab action', function () {
         let ganttObj: Gantt;
         let preventDefault: Function = new Function();
         beforeAll(function (done) {
@@ -838,117 +1533,501 @@ describe('Gantt Selection support', () => {
                     duration: 'Duration',
                     progress: 'Progress',
                     dependency: 'Predecessor',
-                    child: 'subtasks',
-                    segments: 'Segments',
+                        child: 'subtasks',
+                        segments: 'Segments',
                 },
                 allowRowDragAndDrop: true,
-                editSettings: {
-                allowAdding: true,
-                allowEditing: true,
-                allowDeleting: true,
-                allowTaskbarEditing: false,
-                showDeleteConfirmDialog: true,
-                allowNextRowEdit: false,
-        },
-        columns: [
-            { field: 'TaskID', width: 60 },
-            {
-                field: 'TaskName',
-                headerText: 'Job Name',
-                width: '250',
-                clipMode: 'EllipsisWithTooltip',
+                    editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: false,
+                    showDeleteConfirmDialog: true,
+                    allowNextRowEdit: false,
             },
-            { field: 'StartDate' },
-            { field: 'EndDate' },
-            { field: 'Duration' },
-            { field: 'Progress' },
-            { field: 'Predecessor' },
-        ],
-        toolbar: [
-            'Add',
-            'Edit',
-            'Update',
-            'Delete',
-            'Cancel',
-            'ExpandAll',
-            'CollapseAll',
-        ],
-        enableContextMenu: true,
-        allowSelection: true,
-        height: '450px',
-        treeColumnIndex: 1,
-        highlightWeekends: true,
-        splitterSettings: {
-            columnIndex: 2,
-        },
-        labelSettings: {
-            leftLabel: 'TaskName',
-            taskLabel: '${Progress}%',
-        },
-        projectStartDate: new Date('01/30/2019'),
-        projectEndDate: new Date('03/04/2019')
-            }, done);
+            columns: [
+                { field: 'TaskID', width: 60 },
+                {
+                    field: 'TaskName',
+                    headerText: 'Job Name',
+                    width: '250',
+                    clipMode: 'EllipsisWithTooltip',
+                },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' },
+            ],
+            toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+            ],
+            enableContextMenu: true,
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            highlightWeekends: true,
+            splitterSettings: {
+                columnIndex: 2,
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: '${Progress}%',
+            },
+            projectStartDate: new Date('01/30/2019'),
+            projectEndDate: new Date('03/04/2019')
+                }, done);
+            });
+            afterAll(function () {
+                if (ganttObj) {
+                    destroyGantt(ganttObj);
+                }
+            });
+            beforeEach((done: Function) => {
+                setTimeout(done, 500);
+            });
+            it('shift Tab action after editing cell', () => {
+                let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
+                triggerMouseEvent(endDate, 'dblclick');
+                let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+                ganttObj.keyboardModule.keyAction(args);
+                expect(ganttObj.element.getElementsByClassName('e-editedbatchcell')[0].getAttribute('data-colindex')).toBe("2");
+    
+            });
         });
-        afterAll(function () {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
-        it('shift Tab action after editing cell', () => {
-            let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
-            triggerMouseEvent(endDate, 'dblclick');
-            let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
-            ganttObj.keyboardModule.keyAction(args);
-            expect(ganttObj.element.getElementsByClassName('e-editedbatchcell')[0].getAttribute('data-colindex')).toBe("2");
 
-        });
-    });
+        describe('shift Tab action', function () {
+            let ganttObj: Gantt;
+            let preventDefault: Function = new Function();
+            beforeAll(function (done) {
+                ganttObj = createGantt({
+                    dataSource: splitTasksData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                            child: 'subtasks',
+                            segments: 'Segments',
+                    },
+                    allowRowDragAndDrop: true,
+                        editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: false,
+                        showDeleteConfirmDialog: true,
+                        allowNextRowEdit: false,
+                },
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Job Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' },
+                ],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'ExpandAll',
+                    'CollapseAll',
+                ],
+                enableContextMenu: true,
+                allowSelection: true,
+                height: '450px',
+                treeColumnIndex: 1,
+                highlightWeekends: true,
+                splitterSettings: {
+                    columnIndex: 2,
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: '${Progress}%',
+                },
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+                    }, done);
+                });
+                afterAll(function () {
+                    if (ganttObj) {
+                        destroyGantt(ganttObj);
+                    }
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(done, 500);
+                });
+            it('Tab action after focusing header cell', () => {
+                let headerCell: HTMLElement = document.getElementsByClassName('e-headercell')[0] as HTMLElement;
+                triggerMouseEvent(headerCell, 'click');
+                let args: any = { action: 'tab', preventDefault: preventDefault, target: headerCell } as any;
+                ganttObj.keyboardModule.keyAction(args);
+                expect(document.getElementsByClassName('e-headercell e-ellipsistooltip e-focused e-focus').length).toBe(1);
 
-describe('control + all to select all record action', function () {
-    let ganttObj: Gantt;
-    let preventDefault: Function = new Function();
-    beforeAll(function (done) {
-        ganttObj = createGantt({
-            dataSource: projectData1,
-            editSettings:{
-                allowAdding: true,
-                allowEditing:true,
-                allowDeleting: true
-            },
-            enableUndoRedo: true,
-            undoRedoActions:['Add','Edit','Delete'],
-            allowSorting: true,
-            taskFields: {
-                id: 'TaskID',
-                name: 'TaskName',
-                startDate: 'StartDate',
-                endDate: 'EndDate',
-                duration: 'Duration',
-                progress: 'Progress',
-                child: 'subtasks',
-                dependency: 'Predecessor'
-            },
-            selectionSettings: {
-                mode: 'Row',
-                type: 'Multiple'
-            },
-            projectStartDate: new Date('02/01/2017'),
-            projectEndDate: new Date('12/30/2017'),
-            rowHeight: 40,
-            taskbarHeight: 30
-        }, done);
-    });
-    afterAll(function () {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
-    it('to select all record', () => {
-        let args: any = { action: 'selectAll', preventDefault: preventDefault };
-        ganttObj.keyboardModule.keyAction(args);
-        expect(ganttObj.selectionModule.selectedRowIndexes.length).toBe(41)
-    });
-});
+            });
+
+            it('shift Tab action after focusing header cell', () => {
+                let headerCell: HTMLElement = document.getElementsByClassName('e-headercell')[1] as HTMLElement;
+                triggerMouseEvent(headerCell, 'click');
+                let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell } as any;
+                ganttObj.keyboardModule.keyAction(args);
+
+            });
+            it('tab action for header items', () => {
+                let headerCell: HTMLElement = document.getElementsByClassName('e-headercell')[0] as HTMLElement;
+                triggerMouseEvent(headerCell, 'click');
+                let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell } as any;
+                ganttObj.keyboardModule.keyAction(args);
+
+            });
+            it('tab action for cells', () => {
+                let headerCell: HTMLElement = (document.getElementsByClassName('e-row')[0] as any).cells[1] as HTMLElement;
+                triggerMouseEvent(headerCell, 'click');
+                let args: any = { action: 'focusTask', preventDefault: preventDefault, target: headerCell } as any;
+                ganttObj.keyboardModule.keyAction(args);
+                let args1: any = { action: 'tab', preventDefault: preventDefault, target: headerCell } as any;
+                ganttObj.keyboardModule.keyAction(args1);
+
+            });
+            it('tab action for labels', () => {
+                let headerCell: HTMLElement = (document.getElementsByClassName('e-row')[0] as any).cells[7] as HTMLElement;
+                triggerMouseEvent(headerCell, 'click');
+                let args: any = { action: 'focusTask', preventDefault: preventDefault, target: headerCell } as any;
+                ganttObj.keyboardModule.keyAction(args);
+                let args1: any = { action: 'tab', preventDefault: preventDefault, target: headerCell } as any;
+                ganttObj.keyboardModule.keyAction(args1);
+
+            });
+            it('tab action for second row to first row', () => {
+                let headerCell: HTMLElement = (document.getElementsByClassName('e-row')[1] as any).cells[1] as HTMLElement;
+                triggerMouseEvent(headerCell, 'click');
+                let args: any = { action: 'focusTask', preventDefault: preventDefault, target: headerCell } as any;
+                ganttObj.keyboardModule.keyAction(args);
+                let args1: any = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell } as any;
+                ganttObj.keyboardModule.keyAction(args1);
+
+            });
+        });
+        describe('shift Tab action', function () {
+            let ganttObj: Gantt;
+            let preventDefault: Function = new Function();
+            beforeAll(function (done) {
+                ganttObj = createGantt({
+                    dataSource: splitTasksData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                            child: 'subtasks',
+                            segments: 'Segments',
+                    },
+                    allowRowDragAndDrop: true,
+                        editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: false,
+                        showDeleteConfirmDialog: true,
+                        allowNextRowEdit: false,
+                },
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Job Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' },
+                ],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'ExpandAll',
+                    'CollapseAll',
+                ],
+                enableContextMenu: true,
+                allowSelection: true,
+                height: '450px',
+                treeColumnIndex: 1,
+                highlightWeekends: true,
+                splitterSettings: {
+                    columnIndex: 2,
+                },
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+                    }, done);
+                });
+                afterAll(function () {
+                    if (ganttObj) {
+                        destroyGantt(ganttObj);
+                    }
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(done, 500);
+                });
+            it('shift tab from', () => {
+                let headerCell: HTMLElement = (document.getElementsByClassName('e-taskbar-main-container')[0] as any)as HTMLElement;
+                triggerMouseEvent(headerCell, 'click');
+                let args: any = { action: 'focusTask', preventDefault: preventDefault, target: headerCell } as any;
+                ganttObj.keyboardModule.keyAction(args);
+                let args1: any = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell } as any;
+                ganttObj.keyboardModule.keyAction(args1);
+
+            });
+            it('tab for non editing cell', function () {
+                let headerCell = (document.getElementsByClassName('e-row')[0] as any).cells[5];
+                triggerMouseEvent(headerCell, 'dblclick');
+                var args1 = { action: 'tab', preventDefault: preventDefault, target: headerCell };
+                ganttObj.keyboardModule.keyAction(args1);
+                expect(document.getElementsByClassName('e-editedbatchcell').length).toBe(1);
+            });
+            it('shift tab for non editing cell', function () {
+                let headerCell = (document.getElementsByClassName('e-row')[0] as any).cells[7];
+                triggerMouseEvent(headerCell, 'dblclick');
+                var args1 = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell };
+                ganttObj.keyboardModule.keyAction(args1);
+                expect(document.getElementsByClassName('e-editedbatchcell').length).toBe(1);
+            });
+        });
+        describe('control + all to select all record action', function () {
+            let ganttObj: Gantt;
+            let preventDefault: Function = new Function();
+            beforeAll(function (done) {
+                ganttObj = createGantt({
+                    dataSource: projectData1,
+                    editSettings:{
+                        allowAdding: true,
+                        allowEditing:true,
+                        allowDeleting: true
+                    },
+                    enableUndoRedo: true,
+                    undoRedoActions:['Add','Edit','Delete'],
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Multiple'
+                    },
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+            });
+            afterAll(function () {
+                if (ganttObj) {
+                    destroyGantt(ganttObj);
+                }
+            });
+            it('to select all record', () => {
+                let args: any = { action: 'selectAll', preventDefault: preventDefault };
+                ganttObj.keyboardModule.keyAction(args);
+                expect(ganttObj.selectionModule.selectedRowIndexes.length).toBe(41)
+            });
+        });
+ describe('Gantt editing action', () => {
+            let ganttObj: Gantt;
+            let interval: number;
+            let preventDefault: Function = new Function();
+            beforeAll((done: Function) => {
+                ganttObj = createGantt(
+                    {
+                        dataSource: cellEditData,
+                        taskFields: {
+                            id: 'TaskID',
+                            name: 'TaskName',
+                            startDate: 'StartDate',
+                            endDate: 'EndDate',
+                            duration: 'Duration',
+                            progress: 'Progress',
+                            notes: 'Notes',
+                            baselineStartDate: 'BaselineStartDate',
+                            baselineEndDate: 'BaselineEndDate',
+                            resourceInfo: 'Resource',
+                            dependency: 'Predecessor',
+                            child: 'subtasks'
+                        },
+                        resourceIDMapping: 'resourceId',
+                        resourceNameMapping: 'resourceName',
+                        resources: resourcesData,
+                        allowSelection: true,
+                        projectStartDate: new Date('03/25/2019'),
+                        projectEndDate: new Date('05/30/2019'),
+                        selectionSettings: {
+                            mode: 'Both',
+                            type: 'Multiple',
+                            enableToggle: false
+                        },
+                        renderBaseline: true,
+                        editSettings: {
+                            allowAdding: true,
+                            allowEditing: true,
+                            allowDeleting: true,
+                            allowNextRowEdit: true
+                        },
+                        editDialogFields: [
+                            { type: 'General' },
+                            { type: 'Dependency' },
+                            { type: 'Resources' },
+                            { type: 'Notes' },
+                        ],
+                        splitterSettings: {
+                            columnIndex: 9
+                        },
+                        allowUnscheduledTasks: true,
+                        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                        columns: [
+                            { field: 'TaskID', width: 60 },
+                            { field: 'TaskName', editType: 'stringedit', width: 100 },
+                            { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                            { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                            { field: 'Duration', width: 100 },
+                            { field: 'Predecessor', width: 100 },
+                            { field: 'Progress', width: 100 },
+                            { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                            { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
+                            { field: 'Resource', width: 100 },
+                            { field: 'Notes', width: 100 },
+                            { field: 'Customcol', headerText: 'Custom Column', width: 100 }
+                        ],
+
+                    }, done);
+            });
+            afterAll(() => {
+                if (ganttObj) {
+                    destroyGantt(ganttObj);
+                }
+            });
+            it('home key testing', () => {
+                let args: any = { action: 'home', preventDefault: preventDefault };
+                ganttObj.selectedRowIndex = 0;
+                ganttObj.keyboardModule.keyAction(args);
+                expect(ganttObj.selectedRowIndex).toBe(0);
+            });
+            it('end key testing', () => {
+                let args: any = { action: 'end', preventDefault: preventDefault };
+                ganttObj.keyboardModule.keyAction(args);
+                expect(ganttObj.selectedRowIndex).toBe(ganttObj.currentViewData.length - 1);
+            });
+        });
+describe('shift Tab action', function () {
+            let ganttObj: Gantt;
+            let preventDefault: Function = new Function();
+            beforeAll(function (done) {
+                ganttObj = createGantt({
+                    dataSource: splitTasksData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                            child: 'subtasks',
+                            segments: 'Segments',
+                    },
+                    labelSettings: {
+                        leftLabel:'TaskID',
+                        rightLabel:'TaskName'
+                    },
+                    allowRowDragAndDrop: true,
+                        editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: false,
+                        showDeleteConfirmDialog: true,
+                        allowNextRowEdit: false,
+                },
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Job Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' },
+                ],
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'ExpandAll',
+                    'CollapseAll',
+                ],
+                enableContextMenu: true,
+                allowSelection: true,
+                height: '450px',
+                treeColumnIndex: 1,
+                highlightWeekends: true,
+                splitterSettings: {
+                    columnIndex: 2,
+                },
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+                    }, done);
+                });
+                afterAll(function () {
+                    if (ganttObj) {
+                        destroyGantt(ganttObj);
+                    }
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(done, 500);
+                });
+                it('shift tab action from taskbar to label', function () {
+                    let taskbar: any = document.getElementsByClassName('e-gantt-child-taskbar-inner-div')[2];
+                    triggerMouseEvent(taskbar, 'click');
+                    var args = { action: 'focusTask', preventDefault: preventDefault, target: taskbar };
+                    ganttObj.keyboardModule.keyAction(args);
+                    var args1 = { action: 'shiftTab', preventDefault: preventDefault, target: taskbar };
+                    ganttObj.keyboardModule.keyAction(args1);
+                });
+        });

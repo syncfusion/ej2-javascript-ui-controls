@@ -8,7 +8,7 @@ import { CylinderSeriesOption } from './column-series';
 
 
 /**
- * `StackingBarSeries` module is used to render the stacking bar series.
+ * The `StackingBarSeries` module is used to render the stacking bar series.
  */
 export class StackingBarSeries extends ColumnBase {
     public sideBySideInfo: DoubleRange[] = [];
@@ -89,12 +89,9 @@ export class StackingBarSeries extends ColumnBase {
                 }
                 if (seriesCollection[j as number].marker.dataLabel.visible && seriesCollection[j as number].chart.dataLabelModule) {
                     seriesCollection[j as number].chart.dataLabelModule.commonId = seriesCollection[j as number].chart.element.id + '_Series_' + seriesCollection[j as number].index + '_Point_';
-                    const dataLabelElement: Element[] = seriesCollection[j as number].chart.dataLabelModule.renderDataLabel(
+                    seriesCollection[j as number].chart.dataLabelModule.renderDataLabel(
                         seriesCollection[j as number], seriesCollection[j as number].points[point[i as number]],
                         null, seriesCollection[j as number].marker.dataLabel);
-                    for (let j: number = 0; j < dataLabelElement.length; j++) {
-                        series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                    }
                 }
             }
         }
@@ -123,6 +120,7 @@ export class StackingBarSeries extends ColumnBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         this.animate(series);

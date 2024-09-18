@@ -3,10 +3,12 @@ import { isNullOrUndefined as isNaN, createElement, extend, remove, addClass, se
 import { IConditionalFormatSettings } from '../../base/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { Button } from '@syncfusion/ej2-buttons';
-import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
+import { ChangeEventArgs } from '@syncfusion/ej2-buttons';
+import { ColorPicker, ColorPickerEventArgs, TextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, ChangeEventArgs as DropDownArgs } from '@syncfusion/ej2-dropdowns';
 import { ConditionalFormatSettingsModel } from '../../model/datasourcesettings-model';
 import { Condition } from '../../base';
+import { CheckBox } from '@syncfusion/ej2-buttons';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { PivotActionInfo } from '../base/interface';
@@ -62,6 +64,7 @@ export class ConditionalFormatting {
         const buttonModel: ButtonPropsModel[] = [
             {
                 click: this.addButtonClick.bind(this),
+                isFlat: false,
                 buttonModel: {
                     cssClass: (this.parent.isAdaptive ? (cls.FORMAT_ROUND_BUTTON + ' ' + cls.FORMAT_CONDITION_BUTTON) :
                         cls.FORMAT_CONDITION_BUTTON) + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
@@ -71,7 +74,7 @@ export class ConditionalFormatting {
             },
             {
                 click: this.applyButtonClick.bind(this),
-                isFlat: true,
+                isFlat: false,
                 buttonModel: {
                     isPrimary: true, cssClass: cls.FORMAT_APPLY_BUTTON + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     content: this.parent.localeObj.getConstant('apply')
@@ -79,7 +82,7 @@ export class ConditionalFormatting {
             },
             {
                 click: this.cancelButtonClick.bind(this),
-                isFlat: true,
+                isFlat: false,
                 buttonModel: {
                     cssClass: cls.FORMAT_CANCEL_BUTTON + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     content: this.parent.localeObj.getConstant('cancel')
@@ -214,95 +217,154 @@ export class ConditionalFormatting {
             });
             outerDiv.appendChild(button);
             const innerDiv: HTMLElement = createElement('div', { id: this.parentID + 'innerDiv' + i, className: cls.FORMAT_INNER });
-            let table: HTMLElement = createElement('table', {
-                id: this.parentID + 'cftable' + i, className: cls.FORMAT_TABLE, attrs: { 'role': 'table' }
+            const valueTable: HTMLElement = createElement('table', {
+                id: this.parentID + '_valueTable' + i, className: cls.FORMAT_TABLE, attrs: { 'role': 'table' }
             });
-            let tRow: HTMLElement = createElement('tr'); let td: HTMLElement = createElement('td');
+            let valueTableRow: HTMLElement = createElement('tr'); let valueTableElements: HTMLElement = createElement('td');
             const valuelabel: HTMLElement = createElement('span', {
                 id: this.parentID + 'valuelabel' + i, className: cls.FORMAT_VALUE_LABEL
             });
             valuelabel.innerText = this.parent.localeObj.getConstant('value');
-            td.appendChild(valuelabel); tRow.appendChild(td);
-            table.appendChild(tRow); tRow = createElement('tr'); td = createElement('td');
+            valueTableElements.appendChild(valuelabel); valueTableRow.appendChild(valueTableElements);
+            valueTable.appendChild(valueTableRow); valueTableRow = createElement('tr'); valueTableElements = createElement('td');
             const measureDropdown: HTMLElement = createElement('div', { id: this.parentID + 'measure' + i });
             const measureInput: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'measureinput' + i,
                 attrs: { 'type': 'text', 'tabindex': '0' }
             }) as HTMLInputElement;
-            measureDropdown.appendChild(measureInput); td.appendChild(measureDropdown); tRow.appendChild(td); td = createElement('td');
+            measureDropdown.appendChild(measureInput); valueTableElements.appendChild(measureDropdown);
+            valueTableRow.appendChild(valueTableElements); valueTableElements = createElement('td');
             const conditionDropdown: HTMLElement = createElement('div', { id: this.parentID + 'condition' + i });
             const conditionInput: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'conditioninput' + i,
                 attrs: { 'type': 'text', 'tabindex': '0' }
             }) as HTMLInputElement;
-            conditionDropdown.appendChild(conditionInput); td.appendChild(conditionDropdown); tRow.appendChild(td);
-            td = createElement('td');
-            const style: string = !(format.conditions === 'Between' || format.conditions === 'NotBetween') ?
-                'display:none; width:10px' : '';
+            conditionDropdown.appendChild(conditionInput);
+            valueTableElements.appendChild(conditionDropdown);
+            valueTableRow.appendChild(valueTableElements);
+            valueTableElements = createElement('td', {
+                attrs: {
+                    style: 'display:table'
+                },
+                className: cls.FORMAT_INPUT_VALUE
+            });
+            const formatValueClassName: string = !(format.conditions === 'Between' || format.conditions === 'NotBetween') ?
+                cls.HIDDEN : '';
+            const conditionValueParentDiv: HTMLElement = createElement('div', {
+                attrs: {
+                    style: 'display: table-row;'
+                }
+            });
+            const conditionValue1WrapperDiv: HTMLElement = createElement('div', {
+                id: this.parentID + 'ConditionValue1' + i,
+                attrs: {
+                    style: 'display: table-cell;'
+                }
+            });
             const value1: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'conditionvalue1' + i,
                 attrs: {
-                    'type': 'text', 'tabindex': '0', 'value': !isNaN(format.value1) ? format.value1.toString() : '0',
+                    'type': 'text',
+                    'tabindex': '0',
+                    'value': !isNaN(format.value1) ? format.value1.toString() : '0',
                     'placeholder': this.parent.localeObj.getConstant('emptyInput')
-                },
-                styles: this.parent.isAdaptive ? style === '' ? 'width: 35%' : 'width: 100%' : style === '' ? 'width: 45px' :
-                    'width: 120px',
-                className: cls.INPUT + ' ' + cls.FORMAT_VALUE1
+                }
             }) as HTMLInputElement;
-            td.appendChild(value1);
+            conditionValue1WrapperDiv.appendChild(value1);
+            conditionValueParentDiv.appendChild(conditionValue1WrapperDiv);
             const valuespan: HTMLElement = createElement('span', {
-                id: this.parentID + 'valuespan' + i, className: cls.FORMAT_VALUE_SPAN,
-                innerHTML: '&', styles: style
+                id: this.parentID + 'valuespan' + i,
+                className: cls.FORMAT_VALUE_SPAN + ' ' + formatValueClassName,
+                innerHTML: '&'
             });
-            td.appendChild(valuespan);
+            conditionValueParentDiv.appendChild(valuespan);
+            const conditionValue2WrapperDiv: HTMLElement = createElement('div', {
+                id: this.parentID + 'ConditionValue2' + i,
+                attrs: {
+                    style: 'display: table-cell;'
+                }
+            });
             const value2: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'conditionvalue2' + i,
                 attrs: {
-                    'type': 'text', 'tabindex': '0', 'value': !isNaN(format.value2) ? format.value2.toString() : '0',
+                    'type': 'text',
+                    'tabindex': '0',
+                    'value': !isNaN(format.value2) ? format.value2.toString() : '0',
                     'placeholder': this.parent.localeObj.getConstant('emptyInput')
-                },
-                styles: (this.parent.isAdaptive && style === '') ? 'width: 35%' : style === '' ? 'width: 45px' : style,
-                className: cls.INPUT + ' ' + cls.FORMAT_VALUE2
+                }
             }) as HTMLInputElement;
-            td.appendChild(value2); tRow.appendChild(td); table.appendChild(tRow);
-            if (this.parent.isAdaptive) {
-                innerDiv.appendChild(table); table = createElement('table', {
-                    id: this.parentID + 'cftable', className: cls.FORMAT_TABLE, attrs: { 'role': 'table' }
-                });
-            }
-            tRow = createElement('tr'); td = createElement('td');
+            conditionValue2WrapperDiv.appendChild(value2);
+            conditionValueParentDiv.appendChild(conditionValue2WrapperDiv);
+            valueTableElements.appendChild(conditionValueParentDiv);
+            valueTableRow.appendChild(valueTableElements);
+            valueTable.appendChild(valueTableRow);
+            innerDiv.appendChild(valueTable);
+            const grandTotalTable: HTMLElement = createElement('table', {
+                id: this.parentID + '_grandTotalTable' + i, className: cls.FORMAT_TABLE + ' ' + cls.GRANDTOTAL_CHECKBOX_TABLE, attrs: { 'role': 'table' }
+            });
+            const grandTotalTableRow: HTMLElement = createElement('tr'); const grandTotalTableElements: HTMLElement = createElement('td');
+            grandTotalTable.appendChild(grandTotalTableRow);
+            const checkBoxInput: HTMLInputElement = createElement('input', {
+                id: this.parentID + 'grandtotalcheckbox' + i,
+                attrs: {
+                    'type': 'checkbox', 'tabindex': '0'
+                }
+            }) as HTMLInputElement;
+            grandTotalTableElements.appendChild(checkBoxInput);
+            grandTotalTableRow.appendChild(grandTotalTableElements);
+            grandTotalTable.appendChild(grandTotalTableRow);
+            innerDiv.appendChild(grandTotalTable);
+            const formatTable: HTMLElement = createElement('table', {
+                id: this.parentID + '_formatTable' + i, className: cls.FORMAT_TABLE, attrs: { 'role': 'table' }
+            });
+            let formatTableRow: HTMLElement = createElement('tr'); let formatTableElements: HTMLElement = createElement('td');
             const formatlabel: HTMLElement = createElement('span', {
                 id: this.parentID + 'formatlabel' + i, className: cls.FORMAT_LABEL
             });
             formatlabel.innerText = this.parent.localeObj.getConstant('formatLabel');
-            td.appendChild(formatlabel); tRow.appendChild(td); table.appendChild(tRow); tRow = createElement('tr');
-            td = createElement('td'); const fontNameDropdown: HTMLElement = createElement('div', { id: this.parentID + 'fontname' + i });
+            formatTableElements.appendChild(formatlabel);
+            formatTableRow.appendChild(formatTableElements);
+            formatTable.appendChild(formatTableRow);
+            formatTableRow = createElement('tr');
+            formatTableElements = createElement('td'); const fontNameDropdown: HTMLElement = createElement('div', { id: this.parentID + 'fontname' + i });
             const fontNameInput: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'fontnameinput' + i, attrs: { 'type': 'text', 'tabindex': '0' }
             }) as HTMLInputElement;
-            fontNameDropdown.appendChild(fontNameInput); td.appendChild(fontNameDropdown); tRow.appendChild(td); td = createElement('td');
+            fontNameDropdown.appendChild(fontNameInput);
+            formatTableElements.appendChild(fontNameDropdown);
+            formatTableRow.appendChild(formatTableElements);
+            formatTableElements = createElement('td');
             const fontSizeDropdown: HTMLElement = createElement('div', { id: this.parentID + 'fontsize' + i });
             const fontSizeInput: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'fontsizeinput' + i, attrs: { 'type': 'text', 'tabindex': '0' }
             }) as HTMLInputElement;
-            fontSizeDropdown.appendChild(fontSizeInput); td.appendChild(fontSizeDropdown); tRow.appendChild(td);
+            fontSizeDropdown.appendChild(fontSizeInput);
+            formatTableElements.appendChild(fontSizeDropdown);
+            formatTableRow.appendChild(formatTableElements);
             if (this.parent.isAdaptive) {
-                table.appendChild(tRow); tRow = createElement('tr'); table.appendChild(tRow); tRow = createElement('tr');
+                formatTable.appendChild(formatTableRow); formatTableRow = createElement('tr');
+                formatTable.appendChild(formatTableRow); formatTableRow = createElement('tr');
             }
-            td = createElement('td');
+            formatTableElements = createElement('td');
             const colorPicker1: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'fontcolor' + i, attrs: { 'type': 'color', 'tabindex': '0' }, className: cls.FORMAT_FONT_COLOR
             }) as HTMLInputElement;
-            td.appendChild(colorPicker1);
+            formatTableElements.appendChild(colorPicker1);
             const colorPicker2: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'backgroundcolor' + i, attrs: { 'type': 'color', 'tabindex': '0' }, className: cls.FORMAT_BACK_COLOR
             }) as HTMLInputElement;
-            td.appendChild(colorPicker2); tRow.appendChild(td); td = createElement('td');
-            const valuePreview: HTMLInputElement = createElement('div', {
+            formatTableElements.appendChild(colorPicker2); formatTableRow.appendChild(formatTableElements);
+            formatTableElements = createElement('td');
+            const valuePreview: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'valuepreview' + i, className: cls.INPUT + ' ' + cls.FORMAT_VALUE_PREVIEW,
-                innerHTML: '123.45'
+                attrs: {
+                    'tabindex': '-1', 'readonly': 'true', 'value': '123.45'
+                }
             }) as HTMLInputElement;
-            td.appendChild(valuePreview); tRow.appendChild(td); table.appendChild(tRow); innerDiv.appendChild(table);
+            formatTableElements.appendChild(valuePreview);
+            formatTableRow.appendChild(formatTableElements);
+            formatTable.appendChild(formatTableRow);
+            innerDiv.appendChild(formatTable);
             outerDiv.appendChild(innerDiv);
         }
         return outerDiv;
@@ -331,7 +393,7 @@ export class ConditionalFormatting {
         const fieldsDropDown: DropDownList[] = [];
         fieldsDropDown[i as number] = new DropDownList({
             dataSource: fields, fields: { text: 'name', value: 'field' },
-            value: value, width: this.parent.isAdaptive ? '100%' : '120px',
+            value: value, width: '100%',
             cssClass: this.parent.cssClass,
             popupHeight: '200px', popupWidth: 'auto', locale: this.parent.locale, enableRtl: this.parent.enableRtl,
             change: this.measureChange.bind(this, i)
@@ -352,13 +414,41 @@ export class ConditionalFormatting {
         const conditionsDropDown: DropDownList[] = [];
         conditionsDropDown[i as number] = new DropDownList({
             dataSource: conditions, fields: { value: 'value', text: 'name' },
-            value: value, width: this.parent.isAdaptive ? '100%' : '120px',
+            value: value, width: '100%',
             cssClass: this.parent.cssClass,
             popupHeight: '200px', popupWidth: 'auto', locale: this.parent.locale, enableRtl: this.parent.enableRtl,
             change: this.conditionChange.bind(this, i)
         });
         conditionsDropDown[i as number].isStringTemplate = true;
         conditionsDropDown[i as number].appendTo(select('#' + this.parentID + 'conditioninput' + i, dialogElement) as HTMLElement);
+        const formatValueClassName: string = !(this.newFormat[i as number].conditions === 'Between' || this.newFormat[i as number].conditions === 'NotBetween') ?
+            cls.HIDDEN : '';
+        const conditionValue1: TextBox = new TextBox({
+            enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
+            cssClass: cls.FORMAT_VALUE1 + ' ' + this.parent.cssClass,
+            width: 'auto'
+        });
+        conditionValue1.isStringTemplate = true;
+        conditionValue1.appendTo(select('#' + this.parentID + 'conditionvalue1' + i, dialogElement) as HTMLElement);
+        const conditionValue2: TextBox = new TextBox({
+            enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
+            cssClass: cls.FORMAT_VALUE2 + ' ' + formatValueClassName + ' ' + this.parent.cssClass,
+            width: 'auto'
+        });
+        conditionValue2.isStringTemplate = true;
+        conditionValue2.appendTo(select('#' + this.parentID + 'conditionvalue2' + i, dialogElement) as HTMLElement);
+        const grandTotalCheckBox: CheckBox = new CheckBox({
+            label: this.parent.localeObj.getConstant('applyToGrandTotal'),
+            checked: this.newFormat[i as number].applyGrandTotals,
+            enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
+            change: this.onCheckChange.bind(this, i),
+            cssClass: this.parent.cssClass
+        });
+        grandTotalCheckBox.isStringTemplate = true;
+        grandTotalCheckBox.appendTo(select('#' + this.parentID + 'grandtotalcheckbox' + i, dialogElement) as HTMLElement);
         const fontNames: { [key: string]: Object }[] = [
             { index: 0, name: 'Arial' }, { index: 1, name: 'San Serif' }, { index: 2, name: 'Impact' },
             { index: 3, name: 'Trebuchet MS' }, { index: 4, name: 'Serif' }, { index: 5, name: 'Verdana' },
@@ -369,9 +459,9 @@ export class ConditionalFormatting {
         const fontNameDropDown: DropDownList[] = [];
         fontNameDropDown[i as number] = new DropDownList({
             dataSource: fontNames, fields: { text: 'name' },
-            value: value, width: this.parent.isAdaptive ? '100%' : '120px',
+            value: value, width: '100%',
             cssClass: this.parent.cssClass,
-            popupWidth: '150px', popupHeight: '200px', locale: this.parent.locale, enableRtl: this.parent.enableRtl,
+            popupHeight: '200px', popupWidth: 'auto', locale: this.parent.locale, enableRtl: this.parent.enableRtl,
             change: this.fontNameChange.bind(this, i)
         });
         fontNameDropDown[i as number].isStringTemplate = true;
@@ -383,8 +473,8 @@ export class ConditionalFormatting {
         value = isNaN(format.style.fontSize) ? '12px' : format.style.fontSize;
         const fontSizeDropDown: DropDownList[] = [];
         fontSizeDropDown[i as number] = new DropDownList({
-            dataSource: fontSize, fields: { text: 'name' }, popupHeight: '200px',
-            value: value, width: this.parent.isAdaptive ? '100%' : '120px',
+            dataSource: fontSize, fields: { text: 'name' }, popupHeight: '200px', popupWidth: 'auto',
+            value: value, width: '100%',
             change: this.fontSizeChange.bind(this, i),
             locale: this.parent.locale, enableRtl: this.parent.enableRtl,
             cssClass: this.parent.cssClass
@@ -395,21 +485,19 @@ export class ConditionalFormatting {
 
     private conditionChange(i: number, args: DropDownArgs): void {
         this.newFormat[i as number].conditions = args.value as Condition;
+        const valuespan: HTMLElement = select('#' + this.parentID + 'valuespan' + i, document) as HTMLElement;
+        const conditionvalue2: HTMLElement = select('#' + this.parentID + 'conditionvalue2' + i, document) as HTMLElement;
         if (args.value === 'Between' || args.value === 'NotBetween') {
-            (select('#' + this.parentID + 'valuespan' + i, document) as HTMLElement).style.display = 'inline-block';
-            (select('#' + this.parentID + 'valuespan' + i, document) as HTMLElement).style.width =
-                this.parent.isAdaptive ? '10%' : '10px';
-            (select('#' + this.parentID + 'conditionvalue2' + i, document) as HTMLElement).style.display = 'inline-block';
-            (select('#' + this.parentID + 'conditionvalue2' + i, document) as HTMLElement).style.width =
-                this.parent.isAdaptive ? '35%' : '45px';
-            (select('#' + this.parentID + 'conditionvalue1' + i, document) as HTMLElement).style.width =
-                this.parent.isAdaptive ? '35%' : '45px';
+            valuespan.classList.remove(cls.HIDDEN);
+            conditionvalue2.parentElement.classList.remove(cls.HIDDEN);
         } else {
-            (select('#' + this.parentID + 'valuespan' + i, document) as HTMLElement).style.display = 'none';
-            (select('#' + this.parentID + 'conditionvalue2' + i, document) as HTMLElement).style.display = 'none';
-            (select('#' + this.parentID + 'conditionvalue1' + i, document) as HTMLElement).style.width =
-                this.parent.isAdaptive ? '100%' : '120px';
+            valuespan.classList.add(cls.HIDDEN);
+            conditionvalue2.parentElement.classList.add(cls.HIDDEN);
         }
+    }
+
+    private onCheckChange(i: number, args: ChangeEventArgs): void {
+        this.newFormat[i as number].applyGrandTotals = args.checked;
     }
 
     private fontNameChange(i: number, args: DropDownArgs): void {

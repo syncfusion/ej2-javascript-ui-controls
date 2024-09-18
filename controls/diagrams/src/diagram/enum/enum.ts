@@ -237,7 +237,26 @@ export type LayoutType =
     /**
      * MindMap - Defines the type of the layout as MindMap
      */
-    'MindMap';
+    'MindMap' |
+    /**
+     * Flowchart - Defines the type of the layout as Flowchart
+     */
+    'Flowchart';
+
+export type BranchDirection =
+    /**
+     * SameAsFlow -Defines the direction as same as flow chart.
+     */
+    'SameAsFlow' |
+    /**
+     * LeftInFlow - Defines the flow direction as left.
+     */
+    'LeftInFlow' |
+    /**
+     * RightInFlow - Defines the flow direction as right.
+     */
+    'RightInFlow'
+
 /**
  * Alignment position
  * Left - Sets the branch type as Left
@@ -929,6 +948,7 @@ export type TextAlign =
  * * Interaction - Features of the connector used for interaction.
  * * ReadOnly - Enables ReadOnly
  * * InheritSegmentThumbShape - Enables or disables to inherit the value of segmentThumbShape
+ * * InheritSegmentThumbSize - Enables or disables to inherit the value of segmentThumbSize
  * * Default - Default features of the connector.
  *
  * @aspNumberEnum
@@ -979,8 +999,11 @@ export enum ConnectorConstraints {
     ConnectToNearByElement = 1 << 17 | 1 << 18,
     /**Enables or disables to inherit the value of segmentThumbShape */
     InheritSegmentThumbShape = 1 << 19,
+    /**Enables or disables to inherit the value of segmentThumbSize */
+    InheritSegmentThumbSize = 1 << 20,
     /** Enables all constraints. */
-    Default = 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 9 | 1 << 10 | 1 << 11 | 1 << 13 | 1 << 16 | 1 << 17 | 1 << 18 | 1 << 19
+    Default = 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 9 | 1 << 10 |
+    1 << 11 | 1 << 13 | 1 << 16 | 1 << 17 | 1 << 18 | 1 << 19 | 1 << 20
 }
 
 
@@ -1011,6 +1034,8 @@ export enum AnnotationConstraints {
     Resize = 1 << 5,
     /** Enables/Disable rotate support for the annotation */
     Rotate = 1 << 6,
+    /** Enables or disables tool tip for the annotation */
+    Tooltip = 1 << 7,
     /** Enables annotation to inherit the interaction option */
     Interaction = 1 << 3 | 1 << 4 | 1 << 5 | 1 << 6,
     /** Disable all annotation Constraints */
@@ -2637,7 +2662,7 @@ export enum DiagramEvent {
     'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange', 'commandExecute', 'historyStateChange',
     'onUserHandleMouseDown', 'onUserHandleMouseUp', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onImageLoad',
     'onDoBindingInit', 'keyUp', 'keyDown', 'fixedUserHandleClick', 'elementDraw', 'mouseWheel', 'segmentChange',
-    'onFixedUserHandleMouseDown', 'onFixedUserHandleMouseUp', 'onFixedUserHandleMouseEnter', 'onFixedUserHandleMouseLeave'
+    'onFixedUserHandleMouseDown', 'onFixedUserHandleMouseUp', 'onFixedUserHandleMouseEnter', 'onFixedUserHandleMouseLeave', 'loaded'
 }
 /**
  * @private

@@ -36,7 +36,7 @@ export class Toolbar {
     private isTransformChild: boolean;
     private contentRenderer: IRenderer;
     public dropDownModule: DropDownButtons;
-    private colorPickerModule: ColorPickerInput;
+    public colorPickerModule: ColorPickerInput;
     private toolbarActionModule: ToolbarAction;
     protected renderFactory: RendererFactory;
     private keyBoardModule: KeyboardEvents;
@@ -275,7 +275,7 @@ export class Toolbar {
         const item: IToolsItems = this.tools[args.updateItem.toLocaleLowerCase() as ToolbarItems];
         if ((getTooltipText(args.updateItem.toLocaleLowerCase(), this.locator) !== 'Code View' && getTooltipText(args.updateItem.toLocaleLowerCase(), this.locator) !== 'Preview') || this.parent.locale !== 'en-US') {
             item.tooltip = getTooltipText(args.updateItem.toLocaleLowerCase(), this.locator);
-        };
+        }
         const trgItem: IToolsItems = this.tools[args.targetItem.toLocaleLowerCase() as ToolbarItems];
         const index: number = getTBarItemsIndex(getCollection(trgItem.subCommand), args.baseToolbar.toolbarObj.items)[0];
         if (!isNOU(index)) {
@@ -508,13 +508,6 @@ export class Toolbar {
         this.isDestroyed = true;
     }
 
-    private moduleDestroy(): void {
-        this.parent = null;
-        this.baseToolbar.parent = null;
-        this.toolbarActionModule.parent = null;
-        this.dropDownModule.parent = null;
-    }
-
     private mouseDownHandler(): void {
         if (Browser.isDevice && this.parent.inlineMode.enable && !isIDevice()) {
             this.showFixedTBar();
@@ -580,13 +573,9 @@ export class Toolbar {
         this.parent.on(events.mouseDown, this.mouseDownHandler, this);
         this.parent.on(events.sourceCodeMouseDown, this.mouseDownHandler, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
-        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
 
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.initialEnd, this.renderToolbar);
         this.parent.off(events.bindOnEnd, this.toolbarBindEvent);
         this.parent.off(events.toolbarUpdated, this.updateToolbarStatus);
@@ -601,7 +590,6 @@ export class Toolbar {
         this.parent.off(events.mouseDown, this.mouseDownHandler);
         this.parent.off(events.sourceCodeMouseDown, this.mouseDownHandler);
         this.parent.off(events.bindCssClass, this.setCssClass);
-        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
 
     // eslint-disable-next-line @typescript-eslint/tslint/config

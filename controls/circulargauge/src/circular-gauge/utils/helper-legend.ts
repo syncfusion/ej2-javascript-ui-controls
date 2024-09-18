@@ -4,7 +4,7 @@
 
 import { measureText, getElement, Rect } from '../utils/helper-common';
 import { FontModel } from '../model/base-model';
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../circular-gauge';
 
 /**
@@ -112,7 +112,7 @@ export function titleTooltip(event: Event, x: number, y: number, gauge: Circular
         elementArray[0].id.indexOf('Legend_Tooltip') > -1)) {
         removeTooltip();
     }
-    if (isTitleTouch) {
+    if (isTitleTouch && !isNullOrUndefined(this)) {
         clearTimeout(this.clearTimeout);
         this.clearTimeout = setTimeout(removeTooltip.bind(this), 2000);
     }

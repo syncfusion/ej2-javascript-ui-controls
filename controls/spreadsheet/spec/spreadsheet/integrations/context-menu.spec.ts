@@ -2,6 +2,7 @@ import { SpreadsheetModel, Spreadsheet } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { CellModel, SheetModel } from '../../../src/index';
+import { MenuItemModel } from '@syncfusion/ej2-navigations';
 
 
 /**
@@ -281,7 +282,7 @@ describe('Spreadsheet context menu module ->', () => {
                 expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Sports Shoes');
                 expect(helper.invoke('getCell', [10, 0]).textContent).toBe('Casual Shoes');
                 done();
-            }, 200);
+            }, 10);
         });
         it('Apply custom sort using context menu', (done: Function) => {
             helper.invoke('selectRange', ['A1']);
@@ -296,7 +297,7 @@ describe('Spreadsheet context menu module ->', () => {
                     expect(helper.invoke('getCell', [9, 0]).textContent).toBe('Sports Shoes');
                     expect(helper.invoke('getCell', [10, 0]).textContent).toBe('T-Shirts');             
                     done();
-                }, 200);
+                }, 10);
             });
         });
         it('Apply re-apply filter using context menu', (done: Function) => {
@@ -443,6 +444,49 @@ describe('Spreadsheet context menu module ->', () => {
             });
         });
     });
+
+    describe('Checking context menu with keyboard shortcut and note ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ cells: [{ index: 8, value: '12' }] }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking context menu and tab key->', (done: Function) => {
+            let td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            let coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(11);
+                helper.triggerKeyEvent('keydown', 27, null, false, false);
+                done();
+            });
+        });
+        it('Checking Add Note', (done: Function) => {
+            const spreadsheet = helper.getInstance();
+            helper.invoke('selectRange',['E1']);
+            let td: HTMLTableCellElement = helper.invoke('getCell', [0, 4]);
+            let coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(9)');
+                expect(spreadsheet.sheets[0].rows[0].cells[4].value).toBe('Price');
+                done();
+            });
+        });
+        it('Checking Delete Note', (done: Function) => {
+            const spreadsheet = helper.getInstance();
+            helper.invoke('selectRange',['E1']);
+            let td: HTMLTableCellElement = helper.invoke('getCell', [0, 4]);
+            let coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(10)');
+                expect(spreadsheet.sheets[0].rows[0].cells[4].value).toBe('Price');
+                done();
+            });
+        });
+    });
     
     describe('CR-Issues->', () => {
         describe('EJ2-51327, EJ2-55488, EJ2-55491, EJ2-62989', () => {
@@ -566,6 +610,89 @@ describe('Spreadsheet context menu module ->', () => {
                     expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(5)').classList).toContain('e-menu-item');
                     done();
                 });
+            });
+        });
+    });
+    describe('Testing context menu on select all button', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking context menu by triggering it on select all button', (done: Function) => {
+            const selectAll: HTMLButtonElement = helper.getElement('#' + helper.id + '_select_all') as HTMLButtonElement;
+            helper.triggerMouseAction(
+                'mousedown', { x: selectAll.getBoundingClientRect().left + 1, y: selectAll.getBoundingClientRect().top + 1 }, null,
+                selectAll);
+            helper.triggerMouseAction(
+                'mouseup', { x: selectAll.getBoundingClientRect().left + 1, y: selectAll.getBoundingClientRect().top + 1 }, document,
+                selectAll);
+            setTimeout(() => {
+                helper.triggerMouseAction('contextmenu', { x: selectAll.getBoundingClientRect().top + 1, y: selectAll.getBoundingClientRect().top + 1 }, null, selectAll);
+                setTimeout(() => {
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(3)').classList).toContain('e-disabled');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(4)').classList).toContain('e-disabled');
+                    done();
+                });
+            });
+        });
+    });
+    describe('Testing on context menu items for row and column header cell', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('To get the context menu items for a row header cell', (done: Function) => {
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[0].cells[0];
+            const items: MenuItemModel[] = helper.getInstance().contextMenuModule.getDataSource('RowHeader', cell);
+            setTimeout(() => {
+                expect(items.length).toBe(8);
+                expect(items[5].text).toBe('Insert Row');
+                expect(items[6].text).toBe('Delete Row');
+                expect(items[7].text).toBe('Hide Row');
+                done();
+            });
+        });
+        it('To get the context menu items for a column header cell', (done: Function) => {
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[0];
+            const items: MenuItemModel[] = helper.getInstance().contextMenuModule.getDataSource('ColumnHeader', cell);
+            setTimeout(() => {
+                expect(items.length).toBe(8);
+                expect(items[5].text).toBe('Insert Column');
+                expect(items[6].text).toBe('Delete Column');
+                expect(items[7].text).toBe('Hide Column');
+                done();
+            });
+        });
+        it('To display context menu options for a row without clicking on the row header cell', (done: Function) => {
+            helper.invoke('selectRange', ['A1:CV1']);
+            let td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            let coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').textContent).toBe('Insert Row');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').textContent).toBe('Delete Row');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').textContent).toBe('Hide Row');
+                done();
+            });
+        });
+        it('To display context menu options for a column without clicking on the column header cell', (done: Function) => {
+            helper.invoke('selectRange', ['A1:A100']);
+            let td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            let coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').textContent).toBe('Insert Column');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').textContent).toBe('Delete Column');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').textContent).toBe('Hide Column');
+                done();
             });
         });
     });

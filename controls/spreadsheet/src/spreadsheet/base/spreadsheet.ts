@@ -35,20 +35,20 @@ import { SelectionSettings, BeforeSelectEventArgs, SelectEventArgs, getStartEven
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { setRowHeight, getRowsHeight, getColumnWidth, getRowHeight, getCell, setColumn, setCell, ColumnModel, RowModel, setRow } from './../../workbook/base/index';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';
-import { RefreshValueArgs, Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';
+import { Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';
 import { Sort, Filter, SpreadsheetImage, SpreadsheetChart } from '../integrations/index';
 import { isNumber, getColumn, getRow, WorkbookFilter, refreshInsertDelete, InsertDeleteEventArgs, RangeModel } from '../../workbook/index';
 import { PredicateModel, fltrPrevent } from '@syncfusion/ej2-grids';
 import { RibbonItemModel } from '../../ribbon/index';
-import { DataValidation } from '../actions/index';
+import { DataValidation, spreadsheetCreated } from './../index';
 import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndReplace, WorkbookAutoFill } from '../../workbook/actions/index';
 import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel, ImageModel, getFormattedCellObject } from './../../workbook/common/index';
 import { ConditionalFormatting } from '../actions/conditional-formatting';
-import { WorkbookImage, WorkbookChart, updateView, focusChartBorder, ExtendedRange } from '../../workbook/index';
-import { WorkbookProtectSheet } from '../../workbook/actions/index';
+import { WorkbookImage, WorkbookChart, updateView, focusChartBorder, ExtendedRange, NumberFormatArgs } from '../../workbook/index';
+import { WorkbookProtectSheet, isImported } from '../../workbook/index';
 import { contentLoaded, completeAction, freeze, ConditionalFormatEventArgs, refreshOverlayElem, insertDesignChart } from '../common/index';
 import { beginAction, sheetsDestroyed, workbookFormulaOperation, getRangeAddress, cellValidation } from './../../workbook/common/index';
-import { updateScroll, SelectionMode, clearCopy, isImported, clearUndoRedoCollection, clearChartBorder } from '../common/index';
+import { updateScroll, SelectionMode, clearCopy, clearUndoRedoCollection, clearChartBorder, propertyChange } from '../common/index';
 import { Print } from '../renderer/print';
 /**
  * Represents the Spreadsheet component.
@@ -929,7 +929,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.renderModule = new Render(this);
         this.renderSpreadsheet();
         this.wireEvents();
-        if (this.created) {
+        if (this.created && !this.refreshing) {
             if ((this.created as { observers?: object[] }).observers) {
                 if ((this.created as { observers?: object[] }).observers.length > 0) {
                     let observerObject: Object = { observers: (this.created as { observers?: object }).observers };
@@ -954,7 +954,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         }
         this.setHeight(); this.setWidth();
         createSpinner({ target: this.element }, this.createElement);
-        if (this.isMobileView() && this.cssClass.indexOf('e-mobile-view') === -1) {
+        if (this.cssClass && this.cssClass.indexOf('e-mobile-view') === -1 && this.isMobileView()) {
             this.element.classList.add('e-mobile-view');
         }
         if (Browser.isDevice) {
@@ -1927,11 +1927,19 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             this.notify(refreshSheetTabs, null);
             this.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
             this.renderModule.refreshSheet();
-            this.openModule.isImportedFile = this.openModule.preventFormatCheck = false;
+            this.openModule.isImportedFile = false;
             this.openModule.unProtectSheetIdx = [];
         } else {
-            this.notify(deInitProperties, {});
-            super.refresh();
+            if (this.createdHandler) {
+                const refreshFn: Function = (): void => {
+                    this.off(spreadsheetCreated, refreshFn);
+                    this.refresh();
+                };
+                this.on(spreadsheetCreated, refreshFn, this);
+            } else {
+                this.notify(deInitProperties, {});
+                super.refresh();
+            }
         }
     }
 
@@ -2182,22 +2190,13 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                         if (curRowIdx && Number(curRowIdx) - 1 !== rowIndex) { return; }
                     }
                     const cell: CellModel = getCell(rowIndex, colIndex, sheet);
-                    const nodeEventArgs: { [key: string]: string | number | boolean | CellModel } = {
+                    const nodeEventArgs: NumberFormatArgs = {
                         value: cell.value, format: cell.format, onLoad: true,
-                        formattedText: '', isRightAlign: false, type: 'General', cell: cell,
+                        formattedText: cell.value, isRightAlign: false, type: 'General', cell: cell,
                         rowIndex: rowIndex, colIndex: colIndex, isRowFill: false
                     };
                     this.notify(getFormattedCellObject, nodeEventArgs);
-                    nodeEventArgs.formattedText = this.allowNumberFormatting ? nodeEventArgs.formattedText : nodeEventArgs.value;
-                    const eventArgs: RefreshValueArgs = {
-                        isRightAlign: <boolean>nodeEventArgs.isRightAlign,
-                        result: <string>nodeEventArgs.formattedText,
-                        type: <string>nodeEventArgs.type,
-                        value: <string>nodeEventArgs.value,
-                        curSymbol: <string>nodeEventArgs.curSymbol,
-                        isRowFill: <boolean>nodeEventArgs.isRowFill
-                    };
-                    this.refreshNode(td, eventArgs);
+                    this.refreshNode(td, nodeEventArgs);
                 }
             }
         }
@@ -2214,7 +2213,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     }
 
     /**
-     * The `calculateNow` method is used to calculate any `uncalculated formulas` in a spreadsheet.
+     * The `calculateNow` method is used to calculate any uncalculated formulas in a spreadsheet.
      * This method accepts an option to specify whether the calculation should be performed for the entire workbook or a specific sheet.
      *
      * @param {string} [scope] - Specifies the scope of the calculation. Acceptable values are `Sheet` or `Workbook`.
@@ -2233,15 +2232,20 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * @hidden
      * @param {Element} td - Specify the element.
-     * @param {RefreshValueArgs} args - specify the args.
+     * @param {NumberFormatArgs} args - specify the args.
      * @returns {void} - to refresh the node.
      */
-    public refreshNode(td: Element, args?: RefreshValueArgs): void {
+    public refreshNode(td: Element, args?: NumberFormatArgs): void {
         let value: string;
         if (td) {
             if (args) {
-                args.result = isNullOrUndefined(args.result) ? '' : args.result.toString();
+                args.result = isNullOrUndefined(args.formattedText) ? (isNullOrUndefined(args.result) ? '' : args.result) :
+                    args.formattedText.toString();
                 if (!args.isRowFill) {
+                    const beforeFillSpan: Element = td.querySelector('.e-fill-before');
+                    if (beforeFillSpan) {
+                        detach(beforeFillSpan);
+                    }
                     const spanFillElem: Element = select('.' + 'e-fill', td);
                     if (spanFillElem) {
                         detach(spanFillElem);
@@ -2253,7 +2257,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     }
                 }
                 const spanElem: Element = select('#' + this.element.id + '_currency', td);
-                if (spanElem) { detach(spanElem); }
+                if (spanElem) {
+                    detach(spanElem);
+                }
                 if (args.type === 'Accounting' && isNumber(args.value) && args.result.includes(args.curSymbol)) {
                     let curSymbol: string; let result: string; let setVal: boolean;
                     if (args.result.trim().endsWith(args.curSymbol)) {
@@ -2263,6 +2269,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                         result = args.result.split(curSymbol).join('');
                     }
                     const dataBarVal: HTMLElement = td.querySelector('.e-databar-value');
+                    const iconSetSpan: HTMLElement = td.querySelector('.e-iconsetspan');
                     let tdContainer: Element = td;
                     let nodeElement: HTMLElement;
                     if (td.children.length > 0 && td.children[td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
@@ -2276,6 +2283,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     } else {
                         setVal = true;
                         (td as HTMLElement).innerText = '';
+                    }
+                    if (iconSetSpan) {
+                        td.insertBefore(iconSetSpan, td.firstElementChild);
                     }
                     if (curSymbol) {
                         const curr: HTMLElement = this.createElement('span', { id: this.element.id + '_currency', styles: 'float: left' });
@@ -2570,7 +2580,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         EventHandler.add(this.element, getStartEvent(), this.mouseDownHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
-        EventHandler.add(this.element, 'noderefresh', this.refreshNode, this);
         this.on(freeze, this.freeze, this);
         this.on(refreshInsertDelete, this.refreshInsertDelete, this);
     }
@@ -2609,7 +2618,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         EventHandler.remove(this.element, getStartEvent(), this.mouseDownHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'keydown', this.keyDownHandler);
-        EventHandler.remove(this.element, 'noderefresh', this.refreshNode);
         this.off(freeze, this.freeze);
         this.off(refreshInsertDelete, this.refreshInsertDelete);
     }
@@ -2966,7 +2974,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             const horizontalScroll: HTMLElement = this.getScrollElement();
             switch (prop) {
             case 'enableRtl':
-                if (newProp.locale) {
+                if (newProp.locale || newProp.currencyCode) {
                     break;
                 }
                 header = this.getColumnHeaderContent();
@@ -3149,7 +3157,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 break;
             case 'currencyCode':
                 if (!newProp.locale) {
-                    this.notify(updateView, {});
+                    this.refresh();
                 }
                 break;
             case 'password':
@@ -3180,6 +3188,19 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             case 'allowChart':
                 this.renderModule.refreshSheet();
                 this.notify(ribbon, { prop: prop, onPropertyChange: true });
+                break;
+            case 'allowResizing':
+                if (newProp.allowResizing) {
+                    this.notify(propertyChange, { propertyName: prop });
+                }
+                break;
+            case 'enableNotes':
+                if (newProp.enableNotes) {
+                    this.notify(updateView, {});
+                }
+                break;
+            case 'allowNumberFormatting':
+                this.notify(updateView, {});
                 break;
             }
         }

@@ -20,16 +20,17 @@ $diagram-bezier-handle-color: rgba($primary-text-color);
 $diagram-symbolpalette-hover: $diagram-palette-hover-background;
 $diagram-symbolpalette-selected: $diagram-palette-selection-background;
 
-$diagram-ruler-color: rgba($content-text-color-alt2);
+$diagram-ruler-color: rgba($content-text-color-alt1);
 $diagram-ruler-font-size: $text-xxs;
 $diagram-ruler-marker-background-color: $content-bg-color-alt1;
-$diagram-ruler-label-fill: rgba($content-text-color-alt2);
-$diagram-ruler-tick-stroke: rgba($series-3);
+$diagram-ruler-label-fill: rgba($content-text-color-alt1);
+$diagram-ruler-tick-stroke: rgba($border-light);
 
 $palette-background-color: rgba($diagram-palette-background);
 
-$diagram-background-color: rgba($white);
+$diagram-overview-resizer-color:rgba($primary);
 $diagram-editbox-fontcolor: rgba($black);
+$diagram-background-color: rgba($white);
 
 //end normal
 //primary
@@ -49,7 +50,7 @@ $diagram-ruler-marker-stroke: rgba($primary);
 $diagram-helper-stroke: rgba($primary);
 
 $diagram-text-edit-selection-background: rgba($primary);
-$diagram-editbox-background: rgba($primary-text-color);
+$diagram-editbox-background: rgba($white);
 
 $diagram-border-strokes: rgba($primary);
 $diagram-lane-border-strokes: rgba($primary);
@@ -69,33 +70,8 @@ $diagram-multiselect-stroke: $diagram-resize-handle-stroke;
 }
 
 @include export-module('diagram-bootstrap-icons') {
-  .e-diagram-menu {
-    .e-bringforward::before{ content: '\e72f'; }
-    .e-bringfront::before{ content: '\e840'; }
-    .e-sendback::before{ content: '\e78a'; }
-    .e-sendbackward::before{ content: '\e7ed'; }
-    .e-delete::before{ content: '\e94a'; }
-    .e-ungroup::before{ content: '\e749'; }
-    .e-group::before{ content: '\e7f4'; }
-    .e-undo::before{ content: '\e713'; }
-    .e-redo::before{ content: '\e755'; }
-    .e-copy::before{ content: '\e77c'; }
-    .e-cut::before{ content: '\e7fb'; }
-    .e-save::before{ content: '\e7c8'; }
-    .e-paste::before{ content: '\e70b'; }
-    .e-zoomin::before{ content: '\e795'; }
-    .e-italic::before{ content: '\e75a'; }
-    .e-close::before{ content: '\e7e7'; }
-    .e-pan::before{ content: '\e7b1'; }
-    .e-bold::before{ content: '\e737'; }
-    .e-underline::before{ content: '\e82f'; }
-    .e-zoomout::before{ content: '\e825'; }
-    .e-export::before{ content: '\e72e'; }
-    .e-print::before{ content: '\e75d'; }
-    .e-order::before{ content: '\e809'; }
-  }
-
+  
   .e-symbolpalette {
-    .e-clear-searchtext::before{ content: '\e754'; }
+    .e-clear-searchtext::before{ content: '\e7e7'; }
   }
 }

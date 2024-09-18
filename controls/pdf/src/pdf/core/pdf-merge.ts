@@ -1,15 +1,18 @@
-import { PdfAnnotation } from './annotations/annotation';
+import { PdfListFieldItem, PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation } from './annotations/annotation';
 import { PdfPageOrientation } from './enumerator';
-import { PdfForm } from './form';
-import { PdfField } from './form/field';
+import { PdfFont, PdfFontFamily, PdfFontStyle, PdfStandardFont } from './fonts/pdf-standard-font';
+import { PdfButtonField, PdfCheckBoxField, PdfComboBoxField, PdfField, PdfListField, PdfRadioButtonListField, PdfSignatureField, PdfTextBoxField } from './form/field';
+import { PdfForm } from './form/form';
 import { PdfTemplate } from './graphics/pdf-template';
-import { _JsonDocument } from './import-export/json-document';
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { PdfDocument, PdfPageSettings } from './pdf-document';
 import { PdfBookmark, PdfBookmarkBase, PdfNamedDestination } from './pdf-outline';
 import { PdfDestination, PdfPage } from './pdf-page';
 import { PdfPageImportOptions } from './pdf-page-import-options';
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
+import { _getItemValue } from './utils';
+import { _PdfBaseStream, _PdfContentStream, _PdfStream } from './base-stream';
+import { PdfAnnotationCollection } from './annotations/annotation-collection';
 
 export class _PdfMergeHelper {
     _bookmarkHashTable: Map<PdfPage, PdfBookmarkBase[]>;
@@ -22,39 +25,40 @@ export class _PdfMergeHelper {
     _newList: Map<_PdfReference, _PdfReference> = new Map<_PdfReference, _PdfReference>();
     _annotationLayer: Map<number, _PdfReference> = new Map<number, _PdfReference>();
     _isLayersPresent: boolean = false;
-    _fieldNames: any[] = []; // eslint-disable-line
+    _fieldNames: string[] = [];
     _crossReference: _PdfCrossReference;
     _destinationDocument: PdfDocument;
+    _sourceDocument: PdfDocument;
     _options: PdfPageImportOptions = new PdfPageImportOptions();
     _kidsReference: any[] = []; // eslint-disable-line
-    _formFieldsCollection: Map<number, PdfField> = new Map<number, PdfField>();
+    _formFieldsCollection: Map<number, _PdfReference> = new Map<number, _PdfReference>();
     _formFields: _PdfReference[] = [];
     _isDuplicatePage: boolean = false;
     _fieldCount: number = 0;
-    constructor(crossReference: _PdfCrossReference, currentDocument: PdfDocument, pageReference: Map<_PdfDictionary, PdfPage>,
-                options: PdfPageImportOptions) {
+    _copier: _PdfCopier;
+    constructor(crossReference: _PdfCrossReference, destination: PdfDocument, source: PdfDocument,
+                pageReference: Map<_PdfDictionary, PdfPage>, options: PdfPageImportOptions) {
         this._crossReference = crossReference;
-        this._destinationDocument = currentDocument;
+        this._destinationDocument = destination;
+        this._sourceDocument = source;
         this._pageReference = pageReference;
         if (typeof options !== 'undefined') {
             this._options = options;
         }
+        this._copier = new _PdfCopier(this._crossReference, this._sourceDocument._crossReference);
     }
-    _importPages(page: PdfPage, document: PdfDocument, index: number, layers: boolean, isCopiedPage: boolean): void {
+    _importPages(page: PdfPage, index: number, layers: boolean, isCopiedPage: boolean): void {
         let template: PdfTemplate;
         let  newPage: PdfPage;
         const pageDictionary: _PdfDictionary = page._pageDictionary;
         this._isDuplicatePage = isCopiedPage;
-        if (isCopiedPage) {
-            if (typeof this._options.targetIndex !== 'undefined') {
-                newPage = this._insertNewPage(page, this._options.targetIndex);
-            } else {
-                newPage = this._insertNewPage(page, page._pageIndex + 1);
-            }
-        } else {
+        if (typeof index === 'number') {
             newPage = this._insertNewPage(page, index);
+        } else if (this._isDuplicatePage) {
+            newPage = this._insertNewPage(page, page._pageIndex + 1);
+        } else {
+            newPage = this._insertNewPage(page);
         }
-        newPage._isDuplicate = true;
         if (isCopiedPage && this._options.optimizeResources) {
             const newContents: any[] = []; // eslint-disable-line
             pageDictionary.forEach((key: string, value: any) => { // eslint-disable-line
@@ -75,21 +79,22 @@ export class _PdfMergeHelper {
         } else {
             template = page._contentTemplate;
             newPage.graphics.drawTemplate(template, {x: 0, y: 0, width: template._size[0], height: template._size[1]});
+            template._content.dictionary.update('Resources', this._copier._copy(pageDictionary.getRaw('Resources')));
             this._pageReference.set(pageDictionary, newPage);
             if (!isCopiedPage) {
                 this._bookmarksPageLinkReference.set(page._ref, newPage._pageIndex);
             }
         }
         if (pageDictionary.has('Annots')) {
-            this._importAnnotation(page, newPage , document._crossReference);
-        }
-        if (typeof this._options !== 'undefined' && this._options.groupFormFields && document._catalog._catalogDictionary.has('AcroForm')) {
-            this._groupFormFields(document.form, page, newPage, document._crossReference);
-        } else if (document._catalog._catalogDictionary.has('AcroForm')) {
-            this._importFormField(page, document.form, newPage, document._crossReference);
+            this._importAnnotation(page, newPage);
+            if (typeof this._options !== 'undefined' && this._options.groupFormFields && this._sourceDocument._catalog._catalogDictionary.has('AcroForm')) {
+                this._formFieldsGroupingSupport(this._sourceDocument.form, page, newPage);
+            } else if (this._sourceDocument._catalog._catalogDictionary.has('AcroForm')) {
+                this._importFormField(page, this._sourceDocument.form, newPage, this._sourceDocument._crossReference);
+            }
         }
         if (!isCopiedPage) {
-            const bookMarkMap: Map<PdfPage, PdfBookmarkBase[]> = document._parseBookmarkDestination();
+            const bookMarkMap: Map<PdfPage, PdfBookmarkBase[]> = this._sourceDocument._parseBookmarkDestination();
             if (bookMarkMap && bookMarkMap.has(page)) {
                 const bookmarks: PdfBookmarkBase[] = bookMarkMap.get(page);
                 for (let i: number = 0; i < bookmarks.length; i++) {
@@ -98,67 +103,53 @@ export class _PdfMergeHelper {
             }
         }
         if ((!isCopiedPage && layers) || !this._options.optimizeResources) {
-            this._mergeLayer(newPage._pageDictionary, pageDictionary, document._crossReference);
+            this._mergeLayer(newPage._pageDictionary, pageDictionary, this._sourceDocument._crossReference);
         }
         newPage._pageDictionary._updated = true;
     }
-    _importAnnotation(page: PdfPage, newPage: PdfPage, crossReference: _PdfCrossReference): void {
-        let jsonDocument: _JsonDocument = new _JsonDocument();
-        let resourceTable: Map<string, string> = new Map<string, string>();
-        let appearance: string = '';
+    _importAnnotation(page: PdfPage, newPage: PdfPage): void {
         const array: any[] = []; // eslint-disable-line
         let dest: any[]; // eslint-disable-line
         let isDestination: boolean = false;
-        const count: number = page.annotations.count;
+        const oldCollection: PdfAnnotationCollection = page.annotations;
+        const count: number = oldCollection.count;
         for (let i: number = 0; i < count; i++) {
-            const annotation: PdfAnnotation = page.annotations.at(i);
-            if (typeof annotation !== 'undefined') {
-                if (annotation._dictionary.has('Dest')) {
-                    dest = [];
-                    const destinationArray: any = annotation._dictionary.get('Dest'); // eslint-disable-line
-                    const destination: any = annotation._dictionary._get('Dest'); // eslint-disable-line
-                    if (destinationArray instanceof Array) {
-                        const destArray: any[]  = destinationArray; // eslint-disable-line
-                        for (let j: number = 0; j < destArray.length; j++) {
-                            dest.push(destArray[Number.parseInt(j.toString(), 10)]);
+            const annotationReference: _PdfReference = oldCollection._annotations[Number.parseInt(i.toString(), 10)];
+            if (annotationReference) {
+                const annotationDictionary: _PdfDictionary = this._sourceDocument._crossReference._fetch(annotationReference);
+                if (annotationDictionary) {
+                    if (annotationDictionary.has('Dest')) {
+                        dest = [];
+                        const destinationArray: any = annotationDictionary.get('Dest'); // eslint-disable-line
+                        const destination: any = annotationDictionary._get('Dest'); // eslint-disable-line
+                        if (destinationArray instanceof Array) {
+                            const destArray: any[] = destinationArray; // eslint-disable-line
+                            for (let j: number = 0; j < destArray.length; j++) {
+                                dest.push(destArray[Number.parseInt(j.toString(), 10)]);
+                            }
+                            isDestination = true;
+                        } else if (destination instanceof _PdfReference) {
+                            dest.push(destination);
                         }
-                        isDestination = true;
                     }
-                    else if (destination instanceof _PdfReference) {
-                        dest.push(destination);
+                    if (dest && dest.length > 0) {
+                        this._destination.push(dest);
                     }
-                }
-                if (dest && dest.length > 0) {
-                    this._destination.push(dest);
-                }
-                if (annotation._dictionary.has('OC')) {
-                    let reference: any = annotation._dictionary.getRaw('OC'); // eslint-disable-line
-                    if (reference instanceof _PdfReference) {
-                        this._annotationLayer.set(i, reference);
-                    }
-                }
-                jsonDocument = new _JsonDocument();
-                resourceTable = new Map<string, string>();
-                jsonDocument._crossReference = crossReference;
-                jsonDocument._isDuplicate = true;
-                jsonDocument._writeObject(resourceTable, annotation._dictionary, annotation._dictionary, 'annot');
-                appearance = jsonDocument._convertToJson(resourceTable);
-                jsonDocument = new _JsonDocument();
-                jsonDocument._crossReference = this._crossReference;
-                const json: any = JSON.parse(appearance); // eslint-disable-line
-                if (json) {
-                    const entry: any = json['annot']; // eslint-disable-line
-                    if (entry) {
-                        const dict: any  = jsonDocument._parseDictionary(entry['dict']); // eslint-disable-line
-                        const ref: _PdfReference = newPage._ref;
-                        if (isDestination) {
-                            dict.update('Dest', dest);
+                    if (annotationDictionary.has('OC')) {
+                        const reference: any = annotationDictionary.getRaw('OC'); // eslint-disable-line
+                        if (reference instanceof _PdfReference) {
+                            this._annotationLayer.set(i, reference);
                         }
-                        dict.update('P', ref);
-                        const newReference: _PdfReference = this._crossReference._getNextReference();
-                        this._crossReference._cacheMap.set(newReference, dict);
-                        array.push(newReference);
                     }
+                    const copiedAnnotationReference: _PdfReference = this._copier._copy(annotationReference);
+                    const copiedAnnotationDictionary: _PdfDictionary = this._destinationDocument._crossReference.
+                        _fetch(copiedAnnotationReference);
+                    if (isDestination) {
+                        copiedAnnotationDictionary.update('Dest', dest);
+                    }
+                    copiedAnnotationDictionary.update('P', newPage._ref);
+                    this._crossReference._cacheMap.set(copiedAnnotationReference, copiedAnnotationDictionary);
+                    array.push(copiedAnnotationReference);
                 }
             }
             isDestination = false;
@@ -168,127 +159,336 @@ export class _PdfMergeHelper {
             newPage._pageDictionary.update('Annots', array);
         }
     }
-    _groupFormFields(form: PdfForm, oldPage: PdfPage, newPage: PdfPage, crossReference: _PdfCrossReference): void {
-        if (form) {
-            let array: _PdfReference[] = [];
-            if (newPage && newPage._pageDictionary && newPage._pageDictionary.has('Annots')) {
-                array = newPage._pageDictionary.get('Annots');
+    _formFieldsGroupingSupport(form: PdfForm, oldPage: PdfPage, newPage: PdfPage): void {
+        let array: _PdfReference[] = [];
+        const fieldNames: string[] = [];
+        let kidsArray: _PdfReference[] = [];
+        let formFields: PdfForm;
+        let drEntry: _PdfDictionary = form._dictionary.get('DR');
+        if (form._dictionary.has('DR'))  {
+            drEntry = form._dictionary.get('DR');
+        }
+        if (newPage._pageDictionary.has('Annots')) {
+            array = newPage._pageDictionary.get('Annots');
+        }
+        if (oldPage._pageDictionary.has('Annots')) {
+            kidsArray = oldPage._pageDictionary.get('Annots');
+        }
+        if (!this._isDuplicatePage) {
+            formFields = this._destinationDocument.form;
+            this._fieldCount = formFields.count;
+            for (let k: number = 0; k < this._fieldCount; k++) {
+                fieldNames.push(formFields.fieldAt(k).name);
             }
-            let kidsArray: _PdfReference[] = [];
-            if (oldPage._pageDictionary.has('Annots')) {
-                kidsArray = oldPage._pageDictionary.get('Annots');
-            }
-            for (let i: number = 0; i < form.count; i++) {
-                const field: PdfField = form.fieldAt(i);
-                let existingKids: _PdfReference[] = [];
-                const isTextbox : _PdfName = field._dictionary.get('FT');
-                if (isTextbox.name.toString() === 'Tx') {
-                    if (field._dictionary.has('Kids')) {
-                        existingKids = field._dictionary.get('Kids');
-                        if (existingKids.length > 1) {
-                            for (let j: number = 0; j < existingKids.length; j++) {
-                                let fieldItem: any = field.itemAt(j); // eslint-disable-line
-                                if (fieldItem.page === oldPage) {
-                                    array = this._combineFormFields(form, field, kidsArray, existingKids, newPage._ref, array, i);
-                                    break;
-                                }
-                            }
-                        } else if (existingKids.length === 1) {
-                            if (field.page === oldPage) {
-                                array = this._combineFormFields(form, field, kidsArray, existingKids, newPage._ref, array, i);
+        }
+        for (let i: number = 0; i < form.count; i++) {
+            const field: PdfField = form.fieldAt(i);
+            let formField: PdfField;
+            let destinationKids: _PdfReference[] = [];
+            const sourceKids: _PdfReference[] = field._dictionary.get('Kids');
+            if (fieldNames.indexOf(field.name) !== -1 || this._isDuplicatePage) {
+                if (!this._isDuplicatePage) {
+                    formField = formFields.fieldAt(fieldNames.indexOf(field.name));
+                    if (formField._dictionary.get('Kids')) {
+                        destinationKids = formField._dictionary.get('Kids');
+                    }
+                } else {
+                    formField = field;
+                    destinationKids = sourceKids;
+                }
+                field._isDuplicatePage = true;
+                if ((field instanceof PdfSignatureField && formField instanceof PdfSignatureField) || !(field instanceof
+                    PdfSignatureField)) {
+                    if (sourceKids !== undefined && sourceKids.length > 0) {
+                        for (let j: number = 0; j < sourceKids.length; j++) {
+                            const fieldItem = field.itemAt(j); // eslint-disable-line
+                            if (fieldItem.page === oldPage) {
+                                formField._page = newPage;
+                                array = this._groupFormFieldsKids(formField, field, kidsArray, destinationKids, sourceKids, newPage._ref,
+                                                                  array, j, i, drEntry, fieldItem);
                             }
                         }
                     } else {
-                        if (field.page === oldPage) {
-                            array = this._combineFormFields(form, field, kidsArray, existingKids, newPage._ref, array, i);
-                        }
+                        array = this._groupFormFieldsKids(formField, field, kidsArray, destinationKids, sourceKids, newPage._ref, array,
+                                                          0, i, drEntry);
                     }
-                } else {
-                    array = this._insertFormFields(i, crossReference, field, form, newPage._ref, array, kidsArray);
                 }
-            }
-            if (array.length > 0) {
-                newPage._pageDictionary.update('Annots', array);
+            } else {
+                array = this._insertFormFields(i, form._crossReference, field, form, newPage._ref, array, kidsArray);
             }
         }
+        if (array.length > 0) {
+            newPage._pageDictionary.update('Annots', array);
+        }
     }
-    _combineFormFields(form: PdfForm, field: PdfField, kidsArray: _PdfReference[], existingKids: _PdfReference[], ref: _PdfReference,
-                       array: _PdfReference[], index: number) : _PdfReference[] {
-        const fieldDictionary: _PdfDictionary = this._exportFormFieldDictionary(this._crossReference, field);
-        if (fieldDictionary.has('Kids')) {
-            const kids: _PdfReference[] = fieldDictionary.get('Kids');
-            for (let j: number = 0; j < kids.length; j++) {
-                if ((kidsArray.indexOf(existingKids[Number.parseInt(j.toString(), 10)]) !== -1)) {
-                    const dictionary: _PdfDictionary = this._crossReference._fetch(kids[Number.parseInt(j.toString(), 10)]);
-                    dictionary.update('P', ref);
-                    array.push(kids[Number.parseInt(j.toString(), 10)]);
-                    const oldDictionary: _PdfDictionary = this._crossReference._fetch(existingKids[Number.parseInt(j.toString(), 10)]);
-                    oldDictionary.forEach((key:any, value: any) => { // eslint-disable-line
-                        if (key === 'Parent') {
-                            dictionary.update(key, value);
-                        }
-                    });
-                    this._kidsReference.push(existingKids[Number.parseInt(j.toString(), 10)]);
-                    existingKids.push(kids[Number.parseInt(j.toString(), 10)]);
-                    dictionary._updated = true;
-                    field._dictionary._updated = true;
+    _groupFormFieldsKids(destinationField: PdfField, field: PdfField, kidsArray: _PdfReference[], destKids: _PdfReference[], oldKids:
+                         _PdfReference[], ref: _PdfReference, array: _PdfReference[], index?: number, fieldIndex?: number, drEntry?: _PdfDictionary, widget?: any) : _PdfReference[] { // eslint-disable-line
+        if (field._dictionary.has('Kids') && destinationField._dictionary.has('Kids')) {
+            if (kidsArray.indexOf(oldKids[Number.parseInt(index.toString(), 10)]) !== -1) {
+                const oldDictionary: _PdfDictionary = field._crossReference._fetch(oldKids[Number.parseInt(index.toString(), 10)]);
+                const dictionary: _PdfDictionary = this._copier._copyDictionary(oldDictionary, !this._isDuplicatePage);
+                dictionary.update('P', ref);
+                const reference: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(reference, dictionary);
+                array.push(reference);
+                dictionary.update('Parent', destinationField._ref);
+                destKids.push(reference);
+                dictionary._updated = true;
+                destinationField._dictionary._updated = true;
+                if (!this._isDuplicatePage) {
+                    if ((destinationField instanceof PdfTextBoxField || destinationField instanceof PdfButtonField || destinationField instanceof PdfComboBoxField) && dictionary.has('AS')) {
+                        delete dictionary._map.AS;
+                    }
+                    this._createAppearance(destinationField, field, oldDictionary, dictionary, drEntry, widget);
                 }
             }
-        } else {
-            const newFieldDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
-            if (fieldDictionary.has('Parent')) {
-                newFieldDictionary.update('Parent', fieldDictionary.get('Parent'));
-                delete field._dictionary._map.Parent;
-            }
-            if (fieldDictionary.has('FT')) {
-                newFieldDictionary.update('FT', fieldDictionary.get('FT'));
-                delete field._dictionary._map.FT;
-                delete fieldDictionary._map.FT;
-            }
-            if (fieldDictionary.has('T')) {
-                newFieldDictionary.update('T', fieldDictionary.get('T'));
-                delete field._dictionary._map.T;
-                delete fieldDictionary._map.T;
-            }
-            if (fieldDictionary.has('V')) {
-                newFieldDictionary.update('V', fieldDictionary.get('V'));
-            }
-            if (fieldDictionary.has('DA')) {
-                newFieldDictionary.update('DA', fieldDictionary.get('DA'));
-                delete field._dictionary._map.DA;
-                delete fieldDictionary._map.DA;
-            }
-            if (fieldDictionary.has('Ff')) {
-                newFieldDictionary.update('Ff', fieldDictionary.get('Ff'));
-                delete field._dictionary._map.Ff;
-                delete fieldDictionary._map.Ff;
-            }
-            const kidsElement: _PdfReference[] = [];
-            kidsElement.push(field._ref);
-            const newFieldReference: _PdfReference = this._crossReference._getNextReference();
-            newFieldDictionary.objId = newFieldReference.toString();
-            this._crossReference._cacheMap.set(newFieldReference, newFieldDictionary);
-            const newField: PdfField = form._parseFields(newFieldDictionary, newFieldReference);
-            field._dictionary.update('Parent', newFieldReference);
-            this._formFields.push(newFieldReference);
-            form._parsedFields.set(index, newField);
-            newField._dictionary._updated = true;
+        } else if (field._dictionary.has('Kids') && !destinationField._dictionary.has('Kids') || this._isDuplicatePage) {
+            const fieldDictionary: _PdfDictionary = this._copier._copyDictionary(destinationField._dictionary, !this._isDuplicatePage);
+            this._updateFieldsWithKids(destinationField, field, fieldDictionary, index, fieldIndex, ref, oldKids, array, drEntry,
+                                       destinationField._dictionary);
+        } else if ((!field._dictionary.has('Kids') && destinationField._dictionary.has('Kids'))) {
+            const fieldDict: _PdfDictionary = this._copier._copyDictionary(field._dictionary);
+            this._updateFieldDictionary(fieldDict, ref, destinationField._ref);
             const reference: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(reference, fieldDictionary);
-            fieldDictionary.update('P', ref);
-            fieldDictionary.update('Parent', newFieldReference);
-            form._dictionary._updated = true;
-            kidsElement.push(reference);
-            newFieldDictionary.update('Kids', kidsElement);
-            newField._kids = kidsElement;
+            this._crossReference._cacheMap.set(reference, fieldDict);
+            destKids.push(reference);
             array.push(reference);
-            this._formFieldsCollection.set(index, newField);
+            destinationField._dictionary._updated = true;
+            this._createAppearance(destinationField, field, field._dictionary, fieldDict, drEntry, widget);
+        } else if (!field._dictionary.has('Kids') && !destinationField._dictionary.has('Kids')) {
+            const fieldDictionary: _PdfDictionary = this._copier._copyDictionary(destinationField._dictionary);
+            const formFieldDict: _PdfDictionary = this._copier._copyDictionary(field._dictionary, !this._isDuplicatePage);
+            this._removeFieldDictionary(formFieldDict, ['Parent', 'FT', 'T', 'Ff']);
+            formFieldDict.update('P', ref);
+            this._updateFieldsWithKids(destinationField, field, fieldDictionary, index, fieldIndex, ref, oldKids, array, drEntry ,
+                                       formFieldDict);
         }
         return array;
     }
+    _updateFieldsWithKids(destinationField: PdfField, field: PdfField, fieldDictionary: _PdfDictionary, index: number, fieldIndex: number,
+                          ref: _PdfReference, oldKids: _PdfReference[], array: _PdfReference[], drEntry: _PdfDictionary,
+                          formFieldDictionary?: _PdfDictionary): void {
+        const newFieldReference: _PdfReference = this._crossReference._getNextReference();
+        const newFieldDict: _PdfDictionary = this._createNewFieldDictionary(fieldDictionary, destinationField._dictionary);
+        newFieldDict.objId = newFieldReference.toString();
+        this._crossReference._cacheMap.set(newFieldReference, newFieldDict);
+        const newField: PdfField = this._destinationDocument.form._parseFields(newFieldDict, newFieldReference);
+        destinationField._dictionary.update('Parent', newFieldReference);
+        newField._dictionary._updated = true;
+        this._updateFieldDictionary(fieldDictionary, ref, newFieldReference);
+        this._destinationDocument.form._dictionary._updated = true;
+        let oldDictionary: _PdfDictionary;
+        if (oldKids !== undefined && oldKids.length > 0) {
+            oldDictionary = field._crossReference._fetch(oldKids[Number.parseInt(index.toString(), 10)]);
+        } else {
+            oldDictionary = formFieldDictionary;
+        }
+        const dictionary: _PdfDictionary = this._copier._copyDictionary(oldDictionary, !this._isDuplicatePage);
+        if ((destinationField instanceof PdfTextBoxField || destinationField instanceof PdfButtonField || destinationField instanceof PdfComboBoxField) && dictionary.has('AS')) {
+            delete dictionary._map.AS;
+        }
+        const reference: _PdfReference = this._crossReference._getNextReference();
+        this._crossReference._cacheMap.set(reference, dictionary);
+        dictionary.update('P', ref);
+        array.push(reference);
+        dictionary.update('Parent', newField._ref);
+        const kidsElement: _PdfReference[] = [];
+        kidsElement.push(destinationField._ref);
+        kidsElement.push(reference);
+        dictionary._updated = true;
+        destinationField._dictionary._updated = true;
+        newFieldDict.update('Kids', kidsElement);
+        newField._kids = kidsElement;
+        this._formFieldsCollection.set(fieldIndex, newFieldReference);
+        this._destinationDocument.form._parsedFields.set(fieldIndex, newField);
+        if (!this._isDuplicatePage) {
+            this._createAppearance(newField, field, oldDictionary, dictionary, drEntry);
+        }
+        newFieldDict._updated = true;
+    }
+    _removeFieldDictionary(dictionary: _PdfDictionary, keys: string[]): _PdfDictionary {
+        keys.forEach(key => { // eslint-disable-line
+            if (dictionary.has(key))  {
+                delete dictionary._map[key]; // eslint-disable-line
+            }
+        });
+        return dictionary;
+    }
+    _updateFieldDictionary(dictionary: _PdfDictionary, pageRef: _PdfReference, parentRef: _PdfReference): void {
+        dictionary = this._removeFieldDictionary(dictionary, ['Parent', 'FT', 'T', 'Ff']);
+        dictionary.update('P', pageRef);
+        dictionary.update('Parent', parentRef);
+        dictionary._updated = true;
+    }
+    _createNewFieldDictionary(fieldDictionary: _PdfDictionary, destDictionary: _PdfDictionary): _PdfDictionary {
+        const newFieldDict: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        ['Parent', 'FT', 'T', 'V', 'Ff', 'TU', 'Opt', 'I'].forEach(key => { // eslint-disable-line
+            if (fieldDictionary.has(key)) {
+                newFieldDict.update(key, fieldDictionary.get(key));
+                delete fieldDictionary._map[key]; // eslint-disable-line
+                delete destDictionary._map[key]; // eslint-disable-line
+            }
+        });
+        return newFieldDict;
+    }
+    _getItemStyle(item: any, field: PdfField): void { // eslint-disable-line
+        const mkDictionary: _PdfDictionary = item._dictionary.get('MK');
+        if (mkDictionary && mkDictionary.has('CA')) {
+            item._styleText = mkDictionary.get('CA').charAt(0);
+        } else {
+            item._styleText = (field instanceof PdfRadioButtonListField) ? 'l' : '4';
+        }
+    }
+    _createAppearance(destinationField: PdfField, field: PdfField, oldDictionary: _PdfDictionary, dictionary: _PdfDictionary,
+                      drEntry: _PdfDictionary, widget?: any): void { // eslint-disable-line
+        const previousIndex: number = destinationField._kidsCount - 1;
+        let itemValue: string;
+        if (destinationField instanceof PdfCheckBoxField) {
+            const item: PdfStateItem = destinationField.itemAt(previousIndex);
+            item._enableGrouping = true;
+            this._getItemStyle(item, destinationField);
+            if (field instanceof PdfRadioButtonListField) {
+                item._dictionary.update('AS', _PdfName.get('Off'));
+                itemValue = _getItemValue(oldDictionary);
+            } else {
+                item._postProcess(destinationField.checked ? 'Yes' : 'Off');
+            }
+            destinationField._drawAppearance(item, itemValue);
+        } else if (destinationField instanceof PdfRadioButtonListField) {
+            const item: PdfRadioButtonListItem = destinationField.itemAt(previousIndex);
+            this._getItemStyle(item, destinationField);
+            if (item._dictionary.has('AS')) {
+                item._postProcess((item._dictionary.get('AS') as _PdfName).name);
+            } else {
+                item._postProcess('Off');
+            }
+            item._enableGrouping = true;
+            destinationField._enableGrouping = true;
+            destinationField._drawAppearance(item);
+        } else if (destinationField instanceof PdfListField)  {
+            const item: PdfListFieldItem = destinationField.itemAt(previousIndex);
+            if (typeof widget !== 'undefined') {
+                item.rotationAngle = widget.rotationAngle;
+            }
+            if (item && !destinationField._checkFieldFlag(item._dictionary)) {
+                item._enableGrouping = true;
+                const template: PdfTemplate = destinationField._createAppearance(item);
+                destinationField._addAppearance(item._dictionary, template, 'N');
+                item._dictionary._updated = true;
+            }
+        } else if (destinationField instanceof PdfTextBoxField || destinationField instanceof PdfButtonField || destinationField instanceof
+                   PdfSignatureField) {
+            const widgetAnnotation: PdfWidgetAnnotation = PdfWidgetAnnotation._load(dictionary, this._crossReference);
+            if (typeof widget !== 'undefined' && widget !== null && destinationField instanceof PdfSignatureField) {
+                destinationField._createAppearance(widget, false);
+            } else {
+                widgetAnnotation.setAppearance(true);
+                widgetAnnotation._enableGrouping = true;
+                let pdfFont: PdfFont;
+                if (typeof widget !== 'undefined' && widget !== null) {
+                    pdfFont = this._obtainFont(widget._dictionary, drEntry);
+                } else {
+                    pdfFont = this._obtainFont(dictionary, drEntry);
+                }
+                widgetAnnotation._pdfFont = pdfFont;
+                if (destinationField instanceof PdfSignatureField) {
+                    destinationField._createAppearance(widgetAnnotation, false);
+                } else {
+                    destinationField._postProcess(false, widgetAnnotation);
+                }
+            }
+        }
+    }
+    _obtainFont(item: _PdfDictionary, formDictionary: _PdfDictionary): PdfFont {
+        let fontFamily: string = '';
+        let fontSize: number = 8;
+        let pdfFont: PdfFont;
+        if (item && (item.has('DS') || item.has('DA'))) {
+            if (item.has('DS')) {
+                const collection: string[] = item.get('DS').split(';');
+                for (let i: number = 0; i < collection.length; i++) {
+                    const entry: string[] = collection[Number.parseInt(i.toString(), 10)].split(':');
+                    if (collection[Number.parseInt(i.toString(), 10)].indexOf('font-family') !== -1) {
+                        fontFamily = entry[1];
+                    } else if (collection[Number.parseInt(i.toString(), 10)].indexOf('font-style') === -1 && collection[Number.parseInt(i.toString(), 10)].indexOf('font') !== -1) {
+                        const name: string = entry[1];
+                        const split: string[] = name.split(' ');
+                        for (let j: number = 0; j < split.length; j++) {
+                            if (split[Number.parseInt(j.toString(), 10)] !== '' && !split[Number.parseInt(j.toString(), 10)].endsWith('pt')) {
+                                fontFamily += split[Number.parseInt(j.toString(), 10)] + ' ';
+                            }
+                        }
+                        while (fontFamily !== ' ' && fontFamily.endsWith(' ')) {
+                            fontFamily = fontFamily.substring(0, fontFamily.length - 2);
+                        }
+                        if (fontFamily.indexOf(',') !== -1) {
+                            fontFamily = fontFamily.split(',')[0];
+                        }
+                    }
+                }
+            } else {
+                const value: string = item.get('DA');
+                if (value && value !== '' && value.indexOf('Tf') !== -1) {
+                    const textCollection: string[] = value.split(' ');
+                    for (let i: number = 0; i < textCollection.length; i++) {
+                        if (textCollection[Number.parseInt(i.toString(), 10)].indexOf('Tf') !== -1) {
+                            fontFamily = textCollection[i - 2];
+                            while (fontFamily !== '' && fontFamily.length > 1 && fontFamily[0] === '/') {
+                                fontFamily = fontFamily.substring(1);
+                            }
+                            fontSize = Number.parseFloat(textCollection[i - 1]);
+                        }
+                    }
+                    if (fontSize === 0) {
+                        fontSize = 8;
+                    }
+                }
+            }
+        }
+        fontFamily = fontFamily.trim();
+        let fontStyle: PdfFontStyle = PdfFontStyle.regular;
+        let baseFontName: string;
+        if (typeof formDictionary != 'undefined' && formDictionary.has('Font')) {
+            const dictionary: _PdfDictionary = formDictionary.get('Font').get(fontFamily);
+            if (typeof dictionary !== 'undefined') {
+                baseFontName = dictionary.get('BaseFont').name;
+                fontStyle = this._getFontStyle(baseFontName);
+            }
+        }
+        switch (fontFamily) {
+        case 'Helv':
+            pdfFont = new PdfStandardFont(PdfFontFamily.helvetica, fontSize, fontStyle);
+            break;
+        case 'Courier':
+        case 'Cour':
+            pdfFont = new PdfStandardFont(PdfFontFamily.courier, fontSize, fontStyle);
+            break;
+        case 'Symb':
+            pdfFont = new PdfStandardFont(PdfFontFamily.symbol, fontSize, fontStyle);
+            break;
+        case 'TiRo':
+        case 'TiIt':
+            pdfFont = new PdfStandardFont(PdfFontFamily.timesRoman, fontSize, fontStyle);
+            break;
+        case 'ZaDb':
+            pdfFont = new PdfStandardFont(PdfFontFamily.zapfDingbats, fontSize, fontStyle);
+            break;
+        default:
+            pdfFont = new PdfStandardFont(PdfFontFamily.helvetica, fontSize, fontStyle);
+            break;
+        }
+        return pdfFont;
+    }
+    _getFontStyle(fontStyle: string): PdfFontStyle {
+        let style: PdfFontStyle = PdfFontStyle.regular;
+        if (fontStyle.includes('Bold')) {
+            style = PdfFontStyle.bold;
+        } else if (fontStyle.includes('Italic')) {
+            style = PdfFontStyle.italic;
+        }
+        return style;
+    }
     _importFormField(page: PdfPage, pdfForm: PdfForm, newPage: PdfPage, crossReference: _PdfCrossReference): void {
-        let jsonDocument: _JsonDocument = new _JsonDocument();
-        let appearance: string = '';
         const form: PdfForm = this._destinationDocument.form;
         let array: _PdfReference[] = [];
         if (newPage && newPage._pageDictionary && newPage._pageDictionary.has('Annots')) {
@@ -297,12 +497,18 @@ export class _PdfMergeHelper {
         let kidsArray: _PdfReference[] = [];
         let widgetArray: _PdfReference[] = [];
         if (this._destinationDocument.form._dictionary.has('Fields')) {
-            this._fieldCount = this._destinationDocument.form._fields.length;
+            const formFields: PdfForm = this._destinationDocument.form;
+            this._fieldCount = formFields.count;
+            for (let k: number = 0; k < this._fieldCount; k++) {
+                const name: string = formFields.fieldAt(k).name;
+                this._fieldNames.push(name);
+            }
         }
         if (page._pageDictionary.has('Annots')) {
             widgetArray = page._pageDictionary.get('Annots');
         }
-        for (let i: number = 0; i < pdfForm.count; ++i) {
+        const count: number = pdfForm.count;
+        for (let i: number = 0; i < count; ++i) {
             const pdfField: PdfField = pdfForm.fieldAt(i);
             if (pdfField._dictionary.has('Kids')) {
                 kidsArray = pdfField._dictionary.get('Kids');
@@ -327,34 +533,24 @@ export class _PdfMergeHelper {
         }
         if (pdfForm._dictionary.has('DR')) {
             const dr: _PdfDictionary = pdfForm._dictionary.get('DR');
-            const resourceTable: Map<string, string> = new Map<string, string>();
-            jsonDocument._crossReference = crossReference;
-            jsonDocument._writeObject(resourceTable, dr, dr, 'dr');
-            appearance = jsonDocument._convertToJson(resourceTable);
-            jsonDocument = new _JsonDocument();
-            jsonDocument._crossReference = this._crossReference;
-            const json: any = JSON.parse(appearance); // eslint-disable-line
-            const entry: any = json['dr']; // eslint-disable-line
-            if (entry) {
-                const drDictionary: any  = jsonDocument._parseDictionary(entry['dict']); // eslint-disable-line
-                let font: any; // eslint-disable-line
-                if (drDictionary.has('Font')) {
-                    font = drDictionary.get('Font');
-                }
-                if (this._destinationDocument.form._dictionary.has('DR')) {
-                    const curreneDR: _PdfDictionary = this._destinationDocument.form._dictionary.get('DR');
-                    if (curreneDR.has('Font')) {
-                        const currentFont: any = curreneDR.get('Font'); // eslint-disable-line
-                        if (font) {
-                            font.forEach((key: string, value: any) => { // eslint-disable-line
-                                currentFont.set(key, value);
-                            });
-                        }
-                        currentFont._updated = true;
+            const drDictionary: any  = this._copier._copyDictionary(dr); // eslint-disable-line
+            let font: any; // eslint-disable-line
+            if (drDictionary.has('Font')) {
+                font = drDictionary.get('Font');
+            }
+            if (this._destinationDocument.form._dictionary.has('DR')) {
+                const curreneDR: _PdfDictionary = this._destinationDocument.form._dictionary.get('DR');
+                if (curreneDR.has('Font')) {
+                    const currentFont: any = curreneDR.get('Font'); // eslint-disable-line
+                    if (font) {
+                        font.forEach((key: string, value: any) => { // eslint-disable-line
+                            currentFont.set(key, value);
+                        });
                     }
-                } else {
-                    this._destinationDocument.form._dictionary.update('DR', drDictionary);
+                    currentFont._updated = true;
                 }
+            } else {
+                this._destinationDocument.form._dictionary.update('DR', drDictionary);
             }
         }
         if (array.length > 0) {
@@ -363,30 +559,56 @@ export class _PdfMergeHelper {
     }
     _insertFormFields(index: number, crossReference: _PdfCrossReference, pdfField: PdfField, form: PdfForm, ref: _PdfReference,
                       array: _PdfReference[], kidsArray: _PdfReference[]): _PdfReference[] {
-        const dict: _PdfDictionary = this._exportFormFieldDictionary(crossReference, pdfField);
-        this._fieldNames.push(pdfField.name);
+        let dictionary: _PdfDictionary = new _PdfDictionary();
+        if (pdfField._dictionary.has('Kids')) {
+            pdfField._dictionary.forEach((key: any, value: any) => { // eslint-disable-line
+                if (key !== 'Kids') {
+                    dictionary.update(key, value);
+                }
+            });
+        } else {
+            dictionary = this._copier._copyDictionary(pdfField._dictionary);
+        }
         const newReference: _PdfReference = this._crossReference._getNextReference();
-        dict.objId = newReference.toString();
-        const field: PdfField = form._parseFields(dict, ref);
+        dictionary.objId = newReference.toString();
+        const field: PdfField = form._parseFields(dictionary, ref);
         this._crossReference._cacheMap.set(newReference, field._dictionary);
-        if (field._dictionary.has('Kids')) {
-            const existingKids: _PdfReference[] = pdfField._dictionary.get('Kids');
-            const kids: _PdfReference[] = field._dictionary.get('Kids');
-            for (let j: number = 0; j < kids.length; j++) {
-                if ((kidsArray.indexOf(existingKids[Number.parseInt(j.toString(), 10)]) !== -1)){
-                    const dictionary: _PdfDictionary = this._crossReference._fetch(kids[Number.parseInt(j.toString(), 10)]);
-                    dictionary.update('P', ref);
-                    dictionary.update('Parent', newReference);
-                    dictionary._updated = true;
-                    array.push(kids[Number.parseInt(j.toString(), 10)]);
+        if (pdfField._dictionary.has('Kids')) {
+            const oldKids: _PdfReference[] = pdfField._dictionary.get('Kids');
+            const kids: _PdfReference[] = [];
+            for (let j: number = 0; j < oldKids.length ; j++) {
+                if ((kidsArray.indexOf(oldKids[Number.parseInt(j.toString(), 10)]) !== -1)) {
+                    const oldDictionary: _PdfDictionary = pdfField._crossReference._fetch(oldKids[Number.parseInt(j.toString(), 10)]);
+                    const dict: _PdfDictionary = this._copier._copyDictionary(oldDictionary);
+                    dict.update('P', ref);
+                    dict.update('Parent', newReference);
+                    dict._updated = true;
+                    const reference: _PdfReference = this._crossReference._getNextReference();
+                    this._crossReference._cacheMap.set(reference, dict);
+                    array.push(reference);
+                    kids.push(reference);
                 }
             }
+            dictionary.update('Kids', kids);
+            field._kids = kids;
         } else {
             field._dictionary.update('P', ref);
             array.push(newReference);
         }
         field._dictionary._updated = true;
-        this._fields.push(newReference);
+        let  i: number = 0;
+        let fieldName: string = field.name;
+        let modified: boolean = false;
+        while (this._fieldNames.indexOf(fieldName) !== -1) {
+            fieldName = field.name + i;
+            modified = true;
+            ++i;
+        }
+        if (modified) {
+            field._dictionary.update('T', fieldName);
+            field._name = fieldName;
+        }
+        field._dictionary._updated = true;
         if (this._fieldCount > 0) {
             this._destinationDocument.form._parsedFields.set(this._fieldCount, field);
             field._annotationIndex = this._fieldCount;
@@ -395,67 +617,25 @@ export class _PdfMergeHelper {
             this._destinationDocument.form._parsedFields.set(index, field);
             field._annotationIndex = index;
         }
+        this._destinationDocument.form._fields.push(newReference);
         return array;
     }
     _mergeFormFieldsWithDocument(): void {
-        if (this._formFields.length > 0) {
-            let pdfFields: any[] = this._destinationDocument.form._dictionary.get('Fields'); // eslint-disable-line
-            for (let i: number = 0; i < pdfFields.length; i++) {
-                if (!this._formFieldsCollection.has(i)) {
-                    this._formFields.push(pdfFields[Number.parseInt(i.toString(), 10)]);
-                }
-            }
-        }
-        if (this._fields.length > 0) {
-            let fieldsCount: number = 0;
-            if (this._destinationDocument.form._dictionary.has('Fields')) {
-                fieldsCount = this._destinationDocument.form._fields.length;
-            }
-            if (this._formFields.length === 0) {
-                this._formFields = this._destinationDocument.form._fields;
-            }
-            if (fieldsCount > 0) {
-                const pdfFields: _PdfReference[] = this._formFields;
-                const exFieldCount: number = this._fields.length;
-                let fieldName : string = '';
-                for (let i: number = 0; i < exFieldCount; i++) {
-                    const formFieldDictionary: _PdfDictionary = this._crossReference._fetch(this._fields[Number.parseInt(i.toString(), 10)]
-                    );
-                    if (formFieldDictionary.has('T')) {
-                        fieldName = formFieldDictionary.get('T').toString();
-                    }
-                    const count: number = this._fieldNames.length;
-                    for (let j: number = 0; j < count; j++) {
-                        if (fieldName === this._fieldNames[Number.parseInt(j.toString(), 10)]) {
-                            const name: string = fieldName + ' ' + i;
-                            formFieldDictionary.update('T', name);
-                            formFieldDictionary._updated = true;
-                            break;
-                        }
-                    }
-                }
-
-                for (let i: number = 0; i < exFieldCount; i++) {
-                    pdfFields.push(this._fields[Number.parseInt(i.toString(), 10)]);
-                }
-                this._destinationDocument.form._dictionary.set('Fields', pdfFields);
-                this._destinationDocument.form._fields = pdfFields;
-                if (!this._options.groupFormFields && !this._isDuplicatePage) {
-                    this._destinationDocument.form._dictionary.update('NeedAppearances', false);
-                }
-                this._destinationDocument.form._dictionary._updated = true;
-            } else {
-                this._destinationDocument.form._dictionary.set('Fields', this._fields);
-                this._destinationDocument.form._fields = this._fields;
-                this._destinationDocument.form._dictionary._updated = true;
-            }
+        let pdfFields: _PdfReference[];
+        if (this._formFieldsCollection.size > 0) {
+            pdfFields = this._destinationDocument.form._dictionary.get('Fields');
+            this._formFieldsCollection.forEach((value: _PdfReference, key: number) => {
+                pdfFields[Number.parseInt(key.toString(), 10)] = value;
+            });
         } else {
-            if (this._formFields.length > 0) {
-                this._destinationDocument.form._dictionary.set('Fields', this._formFields);
-                this._destinationDocument.form._fields = this._formFields;
-                this._destinationDocument.form._dictionary._updated = true;
-            }
+            pdfFields = this._destinationDocument.form._fields;
         }
+        if (this._destinationDocument.form._dictionary.get('NeedAppearances')) {
+            this._destinationDocument.form._dictionary.set('NeedAppearances', false);
+        }
+        this._destinationDocument.form._dictionary.set('Fields', pdfFields);
+        this._destinationDocument.form._fields = pdfFields;
+        this._destinationDocument.form._dictionary._updated = true;
     }
     _importLayers(ocProperties: _PdfDictionary, layers: boolean): void {
         this._isLayersPresent = layers;
@@ -863,7 +1043,7 @@ export class _PdfMergeHelper {
                 const dest: any = this._destination[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
                 if (dest instanceof Array) {
                     const destination: any = dest; // eslint-disable-line
-                    if (destination.length > 0) {
+                    if (destination.length > 0 && destination[0] && destination[0] instanceof _PdfReference) {
                         const ref: any = document._crossReference._fetch(destination[0]); // eslint-disable-line
                         const index: PdfPage = pageLinkReference.get(ref) as PdfPage;
                         if (ref && pageLinkReference.has(ref) && index !== null) {
@@ -877,7 +1057,7 @@ export class _PdfMergeHelper {
             }
         }
     }
-    _insertNewPage(page: PdfPage, index: number): PdfPage {
+    _insertNewPage(page: PdfPage, index?: number): PdfPage {
         let newPage: PdfPage;
         const pagesettings: PdfPageSettings = new PdfPageSettings();
         pagesettings.size = page.size;
@@ -917,29 +1097,10 @@ export class _PdfMergeHelper {
         }
         return newPage;
     }
-    _exportFormFieldDictionary(crossReference: _PdfCrossReference, field: PdfField): _PdfDictionary {
-        let fieldDictionary: _PdfDictionary;
-        let jsonDocument: _JsonDocument = new _JsonDocument();
-        const resourceTable: Map<string, string> = new Map<string, string>();
-        jsonDocument._crossReference = crossReference;
-        jsonDocument._writeObject(resourceTable, field._dictionary, field._dictionary, 'fields');
-        const appearance: string = jsonDocument._convertToJson(resourceTable);
-        jsonDocument = new _JsonDocument();
-        jsonDocument._crossReference = this._crossReference;
-        const json: any = JSON.parse(appearance); // eslint-disable-line
-        if (json) {
-            const entry: any = json['fields']; // eslint-disable-line
-            if (entry) {
-                fieldDictionary = jsonDocument._parseDictionary(entry['dict']);
-            }
-        }
-        return fieldDictionary;
-    }
     _objectDispose(): void {
         this. _bookmarkHashTable = new Map();
         this._namedDestinations = [];
         this._bookmarks = [];
-        this._fields = [];
         this._pageReference = new Map();
         this._bookmarksPageLinkReference.clear();
         this._destination = [];
@@ -947,5 +1108,123 @@ export class _PdfMergeHelper {
         this._annotationLayer = new Map();
         this._fieldNames = [];
         this._destinationDocument.form._widgetReferences = [];
+    }
+}
+export class _PdfCopier {
+    _traversedObjects: Map<_PdfReference, _PdfReference> = new Map<_PdfReference, _PdfReference>();
+    _targetCrossReference: _PdfCrossReference;
+    _sourceCrossReference: _PdfCrossReference;
+    _isGroupingSupport: boolean = false;
+    constructor(targetCrossReference: _PdfCrossReference, sourceCrossReference: _PdfCrossReference) {
+        this._targetCrossReference = targetCrossReference;
+        this._sourceCrossReference = sourceCrossReference;
+    }
+    _copy(object: any): any { // eslint-disable-line
+        let clonedObject: any; // eslint-disable-line
+        if (object instanceof _PdfDictionary) {
+            clonedObject = this._copyDictionary(object);
+        } else if (Array.isArray(object)) {
+            clonedObject = this._copyArray(object);
+        } else if (object instanceof _PdfBaseStream) {
+            clonedObject = this._copyStream(object);
+        } else if (object instanceof _PdfReference) {
+            clonedObject = this._copyReference(object);
+        } else if (object instanceof _PdfName || typeof object === 'number' ||
+                    typeof object === 'string' || typeof object === 'boolean') {
+            clonedObject = object;
+        }
+        return clonedObject;
+    }
+    _copyDictionary(element: _PdfDictionary, copiedPage?: boolean): _PdfDictionary {
+        const clonedDictionary: _PdfDictionary = new _PdfDictionary(this._targetCrossReference);
+        if (element && element.size > 0) {
+            element.forEach((key: string, value: any) => { // eslint-disable-line
+                if (key === 'OC' && value instanceof Array || (key !== 'P' && key !== 'Parent' && key !== 'Dest' && key !== 'OC' && !(key === 'AP' && copiedPage)) ) {
+                    const copiedValue: any = this._copy(value); // eslint-disable-line
+                    if (copiedValue !== null && typeof copiedValue !== 'undefined') {
+                        clonedDictionary.update(key, copiedValue);
+                    }
+                }
+            });
+        }
+        clonedDictionary._updated = true;
+        return clonedDictionary;
+    }
+    _copyArray(originalArray: any[]): any[] { // eslint-disable-line 
+        const newArray: any[] = []; // eslint-disable-line 
+        for (let i: number = 0; i < originalArray.length; i++) {
+            newArray.push(this._copy(originalArray[Number.parseInt(i.toString(), 10)]));
+        }
+        return newArray;
+    }
+    _copyStream(originalStream: _PdfBaseStream): _PdfBaseStream {
+        let bytes: number[] | Uint8Array;
+        let imageStream: boolean = false;
+        const baseStream: any = originalStream; // eslint-disable-line
+        if (originalStream.dictionary.has('Subtype') && originalStream.dictionary.get('Subtype').name === 'Image') {
+            imageStream = true;
+            if (originalStream instanceof _PdfStream) {
+                bytes = originalStream.getByteRange(originalStream.offset, originalStream.end);
+            } else if (originalStream && baseStream.stream && baseStream.stream instanceof _PdfStream) {
+                if (typeof baseStream._initialized === 'boolean' && baseStream._cipher) {
+                    const streamLength: number = baseStream.stream.end - baseStream.stream.start;
+                    baseStream.getBytes(streamLength);
+                    bytes = baseStream.buffer.subarray(0, baseStream.bufferLength);
+                } else {
+                    const stream: _PdfStream = baseStream.stream;
+                    bytes = stream.getByteRange(stream.start, stream.end);
+                }
+            } else if (baseStream.stream && baseStream.stream.stream) {
+                const flateStream: any = baseStream.stream; // eslint-disable-line
+                if (flateStream.stream instanceof _PdfStream && typeof flateStream._initialized === 'boolean' && flateStream._cipher) {
+                    const streamLength: number = flateStream.stream.end - flateStream.stream.start;
+                    flateStream.getBytes(streamLength);
+                    bytes = flateStream.buffer.subarray(0, flateStream.bufferLength);
+                } else if (flateStream.stream && flateStream.stream instanceof _PdfStream) {
+                    const stream: _PdfStream = flateStream.stream;
+                    bytes = stream.getByteRange(stream.start, stream.end) as Uint8Array;
+                } else {
+                    bytes = [];
+                }
+            } else {
+                bytes = originalStream.getBytes();
+                if ((!bytes || bytes.length === 0) && originalStream instanceof _PdfContentStream) {
+                    bytes = originalStream._bytes;
+                }
+            }
+        } else {
+            bytes = originalStream.getBytes();
+            if ((!bytes || bytes.length === 0) && originalStream instanceof _PdfContentStream) {
+                bytes = originalStream._bytes;
+            }
+        }
+        const content: _PdfContentStream = new _PdfContentStream(Array.from(bytes));
+        content._isImage = imageStream;
+        content.dictionary = this._copyDictionary(originalStream.dictionary);
+        content.dictionary._updated = true;
+        return content;
+    }
+    _copyReference(element: _PdfReference): any { // eslint-disable-line
+        if (this._traversedObjects.has(element)) {
+            return this._traversedObjects.get(element);
+        } else {
+            this._traversedObjects.set(element, null);
+            const dereferencedValue: any = this._sourceCrossReference._fetch(element); // eslint-disable-line
+            const copyValue: any = this._copy(dereferencedValue); // eslint-disable-line
+            if (copyValue instanceof _PdfDictionary || copyValue instanceof _PdfBaseStream) {
+                const newRef: _PdfReference = this._addToDestination(copyValue);
+                this._traversedObjects.set(element, newRef);
+                return newRef;
+            } else {
+                this._traversedObjects.set(element, copyValue);
+                return copyValue;
+            }
+        }
+    }
+    _addToDestination(element: any): _PdfReference { // eslint-disable-line
+        const newRef: _PdfReference = this._targetCrossReference._getNextReference();
+        this._targetCrossReference._cacheMap.set(newRef, element);
+        element.objId = `${newRef.objectNumber} ${newRef.generationNumber}`;
+        return newRef;
     }
 }

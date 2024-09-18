@@ -209,14 +209,17 @@ export class TextSearch {
                             continue;
                         }
                     }
-                    if (!(!isNullOrUndefined(this.owner.searchModule.textSearchResults) && this.owner.searchModule.textSearchResults.length !== 0) && span.previousElement && (span.previousElement instanceof BookmarkElementBox || span.previousElement instanceof CommentCharacterElementBox)) {
+                    if (!(!isNullOrUndefined(this.owner.searchModule.textSearchResults)
+                        && this.owner.searchModule.textSearchResults.length !== 0) && span.previousElement
+                        && (span.previousElement instanceof BookmarkElementBox
+                            || span.previousElement instanceof CommentCharacterElementBox)) {
                         isContainField = true;
                     }
                     let offset: number = 0;
                     if (isContainField) {
                         offset = (span.line).getOffset(span, 0) + span.length;
                     } else {
-                        offset = (span.line).getOffset(span, index)
+                        offset = (span.line).getOffset(span, index);
                     }
                     result.end = this.getTextPosition(span.line, offset.toString());
                     result.end.location = this.owner.selectionModule.getPhysicalPositionInternal(span.line, offset, true);

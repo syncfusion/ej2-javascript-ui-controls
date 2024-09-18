@@ -13,7 +13,7 @@ import { Size, measureText, TextOption, PathOption, Rect, SvgRenderer } from '@s
 import { ZIndex, Anchor, SizeType } from '../utils/enum';
 import { DataUtil } from '@syncfusion/ej2-data';
 /**
- * `StripLine` module is used to render the stripLine in chart.
+ * The `StripLine` module is used to render strip lines in charts.
  */
 export class StripLine {
     /**
@@ -216,8 +216,9 @@ export class StripLine {
                             this.dateToMilliSeconds(stripline.start, chart) : stripline.start as number;
                         if ((stripline.startFromAxis && axis.valueType === 'DateTime' && stripline.sizeType === 'Auto') ||
                         (stripline.start < axis.visibleRange.min)) {
-                            startValue = axis.visibleLabels[0].value === axis.visibleRange.min ? axis.visibleRange.min :
-                                axis.visibleLabels[0].value - (axis.valueType === 'DateTime' ? axis.dateTimeInterval :
+                            startValue = axis.visibleLabels[0] &&
+                                axis.visibleLabels[0].value === axis.visibleRange.min ? axis.visibleRange.min :
+                                axis.visibleLabels[0] && axis.visibleLabels[0].value - (axis.valueType === 'DateTime' ? axis.dateTimeInterval :
                                     axis.visibleRange.interval);
                         }
                         startValue = stripline.startFromAxis && axis.valueType !== 'DateTime' ? axis.visibleRange.min : startValue;
@@ -295,7 +296,7 @@ export class StripLine {
                     id, 'none', strokeWidth, stripline.color, stripline.opacity, stripline.dashArray, d
                 )
             ),
-            chart.redraw, true, 'x', 'y', null, direction, true
+            chart.redraw, true, 'x', 'y', null, direction, true, null, null, chart.duration
         );
     }
     /**
@@ -323,7 +324,7 @@ export class StripLine {
                     rect, 0, 0, '', stripline.border.dashArray
                 )
             ),
-            chart.redraw, true, 'x', 'y', null, null, true, true, previousRect
+            chart.redraw, true, 'x', 'y', null, null, true, true, previousRect, chart.duration
         );
     }
 

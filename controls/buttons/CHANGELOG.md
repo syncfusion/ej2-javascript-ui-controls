@@ -2,39 +2,13 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
-
-### Switch
-
-#### Bug Fixes
-
-- `#F190104` - The issue with Script error occurs while `opening dialog` component using switch button has been resolved.
-
-## 26.2.8 (2024-08-06)
-
-### Switch
-
-#### Bug Fixes
-
-- `#F190104` - The issue with Script error occurs while `opening dialog` component using switch button has been resolved.
-
-## 26.2.7 (2024-07-30)
-
-### Switch
-
-#### Bug Fixes
-
-- `#F190104` - The issue with Script error occurs while `opening dialog` component using switch button has been resolved.
-
-## 26.1.40 (2024-07-02)
-
-### Checkbox
-
-#### Bug Fixes
-
-- `#I602047` - The issue with "CheckBox change event triggered twice when setting label as HTML string element" has been resolved.
-
 ## 26.1.35 (2024-06-11)
+
+### Floating Action Button
+
+#### Breaking Changes
+
+- The `refreshPosition` method has been marked as deprecated and will no longer be used. It will be removed in future versions. Previously, this method was used to re-position the FAB when its target was resized. Now, this functionality is handled responsively through CSS at the source level, eliminating the need for manual refreshes.
 
 ### Switch
 

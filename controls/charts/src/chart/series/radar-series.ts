@@ -6,7 +6,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Axis } from '../axis/axis';
 
 /**
- * `RadarSeries` module is used to render the radar series.
+ * The `RadarSeries` module is used to render the radar series.
  */
 
 export class RadarSeries extends PolarSeries {
@@ -18,6 +18,7 @@ export class RadarSeries extends PolarSeries {
      * @param {Axis} yAxis - The y-axis of the chart.
      * @param {boolean} inverted - A flag indicating whether the chart is inverted or not.
      * @returns {void}
+     * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean): void {
         const seriesType: string = firstToLowerCase(series.drawType);

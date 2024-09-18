@@ -327,6 +327,86 @@ describe('Bullet Chart Scale', () => {
             expect(svg.getAttribute('stroke-width') == '0').toBe(true);
             done();
         });
+        it('Checking theme as Tailwind', (done: Function) => {
+            bullet.theme = 'Tailwind';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as TailwindDark', (done: Function) => {
+            bullet.theme = 'TailwindDark';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as Bootstrap5', (done: Function) => {
+            bullet.theme = 'Bootstrap5';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as Bootstrap5Dark', (done: Function) => {
+            bullet.theme = 'Bootstrap5Dark';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == '#212529').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as Fluent', (done: Function) => {
+            bullet.theme = 'Fluent';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'rgba(255, 255, 255, 0.0001)').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as FluentDark', (done: Function) => {
+            bullet.theme = 'FluentDark';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as Fluent2', (done: Function) => {
+            bullet.theme = 'Fluent2';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as Fluent2Dark', (done: Function) => {
+            bullet.theme = 'Fluent2Dark';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as Material3', (done: Function) => {
+            bullet.theme = 'Material3';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as Material3Dark', (done: Function) => {
+            bullet.theme = 'Material3Dark';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
         it('Checking theme as HighContrast', (done: Function) => {
             bullet.theme = 'HighContrast';
             bullet.refresh();
@@ -385,6 +465,61 @@ describe('Bullet Chart Scale', () => {
             expect(svg.getAttribute('stroke-width') == '12').toBe(true);
             done();
         });
+        it('Checking theme as Fluent with valueFill as null', (done: Function) => {
+            bullet.theme = 'FluentDark';
+            bullet.valueFill = null;
+            bullet.targetColor = "#191919";
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as Fluent with valueFill as null and targetColor as without null', (done: Function) => {
+            bullet.theme = 'Fluent';
+            bullet.valueFill = null;
+            bullet.targetColor = "#191919";
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'rgba(255, 255, 255, 0.0001)').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as Material3 with valueFill as null', (done: Function) => {
+            bullet.theme = 'Material3Dark';
+            bullet.valueFill = null;
+            bullet.targetColor = "#191919";
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as Material3 with valueFill as null and targetColor as without null', (done: Function) => {
+            bullet.theme = 'Material3';
+            bullet.valueFill = null;
+            bullet.targetColor = "#191919";
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as Material3 with valueFill as null with enableRtl', (done: Function) => {
+            bullet.theme = 'Material3Dark';
+            bullet.dataSource = [
+                { value: -1, target: 75, category: 'Year 1' },
+            ];
+            bullet.type = 'Dot';
+            bullet.enableRtl = true;
+            bullet.valueFill = null;
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        
     });
      describe('Null or undefined public properly', () => {
         let bullet: BulletChart;
@@ -425,6 +560,92 @@ describe('Bullet Chart Scale', () => {
             expect(svg === null).toBe(true);
         });
         it('Checking comparative bar', () => {
+            svg = document.getElementById('container_svg_ComparativeMeasure');
+            expect(svg === null).toBe(true);
+        });
+    });
+    describe('Checking theme', () => {
+        let bullet: BulletChart;
+        let svg: Element;
+        let range1: Element;
+        let range2: Element;
+        let range3: Element;
+        let bulletElement: Element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(bulletElement);
+            bullet = new BulletChart({
+                valueField: 'value',
+                targetField: 'comparativeMeasureValue',
+                categoryField: 'category',
+                height: '400',
+                minimum: 0, maximum: 20, interval: 4,
+                animation: { enable: false }, theme: 'Bootstrap5'
+            });
+            bullet.appendTo('#container');
+        });
+        afterAll((): void => {
+            bullet.destroy();
+            bulletElement.remove();
+        });
+        it('Ranges in Bootstrap5 theme', () => {
+            svg = document.getElementById('container_svg_range_0');
+            expect(svg.getAttribute('width') == '0').toBe(true);
+            expect(svg.getAttribute('height') == '353').toBe(true);
+            svg = document.getElementById('container_svg_range_1');
+            expect(svg.getAttribute('width') == '0').toBe(true);
+            expect(svg.getAttribute('height') == '353').toBe(true);
+            svg = document.getElementById('container_svg_range_2');
+            expect(svg.getAttribute('width') == '0').toBe(true);
+            expect(svg.getAttribute('height') == '353').toBe(true);
+        });
+        it('Checking Measure bar in Bootstrap5', () => {
+            svg = document.getElementById('container_svg_FeatureMeasure_0');
+            expect(svg === null).toBe(true);
+        });
+        it('Checking comparative bar in Bootstrap5', () => {
+            svg = document.getElementById('container_svg_ComparativeMeasure');
+            expect(svg === null).toBe(true);
+        });
+    });
+    describe('Checking theme', () => {
+        let bullet: BulletChart;
+        let svg: Element;
+        let range1: Element;
+        let range2: Element;
+        let range3: Element;
+        let bulletElement: Element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(bulletElement);
+            bullet = new BulletChart({
+                valueField: 'value',
+                targetField: 'comparativeMeasureValue',
+                categoryField: 'category',
+                height: '400',
+                minimum: 0, maximum: 20, interval: 4,
+                animation: { enable: false }, theme: 'Bootstrap5Dark'
+            });
+            bullet.appendTo('#container');
+        });
+        afterAll((): void => {
+            bullet.destroy();
+            bulletElement.remove();
+        });
+        it('Ranges in Bootstrap3Dark theme', () => {
+            svg = document.getElementById('container_svg_range_0');
+            expect(svg.getAttribute('width') == '0').toBe(true);
+            expect(svg.getAttribute('height') == '353').toBe(true);
+            svg = document.getElementById('container_svg_range_1');
+            expect(svg.getAttribute('width') == '0').toBe(true);
+            expect(svg.getAttribute('height') == '353').toBe(true);
+            svg = document.getElementById('container_svg_range_2');
+            expect(svg.getAttribute('width') == '0').toBe(true);
+            expect(svg.getAttribute('height') == '353').toBe(true);
+        });
+        it('Checking Measure bar in Bootstrap5Dark', () => {
+            svg = document.getElementById('container_svg_FeatureMeasure_0');
+            expect(svg === null).toBe(true);
+        });
+        it('Checking comparative bar in Bootstrap5Dark', () => {
             svg = document.getElementById('container_svg_ComparativeMeasure');
             expect(svg === null).toBe(true);
         });

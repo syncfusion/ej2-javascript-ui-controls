@@ -4,7 +4,7 @@ import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
 
 /**
- * `MacdIndicator` module is used to render MACD indicator.
+ * The `MacdIndicator` module is used to render the Moving Average Convergence Divergence indicator.
  */
 export class MacdIndicator extends TechnicalAnalysis {
     /**

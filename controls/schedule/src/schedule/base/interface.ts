@@ -483,6 +483,7 @@ export interface IRenderer {
     getAdjustedDate?(date: Date): Date;
     viewIndex: number;
     colLevels: TdData[][];
+    getGroupIndices(dataCollection?: TdData[]): number[];
 }
 
 /** @private */

@@ -87,6 +87,9 @@ export class InlineEditRender {
         table.appendChild(gObj.getContentTable().querySelector(literals.colGroup).cloneNode(true));
         const tbody: Element = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
         const tr: Element = this.parent.createElement('tr');
+        if (this.parent.rowHeight) {
+            (tr as HTMLElement).style.height = this.parent.rowHeight + 'px';
+        }
         let i: number = 0;
         if (isDetail) {
             tr.insertBefore(this.parent.createElement('td', { className: 'e-detailrowcollapse' }), tr.firstChild);

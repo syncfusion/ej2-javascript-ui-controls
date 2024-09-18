@@ -894,6 +894,25 @@ describe('3DChart Control', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
+        it('chart tooltip format checking with keyboard navigation', (done: Function) => {
+            loaded = (args: CircularChart3DLoadedEventArgs): void => {
+                const element = document.getElementById('container-svg-0-region-series-0-point-0');
+                trigger.keyboardEvent('keydown', element, 'Space', 'Space');
+                trigger.keyboardEvent('keyup', element, 'ArrowUp', 'ArrowUp');
+                trigger.keyboardEvent('keydown', element, 'Escape', 'Escape');
+                trigger.keyboardEvent('keyup', element, 'ArrowDown', 'ArrowDown');
+                trigger.keyboardEvent('keyup', element, 'ArrowLeft', 'ArrowLeft');
+                trigger.keyboardEvent('keyup', element, 'ArrowRight', 'ArrowRight');
+                trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.highlightMode = 'Point';
+            chartObj.highlightPattern = 'Box';
+            chartObj.legendSettings = { visible: true };
+            chartObj.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

@@ -696,10 +696,6 @@ export class AxisHelper {
             labelElement = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_XAxisMultiLevelLabel' + level });
             multiLevel.categories.map((categoryLabel: MultiLevelCategories, i: number) => {
                 if (!isNullOrUndefined(categoryLabel.start) && !isNullOrUndefined(categoryLabel.end)) {
-                    if (this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark') {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (multiLevel as any).setProperties({ textStyle: { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' } }, true);
-                    }
                     if (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark') {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (multiLevel as any).setProperties({ textStyle: { fontFamily: 'Inter' } }, true);
@@ -719,6 +715,14 @@ export class AxisHelper {
                     if (this.heatMap.theme === 'Fluent2Dark' || this.heatMap.theme === 'Fluent2HighContrast') {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (multiLevel as any).setProperties({ textStyle: { color: '#FFFFFF', size: '12px', fontWeight: '400', fontFamily: 'Segoe UI' } }, true);
+                    }
+                    if (this.heatMap.theme === 'Bootstrap5') {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (multiLevel as any).setProperties({ textStyle: { color: '#212529', size: '12px', fontWeight: '400', fontFamily: 'Segoe UI' } }, true);
+                    }
+                    if (this.heatMap.theme === 'Bootstrap5Dark') {
+                        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (multiLevel as any).setProperties({ textStyle: { color: '#DEE2E6', size: '12px', fontWeight: '400', fontFamily: 'Segoe UI'} }, true );
                     }
                     tooltip = false;
                     start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));
@@ -770,7 +774,7 @@ export class AxisHelper {
                     }
                     if (!this.heatMap.enableCanvasRendering) {
                         parent.appendChild(labelElement);
-                        }
+                    }
                     if (options.text.indexOf('...') !== -1 || options.text[0].indexOf('...') !== -1 || tooltip) {
                         this.heatMap.tooltipCollection.push(
                             new CanvasTooltip(
@@ -869,7 +873,7 @@ export class AxisHelper {
                 }
                 if (this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (multiLevel as any).setProperties({ textStyle : { fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}, true);
+                    (multiLevel as any).setProperties({ textStyle : { fontFamily: 'Segoe UI' }}, true);
                 }
                 if (this.heatMap.theme === 'Fluent2') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any

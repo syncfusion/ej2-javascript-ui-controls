@@ -34,7 +34,7 @@ export class Selection {
     /** @hidden */
     public previousActiveCell: string;
     /** @hidden */
-    public isNoteContainerIsActiveElement: boolean = false;
+    public isNoteActiveElement: boolean = false;
     private isNoteTouch: boolean = false;
 
     /**
@@ -238,19 +238,20 @@ export class Selection {
     }
 
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
-        this.isNoteContainerIsActiveElement = document.activeElement.className.indexOf('e-addNoteContainer') > -1;
+        this.isNoteActiveElement = !isNullOrUndefined(document) && !isNullOrUndefined(document.activeElement) &&
+            !isNullOrUndefined(document.activeElement.className) && document.activeElement.className.indexOf('e-addNoteContainer') > -1;
         if (closest(e.target as Element, '.e-scrollbar') || (e.target as Element).classList.contains('e-main-panel') ||
             (e.target as Element).classList.contains('e-sheet')) { return; }
         const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         const sheet: SheetModel = this.parent.getActiveSheet();
         this.parent.notify(editOperation, eventArgs);
         const isFormulaEdit: boolean =  checkIsFormula(eventArgs.editedValue, true);
-        const isNoteCellIndex: boolean = !isNullOrUndefined(this.parent.spreadsheetNoteModule.noteCellIndexes);
+        const isNoteCellIndex: boolean = this.parent.enableNotes && !isNullOrUndefined(this.parent.spreadsheetNoteModule.noteCellIndexes);
         const cellIndexes: number[] = isNoteCellIndex ? this.parent.spreadsheetNoteModule.noteCellIndexes :
             getCellIndexes(this.parent.getActiveSheet().activeCell);
         const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
         if (!isNullOrUndefined(targetElement) && targetElement.children !== null && targetElement.children.length > 0
-            && this.isNoteContainerIsActiveElement && targetElement.children[targetElement.children.length - 1].classList.contains('e-addNoteIndicator')) {
+            && this.isNoteActiveElement && targetElement.children[targetElement.children.length - 1].classList.contains('e-addNoteIndicator')) {
             const cell: CellModel = getCell(cellIndexes[0], cellIndexes[1], sheet);
             const eventAction: string = !isNullOrUndefined(cell) && cell.notes ? 'editNote' : 'addNote';
             const noteContainer: HTMLTextAreaElement  = document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement;
@@ -898,7 +899,9 @@ export class Selection {
             updateSelectedRange(this.parent as Workbook, selRange, sheet, isMultiRange);
             if (isSelectRangeChange) {
                 promise.then((): void => {
-                    this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
+                    if (this.parent) {
+                        this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
+                    }
                 });
             }
         } else if (!isInit && !this.isautoFillClicked) {

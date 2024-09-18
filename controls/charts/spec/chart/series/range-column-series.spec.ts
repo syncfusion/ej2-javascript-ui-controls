@@ -1348,6 +1348,57 @@ describe('Chart', () => {
             chartObj.refresh();
         });
         });
+    describe('Checking Range column series setData method.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement;
+        element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { title: 'primaryXAxis', valueType: 'DateTime' },
+                    primaryYAxis: { title: 'PrimaryYAxis' },
+                    series: [
+                        {
+                            type: 'RangeColumn', name: 'column series',
+                            columnWidthInPixel: 10,
+                            dataSource: [
+                                { x: new Date(1, 0, 2000), low: -12, high: 0 }, { x: new Date(1, 0, 2001), low: 12, high: 10 },
+                                { x: new Date(1, 0, 2002), low: 23, high: 10 }, { x: new Date(1, 0, 2003), low: 202, high: 43 },
+                                { x: new Date(1, 0, 2004), low: 0, high: 10 }, { x: new Date(1, 0, 2005), low: -22, high: 34 },
+                                { x: new Date(1, 0, 2006), low: -12, high: 23 }, { x: new Date(1, 0, 2007), low: 12, high: 40 }],
+                             xName: 'x', yName: 'y', low: 'low', high: 'high',
+                            animation: { enable: false }, marker: { visible: true }
+                        },
+                    ],
+                    width: '700'
+                });
+            chartObj.appendTo('#container');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+
+        it('RangeColumn - setData', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement = document.getElementById('container_Series_0_Point_1_Symbol1');
+                expect(seriesElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            let rangeColumnData = [
+                { x: new Date(1, 0, 2000), low: -12, high: 0 }, { x: new Date(1, 0, 2001), low: 12, high: 10 },
+                { x: new Date(1, 0, 2002), low: 30, high: 10 }, { x: new Date(1, 0, 2003), low: 202, high: 43 },
+                { x: new Date(1, 0, 2004), low: 0, high: 10 }, { x: new Date(1, 0, 2005), low: -22, high: 34 },
+                { x: new Date(1, 0, 2006), low: -12, high: 27 }, { x: new Date(1, 0, 2007), low: 12, high: 40 }];
+            chartObj.series[0].setData(rangeColumnData);
+            chartObj.refresh();
+        });
+    });
         it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)

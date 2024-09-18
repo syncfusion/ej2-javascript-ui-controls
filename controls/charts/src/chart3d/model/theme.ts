@@ -236,89 +236,89 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
         break;
     case 'Bootstrap5':
         style = {
-            axisLabel: '#222222',
-            axisTitle: '#343A40',
-            majorGridLine: '#E5E7EB',
-            minorGridLine: '#E5E7EB',
-            majorTickLine: '#D1D5DB',
-            minorTickLine: '#D1D5DB',
-            chartTitle: '#343A40',
-            legendLabel: '#343A40',
+            axisLabel: '#212529',
+            axisTitle: '#212529',
+            majorGridLine: '#DEE2E6',
+            minorGridLine: '#DEE2E6',
+            majorTickLine: '#DEE2E6',
+            minorTickLine: '#DEE2E6',
+            chartTitle: '#212529',
+            legendLabel: '#212529',
             background: 'transparent',
-            tooltipFill: '#212529',
-            tooltipBoldLabel: '#F9FAFB',
-            tooltipLightLabel: '#F9FAFB',
-            tooltipHeaderLine: '#9CA3AF',
+            tooltipFill: '#000000E5',
+            tooltipBoldLabel: '#FFFFFF',
+            tooltipLightLabel: '#FFFFFF',
+            tooltipHeaderLine: '#FFFFFF',
             tabColor: '#0D6EFD',
-            backWallColor: '#F9F9F9',
-            leftWallColor: '#EBEBEB',
+            backWallColor: '#DEE2E6',
+            leftWallColor: '#DEE2E6',
             chartTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#212529', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#222222', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#343A40', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal'
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#212529', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '700'
             },
             datalabelFont: {
-                color: '#FFFFFF', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '10px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#21252980', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             }
         };
         break;
     case 'Bootstrap5Dark':
         style = {
-            axisLabel: '#E9ECEF',
-            axisTitle: '#E9ECEF',
-            majorGridLine: '#343A40',
-            minorGridLine: '#343A40',
+            axisLabel: '#DEE2E6',
+            axisTitle: '#DEE2E6',
+            majorGridLine: '#495057',
+            minorGridLine: '#495057',
             majorTickLine: '#495057',
             minorTickLine: '#495057',
-            chartTitle: '#E9ECEF',
-            legendLabel: '#E9ECEF',
+            chartTitle: '#DEE2E6',
+            legendLabel: '#DEE2E6',
             background: 'transparent',
-            tooltipFill: '#E9ECEF',
+            tooltipFill: '#FFFFFFE5',
             tooltipBoldLabel: '#212529',
             tooltipLightLabel: '#212529',
-            tooltipHeaderLine: '#ADB5BD',
+            tooltipHeaderLine: '#212529',
             tabColor: '#0D6EFD',
-            backWallColor: '#222222',
-            leftWallColor: '#272727',
+            backWallColor: '#495057',
+            leftWallColor: '#495057',
             chartTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#212529', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#212529', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '700'
             },
             datalabelFont: {
-                color: '#000000', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '10px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E680', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             }
         };
         break;
@@ -495,6 +495,50 @@ export function get3DThemeColor(theme: ChartTheme ): Chart3DThemeStyle {
             },
             chartSubTitleFont: {
                 color: '#ADADAD', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+            }
+        };
+        break;
+    case 'Fluent2HighContrast':
+        style = {
+            axisLabel: '#FFFFFF',
+            axisTitle: '#FFFFFF',
+            majorGridLine: '#292827',
+            minorGridLine: '#3B3A39',
+            majorTickLine: '#292827',
+            minorTickLine: '#3B3A39',
+            chartTitle: '#FFFFFF',
+            legendLabel: '#FFFFFF',
+            background: 'transparent',
+            tooltipFill: '#000000',
+            tooltipBoldLabel: '#FFFFFF',
+            tooltipLightLabel: '#FFFFFF',
+            tooltipHeaderLine: '#3B3A39',
+            tabColor: '#0078D4',
+            backWallColor: '#222222',
+            leftWallColor: '#272727',
+            chartTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            axisLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            legendTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            legendLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            tooltipLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
+            },
+            axisTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            datalabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '10px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            chartSubTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             }
         };
         break;
@@ -681,13 +725,9 @@ export function get3DSeriesColor(theme: ChartTheme): string[] {
         palette = ['#00C2FF', '#FD7400', '#F87171', '#4ADE80', '#E879F9',
             '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
         break;
-    case 'Bootstrap5':
-        palette = ['#6355C7', '#9B43F4', '#2196F5', '#F7523F', '#963C70',
-            '#4BE0BC', '#FD7400', '#C9E422', '#DE3D8A', '#162F88'];
-        break;
     case 'Bootstrap5Dark':
-        palette = ['#A598FF', '#FF7E6F', '#6CBDFF', '#FF7F71', '#FF6DB3',
-            '#63F5D2', '#FCAA65', '#ECFF77', '#EF8EFF', '#5F82FD'];
+    case 'Bootstrap5':
+        palette = ['#FD7E14', '#6610F2', '#6F42C1', '#D63384', '#DC3545', '#FFC107', '#198754', '#0DCAF0'];
         break;
     case 'FluentDark':
         palette = ['#41E4FF', '#FF7E6F', '#EDBB40', '#AF4BCF', '#FF7266',
@@ -702,6 +742,10 @@ export function get3DSeriesColor(theme: ChartTheme): string[] {
             '#0364DE', '#66CD15', '#F3A93C', '#107C10', '#C19C00'];
         break;
     case 'Fluent2Dark':
+        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
+            '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
+        break;
+    case 'Fluent2HighContrast':
         palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
             '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
         break;

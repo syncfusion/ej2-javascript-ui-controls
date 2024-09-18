@@ -398,6 +398,28 @@ describe('Accumulation Chart Control', () => {
             pie.legendSettings.reverse = true;
             pie.refresh();
         });
+        it('Pie Legend chekcing with title', (done: Function) => {
+            pie.loaded = () => {
+                legendEle = getElement(legendId + '_text_0');
+                expect(legendEle.getAttribute('x')).toBe('345');
+                const y: number = parseInt(legendEle.getAttribute('y'), 10);
+                expect(y).toBe(411);
+                done();
+            };
+            pie.legendSettings= {visible: true, enablePages: false, position: 'Bottom', titlePosition: 'Left', title: 'Legend'}
+            pie.refresh();
+        });
+        it('Pie Legend checking with height', (done: Function) => {
+            pie.loaded = () => {
+                legendEle = getElement(legendId + '_text_0');
+                expect(legendEle.getAttribute('x')).toBe('345');
+                const y: number = parseInt(legendEle.getAttribute('y'), 10);
+                expect(y).toBe(471);
+                done();
+            };
+            pie.legendSettings= {visible: true, enablePages: false, position: 'Bottom', titlePosition: 'Left', title: 'Legend' , height: '40'}
+            pie.refresh();
+        });
     });
 
     describe('Pie Legend checking with Title', () => {
@@ -506,6 +528,60 @@ describe('Accumulation Chart Control', () => {
             pie.legendSettings.titleStyle.fontWeight = '500';
             pie.legendSettings.titleStyle.fontFamily = 'verdana';
             pie.legendSettings.titleStyle.opacity = 2;
+            pie.refresh();
+        });
+        it('Pie Legend title checking with Legend Position as Top without title', (done: Function) => {
+            pie.loaded = () => {
+                legendEle = getElement(legendId + '_title');
+                expect(legendEle.textContent).toBe('Legend Title');
+                expect(legendEle.getAttribute('x')).toBe('300');
+                expect(legendEle.getAttribute('y')).toBe('29');
+                legendEle = getElement(legendId + '_element');
+                expect(legendEle.getAttribute('x')).toBe('47.5');
+                expect(legendEle.getAttribute('y')).toBe('11');
+                expect(legendEle.getAttribute('height')).toBe('50');
+                expect(legendEle.getAttribute('width')).toBe('505');
+                done();
+            };
+            pie.legendSettings.titlePosition = 'Top';
+            pie.legendSettings.position = 'Top';
+            pie.title = '';
+            pie.refresh();
+        });
+        it('Pie Legend - Checking smart legend with position as bottom', (done: Function) => {
+            pie.loaded = () => {
+                legendEle = getElement(legendId + '_title');
+                expect(legendEle.textContent).toBe('Legend Title');
+                expect(legendEle.getAttribute('x')).toBe('300');
+                expect(legendEle.getAttribute('y')).toBe('29');
+                legendEle = getElement(legendId + '_element');
+                expect(legendEle.getAttribute('x')).toBe('47.5');
+                expect(legendEle.getAttribute('y')).toBe('11');
+                expect(legendEle.getAttribute('height')).toBe('50');
+                expect(legendEle.getAttribute('width')).toBe('505');
+                done();
+            };
+            pie.legendSettings.titlePosition = 'Top';
+            pie.legendSettings.position = 'Top';
+            pie.title = '';
+            pie.refresh();
+        });
+        it('Pie Legend - Checking smart legend with position as left', (done: Function) => {
+            pie.loaded = () => {
+                legendEle = getElement(legendId + '_title');
+                expect(legendEle.textContent).toBe('Legend Title');
+                expect(legendEle.getAttribute('x')).toBe('300');
+                expect(legendEle.getAttribute('y')).toBe('29');
+                legendEle = getElement(legendId + '_element');
+                expect(legendEle.getAttribute('x')).toBe('47.5');
+                expect(legendEle.getAttribute('y')).toBe('11');
+                expect(legendEle.getAttribute('height')).toBe('50');
+                expect(legendEle.getAttribute('width')).toBe('505');
+                done();
+            };
+            pie.legendSettings.titlePosition = 'Top';
+            pie.legendSettings.position = 'Top';
+            pie.title = '';
             pie.refresh();
         });
 
@@ -620,6 +696,21 @@ describe('Accumulation Chart Control', () => {
                 done();
             };
             pie.legendSettings.enableHighlight = true;
+            pie.refresh();
+        });
+        it('checking with keyboard navigation', (done: Function) => {
+            let enterKeyUpTriggered: boolean = false;
+            pie.loaded = () => {
+                if (!enterKeyUpTriggered) {
+                    enterKeyUpTriggered = true;
+                    legendEle = document.getElementById(id + '_chart' + '_legend_g_1');
+                    trigger.keyboardEvent('keyup', legendEle, 'ArrowLeft', 'ArrowLeft');
+                    trigger.keyboardEvent('keyup', legendEle, 'ArrowRight', 'ArrowRight');
+                    trigger.keyboardEvent('keyup', legendEle, 'Enter', 'Enter');
+                    expect(legendEle !== null).toBe(true);
+                }
+                done();
+            };
             pie.refresh();
         });
     });

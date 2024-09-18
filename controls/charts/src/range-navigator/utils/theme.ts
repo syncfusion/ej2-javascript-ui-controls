@@ -195,49 +195,49 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
         break;
     case 'Bootstrap5':
         style = {
-            gridLineColor: '#E5E7EB',
-            axisLineColor: '#E5E7EB',
-            labelFontColor: '#495057',
+            gridLineColor: '#E9ECEF',
+            axisLineColor: '#DEE2E6',
+            labelFontColor: '#21252980',
             unselectedRectColor: range.series.length ? 'transparent' : '#E5E7EB',
-            thumpLineColor: '#0D6EFD',
+            thumpLineColor: '#CED4DA',
             thumbBackground: '#FFFFFF',
-            gripColor: '#0D6EFD',
+            gripColor: '#6E757D',
             background: 'transparent',
-            thumbHoverColor: '#EEEEEE',
-            selectedRegionColor: range.series.length ? 'rgba(13, 110, 253, 0.1)' : '#4F46E5',
-            tooltipBackground: '#212529',
-            tooltipFontColor: '#F9FAFB',
+            thumbHoverColor: '#666666',
+            selectedRegionColor: range.series.length ? 'rgba(52, 58, 64, 0.1)' : '#ADB5BD',
+            tooltipBackground: '#000000E5',
+            tooltipFontColor: '#FFFFFF',
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#21252980', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
     case 'Bootstrap5Dark':
         style = {
             gridLineColor: '#343A40',
-            axisLineColor: '#343A40',
-            labelFontColor: '#CED4DA',
+            axisLineColor: '#495057',
+            labelFontColor: '#DEE2E680',
             unselectedRectColor: range.series.length ? 'transparent' : '#E5E7EB',
             thumpLineColor: '#6C757D',
-            thumbBackground: '#374151',
+            thumbBackground: '#212529',
             gripColor: '#ADB5BD',
             background: 'transparent',
             thumbHoverColor: '#666666',
             selectedRegionColor: range.series.length ? 'rgba(173, 181, 189, 0.1)' : '#ADB5BD',
-            tooltipBackground: '#E9ECEF',
+            tooltipBackground: '#FFFFFFE5',
             tooltipFontColor: '#212529',
             thumbWidth: thumbWidth,
             thumbHeight: thumbHeight,
             axisLabelFont: {
-                color: '#CED4DA', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E680', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#212529', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -334,6 +334,30 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             },
             tooltipLabelFont: {
                 color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            }
+        };
+        break;
+    case 'Fluent2HighContrast':
+        style = {
+            gridLineColor: '#8A8886',
+            axisLineColor: '#3B3A39',
+            labelFontColor: '#ADADAD',
+            unselectedRectColor: range.series.length ? 'transparent' : '#A19F9D',
+            thumpLineColor: '#8A8886',
+            thumbBackground: '#1F1F1F',
+            gripColor: '#FFFFFF',
+            background: 'transparent',
+            thumbHoverColor: '#1F1F1F',
+            selectedRegionColor: range.series.length ? 'rgba(138, 136, 134, 0.1)' : '#797775',
+            tooltipBackground: '#000000',
+            tooltipFontColor: '#FFFFFF',
+            thumbWidth: thumbWidth,
+            thumbHeight: thumbHeight,
+            axisLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            tooltipLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '10px', fontStyle: 'Normal', fontWeight: '600'
             }
         };
         break;

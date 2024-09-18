@@ -12,6 +12,7 @@ import { ForeignKey } from '../../../src/grid/actions/foreign-key';
 import { data, employeeData, customerData, image } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { PdfExport } from '../../../src/grid/actions/pdf-export';
+import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { createGrid, destroy} from '../base/specutil.spec';
 import { HierarchyGridPrintMode } from '../../../src/grid/base/enum';
 import { PdfDocument, PdfGrid, PdfStandardFont, PdfFontFamily, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
@@ -19,7 +20,7 @@ import { DataManager } from '@syncfusion/ej2-data';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { PdfExportProperties, ExportDetailTemplateEventArgs } from '../../../src/grid/base/interface';
 
-Grid.Inject(Page, Group, Selection, Toolbar, PdfExport, DetailRow, ForeignKey);
+Grid.Inject(Page, Group, Selection, Toolbar, PdfExport, DetailRow, ForeignKey, Aggregate);
 
 describe('pdf Export =>', () => {
     let exportComplete: () => void = () => true;
@@ -978,18 +979,104 @@ describe('pdf Export =>', () => {
                 }, done);
         });
 
-        it('Hierarchy export all mode', (done) => {
+        it('Hierarchy export all mode', (done: Function) => {
             gridObj.pdfExport(null, true).then((pdfDoc: PdfDocument) => {
                 expect(pdfDoc instanceof PdfDocument).toBeTruthy();
                 done();
             });
         });
 
-        it('Hierarchy export none mode', (done) => {
+        it('Hierarchy export none mode', (done: Function) => {
             gridObj.pdfExport({ hierarchyExportMode: 'None' }, true).then((pdfDoc: PdfDocument) => {
                 expect(pdfDoc instanceof PdfDocument).toBeTruthy();
                 done();
             });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+     // used for code coverage
+     describe('code coverage for pdf export file', () => {
+        let gridObj: Grid;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 1),
+                    allowPdfExport: true,
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: '120px' },
+                        { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 140 },
+                    ],
+
+                }, done);
+        });
+
+        it('pdf export file code coverage', () => {
+            let theme: any = { 
+                header: { font: { fontSize: 10 } },
+                caption: { font: { fontSize: 10 } },
+                record: { font: { fontSize: 10 } }
+            };
+            (gridObj as any).pdfExportModule.getGridPdfFont({});
+            (gridObj as any).pdfExportModule.getSummaryWithoutTemplate({ FalseCount: true });
+            (gridObj as any).pdfExportModule.getSummaryWithoutTemplate({ Custom: true });
+            (gridObj as any).pdfExportModule.getSummaryWithoutTemplate({});
+            (gridObj as any).pdfExportModule.getFont({ font: true });
+            (gridObj as any).pdfExportModule.getDashStyle('DashDotDot');
+            (gridObj as any).pdfExportModule.getDashStyle('');
+            (gridObj as any).pdfExportModule.getBrushFromContent({ style: {} });
+            (gridObj as any).pdfExportModule.getGridPdfFont(theme);
+        });
+
+
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    // used for code coverage
+    describe('904075: Vue3 is not correctly printing and exporting custom templates', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 4),
+                    allowPaging: true,
+                    pageSettings: { pageSize: 3 },
+                    toolbar: ['PdfExport'],
+                    allowPdfExport: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'ShipCountry', headerText: 'Ship Country' },
+                        { field: 'CustomerID', headerText: 'Customer ID' },
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Count',
+                            field: 'ShipCountry',
+                            footerTemplate: 'Count: ${Count}'
+                        }]
+                    }]
+
+                }, done);
+        });
+
+        it('vue3 aggregates code coverage', () => {
+            gridObj.isVue = true;
+            (gridObj as any).isVue3 = true;
+        });
+
+        it('PdfExport', () => {
+            gridObj.pdfExport();
         });
 
         afterAll(() => {

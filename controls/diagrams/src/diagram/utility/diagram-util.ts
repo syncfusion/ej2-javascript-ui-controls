@@ -10,7 +10,7 @@ import { Point } from './../primitives/point';
 import {
     PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityFlows, BpmnFlows, DiagramAction,
     UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform, EventState, ChangeType, BlazorAction,
-    ControlPointsVisibility
+    ControlPointsVisibility, DiagramEvent
 } from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection, DistributeOptions } from './../enum/enum';
 import { Alignment, SegmentInfo } from '../rendering/canvas-interface';
@@ -62,12 +62,13 @@ import { GridPanel } from '../core/containers/grid';
 import { isBlazor, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeInfo, INode } from '../layout/layout-base';
 import { MouseEventArgs } from '../interaction/event-handlers';
-import { IBlazorDropEventArgs, IBlazorCollectionChangeEventArgs, IElement } from '../objects/interface/IElement';
+import { IBlazorDropEventArgs, IBlazorCollectionChangeEventArgs, IElement, ILoadedEventArgs} from '../objects/interface/IElement';
 import { ConnectorFixedUserHandleModel, NodeFixedUserHandleModel } from '../objects/fixed-user-handle-model';
 import { ConnectorFixedUserHandle } from '../objects/fixed-user-handle';
 import { SymbolPaletteModel } from '../../symbol-palette';
 import { LayerModel } from '../diagram/layer-model';
 import { Overview } from '../../overview/overview';
+import { FlowChartData, ArrowStyle } from '../data-binding/data-binding';
 
 
 
@@ -575,7 +576,7 @@ export function updateDefaultValues(
 export function updateLayoutValue(actualNode: TreeInfo, defaultValue: object, nodes?: INode[], node?: INode): void {
     // eslint-disable-next-line @typescript-eslint/ban-types
     let keyObj: object;
-    let assistantKey: string = 'Role';
+    const assistantKey: string = 'Role';
     if (defaultValue) {
         for (const key of Object.keys(defaultValue)) {
             keyObj = defaultValue[`${key}`];
@@ -878,7 +879,7 @@ function offsetPoint(
  * @param { Canvas} fixedUserHandleContainer - provide the fixedUserHandleContainer  value.
  * @private
  */
-export function initfixedUserHandlesSymbol(
+export function initFixedUserHandlesSymbol(
     options: ConnectorFixedUserHandleModel | NodeFixedUserHandleModel, fixedUserHandleContainer: Canvas): DiagramElement {
     //let fixedUserHandleContent: PathElement | DiagramNativeElement;
     const fixedUserHandleContent: PathElement | DiagramNativeElement = new PathElement();
@@ -1604,6 +1605,9 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
             diagram.element.classList.add('e-diagram');
         }
     }
+    //881117 - Event to notify after diagram elements are loaded.  
+    const args: ILoadedEventArgs = { name: 'loaded', diagram: diagram};
+    diagram.triggerEvent(DiagramEvent.loaded, args); 
     if (dataObj.selectedItems) {
         dataObj.selectedItems.nodes = [];
         dataObj.selectedItems.connectors = [];
@@ -2234,20 +2238,20 @@ export function getUserHandlePosition(selectorItem: SelectorModel, handle: UserH
     if (selectorItem.nodes.length > 0) {
         switch (handle.side) {
         case 'Top':
-            point.x += left + bounds.width * offset;
-            point.y += top - (size / 2 + 12.5);
+            point.x += left + offset * wrapper.actualSize.width;
+            point.y += top - (size);
             break;
         case 'Bottom':
-            point.x += left + offset * bounds.width;
-            point.y += top + wrapper.actualSize.height + (size / 2 + 12.5);
+            point.x += left + offset * wrapper.actualSize.width;
+            point.y += top + wrapper.actualSize.height + (size);
             break;
         case 'Left':
-            point.x += left - (size / 2 + 12.5);
-            point.y += top + offset * bounds.height;
+            point.x += left - (size);
+            point.y += top + offset * wrapper.actualSize.height;
             break;
         case 'Right':
-            point.x += left + wrapper.actualSize.width + (size / 2 + 12.5);
-            point.y += top + offset * bounds.height;
+            point.x += left + wrapper.actualSize.width + (size);
+            point.y += top + offset * wrapper.actualSize.height;
             break;
         }
         point.x += ((margin.left - margin.right) / transform.scale) +
@@ -3106,4 +3110,32 @@ export function selectionHasConnector(diagram: Diagram, selector: Selector): boo
         return true;
     }
     return false;
+}
+/**
+ * To Get connector style based on the arrow type
+ * @param {FlowChartData} data - provide the flow chart data.
+ * @returns {ArrowStyle} - Connector style
+ */
+export function getConnectorArrowType(data: FlowChartData){
+    if (data.arrowType && data.arrowType.trim() !== '') {
+        switch (data.arrowType) {
+        case 'single-line-arrow':
+            return { targetDecorator: 'Arrow', strokeWidth: 1 };
+        case 'double-line-arrow':
+            return { targetDecorator: 'Arrow', strokeWidth: 2 };
+        case 'dotted-arrow':
+            return { targetDecorator: 'Arrow', strokeDashArray: '2,2' };
+        case 'single-line':
+            return { targetDecorator: 'None', strokeWidth: 1 };
+        case 'double-line':
+            return { targetDecorator: 'None', strokeWidth: 2 };
+        case 'dotted':
+            return { targetDecorator: 'None', strokeDashArray: '2,2' };
+        case 'wiggly-arrow':
+            return { targetDecorator: 'None', strokeWidth: 1, opacity: 0 };
+        default:
+            return { targetDecorator: 'Arrow', strokeWidth: 1 };
+        }
+    }
+    return { targetDecorator: 'Arrow', strokeWidth: 1 };
 }

@@ -34,6 +34,7 @@ export class AccumulationAnnotation extends AnnotationBase {
      *
      * @param {Element} element - Annotation element.
      * @returns {void}
+     * @private
      */
     public renderAnnotations(element: Element): void {
         this.annotations = this.pie.annotations;
@@ -45,6 +46,9 @@ export class AccumulationAnnotation extends AnnotationBase {
         this.annotations.map((annotation: AccumulationAnnotationSettings, index: number) => {
             this.processAnnotation(annotation, index, this.parentElement);
         });
+        if (this.pie.series[0].animation.enable && this.pie.series[0].type === 'Pie' && this.pie.animateSeries) {
+            this.parentElement.style.visibility = 'hidden';
+        }
         appendElement(this.parentElement, element, redraw);
     }
 

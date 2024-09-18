@@ -117,7 +117,11 @@ export class ContextMenu {
     }
 
     private get spellChecker(): SpellChecker {
-        return this.documentHelper.owner.spellCheckerModule;
+        try {
+            return this.documentHelper.owner.spellCheckerModule;
+        } catch {
+            return undefined;
+        }
     }
 
     private getModuleName(): string {
@@ -695,11 +699,13 @@ export class ContextMenu {
                             /* eslint-disable @typescript-eslint/no-explicit-any */
                             let jsonObject: any = JSON.parse(data);
                             allSuggestions = jsonObject.Suggestions;
-                            if (!isNullOrUndefined(allSuggestions)) {
-                                this.spellChecker.errorSuggestions.add(exactData, allSuggestions.slice());
-                                splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions);
+                            if (!isNullOrUndefined(this.documentHelper)) {
+                                if (!isNullOrUndefined(allSuggestions)) {
+                                    this.spellChecker.errorSuggestions.add(exactData, allSuggestions.slice());
+                                    splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions);
+                                }
+                                this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as MouseEvent);
                             }
-                            this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as MouseEvent);
                         });
                     } else {
                         this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as MouseEvent);

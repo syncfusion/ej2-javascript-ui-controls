@@ -60,7 +60,7 @@ export interface GanttModel extends ComponentModel{
     /**
      * Gets or sets whether to load child record on demand in remote data binding. Initially parent records are rendered in collapsed state.
      *
-     * @default false
+     * @default true
      */
     loadChildOnDemand?: boolean;
 
@@ -147,7 +147,7 @@ export interface GanttModel extends ComponentModel{
     /**
      * `undoRedoActions` Defines action items that retain for undo and redo operation.
      *
-     * @default ['Sorting','Add','ColumnReorder','ColumnResize','ColumnState','Delete','Edit','Filtering','Indent','Outdent','NextTimeSpan','PreviousTimeSpan','RowDragAndDrop','Search']
+     * @default ['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'TaskbarDragAndDrop', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit']
      */
     undoRedoActions?: GanttAction[];
 

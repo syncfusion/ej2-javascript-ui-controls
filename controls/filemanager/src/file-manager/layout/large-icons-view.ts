@@ -142,7 +142,6 @@ export class LargeIconsView {
             } else { this.items = this.allItems = getSortedData(this.parent, this.items); }
             iconsView.classList.remove(CLS.DISPLAY_NONE);
             if (this.parent.enableVirtualization && this.allItems.length > 0) {
-                if (!this.element.style.height) { this.adjustHeight(); }
                 this.parent.virtualizationModule.setUIVirtualization();
             }
             this.listElements = ListBase.createListFromJson(createElement, <{ [key: string]: Object; }[]>this.items, this.listObj);
@@ -179,7 +178,6 @@ export class LargeIconsView {
             for (let i: number = 0; i < activeEle.length; i++) {
                 activeEle[i as number].setAttribute('aria-selected', 'true');
             }
-            this.adjustHeight();
             this.element.style.maxHeight = '100%';
             this.getItemCount();
             this.addEventListener();
@@ -282,12 +280,6 @@ export class LargeIconsView {
      */
     private getModuleName(): string {
         return 'largeiconsview';
-    }
-
-    private adjustHeight(): void {
-        const pane: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.CONTENT_ID, this.parent.element);
-        const bar: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID, this.parent.element);
-        this.element.style.height = (pane.offsetHeight - bar.offsetHeight) + 'px';
     }
 
     private onItemCreated(args: ItemCreatedArgs): void {
@@ -495,7 +487,6 @@ export class LargeIconsView {
 
     private onLayoutRefresh(): void {
         if (this.parent.view !== 'LargeIcons') { return; }
-        this.adjustHeight();
     }
 
     private onUpdateSelectionData(): void {
@@ -629,7 +620,8 @@ export class LargeIconsView {
     private onpasteEnd(args: ReadArgs): void {
         if (this.parent.view === 'LargeIcons') {
             this.isPasteOperation = true;
-            if (this.parent.path === this.parent.destinationPath || this.parent.path === getDirectoryPath(this.parent, args) || this.parent.hasId) {
+            if (this.parent.path === this.parent.destinationPath ||
+                this.parent.path === getDirectoryPath(this.parent, args) || this.parent.hasId) {
                 this.onPathChanged(args);
             }
         }
@@ -651,9 +643,6 @@ export class LargeIconsView {
             switch (prop) {
             case 'allowDragAndDrop':
                 this.createDragObj();
-                break;
-            case 'height':
-                this.adjustHeight();
                 break;
             case 'selectedItems':
                 this.isInteraction = false;
@@ -1109,6 +1098,9 @@ export class LargeIconsView {
         case 'ctrlD':
             this.doDownload();
             break;
+        case 'back':
+            this.parent.traverseBackward();
+            break;
         }
     }
 
@@ -1407,9 +1399,6 @@ export class LargeIconsView {
 
     private resizeHandler(): void {
         this.getItemCount();
-        if (!isNOU(this.listObj)) {
-            this.adjustHeight();
-        }
     }
 
     private splitterResizeHandler(): void {

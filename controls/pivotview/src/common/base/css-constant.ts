@@ -473,6 +473,10 @@ export const FORMAT_VALUE1: string = 'e-format-value1';
 /** @hidden */
 export const FORMAT_VALUE2: string = 'e-format-value2';
 /** @hidden */
+export const HIDDEN: string = 'e-visible-hide';
+/** @hidden */
+export const FORMAT_INPUT_VALUE: string = 'e-format-input-value';
+/** @hidden */
 export const FORMAT_VALUE_SPAN: string = 'e-format-value-span';
 /** @hidden */
 export const FORMAT_FONT_COLOR: string = 'e-format-font-color';
@@ -482,6 +486,8 @@ export const FORMAT_BACK_COLOR: string = 'e-format-back-color';
 export const FORMAT_VALUE_PREVIEW: string = 'e-format-value-preview';
 /** @hidden */
 export const FORMAT_COLOR_PICKER: string = 'e-format-color-picker';
+/** @hidden */
+export const GRANDTOTAL_CHECKBOX_TABLE: string = 'e-grandtotal-checkbox-table';
 /** @hidden */
 export const FORMAT_DELETE_ICON: string = 'e-format-delete-icon';
 /** @hidden */

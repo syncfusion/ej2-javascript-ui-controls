@@ -129,6 +129,7 @@ export class PivotUtil {
             drilledMembers: this.cloneDrillMemberSettings(dataSourceSettings.drilledMembers),
             valueSortSettings: this.CloneValueSortObject(dataSourceSettings.valueSortSettings),
             valueAxis: dataSourceSettings.valueAxis,
+            valueIndex: dataSourceSettings.valueIndex,
             grandTotalsPosition: dataSourceSettings.grandTotalsPosition,
             formatSettings: this.cloneFormatSettings(dataSourceSettings.formatSettings),
             calculatedFieldSettings: this.cloneCalculatedFieldSettings(dataSourceSettings.calculatedFieldSettings),
@@ -1093,7 +1094,7 @@ export class PivotUtil {
      * @param {IAxisSet[]} sortMembersOrder - It contains the sort members order.
      * @param {string} sortOrder - It contains the sort order.
      * @param {string | boolean} type - It contains the type.
-     * @param {boolean} isNumberGroupSorting - It denotes the number group sorting or not.
+     * @param {boolean} isNumberGroupSorting - it defines the sorting is numer grouping or not.
      * @returns {IAxisSet[]} - It returns the sorted data as IAxisSet[].
      * @hidden
      */
@@ -1116,15 +1117,13 @@ export class PivotUtil {
                     ((b.dateText > a.dateText) ? -1 : 0))) : sortOrder === 'Descending' ?
                     (sortMembersOrder.sort((a: IAxisSet, b: IAxisSet): number => (a.dateText < b.dateText) ? 1 :
                         ((b.dateText < a.dateText) ? -1 : 0))) : sortMembersOrder;
-        }
-        else if (type === true) {
+        } else if (type === true) {
             sortMembersOrder = sortOrder === 'Ascending' ?
                 (sortMembersOrder.sort((a: IAxisSet, b: IAxisSet): number => (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? 1 : (b.actualText === 'Out of Range') ? -1 : (Number(a.actualText.toString().match(/\d+/)) > Number(b.actualText.toString().match(/\d+/))) ? 1 : ((Number(b.actualText.toString().match(/\d+/)) > Number(a.actualText.toString().match(/\d+/))) ? -1 : 0))) :
                 sortOrder === 'Descending' ?
                     (sortMembersOrder.sort((a: IAxisSet, b: IAxisSet): number => (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? -1 : (b.actualText === 'Out of Range') ? 1 : (Number(a.actualText.toString().match(/\d+/)) < Number(b.actualText.toString().match(/\d+/))) ? 1 : ((Number(b.actualText.toString().match(/\d+/)) < Number(a.actualText.toString().match(/\d+/))) ? -1 : 0))) :
                     sortMembersOrder;
-        }
-        else {
+        } else {
             sortMembersOrder = sortOrder === 'Ascending' ?
                 (sortMembersOrder.sort(function (a: IAxisSet, b: IAxisSet): number { return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : ((a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0)); })) :
                 sortOrder === 'Descending' ?

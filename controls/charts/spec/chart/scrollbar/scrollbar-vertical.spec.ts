@@ -47,6 +47,7 @@ describe('Scrollbar Chart', () => {
                     title: 'Chart Title',
                     legendSettings: { visible: true },
                     width: '900',
+                    enableAnimation: false,
                     zoomSettings: { enableSelectionZooming: true, enableScrollbar: true, mode: 'Y' }
                 }
             );
@@ -194,9 +195,9 @@ describe('Scrollbar Chart', () => {
             let yAxisLabel: Element = document.getElementById('container1_AxisLabel_0');
             let yAxisTitle: Element = document.getElementById('container_AxisTitle_1');
             expect(chartAreaHt === '344.25' || chartAreaHt === '350.25').toBe(true);
-            expect(majorTick === '73 340.50174999999996 L 52 340.50174999999996' || majorTick === '69 350.18575 L 48 350.18575').toBe(true);
+            expect(majorTick === '73 340.50174999999996 L 52 340.50174999999996' || majorTick === '69 356.4 L 48 356.4' ).toBe(true);
             expect(yAxisLabel.getAttribute('x') === '37').toBe(true);
-            expect(yAxisLabel.getAttribute('y') === '350').toBe(true);
+            expect(yAxisLabel.getAttribute('y') === '356').toBe(true);
             expect(yAxisLabel.innerHTML === '10').toBe(true);
             expect(yAxisTitle.getAttribute('x') === '29.5' || yAxisTitle.getAttribute('x') === '26.5').toBe(true);
             expect(yAxisTitle.getAttribute('y') === '213.375' || yAxisTitle.getAttribute('y') === '212.875').toBe(true);
@@ -221,6 +222,7 @@ describe('Scrollbar Chart', () => {
                         dataSource: [{ x: 10, y: 46 }, { x: 20, y: 27 }, { x: 30, y: 26 }, { x: 40, y: 16 }, { x: 50, y: 31 }],
                         xName: 'x', yName: 'y', marker: { visible: true }, type: 'Line'
                     }],
+                    enableAnimation: false,
                     title: 'Chart Title',
                     legendSettings: { visible: true },
                     width: '900',
@@ -259,7 +261,7 @@ describe('Scrollbar Chart', () => {
             expect(chartAreaHt === '375.25' || chartAreaHt === '380.25').toBe(true);
             expect(majorTick === '73.5 421 L 73.5 415' || majorTick === '69.5 424 L 69.5 418').toBe(true);
             expect(yAxisLabel.getAttribute('x') === '40').toBe(true);
-            expect(yAxisLabel.getAttribute('y') === '387').toBe(true);
+            expect(yAxisLabel.getAttribute('y') === '388').toBe(true);
             expect(yAxisLabel.innerHTML === '4' || yAxisLabel.innerHTML === '6').toBe(true);
             expect(yAxisTitle.getAttribute('x') === '29.5' || yAxisTitle.getAttribute('x') === '26.5').toBe(true);
             expect(yAxisTitle.getAttribute('y') === '228.375').toBe(true);
@@ -271,7 +273,7 @@ describe('Scrollbar Chart', () => {
                 chartObj.loaded = null;
                 trigger.draganddropEvent(ele, 200, 250, 350, 400);
                 let border: string = document.getElementById('container_BorderLine_1').getAttribute('d').split('M ')[1];
-                expect(border === '57.5 411 L 29.5 411 L 29.5 364 ' || border === '26.5 423.5 L 26.5 388.1142201875 ' || border === '26.5 423.5 L 26.5 386.87749565972206 ').toBe(true);
+                expect(border === '57.5 411 L 29.5 411 L 29.5 364 ' || border === '26.5 423.5 L 26.5 389.0845968934911 ' || border === '26.5 423.5 L 26.5 386.87749565972206 ').toBe(true);
                 done();
             };
             chartObj.primaryYAxis.labelPosition = 'Outside';
@@ -288,7 +290,7 @@ describe('Scrollbar Chart', () => {
                 trigger.draganddropEvent(ele, 200, 250, 350, 400);
                 let border: string = document.getElementById('container_BorderLine_1').getAttribute('d').split('M ')[1];
                 expect(border === '75.5 420.5 L 75.5 381 ' || border === '76.5 420.5 L 76.5 381 ' ||
-                    border === '72.5 423.5 L 72.5 382.6772723623436 ' || border === '72.5 423.5 L 72.5 379.1809285481767 ').toBe(true);
+                    border === '72.5 423.5 L 72.5 382.6772723623436 ' || border === '72.5 423.5 L 72.5 387.7010665142776 ').toBe(true);
                 done();
 
             };
@@ -317,6 +319,7 @@ describe('Scrollbar Chart', () => {
                         dataSource: [{ x: 10, y: 46 }, { x: 20, y: 27 }, { x: 30, y: 26 }, { x: 40, y: 16 }, { x: 50, y: 31 }],
                         xName: 'x', yName: 'y', marker: { visible: true }, type: 'Line'
                     }],
+                    enableAnimation: false,
                     title: 'Chart Title',
                     legendSettings: { visible: true },
                     width: '900',
@@ -353,9 +356,9 @@ describe('Scrollbar Chart', () => {
             let yAxisLabel: Element = document.getElementById('container1_AxisLabel_0');
             let yAxisTitle: Element = document.getElementById('container_AxisTitle_1');
             expect(chartAreaHt === '344.25' || chartAreaHt === '350.25').toBe(true);
-            expect(majorTick === '125.1875 315.219125 L 120.1875 315.219125' || majorTick === '125.1875 314.76145833333334 L 120.1875 314.76145833333334').toBe(true);
+            expect(majorTick === '125.1875 326.45000000000005 L 120.1875 326.45000000000005' || majorTick === '125.1875 314.76145833333334 L 120.1875 314.76145833333334').toBe(true);
             expect(yAxisLabel.getAttribute('x') === '112.1875').toBe(true);
-            expect(yAxisLabel.getAttribute('y') === '315').toBe(true);
+            expect(yAxisLabel.getAttribute('y') === '326').toBe(true);
             expect(yAxisLabel.innerHTML === '0' || yAxisLabel.innerHTML === '5').toBe(true);
             expect(yAxisTitle.getAttribute('x') === '81.6875' || yAxisTitle.getAttribute('x') === '82.6875').toBe(true);
             expect(yAxisTitle.getAttribute('y') === '212.375' || yAxisTitle.getAttribute('y') === '213.375').toBe(true);
@@ -405,8 +408,8 @@ describe('Scrollbar Chart', () => {
                 let mulitiLevelLabel: Element = document.getElementById('container1_Axis_MultiLevelLabel_Level_0_Text_0');
                 let border: string = document.getElementById('container1_Axis_MultiLevelLabel_Rect_0_0').getAttribute('d').split('M')[1];
                 expect(mulitiLevelLabel.getAttribute('x') === '59.5' || mulitiLevelLabel.getAttribute('x') === '55.5').toBe(true);
-                expect(mulitiLevelLabel.getAttribute('y') === '321.6769318181818' || mulitiLevelLabel.getAttribute('y') === '325.7464625').toBe(true);
-                expect(border === ' 84.5 293.7359090909091 L 34.5 293.7359090909091 ' || border === ' 79.5 297.46145 L 31.5 297.46145 ').toBe(true)
+                expect(mulitiLevelLabel.getAttribute('y') === '321.6769318181818' || mulitiLevelLabel.getAttribute('y') === '333.453125').toBe(true);
+                expect(border === ' 84.5 293.7359090909091 L 34.5 293.7359090909091 ' || border === ' 79.5 307.8125 L 31.5 307.8125 ').toBe(true)
                 done();
             };
             chartObj.loaded = loaded;
@@ -418,9 +421,9 @@ describe('Scrollbar Chart', () => {
                 let mulitiLevelLabel: Element = document.getElementById('container1_Axis_MultiLevelLabel_Level_0_Text_0');
                 let border: string = document.getElementById('container1_Axis_MultiLevelLabel_Rect_0_0').getAttribute('d').split('M')[1];
                 expect(mulitiLevelLabel.getAttribute('x') === '93.5' || mulitiLevelLabel.getAttribute('x') === '77.5').toBe(true);
-                expect(mulitiLevelLabel.getAttribute('y') === '321.6769318181818' || mulitiLevelLabel.getAttribute('y') === '325.7464625').toBe(true);
+                expect(mulitiLevelLabel.getAttribute('y') === '321.6769318181818' || mulitiLevelLabel.getAttribute('y') === '333.453125').toBe(true);
                 expect(border === ' 57.5 293.7359090909091 L 107.5 293.7359090909091 ' ||
-                    border === ' 69.5 297.46145 L 117.5 297.46145 ').toBe(true) 
+                    border === ' 69.5 307.8125 L 117.5 307.8125 ').toBe(true) 
                 done();
             };
             chartObj.primaryYAxis.labelPosition = 'Inside';
@@ -470,7 +473,7 @@ describe('Scrollbar Chart', () => {
                 let crossHairEle: string = document.getElementById('container_axis_tooltip_1').getAttribute('d').split(' L')[0];
                 expect(crossHairEle === 'M 1.5 208.5 Q 1.5 206.5 3.5 206.5' || crossHairEle === 'M 0 207 Q 0 205 2 205').toBe(true);
                 let text: string = document.getElementById('container_axis_tooltip_text_1').innerHTML;
-                expect(text === '17.909' || text === '17.995').toBe(true);
+                expect(text === '17.909' || text === '20.143').toBe(true);
                 done();
             }
             chartObj.loaded = loaded;
@@ -533,7 +536,7 @@ describe('Scrollbar Chart', () => {
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseUp();
             done();
         });
-        it('Left Resize using Circle', (done: Function) => {
+        it('Left Resize using Circle ', (done: Function) => {
             let currentTarget: Element = document.getElementById('container_scrollBar_leftCircle_primaryYAxis');
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 75, 235)));
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 75, 190)));

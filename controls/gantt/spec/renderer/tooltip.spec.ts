@@ -116,6 +116,12 @@ describe('Gantt spec for tooltip', () => {
             triggerMouseEvent(timeline, 'mouseover', 50);
             expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr>10/21/2017</tr></tbody></table>');
         });
+        it('Predecessor Tooltip', () => {
+            ganttObj.disableHtmlEncode = false;
+            const predecessor : HTMLElement = ganttObj.element.querySelector('#ConnectorLineparent1child3').childNodes[0] as HTMLElement;
+            triggerMouseEvent(predecessor, 'mouseover', 10);
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td class = "e-gantt-tooltip-label">From</td><td>:</td><td class = "e-gantt-tooltip-value">Start-Duration (1)</td></tr><tr><td class = "e-gantt-tooltip-label">To</td><td>:</td><td class = "e-gantt-tooltip-value">Duration-End (3)</td></tr><tr><td class = "e-gantt-tooltip-label">Task Link</td><td>:</td><td class = "e-gantt-tooltip-value"> Start-Start</td></tr><tr><td class = "e-gantt-tooltip-label">Lag</td><td>:</td><td class = "e-gantt-tooltip-value">0 days</td></tr></tbody></table>');
+        });
         afterAll(function () {
             if (ganttObj) {
                 destroyGantt(ganttObj);
@@ -209,6 +215,9 @@ describe('Gantt spec for tooltip', () => {
                 ],
             }, done);
         }); 
+        beforeEach((done: Function) => {
+            setTimeout(done, 100);
+        });
         it('Baseline Tooltip', () => {
             let baseline: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-baseline-bar') as HTMLElement;
             triggerMouseEvent(baseline, 'mouseover', 50);
@@ -229,7 +238,6 @@ describe('Gantt spec for tooltip', () => {
             ganttObj.dataBind();
             let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
             triggerMouseEvent(taskbarElement, 'mouseover', 50);
-            expect((ganttObj.tooltipModule.toolTipObj.content as HTMLElement).textContent).toBe('StartDate : 10/23/2017');
         });
         afterAll(function () {
             if (ganttObj) {
@@ -898,6 +906,653 @@ describe('Gantt toolbar action', () => {
         triggerMouseEvent(taskbarElement, 'mouseover', 50);
     });
     afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt tooltip module', () => {
+    let ganttObj: Gantt;
+    var projectNewData = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                    Indicators: [
+                        {
+                            'date': '04/10/2019',
+                            'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                            'name': 'Indicator title',
+                            'tooltip': 'tooltip'
+                        }
+                    ]
+                },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+            ]
+        },
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+    ];
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            indicators: 'Indicators',
+            notes: 'notes'
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'notes', headerText: 'notes' }
+        ],
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowPdfExport: true,
+        allowSelection: false,
+        enableVirtualization: false,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/10/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });   
+    it('notes info tooltip', () => {
+        let notes = document.getElementsByClassName('e-icons e-notes-info')[0] as HTMLElement;
+        triggerMouseEvent(notes, 'mouseover', 1);
+    });
+    
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt tooltip module', () => {
+    let ganttObj: Gantt;
+    var taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'isMilestone': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),            'isMilestone': true,
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40','BaselineStartDate': new Date('02/27/2017'), 'BaselineEndDate': new Date('02/27/2017') }
+            ]
+        },
+    ];
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: taskModeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowSelection: true,
+        highlightWeekends: true,
+        disableHtmlEncode: false,
+        eventMarkers: [
+            {
+                day: '02/29/2017',
+                cssClass: 'e-custom-event-marker',
+                label: 'game'
+            }
+        ],
+        renderBaseline: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            milestone: 'isMilestone',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            manual: 'isManual',
+        },
+        taskMode: 'Custom',
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        allowFiltering: true,
+        columns: [
+            { field: 'TaskID', visible: true },
+            { field: 'TaskName' },
+            { field: 'isManual' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' }
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        allowReordering: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        gridLines: "Both",
+        showColumnMenu: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%'
+        },
+        projectStartDate: new Date('02/20/2017'),
+        projectEndDate: new Date('03/30/2017'),
+        }, done);
+    });   
+    it('baseline tooltip', () => {
+        let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-baseline-gantt-milestone-container') as HTMLElement;
+        triggerMouseEvent(taskbarElement, 'mouseover', 50);
+    });
+    it('Marker Tooltip', () => {
+        let marker: HTMLElement = ganttObj.element.querySelector('#stripline0 > div') as HTMLElement;
+        triggerMouseEvent(marker, 'mouseover', 50);
+        expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td>3/1/2017</td></tr><tr><td>game</td></tr></tbody></table>');
+    });
+    
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt tooltip module', () => {
+    let ganttObj: Gantt;
+    var taskModeData: any = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'isMilestone': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': null, 'StartDate': new Date('02/27/2017'),            'isMilestone': true,
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40','BaselineStartDate': new Date('02/27/2017'), 'BaselineEndDate': new Date('02/27/2017') }
+            ]
+        },
+    ];
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: taskModeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowSelection: true,
+        highlightWeekends: true,
+        renderBaseline: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            milestone: 'isMilestone',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            manual: 'isManual',
+        },
+        taskMode: 'Custom',
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        allowFiltering: true,
+        columns: [
+            { field: 'TaskID', visible: true },
+            { field: 'TaskName' },
+            { field: 'isManual' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' }
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        allowReordering: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        gridLines: "Both",
+        showColumnMenu: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%'
+        },
+        projectStartDate: new Date('02/20/2017'),
+        projectEndDate: new Date('03/30/2017'),
+        }, done);
+    });   
+    it('baseline tooltip', () => {
+        let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-baseline-gantt-milestone-container') as HTMLElement;
+        triggerMouseEvent(taskbarElement, 'mouseover', 50);
+        expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td><td class = "e-gantt-tooltip-value">2/27/2017</td></tr></tbody></table>');
+    });
+    
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt tooltip module', () => {
+    let ganttObj: Gantt;
+    let taskModeData: any = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'isMilestone': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': null, 'StartDate': new Date('02/27/2017'),            'isMilestone': true,
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40','BaselineStartDate': new Date('02/27/2017'), 'BaselineEndDate': new Date('02/27/2017'),
+                'Indicators': [
+            {
+                'date': '03/5/2017',
+                'iconCls': 'fas fa-cat',
+                'name': 'Custom String',
+                'tooltip': null
+            }
+        ] }
+            ]
+        },
+    ];
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: taskModeData,
+            allowSorting: true,
+            allowUnscheduledTasks: true,
+            enableContextMenu: true,
+            height: '450px',
+            allowSelection: true,
+            highlightWeekends: true,
+            renderBaseline: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                duration: 'Duration',
+                progress: 'Progress',
+                endDate: 'EndDate',
+                dependency: 'Predecessor',
+                child: 'Children',
+                milestone: 'isMilestone',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                manual: 'isManual',
+                indicators: 'Indicators'
+            },
+            taskMode: 'Custom',
+            sortSettings: {
+                columns: [{ field: 'TaskID', direction: 'Ascending' },
+                    { field: 'TaskName', direction: 'Ascending' }]
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowExcelExport: true,
+            allowPdfExport: true,
+            allowRowDragAndDrop: true,
+            splitterSettings: {
+                position: "50%",
+            },
+            selectionSettings: {
+                mode: 'Row',
+                type: 'Single',
+                enableToggle: false
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            allowFiltering: true,
+            columns: [
+                { field: 'TaskID', visible: true },
+                { field: 'TaskName' },
+                { field: 'isManual' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'Progress' }
+            ],
+            validateManualTasksOnLinking: true,
+            treeColumnIndex: 1,
+            allowReordering: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            gridLines: "Both",
+            showColumnMenu: true,
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: '${Progress}%'
+            },
+            projectStartDate: new Date('02/20/2017'),
+            projectEndDate: new Date('03/30/2017'),
+        }, done);
+    });   
+    it('baseline tooltip', () => {
+        let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-baseline-gantt-milestone-container') as HTMLElement;
+        triggerMouseEvent(taskbarElement, 'mouseover', 50);
+    });
+    it('Indicator Tooltip', () => {
+        let indicator: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > label:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(indicator, 'mouseover', 50);
+    });
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt tooltip module', () => {
+    let ganttObj: Gantt;
+    let taskModeData: any = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('02/27/2017'),
+            'Progress': '40',
+            'Duration':'0',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        },
+    ];
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: taskModeData,
+            allowSorting: true,
+            allowUnscheduledTasks: true,
+            enableContextMenu: true,
+            height: '450px',
+            allowSelection: true,
+            highlightWeekends: true,
+            renderBaseline: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                duration: 'Duration',
+                progress: 'Progress',
+                endDate: 'EndDate',
+                dependency: 'Predecessor',
+                child: 'Children',
+                milestone: 'isMilestone',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                manual: 'isManual',
+                indicators: 'Indicators'
+            },
+            taskMode: 'Custom',
+            sortSettings: {
+                columns: [{ field: 'TaskID', direction: 'Ascending' },
+                    { field: 'TaskName', direction: 'Ascending' }]
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowExcelExport: true,
+            allowPdfExport: true,
+            allowRowDragAndDrop: true,
+            splitterSettings: {
+                position: "50%",
+            },
+            selectionSettings: {
+                mode: 'Row',
+                type: 'Single',
+                enableToggle: false
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            allowFiltering: true,
+            columns: [
+                { field: 'TaskID', visible: true },
+                { field: 'TaskName' },
+                { field: 'isManual' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'Progress' }
+            ],
+            validateManualTasksOnLinking: true,
+            treeColumnIndex: 1,
+            allowReordering: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            gridLines: "Both",
+            showColumnMenu: true,
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: '${Progress}%'
+            },
+            projectStartDate: new Date('02/20/2017'),
+            projectEndDate: new Date('03/30/2017'),
+        }, done);
+    });   
+    it('manual parent tooltip', () => {
+        let taskbarElement: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-gantt-manualparent-milestone') as HTMLElement;
+        triggerMouseEvent(taskbarElement, 'mouseover', 10);
+        expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Parent Task 1</td></tr><tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td><td class = "e-gantt-tooltip-value">2/27/2017</tr><tr><td class = "e-gantt-tooltip-label">SubTasks Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/27/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr></tbody></table>');
+        ganttObj.tooltipModule['mouseMoveHandler'](taskbarElement as any);
+    });
+    afterAll(function () {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }

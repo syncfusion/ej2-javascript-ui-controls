@@ -10647,8 +10647,1043 @@ describe('MultiSelect', () => {
             }, 450);
         });
     });
+    
+    describe('Null or undefined value testing', () => {
+        let listObj: MultiSelect;
+        let empList: { [key: string]: Object }[] = [
+            { "Name": "Australia", "Code": "AU", "Start": "A" },
+            { "Name": "Bermuda", "Code": "BM", "Start": "B" },
+            { "Name": "Canada", "Code": "CA", "Start": "C" },
+            { "Name": "Cameroon", "Code": "CM", "Start": "C" },
+            { "Name": "Denmark", "Code": "DK", "Start": "D" },
+            { "Name": "France", "Code": "FR", "Start": "F" },
+            { "Name": "Finland", "Code": "FI", "Start": "F" },
+            { "Name": "Germany", "Code": "DE", "Start": "G" },
+            { "Name": "Greenland", "Code": "GL", "Start": "G" },
+            { "Name": "Hong Kong", "Code": "HK", "Start": "H" },
+            { "Name": "India", "Code": "IN", "Start": "I" },
+            { "Name": "Italy", "Code": "IT", "Start": "I" },
+            { "Name": "Japan", "Code": "JP", "Start": "J" },
+            { "Name": "Mexico", "Code": "MX", "Start": "M" },
+            { "Name": "Norway", "Code": "NO", "Start": "N" },
+            { "Name": "Poland", "Code": "PL", "Start": "P" },
+            { "Name": "Switzerland", "Code": "CH", "Start": "S" },
+            { "Name": "United Kingdom", "Code": "GB", "Start": "U" },
+            { "Name": "United States", "Code": "US", "Start": "U" }
+        ];
+        beforeEach(() => {
+            listObj = undefined;
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'list' });
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            document.body.innerHTML = '';
+        });
+        it('actionFailureTemplate', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                actionFailureTemplate: null
+            }, '#list');
+            expect(listObj.actionFailureTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                actionFailureTemplate: undefined
+            }, '#list');
+            expect(listObj.actionFailureTemplate).toBe('Request failed');
+            listObj.destroy();
+        });
+        it('allowCustomValue', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                allowCustomValue: null
+            }, '#list');
+            expect(listObj.allowCustomValue).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                allowCustomValue: undefined
+            }, '#list');
+            expect(listObj.allowCustomValue).toBe(false);
+            listObj.destroy();
+        });
+        it('addTagOnBlur', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                addTagOnBlur: null
+            }, '#list');
+            expect(listObj.addTagOnBlur).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                addTagOnBlur: undefined
+            }, '#list');
+            expect(listObj.addTagOnBlur).toBe(false);
+            listObj.destroy();
+        });
+        it('allowFiltering', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                allowFiltering: null
+            }, '#list');
+            expect(listObj.allowFiltering).toBe(false);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                allowFiltering: undefined
+            }, '#list');
+            expect(listObj.allowFiltering).toBe(false);
+            listObj.destroy();
+        });
+        it('allowObjectBinding', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                allowObjectBinding: null
+            }, '#list');
+            expect(listObj.allowObjectBinding).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                allowObjectBinding: undefined
+            }, '#list');
+            expect(listObj.allowObjectBinding).toBe(false);
+            listObj.destroy();
+        });
+        it('cssClass', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                cssClass: null
+            }, '#list');
+            expect(listObj.cssClass).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                cssClass: undefined
+            }, '#list');
+            expect(listObj.cssClass).toBe(null);
+            listObj.destroy();
+        });
+        it('changeOnBlur', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                changeOnBlur: null
+            }, '#list');
+            expect(listObj.changeOnBlur).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                changeOnBlur: undefined
+            }, '#list');
+            expect(listObj.changeOnBlur).toBe(true);
+            listObj.destroy();
+        });
+        it('closePopupOnSelect', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                closePopupOnSelect: null
+            }, '#list');
+            expect(listObj.closePopupOnSelect).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                closePopupOnSelect: undefined
+            }, '#list');
+            expect(listObj.closePopupOnSelect).toBe(true);
+            listObj.destroy();
+        });
+        it('enablePersistence', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                enablePersistence: null
+            }, '#list');
+            expect(listObj.enablePersistence).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                enablePersistence: undefined
+            }, '#list');
+            expect(listObj.enablePersistence).toBe(false);
+            listObj.destroy();
+        });
+        it('enableRtl', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                enableRtl: null
+            }, '#list');
+            expect(listObj.enableRtl).toBe(false);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                enableRtl: undefined
+            }, '#list');
+            expect(listObj.enableRtl).toBe(false);
+            listObj.destroy();
+        });
+        it('enableVirtualization', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                enableVirtualization: null
+            }, '#list');
+            expect(listObj.enableVirtualization).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                enableVirtualization: undefined
+            }, '#list');
+            expect(listObj.enableVirtualization).toBe(false);
+            listObj.destroy();
+        });
+        it('enabled', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                enabled: null
+            }, '#list');
+            expect(listObj.enabled).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                enabled: undefined
+            }, '#list');
+            expect(listObj.enabled).toBe(true);
+            listObj.destroy();
+        });
+        it('filterBarPlaceholder', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                allowFiltering: true,
+                filterBarPlaceholder: null
+            }, '#list');
+            expect(listObj.filterBarPlaceholder).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                allowFiltering: true,
+                filterBarPlaceholder: undefined
+            }, '#list');
+            expect(listObj.filterBarPlaceholder).toBe(null);
+            listObj.destroy();
+        });
+        it('footerTemplate', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                footerTemplate: null
+            }, '#list');
+            expect(listObj.footerTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                footerTemplate: undefined
+            }, '#list');
+            expect(listObj.footerTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('groupTemplate', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                groupTemplate: null
+            }, '#list');
+            expect(listObj.groupTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                groupTemplate: undefined
+            }, '#list');
+            expect(listObj.groupTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('headerTemplate', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                headerTemplate: null
+            }, '#list');
+            expect(listObj.headerTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                headerTemplate: undefined
+            }, '#list');
+            expect(listObj.headerTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('hideSelectedItem', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                hideSelectedItem: null
+            }, '#list');
+            expect(listObj.hideSelectedItem).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                hideSelectedItem: undefined
+            }, '#list');
+            expect(listObj.hideSelectedItem).toBe(true);
+            listObj.destroy();
+        });
+        it('ignoreAccent', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                ignoreAccent: null
+            }, '#list');
+            expect(listObj.ignoreAccent).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                ignoreAccent: undefined
+            }, '#list');
+            expect(listObj.ignoreAccent).toBe(false);
+            listObj.destroy();
+        });
+        it('ignoreCase', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                ignoreCase: null
+            }, '#list');
+            expect(listObj.ignoreCase).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                ignoreCase: undefined
+            }, '#list');
+            expect(listObj.ignoreCase).toBe(true);
+            listObj.destroy();
+        });
+        it('enableHtmlSanitizer', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                enableHtmlSanitizer: null
+            }, '#list');
+            expect(listObj.enableHtmlSanitizer).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                enableHtmlSanitizer: undefined
+            }, '#list');
+            expect(listObj.enableHtmlSanitizer).toBe(true);
+            listObj.destroy();
+        });
+        it('enableGroupCheckBox', () => {
+            listObj = new MultiSelect({ 
+                dataSource: empList,
+                fields: { text: 'Name', groupBy: 'Start' },
+                enableGroupCheckBox: null,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                enableSelectionOrder: false
+            }, '#list');
+            expect(listObj.enableGroupCheckBox).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: empList,
+                fields: { text: 'Name', groupBy: 'Start' },
+                enableGroupCheckBox: undefined,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                enableSelectionOrder: false
+            }, '#list');
+            expect(listObj.enableGroupCheckBox).toBe(false);
+            listObj.destroy();
+        });
+        it('enableSelectionOrder', () => {
+            listObj = new MultiSelect({ 
+                dataSource: empList,
+                fields: { text: 'Name', groupBy: 'Start' },
+                enableGroupCheckBox: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                enableSelectionOrder: null
+            }, '#list');
+            expect(listObj.enableSelectionOrder).toBe(false);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: empList,
+                fields: { text: 'Name', groupBy: 'Start' },
+                enableGroupCheckBox: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                enableSelectionOrder: undefined
+            }, '#list');
+            expect(listObj.enableSelectionOrder).toBe(false);
+            listObj.destroy();
+        });
+        it('itemTemplate', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                itemTemplate: null
+            }, '#list');
+            expect(listObj.itemTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                itemTemplate: undefined
+            }, '#list');
+            expect(listObj.itemTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('openOnClick', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                openOnClick: null
+            }, '#list');
+            expect(listObj.openOnClick).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                openOnClick: undefined
+            }, '#list');
+            expect(listObj.openOnClick).toBe(true);
+            listObj.destroy();
+        });
+        it('showDropDownIcon', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                showDropDownIcon: null
+            }, '#list');
+            expect(listObj.showDropDownIcon).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                showDropDownIcon: undefined
+            }, '#list');
+            expect(listObj.showDropDownIcon).toBe(false);
+            listObj.destroy();
+        });
+        it('noRecordsTemplate', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                noRecordsTemplate: null
+            }, '#list');
+            expect(listObj.noRecordsTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                noRecordsTemplate: undefined
+            }, '#list');
+            expect(listObj.noRecordsTemplate).toBe('No records found');
+            listObj.destroy();
+        });
+        it('unSelectAllText', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                unSelectAllText: null
+            }, '#list');
+            expect(listObj.unSelectAllText).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                unSelectAllText: undefined
+            }, '#list');
+            expect(listObj.unSelectAllText).toBe('Unselect All');
+            listObj.destroy();
+        });
+        it('placeholder', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                placeholder: null
+            }, '#list');
+            expect(listObj.placeholder).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                placeholder: undefined
+            }, '#list');
+            expect(listObj.placeholder).toBe(null);
+            listObj.destroy();
+        });
+        it('valueTemplate', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                valueTemplate: null
+            }, '#list');
+            expect(listObj.valueTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                valueTemplate: undefined
+            }, '#list');
+            expect(listObj.valueTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('popupHeight', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                popupHeight: null
+            }, '#list');
+            expect(listObj.popupHeight).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                popupHeight: undefined
+            }, '#list');
+            expect(listObj.popupHeight).toBe('300px');
+            listObj.destroy();
+        });
+        it('popupWidth', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                popupWidth: null
+            }, '#list');
+            expect(listObj.popupWidth).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                popupWidth: undefined
+            }, '#list');
+            expect(listObj.popupWidth).toBe('100%');
+            listObj.destroy();
+        });
+        it('readonly', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                readonly: null
+            }, '#list');
+            expect(listObj.readonly).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                readonly: undefined
+            }, '#list');
+            expect(listObj.readonly).toBe(false);
+            listObj.destroy();
+        });
+        it('showClearButton', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                showClearButton: null
+            }, '#list');
+            expect(listObj.showClearButton).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                showClearButton: undefined
+            }, '#list');
+            expect(listObj.showClearButton).toBe(true);
+            listObj.destroy();
+        });
+        it('text', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                text: null
+            }, '#list');
+            expect(listObj.text).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                text: undefined
+            }, '#list');
+            expect(listObj.text).toBe(null);
+            listObj.destroy();
+        });
+        it('value', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                value: null
+            }, '#list');
+            expect(listObj.value).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                value: undefined
+            }, '#list');
+            expect(listObj.value).toBe(null);
+            listObj.destroy();
+        });
+        it('valueTemplate', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                valueTemplate: null
+            }, '#list');
+            expect(listObj.valueTemplate).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                valueTemplate: undefined
+            }, '#list');
+            expect(listObj.valueTemplate).toBe(null);
+            listObj.destroy();
+        });
+        it('width', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                width: null
+            }, '#list');
+            expect(listObj.width).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                width: undefined
+            }, '#list');
+            expect(listObj.width).toBe('100%');
+            listObj.destroy();
+        });
+        it('maximumSelectionLength', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                maximumSelectionLength: null
+            }, '#list');
+            expect(listObj.maximumSelectionLength).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                maximumSelectionLength: undefined
+            }, '#list');
+            expect(listObj.maximumSelectionLength).toBe(1000);
+            listObj.destroy();
+        });
+        it('delimiterChar', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                delimiterChar: null
+            }, '#list');
+            expect(listObj.delimiterChar).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                delimiterChar: undefined
+            }, '#list');
+            expect(listObj.delimiterChar).toBe(',');
+            listObj.destroy();
+        });
+        it('zIndex', () => {
+            listObj = new MultiSelect({ 
+                dataSource: datasource,
+                fields: { value: "id", text: "text" },
+                zIndex: null
+            }, '#list');
+            expect(listObj.zIndex).toBe(null);
+            listObj.destroy();
+            listObj = new MultiSelect({ 
+                dataSource: datasource2,
+                fields: { value: "id", text: "text" },
+                zIndex: undefined
+            }, '#list');
+            expect(listObj.zIndex).toBe(1000);
+            listObj.destroy();
+        });
+    });
+
+    describe('Code Coverage improvements', () => {
+        let listObj: any;
+        let element: HTMLElement
+        let empList: { [key: string]: Object }[] = [
+            { "Name": "Australia", "Code": "AU", "Start": "A" },
+            { "Name": "Bermuda", "Code": "BM", "Start": "B" },
+            { "Name": "Canada", "Code": "CA", "Start": "C" },
+            { "Name": "Cameroon", "Code": "CM", "Start": "C" },
+            { "Name": "Denmark", "Code": "DK", "Start": "D" },
+        ];
+        beforeAll(() => {
+            element = createElement('input');
+            element.setAttribute('placeholder','Select a game');
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            listObj.destroy();
+            element.remove();
+        });
+        /**
+         * Inline placeholder
+         */
+        it('- updateSelectionList', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'id' },
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            (<any>listObj).updateSelectionList();
+        });
+        it('- updateSelectionList', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'id' },
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 22,
+                keyCode: 40,
+                which: 40,
+                code: 22
+            };
+            (<any>listObj).arrowDown(keyboardEventArgs);
+            
+        });
+        it('- updateSelectionList', () => {
+            var temp: any = Browser.userAgent;
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+            listObj = new MultiSelect({ allowFiltering: true,allowObjectBinding:true, 
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }],
+                fields: { text: 'text', value: 'id' }
+            });
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            listObj.getTakeValue()
+            Browser.userAgent = temp;
+        });
+        it('- arrowUp', () => {
+    
+            listObj = new MultiSelect({ allowObjectBinding: true, dataSource: empList,
+                 value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }],
+                 fields: { text: 'Name', groupBy: 'Start',value: 'Code' },
+                mode: 'CheckBox',enableGroupCheckBox:true});
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 22,
+                keyCode: 38,
+                which: 38,
+                code: 22
+            };
+            (<any>listObj).arrowUp(keyboardEventArgs);
+            
+        });
+        it('- SelectByKey with list', () => {
+    
+            listObj = new MultiSelect({ allowObjectBinding: true, dataSource: empList,
+                 value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }],
+                 fields: { text: 'Name', groupBy: 'Start',value: 'Code' },
+                mode: 'CheckBox',enableGroupCheckBox:true});
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            listObj.ulElement.querySelector("li.e-list-item:not(.e-virtual-list)").classList.add('e-item-focus');
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 22,
+                keyCode: 13,
+                which: 38,
+                code: 22
+            };
+            (<any>listObj).selectListByKey(keyboardEventArgs);
+            
+        });
+        it('- SelectByKey without list', () => {
+    
+            listObj = new MultiSelect({ allowObjectBinding: true, dataSource: empList,
+                 value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }],
+                 fields: { text: 'Name', groupBy: 'Start',value: 'Code' },
+                mode: 'CheckBox',enableGroupCheckBox:true,showSelectAll:true});
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            var activeList = (<any>listObj).list.querySelector('.e-list-item.e-item-focus');
+            if(activeList)
+                {
+                    activeList.classList.remove('e-item-focus');
+                }
+                var activeSelectAll = (listObj as any).popupWrapper.querySelector('.e-selectall-parent');
+                activeSelectAll.classList.add('e-item-focus');
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 22,
+                keyCode: 13,
+                which: 38,
+                code: 22
+            };
+            (<any>listObj).selectListByKey(keyboardEventArgs);
+            
+        });
+        it('- refreshListItems', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true,
+                enableVirtualization: true,
+                allowCustomValue:true,
+                 fields: { text: 'text', value: 'id' },
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            (<any>listObj).virtualCustomData = {};
+            (<any>listObj).viewPortInfo = {
+                currentPageNumber: null,
+                direction: null,
+                sentinelInfo: {},
+                offsets: {},
+                startIndex: 0,
+            };
+            (<any>listObj).refreshListItems(null);
+    
+        });
+        it('- removeSelectedChip', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'id' },mode:'Box',
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 22,
+                keyCode: 46,
+                which: 38,
+                code: 22
+            };
+            let elem: HTMLElement[] = (<any>listObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips);
+            var active = elem[0].classList.add('e-chip-selected');
+            (<any>listObj).removeSelectedChip(keyboardEventArgs);
+        });
+        it('- removeSelectedChip', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'id' },mode:'CheckBox',showSelectAll:true,
+    
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 22,
+                keyCode: 46,
+                which: 38,
+                code: 22
+            };
+            let inputEle: HTMLElement  = createElement('input');
+            inputEle.setAttribute('class','e-input-group e-control-wrapper e-input-focus');
+            let mouseEventArguments: any = { preventDefault: function () { }, target: element };
+            (<any>listObj).clickHandler(mouseEventArguments);
+            
+        });
+        it('- removeSelectedChip', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'id' },mode:'CheckBox',showSelectAll:true,
+    
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 22,
+                keyCode: 46,
+                which: 38,
+                code: 22
+            };
+            let inputEle: HTMLElement  = createElement('input');
+            inputEle.setAttribute('class','e-input-group e-control-wrapper e-input-focus');
+            let mouseEventArguments: any = { preventDefault: function () { }, target: element };
+            (<any>listObj).clickHandler(mouseEventArguments);
+            
+        });
+        it('- onMouseOver', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'CheckBox',showSelectAll:true,
+                enableGroupCheckBox:true,
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            let inputEle: HTMLElement  = createElement('input');
+            inputEle.setAttribute('class','e-input-group e-control-wrapper e-input-focus');
+            let mouseEventArguments: any = { preventDefault: function () { }, target: element };
+            (<any>listObj).onMouseOver(mouseEventArguments);
+        });
+        it('- updateReadonly ', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'CheckBox',showSelectAll:true,
+                enableGroupCheckBox:true,
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).inputElement = null;
+            (<any>listObj).updateReadonly(true);
+            (<any>listObj).updateOldPropCssClass(null);
+        });
+        it('- updateListARIA ', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'CheckBox',showSelectAll:true,
+                enableGroupCheckBox:true,
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).ulElement = null;
+            (<any>listObj).updateListARIA()
+        });
+        it('- removechip ', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'CheckBox',showSelectAll:true,
+                enableGroupCheckBox:true,
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).chipCollectionWrapper = null;
+            (<any>listObj).removeChip((<any>listObj).value,false);
+        });
+        it('- setWidth ', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true,width: {} as any, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'CheckBox',showSelectAll:true,
+                enableGroupCheckBox:true,
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).setWidth({});
+            let myFunction = function() {
+                console.log("This is a function expression.");
+              };
+            (<any>listObj).multiCompiler(myFunction);
+            (<any>listObj).list = null;
+            (<any>listObj).mainData = null;
+            (<any>listObj).removeFocus();
+            (<any>listObj).popupObj = null;
+            (<any>listObj).setZIndex ();
+        });
+        it('- updateDataSource', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'CheckBox',showSelectAll:true,
+                enableGroupCheckBox:true,
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).updateDataSource(null);
+    
+        });
+        it('- reinitialPopup', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'CheckBox',showSelectAll:true,
+                enableGroupCheckBox:true,
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).popupObj = null;
+            (<any>listObj).reInitializePoup(null);
+        });
+        it('- propertychanges', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'Box',showSelectAll:true,
+                enableGroupCheckBox:true,
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).filterBarPlaceholder = "Enter text";
+            (<any>listObj).delimiterChar = "+";
+            (<any>listObj).dataBind();
+        });
+        it('- reinitialPopup', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'CheckBox',showSelectAll:false,
+                enableGroupCheckBox:true,
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).popupObj = null;
+            (<any>listObj).showSelectAll = true;
+            (<any>listObj).allowFiltering = true;
+            (<any>listObj).fields.groupBy = null;
+            (<any>listObj).dataBind();
+        });
+        it('- checkautofocus', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'CheckBox',showSelectAll:false,
+                enableGroupCheckBox:true,
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (<any>listObj).element.setAttribute('autofocus', '');
+            (<any>listObj).checkAutoFocus ();
+        });
+    });
 });
 function commonFun(arg0: string) {
     throw new Error('Function not implemented.');
 }
-

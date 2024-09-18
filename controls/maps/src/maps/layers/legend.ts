@@ -258,7 +258,7 @@ export class Legend {
                         shapeBorder: this.legendCollection[i as number]['shapeBorder']
                     });
                 }
-                if (this.legendCollection.length === 1) {
+                if (this.legendCollection.length === 1 && !(map.theme === 'Fluent2HighContrast' && legend.position === 'Bottom')) {
                     legendHeight = rectHeight;
                     legendWidth = rectWidth;
                 }
@@ -457,7 +457,7 @@ export class Legend {
                 const rectOptions: RectOption = new RectOption(itemId, item['fill'], item['shapeBorder'], legend.opacity, bounds);
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
                 textFont.fontFamily = !isNullOrUndefined(textFont.fontFamily) ? textFont.fontFamily : this.maps.themeStyle.fontFamily;
-                textFont.size = map.themeStyle.legendFontSize || textFont.size;
+                textFont.size = textFont.size || map.themeStyle.legendFontSize;
                 const textElement : Element = renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
                 textElement.setAttribute('aria-label', item['text']);
                 textElement.setAttribute('role', 'region');
@@ -518,7 +518,7 @@ export class Legend {
                     this.maps.themeStyle.legendTextColor;
                 legendTextStyle.fontFamily = !isNullOrUndefined(legendTextStyle.fontFamily) ? legendTextStyle.fontFamily :
                     this.maps.themeStyle.fontFamily;
-                legendTextStyle.size = map.themeStyle.legendFontSize || legendTextStyle.size;
+                legendTextStyle.size = legendTextStyle.size || map.themeStyle.legendFontSize;
                 legendTextStyle.fontWeight = legendTextStyle.fontWeight || map.themeStyle.fontWeight;
                 if (i === 0) {
                     this.renderLegendBorder();
@@ -1380,8 +1380,18 @@ export class Legend {
         const spacing: number = 10;
         const trimTitle: string = textTrim((this.legendItemRect.width + (spacing * 2)), legendTitle, textStyle);
         const textSize: Size = measureText(trimTitle, textStyle);
+        let sameTextWidth: boolean = false;
+        for (let i: number = 0; i < this.legendRenderingCollections.length; i++) {
+            if (this.legendRenderingCollections[i as number].textWidth !== this.legendRenderingCollections[0].textWidth) {
+                sameTextWidth = false;
+                break;
+            } else {
+                sameTextWidth = true;
+            }
+        }
         this.legendBorderRect = new Rect(
-            (this.legendItemRect.x - spacing),
+            (map.theme === 'Fluent2HighContrast' && !sameTextWidth && (legend.position === 'Left' || legend.position === 'Right') && legend.mode === 'Interactive')
+                ? (this.legendItemRect.x - (spacing * 3)) : (this.legendItemRect.x - spacing),
             (this.legendItemRect.y - spacing - textSize.height),
             (this.legendItemRect.width) + (spacing * 2),
             (this.legendItemRect.height) + (spacing * 2) + textSize.height +
@@ -1821,7 +1831,11 @@ export class Legend {
                                 const arrowElement: Element = querySelector(id, this.maps.element.id);
                                 if (this.maps.isDevice && !(isNullOrUndefined(arrowElement))) {
                                     clearTimeout(this.arrowTimer);
-                                    this.arrowTimer = setTimeout(() => { remove(arrowElement); }, 2000);
+                                    this.arrowTimer = setTimeout(() => {
+                                        if (!isNullOrUndefined(arrowElement.parentNode)) {
+                                            remove(arrowElement);
+                                        }
+                                    }, 2000);
                                 }
                                 break;
                             }

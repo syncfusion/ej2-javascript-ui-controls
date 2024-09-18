@@ -258,7 +258,7 @@ export function strippedValue(element: HTMLInputElement, maskValues: string): st
                             this.customRegExpCollec[k as number][this.customRegExpCollec[k as number].length - 1] === ']') ||
                         (!isNullOrUndefined(this.customCharacters) &&
                             (!isNullOrUndefined(this.customCharacters[this.customRegExpCollec[k as number]]))))) && (maskValue !== '')) {
-                    value += maskValue[i  as number];
+                    value += maskValue[i as number];
                 }
             }
             ++k;

@@ -2241,6 +2241,7 @@ describe('Row Drag and Drop module', () => {
             gridObj1.rowDropSettings.targetID = gridObj2.element.id;
             const dragRowElem: Element = gridObj1.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
             const dropRowElem: Element = gridObj2.getContentTable().querySelector('tr');
+            const dropElem: Element = gridObj2.element.querySelector('.e-gridcontent');
             const dragClient: any = dragRowElem.getBoundingClientRect();
             const dropClient: any = dropRowElem.getBoundingClientRect();
             gridObj1.selectRow(0);
@@ -2266,6 +2267,7 @@ describe('Row Drag and Drop module', () => {
                 event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
             });
             (gridObj2.rowDragAndDropModule as any).columnDrop({ target: dropRowElem, droppedElement: dropClone });
+            (gridObj2.rowDragAndDropModule as any).columnDrop({ target: dropElem, droppedElement: dropClone });
         });
 
         afterAll(() => {

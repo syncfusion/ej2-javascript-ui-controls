@@ -273,7 +273,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     /**
      * Defines toolbar items for DocumentEditorContainer.
      *
-     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','InsertFootnote','InsertEndnote','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields','UpdateFields','ContentControl']
+     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','InsertFootnote','InsertEndnote','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields','UpdateFields','ContentControl','XML Mapping']
      */
     toolbarItems?: (CustomToolbarItemModel | ToolbarItem)[];
 

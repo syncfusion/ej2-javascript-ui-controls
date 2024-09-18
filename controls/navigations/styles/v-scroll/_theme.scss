@@ -7,6 +7,12 @@
       color: $vscroll-default-icon-color;
     }
 
+    & .e-menu-item.e-selected .e-icons {
+      @if $skin-name == 'fluent2' {
+        color: $flyout-text-color-selected;
+      }
+    }
+
     &.e-rtl {
 
       &.e-scroll-device {

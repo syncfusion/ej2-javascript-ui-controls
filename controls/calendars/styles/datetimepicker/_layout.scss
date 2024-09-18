@@ -137,65 +137,12 @@
     }
   }
 
-  .e-bigger.e-datetime-wrapper,
-  #{if(&, '&', '*')}.e-bigger .e-datetime-wrapper {
-
-    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
-      font-size: $datetime-icon-bigger-font-size;
-    }
-
-    #{if(&, '&', '*')} .e-input-group-icon.e-time-icon {
-      margin: $datetime-time-bigger-icon-margin;
-      @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3' {
-        min-height: $datetime-bigger-min-height;
-        min-width: $datetime-bigger-min-width;
-        @if $skin-name == 'Material3' {
-          border-radius: $datetime-bigger-icon-border-radius;
-        }
-      }
-    }
-  }
-
-  .e-bigger.e-datetime-wrapper:not(.e-outline),
-  #{if(&, '&', '*')}.e-bigger .e-datetime-wrapper:not(.e-outline) {
-    #{if(&, '&', '*')}.e-rtl .e-input-group-icon.e-time-icon {
-      margin: $datetime-time-rtl-bigger-icon-margin;
-    }
-  }
-
-  .e-bigger #{&}.e-datetimepicker.e-popup,
-  #{if(&, '&', '*')}.e-bigger#{&}.e-datetimepicker.e-popup {
-    #{if(&, '&', '*')} .e-list-parent.e-ul {
-      @if $skin-name != 'Material3' {
-        padding: $datetime-list-bigger-padding 0;
-      }
-      @else {
-        padding: 0;
-      }
-      
-      #{if(&, '&', '*')} .e-list-item {
-        font-size: $datetime-list-bigger-font-size;
-        line-height: $datetime-list-bigger-line-height;
-        text-indent: $datetime-list-bigger-text-indent;
-      }
-    }
-  }
-
   .e-small #{&}.e-datetimepicker.e-popup,
   #{if(&, '&', '*')}.e-small#{&}.e-datetimepicker.e-popup {
     #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
       font-size: $datetime-list-small-font-size;
       line-height: $datetime-list-small-line-height;
       text-indent: $datetime-list-small-text-indent;
-    }
-  }
-
-  .e-small.e-bigger #{&}.e-datetimepicker.e-popup,
-  #{if(&, '&', '*')}.e-small.e-bigger#{&}.e-datetimepicker.e-popup {
-    #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
-      font-size: $datetime-list-bigger-small-font-size;
-      line-height: $datetime-list-bigger-small-line-height;
-      text-indent: $datetime-list-bigger-small-text-indent;
     }
   }
 
@@ -216,32 +163,9 @@
     }
   }
 
-  .e-small.e-bigger.e-datetime-wrapper,
-  #{if(&, '&', '*')}.e-small.e-bigger .e-datetime-wrapper {
-
-    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
-      font-size: $datetime-icon-bigger-small-font-size;
-    }
-
-    #{if(&, '&', '*')} .e-input-group-icon.e-time-icon {
-      @if $skin-name == 'Material3' {
-        min-height: $datetime-bigger-small-min-height;
-        min-width: $datetime-bigger-small-min-width;
-        border-radius: $datetime-bigger-small-icon-border-radius;
-        margin: $datetime-time-bigger-small-icon-margin;
-      }
-    }
-  }
-
   .e-content-placeholder.e-datetimepicker.e-placeholder-datetimepicker {
     background-size: 250px 33px;
     min-height: 33px;
-  }
-
-  .e-bigger .e-content-placeholder.e-datetimepicker.e-placeholder-datetimepicker,
-  .e-bigger.e-content-placeholder.e-datetimepicker.e-placeholder-datetimepicker {
-    background-size: 250px 40px;
-    min-height: 40px;
   }
 
   .e-datetimepicker.e-popup-expand.e-popup {

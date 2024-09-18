@@ -54,43 +54,6 @@
     }
   }
 
-  .e-bigger {
-    .e-de-dlg-container {
-      padding-bottom: $de-padding-full-bigger;
-    }
-
-    .e-de-container-row {
-      padding-bottom: $de-padding-full-bigger;
-    }
-
-    .e-de-subcontainer-left {
-      padding-right: $de-padding-half-bigger;
-      width: 50%;
-    }
-
-    .e-de-subcontainer-right {
-      padding-left: $de-padding-half-bigger;
-      width: 50%;
-    }
-
-    .e-de-dlg-tab-first-child {
-      padding-top: $de-padding-half-bigger;
-    }
-
-    .e-rtl {
-      .e-de-subcontainer-left {
-        padding-left: $de-padding-half-bigger;
-        padding-right: 0;
-      }
-
-      .e-de-subcontainer-right {
-        padding-left: 0;
-        padding-right: $de-padding-half-bigger;
-        width: 50%;
-      }
-    }
-  }
-
   .e-de-blink-cursor {
     border-left: 1px solid $de-blink-cursor-clr;
     pointer-events: none;

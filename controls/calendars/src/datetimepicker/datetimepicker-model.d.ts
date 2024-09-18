@@ -285,6 +285,20 @@ export interface DateTimePickerModel extends DatePickerModel{
     max?: Date;
 
     /**
+     * Gets or sets the minimum time that can be selected in the time popup of the DateTimePicker.
+     *
+     * @default null
+     */
+    minTime?: Date;
+
+    /**
+     * Gets or sets the maximum time that can be selected in the time popup of the DateTimePicker.
+     *
+     * @default null
+     */
+    maxTime?: Date;
+
+    /**
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
      *
      * @default 0

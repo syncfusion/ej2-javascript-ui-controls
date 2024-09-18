@@ -51,13 +51,9 @@ export function getCircular3DSeriesColor(theme: CircularChart3DTheme): string[] 
         palette = ['#8B5CF6', '#22D3EE', '#F87171', '#4ADE80', '#E879F9',
             '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
         break;
-    case 'Bootstrap5':
-        palette = ['#6355C7', '#FFB400', '#2196F5', '#F7523F', '#963C70',
-            '#4BE0BC', '#FD7400', '#C9E422', '#DE3D8A', '#162F88'];
-        break;
     case 'Bootstrap5Dark':
-        palette = ['#8F80F4', '#FFD46D', '#6CBDFF', '#FF7F71', '#FF6DB3',
-            '#63F5D2', '#FCAA65', '#ECFF77', '#EF8EFF', '#5F82FD'];
+    case 'Bootstrap5':
+        palette = ['#FD7E14', '#6610F2', '#6F42C1', '#D63384', '#DC3545', '#FFC107', '#198754', '#0DCAF0'];
         break;
     case 'FluentDark':
         palette = ['#1AC9E6', '#DA4CB2', '#EDBB40', '#AF4BCF', '#FF7266',
@@ -72,6 +68,10 @@ export function getCircular3DSeriesColor(theme: CircularChart3DTheme): string[] 
             '#0364DE', '#66CD15', '#F3A93C', '#107C10', '#C19C00'];
         break;
     case 'Fluent2Dark':
+        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
+            '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
+        break;
+    case 'Fluent2HighContrast':
         palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
             '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
         break;
@@ -253,61 +253,61 @@ export function getCircular3DThemeColor(theme: CircularChart3DTheme): CircularCh
         break;
     case 'Bootstrap5':
         style = {
-            chartTitle: '#343A40',
-            legendLabel: '#343A40',
+            chartTitle: '#212529',
+            legendLabel: '#212529',
             background:  'transparent',
-            tooltipFill: '#212529',
+            tooltipFill: '#000000E5',
             tooltipBoldLabel: '#F9FAFB',
-            tooltipLightLabel: '#F9FAFB',
-            tooltipHeaderLine: '#9CA3AF',
+            tooltipLightLabel: '#FFFFFF',
+            tooltipHeaderLine: '#FFFFFF',
             tabColor: '#0D6EFD',
             chartTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#212529', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal'
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
             },
             datalabelFont: {
-                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#21252980', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             }
         };
         break;
     case 'Bootstrap5Dark':
         style = {
-            chartTitle: '#E9ECEF',
-            legendLabel: '#E9ECEF',
+            chartTitle: '#DEE2E6',
+            legendLabel: '#DEE2E6',
             background: 'transparent',
             tooltipFill: '#E9ECEF',
             tooltipBoldLabel: '#212529',
             tooltipLightLabel: '#212529',
-            tooltipHeaderLine: '#ADB5BD',
+            tooltipHeaderLine: '#212529',
             tabColor: '#0D6EFD',
             chartTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#212529', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
             },
             datalabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E680', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             }
         };
         break;
@@ -428,6 +428,36 @@ export function getCircular3DThemeColor(theme: CircularChart3DTheme): CircularCh
             },
             chartSubTitleFont: {
                 color: '#ADADAD', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+            }
+        };
+        break;
+    case 'Fluent2HighContrast':
+        style = {
+            chartTitle: '#FFFFFF',
+            legendLabel: '#FFFFFF',
+            background: 'transparent',
+            tooltipFill: '#000000',
+            tooltipBoldLabel: '#FFFFFF',
+            tooltipLightLabel: '#FFFFFF',
+            tooltipHeaderLine: '#3B3A39',
+            tabColor: '#0078D4',
+            chartTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '16px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            legendTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            legendLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            tooltipLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
+            },
+            datalabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            chartSubTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '600'
             }
         };
         break;

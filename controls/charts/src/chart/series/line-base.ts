@@ -11,12 +11,17 @@ import { VisibleRangeModel } from '../../common/model/interface';
 
 
 /**
- * Base for line type series.
+ * Base class for line-type series.
+ * This class provides common properties and methods for line-type series in the chart.
+ *
+ * @private
  */
 
 export class LineBase {
 
     public chart: Chart;
+    private previousX: number;
+    private previousY: number;
     /**
      * Initializes the tooltip module for the chart.
      *
@@ -39,10 +44,14 @@ export class LineBase {
         const yVisibleRange: VisibleRangeModel = series.yAxis.visibleRange;
         const seriesPoints: Points[] = <Points[]>series.points;
         const areaBounds: Rect = series.clipRect;
-        const xTolerance: number = Math.abs(xVisibleRange.delta / areaBounds.width);
-        const yTolerance: number = Math.abs(yVisibleRange.delta / areaBounds.height);
+        const xTolerance: number = this.chart && this.chart.zoomRedraw && this.chart.redraw ? this.previousX :
+            Math.abs(xVisibleRange.delta / areaBounds.width);
+        const yTolerance: number = this.chart && this.chart.zoomRedraw && this.chart.redraw ? this.previousY :
+            Math.abs(yVisibleRange.delta / areaBounds.height);
         let prevXValue: number = (seriesPoints[0] && seriesPoints[0].xValue > xTolerance) ? 0 : xTolerance;
         let prevYValue: number = (seriesPoints[0] && seriesPoints[0].y > yTolerance) ? 0 : yTolerance;
+        this.previousX = xTolerance;
+        this.previousY = yTolerance;
         let xVal: number = 0;
         let yVal: number = 0;
         for (const currentPoint of seriesPoints) {
@@ -76,6 +85,7 @@ export class LineBase {
      * @param {Function} getPointLocation getPointLocation
      * @param {string} startPoint startPoint
      * @returns {string} get line path direction
+     * @private
      */
     public getLineDirection(
         firstPoint: Points, secondPoint: Points, series: Series,
@@ -104,6 +114,7 @@ export class LineBase {
      * @param {Series} series - The series to which the path belongs.
      * @param {string} clipRect - The clipping rectangle for the path.
      * @returns {void}
+     * @private
      */
     public appendLinePath(options: PathOption, series: Series, clipRect: string): void {
         const points: { element: Element; previousDirection: string; chart: Chart } =
@@ -136,6 +147,7 @@ export class LineBase {
      * @param {Series} series - The series to which the path belongs.
      * @param {string} clipRect - The clip rectangle for the path.
      * @returns {void}
+     * @private
      */
     public addPath(options: PathOption, series: Series, clipRect: string): void {
         const points: { element: Element; previousDirection: string; chart: Chart } =
@@ -177,6 +189,7 @@ export class LineBase {
      * @param {Series} series - The series to which the path belongs.
      * @param {string} clipRect - The clip rectangle for the path.
      * @returns {void}
+     * @private
      */
     public addAreaPath(options: PathOption, series: Series, clipRect: string): void {
         const points: { element: Element; previousDirection: string; chart: Chart } =
@@ -212,7 +225,6 @@ export class LineBase {
                         else {
                             endPathCommands.splice(1, 0, endPathCommands[1] ? endPathCommands[1] : endPathCommands[0]);
                         }
-                      
                     }
                 }
                 animateAddPoints(points.element, endPathCommands.join(''), series.chart.redraw, points.previousDirection, this.chart.duration, options.d);
@@ -241,6 +253,7 @@ export class LineBase {
      * @param {Series} series - The series for which progressive animation is executed.
      * @param {AnimationModel} option - The animation option.
      * @returns {void}
+     * @private
      */
     public doProgressiveAnimation(series: Series, option: AnimationModel): void {
         const animation: Animation = new Animation({});
@@ -253,13 +266,15 @@ export class LineBase {
             duration: (option.duration === 0 && animationMode === 'Enable') ? 1000 : option.duration,
             delay: option.delay,
             progress: (args: AnimationOptions): void => {
-                if (args.timeStamp >= args.delay) {
-                    path.style.visibility = 'visible';
-                    currentTime = Math.abs(Math.round(((args.timeStamp - args.delay) * pathLength) / args.duration));
-                    path.setAttribute('stroke-dasharray', currentTime + ',' + pathLength);
-                }
+                path.style.visibility = 'visible';
+                currentTime = Math.abs(Math.round(((args.timeStamp) * pathLength) / args.duration));
+                path.setAttribute('stroke-dasharray', currentTime + ',' + pathLength);
             },
             end: () => {
+                const annotations: HTMLElement = <HTMLElement>getElement(series.chart.element.id + '_Annotation_Collections');
+                if (annotations) {
+                    annotations.style.visibility = 'visible';
+                }
                 path.setAttribute('stroke-dasharray', strokeDashArray);
                 path.style.visibility = '';
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
@@ -274,6 +289,7 @@ export class LineBase {
      * @param {boolean} isInverted isInverted
      * @param {Function} getLocation getLocation
      * @returns {void}
+     * @private
      */
     public storePointLocation(point: Points, series: Series, isInverted: boolean, getLocation: Function): void {
         const markerWidth: number = (series.marker && series.marker.width) ? series.marker.width : 0;
@@ -299,24 +315,27 @@ export class LineBase {
      * @param {Points} point - The point to be checked.
      * @param {Axis} yAxis - The y-axis.
      * @returns {boolean} - Returns true if the y-value falls within the y-axis range, otherwise false.
+     * @private
      */
     public withinYRange(point: Points, yAxis: Axis): boolean {
         return point.yValue >= yAxis.visibleRange.min && point.yValue <= yAxis.visibleRange.max;
     }
 
-    public GetStepLineDirection(currentPoint: ChartLocation, previousPoint: ChartLocation, stepLineType: StepPosition, command: string = 'L'): string {
+    public GetStepLineDirection(currentPoint: ChartLocation, previousPoint: ChartLocation, stepLineType: StepPosition, command: string = 'L', series: Series, isBorder?: boolean): string {
+        const X: string = (series.noRisers && isBorder) ? ' M ' : ' L ';
         if (stepLineType === 'Right') {
+            command = (series.noRisers && isBorder) ? 'M' : 'L';
             return (command + ' ' +
                 (previousPoint.x) + ' ' + (currentPoint.y) + ' L ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
         }
         else if (stepLineType === 'Center') {
             const centerX: number = previousPoint.x + (currentPoint.x - previousPoint.x) / 2;
             return (command + ' ' +
-                (centerX) + ' ' + (previousPoint.y) + ' L ' + (centerX) + ' ' + (currentPoint.y) + ' L ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
+                (centerX) + ' ' + (previousPoint.y) + X + (centerX) + ' ' + (currentPoint.y) + ' L ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
         }
         else {
             return (command + ' ' +
-                (currentPoint.x) + ' ' + (previousPoint.y) + ' L ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
+                (currentPoint.x) + ' ' + (previousPoint.y) + X + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
         }
     }
 
@@ -325,6 +344,7 @@ export class LineBase {
      *
      * @param {Points[]} points - Collection of points.
      * @returns {{ first: Points, last: Points }} - Returns an object containing the first and last visible points.
+     * @private
      */
     public getFirstLastVisiblePoint(points: Points[]): { first: Points, last: Points } {
         let first: Points = null; let last: Points = null;
@@ -342,6 +362,7 @@ export class LineBase {
      *
      * @param {string} direction - The direction string.
      * @returns {string} - Returns the border direction.
+     * @private
      */
     public getBorderDirection(
         direction: string
@@ -364,6 +385,7 @@ export class LineBase {
      *
      * @param {string} borderDirection - The border direction.
      * @returns {string} - Returns the updated border direction.
+     * @private
      */
     public removeEmptyPointsBorder(
         borderDirection: string
@@ -395,6 +417,7 @@ export class LineBase {
      * @param {Series} series - The series to animate.
      * @param {AnimationModel} animation - The animation model containing animation details.
      * @returns {void}
+     * @private
      */
     public doLinearAnimation(series: Series, animation: AnimationModel): void {
         const clipRect: HTMLElement = <HTMLElement>series.clipRectElement.childNodes[0].childNodes[0];
@@ -407,24 +430,52 @@ export class LineBase {
             +clipRect.getAttribute('y');
         let value: number;
         clipRect.style.visibility = 'hidden';
+        this.animateRect(series, animation, clipRect, duration, effect, elementHeight, elementWidth, xCenter, yCenter, value);
+        if (series.marker && series.marker.visible) {
+            const markerClipRect: HTMLElement = <HTMLElement>series.symbolElement.childNodes[0].childNodes[0];
+            markerClipRect.style.visibility = 'hidden';
+            this.animateRect(series, animation, markerClipRect, duration, effect, elementHeight, elementWidth, xCenter, yCenter, value);
+        }
+    }
+
+    /**
+     * Animates the given clip rectangle with the specified animation parameters.
+     *
+     * @param {Series} series - The series to which the clip rectangle belongs.
+     * @param {AnimationModel} animation - The animation model containing animation details.
+     * @param {HTMLElement} clipRect - The clip rectangle to animate.
+     * @param {number} duration - The duration of the animation.
+     * @param {Function} effect - The animation function to use.
+     * @param {number} elementHeight - The height of the clip rectangle element.
+     * @param {number} elementWidth - The width of the clip rectangle element.
+     * @param {number} xCenter - The x-coordinate of the clip rectangle's center.
+     * @param {number} yCenter - The y-coordinate of the clip rectangle's center.
+     * @param {number} value - The animation value.
+     * @returns {void}
+     */
+    private animateRect(series: Series, animation: AnimationModel, clipRect: HTMLElement, duration: number, effect: Function,
+                        elementHeight: number, elementWidth: number, xCenter: number, yCenter: number, value: number): void
+    {
         new Animation({}).animate(clipRect, {
             duration: (duration === 0 && animationMode === 'Enable') ? 1000 : duration,
             delay: animation.delay,
             progress: (args: AnimationOptions): void => {
-                if (args.timeStamp >= args.delay) {
-                    clipRect.style.visibility = 'visible';
-                    if (series.chart.requireInvertedAxis) {
-                        value = effect(args.timeStamp - args.delay, 0, elementHeight, args.duration);
-                        clipRect.setAttribute('transform', 'translate(' + xCenter + ' ' + yCenter +
-                            ') scale(1,' + (value / elementHeight) + ') translate(' + (-xCenter) + ' ' + (-yCenter) + ')');
-                    } else {
-                        value = effect(args.timeStamp - args.delay, 0, elementWidth, args.duration);
-                        clipRect.setAttribute('transform', 'translate(' + xCenter + ' ' + yCenter +
-                            ') scale(' + (value / elementWidth) + ', 1) translate(' + (-xCenter) + ' ' + (-yCenter) + ')');
-                    }
+                clipRect.style.visibility = 'visible';
+                if (series.chart.requireInvertedAxis) {
+                    value = effect(args.timeStamp, 0, elementHeight, args.duration);
+                    clipRect.setAttribute('transform', 'translate(' + xCenter + ' ' + yCenter +
+                        ') scale(1,' + (value / elementHeight) + ') translate(' + (-xCenter) + ' ' + (-yCenter) + ')');
+                } else {
+                    value = effect(args.timeStamp, 0, elementWidth, args.duration);
+                    clipRect.setAttribute('transform', 'translate(' + xCenter + ' ' + yCenter +
+                        ') scale(' + (value / elementWidth) + ', 1) translate(' + (-xCenter) + ' ' + (-yCenter) + ')');
                 }
             },
             end: () => {
+                const annotations: HTMLElement = <HTMLElement>getElement(series.chart.element.id + '_Annotation_Collections');
+                if (annotations) {
+                    annotations.style.visibility = 'visible';
+                }
                 clipRect.setAttribute('transform', 'translate(0,0)');
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }

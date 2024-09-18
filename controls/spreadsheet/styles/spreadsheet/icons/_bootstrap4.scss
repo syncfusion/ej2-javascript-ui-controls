@@ -98,6 +98,18 @@
         }
       }
 
+      & .e-calculation {
+        &::before {
+          content: '\e9c3';
+        }
+      }
+
+      & .e-calculate-sheet {
+        &::before {
+          content: '\e9c6';
+        }
+      }
+
       & .e-hyperlink-icon {
         &::before {
           content: '\e72e';
@@ -120,6 +132,18 @@
     & .e-insert-function .e-btn-icon {
       &::before {
         content: '\e82d';
+      }
+    }
+
+    & .e-calculation .e-btn-icon {
+      &::before {
+        content: '\e9c3';
+      }
+    }
+
+    & .e-calculate-sheet .e-btn-icon {
+      &::before {
+        content: '\e9c6';
       }
     }
 

@@ -1312,7 +1312,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             // eslint-disable-next-line prefer-const
             let style: FontModel = {
                 color: this.titleStyle.color,
-                size: this.titleStyle.size || this.themeStyle.fontSize,
+                size: this.titleStyle.size || this.themeStyle.titleFontSize,
                 fontFamily: this.titleStyle.fontFamily || this.themeStyle.fontFamily,
                 fontStyle: this.titleStyle.fontStyle,
                 fontWeight: this.titleStyle.fontWeight || this.themeStyle.titleFontWeight,
@@ -1568,13 +1568,13 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         let startAngle: number = getAngleFromValue(startValue, axisRange.max, axisRange.min, axis.startAngle, axis.endAngle, isClockWise);
         let endAngle: number = getAngleFromValue(endValue, axisRange.max, axisRange.min, axis.startAngle, axis.endAngle, isClockWise);
         let startWidth: number;
-        if ((<string>range.startWidth).length > 0) {
+        if (!isNullOrUndefined((<string>range.startWidth)) && (<string>range.startWidth).length > 0) {
             startWidth = toPixel(<string>range.startWidth, range.currentRadius);
         } else {
             startWidth = <number>range.startWidth;
         }
         let endWidth: number;
-        if ((<string>range.endWidth).length > 0) {
+        if (!isNullOrUndefined((<string>range.endWidth)) && (<string>range.endWidth).length > 0) {
             endWidth = toPixel(<string>range.endWidth, range.currentRadius);
         } else {
             endWidth = <number>range.endWidth;

@@ -4,7 +4,7 @@ import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
 
 /**
- * `SmaIndicator` module is used to render SMA indicator.
+ * The `SmaIndicator` module is used to render the Simple Moving Average indicator.
  */
 export class SmaIndicator extends TechnicalAnalysis {
 

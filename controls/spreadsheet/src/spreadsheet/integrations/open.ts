@@ -13,7 +13,6 @@ import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 export class Open {
     private parent: Spreadsheet;
     public isImportedFile: boolean = false;
-    public preventFormatCheck: boolean;
     public unProtectSheetIdx: number[] = [];
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -191,7 +190,7 @@ export class Open {
             this.parent.renderModule.refreshSheet(response.isOpenFromJson, false, false, false, response);
             this.parent.notify(refreshSheetTabs, null);
             this.isImportedFile = true;
-            this.preventFormatCheck = response.eventArgs && response.eventArgs.file && (response.eventArgs.file as File).name &&
+            response.context.preventFormatCheck = response.eventArgs && response.eventArgs.file && (response.eventArgs.file as File).name &&
                 !(response.eventArgs.file as File).name.includes('.csv');
             this.unProtectSheetIdx = [];
             this.parent.hideSpinner();

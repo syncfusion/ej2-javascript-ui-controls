@@ -42,6 +42,7 @@ $slider-btn-center-align: -13px !default;
 $slider-range-height: $slider-container-height !default;
 $slider-range-width: $slider-vertical-width !default;
 $slider-range-border-radius: 4px !default;
+$slider-range-border-color: $slider-border-color;
 $slider-cursor: pointer !default;
 $slider-handle-hover-cursor: pointer !default;
 $slider-scale-top: 6px !default;
@@ -71,9 +72,13 @@ $slider-mobile-scale-font-size: $text-sm !default;
 $slider-button-horizon-mobile-padding: 0 36px !default;
 $slider-button-vertical-mobile-padding: 36px 0 !default;
 $slider-touch-center-align: -4px !default;
+$slider-disabled-bg-color: $content-text-color-disabled;
 
 //color variables
-$slider-disabled-bg-color: $content-text-color-disabled !default;
+$slider-button-disabled-bg-color: $secondary-bg-color-disabled !default;
+$slider-button-disabled-border-color: $success-border-color-disabled !default;
+$slider-button-icon-disabled-bg-color: $icon-color-disabled;
+$slider-disabled-track-bg-color: $slider-bg-disabled;
 $slider-button-icon-color: $icon-color !default;
 $slider-button-icon-hover-color: $icon-color-hover !default;
 $slider-button-icon-active-color: $icon-color-pressed !default;

@@ -121,7 +121,7 @@ export class GaugeTooltip {
             this.tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY, rangeTooltipStyle);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).renderReactTemplates();
-        } else if ((target.id === (this.element.id + '_LinearGaugeTitle')) && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
+        } else if ((target.id === (this.element.id + '_LinearGaugeTitle')) && ((<HTMLElement>target).textContent.indexOf('...') > -1)) {
             showTooltip(this.gauge.title, this.gauge);
         } else {
             removeTooltip();

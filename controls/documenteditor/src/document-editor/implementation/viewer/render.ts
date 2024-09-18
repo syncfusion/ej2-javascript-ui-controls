@@ -24,6 +24,8 @@ import { FontScriptType, TextWrappingStyle } from '../../index';
 import { TextSizeInfo } from './text-helper';
 import { DocumentCanvasElement, DocumentCanvasRenderingContext2D } from './document-canvas';
 import { Dictionary } from '../../base/dictionary';
+import { getPathString, PathSegment, pathSegmentCollection, PointModel, processPathData, splitArrayCollection, transformPath } from '../utility/path-util';
+import { getShape } from '../utility/shapes';
 
 /**
  * @private
@@ -66,7 +68,11 @@ export class Renderer {
         }
     }
     public get spellChecker(): SpellChecker {
-        return this.documentHelper.owner.spellCheckerModule;
+        try{
+            return this.documentHelper.owner.spellCheckerModule;
+        } catch {
+            return undefined;
+        }
     }
     private get selectionCanvas(): HTMLCanvasElement {
         return isNullOrUndefined(this.viewer) ? undefined : this.documentHelper.selectionCanvas;
@@ -536,15 +542,20 @@ export class Renderer {
         this.pageContext.beginPath();
         if (shape.fillFormat && shape.fillFormat.color && shape.fillFormat.fill && shapeType !== 'StraightConnector') {
             this.pageContext.fillStyle = shape.fillFormat.color;
-            this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+            if(shapeType === 'Rectangle') {
+                this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+            } 
+            else {
+                this.renderPathElement(shape, shapeLeft, shapeTop);
+            }
         }
         if (!isNullOrUndefined(shapeType)) {
             if (shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') {
                 this.pageContext.lineWidth = shape.lineFormat.weight;
                 this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
-                if (shapeType !== 'StraightConnector') {
+                if (shapeType === 'Rectangle') {
                     this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
-                } else {
+                } else if(shapeType === 'StraightConnector') {
                     this.pageContext.moveTo(shapeLeft, shapeTop);
                     this.pageContext.lineTo(shapeLeft + this.getScaledValue(shape.width), shapeTop + this.getScaledValue(shape.height));
                     this.pageContext.stroke();
@@ -570,7 +581,30 @@ export class Renderer {
             this.pageContext.restore();
         }
     }
-
+    private renderPathElement(shape: ShapeElementBox, x: number, y: number) {
+        let pathData: string;
+        if (shape.autoShapeType && shape.autoShapeType != 'Unknown') {
+            switch(shape.autoShapeType){
+                case 'ElbowConnector':
+                    pathData = this.getConnectorPathData(shape);
+                    break;
+                case 'CurvedConnector':
+                    pathData = this.getCurvedPathData(shape);
+                    break;
+                default:
+                    pathData = getShape(shape.autoShapeType);
+                    break;
+            }
+        } else if(shape.autoShapeType) {
+            pathData = this.constructPath(shape);
+        }
+        if (pathData) {
+            let bounds: Rect = this.calculatePathBounds(pathData);
+            let data: string = this.updatePath(pathData, bounds, shape);
+            this.drawPath(data, shape, x, y);
+        }
+    }
+    
     private renderWidget(page: Page, widget: Widget): void {
         if (this.documentHelper.owner.enableLockAndEdit) {
             this.renderLockRegionBorder(page, widget);
@@ -580,6 +614,259 @@ export class Renderer {
         } else {
             this.renderTableWidget(page, widget as TableWidget);
         }
+    }
+
+    private getConnectorPathData(shape: ShapeElementBox): string{
+        const startX = shape.distanceTop;
+        const startY = shape.distanceLeft;
+        const endX = shape.distanceTop + this.getScaledValue(shape.width);
+        const endY = shape.distanceLeft + this.getScaledValue(shape.height);
+
+        // Determine the mid points
+        const midX = startX + (endX - startX) / 2;
+        // const midY = startY + (endY - startY) / 2;
+
+        // Create the path data
+        let pathData = `M ${startX},${startY} `; // Move to the start point
+        pathData += `L ${midX},${startY} `; // Horizontal line to the middle X
+        pathData += `L ${midX},${endY} `; // Vertical line to the end Y
+        pathData += `L ${endX},${endY}`; // Horizontal line to the end point
+        return pathData;
+    }
+
+    private getCurvedPathData(shape: ShapeElementBox) {
+        const startX = shape.distanceTop;
+        const startY = shape.distanceLeft;
+        const endX = shape.distanceTop + this.getScaledValue(shape.width);
+        const endY = shape.distanceLeft + this.getScaledValue(shape.height);
+
+
+        // Control points for the Bezier curve
+        const controlPoint1X = startX + this.getScaledValue(shape.width) / 1.5;
+        const controlPoint1Y = startY;
+
+        const controlPoint2X = endX - this.getScaledValue(shape.width) / 1.5;
+        const controlPoint2Y = endY;
+
+        // Create the path data using cubic Bezier curve command
+        const pathData = `M ${startX},${startY} C ${controlPoint1X},${controlPoint1Y} ${controlPoint2X},${controlPoint2Y} ${endX},${endY}`;
+
+        return pathData;
+    }
+    private constructPath(shape: ShapeElementBox): string {
+        let points: any = shape.editingPoints;
+        const coords = {};
+
+        for (var key in points) {
+            if (points.hasOwnProperty(key)) {
+                // Assigning key-value pairs to the new object
+                coords[key] = this.calculateCoord(points[key], 400, 400);
+            }
+        }
+        // Create path data using the coordinates
+        const pathData = `
+      M ${(coords as any).connsiteX0},${(coords as any).connsiteY0}
+      L ${(coords as any).connsiteX1},${(coords as any).connsiteY1}
+      L ${(coords as any).connsiteX2},${(coords as any).connsiteY2}
+      L ${(coords as any).connsiteX3},${(coords as any).connsiteY3}
+      L ${(coords as any).connsiteX4},${(coords as any).connsiteY4}
+      Z
+    `;
+
+    return pathData;
+    }
+    private calculateCoord(pointValue: string, w: number, h: number) {
+        const parts = pointValue.split(" ");
+        const operation = parts[0];
+        const numerator = parseFloat(parts[1]);
+        const dimension = parts[2] === 'w' ? w : h;
+        const denominator = parseFloat(parts[3]);
+
+        if (operation === "*/") {
+            return (numerator / denominator) * dimension;
+        }
+        return 0; // Default return value if operation is not recognized
+    }
+    private drawPath(data: string, shape: ShapeElementBox, x: number, y: number): void {
+        let collection: Object[] = [];
+        collection = processPathData(data);
+        collection = pathSegmentCollection(collection);
+        this.setStyle(shape);
+        const ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D = this.pageContext;
+        if ((ctx as CanvasRenderingContext2D).translate) {
+            ctx.save();
+            ctx.beginPath();
+            //this.rotateContext(canvas, options.angle, pivotX, pivotY);
+            (ctx as CanvasRenderingContext2D).translate(x, y);
+            this.renderPath(ctx, collection);
+            ctx.fill();
+            (ctx as CanvasRenderingContext2D).translate(-x, -y);
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+    private renderPath(canvas: any, collection: Object[]): void {
+        const ctx: CanvasRenderingContext2D = canvas;
+        let x0: number; let y0: number; let x1: number; let y1: number; let x2: number; let y2: number;
+        let x: number; let y: number; let length: number; let i: number; const segs: Object[] = collection;
+        for (x = 0, y = 0, i = 0, length = segs.length; i < length; ++i) {
+            const obj: Object = segs[parseInt(i.toString(), 10)]; const seg: PathSegment = obj; const char: string = seg.command;
+            if ('x1' in seg) { x1 = seg.x1; }
+            if ('x2' in seg) { x2 = seg.x2; }
+            if ('y1' in seg) { y1 = seg.y1; }
+            if ('y2' in seg) { y2 = seg.y2; }
+            if ('x' in seg) { x = seg.x; }
+            if ('y' in seg) { y = seg.y; }
+            switch (char) {
+            case 'M':
+                ctx.moveTo(x, y); seg.x = x; seg.y = y;
+                break;
+            case 'L':
+                ctx.lineTo(x, y); seg.x = x; seg.y = y;
+
+                break;
+            case 'C':
+                ctx.bezierCurveTo(x1, y1, x2, y2, x, y);
+                seg.x = x; seg.y = y; seg.x1 = x1; seg.y1 = y1; seg.x2 = x2; seg.y2 = y2;
+                break;
+            case 'Q':
+                ctx.quadraticCurveTo(x1, y1, x, y);
+                seg.x = x; seg.y = y; seg.x1 = x1; seg.y1 = y1;
+                break;
+            case 'A':
+            // eslint-disable-next-line
+            let curr: PointModel = { x: x0, y: y0 }; let rx: number = seg.r1; let ry: number = seg.r2;
+            const xAxisRotation: number = seg.angle * (Math.PI / 180.0);
+            const largeArc: boolean = seg.largeArc; const sweep: boolean = seg.sweep; const cp: PointModel = { x: x, y };
+                    const currp: PointModel = {
+                        x:
+                            Math.cos(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.sin(xAxisRotation) * (curr.y - cp.y) / 2.0,
+                        y: -Math.sin(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.cos(xAxisRotation) * (curr.y - cp.y) / 2.0
+                    };
+                    const l: number = Math.pow(currp.x, 2) / Math.pow(rx, 2) + Math.pow(currp.y, 2) / Math.pow(ry, 2);
+                    if (l > 1) {
+                        rx *= Math.sqrt(l);
+                        ry *= Math.sqrt(l);
+                    }
+                    const k: number = (Math.pow(ry, 2) * Math.pow(currp.x, 2));
+                    let s: number = (largeArc === sweep ? -1 : 1) * Math.sqrt(
+                        ((Math.pow(rx, 2) * Math.pow(ry, 2)) - (Math.pow(rx, 2) * Math.pow(currp.y, 2)) - k) /
+                        (Math.pow(rx, 2) * Math.pow(currp.y, 2) + Math.pow(ry, 2) * Math.pow(currp.x, 2))
+                    );
+                    if (isNaN(s)) {
+                        s = 0;
+                    }
+                const cpp: PointModel = { x: s * rx * currp.y / ry, y: s * -ry * currp.x / rx };
+                    const centp: PointModel = {
+                        x:
+                        (curr.x + cp.x) / 2.0 + Math.cos(xAxisRotation) * cpp.x - Math.sin(xAxisRotation) * cpp.y,
+                    y: (curr.y + cp.y) / 2.0 + Math.sin(xAxisRotation) * cpp.x + Math.cos(xAxisRotation) * cpp.y
+                };
+                const a1: number = this.a([1, 0], [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry]);
+                const u: number[] = [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry];
+                const v: number[] = [(-currp.x - cpp.x) / rx, (-currp.y - cpp.y) / ry];
+                let ad: number = this.a(u, v);
+                if (this.r(u, v) <= -1) {
+                    ad = Math.PI;
+                }
+                if (this.r(u, v) >= 1) {
+                    ad = 0;
+                  }
+                const dir: number = !sweep ? -1.0 : 1.0;
+                const ah: number = a1 + dir * (ad / 2.0);
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const halfWay: PointModel = {
+                        x:
+                            centp.x + rx * Math.cos(ah),
+                        y: centp.y + ry * Math.sin(ah)
+                    };
+                seg.centp = centp; seg.xAxisRotation = xAxisRotation; seg.rx = rx;
+                seg.ry = ry; seg.a1 = a1; seg.ad = ad; seg.sweep = sweep;
+                if (ctx != null) {
+                    const ra: number = rx > ry ? rx : ry;
+                    const sx: number = rx > ry ? 1 : rx / ry;
+                    const sy: number = rx > ry ? ry / rx : 1;
+                    ctx.save();
+                    ctx.translate(centp.x, centp.y);
+                    ctx.rotate(xAxisRotation);
+                    ctx.scale(sx, sy);
+                    ctx.arc(0, 0, ra, a1, a1 + ad, !sweep);
+                    ctx.scale(1 / sx, 1 / sy);
+                    ctx.rotate(-xAxisRotation);
+                    ctx.translate(-centp.x, -centp.y);
+                    ctx.restore();
+                }
+                break;
+            case 'Z':
+            case 'z':
+                ctx.closePath();
+                x = x0; y = y0;
+                break;
+            }
+            x0 = x; y0 = y;
+        }
+}
+
+// vector magnitude
+private m(v: number[]): number { return Math.sqrt(Math.pow(v[0], 2) + Math.pow(v[1], 2)); }
+// ratio between two vectors
+private r(u: number[], v: number[]): number { return (u[0] * v[0] + u[1] * v[1]) / (this.m(u) * this.m(v)); }
+// angle between two vectors
+private a(u: number[], v: number[]): number { return (u[0] * v[1] < u[1] * v[0] ? -1 : 1) * Math.acos(this.r(u, v)); }
+
+private updatePath(pathData: string, bounds: Rect, shape: ShapeElementBox): string {
+    let isScale: boolean = false;
+    let newPathString: string = '';
+    let scaleX: number = - bounds.x;
+    let scaleY: number = - bounds.y;
+    let arrayCollection: Object[] = [];
+    if (this.getScaledValue(shape.width) !== bounds.width || this.getScaledValue(shape.height) !== bounds.height) {
+        scaleX = this.getScaledValue(shape.width) / Number(bounds.width ? bounds.width : 1);
+        scaleY = this.getScaledValue(shape.height) / Number(bounds.height ? bounds.height : 1);
+        isScale = true;
+    }
+    arrayCollection = processPathData(pathData);
+    arrayCollection = splitArrayCollection(arrayCollection);
+    if ((isScale)) {
+        newPathString = transformPath(arrayCollection, scaleX, scaleY, isScale, bounds.x, bounds.y, 0, 0);
+    } else {
+        newPathString = getPathString(arrayCollection);
+    }
+    isScale = false;
+    return newPathString;
+}
+
+private calculatePathBounds(data: string): Rect {
+    // Create an SVG element
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    document.body.appendChild(svg); // Append to the DOM to ensure rendering context
+
+    // Create a path element
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", data);
+    svg.appendChild(path);
+
+    // Get the bounding box of the path
+    const bounds = path.getBBox();
+
+    // Remove the temporary SVG element
+    svg.remove();
+
+    const svgBounds: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
+    return svgBounds;
+}
+
+    private setStyle(shape: ShapeElementBox): void {
+        const ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D = this.pageContext;
+        if (shape.lineFormat.color === 'none') { 
+            shape.lineFormat.color = 'transparent'; 
+        }
+        ctx.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
+        ctx.lineWidth = shape.lineFormat.weight;
+        if (shape.lineFormat.weight === 0) {
+            ctx.strokeStyle = 'transparent';
+        }
+        //ctx.globalAlpha = style.opacity;
     }
 
     private renderLockRegionBorder(page: Page, widget: Widget) {
@@ -1982,7 +2269,39 @@ export class Renderer {
             (this.pageContext as any).letterSpacing = format.characterSpacing * this.documentHelper.zoomFactor + 'pt';
             this.pageContext.save();
             this.pageContext.scale(scaleFactor, 1);
-            this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1)/(scaleFactor), this.getScaledValue(top + topMargin, 2), scaledWidth);
+            // Text frame align position.
+            if (((elementBox.paragraph.containerWidget as TextFrame).containerShape as ShapeElementBox) && (elementBox.paragraph.containerWidget as TextFrame).textVerticalAlignment == 'Center') {
+                let shapeHeight: number = ((elementBox.paragraph.containerWidget as TextFrame).containerShape as ShapeElementBox).height;
+                let y: number = this.getScaledValue(top + topMargin, 2) + (this.getScaledValue(shapeHeight) / 4.5);
+                let height: number = 0;
+                if(elementBox.paragraph.containerWidget.childWidgets && elementBox.paragraph.containerWidget.childWidgets.length > 0) {
+                    for(let i = 0; i < elementBox.paragraph.containerWidget.childWidgets.length; i++) {
+                        height = height + (elementBox.paragraph.containerWidget.childWidgets[i] as TextFrame).height;
+                    }
+                }
+                if((height + this.getScaledValue(shapeHeight) / 2) < this.getScaledValue(shapeHeight)) {
+                    this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1) / (scaleFactor), y, scaledWidth);
+                } else {
+                    this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1) / (scaleFactor), this.getScaledValue(top + topMargin, 2), scaledWidth);
+                }
+            }
+            else if (((elementBox.paragraph.containerWidget as TextFrame).containerShape as ShapeElementBox) && (elementBox.paragraph.containerWidget as TextFrame).textVerticalAlignment == 'Bottom') {
+                let shapeHeight: number = ((elementBox.paragraph.containerWidget as TextFrame).containerShape as ShapeElementBox).height;
+                let y: number = this.getScaledValue(top + topMargin, 2) + (this.getScaledValue(shapeHeight) / 2);
+                let height: number = 0;
+                if(elementBox.paragraph.containerWidget.childWidgets && elementBox.paragraph.containerWidget.childWidgets.length > 0) {
+                    for(let i = 0; i < elementBox.paragraph.containerWidget.childWidgets.length; i++) {
+                        height = height + (elementBox.paragraph.containerWidget.childWidgets[i] as TextFrame).height;
+                    }
+                }
+                if((height + this.getScaledValue(shapeHeight) / 2) < this.getScaledValue(shapeHeight)) {
+                    this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1) / (scaleFactor), y, scaledWidth);
+                } else {
+                    this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1) / (scaleFactor), this.getScaledValue(top + topMargin, 2), scaledWidth);
+                }
+            } else {
+                this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1) / (scaleFactor), this.getScaledValue(top + topMargin, 2), scaledWidth);
+            }
             this.pageContext.restore();
         }
         if (characterRange === CharacterRangeType.RightToLeft && !HelperMethods.startsWith(text, ' ')) {
@@ -2174,8 +2493,10 @@ export class Renderer {
                                 this.spellChecker.callSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                                     /* eslint-disable @typescript-eslint/no-explicit-any */
                                     let jsonObject: any = JSON.parse(data);
-                                    let canUpdate: boolean = (beforeIndex === this.pageIndex || elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
-                                    this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
+                                    if (!isNullOrUndefined(this.spellChecker)) {
+                                        let canUpdate: boolean = (beforeIndex === this.pageIndex || elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
+                                        this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
+                                    }
                                 });
                             }
                         }
@@ -2205,7 +2526,9 @@ export class Renderer {
                     this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                         /* eslint-disable @typescript-eslint/no-explicit-any */
                         let jsonObject: any = JSON.parse(data);
-                        this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
+                        if (!isNullOrUndefined(this.spellChecker)) {
+                            this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
+                        }
                     });
                 }
             }

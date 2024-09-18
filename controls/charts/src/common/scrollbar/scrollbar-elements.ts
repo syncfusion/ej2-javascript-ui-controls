@@ -47,6 +47,8 @@ export function createScrollSvg(scrollbar: ScrollBar, renderer: SvgRenderer): vo
 }
 /**
  * Scrollbar elements renderer.
+ *
+ * @private
  */
 export class ScrollElements {
     /** @private */
@@ -243,7 +245,7 @@ export class ScrollElements {
      */
 
     private thumbGrip(scroll: ScrollBar, renderer: SvgRenderer, parent: Element, scrollBar: ScrollbarSettingsModel): void {
-        let sidePadding: number = 0;
+        let sidePadding: number = (scroll.component.theme.indexOf('Fluent2') > -1 || (scroll.component.theme.indexOf('Bootstrap5')) > -1) ? -5 : 0;
         let topPadding: number = 0;
         const gripWidth: number = 14;
         const gripCircleDiameter: number = 2;
@@ -258,15 +260,15 @@ export class ScrollElements {
             transform: 'translate(' + (!scrollBar.enableZoom ? ((this.thumbRectX + this.thumbRectWidth / 2) + ((scroll.isVertical ? 2 : 0) * padding) - scrollBar.height / 2) : (this.thumbRectX + this.thumbRectWidth / 2) + ((scroll.isVertical ? 1 : -1) * padding)) +
                 ',' + (scroll.isVertical ? (scroll.height / 2 + padding / 2) - 0.5 : (scroll.height / 2 - padding / 2) - 0.5) + ') rotate(' + (scroll.isVertical ? '180' : '0') + ')'
         });
-        for (let i: number = 1; i <= (scroll.component.theme.indexOf('Fluent2') > -1 ? 10 : 6); i++) {
+        for (let i: number = 1; i <= (scroll.component.theme.indexOf('Fluent2') > -1 || (scroll.component.theme.indexOf('Bootstrap5')) > -1 ? 10 : 6); i++) {
             option.id = this.chartId + 'scrollBar_gripCircle' + i + '_' + scroll.axis.name;
             option.cx = sidePadding;
             option.cy = topPadding;
             this.gripCircle.appendChild(
                 renderer.drawCircle(option  )
             );
-            sidePadding = i === (scroll.component.theme.indexOf('Fluent2') > -1 ? 5 : 3) ? 0 : (sidePadding + 5);
-            topPadding = i >= (scroll.component.theme.indexOf('Fluent2') > -1 ? 5 : 3) ? 5 : 0;
+            sidePadding = i === (scroll.component.theme.indexOf('Fluent2') > -1 || (scroll.component.theme.indexOf('Bootstrap5')) > -1 ? 5 : 3) ? ((scroll.component.theme.indexOf('Fluent2') > -1 || (scroll.component.theme.indexOf('Bootstrap5')) > -1) ? -5 : 0) : (sidePadding + 5);
+            topPadding = i >= (scroll.component.theme.indexOf('Fluent2') > -1 || (scroll.component.theme.indexOf('Bootstrap5')) > -1 ? 5 : 3) ? 5 : 0;
         }
         if (scrollBar.height >= 12) { parent.appendChild(this.gripCircle); }
     }

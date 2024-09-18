@@ -1307,7 +1307,7 @@ describe('DDList', () => {
         });
         it(' check initial value, text and index ', () => {
             expect(listObj.value === 4).toBe(true);
-            expect(listObj.text === 4).toBe(true);
+            expect(listObj.text === "4").toBe(true);
             expect(listObj.index === 3).toBe(true);
         });
     });
@@ -3171,10 +3171,7 @@ describe('DDList', () => {
         let ddlObj: any;
         let element: HTMLInputElement;
         let keyEvent: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', type: 'keydown' };
-        let originalTimeout: number;
         beforeAll(() => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
             element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
             document.body.appendChild(element);
             ddlObj = new DropDownList({
@@ -3192,7 +3189,7 @@ describe('DDList', () => {
             setTimeout(() => {
                 expect(ddlObj.inputElement.value !== '').toBe(true);
                 done()
-            }, 1100);
+            }, 800);
         });
         it('popup show after actionComplete event', (done) => {
             ddlObj.showPopup();
@@ -3203,7 +3200,6 @@ describe('DDList', () => {
             }, 800);
         });
         afterAll(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             if (element) {
                 element.parentElement.remove();
                 document.body.innerHTML = '';
@@ -6356,6 +6352,451 @@ describe('DDList', () => {
                     expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
                     done();
                 }, 450);
+            });
+        });
+        describe('DropdownList Null or undefined value testing', () => {
+            let listObj: DropDownList;
+            beforeEach(() => {
+                listObj = undefined;
+                let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'list' });
+                document.body.appendChild(element);
+            });
+            afterEach(() => {
+                document.body.innerHTML = '';
+            });
+            it('actionFailureTemplate', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    actionFailureTemplate: null
+                }, '#list');
+                expect(listObj.actionFailureTemplate).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    actionFailureTemplate: undefined
+                }, '#list');
+                expect(listObj.actionFailureTemplate).toBe('Request failed');
+                listObj.destroy();
+            });
+            it('allowFiltering', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    allowFiltering: null
+                }, '#list');
+                expect(listObj.allowFiltering).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    allowFiltering: undefined
+                }, '#list');
+                expect(listObj.allowFiltering).toBe(false);
+                listObj.destroy();
+            });
+            it('allowObjectBinding', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    allowObjectBinding: null
+                }, '#list');
+                expect(listObj.allowObjectBinding).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    allowObjectBinding: undefined
+                }, '#list');
+                expect(listObj.allowObjectBinding).toBe(false);
+                listObj.destroy();
+            });
+            it('cssClass', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    cssClass: null
+                }, '#list');
+                expect(listObj.cssClass).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    cssClass: undefined
+                }, '#list');
+                expect(listObj.cssClass).toBe(null);
+                listObj.destroy();
+            });
+            it('enablePersistence', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    enablePersistence: null
+                }, '#list');
+                expect(listObj.enablePersistence).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    enablePersistence: undefined
+                }, '#list');
+                expect(listObj.enablePersistence).toBe(false);
+                listObj.destroy();
+            });
+            it('enableRtl', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    enableRtl: null
+                }, '#list');
+                expect(listObj.enableRtl).toBe(false);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    enableRtl: undefined
+                }, '#list');
+                expect(listObj.enableRtl).toBe(false);
+                listObj.destroy();
+            });
+            it('enableVirtualization', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    enableVirtualization: null
+                }, '#list');
+                expect(listObj.enableVirtualization).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    enableVirtualization: undefined
+                }, '#list');
+                expect(listObj.enableVirtualization).toBe(false);
+                listObj.destroy();
+            });
+            it('enabled', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    enabled: null
+                }, '#list');
+                expect(listObj.enabled).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    enabled: undefined
+                }, '#list');
+                expect(listObj.enabled).toBe(true);
+                listObj.destroy();
+            });
+            it('filterBarPlaceholder', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    allowFiltering: true,
+                    filterBarPlaceholder: null
+                }, '#list');
+                expect(listObj.filterBarPlaceholder).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    allowFiltering: true,
+                    filterBarPlaceholder: undefined
+                }, '#list');
+                expect(listObj.filterBarPlaceholder).toBe(null);
+                listObj.destroy();
+            });
+            it('footerTemplate', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    footerTemplate: null
+                }, '#list');
+                expect(listObj.footerTemplate).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    footerTemplate: undefined
+                }, '#list');
+                expect(listObj.footerTemplate).toBe(null);
+                listObj.destroy();
+            });
+            it('groupTemplate', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    groupTemplate: null
+                }, '#list');
+                expect(listObj.groupTemplate).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    groupTemplate: undefined
+                }, '#list');
+                expect(listObj.groupTemplate).toBe(null);
+                listObj.destroy();
+            });
+            it('headerTemplate', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    headerTemplate: null
+                }, '#list');
+                expect(listObj.headerTemplate).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    headerTemplate: undefined
+                }, '#list');
+                expect(listObj.headerTemplate).toBe(null);
+                listObj.destroy();
+            });
+            it('ignoreAccent', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    ignoreAccent: null
+                }, '#list');
+                expect(listObj.ignoreAccent).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    ignoreAccent: undefined
+                }, '#list');
+                expect(listObj.ignoreAccent).toBe(false);
+                listObj.destroy();
+            });
+            it('ignoreCase', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    ignoreCase: null
+                }, '#list');
+                expect(listObj.ignoreCase).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    ignoreCase: undefined
+                }, '#list');
+                expect(listObj.ignoreCase).toBe(true);
+                listObj.destroy();
+            });
+            it('itemTemplate', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    itemTemplate: null
+                }, '#list');
+                expect(listObj.itemTemplate).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    itemTemplate: undefined
+                }, '#list');
+                expect(listObj.itemTemplate).toBe(null);
+                listObj.destroy();
+            });
+            it('noRecordsTemplate', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    noRecordsTemplate: null
+                }, '#list');
+                expect(listObj.noRecordsTemplate).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    noRecordsTemplate: undefined
+                }, '#list');
+                expect(listObj.noRecordsTemplate).toBe('No records found');
+                listObj.destroy();
+            });
+            it('placeholder', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    placeholder: null
+                }, '#list');
+                expect(listObj.placeholder).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    placeholder: undefined
+                }, '#list');
+                expect(listObj.placeholder).toBe(null);
+                listObj.destroy();
+            });
+            it('popupHeight', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    popupHeight: null
+                }, '#list');
+                expect(listObj.popupHeight).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    popupHeight: undefined
+                }, '#list');
+                expect(listObj.popupHeight).toBe('300px');
+                listObj.destroy();
+            });
+            it('popupWidth', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    popupWidth: null
+                }, '#list');
+                expect(listObj.popupWidth).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    popupWidth: undefined
+                }, '#list');
+                expect(listObj.popupWidth).toBe('100%');
+                listObj.destroy();
+            });
+            it('readonly', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    readonly: null
+                }, '#list');
+                expect(listObj.readonly).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    readonly: undefined
+                }, '#list');
+                expect(listObj.readonly).toBe(false);
+                listObj.destroy();
+            });
+            it('showClearButton', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    showClearButton: null
+                }, '#list');
+                expect(listObj.showClearButton).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    showClearButton: undefined
+                }, '#list');
+                expect(listObj.showClearButton).toBe(false);
+                listObj.destroy();
+            });
+            it('text', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    text: null
+                }, '#list');
+                expect(listObj.text).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    text: undefined
+                }, '#list');
+                expect(listObj.text).toBe(null);
+                listObj.destroy();
+            });
+            it('value', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    value: null
+                }, '#list');
+                expect(listObj.value).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    value: undefined
+                }, '#list');
+                expect(listObj.value).toBe(null);
+                listObj.destroy();
+            });
+            it('valueTemplate', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    valueTemplate: null
+                }, '#list');
+                expect(listObj.valueTemplate).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    valueTemplate: undefined
+                }, '#list');
+                expect(listObj.valueTemplate).toBe(null);
+                listObj.destroy();
+            });
+            it('width', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    width: null
+                }, '#list');
+                expect(listObj.width).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    width: undefined
+                }, '#list');
+                expect(listObj.width).toBe('100%');
+                listObj.destroy();
+            });
+            it('index', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource,
+                    fields: { value: "id", text: "text" },
+                    index: null
+                }, '#list');
+                expect(listObj.index).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    index: undefined
+                }, '#list');
+                expect(listObj.index).toBe(null);
+                listObj.destroy();
+            });
+            it('zIndex', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource,
+                    fields: { value: "id", text: "text" },
+                    zIndex: null
+                }, '#list');
+                expect(listObj.zIndex).toBe(null);
+                listObj.destroy();
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                    zIndex: undefined
+                }, '#list');
+                expect(listObj.zIndex).toBe(1000);
+                listObj.destroy();
             });
         });
     });

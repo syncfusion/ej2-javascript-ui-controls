@@ -1,9 +1,8 @@
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, DialogBeforeOpenEventArgs, Spreadsheet, dialog, getCell, SheetModel, ValidationModel } from "../../../src/index";
-import { Dialog } from "../../../src/spreadsheet/services/index";
+import { CellModel, DialogBeforeOpenEventArgs, Spreadsheet, getCell, SheetModel, ValidationModel } from '../../../src/index';
 import { getComponent, L10n } from '@syncfusion/ej2-base';
-import { DropDownList } from "@syncfusion/ej2-dropdowns";
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { SpreadsheetModel } from '../../../src/spreadsheet/index';
 
 
@@ -18,15 +17,24 @@ describe('Data validation ->', () => {
                     ranges: [{
                         dataSource: defaultData
                     }],
+                    rows: [{ cells: [{ validation: { type: 'List', value1: '=Sheet2!A2:A11' }, notes: 'Syncfusion' }] }]
+                },
+                {
+                    ranges: [{ dataSource: defaultData }]
                 }]
             }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
-        it('', (done: Function) => {
+        it('Adding validation', (done: Function) => {
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0].validation)).toBe('{"type":"List","value1":"=Sheet2!A2:A11","ignoreBlank":true,"inCellDropDown":true}');
+            const cellEle: HTMLElement = helper.invoke('getCell', [0, 0]);
+            expect(cellEle.querySelector('.e-validation-list')).not.toBeNull();
+            expect(cellEle.querySelector('.e-addNoteIndicator')).not.toBeNull();
             helper.invoke('addDataValidation', [{ type: 'TextLength', operator: 'LessThanOrEqualTo', value1: '12' }, 'A2:A7']);
-            const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[0];
+            const sheet: SheetModel = helper.getInstance().sheets[0];
+            const cell: CellModel = sheet.rows[1].cells[0];
             expect(JSON.stringify(cell.validation)).toBe('{"type":"TextLength","operator":"LessThanOrEqualTo","value1":"12"}');
             helper.invoke('addInvalidHighlight', ['A2:A7']);
             let td: HTMLElement = helper.invoke('getCell', [1, 0]);
@@ -39,15 +47,19 @@ describe('Data validation ->', () => {
             expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
             expect(td.style.color).toBe('rgb(0, 0, 0)');
             helper.invoke('removeDataValidation', ['A2:A7']);
-            expect(helper.getInstance().sheets[0].rows[1].cells[0].validation).toBeUndefined();
+            expect(sheet.rows[1].cells[0].validation).toBeUndefined();
+            helper.invoke('addDataValidation', [{ type: 'WholeNumber', operator: 'Between' }, 'B2:B7']);
+            expect(sheet.rows[1].cells[1].validation).toBeUndefined();
             done();
         });
-
         it('Add list validation', (done: Function) => {
             helper.invoke('addDataValidation', [{ type: 'List', value1: '12,13,14' }, 'D2']);
             const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[3];
             expect(JSON.stringify(cell.validation)).toBe('{"type":"List","value1":"12,13,14"}');
             helper.invoke('selectRange', ['D2']);
+            const cellEle: HTMLElement = helper.invoke('getCell', [0, 0]);
+            expect(cellEle.querySelector('.e-validation-list')).toBeNull();
+            expect(cellEle.querySelector('.e-addNoteIndicator')).not.toBeNull();
             const td: HTMLElement = helper.invoke('getCell', [1, 3]).children[0];
             expect(td.classList).toContain('e-validation-list');
             const coords: ClientRect = td.getBoundingClientRect();
@@ -66,6 +78,69 @@ describe('Data validation ->', () => {
                     done();
                 });
             });
+        });
+        it('Add list validation using updateCell method and select formatted value from dropdown', (done: Function) => {
+            helper.invoke('selectRange', ['H2']);
+            const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[7];
+            expect(cell.validation).toBeUndefined();
+            const cellEle: HTMLElement = helper.invoke('getCell', [1, 7]);
+            expect(cellEle.children.length).toBe(0);
+            helper.invoke('updateCell', [{ validation: { type: 'List', value1: '12.5%,24.7%,35.6%' } }, 'H2']);
+            expect(JSON.stringify(cell.validation)).toBe('{"type":"List","value1":"12.5%,24.7%,35.6%"}');
+            expect(cellEle.children.length).toBe(1);
+            let validationEle: Element = cellEle.children[0];
+            expect(validationEle.classList).toContain('e-validation-list');
+            let validationInput: any = validationEle.querySelector('.e-dropdownlist');
+            validationInput.ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: validationEle });
+            setTimeout(() => {
+                helper.click('.e-ddl.e-popup.e-popup-open li:nth-child(2)');
+                expect(cell.value).toBe('0.247');
+                expect(cell.format).toBe('0.00%');
+                expect(cellEle.innerText).toBe('24.70%');
+                expect(helper.getElement(`#${helper.id}_formula_input`).value).toBe('24.70%');
+                helper.invoke('updateCell', [{ validation: { type: 'List', value1: '$10.25,$20.35,$20.768' }, format: 'General' }, 'H2']);
+                expect(cellEle.children.length).toBe(1);
+                validationEle = cellEle.children[0];
+                expect(validationEle.classList).toContain('e-validation-list');
+                validationInput = validationEle.querySelector('.e-dropdownlist');
+                validationInput.ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: validationEle });
+                setTimeout(() => {
+                    helper.click('.e-ddl.e-popup.e-popup-open li:nth-child(3)');
+                    expect(cell.value).toBe('20.768');
+                    expect(cell.format).toBe('$#,##0.00');
+                    expect(cellEle.innerText).toBe('$20.77');
+                    expect(helper.getElement(`#${helper.id}_formula_input`).value).toBe('20.768');
+                    done();
+                });
+            });
+        });
+        it('Removing list validation by changing the validation using updateCell method', (done: Function) => {
+            helper.invoke('updateCell', [{ validation: { type: 'WholeNumber', operator: 'LessThan', value1: '20' } }, 'H2']);
+            const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[7];
+            expect(cell.validation.type).toBe('WholeNumber');
+            let cellEle: HTMLElement = helper.invoke('getCell', [1, 7]);
+            expect(cellEle.querySelector('.e-validation-list')).toBeNull();
+            expect(cellEle.innerText).toBe('$20.77');
+            helper.invoke('updateCell', [{ validation: { type: 'List', value1: '10,20,20' } }, 'H3']);
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[7].validation)).toBe('{"type":"List","value1":"10,20,20"}');
+            expect(helper.invoke('getCell', [2, 7]).querySelector('.e-validation-list')).toBeNull();
+            done();
+        });
+        it('Changing allowDataValidation property and checking the list validation applied cell', (done: Function) => {
+            helper.invoke('selectRange', ['H3:H3']);
+            const cellEle: HTMLElement = helper.invoke('getCell', [2, 7]);
+            expect(cellEle.querySelector('.e-validation-list')).not.toBeNull();
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.allowDataValidation = false;
+            spreadsheet.dataBind();
+            expect(cellEle.querySelector('.e-validation-list')).toBeNull();
+            spreadsheet.allowDataValidation = true;
+            spreadsheet.dataBind();
+            helper.invoke('selectRange', ['H2:H2']);
+            expect(cellEle.querySelector('.e-validation-list')).toBeNull();
+            helper.invoke('selectRange', ['H3:H3']);
+            expect(cellEle.querySelector('.e-validation-list')).not.toBeNull();
+            done();
         });
     });
 
@@ -286,7 +361,7 @@ describe('Data validation ->', () => {
             helper.click('#' + helper.id + '_undo');
             const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[4];
             expect(JSON.stringify(cell.validation)).toBe('{"type":"TextLength","operator":"EqualTo","value1":"3","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":false}');
-            expect(cell.style).toBeNull();
+            expect(cell.style).toBeUndefined();
             expect(helper.invoke('getCell', [1, 4]).style.fontWeight).toBe('');
             done();
         });
@@ -1191,7 +1266,7 @@ describe('Data validation ->', () => {
                     sheets: [{
                         ranges: [{ dataSource: defaultData }],
                         rows: [{ cells: [{ index: 8, validation: { type: 'List', value1: '=A2:A5' } }] },
-                        { index: 5, cells: [{ index: 3, validation: { type: 'List', value1: '1,2' } }] }]
+                            { index: 5, cells: [{ index: 3, validation: { type: 'List', value1: '1,2' } }] }]
                     }]
                 }, done);
             });
@@ -1698,77 +1773,125 @@ describe('Data validation ->', () => {
                 helper.edit('I7', '$20');
                 helper.edit('I8', '50%');
                 helper.edit('I9', '$100');
-                helper.invoke('addDataValidation', [{ type: 'List', value1: '12%,17%,20%,$45,$50,1,0.5,0.15' }, 'I:I']);
+                helper.invoke('addDataValidation', [{ type: 'List', value1: '12%,17%,20%,$45,$50,1,0.5,0.15', inCellDropDown: false }, 'I:I']);
                 helper.edit('I1', '12%');
-                expect(spreadsheet.sheets[0].rows[0].cells[8].value).toBe('0.12');
+                const sheet: any = spreadsheet.sheets[0];
+                expect(sheet.rows[0].cells[8].value).toBe('0.12');
                 helper.edit('I2', '17%');
-                expect(spreadsheet.sheets[0].rows[1].cells[8].value).toBe('0.17');
+                expect(sheet.rows[1].cells[8].value).toBe('0.17');
                 helper.edit('I3', '20%');
-                expect(spreadsheet.sheets[0].rows[2].cells[8].value).toBe('0.2');
+                expect(sheet.rows[2].cells[8].value).toBe('0.2');
                 helper.edit('I4', '$45');
-                expect(spreadsheet.sheets[0].rows[3].cells[8].value).toBe('45');
+                expect(sheet.rows[3].cells[8].value).toBe('45');
                 helper.edit('I5', '$50');
-                expect(spreadsheet.sheets[0].rows[4].cells[8].value).toBe('50');
+                expect(sheet.rows[4].cells[8].value).toBe('50');
                 helper.edit('I6', '$50');
-                expect(spreadsheet.sheets[0].rows[5].cells[8].value).toBe('$50');
+                expect(sheet.rows[5].cells[8].value).toBe(50);
                 helper.edit('I7', '12%');
-                expect(parseFloat(spreadsheet.sheets[0].rows[6].cells[8].value)).toBe(0.12);
+                expect(sheet.rows[6].cells[8].value).toBe(0.12);
                 helper.edit('I8', '$45');
-                expect(spreadsheet.sheets[0].rows[7].cells[8].value).toBe('$45');
+                expect(sheet.rows[7].cells[8].value).toBe(45);
                 helper.edit('I9', '20%');
-                expect(parseFloat(spreadsheet.sheets[0].rows[8].cells[8].value)).toBe(0.2);
+                expect(sheet.rows[8].cells[8].value).toBe(0.2);
                 helper.edit('I10', '0.12');
-                expect(parseFloat(spreadsheet.sheets[0].rows[9].cells[8].value)).toBe(0.12);
+                expect(sheet.rows[9].cells[8].value).toBe(0.12);
                 helper.edit('I11', '0.17');
-                expect(parseFloat(spreadsheet.sheets[0].rows[10].cells[8].value)).toBe(0.17);
+                expect(sheet.rows[10].cells[8].value).toBe(0.17);
                 helper.edit('I12', '0.2');
-                expect(parseFloat(spreadsheet.sheets[0].rows[11].cells[8].value)).toBe(0.2);
+                expect(sheet.rows[11].cells[8].value).toBe(0.2);
                 helper.edit('I13', '100%');
-                expect(spreadsheet.sheets[0].rows[12].cells[8].value).toBe('1');
+                expect(sheet.rows[12].cells[8].value).toBe('1');
                 helper.edit('I14', '15%');
-                expect(spreadsheet.sheets[0].rows[13].cells[8].value).toBe('0.15');
+                expect(sheet.rows[13].cells[8].value).toBe('0.15');
                 helper.edit('I15', '50%');
-                expect(spreadsheet.sheets[0].rows[14].cells[8].value).toBe('0.5');
+                expect(sheet.rows[14].cells[8].value).toBe('0.5');
                 helper.invoke('addDataValidation', [{ type: 'List', value1: '=I1:I15' }, 'J:J']);
                 helper.edit('J1', '12%');
-                expect(spreadsheet.sheets[0].rows[0].cells[9].value).toBe('0.12');
+                expect(sheet.rows[0].cells[9].value).toBe('0.12');
                 helper.edit('J2', '17%');
-                expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('0.17');
+                expect(sheet.rows[1].cells[9].value).toBe('0.17');
                 helper.edit('J3', '20%');
-                expect(spreadsheet.sheets[0].rows[2].cells[9].value).toBe('0.2');
+                expect(sheet.rows[2].cells[9].value).toBe('0.2');
                 helper.edit('J4', '$45');
-                expect(spreadsheet.sheets[0].rows[3].cells[9].value).toBe('45');
+                expect(sheet.rows[3].cells[9].value).toBe('45');
                 helper.edit('J5', '$50');
-                expect(spreadsheet.sheets[0].rows[4].cells[9].value).toBe('50');
+                expect(sheet.rows[4].cells[9].value).toBe('50');
                 helper.edit('J6', '$50');
-                expect(spreadsheet.sheets[0].rows[5].cells[8].value).toBe('$50');
+                expect(sheet.rows[5].cells[8].value).toBe(50);
                 helper.edit('J7', '12%');
-                expect(parseFloat(spreadsheet.sheets[0].rows[6].cells[9].value)).toBe(0.12);
+                expect(sheet.rows[6].cells[9].value).toBe('0.12');
                 helper.edit('J8', '$45');
-                expect(spreadsheet.sheets[0].rows[7].cells[8].value).toBe('$45');
+                expect(sheet.rows[7].cells[8].value).toBe(45);
                 helper.edit('J9', '20%');
-                expect(parseFloat(spreadsheet.sheets[0].rows[8].cells[9].value)).toBe(0.2);
+                expect(sheet.rows[8].cells[9].value).toBe('0.2');
                 helper.edit('J10', '0.12');
-                expect(parseFloat(spreadsheet.sheets[0].rows[9].cells[9].value)).toBe(0.12);
+                expect(sheet.rows[9].cells[9].value).toBe(0.12);
                 helper.edit('J11', '0.17');
-                expect(parseFloat(spreadsheet.sheets[0].rows[10].cells[9].value)).toBe(0.17);
+                expect(sheet.rows[10].cells[9].value).toBe(0.17);
                 helper.edit('J12', '0.2');
-                expect(parseFloat(spreadsheet.sheets[0].rows[11].cells[9].value)).toBe(0.2);
+                expect(sheet.rows[11].cells[9].value).toBe(0.2);
                 helper.edit('J13', '100%');
-                expect(spreadsheet.sheets[0].rows[12].cells[9].value).toBe('1');
+                expect(sheet.rows[12].cells[9].value).toBe('1');
                 helper.edit('J14', '15%');
-                expect(spreadsheet.sheets[0].rows[13].cells[9].value).toBe('0.15');
+                expect(sheet.rows[13].cells[9].value).toBe('0.15');
                 helper.edit('J15', '50%');
-                expect(spreadsheet.sheets[0].rows[14].cells[9].value).toBe('0.5');
+                expect(sheet.rows[14].cells[9].value).toBe('0.5');
+                done();
+            });
+        });
+        describe('EJ-899038 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{
+                        rows: [{ cells: [{ value: '1' }], height: 20 },
+                        { cells: [{ value: '2' }], height: 20 }, { cells: [{ value: '3' }], height: 14 }, { cells: [{ value: '3' }], height: 14 },
+                        { cells: [{ value: '4' }], height: 14 }, { cells: [{ value: '5' }], height: 14 }, { cells: [{ value: '6' }], height: 14 }, { cells: [{ value: '7' }], height: 14 }]
+                    }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Selection misalignment occurs when selecting a cell with list data validation and a minimum row height', (done: Function) => {
+                helper.getInstance().addDataValidation({ type: 'List', value1: '1,2,3,4,5', ignoreBlank: true }, `A:A`)
+                helper.invoke('selectRange', ['A2:A2']);
+                var td: HTMLElement = helper.invoke('getCell', [1, 0]);
+                expect(td.children[0].classList).toContain('e-validation-list');
+                expect(td.children[0].getAttribute('style')).toBe(null);
+                helper.getInstance().setRowHeight(16, 2);
+                helper.invoke('selectRange', ['A3:A3']);
+                td = helper.invoke('getCell', [2, 0]);
+                expect(td.children[0].classList).toContain('e-validation-list');
+                expect(td.children[0].getAttribute('style')).toBe('height: 15px;');
+                var td: HTMLElement = helper.invoke('getCell', [1, 0]);
+                expect((td.children).length.toString()).toEqual('0');
+                helper.getInstance().setRowHeight(12, 3);
+                helper.invoke('selectRange', ['A4:A4']);
+                td = helper.invoke('getCell', [3, 0]);
+                expect(td.children[0].classList).toContain('e-validation-list');
+                expect(td.children[0].getAttribute('style')).toBe('height: 11px;');
+                helper.getInstance().setRowHeight(32, 3);
+                helper.invoke('selectRange', ['A4:A4']);
+                td = helper.invoke('getCell', [3, 0]);
+                expect(td.children[0].classList).toContain('e-validation-list');
+                expect(td.children[0].getAttribute('style')).toBe("");
+                helper.getInstance().setRowHeight(11, 3);
+                td = helper.invoke('getCell', [3, 0]);
+                expect(td.children[0].classList).toContain('e-validation-list');
+                expect(td.children[0].getAttribute('style')).toBe('height: 10px;');
+                helper.getInstance().setRowHeight(30, 4);
+                helper.invoke('selectRange', ['A5:A5']);
+                td = helper.invoke('getCell', [4, 0]);
+                expect(td.children[0].classList).toContain('e-validation-list');
+                expect(td.children[0].getAttribute('style')).toBe(null);
                 done();
             });
         });
     });
 
-        
     describe('Localization is not updated for apply  button in the data Validation Pop-up ->',()=>{
         describe('EJ2-55546->', () => {
-            beforeEach((done: Function)=> {
+            beforeAll((done: Function)=> {
                 L10n.load({
                     'de-DE': {
                         'spreadsheet': {
@@ -1893,20 +2016,20 @@ describe('Data validation ->', () => {
                             'CircularReference': 'Wenn eine Formel auf einen oder mehrere Zirkelverweise verweist, kann dies zu einer falschen Berechnung führen.',
                             'CustomFormat': 'Formats de nombre personnalisés',
                             'CustomFormatPlaceholder': 'Geben Sie ein benutzerdefiniertes Format ein oder wählen Sie es aus',
-                            'APPLY':'Sich bewerben',                           
+                            'APPLY':'Sich bewerben'
                         }
                     }
                 });
                 helper.initializeSpreadsheet({locale:'de-DE'},done);
             });
-            afterEach(()=>{
+            afterAll(() => {
                 helper.invoke('destroy');
             });
-            it('apply button is not updated while applying localization',(done:Function)=>{
+            it('apply button is not updated while applying localization', (done: Function) => {
                 helper.switchRibbonTab(4);
-                helper.getElement('#'+helper.id+'_datavalidation').click();
-                helper.getElement('#'+helper.id+'_datavalidation-popup li:nth-child(1)').click();
-                var footer:HTMLElement = helper.getElement('.e-footer-content button:nth-child(2)');
+                helper.getElement('#' + helper.id + '_datavalidation').click();
+                helper.getElement('#' + helper.id + '_datavalidation-popup li:nth-child(1)').click();
+                const footer: HTMLElement = helper.getElement('.e-footer-content button:nth-child(2)');
                 expect(footer.textContent).toBe('Sich bewerben');
                 done();
             });
@@ -2204,8 +2327,15 @@ describe('Data validation ->', () => {
             expect(helper.invoke('getCell', [4,3]).style.color).toBe('rgb(0, 0, 0)')
             done()
         });
+        it('Check isValidCell() public method without parameters', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'GreaterThan', value1: '10', ignoreBlank: true }, `G:G`);
+            helper.invoke('selectRange', ['G4'])
+            expect(spreadsheet.isValidCell()).toBeFalsy();
+            done()
+        });
     });
-    describe('EJ2-851197 ->', () => {
+    describe('EJ2-851197, EJ2-875556 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{ranges: [{dataSource : defaultData}]}],
@@ -2240,53 +2370,181 @@ describe('Data validation ->', () => {
                 });
             });
         });
-    });
-    describe('EJ-899038 ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    rows: [{ cells: [{ value: '1' }], height: 20 },
-                    { cells: [{ value: '2' }], height: 20 }, { cells: [{ value: '3' }], height: 14 }, { cells: [{ value: '3' }], height: 14 },
-                    { cells: [{ value: '4' }], height: 14 }, { cells: [{ value: '5' }], height: 14 }, { cells: [{ value: '6' }], height: 14 }, { cells: [{ value: '7' }], height: 14 }]
-                }]
-            }, done);
+        it('The cell value is not correctly displayed in formula bar', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['G2']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+            ddlElement.ej2_instances[0].value = 'List';
+            ddlElement.ej2_instances[0].dataBind();
+            helper.getElements('.e-datavalidation-dlg .e-input')[2].value = '1,2,3,4';
+            helper.click('.e-datavalidation-dlg .e-primary');
+            helper.invoke('updateCell', [{ value: 'friday' }, 'G2']);
+            expect(spreadsheet.sheets[0].rows[1].cells[6].value).toBe('friday');
+            setTimeout(() => {
+                expect(helper.getElements('.e-validation-error-dlg.e-dialog').length).toBe(1);
+                helper.click('.e-validation-error-dlg .e-primary');
+                setTimeout(() => {
+                    const ddlObj: any = getComponent(helper.invoke('getCell', [1, 6]).querySelector('.e-dropdownlist'), 'dropdownlist');
+                    ddlObj.showPopup();
+                    setTimeout(() => {
+                        helper.click('.e-ddl.e-popup li:nth-child(2)');
+                        var formulaBar = helper.getElement('#' + helper.id + '_formula_input');
+                        expect(formulaBar.value).toBe('2');
+                        done();
+                    });
+                })
+            })
         });
-        afterAll(() => {
+    });
+
+    describe('Testing Apply data validation and remove data validation cases ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterEach(() => {
             helper.invoke('destroy');
         });
-        it('Selection misalignment occurs when selecting a cell with list data validation and a minimum row height', (done: Function) => {
-            helper.getInstance().addDataValidation({ type: 'List', value1: '1,2,3,4,5', ignoreBlank: true }, `A:A`)
-            helper.invoke('selectRange', ['A2:A2']);
-            var td: HTMLElement = helper.invoke('getCell', [1, 0]);
-            expect(td.children[0].classList).toContain('e-validation-list');
-            expect(td.children[0].getAttribute('style')).toBe(null);
-            helper.getInstance().setRowHeight(16, 2);
-            helper.invoke('selectRange', ['A3:A3']);
-            td = helper.invoke('getCell', [2, 0]);
-            expect(td.children[0].classList).toContain('e-validation-list');
-            expect(td.children[0].getAttribute('style')).toBe('height: 15px;');
-            var td: HTMLElement = helper.invoke('getCell', [1, 0]);
-            expect((td.children).length.toString()).toEqual('0');
-            helper.getInstance().setRowHeight(12, 3);
-            helper.invoke('selectRange', ['A4:A4']);
-            td = helper.invoke('getCell', [3, 0]);
-            expect(td.children[0].classList).toContain('e-validation-list');
-            expect(td.children[0].getAttribute('style')).toBe('height: 11px;');
-            helper.getInstance().setRowHeight(32, 3);
-            helper.invoke('selectRange', ['A4:A4']);
-            td = helper.invoke('getCell', [3, 0]);
-            expect(td.children[0].classList).toContain('e-validation-list');
-            expect(td.children[0].getAttribute('style')).toBe("");
-            helper.getInstance().setRowHeight(11, 3);
-            td = helper.invoke('getCell', [3, 0]);
-            expect(td.children[0].classList).toContain('e-validation-list');
-            expect(td.children[0].getAttribute('style')).toBe('height: 10px;');
-            helper.getInstance().setRowHeight(30, 4);
-            helper.invoke('selectRange', ['A5:A5']);
-            td = helper.invoke('getCell', [4, 0]);
-            expect(td.children[0].classList).toContain('e-validation-list');
-            expect(td.children[0].getAttribute('style')).toBe(null);
+        it('Apply Data Validation using updateAction method', (done: Function) => {
+            let args = { action: 'validation', eventArgs: { type: 'List', operator: 'Between', value1: '1,2', value2: '', ignoreBlank: true, inCellDropDown: true, range: 'Sheet1!C:C' } };
+            helper.getInstance().updateAction(args);
+            expect(helper.getInstance().activeSheetIndex).toEqual(0);
             done();
+        });
+        it('Add List Data validation with sheet reference', (done: Function) => {
+            helper.invoke('selectRange', ['I2:CV2']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                ddlElem.ej2_instances[0].value = 'List';
+                ddlElem.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=Sheet1!A1:A10';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8].validation)).toBe('{"type":"List","operator":"Between","value1":"=Sheet1!A1:A10","value2":"","ignoreBlank":true,"inCellDropDown":true}');
+                done();
+            });
+        });
+        it('Edit a cell with data validation.', (done: Function) => {
+            helper.getInstance().addDataValidation({ operator: 'Between', value1: '10', value2: '=20', ignoreBlank: true }, 'D2:D11');
+            helper.edit('D4', '=sum(10,20,30)');
+            helper.edit('D5', '1000%');
+            expect(helper.getInstance().activeSheetIndex).toEqual(0);
+            done();
+        });
+        it('Edit a cell with DateTime data validation.', (done: Function) => {
+            helper.getInstance().addDataValidation({ type: 'Date', operator: 'Between', value1: '=TODAY()', value2: '10/10/2022' }, 'B1:B11');
+            helper.edit('B4', '=sum(10,20,30)');
+            expect(helper.getInstance().activeSheetIndex).toEqual(0);
+            done();
+        });
+        it('Edit a cell with DateTime data validation with percentage values.', (done: Function) => {
+            helper.getInstance().addDataValidation({ type: 'Date', operator: 'Between', value1: '=TODAY()', value2: '1000%' }, 'C1:C11');
+            helper.edit('C4', '=sum(10,20,30)');
+            expect(helper.getInstance().activeSheetIndex).toEqual(0);
+            done();
+        });
+        it('Empty value in validation in UI dialog.', (done: Function) => {
+            helper.invoke('selectRange', ['E3:E2']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            setTimeout(() => {
+                helper.click('.e-datavalidation-ddb li:nth-child(1)');
+                helper.getElements('.e-datavalidation-dlg #minvalue')[0].value = '12';
+                helper.getElements('.e-datavalidation-dlg #maxvalue')[0].value = '';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
+                expect(helper.getInstance().activeSheetIndex).toEqual(0);
+                done();
+            });
+        });
+        it('Empty value in validation in UI dialog.', (done: Function) => {
+            helper.invoke('selectRange', ['D2:D5']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Greater Than';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                expect(helper.getInstance().activeSheetIndex).toEqual(0);
+                done();
+            });
+        });
+        it('Close list validation drop down using Alt + Up Arrow.', function (done) {
+            helper.invoke('addDataValidation', [{ type: 'List', value1: '12,13,14' }, 'D2']);
+            const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[3];
+            expect(JSON.stringify(cell.validation)).toBe('{"type":"List","value1":"12,13,14"}');
+            helper.invoke('selectRange', ['D2']);
+            const td: HTMLElement = helper.invoke('getCell', [1, 3]).children[0];
+            expect(td.classList).toContain('e-validation-list');
+            const coords: ClientRect = td.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, document, td);
+            helper.triggerMouseAction('mousedup', { x: coords.left, y: coords.top }, document, td);
+            (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
+            setTimeout(() => {
+                helper.triggerKeyNativeEvent(38, false, false, td.children[0], 'keydown', true);
+                expect(helper.getInstance().activeSheetIndex).toEqual(0);
+                done();
+            });
+        });
+        it('Invalid Sheet Name in list validation dialog', (done: Function) => {
+            helper.invoke('selectRange', ['I2:CV2']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                ddlElem.ej2_instances[0].value = 'List';
+                ddlElem.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=Sheet!A1:A10';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
+                expect(helper.getInstance().activeSheetIndex).toEqual(0);
+                done();
+            });
+        });
+        it('Invalid row/column refernce in list validation dialog', (done: Function) => {
+            helper.invoke('selectRange', ['I2:CV2']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                ddlElem.ej2_instances[0].value = 'List';
+                ddlElem.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=Sheet1!A1:C10';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
+                expect(helper.getInstance().activeSheetIndex).toEqual(0);
+                done();
+            });
+        });
+    });
+    describe('Data validation with differnt listSeperators ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ranges: [{dataSource : defaultData}]}], listSeparator : ';'
+            }, done)
+        })
+        afterAll(() => {
+            helper.invoke('destroy');
+        })
+        it('Data validation with differnt listSeperators', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addDataValidation({ type: 'List', value1: 'A;B;C;D', ignoreBlank: true }, 'A2:A11');
+            setTimeout(() => {
+                expect(JSON.stringify(spreadsheet.sheets[0].rows[3].cells[0].validation)).toBe('{"type":"List","value1":"A;B;C;D","ignoreBlank":true}')
+                expect(spreadsheet.activeSheetIndex).toEqual(0);
+                done();
+            });
         });
     });
 });

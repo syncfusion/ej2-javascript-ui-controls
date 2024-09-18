@@ -18,6 +18,8 @@ export class VirtualScroll {
     private parent: TreeGrid;
     private expandCollapseRec: ITreeData;
     private prevstartIndex: number = -1;
+    public setEndIndexToGantt : boolean = true;
+    public ganttEndIndex : number;
     private prevendIndex: number = -1;
     private visualData: ITreeData[];
     private prevrequestType: string;
@@ -123,11 +125,16 @@ export class VirtualScroll {
                 this.parent.grid.notify(events.virtualActionArgs, { setTop: true });
             }
             if ((requestType === 'save' && pageingDetails.actionArgs.index >= (counts.count - this.parent.grid.pageSettings.pageSize)) || (requestType === 'refresh' && this.parent['isGantt'] && this.parent['isAddedFromGantt'])) {
-                if ((counts.endIndex + this.parent.pageSettings.pageSize >= counts.count && (this.parent.root && counts.count - counts.endIndex === this.visualData.length - this.parent.root['previousFlatData'].length))
+                if (this.setEndIndexToGantt) {
+                    this.ganttEndIndex = counts.endIndex;
+                }
+                if ((counts.endIndex + this.parent.pageSettings.pageSize >= counts.count && (this.parent.root && counts.count - this.ganttEndIndex === this.visualData.length - this.parent.root['previousFlatData'].length))
                     || !(this.parent['isGantt'] && this.parent['isAddedFromGantt'])) {
                     startIndex = counts.startIndex + (counts.count - counts.endIndex);
                     endIndex = counts.count;
+                    this.setEndIndexToGantt = false;
                 }
+                this.ganttEndIndex = endIndex;
                 this.parent['isAddedFromGantt'] = false;
             }
             //if ((this.prevendIndex !== -1 && this.prevstartIndex !== -1) &&

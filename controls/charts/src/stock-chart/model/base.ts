@@ -3,19 +3,20 @@ import { DataManager, Query} from '@syncfusion/ej2-data';
 import { MarkerSettings, Series, Trendline } from '../../chart/series/chart-series';
 import { MarkerSettingsModel, TrendlineModel } from '../../chart/series/chart-series-model';
 import { StockChart } from '../stock-chart';
-import { ChartSeriesType,  TechnicalIndicators, MacdType, FinancialDataFields,  ChartShape } from '../../chart/utils/enum';
+import { ChartSeriesType,  TechnicalIndicators, MacdType, FinancialDataFields,  ChartShape, TooltipPosition, FadeOutMode } from '../../chart/utils/enum';
 import { Anchor, ZIndex, SizeType, AxisPosition } from '../../chart/utils/enum';
 import { TrendlineTypes } from '../../chart/utils/enum';
 import { MajorGridLinesModel, MajorTickLinesModel, CrosshairTooltipModel, AxisLineModel } from '../../chart/axis/axis-model';
 import { MinorGridLinesModel, MinorTickLinesModel } from '../../chart/axis/axis-model';
 import { MajorGridLines, MajorTickLines, MinorTickLines, MinorGridLines, CrosshairTooltip, AxisLine } from '../../chart/axis/axis';
 import { ConnectorType } from '../../accumulation-chart/model/enum';
-import { CornerRadius, Animation } from '../../common/model/base';
+import { Animation, CornerRadius } from '../../common/model/base';
 import { TextOverflow, Alignment, Regions, Units, Position, FlagType, LabelPlacement, EmptyPointMode, LegendShape, ChartTheme, ValueType, EdgeLabelPlacement, ChartRangePadding, IntervalType, SkeletonType, LabelIntersectAction } from '../../common/utils/enum';
-import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel, IChartEventArgs, Font, FontModel, Border, BorderModel } from '../../chart/index';
+import { AnimationModel, EmptyPointSettingsModel, IChartEventArgs, Font, FontModel, Border, BorderModel, ConnectorModel, CornerRadiusModel } from '../../chart/index';
 import {  StockChartBorderModel, StockChartConnectorModel, StockChartStripLineSettingsModel, StockSeriesModel } from './base-model';
 import { StockChartFontModel } from './base-model';
 import { stockEventFont } from '../../common/model/theme';
+
 export class StockChartFont extends ChildProperty<StockChartFont> {
 
     /**
@@ -143,33 +144,33 @@ export class StockMargin extends ChildProperty<StockMargin> {
     /**
      * Left margin in pixels.
      *
-     * @default 10
+     * @default null
      */
-    @Property(Browser.isDevice ? 5 : 10)
+    @Property(null)
     public left: number;
 
     /**
      * Right margin in pixels.
      *
-     * @default 10
+     * @default null
      */
-    @Property(Browser.isDevice ? 5 : 10)
+    @Property(null)
     public right: number;
 
     /**
      * Top margin in pixels.
      *
-     * @default 10
+     * @default null
      */
-    @Property(Browser.isDevice ? 5 : 10)
+    @Property(null)
     public top: number;
 
     /**
      * Bottom margin in pixels.
      *
-     * @default 10
+     * @default null
      */
-    @Property(Browser.isDevice ? 5 : 10)
+    @Property(null)
     public bottom: number;
 }
 

@@ -180,6 +180,155 @@ describe('Lineargauge axis testing', () => {
                        }, 500);
             });    
     });
+    describe('Lineargauge axis testing with print and export', () => {
+        let linearGaugeObj: LinearGauge;
+        let mapElement: Element;
+        let temp: Element;
+        mapElement = createElement('div', { id: 'container' });
+        temp = createElement('div', { id: 'tempElement' });
+        (<any>window).open = () => {
+            return {
+                document: { write: () => { }, close: () => { } },
+                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+            };
+        };
+        beforeAll(() => {    
+            document.body.appendChild(mapElement);
+            document.body.appendChild(temp);
+            linearGaugeObj = new LinearGauge({
+                allowPrint: true,
+                theme: 'Tailwind',
+                allowImageExport: true,
+                allowPdfExport : true,
+                width: "400px",
+                height: "300px",
+                axes: [{ }],
+                background: 'transparent'
+            });
+            linearGaugeObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            remove(mapElement);
+            linearGaugeObj.destroy();
+        });
+        it('Checking export - PDF - Potrait', (done: Function) => {
+            linearGaugeObj.export('PDF', 'map', PdfPageOrientation.Portrait);
+                setTimeout(() => {
+                    expect('').toBe('');
+                    done();
+                }, 500);
+            });
+        it('Checking base64 string for SVG', (done: Function) => {
+            linearGaugeObj.export('SVG', 'map',PdfPageOrientation.Portrait, false);
+                setTimeout(() => {
+                    expect('').toBe('');
+                    done();
+                }, 500);
+            });
+        it('Checking base64 string for PNG', (done: Function) => {
+            linearGaugeObj.background = 'rgba(255,255,255, 0.0)';
+            linearGaugeObj.refresh();
+            linearGaugeObj.export('PNG', 'map',PdfPageOrientation.Portrait, false);
+                setTimeout(() => {
+                    expect('').toBe('');
+                    done();
+                 }, 500);
+            }) 
+        it('Checking base64 string for JPEG', (done: Function) => {
+            linearGaugeObj.export('JPEG', 'map',PdfPageOrientation.Portrait, false);
+                setTimeout(() => {
+                    expect('').toBe('');
+                    done();
+                }, 500);
+            });
+        it('Checking base64 string for PDF', (done: Function) => {
+         linearGaugeObj.export('PDF', 'map',PdfPageOrientation.Portrait, false);
+            setTimeout(() => {
+                expect('').toBe('');
+                    done();
+                }, 500);
+            }); 
+            
+        it('Checking PDF export in SVG format', (done: Function) => {
+            linearGaugeObj.allowImageExport = false;
+            linearGaugeObj.export('SVG', 'map',PdfPageOrientation.Portrait, false);
+                setTimeout(() => {
+                    expect('').toBe('');
+                        done();
+                       }, 500);
+            });    
+    });
+    describe('Lineargauge axis testing with print and export', () => {
+        let linearGaugeObj: LinearGauge;
+        let mapElement: Element;
+        let temp: Element;
+        mapElement = createElement('div', { id: 'container' });
+        temp = createElement('div', { id: 'tempElement' });
+        (<any>window).open = () => {
+            return {
+                document: { write: () => { }, close: () => { } },
+                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+            };
+        };
+        beforeAll(() => {    
+            document.body.appendChild(mapElement);
+            document.body.appendChild(temp);
+            linearGaugeObj = new LinearGauge({
+                theme: 'Tailwind',
+                background: 'transparent',
+                allowPrint: true,
+                allowImageExport: true,
+                allowPdfExport : true,
+                width: "400px",
+                height: "300px",
+                axes: [{ }],
+                loaded: (args: Object): void => {
+                    linearGaugeObj.print();
+                }
+            });
+            linearGaugeObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            remove(mapElement);
+            linearGaugeObj.destroy();
+        });
+        it('checking a print', (done: Function) => {            
+            linearGaugeObj.beforePrint = (args: IPrintEventArgs): void => {
+            expect((args.htmlContent.outerHTML.indexOf('<div id="container" class="e-lib e-control e-lineargauge" style="user-select: none; position: relative; width: 400px; height: 300px; cursor: auto;">')) > -1).toBe(true);
+            done();
+            };
+            linearGaugeObj.print();
+        });
+        it('checking a print background as rgba(255,255,255, 0.0)', (done: Function) => {
+            linearGaugeObj.background = 'rgba(255,255,255, 0.0)';
+            linearGaugeObj.refresh();
+            linearGaugeObj.beforePrint = (args: IPrintEventArgs): void => {
+                expect((args.htmlContent.outerHTML.indexOf('<div id="container" class="e-lib e-control e-lineargauge" style="user-select: none; position: relative; width: 400px; height: 300px; cursor: auto;">')) > -1).toBe(true);
+                done();
+            };
+            linearGaugeObj.print();
+        });
+        it('checking a print background as rgba(255,255,255, 0.0)', (done: Function) => {
+            linearGaugeObj.theme = 'TailwindDark';
+            linearGaugeObj.background = 'rgba(255,255,255, 0.0)';
+            linearGaugeObj.refresh();
+            linearGaugeObj.beforePrint = (args: IPrintEventArgs): void => {
+                expect((args.htmlContent.outerHTML.indexOf('<div id="container" class="e-lib e-control e-lineargauge" style="user-select: none; position: relative; width: 400px; height: 300px; cursor: auto;">')) > -1).toBe(true);
+                done();
+            };
+            linearGaugeObj.print();
+        });
+        it('checking a print background as rgba(255,255,255, 0.0)', (done: Function) => {
+            linearGaugeObj.theme = 'TailwindDark';
+            linearGaugeObj.background = 'rgba(255,255,255, 0.0)';
+            linearGaugeObj.refresh();
+            linearGaugeObj.beforePrint = (args: IPrintEventArgs): void => {
+                expect((args.htmlContent.outerHTML.indexOf('<div id="container" class="e-lib e-control e-lineargauge" style="user-select: none; position: relative; width: 400px; height: 300px; cursor: auto;">')) > -1).toBe(true);
+                done();
+            };
+            linearGaugeObj.print();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

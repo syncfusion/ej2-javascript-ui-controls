@@ -11,6 +11,7 @@ import { IPrintEventArgs } from '../../../src/chart/model/chart-interface';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { Export } from '../../../src/chart/print-export/export';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import { ILoadEventArgs } from '../../../src';
 AccumulationChart.Inject(AccumulationAnnotation, AccumulationDataLabel, AccumulationLegend, Export);
 /* eslint-disable */
 describe('Chart Control', () => {
@@ -114,7 +115,18 @@ describe('Chart Control', () => {
                 done();
             };
             chartObj.refresh();
-        });      
+        });
+        it('Checking accumulation export', (done: Function) => {
+            chartObj.loaded = (args: ILoadEventArgs): void => {
+                expect(document.getElementById('container') !== null).toBe(true);
+                done();
+            };
+            chartObj.afterExport = (args: IPrintEventArgs): void => {
+                args.cancel = true;
+            }
+            chartObj.export('JPEG', 'chart');
+            chartObj.refresh();
+        });       
     });
     it('memory leak', () => {
         profile.sample();

@@ -75,7 +75,7 @@ describe('Chart control thems', () => {
         it('Checking default theme', (done: Function) => {
             loaded = (args: Object): void => {
                 const fill: string = document.getElementById('container-svg-0-region-series-0-point-1').getAttribute('fill');
-                expect(fill).toBe('#6355C7');
+                expect(fill).toBe('#FD7E14');
                 done();
             };
             chartObj.loaded = loaded;
@@ -174,7 +174,7 @@ describe('Chart control thems', () => {
         it('Checking Bootstrap5', (done: Function) => {
             loaded = (args: Object): void => {
                 const fill: string = document.getElementById('container-svg-0-region-series-0-point-1').getAttribute('fill');
-                expect(fill).toBe('#6355C7');
+                expect(fill).toBe('#FD7E14');
                 done();
             };
             chartObj.theme = 'Bootstrap5';
@@ -184,7 +184,7 @@ describe('Chart control thems', () => {
         it('Checking Bootstrap5Dark', (done: Function) => {
             loaded = (args: Object): void => {
                 const fill: string = document.getElementById('container-svg-0-region-series-0-point-1').getAttribute('fill');
-                expect(fill).toBe('#A598FF');
+                expect(fill).toBe('#FD7E14');
                 done();
             };
             chartObj.theme = 'Bootstrap5Dark';

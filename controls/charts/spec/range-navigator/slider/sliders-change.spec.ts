@@ -216,6 +216,7 @@ describe('Range navigator', () => {
             range.navigatorStyleSettings.selectedRegionColor = 'pink';
             range.refresh();
         });
+        
         it('checking with label click', (done: Function) => {
             range.loaded = (args: Object): void => {
                 isCheck = true;
@@ -236,6 +237,47 @@ describe('Range navigator', () => {
             };
             range.animationDuration = 0;
             range.navigatorStyleSettings.selectedRegionColor = 'green';
+            range.refresh();
+        });
+        it('checking with right slider moving in side of unselected area', (done: Function) => {
+            range.loaded = (args: object) => {
+                isCheck = true;
+                element = document.getElementById('container_rightUnSelectedArea');
+                range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, 200, 20));
+                range.mouseMove(<PointerEvent>trigger.onTouchMove(targetElement, null, null, null, null, 100, 20));
+                range.mouseEnd(<PointerEvent>trigger.onTouchEnd(targetElement, null, null, null, null, 400, 20));
+                expect(element !== null).toBe(true);
+            };
+            range.changed = (args: IChangedEventArgs) => {
+                if (isCheck) {
+                    expect(Math.floor(+args.start) >= 10 && Math.floor(+args.start) < 15).toBe(true);
+                    expect(Math.ceil(+args.end) == 20 || Math.ceil(+args.end) == 21 ).toEqual(true);
+                    isCheck = false;
+                }
+                done();
+            };
+            range.navigatorStyleSettings.selectedRegionColor = 'pink';
+            range.refresh();
+        });
+        it('checking with right slider moving in side of unselected area with rtl', (done: Function) => {
+            range.loaded = (args: object) => {
+                isCheck = true;
+                element = document.getElementById('container_rightUnSelectedArea');
+                range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, 200, 20));
+                range.mouseMove(<PointerEvent>trigger.onTouchMove(targetElement, null, null, null, null, 100, 20));
+                range.mouseEnd(<PointerEvent>trigger.onTouchEnd(targetElement, null, null, null, null, 400, 20));
+                expect(element !== null).toBe(true);
+            };
+            range.changed = (args: IChangedEventArgs) => {
+                if (isCheck) {
+                    expect(Math.floor(+args.start) >= 10 && Math.floor(+args.start) < 15).toBe(true);
+                    expect(Math.ceil(+args.end) === 20 || Math.ceil(+args.end) === 21).toBe(true);
+                    isCheck = false;
+                }
+                done();
+            };
+            range.enableRtl = true;
+            range.navigatorStyleSettings.selectedRegionColor = 'pink';
             range.refresh();
         });
     });

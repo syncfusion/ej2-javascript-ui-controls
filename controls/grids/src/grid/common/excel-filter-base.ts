@@ -12,8 +12,8 @@ import {
 import { Column } from '../models/column';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
-import { parentsUntil, appendChildren, extend, eventPromise } from '../base/util';
-import { IFilterArgs, EJ2Intance, FilterUI } from '../base/interface';
+import { parentsUntil, appendChildren, extend, eventPromise, resetDialogAppend } from '../base/util';
+import { IFilterArgs, EJ2Intance, FilterUI, IGrid } from '../base/interface';
 import * as events from '../base/constant';
 import { ContextMenu, MenuItemModel, ContextMenuModel, MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { PredicateModel } from '../base/grid-model';
@@ -291,7 +291,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 select: this.selectHandler.bind(this),
                 onClose: this.destroyCMenu.bind(this),
                 enableRtl: this.parent.enableRtl,
-                animationSettings: { effect: 'None' },
+                animationSettings: { effect: Browser.isDevice ? 'ZoomIn' : 'None' },
                 beforeClose: this.preventClose.bind(this),
                 cssClass: this.options.isResponsiveFilter && this.parent.cssClass ?
                     'e-res-contextmenu-wrapper' + ' ' + this.parent.cssClass : this.options.isResponsiveFilter ?
@@ -407,16 +407,20 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2), options);
         this.dlg.insertBefore(this.menu, this.dlg.firstChild);
         this.dlg.classList.add('e-excelfilter');
+        if ((this.parent as IGrid) && !isNullOrUndefined((this.parent as IGrid).getContent) && (this.parent as IGrid).getContent()
+            && ((this.parent as IGrid).getContent().firstElementChild as HTMLElement)
+                .offsetHeight < (this.dlg as HTMLElement).offsetHeight) {
+            resetDialogAppend((this.parent as IGrid), this.dialogObj);
+        }
         if (this.parent.enableRtl) {
             this.dlg.classList.add('e-rtl');
         }
         this.dlg.classList.remove('e-checkboxfilter');
         this.cmenu = this.parent.createElement('ul', { className: 'e-excel-menu' }) as HTMLUListElement;
-        const menuItems = this.dlg.querySelectorAll('.e-menu-item');
-        menuItems.forEach((menuItem) => {
-            if(menuItem.scrollWidth>menuItem.clientWidth)
-            {
-                menuItem.setAttribute('title',menuItem.textContent);
+        const menuItems: NodeListOf<Element> = this.dlg.querySelectorAll('.e-menu-item');
+        menuItems.forEach((menuItem: Element) => {
+            if (menuItem.scrollWidth > menuItem.clientWidth) {
+                menuItem.setAttribute('title', menuItem.textContent);
             }
         });
         if (options.column.showColumnMenu) {

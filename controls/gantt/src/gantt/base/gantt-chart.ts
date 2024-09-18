@@ -33,9 +33,12 @@ export class GanttChart {
     public isCollapseAll: boolean = false;
     private focusedElement: HTMLElement;
     public focusedRowIndex: number;
+    public debounceTimeoutNext: number = 0;
+    public debounceTimeout: number = 0;
     private isGanttElement: boolean = false;
     public keyboardModule: KeyboardEvents;
     public targetElement: Element;
+    public previousPinchDistance: number = 0;
     public virtualRender: VirtualContentRenderer;
     public isEditableElement: boolean;
     /* eslint-disable-next-line */
@@ -43,6 +46,8 @@ export class GanttChart {
     public nextElementIndex: number;
     public childrenIndex: number;
     private currentToolbarIndex: number = -1;
+    private initPinchDistance: number;
+    private isPinching: boolean = false;
     constructor(parent: Gantt) {
         this.parent = parent;
         this.chartTimelineContainer = null;
@@ -416,10 +421,16 @@ export class GanttChart {
      * @param {PointerEvent} e .
      * @returns {void} .
      */
-    private ganttChartMouseDown(e: PointerEvent): void {
+    private ganttChartMouseDown(e: PointerEvent | TouchEvent): void {
         let cancel: boolean = false;
-        if (this.parent.allowTaskbarDragAndDrop && this.parent.editModule && this.parent.editSettings.allowTaskbarEditing) {
-            const editAction: string = this.parent.editModule.taskbarEditModule['getTaskBarAction'](e);
+        if (e.type === 'touchstart' && e instanceof TouchEvent && e.touches && e.touches.length === 2) {
+            // Calculate initial distance between two Pinch touch points
+            this.initPinchDistance = this.calculatePinchDistance(e.touches[0], e.touches[1]);
+            this.isPinching = true;
+        }
+        if (this.parent.allowTaskbarDragAndDrop && this.parent.editModule &&
+            this.parent.editSettings.allowTaskbarEditing && !this.isPinching) {
+            const editAction: string = this.parent.editModule.taskbarEditModule['getTaskBarAction'](e as PointerEvent);
             if (editAction === 'ChildDrag' || editAction === 'ParentDrag' || editAction === 'MilestoneDrag' || editAction === 'ManualParentDrag') {
                 const args: Object = {
                     cancel: cancel,
@@ -431,8 +442,8 @@ export class GanttChart {
                 cancel = args['cancel'];
             }
         }
-        if (!cancel) {
-            if (e.which !== 3 && this.parent.editSettings.allowTaskbarEditing) {
+        if (!cancel && !this.isPinching) {
+            if ((e as PointerEvent).which !== 3 && this.parent.editSettings.allowTaskbarEditing) {
                 this.parent.notify('chartMouseDown', e);
                 this.parent.element.tabIndex = 0;
             }
@@ -440,13 +451,20 @@ export class GanttChart {
             if (this.parent.editSettings.allowTaskbarEditing && (this.parent.element.querySelector('.e-left-resize-gripper') || this.parent.element.querySelector('.e-left-connectorpoint-outer-div') )) {
                 isTaskbarEdited = true;
             }
-            if (!isTaskbarEdited || e.button === 2) {
+            if (!isTaskbarEdited || (e as PointerEvent).button === 2) {
                 if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
                     this.parent.treeGrid.endEdit();
                 }
             }
         }
     }
+
+    private calculatePinchDistance(touch1: Touch, touch2: Touch): number {
+        const dx: number = touch2.clientX - touch1.clientX;
+        const dy: number = touch2.clientY - touch1.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
     private ganttChartMouseClick(e: PointerEvent): void {
         if (this.parent.autoFocusTasks) {
             this.scrollToTarget(e); /** Scroll to task */
@@ -456,6 +474,8 @@ export class GanttChart {
 
     private ganttChartMouseUp(e: PointerEvent): void {
         if (e.type === 'touchend') {
+            this.initPinchDistance = null;
+            this.isPinching = false;
             const resizeCheck: HTMLElement = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div');
             if (!isNullOrUndefined(resizeCheck)) {
                 resizeCheck.remove();
@@ -547,6 +567,10 @@ export class GanttChart {
      * @private
      */
     private mouseUp(e: PointerEvent): void {
+        if (e.type === 'touchend') {
+            this.initPinchDistance = null;
+            this.isPinching = false;
+        }
         if (!isNullOrUndefined(this.parent.editModule) && !isNullOrUndefined(this.parent.editModule.taskbarEditModule)){
             this.parent.editModule.taskbarEditModule.removeFalseLine(false);
         }
@@ -575,7 +599,12 @@ export class GanttChart {
      * @returns {void} .
      * @private
      */
-    private documentMouseUp(e: PointerEvent): void {
+    private documentMouseUp(e: PointerEvent | TouchEvent): void {
+        if (e.type === 'touchend') {
+            this.initPinchDistance = null;
+            this.isPinching = false;
+            this.previousPinchDistance = 0;
+        }
         this.isGanttElement = true;
         if ((e.target as HTMLElement).classList.contains('e-treegridexpand') ||
            (e.target as HTMLElement).classList.contains('e-treegridcollapse')) {
@@ -589,7 +618,7 @@ export class GanttChart {
                 ganttDragElemet.remove();
             }
         }
-        if (this.parent.isDestroyed || e.which === 3) {
+        if (this.parent.isDestroyed || (e as PointerEvent).which === 3) {
             return;
         }
         const resizeCheck: HTMLElement = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div');
@@ -627,9 +656,9 @@ export class GanttChart {
             const isOnTaskbarElement: boolean | Element = (e.target as HTMLElement).classList.contains(cls.taskBarMainContainer)
                 || closest(e.target as Element, '.' + cls.taskBarMainContainer);
             if (closest((<HTMLElement>target), '.e-gantt-parent-taskbar') && !this.parent.editSettings.allowEditing) {
-                this.chartExpandCollapseRequest(e);
+                this.chartExpandCollapseRequest(e as PointerEvent);
             } else if (!isOnTaskbarElement && this.parent.autoFocusTasks) {
-                this.scrollToTarget(e); /** Scroll to task */
+                this.scrollToTarget(e as PointerEvent); /** Scroll to task */
             }
         }
         if (this.parent.editModule && this.parent.editModule.taskbarEditModule) {
@@ -640,7 +669,7 @@ export class GanttChart {
             const taskbarElement: Element =
                 closest((<HTMLElement>target), '.e-gantt-parent-taskbar,.e-gantt-child-taskbar,.e-gantt-milestone');
             if (taskbarElement) {
-                this.onTaskbarClick(e, target, taskbarElement);
+                this.onTaskbarClick((e as PointerEvent), target, taskbarElement);
             }
         }
     }
@@ -686,15 +715,30 @@ export class GanttChart {
      * @returns {void} .
      * @private
      */
-    private ganttChartMove(e: PointerEvent): void {
-        if (this.parent.editSettings.allowTaskbarEditing) {
+    private ganttChartMove(e: PointerEvent | TouchEvent): void {
+        if (e.type === 'touchmove' && this.isPinching === true && e instanceof TouchEvent && e.touches && e.touches.length === 2) {
+            // Calculate current distance between two touch points
+            const currentPinchDistance: number = this.calculatePinchDistance(e.touches[0], e.touches[1]);
+            if (Math.abs(this.previousPinchDistance - currentPinchDistance) > 15) {
+                if (currentPinchDistance > this.previousPinchDistance) {
+                    // Pinch out detected - Perform Zoom in
+                    this.parent.timelineModule.processZooming(true);
+                }
+                else if (currentPinchDistance < this.previousPinchDistance) {
+                    // Pinch in detected - Perform Zoom out
+                    this.parent.timelineModule.processZooming(false);
+                }
+                this.previousPinchDistance = currentPinchDistance;
+            }
+        }
+        if (this.parent.editSettings.allowTaskbarEditing && this.isPinching === false) {
             if (this.parent.element.getElementsByClassName('e-clone-taskbar').length > 0 && !this.parent.enableRtl) {
                 let xValue: number;
                 if (e.type === 'touchmove' || e.type === 'touchstart' || e.type === 'touchend') {
                     xValue = e['changedTouches'][0].pageX;
                 }
                 else {
-                    xValue = e.pageX;
+                    xValue = (e as PointerEvent).pageX;
                 }
                 if (xValue <= this.parent.getOffsetRect(this.parent.ganttChartModule.chartElement).left) {
                     return;
@@ -702,7 +746,7 @@ export class GanttChart {
             }
             this.parent.notify('chartMouseMove', e);
             if (!isNullOrUndefined(this.parent.taskFields.dependency) && this.parent.connectorLineEditModule) {
-                this.parent.connectorLineEditModule.updateConnectorLineEditElement(e);
+                this.parent.connectorLineEditModule.updateConnectorLineEditElement(e as PointerEvent);
             }
         }
     }
@@ -929,7 +973,7 @@ export class GanttChart {
             return;
         }
         let record: IGanttData;
-        if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+        if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
             record = this.parent.currentViewData.filter((item: IGanttData) => item.ganttProperties[this.parent.taskFields.id] === args['data'][this.parent.taskFields.id])[0];
         } else {
             record = getValue('data', args);
@@ -937,7 +981,7 @@ export class GanttChart {
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('collapse', getValue('chartRow', args), record, null);
             const idField: string = this.parent.taskFields.id;
-            if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+            if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
                 const gridRec: Object = this.parent.treeGrid.getCurrentViewRecords().filter(function (item: Object): boolean { return item[idField as string] === args['data'][idField as string]; })[0];
                 this.parent.treeGrid.collapseRow(getValue('gridRow', args), gridRec);
             }
@@ -991,7 +1035,7 @@ export class GanttChart {
             return;
         }
         let record: IGanttData;
-        if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+        if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
             record = this.parent.currentViewData.filter((item: IGanttData) => item.ganttProperties.taskId === args['data'][this.parent.taskFields.id])[0];
         } else {
             record = getValue('data', args);
@@ -999,7 +1043,7 @@ export class GanttChart {
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('expand', getValue('chartRow', args), record, null);
             const idField: string = this.parent.taskFields.id;
-            if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+            if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
                 const gridRec: Object = this.parent.treeGrid.getCurrentViewRecords().filter(function (item: IGanttData): boolean { return item[idField as string] === args['data'][idField as string]; })[0];
                 this.parent.treeGrid.expandRow(getValue('gridRow', args), gridRec);
             }
@@ -1163,6 +1207,7 @@ export class GanttChart {
         EventHandler.add(this.parent.chartPane, mouseDown, this.ganttChartMouseDown, this);
         EventHandler.add(this.parent.chartPane, cancel, this.ganttChartLeave, this);
         EventHandler.add(this.parent.chartPane, mouseMove, this.ganttChartMove, this);
+        EventHandler.add(this.parent.chartPane, 'wheel', this.onWheelZoom, this);
         if (this.parent.isAdaptive) {
             EventHandler.add(this.parent.chartPane, click, this.ganttChartMouseClick, this);
             EventHandler.add(this.parent.chartPane, mouseUp, this.ganttChartMouseUp, this);
@@ -1189,6 +1234,8 @@ export class GanttChart {
         if (!isNullOrUndefined(this.parent.chartPane)) {
             EventHandler.remove(this.parent.chartPane, cancel, this.ganttChartLeave);
             EventHandler.remove(this.parent.chartPane, mouseMove, this.ganttChartMove);
+            EventHandler.remove(this.parent.chartPane, 'wheel', this.onWheelZoom);
+            EventHandler.remove(this.parent.chartPane, mouseDown, this.ganttChartMouseDown);
         }
         if (this.parent.isAdaptive) {
             if (!isNullOrUndefined(this.parent.chartPane)) {
@@ -1218,6 +1265,37 @@ export class GanttChart {
         }
     }
 
+    // Triggers while perform ctrl+mouse wheel Pinch IN/OUT actions
+    private onWheelZoom(e: WheelEvent): void {
+        if (e.ctrlKey) {
+            e.preventDefault();
+            const zoomIn1: boolean = e.deltaY < 0;
+            // Differentiating between touchpad and mouse wheel
+            let isTouchpad: boolean = false;
+            if (Math.abs(e.deltaY) < 75) {  // Smaller deltaY typically indicates touchpad
+                isTouchpad = true;
+            }
+            if (this.debounceTimeout) {
+                if (((this.debounceTimeoutNext + 20) > this.debounceTimeout)) {
+                    clearTimeout(this.debounceTimeout);
+                }
+                if ((this.debounceTimeoutNext + 20) <= this.debounceTimeout || !this.debounceTimeoutNext) {
+                    this.debounceTimeoutNext = this.debounceTimeout;
+                }
+            }
+            this.debounceTimeout = setTimeout(function (): void {
+                const verticalScrollDelta: number = Math.abs(e.deltaY);
+                // Adjust threshold based on the input method
+                const isValidScrollDelta: boolean = isTouchpad
+                    ? (verticalScrollDelta > 0.5 && verticalScrollDelta < 15)
+                    : (verticalScrollDelta > 5 && verticalScrollDelta <= 200);
+                if (isValidScrollDelta) {
+                    this.parent.timelineModule.processZooming(zoomIn1);
+                }
+            }.bind(this), 100);
+        }
+    }
+
     /**
      * To get record by taskbar element.
      *
@@ -1234,14 +1312,15 @@ export class GanttChart {
             item = this.parent.currentViewData[this.getIndexByTaskBar(target)];
         }        return item;
     }
-    
     private updateElement(next: Element, currentColumn: ColumnModel, isTab: boolean, isInEditedState: boolean, row: IGanttData): Element {
         if (this.parent.ganttColumns[next.getAttribute('data-colindex')].field === this.parent.taskFields.progress) {
             let rowIndex: number = row.index;
             do {
-                next = this.getNextElement(next as Element, isTab, isInEditedState) as Element;
+                if (row.hasChildRecords) {
+                    next = this.getNextElement(next as Element, isTab, isInEditedState) as Element;
+                }
                 currentColumn = this.parent.ganttColumns[(next as Element).getAttribute('data-colindex')];
-                rowIndex = parseInt(next.parentElement.getAttribute('data-rowindex'));
+                rowIndex = this.parent.treeGrid.getRows().indexOf(next.parentElement as HTMLTableRowElement);
             } while (!currentColumn.allowEditing);
             this.parent.treeGrid.saveCell();
             this.parent.treeGrid.editCell(rowIndex, this.parent.ganttColumns[next.getAttribute('data-colindex')].field);
@@ -1281,6 +1360,7 @@ export class GanttChart {
         const isTab: boolean = (e.action === 'tab') ? true : false;
         let nextElement: Element | string = this.getNextElement($target, isTab, isInEditedState);
         if (nextElement && (nextElement === 'noNextRow' || (nextElement as HTMLElement).classList.contains('e-rowdragheader'))) {
+            // eslint-disable-next-line
             (nextElement === 'noNextRow' && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) ? this.parent.treeGrid.saveCell() : '';
             nextElement = null;
         }
@@ -1327,6 +1407,7 @@ export class GanttChart {
                         nextElement = toolbarItems[itemIndex as number];
                         nextElement.setAttribute('tabindex', '-1');
                         if (nextElement.querySelector('.e-btn') === $target) {
+                            // eslint-disable-next-line
                             e.action === 'tab' ? itemIndex++ : itemIndex--;
                             nextElement = toolbarItems[itemIndex as number];
                         }
@@ -1337,10 +1418,11 @@ export class GanttChart {
                         this.currentToolbarIndex = itemIndex;
                     }
                     else {
-                        e.action == 'tab' ? itemIndex++ : itemIndex--;
+                        // eslint-disable-next-line
+                        e.action === 'tab' ? itemIndex++ : itemIndex--;
                     }
                 }
-                while (!isUpdated)
+                while (!isUpdated);
             }
         }
         if (e.action === 'tab' && !nextElement && (this.currentToolbarIndex === toolbarItems.length - 1 &&
@@ -1414,7 +1496,7 @@ export class GanttChart {
                             } else {
                                 this.parent.treeGrid.grid.notify('key-pressed', e);
                                 if (isInEditedState) {
-                                    this.parent.treeGrid.editCell(this.focusedRowIndex, columnName);   // eslint-disable-line
+                                    this.parent.treeGrid.editCell(this.focusedRowIndex, columnName);
                                 }
                             }
                         } else {
@@ -1425,7 +1507,8 @@ export class GanttChart {
                             if ($target.classList.contains('e-headercell')) {
                                 this.manageFocus($target as HTMLElement, 'remove', false);
                             }
-                            const row: IGanttData = this.parent.flatData[($target.parentElement as any).rowIndex];
+                            /* eslint-disable-next-line */
+                            const row: IGanttData = this.parent.currentViewData[($target.parentElement as any).rowIndex];
                             let next: Element = nextElement;
                             if (row.hasChildRecords &&
                                 (this.parent.ganttColumns[next.getAttribute('data-colindex')].field === this.parent.taskFields.progress ||
@@ -1448,7 +1531,7 @@ export class GanttChart {
                     if (nextElement && !nextElement.classList.contains('e-headercell') && nextElement.classList.contains('e-rowcell')
                         && !nextElement.classList.contains('e-toolbar-item')) {
                         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                        const row: IGanttData = this.parent.flatData[($target.parentElement as any).rowIndex];
+                        const row: IGanttData = this.parent.currentViewData[($target.parentElement as any).rowIndex];
                         let next: Element = nextElement;
                         if (row.hasChildRecords &&
                             (this.parent.ganttColumns[next.getAttribute('data-colindex')].field === this.parent.taskFields.progress ||
@@ -1462,16 +1545,18 @@ export class GanttChart {
                             }
                             next = this.updateElement(next, currentColumn, isTab, isInEditedState, row);
                         }
-                        else if (parseInt(next.parentElement.getAttribute('data-rowindex')) !== 0 &&
-                        parseInt(next.getAttribute('data-colindex')) === 0 &&
+                        else if (parseInt(next.parentElement.getAttribute('data-rowindex'), 10) !== 0 &&
+                        parseInt(next.getAttribute('data-colindex'), 10) === 0 &&
                         this.parent.ganttColumns[next.getAttribute('data-colindex')].field === this.parent.taskFields.id &&
                             $target.classList.contains('e-editedbatchcell')) {
-                            let rowIndex = ($target.parentElement as any).rowIndex;
-                            let rowElement: Element = this.getNextRowElement(rowIndex, isTab, true);
+                            /* eslint-disable-next-line */
+                            const rowIndex: number = ($target.parentElement as any).rowIndex;
+                            const rowElement: Element = this.getNextRowElement(rowIndex, isTab, true);
                             next = this.getChildElement(rowElement, isTab) as Element;
-                            const rowData: IGanttData = this.parent.flatData[parseInt(rowElement.getAttribute('data-rowindex'))];
-                            if (rowData.hasChildRecords && this.parent.ganttColumns[next.getAttribute('data-colindex')].field ===
-                                this.parent.taskFields.progress) {
+                            const rowData: IGanttData = this.parent.flatData[parseInt(rowElement.getAttribute('data-rowindex'), 10)];
+                            if (rowData.hasChildRecords && (!this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing ||
+                                                            this.parent.ganttColumns[next.getAttribute('data-colindex')].field ===
+                                                            this.parent.taskFields.progress)) {
                                 let currentColumn: ColumnModel;
                                 next = this.updateElement(next, currentColumn, isTab, isInEditedState, rowData);
                                 while (!this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing) {
@@ -1540,11 +1625,19 @@ export class GanttChart {
      * @returns {Element | string} .
      */
     private getNextElement($target: Element, isTab: boolean, isInEditedState: boolean): Element | string {
-        if ($target.classList.contains("e-timeline-header-container") && isTab) {
-           let rowElement: Element = this.getNextRowElement(-1, isTab, true);
-           return this.getChildElement(rowElement, isTab);
+        if ($target.classList.contains('e-timeline-header-container') && isTab) {
+            const rowElement: Element = this.getNextRowElement(-1, isTab, true);
+            return this.getChildElement(rowElement, isTab);
         }
         let nextElement: Element = isTab ? $target.nextElementSibling : $target.previousElementSibling;
+        if ($target.parentElement.classList.contains('e-taskbar-main-container')) {
+            if (this.parent.labelSettings.rightLabel && isTab) {
+                return $target.parentElement.nextElementSibling;
+            }
+            else if (!isTab && this.parent.labelSettings.leftLabel) {
+                return $target.parentElement.previousElementSibling;
+            }
+        }
         while (nextElement && nextElement.parentElement.classList.contains('e-row')) {
             if (!nextElement.matches('.e-hide') && !nextElement.matches('.e-rowdragdrop')) {
                 return nextElement;
@@ -1606,9 +1699,14 @@ export class GanttChart {
                 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 rowIndex = (closest($target, '.e-chart-row') as any).rowIndex;
                 if (isTab) {
+                    if (!isTab && this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+                        /* eslint-disable-next-line */
+                        const rowRecord: IGanttData = this.parent.currentViewData[rowIndex];
+                        rowIndex = this.parent.flatData.indexOf(rowRecord);
+                    }
                     rowElement = this.getNextRowElement(rowIndex, isTab, true);
                 } else {
-                    rowElement = this.parent.treeGrid.grid.getRowByIndex(rowIndex);
+                    rowElement = this.parent.treeGrid.getRows()[rowIndex as number];
                 }
                 const childElement : Element | string = this.getChildElement(rowElement, isTab);
                 return childElement;
@@ -1632,7 +1730,7 @@ export class GanttChart {
         const nextRecord: IGanttData = isTab ? expandedRecords[expandedRecordIndex + 1] : expandedRecords[expandedRecordIndex - 1];
         const nextRowIndex: number = this.parent.currentViewData.indexOf(nextRecord);
         if (nextRecord) {
-            return isChartRow ? this.parent.treeGrid.grid.getRowByIndex(nextRowIndex) : this.parent.getRowByIndex(nextRowIndex);
+            return isChartRow ? this.parent.treeGrid.getRows()[nextRowIndex as number] : this.parent.getRowByIndex(nextRowIndex);
         } else {
             return null;
         }

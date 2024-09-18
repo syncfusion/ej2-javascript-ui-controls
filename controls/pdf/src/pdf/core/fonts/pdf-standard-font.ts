@@ -1320,6 +1320,10 @@ export class _PdfStandardFontMetricsFactory {
     static _getMetrics(fontFamily: PdfFontFamily, fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
         let metrics: _PdfFontMetrics = null;
         switch (fontFamily) {
+        case PdfFontFamily.helvetica:
+            metrics = this._getHelveticaMetrics(fontStyle, size);
+            metrics._name = 'Helvetica';
+            break;
         case PdfFontFamily.courier:
             metrics = this._getCourierMetrics(fontStyle, size);
             metrics._name = 'Courier';
@@ -1336,17 +1340,13 @@ export class _PdfStandardFontMetricsFactory {
             metrics = this._getZapfDingbatsMetrics(size);
             metrics._name = 'ZapfDingbats';
             break;
-        case PdfFontFamily.helvetica:
-            metrics = this._getHelveticaMetrics(fontStyle, size);
-            metrics._name = 'Helvetica';
-            break;
         default:
             metrics = this._getHelveticaMetrics(fontStyle, size);
             metrics._name = 'Helvetica';
             break;
         }
-        metrics._superscriptSizeFactor = this._subSuperScriptFactor;
         metrics._subScriptSizeFactor = this._subSuperScriptFactor;
+        metrics._superscriptSizeFactor = this._subSuperScriptFactor;
         return metrics;
     }
     static _getHelveticaMetrics(fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {

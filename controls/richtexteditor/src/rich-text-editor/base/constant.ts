@@ -105,6 +105,16 @@ export const keyDown: string = 'keyDown';
  * @hidden
  * @deprecated
  */
+export const onImport: string = 'onImport';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const onExport: string = 'onExport';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const mouseUp: string = 'mouseUp';
 /**
  * @hidden
@@ -471,11 +481,6 @@ export const checkUndo: string = 'checkUndoStack';
  * @deprecated
  */
 export const readOnlyMode: string = 'readOnlyMode';
-/**
- * @hidden
- * @deprecated
- */
-export const moduleDestroy: string = 'moduleDestroy';
 /**
  * @hidden
  * @deprecated

@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach, remove } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, IBaseQuickToolbar } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, DialogType } from './enum';import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel } from '../models/models';import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, EmojiSettings } from '../models/toolbar-settings';import { FileManagerSettings } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Audio } from '../renderer/audio-module';import { Video } from '../renderer/video-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import { EnterKeyAction } from '../actions/enter-key';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { FormatPainter } from '../actions/format-painter';import { EmojiPicker } from '../actions/emoji-picker';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, IBaseQuickToolbar, SlashMenuItemSelectArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, DialogType } from './enum';import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel } from '../models/models';import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, EmojiSettings, ImportWord, ExportWord, ExportPdf } from '../models/toolbar-settings';import { FileManagerSettings } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Audio } from '../renderer/audio-module';import { Video } from '../renderer/video-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import { ImportExport } from '../actions/import-export';import { EnterKeyAction } from '../actions/enter-key';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { FormatPainter } from '../actions/format-painter';import { EmojiPicker } from '../actions/emoji-picker';import { SlashMenuSettings } from '../models/slash-menu-settings';import { SlashMenuSettingsModel } from '../models/slash-menu-settings-model';import { SlashMenu} from '../renderer/slash-menu';import { mentionRestrictKeys } from '../../common/config';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -35,6 +35,24 @@ export interface RichTextEditorModel extends ComponentModel{
      * }
      */
     toolbarSettings?: ToolbarSettingsModel;
+
+    /**
+     * Specifies the list items in the mention popup.
+     * * enable- Specifies to enable or disable the slash menu in the Editor.
+     * * items- Specfies the items to be rendered in the slash menu.
+     * * popupWidth- Specifies the width of the slash menu popup in pixels/number/percentage. The number value is considered as pixels.
+     * * popupHeight- Specifies the height of the slash menu popup in pixels/number/percentage. The number value is considered as pixels.
+     *
+     * @default
+     * {
+     * enable: false,
+     * items: ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'OrderedList', 'UnorderedList'
+     * .'CodeBlock', 'BlockQuote'],
+     * popupWidth: '300px',
+     * popupHeight: '320px'
+     * }
+     */
+    slashMenuSettings?: SlashMenuSettingsModel;
 
     /**
      * Specifies the items to be rendered in quick toolbar based on the target element.
@@ -123,6 +141,8 @@ export interface RichTextEditorModel extends ComponentModel{
      * * resources - we can add both styles and scripts to the iframe.
      * 1. styles[] - An array of CSS style files to inject inside the iframe to display content
      * 2. scripts[] - An array of JS script files to inject inside the iframe
+     * * metaTags[] - An array of meta tags to inject inside the iframe's head for setting up various metadata like http-equiv, charset, etc.
+     * * sandbox - A string array defining the sandbox attribute for the iframe, which controls the security restrictions applied to the embedded content. By default, "allow-same-origin" is included in the Rich Text Editor's iframe sandbox.
      *
      * {% codeBlock src='rich-text-editor/iframe-settings/index.md' %}{% endcodeBlock %}
      *
@@ -130,7 +150,9 @@ export interface RichTextEditorModel extends ComponentModel{
      * {
      * enable: false,
      * attributes: null,
-     * resources: { styles: [], scripts: [] }
+     * resources: { styles: [], scripts: [] },
+     * metaTags: [],
+     * sandbox: null,
      * }
      */
     iframeSettings?: IFrameSettingsModel;
@@ -163,6 +185,47 @@ export interface RichTextEditorModel extends ComponentModel{
      * }
      */
     insertImageSettings?: ImageSettingsModel;
+
+    /**
+     * Specifies the file insert options for the Rich Text Editor component, with the following property:
+     * * serviceUrl - Specifies the URL that will receive the uploaded files on the server.
+     *
+     * @default
+     * {
+     * serviceUrl: null,
+     * }
+     */
+    importWord?: ImportWordModel;
+
+    /**
+     * Specifies the file export options for the Rich Text Editor component, with the following properties:
+     * * serviceurl - Specifies the URL that will be used to export the Rich Text Editor content into Word files.
+     * * fileName - Specifies the name of the exported Word file.
+     * * stylesheet - Specifies the stylesheet to be applied to the exported Word file.
+     *
+     * @default
+     * {
+     * serviceUrl:null,
+     * fileName:Sample.docx,
+     * stylesheet: null,
+     * }
+     */
+    exportWord?: ExportWordModel;
+
+    /**
+     * Specifies the file export options for the Rich Text Editor component, with the following properties:
+     * * serviceurl - Specifies the URL that will be used to export the Rich Text Editor content into PDF files.
+     * * fileName - Specifies the name of the exported PDF file.
+     * * stylesheet - Specifies the stylesheet to be applied to the exported PDF file.
+     *
+     * @default
+     * {
+     * serviceUrl:null,
+     * fileName:Sample.pdf,
+     * stylesheet: null,
+     * }
+     */
+    exportPdf?: ExportPdfModel;
 
     /**
      * Specifies the audio insert options in Rich Text Editor component and control with the following properties.
@@ -960,5 +1023,12 @@ export interface RichTextEditorModel extends ComponentModel{
      * @default null
      */
     formatter?: IFormatter;
+
+    /**
+     * Triggers when an slash menu item in the popup is selected by the user either with mouse/tap or with keyboard navigation.
+     *
+     * @event 'slashMenuItemSelect'
+     */
+    slashMenuItemSelect?: EmitType<SlashMenuItemSelectArgs>;
 
 }

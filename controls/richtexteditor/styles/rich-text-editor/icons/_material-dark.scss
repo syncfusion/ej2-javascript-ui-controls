@@ -226,8 +226,12 @@
       content: '\e34f';
     }
 
-    .e-insert-code::before {
+    .e-inline-code::before {
       content: '\e356';
+    }
+
+    .e-preformat-code::before {
+      content: '\e9d4';
     }
 
     .e-table-header::before {

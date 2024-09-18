@@ -8,6 +8,7 @@ import { axisLabelRender, radiusCalculate } from '../model/constants';
 import { AxisRenderer } from './axis-renderer';
 import { PointerRenderer } from './pointer-renderer';
 import { getCompleteArc } from '../utils/helper-pointer-renderer';
+import { FontModel } from '../model/base-model';
 
 /**
  * Specifies the CircularGauge Axis Layout.
@@ -835,8 +836,16 @@ export class AxisLayoutPanel {
      */
     private getMaxLabelWidth(gauge: CircularGauge, axis: Axis): void {
         axis.maxLabelSize = new Size(0, 0);
+        const textStyle: FontModel = {
+            size: axis.labelStyle.font.size || this.gauge.themeStyle.fontSize,
+            color: axis.labelStyle.font.color || this.gauge.themeStyle.labelColor,
+            fontFamily: axis.labelStyle.font.fontFamily || this.gauge.themeStyle.labelFontFamily,
+            fontWeight: axis.labelStyle.font.fontWeight || this.gauge.themeStyle.fontWeight,
+            fontStyle: axis.labelStyle.font.fontStyle,
+            opacity: axis.labelStyle.font.opacity
+        };
         for (const label of axis.visibleLabels) {
-            label.size = measureText(label.text, axis.labelStyle.font);
+            label.size = measureText(label.text, textStyle);
             axis.maxLabelSize.width = label.size.width > axis.maxLabelSize.width ?
                 label.size.width : axis.maxLabelSize.width;
             axis.maxLabelSize.height = label.size.height > axis.maxLabelSize.height ?

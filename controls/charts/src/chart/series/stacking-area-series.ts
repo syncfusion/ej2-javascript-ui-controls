@@ -7,7 +7,7 @@ import { AnimationModel } from '../../common/model/base-model';
 import { Axis } from '../../chart/axis/axis';
 
 /**
- * `StackingAreaSeries` module used to render the stacking area series.
+ * The `StackingAreaSeries` module is used to render the stacking area series.
  */
 
 export class StackingAreaSeries extends LineBase {
@@ -164,12 +164,9 @@ export class StackingAreaSeries extends LineBase {
                 }
                 if (stackSeries.marker.dataLabel.visible && stackSeries.chart.dataLabelModule) {
                     stackSeries.chart.dataLabelModule.commonId = stackSeries.chart.element.id + '_Series_' + stackSeries.index + '_Point_';
-                    const dataLabelElement: Element[] = stackSeries.chart.dataLabelModule.
+                    stackSeries.chart.dataLabelModule.
                         renderDataLabel(stackSeries, stackSeries.points[point[j as number]],
                                         null, stackSeries.marker.dataLabel);
-                    for (let k: number = 0; k < dataLabelElement.length; k++) {
-                        stackSeries.chart.dataLabelModule.doDataLabelAnimation(stackSeries, dataLabelElement[k as number]);
-                    }
                 }
             }
         }
@@ -181,6 +178,7 @@ export class StackingAreaSeries extends LineBase {
      * @param {Series} series - The series to which the path belongs.
      * @param {string} clipRect - The clip rectangle for the path.
      * @returns {void}
+     * @private
      */
     public addAreaPath(options: PathOption, series: Series, clipRect: string): void {
         const points: { element: Element; previousDirection: string; } =
@@ -218,6 +216,7 @@ export class StackingAreaSeries extends LineBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         const option: AnimationModel = series.animation;

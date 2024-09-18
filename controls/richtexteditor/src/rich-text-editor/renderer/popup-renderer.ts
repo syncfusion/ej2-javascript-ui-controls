@@ -3,7 +3,6 @@ import { CLS_QUICK_POP } from '../base/classes';
 import { IRenderer, IRichTextEditor, QuickToolbarEventArgs } from '../base/interface';
 import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
 import * as events from '../base/constant';
-import { detach } from '@syncfusion/ej2-base';
 /**
  * `Popup renderer` module is used to render popup in RichTextEditor.
  *
@@ -82,5 +81,4 @@ export class PopupRenderer implements IRenderer {
     public setPanel(panel: Element): void {
         this.popupPanel = panel;
     }
-
 }

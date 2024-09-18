@@ -14,3 +14,4 @@ export * from './renderer/dialog-renderer';
 export * from './renderer/iframe-content-renderer';
 export * from './renderer/markdown-renderer';
 export * from './renderer/popup-renderer';
+export * from './renderer/slash-menu';

@@ -1823,7 +1823,7 @@ describe('Stepper', () => {
             expect(stepperElement.querySelectorAll('.e-step-inprogress').length).toBe(0);
             expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(4);
         });
-        
+
         it('stepper with Linear mode when activeStep is bounded', () => {
             stepper = new Stepper({
                 steps: [{}, {}, {}, {}],
@@ -1931,7 +1931,7 @@ describe('Stepper', () => {
             expect((liElementArray[2] as HTMLElement).classList.contains('e-previous')).toEqual(true);
             expect((liElementArray[3] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
         });
-        
+
         describe('Methods and Events', () => {
 
             it('stepper with nextStep method', () => {

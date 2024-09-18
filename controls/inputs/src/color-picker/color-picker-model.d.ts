@@ -1,4 +1,4 @@
-import { BaseEventArgs, Component, EmitType, Event, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';import { Browser, closest, detach, EventHandler, getInstance, select, selectAll, formatUnit } from '@syncfusion/ej2-base';import { addClass, attributes, classList, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';import { remove, removeClass, rippleEffect } from '@syncfusion/ej2-base';import { SplitButton, BeforeOpenCloseMenuEventArgs, getModel, ClickEventArgs } from '@syncfusion/ej2-splitbuttons';import { Deferred } from '@syncfusion/ej2-splitbuttons';import { Tooltip, TooltipEventArgs, getZindexPartial, Popup, isCollide } from '@syncfusion/ej2-popups';import { Input } from './../input/index';import { NumericTextBox, NumericTextBoxModel, ChangeEventArgs } from './../numerictextbox/index';import { Slider, SliderChangeEventArgs } from './../slider/slider';
+import { BaseEventArgs, Component, EmitType, Event, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';import { Browser, closest, detach, EventHandler, getInstance, select, selectAll, formatUnit } from '@syncfusion/ej2-base';import { addClass, attributes, classList, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';import { remove, removeClass, rippleEffect } from '@syncfusion/ej2-base';import { SplitButton, BeforeOpenCloseMenuEventArgs, getModel } from '@syncfusion/ej2-splitbuttons';import { Deferred } from '@syncfusion/ej2-splitbuttons';import { Tooltip, TooltipEventArgs, getZindexPartial, Popup, isCollide } from '@syncfusion/ej2-popups';import { Input } from './../input/index';import { NumericTextBox, NumericTextBoxModel, ChangeEventArgs } from './../numerictextbox/index';import { Slider, SliderChangeEventArgs } from './../slider/slider';
 import {ColorPickerMode,ColorPickerEventArgs,PaletteTileEventArgs,BeforeOpenCloseEventArgs,OpenEventArgs,ModeSwitchEventArgs} from "./color-picker";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -98,6 +98,16 @@ export interface ColorPickerModel extends ComponentModel{
      * @default false
      */
     createPopupOnClick?: boolean;
+
+    /**
+     * Specifies to show the recent color options in the color picker in the palate mode.
+     * It accepts boolean value to configure recent colors. The default value is false.
+     * If this property value is false, then the recent color user interface is not rendered in color picker component.
+     * This recent color option is rendered only in the palette mode.
+     *
+     * @default false
+     */
+    showRecentColors?: boolean;
 
     /**
      * Triggers while selecting the color in picker / palette, when showButtons property is enabled.

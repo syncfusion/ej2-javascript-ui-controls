@@ -16,11 +16,17 @@
     &.e-underlined,
     &.e-filled {
       .e-otp-input-field {
-        border-bottom: 2px solid $otp-input-border-bottom-color;
+        @if ($skin-name == 'bootstrap5.3') {
+          border-bottom: 1px solid $otp-input-border-bottom-color;
+        }
+        @else {
+          border-bottom: 2px solid $otp-input-border-bottom-color;
+        }
       }
       .e-otp-input-field:disabled {
         border-color: $otp-input-disabled-border-color;
         color: $otp-input-disabled-color;
+        background: $otp-input-disabled-bg-color;
       }
     }
     &.e-filled {

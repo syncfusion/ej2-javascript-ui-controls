@@ -34,8 +34,6 @@ export class NormalEdit {
     private args: EditEventArgs = {};
     private cloneRow: Element;
     private originalRow: Element;
-    private frozen: Element;
-    private cloneFrozen: Element;
     private currentVirtualData: Object = {};
     private evtHandlers: { event: string, handler: Function }[];
 
@@ -82,12 +80,10 @@ export class NormalEdit {
         const action: string = 'action';
         switch (e.requestType as string) {
         case 'save':
-            if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
-                || (!this.parent.isPersistSelection)) {
-                if (e[`${action}`] !== 'edit' && (!this.parent.editSettings.showAddNewRow ||
-                    (this.parent.editSettings.showAddNewRow && e[`${action}`] !== 'add'))) {
-                    this.parent.selectRow(e['index']);
-                }
+            if ((!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
+                || (!this.parent.isPersistSelection)) && (e[`${action}`] !== 'edit' && (!this.parent.editSettings.showAddNewRow ||
+                (this.parent.editSettings.showAddNewRow && e[`${action}`] !== 'add')))) {
+                this.parent.selectRow(e['index']);
             }
             this.parent.trigger(events.actionComplete, extend(e, {
                 requestType: 'save',
@@ -472,12 +468,6 @@ export class NormalEdit {
             this.cloneRow = null;
             this.originalRow.classList.remove('e-hiddenrow');
         }
-        if (this.cloneFrozen) {
-            this.cloneFrozen.remove();
-            if (this.frozen) {
-                this.frozen.classList.remove('e-hiddenrow');
-            }
-        }
     }
 
     private blazorTemplate(): void {
@@ -497,6 +487,9 @@ export class NormalEdit {
     }
 
     private editFailure(e: ReturnType): void {
+        if ((<{ cancel?: boolean }>e).cancel) {
+            return;
+        }
         this.parent.removeMaskRow();
         this.parent.trigger(events.actionFailure, ({ error: e }));
         this.parent.hideSpinner();
@@ -628,7 +621,8 @@ export class NormalEdit {
             }
             if (cols[parseInt(i.toString(), 10)].field) {
                 if (cols[parseInt(i.toString(), 10)].type === 'string') {
-                    cols[parseInt(i.toString(), 10)].defaultValue = this.parent.sanitize(cols[parseInt(i.toString(), 10)].defaultValue as string);
+                    cols[parseInt(i.toString(), 10)].defaultValue = this.parent
+                        .sanitize(cols[parseInt(i.toString(), 10)].defaultValue as string);
                 }
                 DataUtil.setValue(cols[parseInt(i.toString(), 10)].field, cols[parseInt(i.toString(), 10)].defaultValue, this.previousData);
             }

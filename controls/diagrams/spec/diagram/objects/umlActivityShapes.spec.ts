@@ -732,4 +732,318 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Code coverage UML classifier nodes', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        //Set the default values of nodes.
+        function getNodeDefaults(obj: NodeModel): NodeModel {
+            obj.style = { fill: '#26A0DA', strokeColor: 'white' };
+            return obj;
+        }
+
+        //Set an annoation style at runtime.
+        function setNodeTemplate(node: NodeModel): void {
+            if (node.annotations.length > 0) {
+                for (let i: number = 0; i < node.annotations.length; i++) {
+                    node.annotations[i].style.color = 'white';
+                }
+            }
+        }
+
+        //create class Property
+        function createProperty(name: string, type: string): object {
+            return { name: name, type: type };
+        }
+
+        //create class Methods
+        function createMethods(name: string, type: string): object {
+            return { name: name, type: type };
+        }
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'umlClassDiagram', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+
+
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'Patient', style: { fontFamily: 'Calibri' },
+                    shape: {
+                        type: 'UmlClassifier',
+                        classShape: {
+                            name: 'Patient',
+                            attributes: [
+                                createProperty('accepted', 'Date'),
+                                createProperty('sickness', 'History'),
+                                createProperty('prescription', 'String[*]'),
+                                createProperty('allergies', 'String[*]'),
+                            ],
+                            methods: [createMethods('getHistory', 'History')],
+                        },
+                        classifier: 'Class',
+                    } as UmlClassifierShapeModel,
+                    offsetX: 100,
+                    offsetY: 100,
+                },
+                {
+                    id: 'Hospital',
+                    shape: {
+                        type: 'UmlClassifier',
+                        classShape: {
+                            name: 'Hospital',
+                            methods: [
+                                createMethods('getDepartment', 'String'),
+                            ]
+                        },
+                        classifier: 'Interface'
+                    } as UmlClassifierShapeModel,
+                    offsetX: 300,
+                    offsetY: 100,
+                },
+                {
+                    id: 'Enumerarion',
+                    shape: {
+                        type: 'UmlClassifier',
+                        classShape: {
+                            name: 'Enumerarion',
+                            methods: [
+                                createMethods('getDepartment', 'String'),
+                            ]
+                        },
+                        classifier: 'Enumeration'
+                    } as UmlClassifierShapeModel,
+                    offsetX: 500,
+                    offsetY: 100,
+                },
+                {
+                    id: 'Patient1',
+                    shape: {
+                        type: 'UmlClassifier',
+                        classShape: {
+                            name: 'Patient',
+                            attributes: [
+                                createProperty('accepted', 'Date'),
+                                createProperty('sickness', 'History'),
+                                createProperty('prescription', 'String[*]'),
+                                createProperty('allergies', 'String[*]'),
+                            ],
+                            methods: [createMethods('getHistory', 'History')],
+                        },
+                        classifier: 'Class',
+                    } as UmlClassifierShapeModel,
+                    offsetX: 100,
+                    offsetY: 300,
+                },
+                {
+                    id: 'Patient2',
+                    shape: {
+                        type: 'UmlClassifier',
+                        classShape: {
+                            name: 'Patient',
+                            attributes: [
+                                createProperty('accepted', 'Date'),
+                                createProperty('sickness', 'History'),
+                                createProperty('prescription', 'String[*]'),
+                                createProperty('allergies', 'String[*]'),
+                            ],
+                            methods: [createMethods('getHistory', 'History')],
+                        },
+                        classifier: 'Class',
+                    } as UmlClassifierShapeModel,
+                    offsetX: 300,
+                    offsetY: 300,
+                },
+            ];
+            let connectors: ConnectorModel[] = [];
+
+            diagram = new Diagram({
+                width: '100%',
+                height: '700px',
+                nodes: nodes,
+                connectors: connectors,
+                //Sets the default values of nodes
+                getNodeDefaults: getNodeDefaults,
+                //Customize the content of the node
+                setNodeTemplate: setNodeTemplate,
+            });
+            diagram.appendTo('#umlClassDiagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Adding umlchild node at runtime', (done: Function) => {
+            diagram.select([diagram.nodes[3]]);
+            let node = diagram.selectedItems.nodes[0];
+            let methods = { name: '0', style: { color: "red", }, parameters: [{ name: 'Date', style: {} }], type: 'History', scope: 'Protected' };
+            diagram.addChildToUmlNode(node, methods, 'Method');
+
+            diagram.select([diagram.nodes[3]]);
+            let node0 = diagram.selectedItems.nodes[0];
+            let attributes = { name: '1', type: 'Date', style: { color: "red" }, scope: 'Protected' };
+            diagram.addChildToUmlNode(node0, attributes, "Attribute");
+
+            diagram.select([diagram.nodes[4]]);
+            let node1 = diagram.selectedItems.nodes[0];
+            let method1 = { name: '0', style: { color: "red", }, parameters: [{ name: 'Date', style: {} }], type: 'History', scope: 'Private' };
+            diagram.addChildToUmlNode(node1, method1, 'Method');
+
+            diagram.select([diagram.nodes[4]]);
+            let node01 = diagram.selectedItems.nodes[0];
+            let attribute1 = { name: '1', type: 'Date', style: { color: "red" }, scope: 'Private' };
+            diagram.addChildToUmlNode(node01, attribute1, "Attribute");
+
+            expect(diagram.nodes.length === 35).toBe(true);
+            done();
+        });
+        it('Changing locale', (done: Function) => {
+            diagram.locale = 'de-DE'
+            diagram.dataBind();
+            expect(diagram.locale === 'de-DE').toBe(true);
+            done();
+        });
+    });
+    describe('Code coverage UML classifier for class node', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        //Set the default values of nodes.
+        function getNodeDefaults(obj: NodeModel): NodeModel {
+            obj.style = { fill: '#26A0DA', strokeColor: 'white' };
+            return obj;
+        }
+
+        //Set an annoation style at runtime.
+        function setNodeTemplate(node: NodeModel): void {
+            if (node.annotations.length > 0) {
+                for (let i: number = 0; i < node.annotations.length; i++) {
+                    node.annotations[i].style.color = 'white';
+                }
+            }
+        }
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'umlClassDiagram', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'Patient', style: { fontFamily: 'Calibri' },
+                    shape: {
+                        type: 'UmlClassifier',
+                        classShape: {
+                            name: 'Patient',
+                            methods: [{ name: 'getHistory', style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History' }],
+                            attributes: [
+                                { name: 'web', type: 'Date', style: { color: "blue" }, isSeparator: true },
+                                { name: 'diagram', type: 'Date', style: { color: "blue" }, isSeparator: true }
+                            ],
+                        },
+                        classifier: 'Class',
+                    } as UmlClassifierShapeModel,
+                    offsetX: 100,
+                    offsetY: 100,
+                },
+                {
+                    id: 'Enumerarion',
+                    offsetX: 300,
+                    offsetY: 100,
+                    style: {
+                        fill: '#26A0DA', strokeColor: 'black'
+                    }, borderColor: 'white',
+                    shape: {
+                        type: 'UmlClassifier',
+                        enumerationShape: {
+                            name: 'AccountType',
+                            members: [
+                                {
+                                    name: 'Checking Account', style: {}, isSeparator: true
+                                },
+                                {
+                                    name: 'Savings Account',
+                                },
+                                {
+                                    name: 'Credit Account',
+                                }
+                            ]
+                        }, classifier: 'Enumeration'
+                    } as UmlClassifierShapeModel,
+                },
+                {
+                    id: 'Hospital',
+                    shape: {
+                        type: 'UmlClassifier',
+                        interfaceShape: {
+                            name: 'Hospital',
+                            methods: []
+                        },
+                        classifier: 'Interface'
+                    } as UmlClassifierShapeModel,
+                    offsetX: 400,
+                    offsetY: 300,
+                },
+            ];
+            let connectors: ConnectorModel[] = [];
+
+            diagram = new Diagram({
+                width: '100%',
+                height: '700px',
+                nodes: nodes,
+                connectors: connectors,
+                //Sets the default values of nodes
+                getNodeDefaults: getNodeDefaults,
+                //Customize the content of the node
+                setNodeTemplate: setNodeTemplate,
+            });
+            diagram.appendTo('#umlClassDiagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Adding umlchild node at runtime', (done: Function) => {
+            diagram.select([diagram.nodes[0]]);
+            var node0 = diagram.selectedItems.nodes[0];
+            var attributes = { name: '1', type: 'Date', style: { color: "red" }, scope: '', isSeparator: true };
+            diagram.addChildToUmlNode(node0, attributes, "Attribute");
+
+            diagram.select([diagram.nodes[1]]);
+            let node = diagram.selectedItems.nodes[0];
+            let members = { name: 'Checking new', style: { color: "red", strokecolor: 'black', fontFamily: 'Calibri' }, isSeparator: true, scope: 'Private' };
+            diagram.addChildToUmlNode(node, members, "Member");
+
+            diagram.select([diagram.nodes[2]]);
+            var node01 = diagram.selectedItems.nodes[0];
+            var method1 = { name: '0', style: { color: "red", }, parameters: [{ name: 'interface', style: {}, type: 'History' }], type: 'History', scope: '' };
+            diagram.addChildToUmlNode(node01, method1, 'Method');
+            expect(diagram.nodes.length === 20).toBe(true);
+
+            done();
+        });
+        it('Changing locale', (done: Function) => {
+            diagram.locale = 'de-DE'
+            diagram.dataBind();
+            expect(diagram.locale === 'de-DE').toBe(true);
+            done();
+        });
+    });
 });

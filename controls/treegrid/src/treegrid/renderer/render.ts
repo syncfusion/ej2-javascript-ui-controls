@@ -142,7 +142,7 @@ export class Render {
             let iconRequired: boolean = !isNullOrUndefined(data.hasFilteredChildRecords)
                 ? data.hasFilteredChildRecords : data.hasChildRecords;
             if (iconRequired && !isNullOrUndefined(data.childRecords)) {
-                if (this.parent['isFromGantt'] && !this.parent.loadChildOnDemand) {
+                if (this.parent['isFromGantt'] && this.parent.loadChildOnDemand) {
                     iconRequired = data.hasChildRecords;
                 }
                 else {

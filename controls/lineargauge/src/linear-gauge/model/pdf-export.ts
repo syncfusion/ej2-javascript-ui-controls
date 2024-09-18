@@ -49,7 +49,8 @@ export class PdfExport {
             const exportElement: HTMLElement = gauge.svgObject.cloneNode(true) as HTMLElement;
             const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
             const backgroundColor: string = backgroundElement.getAttribute('fill');
-            if ((gauge.theme === 'Tailwind' || gauge.theme === 'Bootstrap5' || gauge.theme === 'Fluent' || gauge.theme === 'Material3' || gauge.theme === 'Fluent2')
+            if ((gauge.theme === 'Tailwind' || gauge.theme === 'Bootstrap5' || gauge.theme === 'Fluent' || gauge.theme === 'Material3' ||
+                gauge.theme === 'Fluent2')
                 && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                 (exportElement.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
             } else if ((gauge.theme === 'TailwindDark' || gauge.theme === 'Bootstrap5Dark' || gauge.theme === 'FluentDark' || gauge.theme === 'Material3Dark' ||

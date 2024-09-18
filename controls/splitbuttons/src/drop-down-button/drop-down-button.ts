@@ -620,6 +620,10 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         }
     }
 
+    private isSafari(): boolean {
+        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    }
+
     protected upDownKeyHandler(e: KeyboardEventArgs): void {
         if (this.target && (e.keyCode === 38 || e.keyCode === 40)) {
             return;
@@ -666,7 +670,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
 
     private focusoutHandler(e: MouseEvent): void {
         if (this.isPopupCreated && !this.canOpen()) {
-            const liTarget : HTMLElement = e.relatedTarget as HTMLElement;
+            const liTarget : HTMLElement = (e.relatedTarget || e.target) as HTMLElement;
             if (liTarget && liTarget.className.indexOf('e-item') > -1) {
                 const li: Element = this.getLI(liTarget);
                 if (li) {
@@ -732,7 +736,10 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 if ((splitButton as any).isReact && popupElem.childNodes.length < 1) {
                     isReact = true;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (splitButton as any).appendReactElement(this.getTargetElement(), this.getPopUpElement());
+                    if ((splitButton as any).appendReactElement) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (splitButton as any).appendReactElement(this.getTargetElement(), this.getPopUpElement());
+                    }
                     this.renderReactTemplates();
                 }
             } else {
@@ -741,7 +748,10 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     isReact = true;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this as any).appendReactElement(this.getTargetElement(), this.getPopUpElement());
+                    if ((this as any).appendReactElement) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (this as any).appendReactElement(this.getTargetElement(), this.getPopUpElement());
+                    }
                     this.renderReactTemplates();
                 }
             }
@@ -756,7 +766,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 addClass([this.element], 'e-active');
                 this.element.setAttribute('aria-expanded', 'true');
                 this.element.setAttribute('aria-owns', this.getPopUpElement().id);
-                if (ul) {
+                if (ul && !this.isSafari()) {
                     ul.focus();
                 }
                 if (this.enableRtl && ul.parentElement.style.left !== '0px')
@@ -776,6 +786,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 }
                 const openArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };
                 this.trigger('open', openArgs);
+                if (ul && this.isSafari()) {
+                    ul.focus();
+                }
             }
         });
     }
@@ -865,6 +878,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 }
                 break;
             case 'cssClass':
+                oldProp.cssClass = isNullOrUndefined(oldProp.cssClass) ? '' : oldProp.cssClass;
                 if (newProp.cssClass.indexOf(classNames.VERTICAL) > -1  || oldProp.cssClass.indexOf(classNames.VERTICAL) > -1) {
                     if (!this.element.querySelector('span.e-caret')) {
                         this.appendArrowSpan();

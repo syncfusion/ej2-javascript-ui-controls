@@ -562,6 +562,106 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].ranges[1].linearGradient.colorStop = null;            
             gauge.refresh();
         });
+    });
+    describe('Gradient Range and pointer', () => {
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge({
+                animationDuration: 0,
+                axes: [{
+                    lineStyle: { width: 10, color: 'transparent' },
+                    labelStyle: {
+                        position: 'Inside', useRangeColor: true,
+                        font: { size: '12px', color: '#424242', fontFamily: 'Roboto', fontStyle: 'Regular' },
+                    }, 
+                    startAngle: 210, endAngle: 150, minimum: 0, maximum: 120, radius: '80%',
+                    majorTicks:
+                    {
+                    useRangeColor: true,
+                    
+                    },
+                    minorTicks: 
+                    {
+                        useRangeColor: true
+                        
+                    },
+                    pointers: [
+                        {
+                            type: 'Marker',
+                            value: 90,
+                            markerWidth: 30,
+                            markerHeight: 30,
+                            animation: { enable: false },
+                            linearGradient: {
+                                startValue: null,
+                                endValue: null,
+                                colorStop: [
+                                    { color: 'blue', offset: '0', opacity: 2 },
+                                    { color: 'red', offset: '100', opacity: 2 }]
+                            }
+                        },
+                    ],
+                    ranges: [
+        
+                        {
+                            start: 0, end: 40, startWidth: 20, endWidth: 20,
+                            linearGradient:
+                            {
+                                startValue: '0',
+                                endValue: '100',
+                                colorStop: [
+                                    { color: 'blue', offset: '0', opacity: 2 },
+                                    { color: 'orange', offset: '100', opacity: 2 }
+                                ]
+                            }
+                        },
+                        {
+                            start: 40, end: 80, startWidth: 20, endWidth: 20,
+                            radialGradient:
+                            {
+                                radius: null,
+                                innerPosition: null,
+                                outerPosition: null,
+                                colorStop: [
+                                    { color: 'red', offset: '0', opacity: 2 },
+                                    { color: 'green', offset: '100', opacity: 2 }
+                                ]
+                            }
+                        }
+                    ],
+                }]
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Checking the pointer with radialGradient properties as null', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_0');
+                expect(svg.getAttribute('fill')).toBe('url(#_container_svg_5_linearGradient)');
+                done();
+            }
+            gauge.refresh();
+        });
+        it('Checking the range one with linearGradient innerPosition as null', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe('url(#_container_svg_6_linearGradient)');
+                done();
+            }
+            gauge.refresh();
+        });
+        it('Checking the range two with radial innerPosition as null', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_1');
+                expect(svg.getAttribute('fill')).toBe('url(#_container_svg_10_radialGradient)');
+                done()
+            }
+            gauge.refresh();
+        });
     }); 
-       
+     
 });

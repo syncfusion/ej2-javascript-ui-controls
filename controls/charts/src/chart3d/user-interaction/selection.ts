@@ -9,7 +9,7 @@ import { Chart3DSelectionMode } from '../utils/enum';
 import { Chart3D } from '../../chart3d';
 import { Chart3DSeries, Chart3DPoint } from '../series/chart-series';
 import { Chart3DSeriesModel } from '../series/chart-series-model';
-import { Indexes, Index } from '../../common/model/base';
+import { Index, Indexes } from '../../common/model/base';
 import { selectionComplete } from '../../common/model/constants';
 import { BaseSelection } from '../../common/user-interaction/selection';
 import { Chart3DSelectionCompleteEventArgs } from '../model/chart3d-Interface';

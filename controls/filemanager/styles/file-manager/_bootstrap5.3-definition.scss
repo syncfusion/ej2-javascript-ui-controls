@@ -1,7 +1,7 @@
 /*! FileManager's tailwind theme wise override definitions and variables */
 //layout variables
 $fm-skin-name: $skin-name !default;
-$fe-bc-font-size: $text-xs !default;
+$fe-bc-font-size: $text-sm !default;
 $fe-bc-icon-font-size: 8px !default;
 $fe-dg-td-font-size: $text-sm !default;
 $fe-lg-text-font-size: $text-xs !default;
@@ -22,8 +22,8 @@ $fe-tb-ddb-btn-padding: 0 !default;
 $fe-tb-ddb-border: 0 !default;
 $fe-tb-ddb-caret-size: 8px !default;
 $fe-upload-overlay-border: 2px !default;
-$fe-search-padding: 3px 12px 2px 0 !default;
-$fe-search-height: 29px !default;
+$fe-search-padding: 2px 12px 2px 0 !default;
+$fe-search-height: 32px !default;
 $fe-search-icon-margin: 5px !default;
 $fe-search-icon-font-size : 14px !default;
 $fe-search-clear-icon-padding: 0 !default;
@@ -32,8 +32,8 @@ $fe-search-input-margin: 0 0 0 29px !default;
 $fe-bc-margin: 0 !default;
 $fe-bc-padding: 8px 16px 8px !default;
 $fe-rtl-bc-padding: 8px 18px 8px 12px !default;
-$fe-bc-text-padding: 4px 4px 5px !default;
-$fe-bc-text-size: 18px !default;
+$fe-bc-text-padding: 1px 4px !default;
+$fe-bc-text-size: 22px !default;
 $fe-bc-icon-margin: 0 4px !default;
 $fe-bc-search-border-bottom: 1px !default;
 $fe-bc-submenu-height: 26px !default;
@@ -44,7 +44,7 @@ $fe-dg-td-padding: 4px 24px 4px 0 !default;
 $fe-dg-rtl-td-padding: 8px 0 8px 24px !default;
 $fe-grid-header-height: 32px !default;
 $fe-grid-header-font-size: $text-xxs !default;
-$fe-grid-header-cb-padding-left: 12px !default;
+$fe-grid-header-cb-padding-left: 8px !default;
 $fe-grid-content-font-size: $text-xs !default;
 $fe-grid-content-name-font-size: $text-sm !default;
 $fe-grid-icon-sort-margin: 0 !default;
@@ -66,16 +66,16 @@ $fe-cm-separator-margin: 0 0 !default;
 $fe-cb-line-height: 12px !default;
 $fe-dd-popup-blank-icon-padding-left: 40px !default;
 $fe-tv-fullrow-height: 34px !default;
-$fe-address-height: 35px !default;
+$fe-address-height: 36px !default;
 $fe-tv-node-height: 32px !default;
 
 $fe-big-tv-fullrow-height: 40px !default;
-$fe-big-address-height: 40px !default;
+$fe-big-address-height: 42px !default;
 $fe-big-tv-node-height: 38px !default;
 $fe-big-tb-ddb-btn-hvr-padding: 0 6px !default;
 $fe-big-tb-ddb-btn-padding: 0 6px !default;
-$fe-big-search-padding: 4px 10px 0 16px !default;
-$fe-big-search-height: 30px !default;
+$fe-big-search-padding: 2px 12px 3px 16px !default;
+$fe-big-search-height: 38px !default;
 $fe-big-bc-padding: 6px 12px !default;
 $fe-big-bc-text-size: 28px !default;
 $fe-big-bc-text-padding: 5px 4px !default;
@@ -168,14 +168,14 @@ $fe-big-grid-empty-inner-content-text-align: center !default;
 
 $fe-grid-empty-min-width: 200px !default;
 
-$fe-grid-empty-content-font-size: $text-base !default;
+$fe-grid-empty-content-font-size: $text-sm !default;
 $fe-grid-empty-content-margin: 0 auto !default;
-$fe-grid-empty-content-padding: 18px 0 8px 0 !default;
+$fe-grid-empty-content-padding: 8px 0 !default;
 $fe-grid-empty-content-text-align: center !default;
 
-$fe-grid-empty-icon-height: 82px !default;
+$fe-grid-empty-icon-height: 52px !default;
 $fe-grid-empty-icon-margin: 0 auto !default;
-$fe-grid-empty-icon-width: 82px !default;
+$fe-grid-empty-icon-width: 52px !default;
 $fe-grid-empty-inner-content-color: $content-text-color-alt2 !default;
 $fe-grid-empty-inner-content-font-size: $text-sm !default;
 $fe-grid-empty-inner-content-margin: 0 auto !default;
@@ -185,14 +185,14 @@ $fe-grid-empty-inner-content-text-align: center !default;
 
 $fe-lg-icon-empty-min-width: 200px !default;
 
-$fe-lg-icon-empty-content-font-size: $text-base !default;
+$fe-lg-icon-empty-content-font-size: $text-sm !default;
 $fe-lg-icon-empty-content-margin: 0 auto !default;
-$fe-lg-icon-empty-content-padding: 18px 0 8px 0 !default;
+$fe-lg-icon-empty-content-padding: 8px 0 !default;
 $fe-lg-icon-empty-content-text-align: center !default;
 
-$fe-lg-icon-empty-icon-height: 82px !default;
+$fe-lg-icon-empty-icon-height: 52px !default;
 $fe-lg-icon-empty-icon-margin: 0 auto !default;
-$fe-lg-icon-empty-icon-width: 82px !default;
+$fe-lg-icon-empty-icon-width: 52px !default;
 
 $fe-lg-icon-empty-inner-content-font-size: $text-sm !default;
 $fe-lg-icon-empty-inner-content-margin: 0 auto !default;
@@ -216,8 +216,8 @@ $fe-hover-bg-color: $content-bg-color-hover !default;
 $fe-ah-border-color: $content-bg-color-selected !default;
 $fe-ah-bg-color: $content-bg-color-selected !default;
 $fe-focus-border-color: $border-light !default;
-$fe-bc-color: $content-text-color-alt1 !default;
-$fe-bc-link-color: $content-text-color-alt2 !default;
+$fe-bc-color: $content-text-color-alt3 !default;
+$fe-bc-link-color: $primary !default;
 $fe-bc-hover-bg-color: $content-bg-color-alt2 !default;
 $fe-bc-hover-font-color: $content-text-color !default;
 $fe-grid-header-bg-color: $content-bg-color-alt1 !default;
@@ -238,3 +238,5 @@ $fe-clone-count-border-color: $primary-text-color !default;
 $fe-clone-count-font-color: $primary-text-color !default;
 $fe-clone-count-bg-color: $primary !default;
 $fe-drop-folder-bg-color: $primary !default;
+$fe-drag-select-bg-color: $content-bg-color-alt3 !default;
+$fe-drag-select-bg-opacity: .45 !default;

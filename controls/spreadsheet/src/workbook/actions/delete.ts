@@ -1,8 +1,8 @@
 import { Workbook, RowModel, CellModel, getCell, setCell, ActionEventArgs } from '../index';
-import { deleteAction, InsertDeleteModelArgs, refreshClipboard, ExtendedRange, MergeArgs, beforeDelete, ConditionalFormatModel, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
+import { deleteAction, InsertDeleteModelArgs, refreshClipboard, MergeArgs, beforeDelete } from '../../workbook/common/index';
 import { activeCellMergedRange, setMerge, workbookFormulaOperation, InsertDeleteEventArgs, deleteModel } from '../../workbook/common/index';
 import { SheetModel, refreshInsertDelete, updateRowColCount, getSheetIndex, beginAction } from '../../workbook/index';
-import { deleteFormatRange } from '../../workbook/index';
+import { deleteFormatRange, ConditionalFormatModel, getRangeIndexes, getRangeAddress } from '../../workbook/index';
 import { extend } from '@syncfusion/ej2-base';
 
 /**
@@ -69,9 +69,11 @@ export class WorkbookDelete {
             }
             this.setRowColCount(args.start, args.end, args.model, 'row');
             if (args.start <= args.model.usedRange.rowIndex) {
-                args.model.usedRange.rowIndex -= ((args.end - args.start) + 1);
+                this.parent.setSheetPropertyOnMute(
+                    args.model, 'usedRange', { rowIndex: args.model.usedRange.rowIndex - ((args.end - args.start) + 1),
+                        colIndex: args.model.usedRange.colIndex });
                 if (args.model.usedRange.rowIndex < 0) {
-                    args.model.usedRange.rowIndex = 0;
+                    this.parent.setSheetPropertyOnMute(args.model, 'usedRange', { rowIndex: 0, colIndex: args.model.usedRange.colIndex });
                 }
             }
             let frozenRow: number = this.parent.frozenRowCount(args.model);
@@ -157,9 +159,10 @@ export class WorkbookDelete {
             }
             this.setRowColCount(args.start, args.end, args.model, 'col');
             if (args.start <= args.model.usedRange.colIndex) {
-                args.model.usedRange.colIndex -= count;
+                this.parent.setSheetPropertyOnMute(
+                    args.model, 'usedRange', { rowIndex: args.model.usedRange.rowIndex, colIndex: args.model.usedRange.colIndex - count });
                 if (args.model.usedRange.colIndex < 0) {
-                    args.model.usedRange.colIndex = 0;
+                    this.parent.setSheetPropertyOnMute(args.model, 'usedRange', { rowIndex: args.model.usedRange.rowIndex, colIndex: 0 });
                 }
             }
             //this.setDeleteInfo(args.start, args.end, 'fldLen', 'Column');
@@ -280,22 +283,6 @@ export class WorkbookDelete {
         if (sheet.id === this.parent.getActiveSheet().id) {
             this.parent.notify(updateRowColCount, { index: curCount - 1, update: layout, isDelete: true, start: startIdx, end: endIdx });
         }
-    }
-    private setDeleteInfo(startIndex: number, endIndex: number, totalKey: string, modelType: string = 'Row'): void {
-        const total: number = (endIndex - startIndex) + 1; const newRange: number[] = [];
-        this.parent.getActiveSheet().ranges.forEach((range: ExtendedRange): void => {
-            if (range.info && startIndex < range.info[`${totalKey}`]) {
-                if (range.info[`delete${modelType}Range`]) {
-                    range.info[`delete${modelType}Range`].push([startIndex, endIndex]);
-                } else {
-                    range.info[`delete${modelType}Range`] = [[startIndex, endIndex]];
-                }
-                range.info[`${totalKey}`] -= total;
-                if (range.info[`insert${modelType}Range`]) {
-                    range.info[`insert${modelType}Range`] = newRange;
-                }
-            }
-        });
     }
     private deleteConditionalFormats(args: InsertDeleteModelArgs, eventArgs: InsertDeleteEventArgs): void {
         const cfCollection: ConditionalFormatModel[] = args.model.conditionalFormats;

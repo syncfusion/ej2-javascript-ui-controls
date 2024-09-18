@@ -1072,6 +1072,106 @@ describe('Chart Control', () => {
             chart.refresh();
         });
     });
+
+    describe('StackingBar - checking animation on data changes.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let animate: EmitType<IAnimationCompleteEventArgs>;
+        let element: HTMLElement = createElement('div', { id: 'StackingBarcontainer' });
+        let dataSource = [
+            { x: 'GBR', y: 17 }, { x: 'CHN', y: 16, }, { x: 'AUS', y: 8 },
+            { x: 'RUS', y: 14 }, { x: 'GER', y: 17 }, { x: 'UA', y: 2 }, { x: 'ES', y: 7 },
+            { x: 'UZB', y: 4 }, { x: 'JPN', y: 12 }, { x: 'NL', y: 8 }, { x: 'USA', y: 26 }
+        ];
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', interval: 1, majorGridLines: { width: 0 }, minorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 } },
+                    primaryYAxis: { title: 'Medal Count', maximum: 100, interval: 10, majorGridLines: { width: 0 }, minorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 }, lineStyle: { width: 0 }, labelFormat: '{value}' },
+                    series: [
+                        {
+                            animation: { enable: false }, name: 'Gold',
+                            dataSource: dataSource,
+                            xName: 'x', yName: 'y', columnFacet: 'Cylinder',
+                            type: 'StackingBar', fill: 'skyblue',
+                            marker: { visible: true, dataLabel: { visible: true } }
+                        }
+                    ],
+                    width: '800', tooltip: { enable: true }, legendSettings: { visible: true },
+                    title: 'Olympic Medal Counts - RIO', loaded: loaded
+                });
+            chartObj.appendTo('#StackingBarcontainer');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+
+        it('Stacking bar - Checking setData method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement = document.getElementById('StackingBarcontainer_Series_0_Point_1');
+                expect(seriesElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            let dataSource = [
+                { x: 'GBR', y: 17 }, { x: 'CHN', y: 16, }, { x: 'AUS', y: 8 },
+                { x: 'RUS', y: 16 }, { x: 'GER', y: 17 }, { x: 'UA', y: 9 }, { x: 'ES', y: 7 },
+                { x: 'UZB', y: 4 }, { x: 'JPN', y: 12 }, { x: 'NL', y: 8 }, { x: 'USA', y: 26 }
+            ];
+            chartObj.series[0].setData(dataSource);
+            chartObj.refresh();
+        });
+    });
+    describe('Staking Bar - Checking legend click animation.', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let path: string[];
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            elem = createElement('div', { id: 'Stackingbarcontainer' });
+            document.body.appendChild(elem);
+            chartObj = new Chart({
+                series: [
+                    {
+                        dataSource: [{ x: 1, y: 10 }, { x: 2, y: null },
+                        { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: 30 }, { x: 6, y: 20 }],
+                        xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Average' },
+                        type: 'StackingBar', animation: { enable: false },
+                        marker: { visible: true, dataLabel: { visible: true } },
+                        name:'Column1'
+                    },
+                    {
+                        dataSource: [{ x: 1, y: 10 }, { x: 2, y: null },
+                        { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: 30 }, { x: 6, y: 20 }],
+                        xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Average' },
+                        type: 'StackingBar', animation: { enable: false },
+                        marker: { visible: true, dataLabel: { visible: true } },
+                        name:'Column2'
+                    }
+                ],
+                legendSettings: { visible: true },
+            });
+            chartObj.appendTo('#Stackingbarcontainer');
+        });
+        afterAll((): void => {
+            elem.remove();
+            chartObj.destroy();
+        });
+        it('Stacking Bar - legend click animation', (done: Function) => {
+            loaded = (args: Object): void => {
+                let legendElement = document.getElementById('Stackingbarcontainer_chart_legend_text_0');
+                trigger.clickEvent(legendElement);
+                expect(legendElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

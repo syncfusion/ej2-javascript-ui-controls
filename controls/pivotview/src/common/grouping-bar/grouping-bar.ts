@@ -143,6 +143,9 @@ export class GroupingBar implements IAction {
 
     private appendToElement(): void {
         const element: HTMLElement = this.groupingTable ? this.groupingTable : this.groupingChartTable;
+        if (isNullOrUndefined(element)) {
+            return;
+        }
         const leftAxisPanel: HTMLElement = element.getElementsByClassName(cls.LEFT_AXIS_PANEL_CLASS)[0] as HTMLElement;
         const filterPanel: HTMLElement = element.getElementsByClassName(cls.GROUP_FILTER_CLASS + ' ' +
             cls.FILTER_AXIS_CLASS)[0] as HTMLElement;
@@ -260,13 +263,13 @@ export class GroupingBar implements IAction {
                     this.updateChartAxisHeight();
                 }
                 if (this.parent.showToolbar && this.parent.displayOption.view === 'Both') {
-                    if (this.parent.currentView === 'Table') {
-                        (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = 'none';
-                    } else {
-                        (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = 'none';
+                    const groupingBarSelector: string = this.parent.currentView === 'Table' ? '.e-chart-grouping-bar'
+                        : '.e-pivot-grouping-bar';
+                    const groupingBar: HTMLElement = this.parent.element.querySelector(groupingBarSelector) as HTMLElement;
+                    if (groupingBar) {
+                        groupingBar.style.display = 'none';
                     }
                 }
-
             }
         }
     }
@@ -391,25 +394,27 @@ export class GroupingBar implements IAction {
      * @hidden
      */
     public alignIcon(): void {
-        const element: HTMLElement = this.parent.pivotFieldListModule.element;
-        let currentWidth: number;
-        if (this.parent.currentView === 'Table') {
-            currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
-        } else {
-            currentWidth = this.parent.chart ? this.parent.pivotChartModule.getCalulatedWidth() : currentWidth;
-        }
-        if (currentWidth) {
-            const actWidth: number = currentWidth < 400 ? 400 : currentWidth;
-            setStyleAttribute(element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
-                left: formatUnit(this.parent.enableRtl ?
-                    -Math.abs((actWidth) -
-                        (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth) :
-                    (actWidth) -
-                    (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth),
+        if (this.parent.pivotFieldListModule) {
+            const element: HTMLElement = this.parent.pivotFieldListModule.element;
+            let currentWidth: number;
+            if (this.parent.currentView === 'Table') {
+                currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
+            } else {
+                currentWidth = this.parent.chart ? this.parent.pivotChartModule.getCalulatedWidth() : currentWidth;
+            }
+            if (currentWidth) {
+                const actWidth: number = currentWidth < 400 ? 400 : currentWidth;
+                setStyleAttribute(element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
+                    left: formatUnit(this.parent.enableRtl ?
+                        -Math.abs((actWidth) -
+                            (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth) :
+                        (actWidth) -
+                        (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth),
 
-                top: this.parent.element.querySelector('.' + cls.FIELD_PANEL_SCROLL_CLASS) ? (this.parent.element.querySelector(
-                    '.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetHeight.toString() + 'px' : ''
-            });
+                    top: this.parent.element.querySelector('.' + cls.FIELD_PANEL_SCROLL_CLASS) ? (this.parent.element.querySelector(
+                        '.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetHeight.toString() + 'px' : ''
+                });
+            }
         }
     }
 
@@ -506,7 +511,7 @@ export class GroupingBar implements IAction {
             }
             this.parent.grid.headerModule.refreshUI();
         }
-        if (this.groupingTable) {
+        if (this.groupingTable || this.groupingChartTable) {
             this.refreshUI();
         }
     }

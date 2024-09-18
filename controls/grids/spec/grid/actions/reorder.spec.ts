@@ -1075,4 +1075,93 @@ describe('Reorder module', () => {
             gridObj = headers = columns = null;
         });
     });
+
+    describe('Reorder file code coverage - 1', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSorting: true,
+                    allowReordering: true,
+                    frozenColumns: 2,
+                    columns: [{ field: 'OrderID' }, 
+                    { field: 'CustomerID' }, 
+                    { field: 'EmployeeID' }],
+                }, done);
+        });
+
+        it('Reorder file -  headerDrop coverage', () => {
+            (gridObj.reorderModule as any).element = gridObj.element.querySelector('.e-headercell');
+            (gridObj.reorderModule as any).element.firstElementChild.removeAttribute('e-mappinguid');
+            (gridObj.reorderModule as any).headerDrop({ target: gridObj.element.querySelectorAll('.e-headercell')[1] });
+        });  
+
+        it('Reorder file -  headerDrop coverage', () => {
+            (gridObj.reorderModule as any).element = gridObj.element.querySelector('.e-headercell');
+            (gridObj.columns[1] as any).lockColumn = true;
+            (gridObj.reorderModule as any).headerDrop({target: gridObj.element.querySelectorAll('.e-headercell')[1]});
+            (gridObj.columns[1] as any).lockColumn = false;
+            (gridObj.reorderModule as any).headerDrop({target: gridObj.element.querySelectorAll('.e-headercell')[1]});
+        });  
+
+        it('Reorder file branches coverage - 1', () => {
+            (gridObj.reorderModule as any).dragStop({ cancel: true });
+            (gridObj.reorderModule as any).moveTargetColumn(null, -4);
+            (gridObj.reorderModule as any).enableAfterRender({ module:'reorder', enable: true });
+            (gridObj.reorderModule as any).createReorderElement({ args: { isXaxis: true } });
+            (gridObj.reorderModule as any).setScrollLeft(gridObj.getContent().firstElementChild, 100);
+            (gridObj as any).getContent().querySelector('.e-rowcell').click();
+            (gridObj as any).keyActionHandler({ action:'ctrlLeftArrow', target: gridObj.getHeaderTable().querySelector('.e-rowcell'), preventDefault: () => { },} );
+            (gridObj as any).getHeaderTable().querySelector('.e-headercell').click();
+            (gridObj as any).keyActionHandler({ action:'ctrlLeftArrow', target: gridObj.getHeaderTable().querySelector('.e-headercell'), preventDefault: () => { },} );
+            (gridObj as any).keyActionHandler({ action:'ctrlRightArrow', target: gridObj.getHeaderTable().querySelector('.e-headercell'), preventDefault: () => { },} );
+        });
+
+        it('Reorder file branches coverage - 2', () => {
+            (gridObj.reorderModule as any).chkDropPosition(gridObj.element.querySelector('.e-headercell'), gridObj.element.querySelectorAll('.e-headercell')[1]);
+        });  
+
+        it('Reorder file branches coverage - 3', () => {
+            gridObj.element.querySelector('.e-headercontent').removeChild((gridObj.reorderModule as any).upArrow);
+            gridObj.element.querySelector('.e-headercontent').removeChild((gridObj.reorderModule as any).downArrow);
+            (gridObj.reorderModule as any).destroy();
+        });  
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Reorder with enableColumnVirtualization  code coverage - 1', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableVirtualization: true,
+                    enableColumnVirtualization: true,
+                    height: 200,
+
+                    columns: [{ field: 'OrderID', width: 100 }, 
+                    { field: 'CustomerID',  width: 100  }, 
+                    { field: 'EmployeeID',  width: 100  }],
+                }, done);
+        });
+
+        it('enableColumnVirtualization Reorder -  headerDrop coverage', () => {
+            (gridObj.reorderModule as any).chkDropPosition(gridObj.element.querySelector('.e-headercell'), gridObj.element.querySelector('.e-row'));
+            (gridObj.reorderModule as any).element = gridObj.element.querySelector('.e-headercell');
+            (gridObj.reorderModule as any).headerDrop({target: gridObj.element.querySelectorAll('.e-headercell')[1]});
+        });  
+
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

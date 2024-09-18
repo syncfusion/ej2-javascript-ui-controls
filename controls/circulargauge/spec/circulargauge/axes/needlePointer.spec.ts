@@ -74,7 +74,7 @@ describe('Circular-Gauge Control', () => {
             };
             gauge.refresh();
         });
-      
+              
 
         it('Checking startwidth and endwidth to set 0', function (done) {
             gauge.loaded = function (args) {

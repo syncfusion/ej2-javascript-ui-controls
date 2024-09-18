@@ -34,6 +34,17 @@
             @include selected-color;
             @include selected-icon-color;
           }
+
+          &:active {
+            @if $skin-name == 'bootstrap5.3' {
+              background-color: $cmenu-li-selection-bgcolor;
+              color: $cmenu-selected-color;
+
+              & .e-menu-icon {
+                color: $cmenu-selected-color;
+              }
+            }
+          }
         }
 
         @include disabled-color;

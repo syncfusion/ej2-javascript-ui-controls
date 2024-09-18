@@ -8,6 +8,7 @@ import { Range, Pointer } from '../../../src/circular-gauge/axes/axis';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/circular-gauge/model/interface';
 import { GaugeLocation } from '../../../src/circular-gauge/utils/helper-common';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import { MouseEvents } from '../user-interaction/mouse-events.spec';
 
 describe('Circular-Gauge Control', () => {
     let gauge: CircularGauge;
@@ -555,6 +556,34 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].pointers[0].imageUrl = 'base/spec/img/img1.jpg';
             gauge.refresh();
         });
+
+        it('Checking marker shape pointer inside - InvertedTriangle', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_0');
+                expect(svg).not.toBe(null);
+                done();
+            };
+            gauge.axes[0].pointers[0].position = 'Inside';
+            gauge.axes[0].pointers[0].value = 80;
+            gauge.axes[0].pointers[0].radius = null;
+            gauge.axes[0].pointers[0].markerShape = 'InvertedTriangle';
+            gauge.refresh();
+        });
+
+        it('Checking marker shape pointer cross - Text', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_0');
+                expect(svg).not.toBe(null);
+                done();
+            };
+            gauge.axes[0].pointers[0].position = 'Cross';
+            gauge.axes[0].pointers[0].value = 80;
+            gauge.axes[0].pointers[0].radius = null;
+            gauge.axes[0].pointers[0].markerShape = 'Text';
+            gauge.axes[0].pointers[0].text = "Text";
+            gauge.axes[0].pointers[0].textStyle.fontWeight = null;
+            gauge.refresh();
+        });
     });
 
     describe('Gauge axis pointer behavior - Range Bar Pointer', () => {
@@ -798,6 +827,7 @@ describe('Circular-Gauge Control', () => {
     });
 
     describe('Gauge axis pointer - Dynamic update', () => {
+        let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
@@ -990,6 +1020,80 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].direction = 'AntiClockWise';
             gauge.axes[0].startAngle = 110;
             gauge.axes[0].endAngle = 70;
+            gauge.refresh();
+        });
+        it('Dynamic update for Range Bar - Anti clock wise and roundedCornerRadius', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_RangeBar_0');
+                gauge.setPointerValue(0, 0, 0);
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '544.3753766785476' || value[1] == '545.3753766785476').toBe(true);
+                gauge.setPointerValue(0, 0, 20);
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '407.3264348843632' || value[1] == '408.3264348843632').toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].type = 'RangeBar';
+            gauge.axes[0].pointers[0].value = 110;
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.axes[0].startAngle = 110;
+            gauge.axes[0].endAngle = 70;
+            gauge.axes[0].pointers[0].roundedCornerRadius = 3;
+            gauge.refresh();
+        });
+        it('Dynamic update for Marker - Anti clock wise and markerShape as Text', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_0');
+                value = svg.getAttribute('transform');
+                expect(value == 'rotate(110,544.3753766785476,283.5538485373545)' || value == 'rotate(110,545.3753766785476,283.5538485373545)').toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].value = 110;
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.axes[0].startAngle = 110;
+            gauge.axes[0].endAngle = 150;
+            gauge.axes[0].pointers[0].roundedCornerRadius = 3;
+            gauge.axes[0].pointers[0].markerShape = 'Text';
+            gauge.axes[0].pointers[0].position = 'Cross';
+            gauge.axes[0].pointers[0].text = 'Text';
+            gauge.refresh();
+        });
+        it('Dynamic update for Marker - Anti clock wise and markerShape as Triangle', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_0');
+                value = svg.getAttribute('transform');
+                expect(value == 'rotate(20,383.5,225)' || value == 'rotate(20,384.5,225)').toBe(true);
+                gauge.setPointerValue(0, 0, 20);
+                value = svg.getAttribute('transform');
+                expect(value == 'rotate(52,383.5,225)' || value == 'rotate(52,384.5,225)').toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].value = 110;
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.axes[0].startAngle = 110;
+            gauge.axes[0].endAngle = 150;
+            gauge.axes[0].pointers[0].radius = null;
+            gauge.axes[0].pointers[0].markerShape = 'Triangle';
+            gauge.axes[0].pointers[0].position = 'Cross';
+            gauge.axes[0].pointers[0].text = 'Text';
+            gauge.refresh();
+        });
+        it('Right click event trigger', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {                
+                trigger.rightClick(ele, 0, 0, 'touch', 5, gauge);
+                done();
+            };
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].value = 110;
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.axes[0].startAngle = 110;
+            gauge.axes[0].endAngle = 150;
+            gauge.axes[0].pointers[0].radius = null;
+            gauge.axes[0].pointers[0].markerShape = 'Triangle';
+            gauge.axes[0].pointers[0].position = 'Cross';
+            gauge.axes[0].pointers[0].text = 'Text';
             gauge.refresh();
         });
     });
@@ -1236,7 +1340,7 @@ describe('Circular-Gauge Control', () => {
                         markerShape: "Rectangle",
                     },
                     {
-                        value: 40,
+                        value: 10,
                         type: "RangeBar",
                         offset: '0%'
                     },

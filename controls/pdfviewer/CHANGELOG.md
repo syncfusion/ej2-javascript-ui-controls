@@ -2,7 +2,28 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 27.1.48 (2024-09-18)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I620380` - Now, the sticky note annotation was added correctly along with the comment programmatically inside the annotationAdd event without any exceptions.
+- `#I624857` - The `ArgumentOutOfRangeException` no longer occurs when clicking the submit button in the provided document.
+- `#F194120` - The bookmark navigation now works properly in the provided document.
+- `#I619099` - The pages now render properly when navigating to the searched text continuously.
+- `#I626710` - Now, the signature is added to the correct signature field when switching the mobile device from portrait to landscape orientation.
+
+#### Features
+
+- Added support to import PDF documents within the Organize Pages dialog, enabling users to incorporate pages from other PDFs into the current document.
+- `#F181628` , `#I482858` , `#I488268` , `#I494793` , `#I595206` - Introduced the ability to programmatically add handwritten signatures and initial annotations in PDF documents.
+- `#F183710` , `#I470260` - Implemented options to customize print quality in the PDF Viewer, allowing users to select different quality levels to balance print clarity with processing speed.
+- Enabled multi-word search functionality within the PDF Viewer.
+- `#I592524` , `#I598159` - Added support for loading custom fonts in `PDFium` WASM to ensure proper rendering of page content.
+- `#I340793` , `#I345576` , `#I359942` , `#I379567` , `#I386590` , `#I605421` , `#I607974` - Added support for custom fonts in the `TypeHere` signature and initial fields.
+
+## 26.2.12 (2024-09-03)
 
 ### PDF Viewer
 
@@ -10,12 +31,14 @@
 
 - `#I621133` - The `IsDocumentEdited` API does not return true for documents with form fields.
 - `#I620047` - Now, the text markup annotation rotation is correctly rendered after rotating the PDF pages.
-- `#I625999` - Now, the free text annotation font size is updating properly.
 - `#I620349` - Now, the `FormFieldPropertiesChange` event is triggered when adding or deleting the dropdown options.
 - `#I622415` - Now, the able to copy text from the input box of the search dialog.
 - `#I626450` - Now, no more console errors occur when focusing on the PDF Viewer.
+- `#I625999` - Now, the free text annotation font size is updating properly.
 - `#I626966` - The invalid behavior of font alignment and font color tools in the `annotationToolbarItems` has been resolved now.
 - `#I626108` - The polygon annotation is now preserved properly when adding and rotating the pages.
+- `#I627416` - Now, the form field background color is now correctly updated when changing form field visibility from `hidden` to `visible` mode.
+- `#622761` - Now, `ValidateFormFieldsArgs` is triggered properly when the submit button is clicked.
 
 ## 26.2.11 (2024-08-27)
 
@@ -57,10 +80,10 @@
 
 #### Bug Fixes
 
-- `#I612530` - Now, able to copy text from form field text boxes using Ctrl+C.
-- `#I608686` - Now, the script error no longer occurs when deleting the added annotations using the `deleteAnnotations` API.
 - `#I607610` - Now, we are able to click the checkbox field in the customer-provided document on mobile devices.
-- `#I612848` - Now, The form fields can no longer be pasted outside the page container
+- `#I608686` - Now, the script error no longer occurs when deleting the added annotations using the `deleteAnnotations` API.
+- `#I612530` - Now, able to copy text from form field text boxes using Ctrl+C.
+- `#I612848` - Now, the form fields can not be pasted out of the page.
 - `#I609340` - Now, the invalid error message is not displayed when loading an incorrect file path in stand-alone mode.
 
 ## 26.2.7 (2024-07-30)
@@ -69,7 +92,7 @@
 
 #### Bug Fixes
 
-- `#I608779` - Now, the signature field value is not removed from `formFieldCollections` when updating visibility programmatically.
+- `#608779` - Now, the signature field value is not removed from `formFieldCollections` when updating visibility programmatically.
 
 ## 26.2.5 (2024-07-26)
 
@@ -98,10 +121,10 @@
 #### Bug Fixes
 
 - `#I592444` - Now, the size of the focused free text annotation remains unchanged when pressing the Alt key.
-- `#I609661` - Now, the Pages are rendered properly when navigating to the pages using the `goToBookmark` method.
-- `#I608331` - Now, the `formFieldRemove` event is not triggered when resizing the form field.
-- `#F189033` - Now, the print preview images are displayed properly on the Safari browser on an iPhone device.
 - `#I609398` - Now, the script error does not occurs when selecting the custom stamp with customized `stampSettings`.
+- `#I608331` - Now, the `FormFieldRemove` event is not triggered when resizing the form field.
+- `#I609661` - Now, the Pages are rendered properly when navigating to the pages using the `goToBookmark` method.
+- `#F189033` - Now, the print preview images are displayed properly on the Safari browser on an iPhone device.
 
 ## 26.1.41 (2024-07-09)
 
@@ -113,10 +136,6 @@
 - `#I605293` - Now, the script error does not occurs when updating the PDF Viewer height value programmatically on mobile devices.
 - `#I601076` - Now, the annotation with author and subject are not missing in downloaded PDF.
 - `#I602512` - Now, the comment `div` is no longer created when an annotation is pasted onto a different page.
-
-#### Features
-
-- Implemented the `exportAsImage` API in our Stand-alone PDF viewer, which allows users to export pages as images. This enhancement provides users with a powerful tool to effortlessly convert PDF pages into image files.
 
 ## 26.1.40 (2024-07-02)
 

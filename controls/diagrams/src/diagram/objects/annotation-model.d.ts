@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { TextStyle, Margin } from '../core/appearance';import { Point } from '../primitives/point';import { TextStyleModel, MarginModel } from '../core/appearance-model';import { PointModel } from '../primitives/point-model';import { HorizontalAlignment, VerticalAlignment, AnnotationAlignment, AnnotationTypes, TextDecoration, AnnotationType, LinkTarget, RotationReference } from '../enum/enum';import { AnnotationConstraints } from '../enum/enum';import { randomId } from '../utility/base-util';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { TextStyle, Margin } from '../core/appearance';import { Point } from '../primitives/point';import { TextStyleModel, MarginModel } from '../core/appearance-model';import { PointModel } from '../primitives/point-model';import { HorizontalAlignment, VerticalAlignment, AnnotationAlignment, AnnotationTypes, TextDecoration, AnnotationType, LinkTarget, RotationReference } from '../enum/enum';import { AnnotationConstraints } from '../enum/enum';import { randomId } from '../utility/base-util';import { DiagramTooltipModel } from './tooltip-model';import { DiagramTooltip } from './tooltip';
 
 /**
  * Interface for a class Hyperlink
@@ -208,6 +208,13 @@ export interface AnnotationModel {
      * @default 'Shape'
      */
     type?: AnnotationTypes;
+
+    /**
+     * This property is used to show tooltip for annotation on mouse over.
+     *
+     * @default new DiagramToolTip();
+     */
+    tooltip?: DiagramTooltipModel;
 
     /**
      * Allows the user to save custom information/data about an annotation

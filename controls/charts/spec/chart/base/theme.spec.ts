@@ -14,8 +14,12 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
-
-Chart.Inject(ColumnSeries, StackingColumnSeries, DataLabel, Legend);
+import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
+import { Series } from '../../../src/chart/series/chart-series';
+import { MouseEvents } from '../base/events.spec';
+import { Export } from '../../../src/chart/print-export/export';
+import { ExportUtils } from '../../../src/common/utils/export';
+Chart.Inject(ColumnSeries, StackingColumnSeries, DataLabel, Legend, Tooltip, Export);
 
 
 
@@ -333,6 +337,48 @@ describe('Chart Control', () => {
             chartObj.palettes = ['violet'];
             chartObj.legendSettings.visible = false;
             chartObj.dataBind();
+        });
+        it('Checking chart-series animate method', (done: Function) => {
+            chartObj.loaded = (args: ILoadedEventArgs): void => {
+                args.chart.animate(0);
+                expect(getElement('theme') !== null).toBe(true);
+                done();
+            };
+            chartObj.tooltip = { enable: true };
+            chartObj.refresh();
+        });
+        it('Checking chart-series animate method without tooltip', (done: Function) => {
+            chartObj.loaded = (args: ILoadedEventArgs): void => {
+                let trigger: MouseEvents = new MouseEvents();
+                args.chart.markerRender.previousPoints = [(args.chart.series[0] as Series).points[0]] as any;
+                args.chart.animate(0);
+                args.chart.chartOnMouseDown(<PointerEvent>trigger.onTouchStart(document.getElementById('theme_Series_0_Point_0'), 0, 0, 0, 0, 0, 0));
+                expect(getElement('theme') !== null).toBe(true);
+                done();
+            };
+            chartObj.tooltip = { enable: false };
+            chartObj.refresh();
+        });
+        it('Checking chart PNG export with height and width', (done: Function): void => {
+            chartObj.loaded = (args: ILoadedEventArgs): void => {
+                chartObj.loaded = null;
+                args.chart.exportModule.export('PNG', 'png', null, null, null, 300);
+                expect(args !== null).toBe(true);
+                done();
+            };
+            chartObj.refresh();
+        });
+        it('Checking chart PNG export with vertical', (done: Function): void => {
+            chartObj.loaded = (args: ILoadedEventArgs): void => {
+                chartObj.loaded = null;
+                const exportChart: ExportUtils = new ExportUtils(args.chart);
+                args.chart.exportModule.export('PNG', 'png', null, [args.chart], null, null, false);
+                exportChart.exportImage([], null, null, null);
+                expect(args !== null).toBe(true);
+                done();
+            };
+            chartObj.theme = 'MaterialDark';
+            chartObj.refresh();
         });
     });
     it('memory leak', () => {

@@ -98,6 +98,18 @@
         }
       }
 
+      & .e-calculation {
+        &::before {
+          content: '\e907';
+        }
+      }
+
+      & .e-calculate-sheet {
+        &::before {
+          content: '\e909';
+        }
+      }
+
       & .e-hyperlink-icon {
         &::before {
           content: '\e757';
@@ -120,6 +132,18 @@
     & .e-insert-function .e-btn-icon {
       &::before {
         content: '\e7fa';
+      }
+    }
+
+    & .e-calculation .e-btn-icon {
+      &::before {
+        content: '\e907';
+      }
+    }
+
+    & .e-calculate-sheet .e-btn-icon {
+      &::before {
+        content: '\e909';
       }
     }
 
@@ -314,25 +338,78 @@
     }
   }
 
+  .e-menu-wrapper.e-chart-menu.e-column-chart,
+  .e-menu-wrapper.e-chart-type-menu.e-column-chart,
+  .e-menu-wrapper.e-chart-menu.e-bar-chart,
+  .e-menu-wrapper.e-chart-type-menu.e-bar-chart,
+  .e-menu-wrapper.e-chart-menu.e-area-chart,
+  .e-menu-wrapper.e-chart-type-menu.e-area-chart,
+  .e-menu-wrapper.e-chart-menu.e-pie-doughnut-chart,
+  .e-menu-wrapper.e-chart-type-menu.e-pie-doughnut-chart,
+  .e-menu-wrapper.e-chart-menu.e-line-chart,
+  .e-menu-wrapper.e-chart-type-menu.e-line-chart,
+  .e-menu-wrapper.e-chart-menu.e-scatter-chart,
+  .e-menu-wrapper.e-chart-type-menu.e-scatter-chart {
+    & .e-ul .e-menu-item.e-focused {
+      background-color: transparent;
+      color: $chart-text-content-color;
+      & .e-menu-icon.e-icons {
+        //color: $flyout-text-color-pressed;
+      }
+      & .e-menu-icon.e-icons {
+        &:hover {
+          //color: $flyout-text-color-pressed;
+        }
+      }
+    }
+  }
+
   .e-chart-menu .e-ul .e-menu-item,
   .e-chart-type-menu .e-ul .e-menu-item {
-    padding: 0 16px 0 10px;
 
     .e-menu-icon {
       font-size: $spreadsheet-chart-icon-font-size;
-      margin-right: 10px;
     }
 
     .e-bar {
       font-size: 42px;
-      left: -6px;
+      left: -5px;
+      margin-right: -2px;
+      position: relative;
+    }
+  }
+
+  .e-bigger .e-menu-wrapper.e-chart-menu .e-ul .e-menu-item,
+  .e-bigger .e-menu-wrapper.e-chart-type-menu .e-ul .e-menu-item {
+
+    .e-menu-icon {
+      font-size: $spreadsheet-chart-icon-font-size;
+    }
+
+    .e-bar {
+      font-size: 42px;
+      left: -5px;
       margin-right: -2px;
       position: relative;
     }
   }
 
   .e-addchart-menu .e-ul .e-menu-item .e-menu-icon {
+    font-size: 22px;
+  }
+
+  .e-addchart-ddb .e-addchart-menu .e-ul .e-menu-item .e-menu-icon {
     font-size: $spreadsheet-chart-icon-font-size;
+    line-height: 17px;
+  }
+
+  .e-bigger .e-addchart-ddb .e-menu-wrapper.e-addchart-menu .e-ul .e-menu-item .e-menu-icon {
+    font-size: $spreadsheet-chart-icon-font-size;
+    line-height: 17px;
+  }
+
+  .e-bigger .e-menu-wrapper.e-addchart-menu .e-ul .e-menu-item .e-menu-icon {
+    font-size: 22px;
   }
 
   .e-chart-menu,

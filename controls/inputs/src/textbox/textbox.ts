@@ -528,7 +528,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
             this.enabled = false;
         }
-        if (!this.element.hasAttribute('aria-labelledby') && !this.element.hasAttribute('placeholder') && !this.element.hasAttribute('aria-label')) {
+        if (!this.element.hasAttribute('aria-labelledby') && !this.element.hasAttribute('placeholder')  && !this.element.hasAttribute('aria-label')) {
             this.element.setAttribute('aria-label', 'textbox');
         }
         this.renderComplete();

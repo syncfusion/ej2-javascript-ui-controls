@@ -10,7 +10,7 @@ import { IFilterArgs, FilterSearchBeginEventArgs, CheckBoxBeforeRenderer, IGrid 
 import * as events from '../base/constant';
 import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
-import { getForeignData } from '../base/util';
+import { getForeignData, resetDialogAppend } from '../base/util';
 import { Column, ColumnModel } from '../models/column';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
@@ -28,6 +28,7 @@ import { DataResult, EJ2Intance } from '../base/interface';
 export class CheckBoxFilterBase {
     //Internal variables
     protected sBox: HTMLElement;
+    private searchInputArgs: InputArgs = null;
     protected isExcel: boolean;
     protected id: string;
     protected colType: string;
@@ -191,6 +192,7 @@ export class CheckBoxFilterBase {
     }
 
     private searchBoxKeyUp(e?: KeyboardEvent): void {
+        if (isNullOrUndefined(this.sInput)) { return; }
         if (isNullOrUndefined(e) || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown' && e.key !== 'Tab' && !(e.key === 'Tab' && e.shiftKey))) {
             if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
                 this.parent.showMaskRow(undefined, this.dialogObj.element);
@@ -287,13 +289,13 @@ export class CheckBoxFilterBase {
             this.searchBox = this.parent.createElement('span', { className: 'e-searchbox e-fields' });
             this.searchBox.appendChild(this.sInput);
             this.sBox.appendChild(this.searchBox);
-            const inputargs: InputArgs = {
+            this.searchInputArgs = {
                 element: this.sInput as HTMLInputElement, floatLabelType: 'Never', properties: {
                     placeholder: this.getLocalizedLabel('Search'),
                     cssClass: this.parent.cssClass
                 }
             };
-            Input.createInput(inputargs, this.parent.createElement);
+            Input.createInput(this.searchInputArgs, this.parent.createElement);
             this.searchBox.querySelector('.e-input-group').appendChild(this.sIcon);
         }
 
@@ -364,6 +366,10 @@ export class CheckBoxFilterBase {
         this.dialogObj.appendTo(this.dlg as HTMLElement);
         this.dialogObj.element.style.maxHeight = options.isResponsiveFilter ? 'none' : this.options.height + 'px';
         this.dialogObj.show();
+        if ((this.parent as IGrid) && (this.parent as IGrid).filterSettings && (this.parent as IGrid).filterSettings.type === 'CheckBox' &&
+            ((this.parent as IGrid).getContent().firstElementChild as HTMLElement).offsetHeight < this.dialogObj.element.offsetHeight) {
+            resetDialogAppend((this.parent as IGrid), this.dialogObj);
+        }
         const content: HTMLElement = this.dialogObj.element.querySelector('.e-dlg-content');
         content.appendChild(this.sBox);
         this.wireEvents();
@@ -371,7 +377,7 @@ export class CheckBoxFilterBase {
             if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer'
                 && !this.infiniteRenderMod) {
                 this.parent.showMaskRow(undefined, this.dialogObj.element);
-            } 
+            }
             if (this.infiniteRenderMod && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
                 this.showMask();
             }
@@ -437,6 +443,12 @@ export class CheckBoxFilterBase {
             }
             this.parent.notify(events.filterMenuClose, { field: this.options.field });
             this.unWireEvents();
+            if (this.searchInputArgs && this.searchInputArgs.element && this.searchInputArgs.element.parentElement) {
+                Input.destroy(this.searchInputArgs);
+                remove(this.searchInputArgs.element);
+            }
+            this.searchInputArgs = null;
+            this.sInput = null;
             if (this.parent.isReact && this.options.column.filter && typeof (this.options.column.filter.itemTemplate) !== 'string'
              && (this.options.column.filter.type === 'CheckBox' || this.options.column.filter.type === 'Excel')) {
                 this.dialogObj.element.querySelector('.e-dlg-content').innerHTML = '';
@@ -1019,7 +1031,7 @@ export class CheckBoxFilterBase {
      * @returns {void}
      * @hidden
      */
-     public showMask(): void {
+    public showMask(): void {
         let maskRowCount: number = 5;
         let maskItemHeight: string;
         const maskList: HTMLElement = this.parent.createElement('div', { id: this.id + this.options.type + '_CheckBoxMaskList',
@@ -1805,7 +1817,8 @@ export class CheckBoxFilterBase {
     private updateInfiniteUnLoadedCheckboxExistPred(value: string | number, updatePredArr: Object[]): void {
         for (let j: number = 0; j < updatePredArr.length; j++) {
             const pred: PredicateModel = updatePredArr[j as number] as PredicateModel;
-            const predValue = pred.value instanceof Date ? this.valueFormatter.toView(pred.value , this.options.formatFn) as string : pred.value;
+            const predValue: string | number | boolean = pred.value instanceof Date ?
+                this.valueFormatter.toView(pred.value, this.options.formatFn) as string : pred.value;
             if (value === predValue && (pred.operator === 'equal' || pred.operator === 'notequal')) {
                 this.infiniteManualSelectMaintainPred.push(updatePredArr[j as number]);
                 updatePredArr.splice(j, 1);

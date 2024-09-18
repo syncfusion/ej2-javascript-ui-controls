@@ -196,7 +196,7 @@ export class InkAnnotation {
      */
     public addInk(pageNumber?: number): any {
         this.outputString = this.updateInkDataWithZoom();
-        const currentBounds: any = this.calculateInkSize();
+        const currentBounds: any = this.calculateInkSize(this.outputString);
         let annot: any;
         if (this.pdfViewerBase.isToolbarInkClicked) {
             const annotationName: string = this.pdfViewer.annotation.createGUID();
@@ -315,12 +315,17 @@ export class InkAnnotation {
         }
     }
 
-    private calculateInkSize(): any {
+    /**
+     * @private
+     * @param {string} data - data
+     * @returns {any} - points
+     */
+    public calculateInkSize(data: string): any {
         let minimumX: number = -1;
         let minimumY: number = -1;
         let maximumX: number = -1;
         let maximumY: number = -1;
-        const collectionData: Object[] = processPathData(this.outputString);
+        const collectionData: Object[] = processPathData(data);
         const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         for (let k: number = 0; k < collectionData.length; k++) {
             const val: any = collectionData[parseInt(k.toString(), 10)];
@@ -389,7 +394,7 @@ export class InkAnnotation {
                         }
                     }
                     this.outputString = data;
-                    const calculateInkPosition: any = this.calculateInkSize();
+                    const calculateInkPosition: any = this.calculateInkSize(this.outputString);
                     this.outputString = '';
                     let rectDiff: number = 0;
                     let rectDifference: number = 1;
@@ -575,7 +580,7 @@ export class InkAnnotation {
 
     public getSelector(type: string, subject: string): AnnotationSelectorSettingsModel {
         let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
-        if ((type === 'Ink' || subject === "Ink") && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
+        if ((type === 'Ink' || subject === 'Ink' ) && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
             selector = this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings;
             this.pdfViewerBase.updateSelectorSettings(selector);
         }
@@ -620,7 +625,9 @@ export class InkAnnotation {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[parseInt(i.toString(), 10)].id) {
                     if (property === 'bounds') {
-                        this.pdfViewerBase.isBounds = this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds, annotationBase.wrapper.bounds);
+                        this.pdfViewerBase.isBounds =
+                        this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds,
+                                                             annotationBase.wrapper.bounds);
                         if (this.pdfViewerBase.isBounds) {
                             pageAnnotations[parseInt(i.toString(), 10)].bounds = {
                                 x: annotationBase.wrapper.bounds.left,
@@ -640,7 +647,7 @@ export class InkAnnotation {
                         currentAnnotObject = pageAnnotations.splice(i, 1)[0];
                         break;
                     }
-                    if (this.pdfViewerBase.isBounds) {
+                    if (this.pdfViewerBase.isBounds){
                         pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
                             this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                     }

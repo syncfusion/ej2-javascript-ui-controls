@@ -1,4 +1,4 @@
-import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest, Collection } from '@syncfusion/ej2-base';
+import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest, Collection, detach, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';
 import { createElement, addClass, removeClass, setStyleAttribute as setAttr, getUniqueID } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
@@ -168,6 +168,11 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public isMac : boolean = false;
     public oldView: string;
     public oldPath: string;
+    private viewElem: HTMLElement;
+    private dragSelectElement: HTMLElement;
+    private dragX: number;
+    private dragY: number;
+    private dragSelectedItems: string[] = [];
 
     /**
      * Specifies the AJAX settings of the file manager.
@@ -413,6 +418,16 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     @Property(null)
     public sortComparer: SortComparer | string;
+
+    /**
+     * Gets or sets a value that indicates whether the File Manager allows multiple items selection with mouse dragging.
+     * Set this property to true to allow users to select multiple items with mouse drag as like file explorer. Hover over
+     * the files or folders and drag the mouse to select the required items.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableRangeSelection: boolean;
 
     /**
      * Specifies the group of items aligned horizontally in the toolbar.
@@ -855,6 +870,9 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.setRtl(this.enableRtl);
         this.addEventListeners();
         read(this, (this.path !== this.originalPath) ? events.initialEnd : events.finalizeEnd, this.path);
+        if (this.fileView === 'Details') {
+            this.largeiconsviewModule.element.classList.add(CLS.DISPLAY_NONE);
+        }
         this.adjustHeight();
         if (isNOU(this.navigationpaneModule)) {
             this.splitterObj.collapse(this.enableRtl ? 1 : 0);
@@ -1306,7 +1324,34 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         }
     }
 
+    private wireSelectOnDragEvent(isBind: boolean): void {
+        if (isNOU(this.view)) {
+            return;
+        }
+        if (isBind) {
+            this.viewElem = this.view === 'LargeIcons' ? this.largeiconsviewModule.element : this.element.querySelector('.e-gridcontent');
+        }
+        if (!this.viewElem) {
+            return;
+        }
+        if (isBind) {
+            if (this.allowMultiSelection) {
+                EventHandler.add(this.viewElem, 'mousedown', this.onDragStart, this);
+                this.on(events.layoutChange, this.onLayoutChange, this);
+                this.on(events.selectionChanged, this.onLayoutChange, this);
+            }
+        }
+        else {
+            EventHandler.remove(this.viewElem, 'mousedown', this.onDragStart);
+            this.off(events.layoutChange, this.onLayoutChange);
+            this.off(events.selectionChanged, this.onLayoutChange);
+        }
+    }
+
     private wireEvents(): void {
+        if (this.enableRangeSelection) {
+            this.wireSelectOnDragEvent(true);
+        }
         EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler, this);
         this.keyboardModule = new KeyboardEvents(
             this.element,
@@ -1319,8 +1364,97 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     private unWireEvents(): void {
+        this.wireSelectOnDragEvent(false);
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler);
         this.keyboardModule.destroy();
+    }
+
+    private onDragStart(event: MouseEvent): void {
+        if (this.viewElem) {
+            if (this.allowDragAndDrop) {
+                const targetElement: Element = closest(event.target as Element, this.viewElem.classList.contains('e-large-icons') ? '.e-list-item' : '.e-fe-text');
+                if (targetElement) {
+                    return;
+                }
+            }
+            event.preventDefault();
+            this.dragX = event.pageX;
+            this.dragY = event.pageY;
+            if (!this.dragSelectElement) {
+                this.dragSelectElement = createElement('div', {
+                    id: this.element.id + '_drag',
+                    className: 'e-filemanager e-drag-select',
+                    styles: 'left: ' + this.dragX + 'px;top: ' + this.dragY + 'px;'
+                });
+                document.body.append(this.dragSelectElement);
+            }
+            EventHandler.add(document, 'mouseup', this.onDragStop, this);
+            EventHandler.add(this.viewElem, 'mousemove', this.onDrag, this);
+            EventHandler.add(this.dragSelectElement, 'mousemove', this.onDrag, this);
+        }
+    }
+
+    private onDrag(event: MouseEvent): void {
+        event.stopPropagation();
+        if (this.dragSelectElement) {
+            const diffX: number = event.pageX - this.dragX;
+            const diffY: number = event.pageY - this.dragY;
+            setStyleAttribute(this.dragSelectElement, {
+                'left': diffX < 0 ? this.dragX + diffX + 'px' : this.dragX + 'px', 'top': diffY < 0 ? this.dragY + diffY + 'px' : this.dragY + 'px',
+                'height': Math.abs(diffY) + 'px', 'width': Math.abs(diffX) + 'px'
+            });
+            this.selectItems();
+        }
+        else {
+            EventHandler.remove(this.viewElem, 'mousemove', this.onDrag);
+        }
+    }
+
+    private onDragStop(): void {
+        if (this.viewElem) {
+            EventHandler.remove(document, 'mouseup', this.onDragStop);
+            EventHandler.remove(this.viewElem, 'mousemove', this.onDrag);
+        }
+        if (this.dragSelectElement) {
+            EventHandler.remove(this.dragSelectElement, 'mousemove', this.onDrag);
+            if (this.dragSelectElement.clientHeight > 0 && this.dragSelectElement.clientWidth > 0) {
+                this.setProperties({ selectedItems: this.dragSelectedItems });
+            }
+            this.dragSelectedItems = [];
+            detach(this.dragSelectElement);
+            this.dragSelectElement = null;
+        }
+    }
+
+    private selectItems(): void {
+        this.dragSelectedItems = [];
+        const dragRect: DOMRect = this.dragSelectElement.getBoundingClientRect() as DOMRect;
+        const allItems: HTMLElement[] = selectAll(this.viewElem.classList.contains('e-large-icons') ? '.e-list-item' : '.e-row', this.viewElem);
+        removeClass(selectAll('.e-active', this.viewElem), ['e-active', 'e-focus']);
+        removeClass(selectAll('.e-check', this.viewElem), ['e-check']);
+        for (const item of allItems) {
+            const itemRect: DOMRect = item.getBoundingClientRect() as DOMRect;
+            if (!(dragRect.right < itemRect.left || dragRect.left > itemRect.right
+                || dragRect.bottom < itemRect.top || dragRect.top > itemRect.bottom)
+                && (this.dragSelectElement.clientHeight > 0 && this.dragSelectElement.clientWidth > 0)) {
+                if (this.viewElem.classList.contains('e-large-icons')) {
+                    item.classList.add('e-active');
+                    this.dragSelectedItems.push(item.getAttribute('title'));
+                }
+                else {
+                    addClass(selectAll('.e-rowcell', item), ['e-active']);
+                    this.dragSelectedItems.push(item.querySelector('.e-drag-text').textContent);
+                }
+                item.querySelector('.e-frame').classList.add('e-check');
+            }
+        }
+    }
+
+    private onLayoutChange(): void {
+        if (this.enableRangeSelection) {
+            this.unWireEvents();
+            this.wireEvents();
+        }
     }
 
     private setPath(): void {
@@ -1367,6 +1501,12 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 break;
             case 'detailsViewSettings':
                 this.notify(events.modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
+                break;
+            case 'enableRangeSelection':
+                this.wireSelectOnDragEvent(false);
+                if (newProp.enableRangeSelection) {
+                    this.wireSelectOnDragEvent(true);
+                }
                 break;
             case 'enableRtl':
                 this.enableRtl = newProp.enableRtl;
@@ -1546,6 +1686,9 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.largeiconsviewModule = null;
         this.detailsviewModule = null;
         this.breadcrumbbarModule = null;
+        this.viewElem = null;
+        this.dragSelectElement = null;
+        this.dragSelectedItems = null;
     }
 
     /**
@@ -1741,6 +1884,24 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     public selectAll(): void {
         this.notify(events.methodCall, { action: 'selectAll' });
+    }
+
+    /**
+     * Specifies the method that must be invoked to traverse the path backwards in the file manager.
+     *
+     * @returns {void}
+     */
+    public traverseBackward(): void {
+        if (this.pathNames.length > 1 && this.breadcrumbbarModule.searchObj.element.value === '' && !this.isFiltered) {
+            this.pathId.pop();
+            this.pathNames.pop();
+            let newPath: string = this.pathNames.slice(1).join('/');
+            newPath = newPath === '' ? '/' : '/' + newPath + '/';
+            this.setProperties({ path: newPath }, true);
+            read(this, events.pathChanged, this.path);
+            const treeNodeId: string = this.pathId[this.pathId.length - 1];
+            this.notify(events.updateTreeSelection, { module: 'treeview', selectedNode: treeNodeId });
+        }
     }
 
     /**

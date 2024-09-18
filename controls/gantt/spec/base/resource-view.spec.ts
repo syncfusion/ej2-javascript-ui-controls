@@ -96,7 +96,7 @@ describe('Gantt - Resource view', () => {
             triggerMouseEvent(resourceCheckbox1, 'click')
             triggerMouseEvent(resourceCheckbox2, 'click')
             triggerMouseEvent(resourceCheckbox3, 'click')
-            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
         });
         it('Adding task under unassigned task', () => {
@@ -105,7 +105,7 @@ describe('Gantt - Resource view', () => {
             work.dataBind();
             expect(ganttObj.currentViewData[3].ganttProperties.sharedTaskUniqueIds.length).toBe(3);
             expect(ganttObj.currentViewData[4].childRecords.length).toBe(4);
-            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
         });
         it('Left resizing the added record', () => {
@@ -279,7 +279,7 @@ describe('Gantt - Resource view', () => {
             let checkbox1: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
             let checkbox2: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
             let checkbox3: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(4) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
-            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(checkbox1, 'click');
             triggerMouseEvent(checkbox2, 'click');
             triggerMouseEvent(checkbox3, 'click');
@@ -505,7 +505,7 @@ describe('Resoure editing using Edit dialog', () => {
         triggerMouseEvent(resourceCheckbox2, 'click')
         triggerMouseEvent(resourceCheckbox3, 'click')
         triggerMouseEvent(resourceCheckbox4, 'click')
-        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
         triggerMouseEvent(saveButton, 'click');
 
     });
@@ -604,7 +604,7 @@ describe('Self reference data', () => {
         triggerMouseEvent(resourceCheckbox1, 'click')
         triggerMouseEvent(resourceCheckbox2, 'click')
         triggerMouseEvent(resourceCheckbox3, 'click')
-        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
         triggerMouseEvent(saveButton, 'click');
     });
     it('Adding task under unassigned task', () => {
@@ -613,7 +613,7 @@ describe('Self reference data', () => {
             work.dataBind();
         expect(ganttObj.currentViewData[1].ganttProperties.sharedTaskUniqueIds.length).toBe(3);
         expect(ganttObj.currentViewData[0].childRecords.length).toBe(1);
-        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
         triggerMouseEvent(saveButton, 'click');
     });
     it('Left resizing the added record', () => {
@@ -693,7 +693,7 @@ describe('Self reference data', () => {
         let resourceCheckbox2: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
         triggerMouseEvent(resourceCheckbox1, 'click')
         triggerMouseEvent(resourceCheckbox2, 'click')
-        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
         triggerMouseEvent(saveRecord, 'click');
         expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(8);
     });
@@ -768,7 +768,7 @@ describe('Self reference data', () => {
           ganttObj.element.id + "ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck") as HTMLElement;
       triggerMouseEvent(resourceCheckbox1, "click");
       let saveButton: HTMLElement = document.querySelector("#" + ganttObj.element.id +
-          "_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat") as HTMLElement;
+          "_dialog > div.e-footer-content > button") as HTMLElement;
       triggerMouseEvent(saveButton, "click");
     });
     afterAll(() => {
@@ -901,7 +901,7 @@ describe("CR issues", () => {
         let resourceCheckbox1: HTMLElement = document.querySelector("#" +
             ganttObj.element.id + "ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck") as HTMLElement;
         triggerMouseEvent(resourceCheckbox1, "click");
-        let saveButton: HTMLElement = document.querySelector("#" + ganttObj.element.id + "_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat") as HTMLElement;
+        let saveButton: HTMLElement = document.querySelector("#" + ganttObj.element.id + "_dialog > div.e-footer-content > button") as HTMLElement;
         triggerMouseEvent(saveButton, "click");
         expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe("Project Initiation"); 
     });
@@ -1458,7 +1458,7 @@ describe('Resource view with persistence', () => {
             ganttObj.dataBind();
             let resourceCheckbox1: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
             triggerMouseEvent(resourceCheckbox1, 'click')
-            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
         });
         afterAll(() => {
@@ -2696,5 +2696,74 @@ describe('CR-Task:875889-Exception when resource ID mapping is empty', () => {
         if (ganttObj) {
           destroyGantt(ganttObj);
         }
-      });
+    });
+});
+describe('MT-905187: Task left value is not properly calculated in Resource multitaskbar sample', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: multiTaskbarData,
+            resources: multiResources,
+            viewType: 'ResourceView',
+            enableMultiTaskbar: true,
+            showOverAllocation: true,
+            taskType: 'FixedWork',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                dependency: 'Predecessor',
+                progress: 'Progress',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks'
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resourceGroup', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            labelSettings: {
+                taskLabel: 'TaskName'
+            },
+            splitterSettings: {
+                columnIndex: 2
+            },
+            allowResizing: true,
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '450px',
+            projectStartDate: new Date('03/24/2019'),
+            projectEndDate: new Date('05/18/2019')
+        }, done);
+    });
+    it('Checking Taskbar left for resource view', () => {
+       expect(ganttObj.currentViewData[3].ganttProperties.left).toBe(497.31);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
 });

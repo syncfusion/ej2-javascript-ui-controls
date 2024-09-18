@@ -1664,7 +1664,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         return dateVal;
     }
     private valueIsDisable(value: string | Date): boolean {
-        if (this.disableItemCollection.length > 0) {
+        if (!isNullOrUndefined(this.disableItemCollection) && this.disableItemCollection.length > 0) {
             if (this.disableItemCollection.length === this.timeCollections.length) {
                 return false;
             }

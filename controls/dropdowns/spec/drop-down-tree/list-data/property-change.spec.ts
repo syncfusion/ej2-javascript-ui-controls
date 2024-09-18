@@ -291,6 +291,15 @@ describe('DropDownTree control', () => {
             expect(ddtreeObj.element.parentElement.querySelector(".e-chips-wrapper").classList.contains("e-icon-hide")).toBe(true);
             expect(ddtreeObj.value.length).toBe(4);
         });
+        it('dynamic autocheck in react', () => {
+            ddtreeObj = new DropDownTree({width: "600px", fields: { dataSource: localDataString, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" }, value: ['2','3', '4', '6'], allowMultiSelection: true, mode: 'Box' }, '#ddtree');
+            ddtreeObj.isReact = true;
+            ddtreeObj.treeSettings.autoCheck = true;
+            ddtreeObj.dataBind();
+            ddtreeObj.reactCallBack();
+            expect(ddtreeObj.element.parentElement.querySelector(".e-chips-wrapper").classList.contains("e-icon-hide")).toBe(true);
+            expect(ddtreeObj.value.length).toBe(4);
+        });
 
         /**
         * Width property

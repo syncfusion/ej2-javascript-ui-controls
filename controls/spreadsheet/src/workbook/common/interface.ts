@@ -89,6 +89,10 @@ export interface FindOptions {
     showDialog?: boolean;
 }
 /**@hidden */
+export interface FindOptionsArgs extends FindOptions {
+    localeObj?: LocaleNumericSettings;
+}
+/**@hidden */
 export interface  ReplaceAllEventArgs {
     addressCollection: string[];
     cancel?: boolean;
@@ -163,6 +167,7 @@ export interface CellFormatArgs {
     checkHeight?: boolean;
     outsideViewport?: boolean;
     formatColor?: string;
+    isFromAutoFillOption?: boolean;
 }
 
 /** @hidden */
@@ -530,7 +535,7 @@ export interface CellUpdateArgs {
 }
 /** @hidden */
 export interface NumberFormatArgs {
-    value: string | number;
+    value?: string | number;
     format?: string;
     type?: string;
     rowIndex?: number;
@@ -551,10 +556,11 @@ export interface NumberFormatArgs {
     skipFormatCheck?: boolean;
     refresh?: boolean;
     isEdit?: boolean;
+    onLoad?: boolean;
 }
 /** @hidden */
 export interface DateFormatCheckArgs {
-    value: string | number;
+    value?: string | number;
     cell?: CellModel;
     rowIndex?: number;
     colIndex?: number;
@@ -567,15 +573,15 @@ export interface DateFormatCheckArgs {
     intl?: Internationalization;
     skipCellFormat?: boolean;
     updateValue?: boolean;
+    curSymbol?: string;
+    format?: string;
 }
 /** @hidden */
 export interface AutoDetectGeneralFormatArgs {
     args?: NumberFormatArgs & DateFormatCheckArgs;
     fResult?: string;
     intl?: Internationalization;
-    currencySymbol?: string;
     isRightAlign?: boolean;
-    curCode?: string;
     cell?: CellModel;
     rowIdx?: number;
     colIdx?: number;
@@ -584,17 +590,19 @@ export interface AutoDetectGeneralFormatArgs {
     prevVal?: string;
 }
 /** @hidden */
-export interface checkCellValid {
+export interface CheckCellValidArgs {
     value?: string;
     range?: number[];
-    isCell?: boolean;
+    isEdit?: boolean;
     sheetIdx?: number;
     td?: HTMLElement;
     isValid?: boolean;
+    cell?: CellModel;
 }
 /** @hidden */
 export interface ExtendedWorkbook extends Workbook {
     viewport?: { topIndex: number, bottomIndex: number, leftIndex: number, rightIndex: number };
+    workbookOpenModule?: { preventFormatCheck: boolean };
     scrollSettings?: { isFinite: boolean, enableVirtualization: boolean };
 }
 /** @hidden */
@@ -657,12 +665,25 @@ export interface LocaleNumericSettings {
     am?: string;
     pm?: string;
     percentSign?: string;
+    timeFormat?: string;
 }
 
 /**@hidden */
 export interface FilterPredicateOptions {
     predicates: Predicate[];
     equalOrPredicates: Predicate[][];
+}
+
+/**@hidden */
+export interface LocalizedFormatActionArgs {
+    action?: string;
+    format?: string;
+    defaultFormats?: string[];
+    localizedFormats?: string[];
+    curSym?: string,
+    decimalGroupSepsChanged?: boolean;
+    curChanged?: boolean;
+    defaultFormat?: string;
 }
 
 /**

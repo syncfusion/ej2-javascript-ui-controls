@@ -303,12 +303,11 @@ export class Tooltip {
                 scheduledTask ? data.endDate : data.autoEndDate, this.parent.getDateFormat());
             let durationValue: string = this.parent.getDurationString((
                 scheduledTask ? data.duration : data.autoDuration), data.durationUnit);
-            let progressValue: number | string = data.progress;
+            const progressValue: number | string = data.progress;
             if (this.parent.enableHtmlSanitizer) {
                 startDateValue = typeof (startDateValue) === 'string' ? SanitizeHtmlHelper.sanitize(startDateValue) : startDateValue ;
                 endDateValue = typeof (endDateValue) === 'string' ? SanitizeHtmlHelper.sanitize(endDateValue) : endDateValue;
-                durationValue = typeof (durationValue) === 'string' ? SanitizeHtmlHelper.sanitize(durationValue) : durationValue;
-                progressValue = typeof (progressValue) === 'string' ? SanitizeHtmlHelper.sanitize(progressValue) : progressValue;
+                durationValue =  SanitizeHtmlHelper.sanitize(durationValue);
             }
             const startDate: string = data.startDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant(scheduledTask ? 'startDate' : 'subTasksStartDate') +
@@ -320,9 +319,9 @@ export class Tooltip {
                     this.parent.localeObj.getConstant('duration') + '</td><td style="padding: 2px;">:</td>' +
                     '<td class = "e-gantt-tooltip-value"> ' + durationValue +
                     '</td></tr>' : '';
-            const progress: string = !isNullOrUndefined(data.progress) ? '<tr><td class = "e-gantt-tooltip-label">' +
+            const progress: string = '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('progress') + '</td><td style="padding: 2px;">:</td><td>' + progressValue +
-                    '</td></tr>' : '';
+                    '</td></tr>';
             const contentTemp: Function = function (): string {
                 return '<table class = "e-gantt-tooltiptable"><tbody>' +
                     taskName + startDate + endDate + duration + progress + '</tbody></table>';
@@ -335,8 +334,8 @@ export class Tooltip {
             let baselineStartDateValue: string = this.parent.getFormatedDate(data.baselineStartDate, this.parent.getDateFormat());
             let baselineEndDateValue: string = this.parent.getFormatedDate(data.baselineEndDate, this.parent.getDateFormat());
             if (this.parent.enableHtmlSanitizer) {
-                baselineStartDateValue = typeof (baselineStartDateValue) === 'string' ? SanitizeHtmlHelper.sanitize(baselineStartDateValue) : baselineStartDateValue;
-                baselineEndDateValue = typeof (baselineEndDateValue) === 'string' ? SanitizeHtmlHelper.sanitize(baselineEndDateValue) : baselineEndDateValue;
+                baselineStartDateValue = SanitizeHtmlHelper.sanitize(baselineStartDateValue);
+                baselineEndDateValue = SanitizeHtmlHelper.sanitize(baselineEndDateValue);
             }
             const contentTemp: Function = function (): string {
                 return '<table class = "e-gantt-tooltiptable"><tbody>' +
@@ -357,8 +356,8 @@ export class Tooltip {
                 this.parent.dateValidationModule.getDateFromFormat(markerTooltipElement.day), this.parent.getDateFormat());
             let markerLabel: string = markerTooltipElement.label ? markerTooltipElement.label : '';
             if (this.parent.enableHtmlSanitizer) {
-                markerLabel = typeof (markerLabel) === 'string' ? SanitizeHtmlHelper.sanitize(markerLabel) : markerLabel;
-                markerTooltipElementValue = typeof (markerTooltipElementValue) === 'string' ? SanitizeHtmlHelper.sanitize(markerTooltipElementValue) : markerTooltipElementValue;
+                markerLabel = SanitizeHtmlHelper.sanitize(markerLabel);
+                markerTooltipElementValue = SanitizeHtmlHelper.sanitize(markerTooltipElementValue);
             }
             const contentTemp: Function = function (): string {
                 return '<table class = "e-gantt-tooltiptable"><tbody><tr><td>' +
@@ -376,12 +375,12 @@ export class Tooltip {
             let linkTextValue: string = parent.tooltipModule.predecessorTooltipData.linkText;
             let offsetStringValue: string = parent.tooltipModule.predecessorTooltipData.offsetString;
             if (this.parent.enableHtmlSanitizer) {
-                fromNameValue = typeof (fromNameValue) === 'string' ? SanitizeHtmlHelper.sanitize(fromNameValue) : fromNameValue;
-                fromIdValue = typeof (fromIdValue) === 'string' ? SanitizeHtmlHelper.sanitize(fromIdValue) : fromIdValue;
-                toNameValue = typeof (toNameValue) === 'string' ? SanitizeHtmlHelper.sanitize(toNameValue) : toNameValue;
-                toIdValue = typeof (toIdValue) === 'string' ? SanitizeHtmlHelper.sanitize(toIdValue) : toIdValue;
-                linkTextValue = typeof (linkTextValue) === 'string' ? SanitizeHtmlHelper.sanitize(linkTextValue) : linkTextValue;
-                offsetStringValue = typeof (offsetStringValue) === 'string' ? SanitizeHtmlHelper.sanitize(offsetStringValue) : offsetStringValue;
+                fromNameValue = SanitizeHtmlHelper.sanitize(fromNameValue);
+                fromIdValue = SanitizeHtmlHelper.sanitize(fromIdValue);
+                toNameValue = SanitizeHtmlHelper.sanitize(toNameValue);
+                toIdValue =  SanitizeHtmlHelper.sanitize(toIdValue);
+                linkTextValue = SanitizeHtmlHelper.sanitize(linkTextValue);
+                offsetStringValue = SanitizeHtmlHelper.sanitize(offsetStringValue);
             }
             const contentTemp: Function = function (): string {
                 return '<table class = "e-gantt-tooltiptable"><tbody><tr><td class = "e-gantt-tooltip-label">' +
@@ -430,28 +429,28 @@ export class Tooltip {
             let manualStartDateValue: string = this.parent.getFormatedDate(data.startDate, this.parent.getDateFormat());
             let manualEndDateValue: string = this.parent.getFormatedDate(data.endDate, this.parent.getDateFormat());
             if (this.parent.enableHtmlSanitizer) {
-                autoStartDateValue = typeof (autoStartDateValue) === 'string' ? SanitizeHtmlHelper.sanitize(autoStartDateValue) : autoStartDateValue;
-                autoEndDateValue = typeof (autoEndDateValue) === 'string' ? SanitizeHtmlHelper.sanitize(autoEndDateValue) : autoEndDateValue;
-                durationUnitValue = typeof (durationUnitValue) === 'string' ? SanitizeHtmlHelper.sanitize(durationUnitValue) : durationUnitValue;
-                manualStartDateValue = typeof (manualStartDateValue) === 'string' ? SanitizeHtmlHelper.sanitize(manualStartDateValue) : manualStartDateValue;
-                manualEndDateValue = typeof (manualEndDateValue) === 'string' ? SanitizeHtmlHelper.sanitize(manualEndDateValue) : manualEndDateValue;
+                autoStartDateValue = SanitizeHtmlHelper.sanitize(autoStartDateValue);
+                autoEndDateValue =  SanitizeHtmlHelper.sanitize(autoEndDateValue);
+                durationUnitValue =  SanitizeHtmlHelper.sanitize(durationUnitValue);
+                manualStartDateValue =  SanitizeHtmlHelper.sanitize(manualStartDateValue);
+                manualEndDateValue = SanitizeHtmlHelper.sanitize(manualEndDateValue);
             }
-            const autoStartDate: string = data.autoStartDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+            const autoStartDate: string = '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('subTasksStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    autoStartDateValue + '</td></tr>' : '';
-            const autoEndDate: string = data.autoEndDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    autoStartDateValue + '</td></tr>';
+            const autoEndDate: string = '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('subTasksEndDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    autoEndDateValue + '</td></tr>' : '';
-            const durationValue: string = !isNullOrUndefined(data.duration) ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    autoEndDateValue + '</td></tr>';
+            const durationValue: string = '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('duration') + '</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value"> ' + durationUnitValue +
-                    '</td></tr>' : '';
-            const manualStartDate: string = data.startDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    '</td></tr>';
+            const manualStartDate: string = '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('startDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    manualStartDateValue + '</td></tr>' : '';
-            const manualEndDate: string = data.endDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    manualStartDateValue + '</td></tr>';
+            const manualEndDate: string = '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('endDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    manualEndDateValue + '</td></tr>' : '';
+                    manualEndDateValue + '</td></tr>';
             const contentTemp: Function = function (): string {
                 return '<table class = "e-gantt-tooltiptable"><tbody>' +
                 taskName + manualStartDate + autoStartDate + manualEndDate + autoEndDate +  durationValue  + '</tbody></table>';
@@ -465,16 +464,16 @@ export class Tooltip {
             let autoEndValue: string = this.parent.getFormatedDate(data.autoEndDate, this.parent.getDateFormat());
             let dateValue: string = this.parent.getFormatedDate(data.startDate, this.parent.getDateFormat());
             if (this.parent.enableHtmlSanitizer) {
-                autoStartValue = typeof (autoStartValue) === 'string' ? SanitizeHtmlHelper.sanitize(autoStartValue) : autoStartValue;
-                autoEndValue = typeof (autoEndValue) === 'string' ? SanitizeHtmlHelper.sanitize(autoEndValue) : autoEndValue;
-                dateValue = typeof (dateValue) === 'string' ? SanitizeHtmlHelper.sanitize(dateValue) : dateValue;
+                autoStartValue = SanitizeHtmlHelper.sanitize(autoStartValue);
+                autoEndValue = SanitizeHtmlHelper.sanitize(autoEndValue);
+                dateValue = SanitizeHtmlHelper.sanitize(dateValue);
             }
-            const autoStart: string = data.autoStartDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+            const autoStart: string = '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('subTasksStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    autoStartValue + '</td></tr>' : '';
-            const autoEnd: string = data.autoEndDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    autoStartValue + '</td></tr>';
+            const autoEnd: string = '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('subTasksEndDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    autoEndValue + '</td></tr>' : '';
+                    autoEndValue + '</td></tr>';
             const date: string = '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value">' +
                     dateValue + '</tr>';

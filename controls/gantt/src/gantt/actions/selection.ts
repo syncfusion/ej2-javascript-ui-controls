@@ -103,7 +103,7 @@ export class Selection {
         const rowIndexes: string = 'rowIndexes';
         const index: number[] = (this.parent.selectionSettings.type === 'Multiple' && !isNullOrUndefined(args[rowIndexes as string])) ?
             args[rowIndexes as string] : [args.rowIndex];
-        this.addRemoveClass(index ,args['name']);
+        this.addRemoveClass(index, args['name']);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
         this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.grid.selectedRowIndex }, true);
         if (this.isMultiShiftRequest) {
@@ -230,16 +230,20 @@ export class Selection {
      */
     public selectRow(index: number, isToggle?: boolean, isPreventFocus?: boolean): void {
         const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
-        if (this.parent.enableVirtualization && this.parent.treeGridModule.addedRecord) {
-            index = this.parent.flatData.indexOf(this.parent.currentViewData[index as number]);
+        if (this.parent.enableVirtualization && (this.parent.treeGridModule.addedRecord ||
+            (this.parent.editModule && this.parent.editModule.isAdded))) {
+            index = this.parent.getExpandedRecords(this.parent.flatData).indexOf(this.parent.currentViewData[index as number]);
             this.parent.treeGridModule.addedRecord = false;
+            if (this.parent.editModule) {
+                this.parent.editModule.isAdded = false;
+            }
         }
         const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('data-rowindex'), 10) === index)[0];
         let condition: boolean;
         if (index === -1 || (isNullOrUndefined(selectedRow) && !this.parent.enableVirtualization) || this.parent.selectionSettings.mode === 'Cell') {
             return;
         }
-        if (this.parent.showActiveElement && (!isNullOrUndefined(isPreventFocus) || this.parent.enableVirtualization) && !isPreventFocus) {
+        if (this.parent.showActiveElement && !isPreventFocus) {
             this.parent.treeGrid.grid.selectionModule.preventFocus = true;
         } else {
             this.parent.treeGrid.grid.selectionModule.preventFocus = false;
@@ -292,7 +296,7 @@ export class Selection {
      * @returns {Object[]} .
      */
     public getSelectedRecords(): Object[] {
-        if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+        if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
             const selectedRows: IGanttData[] = [];
             const selectedIndexes: number[] = this.parent.selectionModule.getSelectedRowIndexes();
             for (let i: number = 0; i < selectedIndexes.length; i++) {
@@ -374,7 +378,7 @@ export class Selection {
                     this.parent.treeGrid.grid.selectionModule.addRowsToSelection([rIndex]);
                     const isUnSelected: boolean = this.selectedRowIndexes.indexOf(rIndex) > -1;
                     if (isUnSelected) {
-                        this.addRemoveClass([rIndex],e['name']);
+                        this.addRemoveClass([rIndex], e['name']);
                     }
                 }
             }
@@ -420,8 +424,9 @@ export class Selection {
                 let persist: boolean = false;
                 const index: number = this.getSelectedRowIndexes().indexOf(records[parseInt(i.toString(), 10)]);
                 const selectedRecordLen: number = this.getSelectedRecords().length;
-                if (this.parent.selectionSettings.persistSelection && this.parent.selectionSettings.enableToggle && !isNullOrUndefined(request) &&
-                    this.parent.selectionSettings.type !== 'Multiple' && selectedRecordLen > 0) {
+                if (this.parent.selectionSettings.persistSelection && this.parent.selectionSettings.enableToggle &&
+                    !isNullOrUndefined(request) && this.parent.selectionSettings.type !== 'Multiple' &&
+                    selectedRecordLen > 0) {
                     persist = true;
                 }
                 if (this.parent.selectionSettings.enableToggle && this.parent.selectionSettings.persistSelection &&
@@ -547,8 +552,10 @@ export class Selection {
                     if (this.parent.enableVirtualization) {
                         this.parent.treeGrid.grid.selectionModule.isInteracted = true;
                     }
+                    this.parent.treeGrid['isFromChartSide'] = true;
                     this.highlightSelectedRows(e, true);
                 } else {
+                    this.parent.treeGrid['isFromChartSide'] = false;
                     this.highlightSelectedRows(e, false);
                 }
                 if (this.parent.selectionSettings.type === 'Multiple' && this.parent.isAdaptive) {

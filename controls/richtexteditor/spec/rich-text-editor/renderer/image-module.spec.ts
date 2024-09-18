@@ -5,6 +5,7 @@ import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syn
 import { RichTextEditor, QuickToolbar, IRenderer, DialogType } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA, dispatchKeyEvent, ImageResizeGripper, clickImage, clickGripper, moveGripper, leaveGripper } from "./../render.spec";
+import { BASIC_MOUSE_EVENT_INIT, INSRT_IMG_EVENT_INIT } from '../../constant.spec';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -160,9 +161,11 @@ describe('Image Module', () => {
                 let linkPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 let linkTBItems: any = linkPop.querySelectorAll('.e-toolbar-item');
                 expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
+                (<any>rteObj).fileManagerSettings.enable = true;
                 (<HTMLElement>linkTBItems.item(0)).click();
                 let eventArgs: any = { target: document, preventDefault: function () { } };
                 (<any>rteObj).imageModule.onDocumentClick(eventArgs);
+                (<any>rteObj).fileManagerSettings.enable = false;
                 done();
             }, 100);
         });
@@ -1151,6 +1154,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj).mouseUp(eventsArgs);
             evnArg.item = { command: 'Images', subCommand: 'JustifyCenter' };
             evnArg.e = args;
+            evnArg.selectNode[0] = evnArg.selectNode[0].parentElement;
             (<any>rteObj).imageModule.alignmentSelect(evnArg);
             eventArgs = { target: document, preventDefault: function () { } };
             (<any>rteObj).imageModule.onDocumentClick(eventArgs);
@@ -2058,7 +2062,6 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(quickPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
                 quickTBItem.item(3).click();
                 expect(rteObj.contentModule.getEditPanel().querySelector('.e-rte-image')).toBe(null);
-                (rteObj.imageModule as any).triggerPost();
                 done();
             }, 200);
         });
@@ -2116,7 +2119,6 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(rteObj.contentModule.getEditPanel().querySelector('.e-rte-image')).toBe(null);
                 expect(rteObj.getRange().startContainer.textContent === `RTE content `).toBe(true);
                 expect(rteObj.getRange().startOffset === 12).toBe(true);
-                (rteObj.imageModule as any).triggerPost();
                 done();
             }, 200);
         });
@@ -2143,7 +2145,6 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(rteObj.contentModule.getEditPanel().querySelector('.e-rte-image')).toBe(null);
                 expect(rteObj.getRange().startContainer.textContent === `RTE Content`).toBe(true);
                 expect(rteObj.getRange().startOffset === 0).toBe(true);
-                (rteObj.imageModule as any).triggerPost();
                 done();
             }, 200);
         });
@@ -3113,7 +3114,6 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(rteObj.getContent().querySelector(".e-rte-image.e-imginline").getAttribute("src").indexOf("blob") == -1).toBe(true);
                 evnArg.selectNode = [rteObj.element];
                 (<any>rteObj).imageModule.deleteImg(evnArg);
-                // (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
             }, 100);
         });
@@ -3152,7 +3152,6 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(rteObj.getContent().querySelector(".e-rte-image.e-imginline").getAttribute("src").indexOf("base64") == -1).toBe(true);
                 evnArg.selectNode = [rteObj.element];
                 (<any>rteObj).imageModule.deleteImg(evnArg);
-                // (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
             }, 100);
         });
@@ -3460,6 +3459,34 @@ client side. Customer easy to edit the contents and get the HTML content for
                         done();
                     }, 100);
                 }, 100);
+            }, 100);
+        });
+    });
+    describe('Caption image with link coverage testing', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                insertImageSettings: { resize: false },
+                value: `<p>Test</p><a class="e-rte-anchor" href="http://adadas">syncfu<img id="rteImg" class="e-rte-image e-imgbreak e-imgleft e-imgright e-imgcenter e-resize" alt="image" style="">sion</a>`
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Caption image with link coverage testing', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
+            dispatchEvent((rteObj.element.querySelector('#rteImg') as HTMLElement), 'mouseup');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('#rteImg'));
+            setTimeout(function () {
+                (document.querySelectorAll('.e-rte-image-popup .e-toolbar-item button')[2] as HTMLElement).click();
+                rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('#rteImg'));
+                dispatchEvent(rteObj.element.querySelector('#rteImg'), 'mouseup');
+                expect(rteObj.element.querySelector('#rteImg').parentElement.parentElement.nodeName === 'SPAN').toBe(true);
+                done();
             }, 100);
         });
     });
@@ -4191,6 +4218,11 @@ client side. Customer easy to edit the contents and get the HTML content for
             rteObj.showDialog(DialogType.InsertImage);
             setTimeout(() => {
                 expect(document.body.querySelectorAll('.e-rte-img-dialog.e-dialog').length).toBe(1);
+                let dialog = (<any>rteObj).imageModule.dialogObj;
+                (<any>rteObj).imageModule.dialogObj = null;
+                rteObj.closeDialog(DialogType.InsertImage);
+                expect(document.body.querySelectorAll('.e-rte-img-dialog.e-dialog').length).toBe(1);
+                (<any>rteObj).imageModule.dialogObj = dialog;
                 rteObj.closeDialog(DialogType.InsertImage);
                 setTimeout(() => {
                     expect(document.body.querySelectorAll('.e-rte-img-dialog.e-dialog').length).toBe(0);
@@ -4286,8 +4318,8 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(rteObj.inputElement.innerHTML === `<p class="focusNode">RTE Content with RTE</p>`).toBe(true);
         });
     });
-
-    xdescribe('EJ2-58542: Memory leak issue with Rich Text Editor component ', () => {
+    
+    describe('EJ2-58542: Memory leak issue with Rich Text Editor component ', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({
@@ -4304,10 +4336,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         afterAll(() => {
             detach(rteObj.element);
             let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
-            for(let i: number = 0; i < allDropDownPopups.length; i++) {
-                detach(allDropDownPopups[i]);
-            }
-            destroy(rteObj);
+            expect(allDropDownPopups.length).toBe(0);
         });
     });
 
@@ -4972,6 +5001,122 @@ client side. Customer easy to edit the contents and get the HTML content for
             done();
         });
     });
+
+    describe('Image module code coverage', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        let QTBarModule: IRenderer;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p><p><b>Functional
+                Specifications/Requirements:</b></p><ol><li><p>Provide
+                the tool bar support, it’s also customizable.</p></li><li><p>Options
+                to get the HTML elements with styles.</p></li><li><p>Support
+                to insert image from a defined path.</p></li><li><p>Footer
+                elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                the editor support.</p></li><li><p>Provide
+                efficient public methods and client side events.</p></li><li><p>Keyboard
+                navigation support.</p></li></ol><p><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="w3-round-large e-rte-image e-imginline" alt="Norway" style=""><span class="e-img-inner" contenteditable="true">Caption</span></span></span></p>`
+            });
+            controlId = (rteObj as any).element.id;
+            QTBarModule = getQTBarModule(rteObj);
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it("image module code coverage", (done) => {
+            let myObj: any = {
+                oldCssClass: 'imageOldClass',
+                cssClass: 'imageOldClass_imageNewClass',
+                setProperties: function (value: any) {
+                  this.oldCssClass = value.cssClass;
+                }
+            };
+            (rteObj as any).imageModule.updateCss(myObj, { oldCssClass: 'imageOldClass', cssClass: 'imageUpdatedClass'});
+            expect(myObj.oldCssClass === '_imageNewClass imageUpdatedClass').toBe(true);
+            (rteObj as any).imageModule.updateCss(myObj, { oldCssClass: null, cssClass: 'imageUpdatedClass'});
+            expect(myObj.oldCssClass === 'imageOldClass_imageNewClass imageUpdatedClass').toBe(true);
+            (rteObj as any).imageModule.popupObj = rteObj;
+            (rteObj as any).imageModule.setCssClass ({ oldCssClass: 'imageOldClass', cssClass: 'imageUpdatedClass'});
+            expect((rteObj as any).element.classList.contains('imageUpdatedClass')).toBe(true);
+            (rteObj as any).imageModule.setCssClass ({ oldCssClass: null, cssClass: 'imageUpdatedClassNew'});
+            expect((rteObj as any).element.classList.contains('imageUpdatedClassNew')).toBe(true);
+            (rteObj as any).imageModule.popupObj = null;
+            let undoCount: number = (rteObj as any).formatter.getUndoRedoStack().length;
+            (rteObj as any).imageModule.undoStack({subCommand: "image"});
+            expect((rteObj as any).formatter.getUndoRedoStack().length === undoCount).toBe(true);
+            let image: any = (rteObj as any).element.querySelector('.e-rte-image');
+            image.parentElement.parentElement.draggable = true;
+            image.parentElement.parentElement.contentEditable = true;
+            image.classList.add('e-rte-imageboxmark');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: image, which: 1, preventDefault: function () {}, stopImmediatePropagation: function () {}};
+            setCursorPoint(image, 0);
+            (rteObj as any).mouseUp(eventsArg);
+            (<any>QTBarModule).renderQuickToolbars();
+            QTBarModule.imageQTBar.showPopup(10, 131, (rteObj as any).element.querySelector('.e-rte-image'));
+            expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(1);
+            (rteObj as any).imageModule.quickToolObj = (rteObj as any).quickToolbarModule;
+            (rteObj as any).imageModule.resizeStart(eventsArg);
+            expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(0);
+            (rteObj as any).imageModule.imgResizeDiv = null;
+            (rteObj as any).imageModule.onCutHandler();
+            (rteObj as any).imageModule.parent = null;
+            (rteObj as any).imageModule.resizing ({});
+            (rteObj as any).imageModule.parent = rteObj;
+            expect((rteObj as any).imageModule.imgEle.style.outline !== '').toBe(true);
+            let imageWidth: number = image.width;
+            let imageHeight: number = image.height;
+            (rteObj as any).imageModule.setAspectRatio({width: null}, 100, 99);
+            (rteObj as any).imageModule.resizing ({});
+            expect(image.width === imageWidth).toBe(true);
+            expect(image.height === imageHeight).toBe(true);
+            (rteObj as any).insertImageSettings.resizeByPercent = true;
+            (rteObj as any).imageModule.setImageHeight(image, 200, 'px');
+            expect(image.style.height === '').toBe(true);
+            (rteObj as any).insertImageSettings.resizeByPercent = false;
+            image.offsetParent.classList.add('e-img-caption');
+            let left: number = (rteObj as any).imageModule.calcPos(image).left;
+            expect(left === 0).toBe(true);
+            image.classList.add('e-rte-botRight');
+            (rteObj as any).imageModule.resizeStart(eventsArg);
+            (rteObj as any).imageModule.pageX = 51;
+            (rteObj as any).imageModule.resizing(eventsArg);
+            expect(image.style.width === '449px').toBe(true);
+            // The below cases needs ensure manullay not able to check it expect - start.
+            (rteObj as any).isDestroyed = true;
+            (rteObj as any).imageModule.addEventListener();
+            (rteObj as any).isDestroyed = false;
+            (rteObj as any).imageModule.contentModule = null; 
+            (rteObj as any).imageModule.removeEventListener();
+            (rteObj as any).imageModule.contentModule = (rteObj as any).contentModule;
+            (rteObj as any).readonly = true;
+            (rteObj as any).imageModule.resizeStart({}, {});
+            (rteObj as any).readonly = false;
+            // The above cases needs ensure manullay not able to check it expect - end.
+            done();
+        });
+
+        it("image module code coverage", (done) => {
+            let image: any = (rteObj as any).element.querySelector('.e-rte-image');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: image, which: 1, preventDefault: function () {}, stopImmediatePropagation: function () {}};
+            (rteObj as any).imageModule.resizeStart(eventsArg);
+            (rteObj as any).imageModule.pageX = 51;
+            (rteObj as any).imageModule.resizing(eventsArg);
+            (rteObj as any).imageModule.resizeEnd (eventsArg);
+            (rteObj as any).imageModule.uploadCancelTime = setTimeout(() => {}, 0);
+            (rteObj as any).imageModule.uploadFailureTime = setTimeout(() => {}, 0);
+            (rteObj as any).imageModule.uploadSuccessTime = setTimeout(() => {}, 0);
+            (rteObj as any).imageModule.destroy();
+            done();
+        });
+    });
+
     describe('837380: The web url is empty when trying to edit after being inserted into the Rich Text Editor', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
@@ -5148,6 +5293,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             
         });
     });
+  
     describe('871139 - when image removing event API is used argument is null', () => {
         let rteObj: RichTextEditor;
         let propertyCheck: boolean;
@@ -5197,7 +5343,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         let editor: RichTextEditor;
         beforeAll((done: DoneFn) => {
             let link = document.createElement('link');
-            link.href = 'https://cdn.syncfusion.com/ej2/material.css';
+            link.href = '/base/demos/themes/material.css';
             link.rel = 'stylesheet';
             link.id = 'materialTheme';
             document.head.appendChild(link);
@@ -5251,8 +5397,296 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(image.width < width);
                 done();
             }, 150);
-       });
-   });
+        });
+        it('Should resize the image properly Case 1 Top Right Increase size', (done: DoneFn) => {
+            editor.insertImageSettings.resizeByPercent = true;
+            editor.dataBind();
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            clickGripper(gripperElement);
+            const width = image.width;
+            // Start position x: 481 y: 86
+            moveGripper(gripperElement, 500, 100);
+            leaveGripper(gripperElement);
+            setTimeout(() => {
+                expect(image.width > width);
+                done();
+            }, 150);
+        });
+        it('Should resize the image properly Case 1 Top Right Decrease size', (done: DoneFn) => {
+            editor.insertImageSettings.resizeByPercent = true;
+            editor.dataBind();
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            clickGripper(gripperElement);
+            const width = image.width;
+            // Start position x: 481 y: 86
+            moveGripper(gripperElement, 400, 60);
+            leaveGripper(gripperElement);
+            setTimeout(() => {
+                expect(image.width < width);
+                done();
+            }, 150);
+        });
+    });
+
+    describe('Pasting image into editor with the Insert image setting display set to block', () => {
+        let editor: RichTextEditor;
+        beforeAll((done) => {
+            editor = renderRTE({
+                insertImageSettings: {
+                    display: 'Break'
+                }
+            });
+            done();
+        });
+        afterAll((done) => {
+            destroy(editor);
+            done();
+        });
+        it('The cursor is set next to the image when you paste it into the editor.', (done: DoneFn) => {
+            editor.focusIn();
+            const clipBoardData: string = `<html>
+            <body>
+            <!--StartFragment--><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" alt="Logo"/><!--EndFragment-->
+            </body>
+            </html>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(window.getSelection().getRangeAt(0).startContainer.previousSibling.nodeName === 'IMG').toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Pasting image into editor with the Insert image setting display set to block and save url configured', () => {
+        let editor: RichTextEditor;
+        beforeAll((done) => {
+            editor = renderRTE({
+                insertImageSettings: {
+                    display: 'Break',
+                    saveUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/SaveFile',
+                    path: 'https://ej2services.syncfusion.com/js/development/RichTextEditor/'
+                }
+            });
+            done();
+        });
+        afterAll((done) => {
+            destroy(editor);
+            done();
+        });
+        it('Should close the quick toolbar on the method call', (done: DoneFn) => {
+            editor.focusIn();
+            const clipBoardData: string = `<html>
+            <body>
+            <!--StartFragment--><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" alt="Logo"/><!--EndFragment-->
+            </body>
+            </html>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                (editor.imageModule as any).hideImageQuickToolbar()
+                expect(document.body.querySelector('.e-rte-image-popup')).toBe(null);
+                done();
+            }, 100);
+        });
+        it('Should close the quick toolbar on the method call', (done: DoneFn) => {
+            editor.focusIn();
+            editor.value = null;
+            editor.cssClass = 'random-class';
+            const clipBoardData: string = `<html>
+            <body>
+            <!--StartFragment--><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" alt="Logo"/><!--EndFragment-->
+            </body>
+            </html>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                (editor.imageModule as any).hideImageQuickToolbar()
+                expect(document.body.querySelector('.e-rte-image-popup')).toBe(null);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Insert link on image with image quick toolbar with targe set to self', () => {
+        beforeAll((done: DoneFn) => {
+            const link: HTMLLinkElement = document.createElement('link');
+            link.href = '/base/demos/themes/material.css';
+            link.rel = 'stylesheet';
+            link.id = 'materialTheme';
+            document.head.appendChild(link);
+            setTimeout(() => {
+                done(); // Style should be loaded before done() called
+            }, 1000);
+        });
+    
+        afterAll((done: DoneFn) => {
+            document.getElementById('materialTheme').remove();
+            done();
+        });
+        let editor: RichTextEditor;
+        beforeEach((done) => {
+            editor = renderRTE({
+                value: `<p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`
+            });
+            done();
+        });
+        afterEach((done) => {
+            destroy(editor);
+            done();
+        });
+        it('Should have proper target attribute.', (done: DoneFn) => {
+            editor.focusIn();
+            const imageElement: HTMLElement = editor.inputElement.querySelector('img');
+            imageElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
+            imageElement.dispatchEvent(new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT));
+            setTimeout(() => {
+                ((document.body.querySelector('.e-rte-image-popup').querySelector('.e-insert-link')) as HTMLElement).click();
+                setTimeout(() => {
+                    (document.body.querySelector('.e-rte-img-dialog').querySelector('.e-checkbox') as HTMLElement).click();
+                    (editor.element.querySelector('.e-img-link') as HTMLInputElement).value = 'https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html';
+                    (editor.element.querySelector('.e-img-link') as HTMLInputElement).dispatchEvent(new Event('input'));
+                    (document.body.querySelector('.e-rte-img-dialog').querySelector('.e-update-link') as HTMLElement).click();
+                    setTimeout(() => {
+                        expect((editor.inputElement.querySelector('img').parentElement as HTMLLinkElement).target).toBe('');
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+        it('Should have proper target attribute. CASE 2 Edit the link', (done: DoneFn) => {
+            const imageElement: HTMLElement = editor.inputElement.querySelector('img');
+            imageElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
+            imageElement.dispatchEvent(new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT));
+            setTimeout(() => {
+                ((document.body.querySelector('.e-rte-image-popup').querySelector('.e-edit-link')) as HTMLElement).click();
+                setTimeout(() => {
+                    expect(document.body.querySelector('.e-rte-img-dialog').querySelector('.e-checkbox').querySelector('.e-check')).toBe(null);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
+    xdescribe('Dropping images into the editor area ', () => {
+        beforeAll((done: DoneFn) => {
+            const link: HTMLLinkElement = document.createElement('link');
+            link.href = '/base/demos/themes/material.css';
+            link.rel = 'stylesheet';
+            link.id = 'materialTheme';
+            document.head.appendChild(link);
+            setTimeout(() => {
+                done(); // Style should be loaded before done() called
+            }, 1000);
+        });
+    
+        afterAll((done: DoneFn) => {
+            document.getElementById('materialTheme').remove();
+            done();
+        });
+        let editor: RichTextEditor;
+        let success: boolean = false;
+        let removeSuccess: boolean = false;
+        beforeEach((done) => {
+
+            editor = renderRTE({
+                insertImageSettings: {
+                    display: 'Break',
+                    saveUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/SaveFile',
+                    removeUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/DeleteFile',
+                    path: 'https://ej2services.syncfusion.com/js/development/RichTextEditor/'
+                },
+                imageUploadSuccess: (e: any) => {
+                    if (editor.inputElement.querySelector('img').src === 'RTE-Landscape.png') {
+                        success = true;
+                    }
+                },
+                imageUploadFailed: (e: any) => {
+                    success = null;
+                },
+                afterImageDelete: (e: any) => {
+                    removeSuccess = true;
+                },
+                cssClass: 'initial-class'
+            });
+            done();
+        });
+        afterEach((done) => {
+            destroy(editor);
+            done();
+        });
+
+        it('Should insert the image into the editor.', (done: DoneFn) => {
+            editor.focusIn();
+            fetch('/base/spec/content/image/RTE-Landscape.png')
+                .then((response) => response.blob())
+                .then((blob) => {
+                    const file: File = new File([blob], 'RTE-Landscape.png', {type: 'image/png'});
+                    const dataTransfer: DataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    const dropEvent: DragEvent = new DragEvent('drop', {dataTransfer: dataTransfer,
+                        view: window, bubbles: true, cancelable: true, clientX: 25, clientY: 85} as MouseEventInit);
+                    editor.inputElement.dispatchEvent(dropEvent);
+                    setTimeout(() => {
+                        if (success) {
+                           expect(success).toBe(true);
+                        } else if (success === null) {
+                            console.warn('Image upload failed');
+                        }
+                        const imageElement: HTMLElement = editor.inputElement.querySelector('img');
+                        imageElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
+                        imageElement.dispatchEvent(new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT));
+                        setTimeout(() => {
+                            ((document.body.querySelector('.e-rte-image-popup').querySelector('.e-remove')) as HTMLElement).click();
+                            setTimeout(() => {
+                                if (removeSuccess) {
+                                    expect(removeSuccess).toBe(true);
+                                } else {
+                                    console.warn('Image remove failed');
+                                }
+                                done();
+                            }, 1000);
+                        }, 150);
+                    }, 1500); // Higher set timeout since calling server POST.
+                });
+        }, 7000);
+        
+        it('Should insert the image into the editor. CASE 2 Updating the cssclass', (done: DoneFn) => {
+            editor.focusIn();
+            editor.cssClass = 'random-class';
+            fetch('/base/spec/content/image/RTE-Landscape.png')
+                .then((response) => response.blob())
+                .then((blob) => {
+                    const file: File = new File([blob], 'RTE-Landscape.png', {type: 'image/png'});
+                    const dataTransfer: DataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    const dropEvent: DragEvent = new DragEvent('drop', {dataTransfer: dataTransfer,
+                        view: window, bubbles: true, cancelable: true, clientX: 25, clientY: 85} as MouseEventInit);
+                    editor.inputElement.dispatchEvent(dropEvent);
+                    setTimeout(() => {
+                        if (success) {
+                            expect(success).toBe(true);
+                        } else if (success === null) {
+                            console.warn('Image upload failed');
+                        }
+                        editor.cssClass = 'random-class';
+                        done();
+                    }, 1500); // Higher set timeout since calling server POST.
+                });
+        }, 3000);
+    });
 
     describe("867960 - beforeQuickToolbarOpen event args positionX and positionY doesn't change the position of image quicktoolbar in RichTextEditor.", () => {
         let rteObj: RichTextEditor;
@@ -5312,6 +5746,63 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('Insert image with display set to break', () => {
+        beforeAll((done: DoneFn) => {
+            const link: HTMLLinkElement = document.createElement('link');
+            link.href = '/base/demos/themes/material.css';
+            link.rel = 'stylesheet';
+            link.id = 'materialTheme';
+            document.head.appendChild(link);
+            setTimeout(() => {
+                done(); // Style should be loaded before done() called
+            }, 1000);
+        });
+    
+        afterAll((done: DoneFn) => {
+            document.getElementById('materialTheme').remove();
+            done();
+        });
+        let editor: RichTextEditor;
+        beforeEach((done) => {
+            editor = renderRTE({
+                insertImageSettings: {
+                    display: 'Break'
+                }}
+            );
+            done();
+        });
+        afterEach((done) => {
+            destroy(editor);
+            done();
+        });
+        it('Case 1: Insert by using the image url', (done: DoneFn) => {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', INSRT_IMG_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', INSRT_IMG_EVENT_INIT));
+            setTimeout(() => {
+                (editor.element.querySelector('.e-img-url') as HTMLInputElement).value = 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png';
+                editor.element.querySelector('.e-img-url').dispatchEvent(new Event('input'));
+                (editor.element.querySelector('.e-insertImage') as HTMLButtonElement).click();
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelector('img').classList.contains('e-rte-image'));
+                    done();
+                }, 100);
+            }, 100);
+        });
+        it ('Case 2: Insert by paste action', (done: DoneFn) => {
+            editor.focusIn();
+            const clipBoardData: string = '<p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 50%;" class="e-rte-image e-imginline" /></p>';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(editor.inputElement.querySelector('img').classList.contains('e-rte-image'));
+                done();
+            }, 100);
+        });
+    });
+
     describe('896793 - Facing some issues while pasting an image into the RichTextEditor in Firefox', () => {
         let editor: RichTextEditor;
         beforeAll((done: Function) => {
@@ -5350,4 +5841,3 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 });
-

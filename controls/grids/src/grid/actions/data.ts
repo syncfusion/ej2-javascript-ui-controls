@@ -269,7 +269,8 @@ export class Data implements IDataProcessor {
      */
     public searchQuery(query: Query, fcolumn?: Column, isForeignKey?: boolean): Query {
         const sSettings: SearchSettingsModel = this.parent.searchSettings;
-        let fields: string[] = (!isNullOrUndefined(sSettings.fields) && sSettings.fields.length) ? sSettings.fields : this.getSearchColumnFieldNames();
+        let fields: string[] = (!isNullOrUndefined(sSettings.fields) && sSettings.fields.length) ? sSettings.fields
+            : this.getSearchColumnFieldNames();
         let predicateList: Predicate[] = [];
         let needForeignKeySearch: boolean = false;
         if (!isNullOrUndefined(this.parent.searchSettings.key) && this.parent.searchSettings.key.length) {

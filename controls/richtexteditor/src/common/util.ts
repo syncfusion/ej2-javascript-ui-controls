@@ -177,7 +177,8 @@ export function getDefaultHtmlTbStatus(): IToolbarStatus {
         formats: null,
         createlink: false,
         insertcode: false,
-        blockquote: false
+        blockquote: false,
+        inlinecode: false
     };
 }
 

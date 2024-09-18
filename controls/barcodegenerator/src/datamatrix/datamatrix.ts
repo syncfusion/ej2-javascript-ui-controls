@@ -135,6 +135,10 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
     public destroy(): void {
         this.notify('destroy', {});
         super.destroy();
+        const content: HTMLElement = document.getElementById(this.element.id + 'content');
+        if (content) {
+            this.element.removeChild(content);
+        }
     }
 
     private initializePrivateVariables(): void {

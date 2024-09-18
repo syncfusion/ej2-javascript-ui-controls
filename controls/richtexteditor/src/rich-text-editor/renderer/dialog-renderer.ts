@@ -66,7 +66,7 @@ export class DialogRenderer {
         this.parent.trigger(events.beforeDialogOpen, args, this.beforeOpenCallback.bind(this, args));
     }
     private handleEnterKeyDown(args: KeyboardEventArgs): void {
-        if (args.code === 'Enter') {
+        if (args.key === 'Enter') {
             args.preventDefault();
         }
     }

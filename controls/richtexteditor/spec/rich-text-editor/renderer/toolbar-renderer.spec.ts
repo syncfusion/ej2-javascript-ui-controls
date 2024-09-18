@@ -274,4 +274,28 @@ describe('Toolbar - Renderer', () => {
             destroy(rteObj);
         });
     });
+
+    describe('885590: dropdown active state not working when drop down is opened', function () {
+        let rteObj : any;
+        let rteEle : any;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                editorMode: 'Markdown',
+                toolbarSettings: {
+                    items: ['Formats']
+                },
+                value: "<h1>Rich Text Editor</h1>"
+            });
+            rteEle = rteObj.element;
+        });
+        it('Check the format dropdown active element', function () {
+            let trgEle : HTMLElement = rteEle.querySelectorAll(".e-toolbar-item")[0];
+            (trgEle.firstElementChild as HTMLElement).click();
+            dispatchEvent(trgEle.firstElementChild, 'mousedown');
+            expect(document.querySelector('.e-item.e-paragraph').classList.contains('e-active')).toBe(true);
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+    });
 });

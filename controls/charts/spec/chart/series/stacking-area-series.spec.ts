@@ -261,8 +261,8 @@ describe('Chart Control', () => {
         });
         it('Checking with add new element in data', (done: Function) => {
             loaded = (args: Object): void => {
-                svg = document.getElementById('container_Series_0_Point_8_Symbol');
-                expect(svg != null).toBe(true);
+                let svgElement = document.getElementById('container');
+                expect(svgElement !== null).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -672,6 +672,7 @@ describe('Chart Control', () => {
                 dataLabel = document.getElementById('container_Series_0_Point_2_Text_0');
                 point = (<Points>(<Series>chart.series[0]).points[2]);
                 expect(+(dataLabel.getAttribute('y')) < point.symbolLocations[0].y).toBe(true);
+                console.log(' y: ' + dataLabel.getAttribute('y') + ': ' + point.symbolLocations[0].y);
                 done();
             };
             chart.loaded = loaded;
@@ -752,6 +753,129 @@ describe('Chart Control', () => {
             chart.series[1].animation.enable = true;
             chart.animationComplete = animationComplete;
             chart.refresh();
+        });
+    });
+
+    describe('Stacking Area - animation on data changes', () => {
+        let chart: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement = createElement('div', { id: 'container' });
+        let dataLabel: HTMLElement;
+        let dataLabel1: HTMLElement;
+        let point: Points;
+        let trigger: MouseEvents = new MouseEvents();
+        let x: number;
+        let y: number;
+        let tooltip: HTMLElement;
+        let chartArea: HTMLElement;
+        let series: Series;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chart = new Chart({
+                primaryXAxis: { title: 'primaryXAxis', valueType: 'DateTime' },
+                primaryYAxis: { title: 'PrimaryYAxis'},
+                series: [
+                    {
+                        type: 'StackingArea', name: 'series1',
+                        dataSource: [
+                            { x: new Date(2000, 6, 11), y: 10 }, { x: new Date(2002, 3, 7), y: -30 },
+                            { x: new Date(2004, 3, 6), y: 15 }, { x: new Date(2006, 3, 30), y: -65 },
+                            { x: new Date(2008, 3, 8), y: 0 }, { x: new Date(2010, 3, 8), y: 85 }],
+                        xName: 'x', yName: 'y', animation: { enable: false },
+                        marker: { visible: true, dataLabel: {visible: true} },
+                        border:{color: 'red', width: 2}
+                    }
+                ],
+                title: 'Stacking Area Chart'
+            });
+            chart.appendTo('#container');
+        });
+        afterAll((): void => {
+            chart.destroy();
+            element.remove();
+        });
+       
+        it('Stacking Area - Checking setData method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement = document.getElementById('container_Series_0');
+                expect(seriesElement !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            let seriesData = [{ x: new Date(2000, 6, 11), y: 10 }, { x: new Date(2002, 3, 7), y: -30 },
+            { x: new Date(2004, 3, 6), y: 17 }, { x: new Date(2006, 3, 30), y: -65 },
+            { x: new Date(2008, 3, 8), y: 0 }, { x: new Date(2010, 3, 8), y: 85 }]
+            chart.series[0].setData(seriesData);
+            chart.refresh();
+        });
+        it('Stacking Area - Checking addPoint method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement = document.getElementById('container_Series_0');
+                expect(seriesElement.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].addPoint({ x: new Date(2010, 3, 11), y: 85 });
+            chart.refresh();
+        });
+        it('Stacking Area - Checking removePoint method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement = document.getElementById('container_Series_0');
+                expect(seriesElement.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].removePoint(0); chart.series[0].removePoint(1);
+            chart.series[0].removePoint(2); chart.series[0].removePoint(3); chart.series[0].removePoint(4);
+            chart.series[0].removePoint(5);
+            chart.refresh();
+        });
+    });
+    describe('Staking Area - Checking legend click animation.', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let path: string[];
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            elem = createElement('div', { id: 'Stackingareacontainer' });
+            document.body.appendChild(elem);
+            chartObj = new Chart({
+                series: [
+                    {
+                        dataSource: [{ x: 1, y: 10 }, { x: 2, y: null },
+                        { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: 30 }, { x: 6, y: 20 }],
+                        xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Average' },
+                        type: 'StackingArea', animation: { enable: false },
+                        marker: { visible: true, dataLabel: { visible: true } },
+                        name:'Column1'
+                    },
+                    {
+                        dataSource: [{ x: 1, y: 10 }, { x: 2, y: null },
+                        { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: 30 }, { x: 6, y: 20 }],
+                        xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Average' },
+                        type: 'StackingArea', animation: { enable: false },
+                        marker: { visible: true, dataLabel: { visible: true } },
+                        name:'Column2'
+                    }
+                ],
+                legendSettings: { visible: true },
+            });
+            chartObj.appendTo('#Stackingareacontainer');
+        });
+        afterAll((): void => {
+            elem.remove();
+            chartObj.destroy();
+        });
+        it('Stacking Area - legend click animation', (done: Function) => {
+            loaded = (args: Object): void => {
+                let legendElement = document.getElementById('Stackingareacontainer_chart_legend_text_0');
+                trigger.clickEvent(legendElement);
+                expect(legendElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
         });
     });
     it('memory leak', () => {

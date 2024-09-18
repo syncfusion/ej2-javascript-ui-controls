@@ -632,7 +632,7 @@ export class PdfForm {
             }
             if (field && ((pageToImport && field.page === pageToImport) || !pageToImport)) {
                 field._doPostProcess(isFlatten || field.flatten);
-                if (!isFlatten && field.flatten) {
+                if (!isFlatten && field.flatten || (isFlatten && pageToImport && field.page === pageToImport)) {
                     this.removeFieldAt(i);
                 }
             }

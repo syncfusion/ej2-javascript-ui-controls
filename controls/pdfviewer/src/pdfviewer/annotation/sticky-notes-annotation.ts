@@ -172,8 +172,8 @@ export class StickyNotesAnnotation {
                         } else {
                             isPrint = annotation.AnnotationSettings.isPrint;
                         }
-                        if (annotation.IsLock) {
-                            annotation.AnnotationSettings.isLock = annotation.IsLock;
+                        if (annotation.IsLock || annotation.IsLocked) {
+                            annotation.AnnotationSettings.isLock = annotation.IsLock ? annotation.IsLock : annotation.IsLocked;
                         }
                         annotationObject = {
                             shapeAnnotationType: 'sticky', author: author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
@@ -257,9 +257,10 @@ export class StickyNotesAnnotation {
             let annotationName: string;
             const author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stickyNotesSettings.author;
             const subject: string = (this.pdfViewer.annotationSettings.subject !== '' && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.stickyNotesSettings.subject ? this.pdfViewer.stickyNotesSettings.subject : 'Sticky Note';
+            const annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stickyNotesSettings);
             if (annotation) {
                 annot = {
-                    author: annotation.author, modifiedDate: annotation.modifiedDate, annotName: annotation.annotName,
+                    author: annotation.author, modifiedDate: annotation.modifiedDate, annotName: annotation.annotName, annotationSettings: annotation.annotationSettings && annotation.annotationSettings !== '' ? annotation.annotationSettings : annotationSettings,
                     data: image.src, bounds: { x: X, y: Y, width: width, height: height }, subject: annotation.subject,
                     notes: annotation.notes, opacity: annotation.opacity, id: annotation.annotName, shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', pageIndex: annotation.pageIndex, isPrint: annotation.isPrint
                 };
@@ -274,7 +275,7 @@ export class StickyNotesAnnotation {
                 const isPrint: boolean = this.pdfViewer.stickyNotesSettings.isPrint;
                 annot = {
                     bounds: { x: X, y: Y, width: width, height: height }, pageIndex: pageIndex, data: image.src,
-                    modifiedDate: this.getDateAndTime(),
+                    modifiedDate: this.getDateAndTime(), annotationSettings: annotationSettings,
                     shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', annotName: annotationName, id: annotationName, opacity: this.opacity, isPrint: isPrint
                 };
                 const isLock: boolean = this.pdfViewer.stickyNotesSettings.isLock ?
@@ -678,7 +679,7 @@ export class StickyNotesAnnotation {
         pageIndex = pageIndex + 1;
         if (data) {
             if (data.length !== 0) {
-                if(!(data.length === 1 && (data[0].AnnotationType === 'Signature' || data[0].AnnotationType === 'signature'))) {
+                if (!(data.length === 1 && (data[0].AnnotationType === 'Signature' || data[0].AnnotationType === 'signature'))) {
                     this.createPageAccordion(pageIndex);
                 }
                 for (let i: number = 0; i < data.length; i++) {
@@ -1073,6 +1074,7 @@ export class StickyNotesAnnotation {
                         this.modifyTextProperty(args.value, args.prevValue);
                     }
                 }
+                // eslint-disable-next-line
                 if (args.prevValue != args.value) {
                     this.updateModifiedDate(titleContainer);
                 }
@@ -2865,16 +2867,17 @@ export class StickyNotesAnnotation {
     /**
      * @param {any} pageIndex - It describes about the page index
      * @param {string} type - It describes about the type
+     * @param {boolean} action - It describes about the action
      * @private
      * @returns {void}
      */
     public addAnnotationComments(pageIndex: any, type: string, action?: boolean): void {
         const pageNumber: number = pageIndex + 1;
         let poppedItem: IPopupAnnotation;
-        if(!action){                
+        if (!action){
             poppedItem = this.pdfViewer.annotation.redoCommentsElement.pop();
         }
-        else if(action){
+        else if (action){
             poppedItem = this.pdfViewer.annotation.undoCommentsElement.pop();
         }
         if (poppedItem) {
@@ -2923,7 +2926,7 @@ export class StickyNotesAnnotation {
                         }
                         else{
                             this.pdfViewer.annotation.redoCommentsElement.push(pageAnnotations[parseInt(i.toString(), 10)]);
-                            }
+                        }
                         if (type === 'sticky') {
                             this.updateUndoRedoCollections(clonedObject, pageIndex, null, action);
                         }
@@ -3025,7 +3028,7 @@ export class StickyNotesAnnotation {
                             window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_sticky');
                         }
                         const pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, 0);
-                        if (pageIndex != null && annotObject[parseInt(pageIndex.toString(), 10)]) {
+                        if (annotObject[parseInt(k.toString(), 10)]) {
                             annotObject[parseInt(k.toString(), 10)].annotations[parseInt(j.toString(), 10)].bounds =
                              { left: bounds.x, top: bounds.y, width: bounds.width, height: bounds.height,
                                  right: bounds.right, bottom: bounds.bottom };

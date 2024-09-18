@@ -547,7 +547,7 @@ export class DatePicker extends Calendar implements IInput {
         const ariaAttrs: object = {
             'aria-atomic': 'true', 'aria-expanded': 'false',
             'role': 'combobox', 'autocomplete': 'off', 'autocorrect': 'off',
-            'autocapitalize': 'off', 'spellcheck': 'false', 'aria-invalid': 'false', 'aria-label': this.getModuleName()
+            'autocapitalize': 'off', 'spellcheck': 'false', 'aria-invalid': 'false'
         };
         if (this.getModuleName() === 'datepicker') {
             const l10nLocale: object = { placeholder: this.placeholder };
@@ -587,6 +587,9 @@ export class DatePicker extends Calendar implements IInput {
             this.inputElement.setAttribute('name', '' + this.element.id);
         }
         attributes(this.inputElement, <{ [key: string]: string }>ariaAttrs);
+        if (!this.inputElement.hasAttribute('aria-label')) {
+            this.inputElement.setAttribute('aria-label', this.getModuleName());
+        }
         if (!this.enabled) {
             this.inputElement.setAttribute('aria-disabled', 'true');
             this.inputElement.tabIndex = -1;
@@ -1839,7 +1842,6 @@ export class DatePicker extends Calendar implements IInput {
         if (this.showClearButton) {
             this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
         }
-        this.hide(null);
         super.destroy();
         Input.destroy({
             element: this.inputElement,
@@ -1856,8 +1858,11 @@ export class DatePicker extends Calendar implements IInput {
         const ariaAttrs: object = {
             'aria-atomic': 'true', 'aria-disabled': 'true',
             'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
-            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-label': this.getModuleName()
+            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
         };
+        if (this.inputElement.hasAttribute('aria-label')) {
+            this.inputElement.removeAttribute('aria-label');
+        }
         if (this.inputElement) {
             Input.removeAttributes(<{ [key: string]: string }>ariaAttrs, this.inputElement);
             if (!isNullOrUndefined(this.inputElementCopy.getAttribute('tabindex'))) {
@@ -2195,15 +2200,21 @@ export class DatePicker extends Calendar implements IInput {
             this.calendarElement.querySelectorAll(dateIdString)[0] &&
             this.calendarElement.querySelectorAll(dateIdString)[0].classList.contains('e-disabled');
         if ((!isNullOrUndefined(this.value) && !isNullOrUndefined(this.min) &&
-         !isNullOrUndefined(this.max) && !(new Date(this.value as Date).setMilliseconds(0) >= new Date(this.min as Date).setMilliseconds(0)
-            && new Date(this.value as any).setMilliseconds(0) <= new Date(this.max as Date).setMilliseconds(0)))
-            || (!this.strictMode && this.inputElement.value !== '' && this.inputElement.value !== this.maskedDateValue && isNullOrUndefined(this.value) || isDisabledDate)) {
+            !isNullOrUndefined(this.max) && !(new Date(this.value as Date).setMilliseconds(0) >=
+                new Date(this.min as Date).setMilliseconds(0)
+                && new Date(this.value as any).setMilliseconds(0) <= new Date(this.max as Date).setMilliseconds(0)))
+            || (!this.strictMode && this.inputElement.value !== '' && this.inputElement.value !== this.maskedDateValue &&
+                isNullOrUndefined(this.value) || isDisabledDate) || !this.isValidTime(this.value)) {
             addClass([this.inputWrapper.container], ERROR);
             attributes(this.inputElement, { 'aria-invalid': 'true' });
         } else if (!isNullOrUndefined(this.inputWrapper)) {
             removeClass([this.inputWrapper.container], ERROR);
             attributes(this.inputElement, { 'aria-invalid': 'false' });
         }
+    }
+
+    protected isValidTime(value: Date): boolean {
+        return true;
     }
     /**
      * Called internally if any of the property value changed.
@@ -2215,7 +2226,7 @@ export class DatePicker extends Calendar implements IInput {
      */
     public onPropertyChanged(newProp: DatePickerModel, oldProp: DatePickerModel): void {
         for (const prop of Object.keys(newProp)) {
-            const openPopup = ['blur', 'change', 'cleared', 'close', 'created', 'destroyed', 'focus', 'navigated', 'open', 'renderDayCell'];
+            const openPopup: string[] = ['blur', 'change', 'cleared', 'close', 'created', 'destroyed', 'focus', 'navigated', 'open', 'renderDayCell'];
             if (openPopup.indexOf(prop) > 0 && this.isReact) {
                 this.isDynamicValueChanged = true;
             }

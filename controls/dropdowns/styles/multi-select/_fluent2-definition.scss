@@ -201,6 +201,8 @@ $ddl-multi-list-hover-bg-color: $content-bg-color-hover !default;
 $ddl-delim-font-color: $content-text-color !default;
 $ddl-close-icon-color: $icon-color !default;
 $ddl-close-icon-hover-color: $icon-color-hover !default;
+$ddl-multi-checkbox-selected-hover-text-color: $flyout-text-color-focus !default;
+$ddl-multi-list-select-color: $flyout-text-color-selected !default;
 
 @include export-module('multiselect-bds') {
   .e-multi-select-wrapper .e-chips-collection .e-chips .e-chips-close.e-icon::before {
@@ -222,11 +224,6 @@ $ddl-close-icon-hover-color: $icon-color-hover !default;
   .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
     height: 32px;
     width: 32px;
-  }
-
-  .e-bigger .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
-    height: $ddl-chip-hooker-square;
-    width: $ddl-chip-hooker-square;
   }
 
   .e-multi-select-wrapper .e-searcher input[type = 'text'],

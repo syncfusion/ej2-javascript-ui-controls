@@ -10,7 +10,7 @@ import { Font } from '../../common/model/base';
 import { Series } from '../series/chart-series';
 
 /**
- * `Logarithmic` module is used to render log axis.
+ * The `Logarithmic` module is used to render the logarithmic axis in charts.
  */
 
 export class Logarithmic extends Double {
@@ -29,6 +29,7 @@ export class Logarithmic extends Double {
      * The method to calculate the range and labels for the axis.
      *
      * @returns {void}
+     * @private
      */
 
     public calculateRangeAndInterval(size: Size, axis: Axis): void {

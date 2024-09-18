@@ -6,7 +6,7 @@ import { AnimationModel } from '../../common/model/base-model';
 import { Axis } from '../axis/axis';
 
 /**
- * `SplineRangeAreaSeries` module is used to render the range area series.
+ * The `SplineRangeAreaSeries` module is used to render the spline range area series.
  */
 
 export class SplineRangeAreaSeries extends SplineBase {
@@ -22,6 +22,7 @@ export class SplineRangeAreaSeries extends SplineBase {
      * @param {boolean} pointAnimate - Specifies whether the point has to be animated or not.
      * @param {boolean} pointUpdate - Specifies whether the point has to be updated or not.
      * @returns {void}
+     * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean, pointAnimate?: boolean, pointUpdate?: boolean): void {
         let point: Points;
@@ -223,16 +224,14 @@ export class SplineRangeAreaSeries extends SplineBase {
         this.render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, false, true);
         for (let i: number = 0; i < point.length; i++) {
             if (series.marker && series.marker.visible) {
-                series.chart.markerRender.renderMarker(series, series.points[point[i as number]],
-                                                       series.points[point[i as number]].symbolLocations[0], null, true);
+                series.points[i as number].symbolLocations.map(function (location: ChartLocation, index: number): void {
+                    series.chart.markerRender.renderMarker(series, series.points[point[i as number]], location, index, true);
+                });
             }
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -243,6 +242,7 @@ export class SplineRangeAreaSeries extends SplineBase {
      * @param {Series} series - The series to which the path belongs.
      * @param {string} clipRect - The clip rectangle for the path.
      * @returns {void}
+     * @private
      */
     public addPath(options: PathOption, series: Series, clipRect: string): void {
         const points: { element: Element; previousDirection: string; } =
@@ -278,6 +278,7 @@ export class SplineRangeAreaSeries extends SplineBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         const option: AnimationModel = series.animation;

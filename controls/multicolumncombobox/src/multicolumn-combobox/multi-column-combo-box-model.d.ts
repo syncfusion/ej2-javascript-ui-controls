@@ -159,7 +159,7 @@ export interface GridSettingsModel {
 
     /**
      * Specifies the mode for text wrapping in the popup grid content. Options include 'Both', 'Content', and 'Header'.
-     * 
+     *
      * @isenumeration true
      *
      * @default WrapMode.Both

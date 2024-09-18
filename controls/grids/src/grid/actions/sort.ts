@@ -1,4 +1,4 @@
-import { Browser, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { Browser, KeyboardEventArgs, EventHandler } from '@syncfusion/ej2-base';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { closest, classList } from '@syncfusion/ej2-base';
 import { SortSettings } from '../base/grid';
@@ -343,6 +343,8 @@ export class Sort implements IAction {
             { event: events.cancelBegin, handler: this.cancelBeginEvent },
             { event: events.destroy, handler: this.destroy }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
+        EventHandler.add(document.body, 'click', this.excelFilterSortAction, this);
+        EventHandler.add(document.body, 'touchend', this.excelFilterSortAction, this);
     }
 
     /**
@@ -352,6 +354,16 @@ export class Sort implements IAction {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         addRemoveEventListener(this.parent, this.evtHandlers, false);
+        EventHandler.remove(document.body, 'click', this.excelFilterSortAction);
+        EventHandler.remove(document.body, 'touchend', this.excelFilterSortAction);
+    }
+
+    private excelFilterSortAction(e: MouseEvent): void {
+        const popUp: Element = parentsUntil(e.target as Element, 'e-grid-popup');
+        const gridID: string = this.parent.element.id + '_e-popup';
+        if (popUp && popUp.id === gridID && parentsUntil(e.target as Element, 'e-excelfilter')) {
+            this.excelFilterSortActionHandler(e);
+        }
     }
 
     /**
@@ -408,12 +420,15 @@ export class Sort implements IAction {
         if (target) {
             target.classList.remove('e-resized');
         }
-        if (parentsUntil(e.target as Element, 'e-excel-ascending') ||
-            parentsUntil(e.target as Element, 'e-excel-descending')) {
+        this.excelFilterSortActionHandler(e);
+    }
+
+    private excelFilterSortActionHandler(e: MouseEvent): void {
+        if (parentsUntil(e.target as Element, 'e-excel-ascending') || parentsUntil(e.target as Element, 'e-excel-descending')) {
             const colUid: string = (<EJ2Intance>closest(e.target as Element, '.e-filter-popup')).getAttribute('uid');
             const direction: SortDirection = isNullOrUndefined(parentsUntil(e.target as Element, 'e-excel-descending')) ?
                 'Ascending' : 'Descending';
-            this.sortColumn(gObj.getColumnByUid(colUid).field, direction, false);
+            this.sortColumn(this.parent.getColumnByUid(colUid).field, direction, false);
         }
     }
 

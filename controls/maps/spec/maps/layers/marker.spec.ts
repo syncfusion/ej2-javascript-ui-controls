@@ -3,13 +3,13 @@
  */
 import { Maps, ILoadedEventArgs } from '../../../src/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { World_Map, usMap, India_Map, CustomPathData, flightRoutes, intermediatestops1 } from '../data/data.spec';
+import { World_Map, usMap, India_Map, CustomPathData, flightRoutes, intermediatestops1, salesData } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { getElement, marker } from '../../../src/maps/utils/helper';
-import { Marker, ILoadEventArgs, BingMap, Zoom, MapsTooltip, NavigationLine } from '../../../src/maps/index';
+import { Marker, ILoadEventArgs, BingMap, Zoom, MapsTooltip, NavigationLine, Legend } from '../../../src/maps/index';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { debug } from 'util';
-Maps.Inject(Marker, Zoom, MapsTooltip, NavigationLine);
+Maps.Inject(Marker, Zoom, MapsTooltip, NavigationLine, Legend);
 
 let imageUrl: string = "http:\/\/ecn.{subdomain}.tiles.virtualearth.net\/tiles\/a{quadkey}.jpeg?g=6465";
 let subDomains: string[] = ["t0", "t1", "t2", "t3"];
@@ -517,6 +517,37 @@ describe('Map marker properties tesing', () => {
             ]
             map.refresh();
         });
+
+        it('Marker shape checking with Image offset null', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Markers_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.layers[0].markerSettings = [
+                {
+                    visible: true,
+                    shape: 'Image',
+                    offset: {
+                        x: null,
+                        y: null
+                    },
+                    imageUrl: 'http://js.syncfusion.com/demos/web/Images/map/pin.png',
+                    dataSource: [{ Name: "USA", latitude: 38.8833, longitude: -77.0167 }]
+                },
+                {
+                    visible: true,
+                    shape: 'Image',
+                    offset: {
+                        x: null,
+                        y: null
+                    },
+                    imageUrl: 'http://js.syncfusion.com/demos/web/Images/map/pin.png',
+                    dataSource: [{ Name: "Brazil", latitude: -15.7833, longitude: -47.8667 }]
+                },
+            ]
+            map.refresh();
+        });
+
         it('checking with marker template', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
@@ -641,6 +672,54 @@ describe('Map marker properties tesing', () => {
             },
                 map.layers[0].markerSettings = [
                     {
+                        visible: true,
+                        dataSource: [
+                            { latitude: 37.6276571, longitude: -122.4276688, name: 'San Bruno' },
+                            { latitude: 33.5302186, longitude: -117.7418381, name: 'Laguna Niguel' },
+                            { latitude: 40.7424509, longitude: -74.0081468, name: 'New York' },
+                            { latitude: -23.5268201, longitude: -46.6489927, name: 'Bom Retiro' },
+                            { latitude: 43.6533855, longitude: -79.3729994, name: 'Toronto' },
+                            { latitude: 48.8773406, longitude: 2.3299627, name: 'Paris' },
+                            { latitude: 52.4643089, longitude: 13.4107368, name: 'Berlin' },
+                            { latitude: 19.1555762, longitude: 72.8849595, name: 'Mumbai' },
+                            { latitude: 35.6628744, longitude: 139.7345469, name: 'Minato' },
+                            { latitude: 51.5326602, longitude: -0.1262422, name: 'London' }
+                        ]
+                    },
+                    {
+                        visible: true,
+                        template: '<div id="marker1" class="markerTemplate">Asia' +
+                            '</div>',
+                        dataSource: [
+                            { latitude: 50.32087157990324, longitude: 90.015625 }
+                        ],
+                        animationDuration: 0
+                    },
+                ]
+            map.refresh();
+        })
+        it('checking the marker clustering latitudeValuePath && longitudeValuePath', () => {
+            map.loaded = (args: ILoadEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                spec = getElement(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_5_cluster_0');
+                trigger.clickEvent(spec);
+                spec = getElement(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_5_cluster_0');
+                trigger.mousemoveEvent(spec, 0, 0, 0, 0);
+            }
+            map.layers[0].markerClusterSettings = {
+                allowClustering: true,
+                shape: 'Image',
+                height: 30,
+                width: 30,
+                fill: 'blue',
+                opacity: 0.5,
+                imageUrl: './images/cluster_icon.svg'
+            },
+                map.layers[0].markerSettings = [
+                    {
+                        latitudeValuePath: 'latitude',
+                        longitudeValuePath: 'longitude',
                         visible: true,
                         dataSource: [
                             { latitude: 37.6276571, longitude: -122.4276688, name: 'San Bruno' },
@@ -1542,6 +1621,14 @@ describe('Map marker properties tesing', () => {
             map.layers[0].urlTemplate = 'https://a.tile.openstreetmap.org/level/tileX/tileY.png';
             map.refresh();
         });
+        it('Marker zooming with OSM map called the mergePersistMapsData method', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.enablePersistence = true;
+            map.refresh();
+        });
     });
     describe('Zooming the map with marker distance in default map', () => {
         let id: string = 'container';
@@ -1757,6 +1844,293 @@ describe('Map marker properties tesing', () => {
             map.refresh();
         });
     });
+    describe('Marker Drag use the marker click', () => {
+        let id: string = 'containers';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                
+                zoomSettings: {
+                    enable: true,
+                },
+                layers: [
+                    {
+                        animationDuration: 0,
+                        shapeData: MapData,
+                        markerSettings: [
+                            {
+                                enableDrag: true,
+                                visible: true,
+                                legendText: 'city',
+                                shapeValuePath: 'shape',
+                                template: '<div id="marker1">Hello</div>',
+                                dataSource: [
+                                    { Latitude: 37.0000, Longitude: -120.0000, city: 'California', shape: 'Circle' },
+                                    { Latitude: 40.7127, Longitude: -74.0059, city: 'New York', shape: 'Diamond' },
+                                    { Latitude: 42, Longitude: -93, city: 'Iowa', shape: 'Rectangle' },
+                                ]
+                            }
+                    ]
+                    },
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+        it('Marker zooming with India map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.refresh();
+        });
+        it('Marker click event map', () => {
+            debugger;
+            let element: Element = getElementByID('containers_LayerIndex_0_MarkerIndex_0_dataIndex_0');
+            let eventObj: Object = {
+                target: element,
+                type: 'touchstart',
+                pageX: element.getBoundingClientRect().left,
+                pageY: element.getBoundingClientRect().top
+            };
+            map.markerModule.markerClick(<PointerEvent>eventObj);
+        });
+    });
+    describe('coverage Marker Drag use the marker click', () => {
+        let id: string = 'containers';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                
+                zoomSettings: {
+                    enable: true,
+                },
+                layers: [
+                    {
+                        animationDuration: 0,
+                        shapeData: MapData,
+                        markerClusterSettings: {
+                            allowClustering: true,
+                            shape: 'Balloon',
+                            height: 30,
+                            width: 30,
+                            fill: 'blue',
+                            opacity: 0.5,
+                        },
+                        markerSettings: [
+                            {
+                                visible: true,
+                                dataSource: [
+                                    { Latitude: 37.6276571, Longitude: -122.4276688, name: 'San Bruno' },
+                                    { Latitude: 33.5302186, Longitude: -117.7418381, name: 'Laguna Niguel' },
+                                    { Latitude: 40.7424509, Longitude: -74.0081468, name: 'New York' },
+                                    { Latitude: -23.5268201, Longitude: -46.6489927, name: 'Bom Retiro' },
+                                    { Latitude: 43.6533855, Longitude: -79.3729994, name: 'Toronto' },
+                                    { Latitude: 48.8773406, Longitude: 2.3299627, name: 'Paris' },
+                                    { Latitude: 52.4643089, Longitude: 13.4107368, name: 'Berlin' },
+                                    { Latitude: 19.1555762, Longitude: 72.8849595, name: 'Mumbai' },
+                                    { latitude: 35.6628744, longitude: 139.7345469, name: 'Minato' },
+                                    { latitude: 51.5326602, longitude: -0.1262422, name: 'London' }
+                                ]
+                            },
+                            {
+                                visible: true,
+                                template: '<div id="marker1" class="markerTemplate">Asia' +
+                                    '</div>',
+                                dataSource: [
+                                    { latitude: 50.32087157990324, longitude: 90.015625 }
+                                ],
+                                animationDuration: 0
+                            },
+                        ]
+                    },
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+        it('Marker zooming with India map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.refresh();
+        });
+        it('Marker cluster click event map', () => {
+            let element: Element = getElementByID('containers_LayerIndex_0_MarkerIndex_0_dataIndex_5_cluster_0_datalabel_0');
+            let eventObj: Object = {
+                target: element,
+                type: 'touchstart',
+                pageX: element.getBoundingClientRect().left,
+                pageY: element.getBoundingClientRect().top
+            };
+            map.markerModule.markerClusterClick(<PointerEvent>eventObj);
+        });
+    });
+    describe('coverage Checking with Marker cluster click', () => {
+        let id: string = 'containers';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                
+                zoomSettings: {
+                    enable: true,
+                },
+                layers: [
+                    {
+                        animationDuration: 0,
+                        shapeData: MapData,
+                        markerClusterSettings: {
+                            allowClustering: true,
+                            allowClusterExpand: true,
+                            shape: 'Image',
+                            height:30,
+                            width:30,
+                            fill: 'blue',
+                            opacity: 0.5, 
+                            imageUrl :'./images/cluster_icon.svg'  
+                        },
+                        markerSettings: [
+                            {
+                                visible: true,
+                                template: '<div id="marker1" class="markerTemplate">Asia<div>',
+                                dataSource: salesData,
+                                shape: 'Image',
+                                height: 20,
+                                width: 20,
+                                tooltipSettings: {
+                                    visible: true,
+                                    valuePath: 'name'
+                                },
+                                animationDuration: 0
+                            }
+                        ]
+                    },
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+        it('Marker zooming with India map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(46);
+            };
+            map.refresh();
+        });
+        it('Checking with markercluster expand using cluster click', () => {
+            map.refresh();
+            let element: Element = getElementByID('containers_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
+            let eventObj: Object = {
+                target: element,
+                type: 'touchstart',
+                pageX: element.getBoundingClientRect().left,
+                pageY: element.getBoundingClientRect().top
+            };
+            map.markerModule.markerClusterClick(<PointerEvent>eventObj);
+        });
+    });
+    describe('Coverage for helper files Checking with Marker template cluster click', () => {
+        let id: string = 'containers';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                
+                zoomSettings: {
+                    enable: true,
+                },
+                layers: [
+                    {
+                        animationDuration: 0,
+                        urlTemplate:'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
+                        markerClusterSettings: {
+                            allowClustering: true,
+                            allowClusterExpand: true,
+                            shape: 'Balloon',
+                            height:30,
+                            width:30,
+                            fill: 'blue',
+                            opacity: 0.5, 
+                        },
+                        markerSettings: [
+                            {
+                                visible: true,
+                                template: '<div id="marker1" class="markerTemplate">Asia<div>',
+                                dataSource: salesData,
+                                shape: 'Image',
+                                height: 20,
+                                width: 20,
+                                tooltipSettings: {
+                                    visible: true,
+                                    valuePath: 'name'
+                                },
+                                animationDuration: 0
+                            }
+                        ]
+                    },
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+        it('Marker zooming with India map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(46);
+            };
+            map.refresh();
+        });
+        it('Checking with markercluster expand', () => {
+            map.refresh();
+            let element: Element = getElementByID(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
+            let eventObj: Object = {
+                target: element,
+                type: 'touchstart',
+                pageX: element.getBoundingClientRect().left,
+                pageY: element.getBoundingClientRect().top
+            };
+            map.markerModule.markerClusterClick(<PointerEvent>eventObj);
+        });
+        it('Checking with markercluster merge', () => {
+            map.refresh();
+            let element: Element = getElementByID(map.element.id + '_Tile_SVG');
+            let eventObj: Object = {
+                target: element,
+                type: 'touchstart',
+                pageX: element.getBoundingClientRect().left,
+                pageY: element.getBoundingClientRect().top
+            };
+            map.markerModule.markerClusterClick(<PointerEvent>eventObj);
+        });        
+    });    
     describe('Render the multipoint sample', () => {
         let id: string = 'container';
         let map: Maps;
@@ -1802,6 +2176,32 @@ describe('Map marker properties tesing', () => {
                 }
                 ]
               }
+            map.refresh();
+        });
+        it('Multipoint as sublayer  with shapeData in map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_1_MultiPoint_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(3);
+            };
+            map.layers =[
+                {
+                    shapeData:India_Map
+                },
+                {
+                    type: 'SubLayer',
+                    shapeData: {
+                    "features": [ {
+                        "type": "MultiPoint",
+                        "coordinates": [
+                        [-122.4194, 37.7749],
+                        [-118.2437, 34.0522],
+                        [-87.6298, 41.8781]
+                        ]
+                    }
+                    ]
+                }
+            }
+            ]
             map.refresh();
         });
         it('Multipoint with shapeData in map', () => {
@@ -1931,8 +2331,9 @@ describe('Map marker properties tesing', () => {
             ];
             map.zoomSettings.shouldZoomInitially = true;
             map.refresh();
-        });        
+        });
     });
+    
     describe('Zooming the map based on marker distance in static google map', () => {
         let id: string = 'container';
         let map: Maps;

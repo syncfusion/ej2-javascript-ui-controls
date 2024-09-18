@@ -63,11 +63,43 @@ export class TableProperties {
     private isRtl: boolean;
     private groupButtonClass: string = 'e-de-ctnr-group-btn e-btn-group';
 
+    //Event Handler
+    private onOutlineBorderClickHandler: EventListenerOrEventListenerObject = this.onOutlineBorder.bind(this);
+    private onAllBorderHandler: EventListenerOrEventListenerObject = this.onAllBorder.bind(this);
+    private onInsideBorderHandler: EventListenerOrEventListenerObject = this.onInsideBorder.bind(this);
+    private onLeftBorderHandler: EventListenerOrEventListenerObject = this.onLeftBorder.bind(this);
+    private onVerticalBorderHandler: EventListenerOrEventListenerObject = this.onVerticalBorder.bind(this);
+    private onRightBorderHandler: EventListenerOrEventListenerObject = this.onRightBorder.bind(this);
+    private onTopBorderHandler: EventListenerOrEventListenerObject = this.onTopBorder.bind(this);
+    private onHorizontalBorderHandler: EventListenerOrEventListenerObject = this.onHorizontalBorder.bind(this);
+    private onBottomBorderHandler: EventListenerOrEventListenerObject = this.onBottomBorder.bind(this);
+    private onInsertRowAboveHandler: EventListenerOrEventListenerObject = this.onInsertRowAbove.bind(this);
+    private onInsertRowBelowHandler: EventListenerOrEventListenerObject = this.onInsertRowBelow.bind(this);
+    private onInsertColumnLeftHandler: EventListenerOrEventListenerObject = this.onInsertColumnLeft.bind(this);
+    private onInsertColumnRightHandler: EventListenerOrEventListenerObject = this.onInsertColumnRight.bind(this);
+    private onDeleteRowHandler: EventListenerOrEventListenerObject = this.onDeleteRow.bind(this);
+    private onDeleteColumnHandler: EventListenerOrEventListenerObject = this.onDeleteColumn.bind(this);
+    private onMergeCellHandler: EventListenerOrEventListenerObject = this.onMergeCell.bind(this);
+    private applyAlignTopHandler: EventListenerOrEventListenerObject = this.applyAlignTop.bind(this);
+    private applyAlignBottomHandler: EventListenerOrEventListenerObject = this.applyAlignBottom.bind(this);
+    private applyAlignCenterHorizontalHandler: EventListenerOrEventListenerObject = this.applyAlignCenterHorizontal.bind(this);
+    private onTopMarginHandler: EventListenerOrEventListenerObject = this.onTopMargin.bind(this);
+    private onRightMarginHandler: EventListenerOrEventListenerObject = this.onRightMargin.bind(this);
+    private onLeftMarginHandler: EventListenerOrEventListenerObject = this.onLeftMargin.bind(this);
+    private onBottomMarginHandler: EventListenerOrEventListenerObject = this.onBottomMargin.bind(this);
+    private onTopMarginClickHandler: EventListenerOrEventListenerObject = this.onTopMarginClick.bind(this);
+    private onTopMarginBlurHandler: EventListenerOrEventListenerObject = this.onTopMarginBlur.bind(this);
+    private onRightMarginClickHandler: EventListenerOrEventListenerObject = this.onRightMarginClick.bind(this);
+    private onRightMarginBlurHandler: EventListenerOrEventListenerObject = this.onRightMarginBlur.bind(this);
+    private onLeftMarginClickHandler: EventListenerOrEventListenerObject = this.onLeftMarginClick.bind(this);
+    private onLeftMarginBlurHandler: EventListenerOrEventListenerObject = this.onLeftMarginBlur.bind(this);
+    private onBottomMarginClickHandler: EventListenerOrEventListenerObject = this.onBottomMarginClick.bind(this);
+    private onBottomMarginBlurHandler: EventListenerOrEventListenerObject = this.onBottomMarginBlur.bind(this);
 
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
-    /* eslint-disable-next-line max-len */
+
     public constructor(container: DocumentEditorContainer, imageProperty: ImageProperties, isRtl?: boolean) {
         this.container = container;
         this.isRtl = isRtl;
@@ -129,63 +161,111 @@ export class TableProperties {
 
     }
     private wireEvent(): void {
-        this.shadingBtn.addEventListener('change', this.changeBackgroundColor.bind(this));
+        this.shadingBtn.addEventListener('change', this.changeBackgroundColor);
         this.borderBtn.addEventListener('change', (args: ColorPickerEventArgs): void => {
             setTimeout((): void => {
                 this.borderColor = args.currentValue.hex; this.tableOutlineBorder.element.focus();
             }, 10);
         });
-        this.tableOutlineBorder.element.addEventListener('click', this.onOutlineBorder.bind(this));
-        this.tableAllBorder.element.addEventListener('click', this.onAllBorder.bind(this));
-        this.tableCenterBorder.element.addEventListener('click', this.onInsideBorder.bind(this));
-        this.tableLeftBorder.element.addEventListener('click', this.onLeftBorder.bind(this));
-        this.tableCenterVerticalBorder.element.addEventListener('click', this.onVerticalBorder.bind(this));
-        this.tableRightBorder.element.addEventListener('click', this.onRightBorder.bind(this));
-        this.tableTopBorder.element.addEventListener('click', this.onTopBorder.bind(this));
-        this.tableCenterHorizontalBorder.element.addEventListener('click', this.onHorizontalBorder.bind(this));
-        this.tableBottomBorder.element.addEventListener('click', this.onBottomBorder.bind(this));
-        this.insertRowAbove.element.addEventListener('click', this.onInsertRowAbove.bind(this));
-        this.insertRowBelow.element.addEventListener('click', this.onInsertRowBelow.bind(this));
-        this.insertColumnLeft.element.addEventListener('click', this.onInsertColumnLeft.bind(this));
-        this.insertColumnRight.element.addEventListener('click', this.onInsertColumnRight.bind(this));
-        this.deleteRow.element.addEventListener('click', this.onDeleteRow.bind(this));
-        this.deleteColumn.element.addEventListener('click', this.onDeleteColumn.bind(this));
-        this.horizontalMerge.element.addEventListener('click', this.onMergeCell.bind(this));
-        this.alignTop.element.addEventListener('click', this.applyAlignTop.bind(this));
-        this.alignBottom.element.addEventListener('click', this.applyAlignBottom.bind(this));
-        this.alignCenterHorizontal.element.addEventListener('click', this.applyAlignCenterHorizontal.bind(this));
+        this.tableOutlineBorder.element.addEventListener('click', this.onOutlineBorderClickHandler);
+        this.tableAllBorder.element.addEventListener('click', this.onAllBorderHandler);
+        this.tableCenterBorder.element.addEventListener('click', this.onInsideBorderHandler);
+        this.tableLeftBorder.element.addEventListener('click', this.onLeftBorderHandler);
+        this.tableCenterVerticalBorder.element.addEventListener('click', this.onVerticalBorderHandler);
+        this.tableRightBorder.element.addEventListener('click', this.onRightBorderHandler);
+        this.tableTopBorder.element.addEventListener('click', this.onTopBorderHandler);
+        this.tableCenterHorizontalBorder.element.addEventListener('click', this.onHorizontalBorderHandler);
+        this.tableBottomBorder.element.addEventListener('click', this.onBottomBorderHandler);
+        this.insertRowAbove.element.addEventListener('click', this.onInsertRowAboveHandler);
+        this.insertRowBelow.element.addEventListener('click', this.onInsertRowBelowHandler);
+        this.insertColumnLeft.element.addEventListener('click', this.onInsertColumnLeftHandler);
+        this.insertColumnRight.element.addEventListener('click', this.onInsertColumnRightHandler);
+        this.deleteRow.element.addEventListener('click', this.onDeleteRowHandler);
+        this.deleteColumn.element.addEventListener('click', this.onDeleteColumnHandler);
+        this.horizontalMerge.element.addEventListener('click', this.onMergeCellHandler);
+        this.alignTop.element.addEventListener('click', this.applyAlignTopHandler);
+        this.alignBottom.element.addEventListener('click', this.applyAlignBottomHandler);
+        this.alignCenterHorizontal.element.addEventListener('click', this.applyAlignCenterHorizontalHandler);
         this.topMargin.htmlAttributes = {'aria-label': 'top-margin'};
         this.bottomMargin.htmlAttributes = {'aria-label': 'bottom-margin'};
         this.leftMargin.htmlAttributes = {'aria-label': 'left-margin'};
         this.rightMargin.htmlAttributes = {'aria-label': 'right-Margin'};
-        this.topMargin.element.addEventListener('click', (): void => {
-            this.isTopMarginApply = true;
-        });
-        this.rightMargin.element.addEventListener('click', (): void => {
-            this.isRightMarginApply = true;
-        });
-        this.leftMargin.element.addEventListener('click', (): void => {
-            this.isLeftMarginApply = true;
-        });
-        this.bottomMargin.element.addEventListener('click', (): void => {
-            this.isBottomMarginApply = true;
-        });
-        this.topMargin.element.addEventListener('keydown', this.onTopMargin.bind(this));
-        this.rightMargin.element.addEventListener('keydown', this.onRightMargin.bind(this));
-        this.leftMargin.element.addEventListener('keydown', this.onLeftMargin.bind(this));
-        this.bottomMargin.element.addEventListener('keydown', this.onBottomMargin.bind(this));
-        this.topMargin.element.addEventListener('blur', (): void => {
-            this.applyTopMargin(); this.isTopMarginApply = false;
-        });
-        this.rightMargin.element.addEventListener('blur', (): void => {
-            this.applyRightMargin(); this.isRightMarginApply = false;
-        });
-        this.leftMargin.element.addEventListener('blur', (): void => {
-            this.applyLeftMargin(); this.isLeftMarginApply = false;
-        });
-        this.bottomMargin.element.addEventListener('blur', (): void => {
-            this.applyBottomMargin(); this.isBottomMarginApply = false;
-        });
+        this.topMargin.element.addEventListener('click', this.onTopMarginClickHandler);
+        this.rightMargin.element.addEventListener('click', this.onRightMarginClickHandler);
+        this.leftMargin.element.addEventListener('click', this.onLeftMarginClickHandler);
+        this.bottomMargin.element.addEventListener('click', this.onBottomMarginClickHandler);
+        this.topMargin.element.addEventListener('keydown', this.onTopMarginHandler);
+        this.rightMargin.element.addEventListener('keydown', this.onRightMarginHandler);
+        this.leftMargin.element.addEventListener('keydown', this.onLeftMarginHandler);
+        this.bottomMargin.element.addEventListener('keydown', this.onBottomMarginHandler);
+        this.topMargin.element.addEventListener('blur', this.onTopMarginBlurHandler);
+        this.rightMargin.element.addEventListener('blur', this.onRightMarginBlurHandler);
+        this.leftMargin.element.addEventListener('blur', this.onLeftMarginBlurHandler);
+        this.bottomMargin.element.addEventListener('blur', this.onBottomMarginBlurHandler);
+    }
+
+    private unWireEvent(): void {
+        //Event Handler
+        this.shadingBtn.removeEventListener('change', this.changeBackgroundColor);
+        this.tableOutlineBorder.element.removeEventListener('click', this.onOutlineBorderClickHandler);
+        this.tableAllBorder.element.removeEventListener('click', this.onAllBorderHandler);
+
+        this.tableCenterBorder.element.removeEventListener('click', this.onInsideBorderHandler);
+        this.tableLeftBorder.element.removeEventListener('click', this.onLeftBorderHandler);
+        this.tableCenterVerticalBorder.element.removeEventListener('click', this.onVerticalBorderHandler);
+        this.tableRightBorder.element.removeEventListener('click', this.onRightBorderHandler);
+        this.tableTopBorder.element.removeEventListener('click', this.onTopBorderHandler);
+        this.tableCenterHorizontalBorder.element.removeEventListener('click', this.onHorizontalBorderHandler);
+        this.tableBottomBorder.element.removeEventListener('click', this.onBottomBorderHandler);
+        this.insertRowAbove.element.removeEventListener('click', this.onInsertRowAboveHandler);
+        this.insertRowBelow.element.removeEventListener('click', this.onInsertRowBelowHandler);
+        this.insertColumnLeft.element.removeEventListener('click', this.onInsertColumnLeftHandler);
+        this.insertColumnRight.element.removeEventListener('click', this.onInsertColumnRightHandler);
+        this.deleteRow.element.removeEventListener('click', this.onDeleteRowHandler);
+        this.deleteColumn.element.removeEventListener('click', this.onDeleteColumnHandler);
+        this.horizontalMerge.element.removeEventListener('click', this.onMergeCellHandler);
+        this.alignTop.element.removeEventListener('click', this.applyAlignTopHandler);
+        this.alignBottom.element.removeEventListener('click', this.applyAlignBottomHandler);
+        this.alignCenterHorizontal.element.removeEventListener('click', this.applyAlignCenterHorizontalHandler);
+
+        this.topMargin.element.removeEventListener('click', this.onTopMarginClickHandler);
+        this.rightMargin.element.removeEventListener('click', this.onRightMarginClickHandler);
+        this.leftMargin.element.removeEventListener('click', this.onLeftMarginClickHandler);
+        this.bottomMargin.element.removeEventListener('click', this.onBottomMarginClickHandler);
+
+        this.topMargin.element.removeEventListener('keydown', this.onTopMarginHandler);
+        this.rightMargin.element.removeEventListener('keydown', this.onRightMarginHandler);
+        this.leftMargin.element.removeEventListener('keydown', this.onLeftMarginHandler);
+        this.bottomMargin.element.removeEventListener('keydown', this.onBottomMarginHandler);
+        this.topMargin.element.removeEventListener('blur', this.onTopMarginBlurHandler);
+        this.rightMargin.element.removeEventListener('blur', this.onRightMarginBlurHandler);
+        this.leftMargin.element.removeEventListener('blur', this.onLeftMarginBlurHandler);
+        this.bottomMargin.element.removeEventListener('blur', this.onBottomMarginBlurHandler);
+    }
+
+    private onTopMarginClick(): void {
+        this.isTopMarginApply = true;
+    }
+    private onTopMarginBlur(): void {
+        this.applyTopMargin(); this.isTopMarginApply = false;
+    }
+    private onRightMarginClick(): void {
+        this.isRightMarginApply = true;
+    }
+    private onRightMarginBlur(): void {
+        this.applyRightMargin(); this.isRightMarginApply = false;
+    }
+    private onLeftMarginClick(): void {
+        this.isLeftMarginApply = true;
+    }
+    private onLeftMarginBlur(): void {
+        this.applyLeftMargin(); this.isLeftMarginApply = false;
+    }
+    private onBottomMarginClick(): void {
+        this.isBottomMarginApply = true;
+    }
+    private onBottomMarginBlur(): void {
+        this.applyBottomMargin(); this.isBottomMarginApply = false;
     }
     private getBorder(border: BorderType): BorderSettings {
         const lineWidth: number = (this.borderSize.content.indexOf('No Border') >= 0) ? 0 : parseFloat(this.borderSize.content);
@@ -701,6 +781,7 @@ export class TableProperties {
         }
     }
     public destroy(): void {
+        this.unWireEvent();
         this.container = undefined;
         if (this.shadingBtn) {
             this.shadingBtn.destroy();
@@ -739,8 +820,7 @@ export class TableProperties {
             this.propertiesTab = undefined;
         }
         if (this.imageProperty) {
-            this.imageProperty.destroy();
-            this.imageProperty = undefined;
+            this.imageProperty = null;
         }
         if (this.tableOutlineBorder) {
             this.tableOutlineBorder.destroy();

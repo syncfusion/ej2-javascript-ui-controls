@@ -1,54 +1,9 @@
 @include export-module('dropdownlist-layout') {
-  .e-bigger .e-input-group.e-ddl {
-    #{if(&, '&', '*')} .e-input-filter,
-    #{if(&, '&', '*')} .e-input-filter:focus {
-      margin-left: -20px;
-    }
-  }
 
   .e-ddl#{&}.e-popup {
     #{if(&, '&', '*')} .e-input-group {
       @if ($skin-name == 'Material3') {
         margin-top: 4px;
-      }
-    }
-  }
-
-  .e-bigger .e-ddl#{&}.e-popup {
-    #{if(&, '&', '*')} .e-list-item {
-      font-size: $ddl-bigger-list-font-size;
-    }
-
-    #{if(&, '&', '*')} .e-list-group-item {
-      @if $skin-name != 'tailwind' {
-        font-size: $ddl-bigger-list-font-size;
-      }
-    }
-
-    #{if(&, '&', '*')} .e-input-group {
-      @if ($skin-name != 'bootstrap5' and $skin-name != 'tailwind' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark' and $skin-name != 'Material3') {
-        padding: 4px 0;
-      }
-      @if ($skin-name == 'Material3') {
-        margin-top: 8px;
-      }
-    }
-  }
-
-  .e-bigger.e-ddl#{&}.e-popup {
-    #{if(&, '&', '*')} .e-list-item {
-      font-size: $ddl-bigger-list-font-size;
-    }
-
-    #{if(&, '&', '*')} .e-list-group-item {
-      @if $skin-name != 'tailwind' {
-        font-size: $ddl-bigger-list-font-size;
-      }
-    }
-
-    #{if(&, '&', '*')} .e-input-group {
-      @if ($skin-name != 'bootstrap5' and $skin-name != 'tailwind' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark') {
-        padding: 4px 0;
       }
     }
   }
@@ -143,7 +98,7 @@
       #{if(&, '&', '*')} .e-filter-parent .e-input-filter:focus,
       #{if(&, '&', '*')} .e-filter-parent .e-input-group.e-input-focus .e-input-filter,
       #{if(&, '&', '*')} .e-filter-parent .e-input-group.e-control-wrapper.e-input-focus .e-input-filter {
-        @if ($skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap5'  and $skin-name != 'tailwind') {
+        @if ($skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'tailwind') {
           padding: $ddl-list-filter-text-indent;
         }
       }
@@ -238,6 +193,9 @@
   .e-ddl.e-popup.e-popup-open .e-list-item.e-disabled {
     opacity: .7;
     pointer-events: none;
+    @if $skin-name == 'bootstrap5.3' or $skin-name == 'fluent2' {
+      color: $ddl-list-disable-item-color;
+    }
   }
 
   ejs-autocomplete,
@@ -272,46 +230,10 @@
     }
   }
 
-  .e-bigger.e-small .e-ddl#{&}.e-popup,
-  .e-bigger .e-input-group.e-ddl.e-small {
-    #{if(&, '&', '*')} .e-list-item {
-      font-size: $ddl-bigger-small-list-font-size;
-    }
-
-    #{if(&, '&', '*')} .e-list-group-item {
-      @if $skin-name != 'tailwind' {
-        font-size: $ddl-bigger-small-list-font-size;
-      }
-    }
-  }
-
-  .e-bigger.e-small.e-ddl#{&}.e-popup,
-  .e-bigger .e-input-group.e-ddl.e-small {
-    #{if(&, '&', '*')} .e-list-item {
-      font-size: $ddl-bigger-small-list-font-size;
-    }
-
-    #{if(&, '&', '*')} .e-list-group-item {
-      @if $skin-name != 'tailwind' {
-        font-size: $ddl-bigger-small-list-font-size;
-      }
-    }
-  }
-
   .e-content-placeholder.e-ddl.e-placeholder-ddl,
   .e-content-placeholder.e-autocomplete.e-placeholder-autocomplete,
   .e-content-placeholder.e-combobox.e-placeholder-combobox {
     background-size: 300px 33px;
     min-height: 33px;
-  }
-
-  .e-bigger .e-content-placeholder.e-ddl.e-placeholder-ddl,
-  .e-bigger.e-content-placeholder.e-ddl.e-placeholder-ddl,
-  .e-bigger .e-content-placeholder.e-autocomplete.e-placeholder-autocomplete,
-  .e-bigger.e-content-placeholder.e-autocomplete.e-placeholder-autocomplete,
-  .e-bigger .e-content-placeholder.e-combobox.e-placeholder-combobox,
-  .e-bigger.e-content-placeholder.e-combobox.e-placeholder-combobox {
-    background-size: 300px 40px;
-    min-height: 40px;
   }
 }

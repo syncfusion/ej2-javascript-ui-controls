@@ -11,12 +11,13 @@ import { removeElement } from '../../../src/common/utils/helper';
 import { AccumulationDataLabel } from '../../../src/accumulation-chart/renderer/dataLabel';
 import { AccumulationSelection } from '../../../src/accumulation-chart/user-interaction/selection';
 import { categoryData1 } from '../../chart/base/data.spec';
-import { MouseEvents } from '../../chart/base/events.spec';
 import { SliceOption } from '../base/util.spec';
 import { IAccLoadedEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
-AccumulationChart.Inject(PieSeries, AccumulationLegend, AccumulationDataLabel, AccumulationSelection);
+import { MouseEvents } from '../../chart/base/events.spec';
+import { AccumulationTooltip } from '../../../src/accumulation-chart/user-interaction/tooltip';
+AccumulationChart.Inject(PieSeries, AccumulationLegend, AccumulationDataLabel, AccumulationSelection, AccumulationTooltip);
 
 document.body.appendChild(createElement('style', {
     innerHTML: ' .selection { stroke-width: 2; fill: lime; stroke: red; opacity: 1; } '
@@ -68,11 +69,11 @@ describe('Accumulation Chart Control', () => {
                             connectorStyle: { length: '10%' }
                         },
                     }
-                ], width: '600', height: '400', legendSettings: { visible: true }
+                ], width: '600', height: '400', legendSettings: { visible: true }, tooltip: { enable: true }
             });
             accumulation.appendTo('#' + id);
         });
-
+ 
         afterAll((): void => {
             accumulation.accumulationSelectionModule.destroy();
             accumulation.destroy();
@@ -569,6 +570,50 @@ describe('Accumulation Chart Control', () => {
             };
 
             accumulation.selectionPattern = 'HorizontalStripe';
+            accumulation.refresh();
+        });
+        it('checking with keyboard navigation', (done: Function) => {
+            let enterKeyUpTriggered: boolean = false;
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                if (!enterKeyUpTriggered) {
+                    enterKeyUpTriggered = true;
+                    element = document.getElementById('pie_Series_0_Point_1');
+                    let element2 = document.getElementById('pie_Series_0');
+                    trigger.keyboardEvent('keyup', element, 'Space', 'Space');
+                    trigger.keyboardEvent('keyup', element2, 'Tab', 'Tab');
+                    expect(element !== null).toBe(true);
+                }
+                done();
+            };
+            accumulation.previousTargetId='pie_Series_0_Point_0'
+            accumulation.refresh();
+        });
+        it('checking with keyboard navigation on legend group', (done: Function) => {
+            let enterKeyUpTriggered: boolean = false;
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                if (!enterKeyUpTriggered) {
+                    enterKeyUpTriggered = true;
+                    element = document.getElementById('pie_Series_0');
+                    trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                    expect(element !== null).toBe(true);
+                }
+                done();
+            };
+            accumulation.previousTargetId='pie_chart_legend_g_2'
+            accumulation.refresh();
+        });
+        it('checking with keyboard navigation on legend page', (done: Function) => {
+            let enterKeyUpTriggered: boolean = false;
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                if (!enterKeyUpTriggered) {
+                    enterKeyUpTriggered = true;
+                    element = document.getElementById('pie_Series_0');
+                    trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                    expect(element !== null).toBe(true);
+                }
+                done();
+            };
+            accumulation.previousTargetId='pie_chart_legend_page_0'
             accumulation.refresh();
         });
     });

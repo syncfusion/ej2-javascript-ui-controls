@@ -6,7 +6,7 @@ The [JavaScript Circular Gauge](https://www.syncfusion.com/javascript-ui-control
 
 <p align="center">
     <a href="https://ej2.syncfusion.com/documentation/circular-gauge/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm">Getting started</a> . 
-    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm#/material/circular-gauge/default.html">Online demos</a> . 
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm#/fluent2/circular-gauge/default.html">Online demos</a> . 
     <a href="https://www.syncfusion.com/javascript-ui-controls/js-circular-gauge?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm">Learn more</a>
 </p>
 
@@ -38,23 +38,23 @@ Circular Gauge control is also offered in the following list of frameworks.
 
 ## Showcase samples
 
-* Live update - [Live Demo](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=circulargauge#/material/circular-gauge/data-sample.html)
-* Direction compass - [Live Demo](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=circulargauge#/material/circular-gauge/compass.html)
+* Live update - [Live Demo](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=circulargauge#/fluent2/circular-gauge/data-sample.html)
+* Direction compass - [Live Demo](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=circulargauge#/fluent2/circular-gauge/direction-compass.html)
 
 ## Key features
 
 * [Arc Gauge/Radial Gauge](https://ej2.syncfusion.com/documentation/circular-gauge/gauge-axes/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm#angles-and-direction): The arc gauge or radial gauge helps in the visualization of numerical values of scales in a semi-circular or quarter-circular manner. It is possible to achieve this by changing the start and end angle values.
 * [Axes](https://ej2.syncfusion.com/documentation/circular-gauge/gauge-axes/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm): Axes is a collection of circular axis that can be used to indicate numeric values.
 * [Ranges](https://ej2.syncfusion.com/documentation/circular-gauge/gauge-ranges/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm): Supports ranges to categorize the axis values. Any number of ranges can be added to the circular gauge.
-* [Ticks and labels](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm#/material/circular-gauge/labels.html): Provides options to customize the ticks and labels of the gauges.
+* [Ticks and labels](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm#/fluent2/circular-gauge/ticks-and-labels.html): Provides options to customize the ticks and labels of the gauges.
 * [Pointers](https://ej2.syncfusion.com/documentation/circular-gauge/gauge-pointers/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm): Indicates the values on axis. Circular gauge supports three types of pointers: needle, range bar, and marker.
 * [Annotation](https://ej2.syncfusion.com/documentation/circular-gauge/gauge-annotations/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm): Uses any custom HTML element as annotation and place it anywhere on the gauge.
 * [Legend](https://ej2.syncfusion.com/documentation/circular-gauge/gauge-legend/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm): Summarizes the information from the ranges.
 * [Tooltip](https://ej2.syncfusion.com/documentation/circular-gauge/gauge-user-interaction/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm#tooltip-for-pointers): Provides information about the pointer and range values on hover.
 * [Pointer drag](https://ej2.syncfusion.com/documentation/circular-gauge/gauge-user-interaction/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm#pointer-drag): Provides support to place a pointer at the desired values by dragging it.
-* [Range drag](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm#/material/circular-gauge/user-interaction.html): Provides support to extend the start or end of the range at the desired values by dragging it.
+* [Range drag](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm#/fluent2/circular-gauge/pointer-ranges-drag.html): Provides support to extend the start or end of the range at the desired values by dragging it.
 * [Print and Export](https://ej2.syncfusion.com/documentation/circular-gauge/gauge-print-and-export/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm): Prints or exports the rendered circular gauge to a desired format. Exporting supports four formats: PDF, PNG, JPEG and SVG.
-* [Templates](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm#/material/circular-gauge/tooltip.html): Templates can be used to create custom user experience in the tooltip of the circular gauge.
+* [Templates](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm#/fluent2/circular-gauge/tooltip.html): Templates can be used to create custom user experience in the tooltip of the circular gauge.
 * [Globalization](https://ej2.syncfusion.com/documentation/circular-gauge/internationalization/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm): Personalize the circular gauge control with different languages, as well as culture-specific number, date and time formatting.
 * [Accessibility](https://ej2.syncfusion.com/documentation/circular-gauge/accessibility/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-circulargauge-npm): Provides with built-in accessibility support which helps to access all the circular gauge control features through the keyboard, screen readers, or other assistive technology devices.
 
@@ -80,4 +80,4 @@ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-contr
 
 Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/circulargauge/license?utm_source=npm&utm_campaign=javascript-circulargauge-npm).
 
-&copy; Copyright 2022 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+&copy; Copyright 2024 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

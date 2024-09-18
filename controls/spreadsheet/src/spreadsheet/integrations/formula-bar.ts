@@ -12,7 +12,7 @@ import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, e
 import { intToDate, isNumber } from '../../workbook/common/math';
 import { Dialog } from '../services/dialog';
 import { SelectEventArgs, ListView } from '@syncfusion/ej2-lists';
-import { workbookFormulaOperation, selectionComplete, getData } from '../../workbook/index';
+import { workbookFormulaOperation, selectionComplete, getData, getFormatFromType } from '../../workbook/index';
 import { isFormulaBarEdit, removeAllChildren } from '../common/index';
 
 /**
@@ -213,64 +213,8 @@ export class FormulaBar {
                 if (!this.parent) {
                     return;
                 }
-                let value: string = '';
-                let dateVal: Date;
                 (values as Map<string, CellModel>).forEach((cell: CellModel): void => {
-                    if (cell) {
-                        if (cell.formula) {
-                            value = cell.formula;
-                        } else if (!isNullOrUndefined(cell.value) && cell.value !== '') {
-                            const option: { type?: string } = {};
-                            let type: string = cell.format && isCustomDateTime(cell.format, true, option, true) && option.type;
-                            if (type === 'date' || type === 'time' || type === 'datetime') {
-                                dateVal = intToDate(Number(cell.value));
-                                if (dateVal && dateVal.toString() !== 'Invalid Date' && dateVal.getFullYear() >= 1900) {
-                                    const intl: Internationalization = new Internationalization();
-                                    const format: string = cell.format.toLowerCase();
-                                    // isCustomDateTime returns as type 'time' for 'm', 'mm' and 'mmm' format, so we converting as 'date' type.
-                                    if (type === 'time' && format.includes('m') && !format.includes(':m') && !format.includes('m:') &&
-                                        !format.includes('[m') && !format.includes('am')) {
-                                        type = 'date';
-                                    }
-                                    const valArr: string[] = cell.value.toString().split('.');
-                                    const isDateTimeVal: boolean = valArr.length === 2;
-                                    const timeVal: Date = isDateTimeVal ? intToDate(parseFloat((valArr[0] + 1) + '.' + valArr[1]) ||
-                                        Number(cell.value)) : dateVal;
-                                    if (type === 'date') {
-                                        const dateObj: { type: string, format?: string, skeleton?: string } = { type: 'date' };
-                                        dateObj.skeleton = 'yMd';
-                                        value = intl.formatDate(dateVal, dateObj);
-                                        if (isDateTimeVal) {
-                                            value += ' ' + intl.formatDate(timeVal, { type: 'dateTime', skeleton: 'hms' });
-                                        }
-                                    } else {
-                                        if (Number(cell.value) >= 1 || type === 'datetime') {
-                                            value = intl.formatDate(dateVal, { type: 'dateTime', skeleton: 'yMd' }) + ' ';
-                                        }
-                                        value += intl.formatDate(timeVal, { type: 'dateTime', skeleton: 'hms' });
-                                    }
-                                }
-                            } else if (cell.format && cell.format.includes('%') && isNumber(cell.value)) {
-                                value = this.parent.getDisplayText(cell);
-                                if (!value.includes('%')) {
-                                    value = '';
-                                }
-                            }
-                            if (!value) {
-                                value = cell.value.toString();
-                                if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
-                                    value = value.toUpperCase();
-                                } else if (this.parent.locale !== 'en-US') {
-                                    const decimalSep: string = (getNumericObject(this.parent.locale) as { decimal: string }).decimal;
-                                    if (decimalSep !== '.' && isNumber(value) && value.includes('.')) {
-                                        value = value.replace('.', decimalSep);
-                                    }
-                                }
-                            }
-                        } else if (cell.hyperlink) {
-                            value = typeof cell.hyperlink === 'string' ? cell.hyperlink : (cell.hyperlink.address || '');
-                        }
-                    }
+                    const value: string = this.getFormulaBarValue(cell);
                     const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
                     this.parent.notify(editOperation, eventArgs);
                     const formulaInp: HTMLTextAreaElement =
@@ -291,6 +235,69 @@ export class FormulaBar {
             });
         }
         this.updateComboBoxValue(address);
+    }
+    private getFormulaBarValue(cell: CellModel): string {
+        let value: string = '';
+        if (cell) {
+            if (cell.formula) {
+                value = cell.formula;
+            } else if (!isNullOrUndefined(cell.value) && cell.value !== '') {
+                const option: { type?: string } = {};
+                let type: string = cell.format && isCustomDateTime(cell.format, true, option, true) && option.type;
+                if (type === 'date' || type === 'time' || type === 'datetime') {
+                    const dateVal: Date = intToDate(Number(cell.value));
+                    if (dateVal && dateVal.toString() !== 'Invalid Date' && dateVal.getFullYear() >= 1900) {
+                        const intl: Internationalization = new Internationalization();
+                        let time: string = getFormatFromType('Time');
+                        if (time === 'h:mm:ss AM/PM') {
+                            time = 'h:mm:ss a';
+                        }
+                        const format: string = cell.format.toLowerCase();
+                        // isCustomDateTime returns as type 'time' for 'm', 'mm' and 'mmm' format, so we converting as 'date' type.
+                        if (type === 'time' && format.includes('m') && !format.includes(':m') && !format.includes('m:') &&
+                            !format.includes('[m') && !format.includes('am')) {
+                            type = 'date';
+                        }
+                        const valArr: string[] = cell.value.toString().split('.');
+                        const isDateTimeVal: boolean = valArr.length === 2;
+                        const timeVal: Date = isDateTimeVal ? intToDate(parseFloat((valArr[0] + 1) + '.' + valArr[1]) ||
+                            Number(cell.value)) : dateVal;
+                        if (type === 'date') {
+                            const dateObj: { type: string, format?: string, skeleton?: string } = { type: 'date' };
+                            dateObj.skeleton = 'yMd';
+                            value = intl.formatDate(dateVal, dateObj);
+                            if (isDateTimeVal) {
+                                value += ' ' + intl.formatDate(timeVal, { type: 'time', skeleton: 'medium', format: time });
+                            }
+                        } else {
+                            if (Number(cell.value) >= 1 || type === 'datetime') {
+                                value = intl.formatDate(dateVal, { type: 'date', skeleton: 'yMd' }) + ' ';
+                            }
+                            value += intl.formatDate(timeVal, { type: 'time', skeleton: 'medium', format: time });
+                        }
+                    }
+                } else if (cell.format && cell.format.includes('%') && isNumber(cell.value)) {
+                    value = this.parent.getDisplayText(cell);
+                    if (!value.includes('%')) {
+                        value = '';
+                    }
+                }
+                if (!value) {
+                    value = cell.value.toString();
+                    if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
+                        value = value.toUpperCase();
+                    } else if (this.parent.locale !== 'en-US') {
+                        const decimalSep: string = (getNumericObject(this.parent.locale) as { decimal: string }).decimal;
+                        if (decimalSep !== '.' && isNumber(value) && value.includes('.')) {
+                            value = value.replace('.', decimalSep);
+                        }
+                    }
+                }
+            } else if (cell.hyperlink) {
+                value = typeof cell.hyperlink === 'string' ? cell.hyperlink : (cell.hyperlink.address || '');
+            }
+        }
+        return value;
     }
     private UpdateValueAfterMouseUp(): void {
         this.updateComboBoxValue(this.parent.getActiveSheet().selectedRange.split(':')[0]);
@@ -646,11 +653,14 @@ export class FormulaBar {
         }
     }
 
-    private editOperationHandler(args: { [key: string]: Object }): void {
-        const action: string = <string>args.action;
-        switch (action) {
+    private editOperationHandler(args: { action: string, element?: HTMLTextAreaElement, value?: string, cell?: CellModel }): void {
+        switch (args.action) {
         case 'refreshFormulabar':
-            this.getFormulaBar().value = isUndefined(args.value) ? '' : <string>args.value;
+            if (args.cell) {
+                this.getFormulaBar().value = this.getFormulaBarValue(args.cell);
+            } else {
+                this.getFormulaBar().value = isUndefined(args.value) ? '' : args.value;
+            }
             break;
         case 'getElement':
             args.element = this.getFormulaBar();

@@ -179,14 +179,6 @@ export function getShapeColor(theme: MapsTheme): string[] {
         themePalette = ['#10B981', '#22D3EE', '#2DD4BF', '#4ADE80', '#8B5CF6',
             '#E879F9', '#F472B6', '#F87171', '#F97316', '#FCD34D'];
         break;
-    case 'bootstrap5':
-        themePalette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
-            '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
-        break;
-    case 'bootstrap5dark':
-        themePalette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
-            '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
-        break;
     case 'fluent':
         themePalette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
             '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
@@ -211,6 +203,11 @@ export function getShapeColor(theme: MapsTheme): string[] {
     case 'fluent2highcontrast':
         themePalette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
             '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
+        break;
+    case 'bootstrap5':
+    case 'bootstrap5dark':
+        themePalette = ['#6610F2', '#6f42C1', '#D63384', '#DC3545',
+            '#FD7E14', '#FFC107', '#198754', '#0DCAF0'];
         break;
     default:
         themePalette = ['#B5E485', '#7BC1E8', '#DF819C', '#EC9B79', '#78D0D3',
@@ -508,68 +505,72 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
         break;
     case 'bootstrap5':
         style = {
-            backgroundColor: 'rgba(255,255,255, 0.0)',
-            areaBackgroundColor: 'rgba(255,255,255, 0.0)',
+            backgroundColor: 'transparent',
+            areaBackgroundColor: 'transparent',
             titleFontColor: '#212529',
             subTitleFontColor: '#212529',
             legendTitleFontColor: '#212529',
             legendTextColor: '#212529',
             dataLabelFontColor: '#212529',
-            tooltipFontColor: '#F9FAFB',
-            tooltipFillColor: '#212529',
-            zoomFillColor: '#6C757D',
-            fontFamily: 'Helvetica Neue',
-            fontSize: '12px',
-            fontWeight: 'Medium',
+            tooltipFontColor: '#FFFFFF',
+            tooltipFillColor: '#000000',
+            zoomFillColor: '#6E757D',
+            fontFamily: 'Segoe UI',
+            fontSize: '10px',
+            fontWeight: '400',
             titleFontSize: '14px',
-            legendFontSize: '12px',
-            tooltipFillOpacity: 1,
+            subTitleFontSize: '12px',
+            legendFontSize: '10px',
+            tooltipFillOpacity: 0.9,
             tooltipTextOpacity: 1,
-            labelFontFamily: 'Helvetica Neue',
-            titleFontWeight: 'normal',
-            zoomSelectionColor: '#343A40',
+            labelFontFamily: 'Segoe UI',
+            titleFontWeight: '400',
+            zoomSelectionColor: '#212529',
+            zoomBorderColor: '#DEE2E6',
             shapeFill: '#E9ECEF',
-            shapeBorderColor: '#000000',
-            rectangleZoomFillColor: '#d3d3d3',
-            rectangleZoomFillOpacity: 0.5,
-            rectangleZoomBorderColor: '#009900',
+            shapeBorderColor: '#DEE2E6',
+            zoomButtonRadius: 32,
+            rectangleZoomBorderColor: '#0D6EFD',
+            rectangleZoomFillColor: '#86B7FE',
+            rectangleZoomFillOpacity: 0.30,
             legendBorderColor: '#000000',
             legendBorderWidth: 0,
-            tooltipBorderColor: 'transparent',
-            zoomButtonRadius: 30
+            tooltipBorderColor: 'transparent'
         };
         break;
     case 'bootstrap5dark':
         style = {
-            backgroundColor: 'rgba(255,255,255, 0.0)',
-            areaBackgroundColor: 'rgba(255,255,255, 0.0)',
-            titleFontColor: '#FFFFFF',
-            subTitleFontColor: '#FFFFFF',
-            legendTitleFontColor: '#FFFFFF',
-            legendTextColor: '#FFFFFF',
-            dataLabelFontColor: '#FFFFFF',
+            backgroundColor: 'transparent',
+            areaBackgroundColor: 'transparent',
+            titleFontColor: '#DEE2E6',
+            subTitleFontColor: '#DEE2E6',
+            legendTitleFontColor: '#DEE2E6',
+            legendTextColor: '#DEE2E6',
+            dataLabelFontColor: '#DEE2E6',
             tooltipFontColor: '#212529',
-            tooltipFillColor: '#E9ECEF',
-            zoomFillColor: '#B5BABE',
-            fontFamily: 'Helvetica Neue',
-            fontSize: '12px',
-            fontWeight: 'Medium',
+            tooltipFillColor: '#FFFFFF',
+            zoomFillColor: '#ADB5BD',
+            fontFamily: 'Segoe UI',
+            fontSize: '10px',
+            fontWeight: '400',
             titleFontSize: '14px',
-            legendFontSize: '12px',
-            tooltipFillOpacity: 1,
+            subTitleFontSize: '12px',
+            legendFontSize: '10px',
+            tooltipFillOpacity: 0.9,
             tooltipTextOpacity: 1,
-            labelFontFamily: 'Helvetica Neue',
-            titleFontWeight: 'normal',
-            zoomSelectionColor: '#DEE2E6',
-            shapeFill: '#495057',
-            shapeBorderColor: '#000000',
-            rectangleZoomFillColor: '#d3d3d3',
-            rectangleZoomFillOpacity: 0.5,
-            rectangleZoomBorderColor: '#009900',
+            labelFontFamily: 'Segoe UI',
+            titleFontWeight: '400',
+            zoomSelectionColor: '#F8F9FA',
+            zoomBorderColor: '#495057',
+            shapeFill: '#343A40',
+            shapeBorderColor: '#495057',
+            zoomButtonRadius: 32,
+            rectangleZoomFillColor: '#86B7FE',
+            rectangleZoomBorderColor: '#0D6EFD',
+            rectangleZoomFillOpacity: 0.30,
             legendBorderColor: '#000000',
             legendBorderWidth: 0,
-            tooltipBorderColor: 'transparent',
-            zoomButtonRadius: 30
+            tooltipBorderColor: 'transparent'
         };
         break;
     case 'fluent':
@@ -798,8 +799,8 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             titleFontWeight: '600',
             zoomSelectionColor: '#FFFFFF',
             zoomBorderColor: '#FFFFFF',
-            shapeFill: '#292827',
-            shapeBorderColor: '#292827',
+            shapeFill: '#FFFFFF',
+            shapeBorderColor: '#FFFFFF',
             rectangleZoomFillColor: '#1AEBFF',
             rectangleZoomFillOpacity: 0.25,
             rectangleZoomBorderColor: '#1AEBFF',

@@ -1,5 +1,8 @@
-import { BulletChart } from '../../../src/bullet-chart/index';
+import { BulletChart, IBulletLoadedEventArgs } from '../../../src/bullet-chart/index';
 import { createElement, remove, EventHandler } from '@syncfusion/ej2-base';
+import { BulletChartLegend } from '../../../src/bullet-chart/legend/legend';
+import { MouseEvents } from '../../chart/base/events.spec';
+BulletChart.Inject(BulletChartLegend);
 
 /**
  * Spec for Bullet chart axis.
@@ -451,6 +454,248 @@ describe('Bullet Chat Axis', () => {
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             expect(svg.getAttribute('y') == '270.66666666666663' || svg.getAttribute('y') == '270').toBe(true);
             done();
+        });
+        it('checking with maximums value as end', (done: Function) => {
+            bullet.maximum = 0;
+            bullet.ranges = [{ end: 6, color: 'red' }, { end: 0, color: 'yellow' }, { end: 10, color: 'green' }];
+            bullet.refresh();
+            svg = document.getElementById('container_svg_AxisLabel_10');
+
+            expect(svg.getAttribute('y')).toEqual('20');
+            done();
+        });
+        it('checking with Title Postion left and alignment far', (done: Function) => {
+            bullet.titlePosition = 'Left';
+            bullet.titleStyle.textAlignment = 'Far';
+            bullet.dataBind();
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.getAttribute('text-anchor') ).toBe('start');
+            done();
+        });
+        it('checking with Title Postion left and alignment near', (done: Function) => {
+            bullet.titlePosition = 'Left';
+            bullet.titleStyle.textAlignment = 'Near';
+            bullet.dataBind();
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.getAttribute('text-anchor') ).toBe('end');
+            done();
+        });
+        it('checking with Title Postion right and alignment near', (done: Function) => {
+            bullet.titlePosition = 'Right';
+            bullet.titleStyle.textAlignment = 'Near';
+            bullet.dataBind();
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.getAttribute('text-anchor') ).toBe('end');
+            done();
+        });
+        it('checking with Title Postion Top and alignment near', (done: Function) => {
+            bullet.titlePosition = 'Top';
+            bullet.titleStyle.textAlignment = 'Near';
+            bullet.dataBind();
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.getAttribute('text-anchor')).toBe('middle');
+            done();
+        });
+        it('checking with Title Postion Top and alignment far', (done: Function) => {
+            bullet.titlePosition = 'Top';
+            bullet.titleStyle.textAlignment = 'Far';
+            bullet.dataBind();
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.getAttribute('text-anchor') ).toBe('middle');
+            done();
+        });
+        it('checking with datalabel with textAlignment as Near', (done: Function) => {
+            bullet.dataLabel = {
+                enable: true, labelStyle: {
+                    textAlignment: 'Near'
+                }
+            };
+            bullet.dataSource = [{ value: 15, target: 17 }];
+            bullet.dataBind();
+            svg = document.getElementById('container_svg_AxisLabel_25');
+            svg = document.getElementById('container_svg_axisLabelGroup');
+            expect(svg !== null).toEqual(true);
+            done();
+        });
+        it('checking with datalabel with textAlignment as Far', (done: Function) => {
+            bullet.dataLabel = {
+                enable: true, labelStyle: {
+                    textAlignment: 'Far'
+                }
+            };
+            bullet.dataSource = [{ value: 15, target: 17 }];
+            bullet.dataBind();
+            svg = document.getElementById('container_svg_AxisLabel_25');
+            svg = document.getElementById('container_svg_axisLabelGroup');
+            expect(svg !== null).toEqual(true);
+            done();
+        });
+        it('checking with subTitle', (done: Function) => {
+            bullet.subtitle = 'KWH';
+            bullet.titlePosition = 'Bottom';
+            bullet.title = 'BulletChart';
+            bullet.dataBind();
+            svg = document.getElementById('container_BulletChartSubTitle');
+            expect(svg.getAttribute('text-anchor') == 'middle').toBe(true);
+            done();
+        });
+        it('checking with subTitle and theme', (done: Function) => {
+            bullet.subtitle = 'KWH';
+            bullet.subtitleStyle.color = "red";
+            bullet.titlePosition = 'Bottom';
+            bullet.title = 'BulletChart';
+            bullet.theme = "Bootstrap";
+            bullet.enableRtl = true;
+            bullet.locale = "";
+            bullet.dataBind();
+            svg = document.getElementById('container_BulletChartSubTitle');
+            expect(svg.getAttribute('text-anchor') == 'middle').toBe(true);
+            done();
+        });
+    });
+    describe('Horizontal orientation', () => {
+        let bullet: BulletChart;
+        let svg: Element;
+        let bulletElement: Element = createElement('div', { id: 'container' });
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            document.body.appendChild(bulletElement);
+            bullet = new BulletChart({
+                dataSource: [{ value: 8, target: 6 }],
+                valueField: 'value', targetField: 'target',
+                animation: {enable: false},
+                interval: 2,
+                orientation: 'Horizontal'
+            });
+            bullet.appendTo('#container');
+        });
+        afterAll((): void => {
+            bullet.destroy();
+            bulletElement.remove();
+        });
+        it('checking subtitle position as Bottom', (done: Function) => {
+            bullet.title = 'Bullet Chart';
+            bullet.subtitle = 'KWH';
+            bullet.subtitleStyle.color = "red";
+            bullet.titlePosition = 'Bottom';
+            bullet.dataBind();
+            svg = document.getElementById('container_BulletChartSubTitle');
+            expect(svg.textContent).toEqual('KWH');
+            done();
+        });
+        it('checking with datalabel with position as Near ', (done: Function) => {
+            bullet.loaded = (args: Object): void => {
+                let element: HTMLElement = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            }
+            bullet.dataLabel = { enable: true, labelStyle: { textAlignment: 'Near' } };
+            bullet.refresh();
+        });
+        it('checking with datalabel with position as Far', (done: Function) => {
+            bullet.loaded = (args: Object): void => {
+                let element: HTMLElement = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            }
+            bullet.dataLabel = { enable: true, labelStyle: { textAlignment: 'Far' } };
+            bullet.interval = null;
+            bullet.refresh();
+        });
+        it('checking with datalabel with position as Near and RTL', (done: Function) => {
+            bullet.loaded = (args: Object): void => {
+                let element: HTMLElement = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            }
+            bullet.dataLabel = { enable: true, labelStyle: { textAlignment: 'Near' } };
+            bullet.enableRtl = true;
+            bullet.maximum = null;
+            bullet.interval = 8;
+            bullet.refresh();
+        });
+        it('checking with datalabel with position as Far and RTL ', (done: Function) => {
+            bullet.loaded = (args: Object): void => {
+                let element: HTMLElement = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            }
+            bullet.dataLabel = { enable: true, labelStyle: { textAlignment: 'Far' } };
+            bullet.enableRtl = true;
+            bullet.tickPosition = 'Inside';
+            bullet.refresh();
+        });
+        it('checking with element event', (done: Function) => {
+            bullet.loaded = (args: Object): void => {
+                let element: HTMLElement = document.getElementById('container');
+
+                expect(element !== null).toBe(true);
+                done();
+            }
+            bullet.dataLabel = { enable: true, labelStyle: { textAlignment: 'Far' } };
+            bullet.enableRtl = true;
+            bullet.tickPosition = 'Inside';
+            bullet.legendSettings = { visible: true, position: 'Left' };
+            bullet.refresh();
+        });
+        it('checking with maximum and minimum ', (done: Function) => {
+            bullet.loaded = (args: Object): void => {
+                let element: HTMLElement = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            }
+            bullet.dataLabel = { enable: true, labelStyle: { textAlignment: 'Far' } };
+            bullet.interval = null;
+            bullet.orientation = 'Vertical';
+            bullet.legendSettings = { visible: true, position: 'Bottom' };
+            bullet.refresh();
+            bullet.delayRedraw = true;
+        });
+        it('checking with checking data bind method ', (done: Function) => {
+            bullet.orientation = 'Vertical';
+            bullet.titleStyle.textAlignment = 'Near';
+            bullet.delayRedraw = true;
+            let element: HTMLElement = document.getElementById('container');
+            expect(element !== null).toBe(true);
+            done();
+        });
+        it('checking with checking element tabIndex  ', (done: Function) => {
+            bullet.loaded = (args: IBulletLoadedEventArgs): void => {
+                bullet.loaded = null;
+                let element: HTMLElement = document.getElementById('container');
+                args.bulletChart.setTabIndex(element, element);
+                args.bulletChart.getActualIndex(1,2);
+                args.bulletChart.getActualIndex(0,0);
+                args.bulletChart.export('PDF', 'sample', 0, [args.bulletChart]);
+                args.bulletChart.export('PDF', 'sample');
+                args.bulletChart.bulletMouseLeave(<PointerEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100));
+                expect(element !== null).toBe(true);
+                done();
+            }
+            bullet.orientation = 'Vertical';
+            bullet.title = 'Bullet Chart';
+            bullet.subtitle = 'KWH';
+            bullet.titleStyle.size = '0px';
+            bullet.delayRedraw = false;
+            bullet.refresh();
+        });
+        it('checking with bullet chart orientation ', (done: Function) => {
+            bullet.loaded = (args: IBulletLoadedEventArgs): void => {
+                bullet.loaded = null;
+                let element: HTMLElement = document.getElementById('container');
+                args.bulletChart.setTabIndex(element, element);
+                args.bulletChart.getActualIndex(1,2);
+                args.bulletChart.getActualIndex(0,0);
+                args.bulletChart.export('PDF', 'sample', 0, [args.bulletChart]);
+                args.bulletChart.export('PDF', 'sample');
+                args.bulletChart.bulletMouseLeave(<PointerEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100));
+                expect(element !== null).toBe(true);
+                done();
+            }
+            bullet.orientation = 'Vertical';
+            bullet.opposedPosition = true;
+            bullet.labelPosition = 'Outside';
+            bullet.refresh();
         });
     });
 });

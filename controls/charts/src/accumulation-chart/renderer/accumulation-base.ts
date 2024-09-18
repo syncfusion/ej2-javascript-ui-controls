@@ -7,7 +7,9 @@ import { AccumulationChart } from '../accumulation';
 import { AccPoints, pointByIndex, AccumulationSeries } from '../model/acc-base';
 
 /**
- * Accumulation Base used to do some base calculation for accumulation chart.
+ * The `AccumulationBase` class is used to perform base calculations for accumulation charts.
+ *
+ * @private
  */
 export class AccumulationBase {
 
@@ -176,9 +178,10 @@ export class AccumulationBase {
      * @param {number} index - The index of the point to explode.
      * @param {AccumulationChart} chart - The accumulation chart control.
      * @param {boolean} explode - Specifies whether to explode the point (default: false).
+     * @param {boolean} pointAnimation - Specifies whether the point based animation is enabled.
      * @returns {void}
      */
-    public explodePoints(index: number, chart: AccumulationChart, explode: boolean = false): void {
+    public explodePoints(index: number, chart: AccumulationChart, explode: boolean = false, pointAnimation?: boolean): void {
         const series: AccumulationSeries = chart.visibleSeries[0];
         const points: AccPoints[] = series.points;
         const point: AccPoints = pointByIndex(index, points);
@@ -194,7 +197,7 @@ export class AccumulationBase {
             explodePoints = this.clubPointExplode(index, point, series, points, chart, duration, clubPointsExploded);
         }
         if (explodePoints && point.y !== 0) {
-            this.pointExplode(index, point, duration, explode);
+            this.pointExplode(index, point, duration, explode, pointAnimation);
         }
     }
 
@@ -248,9 +251,10 @@ export class AccumulationBase {
      * @param {AccPoints} point - To get the point of explode.
      * @param {number} duration - Duration of the explode point.
      * @param {boolean} explode - Either true or false.
+     * @param {boolean} pointAnimation - Specifies whether the point based animation is enabled.
      * @returns {void}
      */
-    private pointExplode(index: number, point: AccPoints, duration: number, explode?: boolean): void {
+    private pointExplode(index: number, point: AccPoints, duration: number, explode?: boolean, pointAnimation?: boolean): void {
         let translate: ChartLocation;
         const pointId: string = this.accumulation.element.id + '_Series_0_Point_';
         const chart: AccumulationChart = this.accumulation;
@@ -264,7 +268,7 @@ export class AccumulationBase {
         }
         if (this.isExplode(pointId + index) || explode) {
             point.isExplode = true;
-            this.explodeSlice(index, translate, pointId, this.center || { x: 0, y: 0 }, duration);
+            this.explodeSlice(index, translate, pointId, this.center || { x: 0, y: 0 }, duration, pointAnimation);
         } else {
             point.isExplode = false;
             this.deExplodeSlice(index, pointId, duration);
@@ -350,13 +354,20 @@ export class AccumulationBase {
      * @param {string} sliceId - The id of the slice.
      * @param {ChartLocation} center - The center point of the accumulation chart.
      * @param {number} animationDuration - The duration of the animation.
+     * @param {boolean} pointAnimation - Specifies whether the point based animation is enabled.
      * @returns {void}
      */
     private explodeSlice(
         index: number, translate: ChartLocation, sliceId: string, center: ChartLocation,
-        animationDuration: number
+        animationDuration: number, pointAnimation?: boolean
     ): void {
-        this.performAnimation(index, sliceId, 0, 0, translate.x - center.x, translate.y - center.y, animationDuration);
+        if (pointAnimation
+            && getElement(this.accumulation.element.id + '_Series_0_Point_' + index).getAttribute('transform')) {
+            this.setElementTransform(sliceId + index, `translate(${translate.x - center.x}, ${translate.y - center.y})`);
+        }
+        else {
+            this.performAnimation(index, sliceId, 0, 0, translate.x - center.x, translate.y - center.y, animationDuration);
+        }
     }
 
     /**

@@ -2,7 +2,7 @@
 /**
  * Specifies the  Bubble series spec.
  */
-import { remove, createElement } from '@syncfusion/ej2-base';
+import { remove, createElement, Browser } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
 import { DataLabel } from '../../../src/chart/series/data-label';
 import { Legend } from '../../../src/chart/legend/legend';
@@ -26,8 +26,9 @@ import { tool1, datetimeData,rotateData1,rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { Export} from '../../../src/chart/print-export/export';
 Chart.Inject(BarSeries, BubbleSeries, LineSeries, Category, Tooltip, DateTime, Logarithmic,
-    Legend, DataLabel, Selection, Zoom, Crosshair, DataEditing);
+    Legend, DataLabel, Selection, Zoom, Crosshair, DataEditing, Export);
 
 let datetime: any = datetimeData;
 let trigger: MouseEvents = new MouseEvents();
@@ -841,6 +842,15 @@ describe('Chart Control', () => {
             chartObj.refresh();
 
         });
+        it('Checking a XLSX export', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                const element: Element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.enableExport = true;
+            chartObj.export('XLSX', 'Chart');
+            chartObj.refresh();
+        });
         /*it('Checking multiple axes with crosshair', (done: Function) => {
             loaded = (args: Object): void => {
                 let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
@@ -929,7 +939,8 @@ describe('Chart Control', () => {
                     width: '800',
                     zoomSettings: {
                         enableDeferredZooming: true
-                    }
+                    },
+                    enableAnimation: false
 
                 });
             chartObj.appendTo('#container');
@@ -1530,6 +1541,133 @@ describe('checking bubble chart render in Canvas Mode.', () => {
         chart.refresh();
     });
 
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
+});
+
+describe('Checking bubble series animation on data changes.', () => {
+    let chart: Chart;
+    let loaded: EmitType<ILoadedEventArgs>;
+    let element: HTMLElement = createElement('div', { id: 'BubbleContainer' });
+    beforeAll(() => {
+        document.body.appendChild(element);
+        chart = new Chart({
+            primaryXAxis: {
+                minimum: 65,
+                maximum: 102,
+                interval: 5,
+                crossesAt: 5
+            },
+            primaryYAxis: {
+                minimum: 0,
+                maximum: 10,
+                crossesAt: 85,
+                interval: 2.5
+            },
+            width: '75%',
+            // Initializing the chart series
+            series: [
+                {
+                    type: 'Bubble',
+                    dataSource: [
+                        { x: 92.2, y: 7.8, size: 1.347, text: 'China', dataLabelName: 'China' },
+                        { x: 74, y: 6.5, size: 1.241, text: 'India', dataLabelName: 'India' },
+                        { x: 90.4, y: 6.0, size: 0.238, text: 'Indonesia', dataLabelName:  'Indonesia'},
+                        { x: 99.4, y: 2.2, size: 0.312, text: 'United States', dataLabelName: 'US' },
+                        { x: 88.6, y: 1.3, size: 0.197, text: 'Brazil', dataLabelName: Browser.isDevice ? 'BR' : 'Brazil'},
+                        { x: 99, y: 0.7, size: 0.0818, text: 'Germany', dataLabelName: Browser.isDevice ? 'DE' : 'Germany' },
+                        { x: 72, y: 2.0, size: 0.0826, text: 'Egypt', dataLabelName: Browser.isDevice ? 'EG' : 'Egypt'},
+                        { x: 99.6, y: 3.4, size: 0.143, text: 'Russia', dataLabelName: Browser.isDevice ? 'RUS' : 'Russia'},
+                        { x: 96.5, y: 0.2, size: 0.128, text: 'Japan', dataLabelName: Browser.isDevice ? 'JP' : 'Japan'},
+                        { x: 86.1, y: 4.0, size: 0.115, text: 'MeLiteracy Ion', dataLabelName: 'MLI' },
+                        { x: 92.6, y: 5.2, size: 0.096, text: 'Philippines', dataLabelName: 'PH' },
+                        { x: 61.3, y: 1.45, size: 0.162, text: 'Nigeria', dataLabelName: 'Nigeria' },
+                        { x: 82.2, y: 3.97, size: 0.7, text: 'Hong Kong', dataLabelName: Browser.isDevice ? 'HK' : 'Hong Kong' },
+                        { x: 79.2, y: 4.9, size: 0.162, text: 'Netherland', dataLabelName: 'NL' },
+                        { x: 72.5, y: 4.5, size: 0.7, text: 'Jordan', dataLabelName: 'Jordan' },
+                        { x: 81, y: 2.5, size: 0.21, text: 'Australia', dataLabelName: Browser.isDevice ? 'AU' : 'Australia'},
+                        { x: 66.8, y: 3.9, size: 0.028, text: 'Mongolia', dataLabelName: 'MN' },
+                        { x: 78.4, y: 2.9, size: 0.231, text: 'Taiwan', dataLabelName: Browser.isDevice ? 'TW' : 'Taiwan' }
+                    ],
+                    xName: 'x', yName: 'y', size: 'size',
+                    border: { width: 2 }, tooltipMappingName: 'text',
+                    marker: { dataLabel: { visible: true } }
+                },
+            ],
+            title: 'World Countries Details',
+            legendSettings: { visible: false }
+        });
+        chart.appendTo('#BubbleContainer');
+    });
+    afterAll((): void => {
+        chart.destroy();
+        element.remove();
+    });
+    it('checking bubble series updated direction', (done: Function) => {
+        loaded = (args: Object): void => {
+            let seriesElement: Element = document.getElementById('BubbleContainer_Series_0_Point_1');
+            expect(seriesElement.getAttribute('cy')).toBe('138.86249999999998');
+            done();
+        };
+        chart.loaded = loaded;
+        let data = [{ x: 92.2, y: 7.8, size: 1.347, text: 'China', dataLabelName: 'China' },
+        { x: 74, y: 6.5, size: 1.241, text: 'India', dataLabelName: 'India' },
+        { x: 90.4, y: 6.0, size: 0.238, text: 'Indonesia', dataLabelName:  'Indonesia'},
+        { x: 99.4, y: 2.7, size: 0.312, text: 'United States', dataLabelName: 'US' },
+        { x: 88.6, y: 1.3, size: 0.197, text: 'Brazil', dataLabelName: Browser.isDevice ? 'BR' : 'Brazil'},
+        { x: 99, y: 0.7, size: 0.0818, text: 'Germany', dataLabelName: Browser.isDevice ? 'DE' : 'Germany' },
+        { x: 72, y: 2.4, size: 0.0826, text: 'Egypt', dataLabelName: Browser.isDevice ? 'EG' : 'Egypt'},
+        { x: 99.6, y: 3.6, size: 0.143, text: 'Russia', dataLabelName: Browser.isDevice ? 'RUS' : 'Russia'},
+        { x: 96.5, y: 0.2, size: 0.128, text: 'Japan', dataLabelName: Browser.isDevice ? 'JP' : 'Japan'},
+        { x: 86.1, y: 4.0, size: 0.115, text: 'MeLiteracy Ion', dataLabelName: 'MLI' },
+        { x: 92.6, y: 5.2, size: 0.096, text: 'Philippines', dataLabelName: 'PH' },
+        { x: 61.3, y: 1.45, size: 0.162, text: 'Nigeria', dataLabelName: 'Nigeria' },
+        { x: 82.2, y: 3.97, size: 0.7, text: 'Hong Kong', dataLabelName: Browser.isDevice ? 'HK' : 'Hong Kong' },
+        { x: 79.2, y: 4.8, size: 0.162, text: 'Netherland', dataLabelName: 'NL' },
+        { x: 72.5, y: 4.5, size: 0.7, text: 'Jordan', dataLabelName: 'Jordan' },
+        { x: 81, y: 2.5, size: 0.21, text: 'Australia', dataLabelName: Browser.isDevice ? 'AU' : 'Australia'},
+        { x: 66.8, y: 3.9, size: 0.028, text: 'Mongolia', dataLabelName: 'MN' },
+        { x: 78.4, y: 2.9, size: 0.231, text: 'Taiwan', dataLabelName: Browser.isDevice ? 'TW' : 'Taiwan' }];
+        chart.series[0].setData(data);
+        chart.refresh();
+    });
+    it('checking bubble series without min radius and max radius', (done: Function) => {
+        loaded = (args: Object): void => {
+            let seriesElement: Element = document.getElementById('BubbleContainer_Series_0_Point_1');
+            expect(seriesElement.getAttribute('cy')).toBe('138.86249999999998');
+            done();
+        };
+        chart.loaded = loaded;
+        chart.series[0].minRadius = null;
+        chart.series[0].maxRadius = null;
+        let data = [{ x: 92.2, y: 7.8, size: 1.347, text: 'China', dataLabelName: 'China' },
+        { x: 74, y: 6.5, size: 1.241, text: 'India', dataLabelName: 'India' },
+        { x: 90.4, y: 6.0, size: 0.238, text: 'Indonesia', dataLabelName: 'Indonesia' },
+        { x: 99.4, y: 2.7, size: 0.312, text: 'United States', dataLabelName: 'US' },
+        { x: 88.6, y: 1.3, size: 0.197, text: 'Brazil', dataLabelName: Browser.isDevice ? 'BR' : 'Brazil' },
+        { x: 99, y: 0.7, size: 0.0818, text: 'Germany', dataLabelName: Browser.isDevice ? 'DE' : 'Germany' },
+        { x: 72, y: 2.4, size: 0.0826, text: 'Egypt', dataLabelName: Browser.isDevice ? 'EG' : 'Egypt' },
+        { x: 99.6, y: 3.8, size: 0.143, text: 'Russia', dataLabelName: Browser.isDevice ? 'RUS' : 'Russia' },
+        { x: 96.5, y: 0.2, size: 0.128, text: 'Japan', dataLabelName: Browser.isDevice ? 'JP' : 'Japan' },
+        { x: 86.1, y: 4.0, size: 0.115, text: 'MeLiteracy Ion', dataLabelName: 'MLI' },
+        { x: 92.6, y: 5.6, size: 0.096, text: 'Philippines', dataLabelName: 'PH' },
+        { x: 61.3, y: 1.45, size: 0.162, text: 'Nigeria', dataLabelName: 'Nigeria' },
+        { x: 82.2, y: 3.97, size: 0.7, text: 'Hong Kong', dataLabelName: Browser.isDevice ? 'HK' : 'Hong Kong' },
+        { x: 79.2, y: 4.8, size: 0.162, text: 'Netherland', dataLabelName: 'NL' },
+        { x: 72.5, y: 4.5, size: 0.7, text: 'Jordan', dataLabelName: 'Jordan' },
+        { x: 81, y: 2.5, size: 0.21, text: 'Australia', dataLabelName: Browser.isDevice ? 'AU' : 'Australia' },
+        { x: 66.8, y: 3.9, size: 0.028, text: 'Mongolia', dataLabelName: 'MN' },
+        { x: 78.4, y: 2.9, size: 0.231, text: 'Taiwan', dataLabelName: Browser.isDevice ? 'TW' : 'Taiwan' }];
+        chart.series[0].setData(data);
+        chart.refresh();
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

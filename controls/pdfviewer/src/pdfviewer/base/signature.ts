@@ -12,7 +12,7 @@ import { Tab, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Button } from '@syncfusion/ej2-buttons';
 import { PdfAnnotationType } from '../drawing';
 import { DisplayMode } from './types';
-import { AnnotationSettings } from '../index';
+import { AnnotationSettings, HandWrittenSignatureSettings, IPoint, AnnotationSelectorSettingsModel } from '../index';
 
 /**
  * @hidden
@@ -39,6 +39,7 @@ interface IRectCollection {
     width: number
     height: number
 }
+/* eslint-disable valid-jsdoc */
 /**
  *
  * @param {Event} e - The event object.
@@ -142,6 +143,10 @@ export class Signature {
      * @private
      */
     public maxSaveLimit: number = 5;
+    /**
+     * @private
+     */
+    public isAddAnnotationProgramatically: boolean;
     /**
      * Initialize the constructor of blazorUIadapater.
      *
@@ -1316,6 +1321,7 @@ export class Signature {
                 }
             }
         }
+        this.setCustomFonts();
         for (let i: number = 0; i < this.signfontStyle.length; i++) {
             fontSignature[parseInt(i.toString(), 10)] = document.createElement('div');
             fontSignature[parseInt(i.toString(), 10)].id = '_font_signature' + i + '';
@@ -1369,6 +1375,30 @@ export class Signature {
         // } else {
         //     return appearanceDiv;
         // }
+    }
+
+    //to set custom fonts for specific settings
+    public setCustomFonts(): void {
+        if (!this.pdfViewerBase.isToolbarSignClicked && !isNullOrUndefined(this.pdfViewer.signatureFieldSettings.typeSignatureFonts)) {
+            if (!this.pdfViewerBase.isInitialField) {
+                for (let j: number = 0; j < 4; j++) {
+                    if (!isNullOrUndefined(this.pdfViewer.signatureFieldSettings.typeSignatureFonts[parseInt(j.toString(), 10)])) {
+                        this.signfontStyle[parseInt(j.toString(), 10)].FontName =
+                            this.pdfViewer.signatureFieldSettings.typeSignatureFonts[parseInt(j.toString(), 10)];
+                    }
+                }
+            }
+        }
+        if (!this.pdfViewerBase.isToolbarSignClicked && !isNullOrUndefined(this.pdfViewer.initialFieldSettings.typeInitialFonts)) {
+            if (this.pdfViewerBase.isInitialField) {
+                for (let j: number = 0; j < 4; j++) {
+                    if (!isNullOrUndefined(this.pdfViewer.initialFieldSettings.typeInitialFonts[parseInt(j.toString(), 10)])) {
+                        this.signfontStyle[parseInt(j.toString(), 10)].FontName =
+                            this.pdfViewer.initialFieldSettings.typeInitialFonts[parseInt(j.toString(), 10)];
+                    }
+                }
+            }
+        }
     }
 
     private select: any = function (e: SelectEventArgs): void {
@@ -1689,8 +1719,11 @@ export class Signature {
             const signCollection: any = {};
             signCollection['sign_' + this.pdfViewerBase.imageCount] = this.outputString;
             this.outputcollection.push(signCollection);
+            const signBounds: any = {};
+            signBounds['height'] = this.pdfViewerBase.currentSignatureAnnot.bounds.height;
+            signBounds['width'] = this.pdfViewerBase.currentSignatureAnnot.bounds.width;
             const signature: any = [];
-            signature.push({ id: 'sign_' + this.pdfViewerBase.imageCount, imageData: imageString, signatureType: signatureType, fontFamily: this.pdfViewerBase.currentSignatureAnnot.fontFamily });
+            signature.push({ id: 'sign_' + this.pdfViewerBase.imageCount, imageData: imageString, signatureType: signatureType, fontFamily: this.pdfViewerBase.currentSignatureAnnot.fontFamily, bounds: signBounds });
             this.signaturecollection.push({ image: signature, isInitial: this.pdfViewerBase.isInitialField });
             this.pdfViewerBase.imageCount++;
         }
@@ -1740,6 +1773,7 @@ export class Signature {
             let keyString: string = '';
             let signatureType: PdfAnnotationType;
             let signatureFontFamily: string;
+            let bounds: any;
             for (let collection: number = 0; collection < this.outputcollection.length; collection++) {
                 const collectionAddedsign: any = this.outputcollection[parseInt(collection.toString(), 10)];
                 const eventTarget: HTMLElement = event.target as HTMLElement;
@@ -1754,16 +1788,23 @@ export class Signature {
                 if (eventTarget && eventTarget.id === 'sign_' + signatureId || eventTarget && eventTarget.id === 'sign_border' + signatureId) {
                     signatureType = this.signaturecollection[parseInt(signatureIndex.toString(), 10)].image[0].signatureType;
                     signatureFontFamily = this.signaturecollection[parseInt(signatureIndex.toString(), 10)].image[0].fontFamily;
+                    bounds = this.signaturecollection[parseInt(signatureIndex.toString(), 10)].image[0].bounds;
                     break;
                 }
             }
             if (signatureType === 'HandWrittenSignature') {
                 const signatureBounds: any = this.updateSignatureAspectRatio(keyString, true);
-                currentWidth = signatureBounds.width ? signatureBounds.width : currentWidth;
-                currentHeight = signatureBounds.height ? signatureBounds.height : currentHeight;
+                if (bounds.width !== signatureBounds.width && bounds.height !== signatureBounds.height) {
+                    currentWidth =  bounds.width;
+                    currentHeight =  bounds.height;
+                }
+                else {
+                    currentWidth = signatureBounds.width ? signatureBounds.width : currentWidth;
+                    currentHeight = signatureBounds.height ? signatureBounds.height : currentHeight;
+                }
             } else {
-                currentWidth = currentWidth === 150 ? 200 : this.pdfViewer.handWrittenSignatureSettings.width;
-                currentHeight = currentHeight === 100 ? 65 : this.pdfViewer.handWrittenSignatureSettings.height;
+                currentWidth =  bounds.width;
+                currentHeight =  bounds.height;
             }
             annot = {
                 id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: keyString,
@@ -2145,7 +2186,12 @@ export class Signature {
         return JSON.stringify(annotations);
     }
 
-    private checkDefaultFont(fontName: string): boolean {
+    /**
+     *
+     * @private
+     * @returns {boolean}
+     */
+    public checkDefaultFont(fontName: string): boolean {
         if (fontName === 'Helvetica' || fontName === 'Times New Roman' || fontName === 'Courier' || fontName === 'Symbol') {
             return true;
         }
@@ -2270,10 +2316,22 @@ export class Signature {
                         }
                     }
                     this.outputString = data;
+                    const calculateInkPosition: any = this.pdfViewer.annotationModule.inkAnnotationModule.
+                        calculateInkSize(this.outputString);
                     this.outputString = '';
-                    const rectDiff: number = 0;
-                    const rectDifference: number = 1;
+                    let rectDiff: number = 0;
+                    let rectDifference: number = 1;
                     const bounds: any = currentAnnotation.Bounds;
+                    if (calculateInkPosition && (currentAnnotation.AnnotationType === 'Ink' ||
+                        currentAnnotation.AnnotationType === 'signature' || currentAnnotation.AnnotationType === 'Signature')) {
+                        if (calculateInkPosition.height < 1) {
+                            rectDiff = bounds.Height ? bounds.Height : bounds.height;
+                            rectDifference = bounds.Height ? bounds.Height : bounds.height;
+                        } else if (calculateInkPosition.width < 1) {
+                            rectDiff = bounds.Width ? bounds.Width : bounds.width;
+                            rectDifference = bounds.Width ? bounds.Width : bounds.width;
+                        }
+                    }
                     const currentLeft: any = !isNullOrUndefined(bounds.X) ? bounds.X + (rectDiff / 2) : bounds.x + (rectDiff / 2);
                     const currentTop: any = !isNullOrUndefined(bounds.Y) ? bounds.Y + (rectDiff / 2) : bounds.y + (rectDiff / 2);
                     const currentWidth: number = bounds.Width ? bounds.Width - (rectDifference - 1) : bounds.width - (rectDifference - 1);
@@ -2297,6 +2355,11 @@ export class Signature {
                     }
                 }
                 this.pdfViewer.add(annot as PdfAnnotationBase);
+                if (this.isAddAnnotationProgramatically) {
+                    this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.signatureName,
+                                                    annot.shapeAnnotationType, annot.bounds, annot.opacity,
+                                                    annot.strokeColor, annot.thickness, annot.data);
+                }
                 const canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentAnnotation.pageIndex);
                 this.pdfViewer.renderDrawing(canvass as any, annot.pageIndex);
                 this.storeSignatureData(annot.pageIndex, annot);
@@ -2655,5 +2718,143 @@ export class Signature {
         }
         if (this.signatureDialog)
         {this.signatureDialog.destroy(); }
+    }
+
+    /**
+     * This method was used to add signature programmatically
+     *
+     * @param {HandWrittenSignatureSettings} annotationObject - It describes type of annotation object
+     * @param {IPoint} offset - It describes about the signature bounds or location
+     * @param {number} pageNumber - It describes about the signature page number
+     * @returns {object} - object
+     * @private
+     */
+    public updateSignatureDetails(annotationObject: HandWrittenSignatureSettings, offset: IPoint, pageNumber: number): Object {
+        //Creating new object if annotationObject is null
+        if (!annotationObject) {
+            annotationObject = { offset: { x: 10, y: 10 }, pageNumber: 0,
+                width: undefined, height: undefined } as unknown as HandWrittenSignatureSettings;
+            offset = annotationObject.offset;
+        }
+        else if (!annotationObject.offset) {
+            offset = { x: 10, y: 10 };
+        }
+        else {
+            offset = annotationObject.offset;
+        }
+        const signatureId: string = this.pdfViewer.annotation.createGUID();
+        const annotationSettings: any = this.pdfViewer.annotation.updateSettings(this.pdfViewer.handWrittenSignatureSettings);
+        const annotationSelectorSettings: AnnotationSelectorSettingsModel =
+        this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings;
+        this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
+        annotationObject.width = annotationObject.width ? annotationObject.width :
+            this.pdfViewer.handWrittenSignatureSettings.width ? this.pdfViewer.handWrittenSignatureSettings.width : 150;
+        annotationObject.height =
+        annotationObject.height ? annotationObject.height : this.pdfViewer.handWrittenSignatureSettings.height ?
+            this.pdfViewer.handWrittenSignatureSettings.height : 100;
+        annotationObject.thickness =
+        annotationObject.thickness ? annotationObject.thickness : this.pdfViewer.handWrittenSignatureSettings.thickness ?
+            this.pdfViewer.handWrittenSignatureSettings.thickness : 1;
+        annotationObject.opacity =
+        annotationObject.opacity ? annotationObject.opacity : this.pdfViewer.handWrittenSignatureSettings.opacity ?
+            this.pdfViewer.handWrittenSignatureSettings.opacity : 1;
+        annotationObject.strokeColor = annotationObject.strokeColor ? annotationObject.strokeColor : this.pdfViewer.handWrittenSignatureSettings.strokeColor ? this.pdfViewer.handWrittenSignatureSettings.strokeColor : '#000000';
+        annotationObject.path = annotationObject.path ? annotationObject.path : this.pdfViewer.handWrittenSignatureSettings.path ? this.pdfViewer.handWrittenSignatureSettings.path : '';
+        annotationObject.canSave = annotationObject.canSave ? annotationObject.canSave : false;
+        annotationObject.signatureItem = annotationObject.signatureItem ? annotationObject.signatureItem : ['Signature'];
+        annotationObject.fontFamily = annotationObject.fontFamily ? annotationObject.fontFamily : 'Helvetica';
+        let displayMode: number;
+        let signatureLimit: number;
+        let initialLimit: number;
+        if (annotationObject.signatureItem[0] === 'Initial') {
+            displayMode = annotationObject.initialDialogSettings.displayMode ? annotationObject.initialDialogSettings.displayMode : 1;
+            initialLimit = annotationObject.saveInitialLimit ? annotationObject.saveInitialLimit :
+                this.pdfViewer.handWrittenSignatureSettings.saveInitialLimit;
+            this.pdfViewer.handWrittenSignatureSettings.saveInitialLimit =
+            this.pdfViewer.handWrittenSignatureSettings.saveInitialLimit < initialLimit ? initialLimit :
+                this.pdfViewer.handWrittenSignatureSettings.saveInitialLimit;
+        }
+        else {
+            displayMode = annotationObject.signatureDialogSettings.displayMode ? annotationObject.signatureDialogSettings.displayMode : 1;
+            signatureLimit = annotationObject.saveSignatureLimit ? annotationObject.saveSignatureLimit :
+                this.pdfViewer.handWrittenSignatureSettings.saveSignatureLimit;
+            this.pdfViewer.handWrittenSignatureSettings.saveSignatureLimit =
+            this.pdfViewer.handWrittenSignatureSettings.saveSignatureLimit < signatureLimit ? signatureLimit :
+                this.pdfViewer.handWrittenSignatureSettings.saveSignatureLimit;
+        }
+        const signatureAnnotation: any = [];
+        let annotType: string;
+        if (displayMode === 1) {
+            annotType = 'signature';
+            let pathData: string = annotationObject.path ? annotationObject.path : '';
+            if (!isNullOrUndefined(pathData)) {
+                // Check whether the given path of the ink annotation is starts with Move path or Line path.
+                if (pathData[0] === 'M' || pathData[0] === 'L') {
+                    const collectionData: Object[] = processPathData(pathData);
+                    const csData: Object[] = splitArrayCollection(collectionData);
+                    pathData = JSON.stringify(csData);
+                }
+                else {
+                    pathData = getPathString(JSON.parse(pathData));
+                }
+            }
+            annotationObject.path = pathData;
+        }
+        if (displayMode === 2) {
+            annotationObject.height = 65;
+            annotType = 'SignatureText';
+        }
+        if (displayMode === 4) {
+            annotType = 'SignatureImage';
+        }
+
+        //Adding the annotation object to an array and return it
+        const signature: any = {
+            SignatureName: signatureId,
+            AnnotationSettings: annotationSettings,
+            AnnotationType: annotType,
+            AnnotationSelectorSettings: annotationObject.annotationSelectorSettings ?
+                annotationObject.annotationSelectorSettings : annotationSelectorSettings,
+            Opacity: annotationObject.opacity,
+            PathData: annotationObject.path,
+            PageNumber: pageNumber,
+            FontFamily: annotationObject.fontFamily,
+            FontSize: 32,
+            StrokeColor: annotationObject.strokeColor,
+            Thickness: annotationObject.thickness,
+            Bounds: { x: offset.x, y: offset.y, width: annotationObject.width, height: annotationObject.height }
+        };
+        signatureAnnotation[0] = signature;
+
+        //To save the programmatically added signature
+        if (annotationObject.canSave) {
+            const bounds: any = { x: offset.x, y: offset.y, width: annotationObject.width, height: annotationObject.height };
+            this.pdfViewerBase.currentSignatureAnnot = null;
+            this.outputString = annotationObject.path;
+            this.pdfViewerBase.isInitialField = annotationObject.signatureItem[0] === 'Initial' ? true : false;
+            let annot: PdfAnnotationBaseModel;
+            if (displayMode === 1){
+                annot = {
+                    id: 'sign' + this.pdfViewerBase.signatureCount, bounds: bounds, pageIndex: annotationObject.pageNumber, data: this.outputString,
+                    shapeAnnotationType: 'HandWrittenSignature', opacity: annotationObject.opacity, strokeColor: annotationObject.strokeColor, thickness: annotationObject.thickness, signatureName: signatureId
+                };
+            }
+            else if (displayMode === 2){
+                annot = {
+                    id: 'sign' + this.pdfViewerBase.signatureCount, bounds: bounds, pageIndex: annotationObject.pageNumber, data: this.outputString, fontFamily: annotationObject.fontFamily, fontSize: 32,
+                    shapeAnnotationType: 'SignatureText', signatureName: signatureId
+                };
+            }
+            else if (displayMode === 4){
+                annot = {
+                    id: 'sign' + this.pdfViewerBase.signatureCount, bounds: bounds, pageIndex: annotationObject.pageNumber, data: this.outputString,
+                    shapeAnnotationType: 'SignatureImage', signatureName: signatureId
+                };
+            }
+            this.pdfViewerBase.currentSignatureAnnot = annot;
+            this.addSignatureCollection();
+            this.outputString = '';
+        }
+        return { signatureAnnotation };
     }
 }

@@ -42,7 +42,6 @@ export class ViewSource {
         this.parent.on(events.initialEnd, this.onInitialEnd, this);
         this.parent.on(events.updateSource, this.updateSourceCode, this);
         this.parent.on(events.destroy, this.destroy, this);
-        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
 
     private onInitialEnd(): void {
@@ -55,7 +54,6 @@ export class ViewSource {
         this.parent.off(events.updateSource, this.updateSourceCode);
         this.parent.off(events.initialEnd, this.onInitialEnd);
         this.parent.off(events.destroy, this.destroy);
-        this.parent.off(events.moduleDestroy, this.moduleDestroy);
         this.parent.formatter.editorManager.observer.off(CONSTANT.KEY_DOWN_HANDLER, this.onKeyDown);
     }
 
@@ -262,9 +260,5 @@ export class ViewSource {
     public destroy(): void {
         if (isNOU(this.parent)) { return; }
         this.removeEventListener();
-    }
-
-    private moduleDestroy(): void {
-        this.parent = null;
     }
 }

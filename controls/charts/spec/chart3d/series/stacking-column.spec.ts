@@ -101,9 +101,9 @@ describe('Stacking Column Series', () => {
             chartObj.series[0].dataSource = null;
             chartObj.loaded = (args: Object) => {
                 const svg: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-0');
-                expect(svg.getAttribute('d')).toBe('M 170.61682242990653 287.2056074766355 L 170.61682242990653 287.2056074766355 L 672.1495327102804 287.2056074766355 L 672.1495327102804 390.233644859813 L 170.61682242990653 390.233644859813 ');
+                expect(svg.getAttribute('d')).toBe('M 171.58878504672896 285.2616822429906 L 171.58878504672896 285.2616822429906 L 672.1495327102804 285.2616822429906 L 672.1495327102804 387.31775700934577 L 171.58878504672896 387.31775700934577 ');
                 const svg1: HTMLElement = document.getElementById('container-svg-0-region-series-1-point-0');
-                expect(svg1.getAttribute('d')).toBe('M 170.61682242990653 91.8411214953271 L 170.61682242990653 91.8411214953271 L 672.1495327102804 91.8411214953271 L 672.1495327102804 287.2056074766355 L 170.61682242990653 287.2056074766355 ');
+                expect(svg1.getAttribute('d')).toBe('M 171.58878504672896 91.8411214953271 L 171.58878504672896 91.8411214953271 L 672.1495327102804 91.8411214953271 L 672.1495327102804 285.2616822429906 L 171.58878504672896 285.2616822429906 ');
                 done();
             };
             chartObj.series[0].dataSource = [{
@@ -382,13 +382,13 @@ describe('Stacking Column Series', () => {
         it('Stacking Column Series with negative', (done: Function) => {
             loaded = (args: Object): void => {
                 const seriesElements: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-1');
-                expect(seriesElements.getAttribute('d')).toBe('M 196.85981308411218 262.9065420560747 L 196.85981308411218 262.9065420560747 L 271.70093457943926 262.9065420560747 L 271.70093457943926 292.06542056074767 L 196.85981308411218 292.06542056074767 ');
+                expect(seriesElements.getAttribute('d')).toBe('M 196.85981308411218 260.9626168224299 L 196.85981308411218 260.9626168224299 L 271.70093457943926 260.9626168224299 L 271.70093457943926 290.12149532710276 L 196.85981308411218 290.12149532710276 ');
                 const seriesElement1: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-3');
-                expect(seriesElement1.getAttribute('d')).toBe('M 446.65420560747657 228.8878504672897 L 446.65420560747657 228.8878504672897 L 521.4953271028037 228.8878504672897 L 521.4953271028037 292.06542056074767 L 446.65420560747657 292.06542056074767 ');
+                expect(seriesElement1.getAttribute('d')).toBe('M 446.65420560747657 226.94392523364485 L 446.65420560747657 226.94392523364485 L 521.4953271028037 226.94392523364485 L 521.4953271028037 290.12149532710276 L 446.65420560747657 290.12149532710276 ');
                 const seriesElements2: HTMLElement = document.getElementById('container-svg-0-region-series-1-point-1');
-                expect(seriesElements2.getAttribute('d')).toBe('M 196.85981308411218 243.46728971962614 L 196.85981308411218 243.46728971962614 L 271.70093457943926 243.46728971962614 L 271.70093457943926 262.9065420560747 L 196.85981308411218 262.9065420560747 ');
+                expect(seriesElements2.getAttribute('d')).toBe('M 196.85981308411218 241.5233644859813 L 196.85981308411218 241.5233644859813 L 271.70093457943926 241.5233644859813 L 271.70093457943926 260.9626168224299 L 196.85981308411218 260.9626168224299 ');
                 const seriesElement3: HTMLElement = document.getElementById('container-svg-0-region-series-1-point-3');
-                expect(seriesElement3.getAttribute('d')).toBe('M 446.65420560747657 175.42990654205607 L 446.65420560747657 175.42990654205607 L 521.4953271028037 175.42990654205607 L 521.4953271028037 228.8878504672897 L 446.65420560747657 228.8878504672897 ');
+                expect(seriesElement3.getAttribute('d')).toBe('M 446.65420560747657 174.45794392523365 L 446.65420560747657 174.45794392523365 L 521.4953271028037 174.45794392523365 L 521.4953271028037 226.94392523364485 L 446.65420560747657 226.94392523364485 ');
                 done();
             };
             chartObj.loaded = loaded;
@@ -413,9 +413,9 @@ describe('Stacking Column Series', () => {
         it('Stacking Column Series with Rotation', (done: Function) => {
             loaded = (args: Object): void => {
                 const seriesElements: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-3');
-                expect(seriesElements.getAttribute('d')).toBe('M 423.5317853273407 329.3072192675112 L 423.5317853273407 329.3072192675112 L 480.9894270907686 333.83544209106026 L 480.9894270907686 401.2097633855261 L 423.5317853273407 393.87835500454185 ');
+                expect(seriesElements.getAttribute('d')).toBe('M 423.5317853273407 326.32701300272515 L 423.5317853273407 326.32701300272515 L 480.9894270907686 330.7258580313157 L 480.9894270907686 398.10017932578154 L 423.5317853273407 390.8981487397558 ');
                 const seriesElements1: HTMLElement = document.getElementById('container-svg-0-region-series-1-point-3');
-                expect(seriesElements1.getAttribute('d')).toBe('M 423.5317853273407 164.40247261601738 L 423.5317853273407 164.40247261601738 L 480.9894270907686 161.7717907851936 L 480.9894270907686 333.83544209106026 L 423.5317853273407 329.3072192675112 ');
+                expect(seriesElements1.getAttribute('d')).toBe('M 423.5317853273407 163.40907052775535 L 423.5317853273407 163.40907052775535 L 480.9894270907686 160.73526276527875 L 480.9894270907686 330.7258580313157 L 423.5317853273407 326.32701300272515 ');
                 done();
             };
             chartObj.loaded = loaded;
@@ -436,9 +436,9 @@ describe('Stacking Column Series', () => {
         it('Stacking Column Series with Depth', (done: Function) => {
             loaded = (args: Object): void => {
                 const seriesElements: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-3');
-                expect(seriesElements.getAttribute('d') === 'M 444.8316086547507 327.3330197554092 L 444.8316086547507 327.3330197554092 L 519.8758231420508 327.3330197554092 L 519.8758231420508 390.68203198494825 L 444.8316086547507 390.68203198494825 ').toBe(true);
+                expect(seriesElements.getAttribute('d') === 'M 444.8316086547507 324.40921919096894 L 444.8316086547507 324.40921919096894 L 519.8758231420508 324.40921919096894 L 519.8758231420508 387.75823142050797 L 444.8316086547507 387.75823142050797 ').toBe(true);
                 const seriesElements1: HTMLElement = document.getElementById('container-svg-0-region-series-1-point-3');
-                expect(seriesElements1.getAttribute('d') === 'M 444.8316086547507 165.54938852304798 L 444.8316086547507 165.54938852304798 L 519.8758231420508 165.54938852304798 L 519.8758231420508 327.3330197554092 L 444.8316086547507 327.3330197554092 ').toBe(true);
+                expect(seriesElements1.getAttribute('d') === 'M 444.8316086547507 164.57478833490123 L 444.8316086547507 164.57478833490123 L 519.8758231420508 164.57478833490123 L 519.8758231420508 324.40921919096894 L 444.8316086547507 324.40921919096894 ').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -450,9 +450,9 @@ describe('Stacking Column Series', () => {
         it('Stacking Column Series with perspectiveAngle', (done: Function) => {
             loaded = (args: Object): void => {
                 const seriesElements: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-3');
-                expect(seriesElements.getAttribute('d') === 'M 426.2857142857143 285 L 426.2857142857143 285 L 470.2857142857143 285 L 470.2857142857143 322.14285714285717 L 426.2857142857143 322.14285714285717 ').toBe(true);
+                expect(seriesElements.getAttribute('d') === 'M 426.2857142857143 283.2857142857143 L 426.2857142857143 283.2857142857143 L 470.2857142857143 283.2857142857143 L 470.2857142857143 320.42857142857144 L 426.2857142857143 320.42857142857144 ').toBe(true);
                 const seriesElements1: HTMLElement = document.getElementById('container-svg-0-region-series-1-point-3');
-                expect(seriesElements1.getAttribute('d') === 'M 426.2857142857143 190.14285714285714 L 426.2857142857143 190.14285714285714 L 470.2857142857143 190.14285714285714 L 470.2857142857143 285 L 426.2857142857143 285 ').toBe(true);
+                expect(seriesElements1.getAttribute('d') === 'M 426.2857142857143 189.57142857142858 L 426.2857142857143 189.57142857142858 L 470.2857142857143 189.57142857142858 L 470.2857142857143 283.2857142857143 L 426.2857142857143 283.2857142857143 ').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -464,9 +464,9 @@ describe('Stacking Column Series', () => {
         it('Stacking Column Series with Tilt', (done: Function) => {
             loaded = (args: Object): void => {
                 const seriesElements: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-3');
-                expect(seriesElements.getAttribute('d') === 'M 441.21949864767544 307.3707893785769 L 441.21949864767544 307.3707893785769 L 510.21735507965406 307.3707893785769 L 506.9544216935693 344.89836087150127 L 439.99921461710716 344.89836087150127 ').toBe(true);
+                expect(seriesElements.getAttribute('d') === 'M 441.2776195041238 305.58339026414586 L 441.2776195041238 305.58339026414586 L 510.3727651958092 305.58339026414586 L 507.1007602189066 343.2152957206217 L 440.0539428460951 343.2152957206217 ').toBe(true);
                 const seriesElements1: HTMLElement = document.getElementById('container-svg-0-region-series-1-point-3');
-                expect(seriesElements1.getAttribute('d') === 'M 444.70234661278425 200.26226158055118 L 444.70234661278425 200.26226158055118 L 519.5301876820101 200.26226158055118 L 510.21735507965406 307.3707893785769 L 441.21949864767544 307.3707893785769 ').toBe(true);
+                expect(seriesElements1.getAttribute('d') === 'M 444.7251120062326 199.5621541393349 L 444.7251120062326 199.5621541393349 L 519.5910603644916 199.5621541393349 L 510.3727651958092 305.58339026414586 L 441.2776195041238 305.58339026414586 ').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -593,17 +593,17 @@ describe('Stacking Column Series', () => {
         it('Stacking Column Series Type with ColumnFacet property as Cylinder', (done: Function) => {
             loaded = (args: Object): void => {
                 const region10: string = document.getElementById('container-svg-10-region-series-0-point-1').getAttribute('d');
-                expect(region10).toBe( 'M 159.5025637898428 206.8492500973466 L 159.5025637898428 206.8492500973466 L 159.5025637898428 375.9378149799596 L 156.67424514585366 376.1584705595699 L 156.67424514585366 206.8227155656214 ');
+                expect(region10).toBe( 'M 160.45786641629823 206.8492500973466 L 160.45786641629823 206.8492500973466 L 160.45786641629823 375.9378149799596 L 157.63094432661043 376.1584705595699 L 157.63094432661043 206.8227155656214 ');
                 const region20: string = document.getElementById('container-svg-20-region-series-0-point-1').getAttribute('d');
-                expect(region20 ).toBe( 'M 161.38317757009347 206.5327102803738 L 161.38317757009347 206.5327102803738 L 161.38317757009347 378.5700934579439 L 164.60267035639856 378.5212045963204 L 164.60267035639856 206.53858932069568 ');
+                expect(region20 ).toBe( 'M 162.3551401869159 206.5327102803738 L 162.3551401869159 206.5327102803738 L 162.3551401869159 378.5700934579439 L 165.57432355004616 378.5212045963204 L 165.57432355004616 206.53858932069568 ');
                 const region25: string = document.getElementById('container-svg-25-region-series-0-point-1').getAttribute('d');
-                expect(region25).toBe('M 174.67950313272755 206.65975180068622 L 174.67950313272755 206.65975180068622 L 174.67950313272755 377.51364292060947 L 175.62962962962962 377.14814814814815 L 175.62962962962962 206.70370370370367 ');
+                expect(region25).toBe('M 175.64477935374404 206.65975180068622 L 175.64477935374404 206.65975180068622 L 175.64477935374404 377.51364292060947 L 176.59259259259258 377.14814814814815 L 176.59259259259258 206.70370370370367 ');
                 const series1Region10: string = document.getElementById('container-svg-10-region-series-1-point-1').getAttribute('d');
-                expect(series1Region10 ).toBe('M 159.5025637898428 -27.199893384236336 L 159.5025637898428 -27.199893384236336 L 159.5025637898428 206.8492500973466 L 156.67424514585366 206.8227155656214 L 156.67424514585366 -27.568583719787554 ' );
+                expect(series1Region10 ).toBe('M 160.45786641629823 -27.199893384236336 L 160.45786641629823 -27.199893384236336 L 160.45786641629823 206.8492500973466 L 157.63094432661043 206.8227155656214 L 157.63094432661043 -27.568583719787554 ' );
                 const series1Region20: string = document.getElementById('container-svg-20-region-series-1-point-1').getAttribute('d');
-                expect(series1Region20 ).toBe( 'M 161.38317757009347 -31.598130841121492 L 161.38317757009347 -31.598130841121492 L 161.38317757009347 206.5327102803738 L 164.60267035639856 206.53858932069568 L 164.60267035639856 -31.516443122965587 ');
+                expect(series1Region20 ).toBe( 'M 162.3551401869159 -31.598130841121492 L 162.3551401869159 -31.598130841121492 L 162.3551401869159 206.5327102803738 L 165.57432355004616 206.53858932069568 L 165.57432355004616 -31.516443122965587 ');
                 const series1Region25: string = document.getElementById('container-svg-25-region-series-1-point-1').getAttribute('d');
-                expect(series1Region25).toBe( 'M 174.67950313272755 -29.83292234836007 L 174.67950313272755 -29.83292234836007 L 174.67950313272755 206.65975180068622 L 175.62962962962962 206.70370370370367 L 175.62962962962962 -29.22222222222222 ');
+                expect(series1Region25).toBe( 'M 175.64477935374404 -29.83292234836007 L 175.64477935374404 -29.83292234836007 L 175.64477935374404 206.65975180068622 L 176.59259259259258 206.70370370370367 L 176.59259259259258 -29.22222222222222 ');
                 done();
             };
             chartObj.loaded = loaded;
@@ -613,17 +613,17 @@ describe('Stacking Column Series', () => {
         it('Checking Cylindrical chart with negative points', (done: Function) => {
             loaded = (args: Object): void => {
                 const region10: string = document.getElementById('container-svg-10-region-series-0-point-0').getAttribute('d');
-                expect(region10 ).toBe('M 416.9566216195841 176.27956605077253 L 416.9566216195841 176.27956605077253 L 416.9566216195841 243.15074990265336 L 414.50467435980346 243.1772844343787 L 414.50467435980346 176.2083417814047 ');
+                expect(region10 ).toBe('M 417.4342729328118 176.27956605077253 L 417.4342729328118 176.27956605077253 L 417.4342729328118 243.15074990265336 L 414.98302395018186 243.1772844343787 L 414.98302395018186 176.2083417814047 ');
                 const region20: string = document.getElementById('container-svg-20-region-series-0-point-0').getAttribute('d');
-                expect(region20 ).toBe('M 423.3271028037383 175.42990654205607 L 423.3271028037383 175.42990654205607 L 423.3271028037383 243.46728971962614 L 426.46320604442593 243.46141067930438 L 426.46320604442593 175.4456871239726 ');
+                expect(region20 ).toBe('M 423.8130841121495 175.42990654205607 L 423.8130841121495 175.42990654205607 L 423.8130841121495 243.46728971962614 L 426.9490326412497 243.46141067930438 L 426.9490326412497 175.4456871239726 ');
                 const region25: string = document.getElementById('container-svg-25-region-series-0-point-0').getAttribute('d');
-                expect(region25  ).toBe('M 434.82144469667844 175.77091272815773 L 434.82144469667844 175.77091272815773 L 434.82144469667844 243.3402481993138 L 435.1481481481481 243.29629629629628 L 435.1481481481481 175.88888888888889 ');
+                expect(region25  ).toBe('M 435.3040828071867 175.77091272815773 L 435.3040828071867 175.77091272815773 L 435.3040828071867 243.3402481993138 L 435.62962962962956 243.29629629629628 L 435.62962962962956 175.88888888888889 ');
                 const series1Region10: string = document.getElementById('container-svg-10-region-series-1-point-0').getAttribute('d');
-                expect(series1Region10  ).toBe('M 416.9566216195841 243.15074990265336 L 416.9566216195841 243.15074990265336 L 416.9566216195841 335.8151046688311 L 414.50467435980346 335.9771049677855 L 414.50467435980346 243.1772844343787 ');
+                expect(series1Region10  ).toBe('M 417.4342729328118 243.15074990265336 L 417.4342729328118 243.15074990265336 L 417.4342729328118 335.8151046688311 L 414.98302395018186 335.9771049677855 L 414.98302395018186 243.1772844343787 ');
                 const series1Region20: string = document.getElementById('container-svg-20-region-series-1-point-0').getAttribute('d');
-                expect(series1Region20).toBe( 'M 423.3271028037383 243.46728971962614 L 423.3271028037383 243.46728971962614 L 423.3271028037383 337.74766355140184 L 426.46320604442593 337.7117704631213 L 426.46320604442593 243.46141067930438 ');
+                expect(series1Region20).toBe( 'M 423.8130841121495 243.46728971962614 L 423.8130841121495 243.46728971962614 L 423.8130841121495 337.74766355140184 L 426.9490326412497 337.7117704631213 L 426.9490326412497 243.46141067930438 ');
                 const series1Region25: string = document.getElementById('container-svg-25-region-series-1-point-0').getAttribute('d');
-                expect(series1Region25 ).toBe( 'M 434.82144469667844 243.3402481993138 L 434.82144469667844 243.3402481993138 L 434.82144469667844 336.9720416379158 L 435.1481481481481 336.7037037037037 L 435.1481481481481 243.29629629629628 ');
+                expect(series1Region25 ).toBe( 'M 435.3040828071867 243.3402481993138 L 435.3040828071867 243.3402481993138 L 435.3040828071867 336.9720416379158 L 435.62962962962956 336.7037037037037 L 435.62962962962956 243.29629629629628 ');
                 done();
             };
             chartObj.loaded = loaded;
@@ -690,10 +690,10 @@ describe('Stacking Column Series', () => {
             loaded = (args: Object): void => {
                 const element: HTMLElement = document.getElementById('container-svg-series-0-point-3-data-label');
                 expect(element.textContent === '65').toBe(true);
-                expect(element.getAttribute('fill')).toBe('#FFFFFF');
+                expect(element.getAttribute('fill')).toBe('#212529');
                 const element1: HTMLElement = document.getElementById('container-svg-series-1-point-3-data-label');
                 expect(element1.textContent === '75').toBe(true);
-                expect(element1.getAttribute('fill')).toBe('#FFFFFF');
+                expect(element1.getAttribute('fill')).toBe('#212529');
                 done();
             };
             chartObj.loaded = loaded;
@@ -727,10 +727,10 @@ describe('Stacking Column Series', () => {
                 const point6: number = +document.getElementById('container-svg-series-1-point-5-data-label').getAttribute('y');
                 const point7: number = +document.getElementById('container-svg-series-1-point-5-data-label').getAttribute('x');
                 expect(point0).toBe(364.9626168224299);
-                expect(point1).toBe(473.8691588785046);
+                expect(point1).toBe(472.8971962616822);
                 expect(point2).toBe(224.02803738317755 );
-                expect(point3).toBe(473.8691588785046);
-                expect(point4).toBe(345.5233644859813);
+                expect(point3).toBe(472.8971962616822);
+                expect(point4).toBe(344.5514018691589);
                 expect(point5).toBe(723.6635514018692);
                 expect(point6).toBe(163.7663551401869);
                 expect(point7).toBe(723.6635514018692 );
@@ -760,7 +760,7 @@ describe('Stacking Column Series', () => {
         it('Checking font color saturation - dataLabel fill black', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: HTMLElement = document.getElementById('container-svg-series-0-point-3-data-label');
-                expect(textElement.getAttribute('fill')).toBe('#FFFFFF');
+                expect(textElement.getAttribute('fill')).toBe('#212529');
                 done();
             };
             chartObj.loaded = loaded;
@@ -771,7 +771,7 @@ describe('Stacking Column Series', () => {
         it('Checking font color saturation - dataLabel fill white', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: HTMLElement = document.getElementById('container-svg-series-0-point-3-data-label');
-                expect(textElement.getAttribute('fill')).toBe('#000000');
+                expect(textElement.getAttribute('fill')).toBe('#212529');
                 done();
             };
             chartObj.loaded = loaded;
@@ -782,11 +782,11 @@ describe('Stacking Column Series', () => {
         it('Checking dataLabel positions Top', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: Element = document.getElementById('container-svg-series-0-point-3-data-label');
-                expect(textElement.getAttribute('y') === '429.62180974477957').toBe(true);
-                expect(textElement.getAttribute('x') === '473.35498839907194').toBe(true);
+                expect(textElement.getAttribute('y') === '428.6566125290023').toBe(true);
+                expect(textElement.getAttribute('x') === '472.3897911832947').toBe(true);
                 const textElement1: Element = document.getElementById('container-svg-series-1-point-3-data-label');
-                expect(textElement1.getAttribute('y') === '299.3201856148492').toBe(true);
-                expect(textElement1.getAttribute('x') === '473.35498839907194').toBe(true);
+                expect(textElement1.getAttribute('y') === '298.35498839907194').toBe(true);
+                expect(textElement1.getAttribute('x') === '472.3897911832947').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -799,10 +799,10 @@ describe('Stacking Column Series', () => {
             loaded = (args: Object): void => {
                 const textElement: Element = document.getElementById('container-svg-series-0-point-3-data-label');
                 expect(textElement.getAttribute('y')).toBe('364.9626168224299');
-                expect(textElement.getAttribute('x')).toBe('473.8691588785046');
+                expect(textElement.getAttribute('x')).toBe('472.8971962616822');
                 const textElement1: Element = document.getElementById('container-svg-series-1-point-3-data-label');
                 expect(textElement1.getAttribute('y')).toBe('224.02803738317755');
-                expect(textElement1.getAttribute('x')).toBe('473.8691588785046');
+                expect(textElement1.getAttribute('x')).toBe('472.8971962616822');
                 done();
             };
             chartObj.loaded = loaded;
@@ -814,11 +814,11 @@ describe('Stacking Column Series', () => {
         it('Checking dataLabel positions as top', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: Element = document.getElementById('container-svg-series-0-point-3-data-label');
-                expect(textElement.getAttribute('y') === '429.62180974477957').toBe(true);
-                expect(textElement.getAttribute('x') === '473.35498839907194').toBe(true);
+                expect(textElement.getAttribute('y') === '428.6566125290023').toBe(true);
+                expect(textElement.getAttribute('x') === '472.3897911832947').toBe(true);
                 const textElement1: Element = document.getElementById('container-svg-series-1-point-3-data-label');
-                expect(textElement1.getAttribute('y') === '299.3201856148492').toBe(true);
-                expect(textElement1.getAttribute('x') === '473.35498839907194').toBe(true);
+                expect(textElement1.getAttribute('y') === '298.35498839907194').toBe(true);
+                expect(textElement1.getAttribute('x') === '472.3897911832947').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -831,10 +831,10 @@ describe('Stacking Column Series', () => {
             loaded = (args: Object): void => {
                 const textElement: Element = document.getElementById('container-svg-series-0-point-3-data-label');
                 expect(textElement.getAttribute('y') === '299.3201856148492').toBe(true);
-                expect(textElement.getAttribute('x') === '473.35498839907194').toBe(true);
+                expect(textElement.getAttribute('x') === '472.3897911832947').toBe(true);
                 const textElement1: Element = document.getElementById('container-svg-series-1-point-3-data-label');
                 expect(textElement1.getAttribute('y') === '149.71461716937355').toBe(true);
-                expect(textElement1.getAttribute('x') === '473.35498839907194').toBe(true);
+                expect(textElement1.getAttribute('x') === '472.3897911832947').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -873,9 +873,9 @@ describe('Stacking Column Series', () => {
                 const text: HTMLElement = document.getElementById('container-svg-series-0-point-3-data-label');
                 const textX: number = + text.getAttribute('x');
                 const textY: number = + text.getAttribute('y');
-                expect(shape.getAttribute('d') === 'M 446.61136890951275 395.8618097447796 L 503.61136890951275 395.8618097447796 L 503.61136890951275 439.8618097447796 L 446.61136890951275 439.8618097447796 L 446.61136890951275 395.8618097447796 z').toBe(true);
-                expect(textX === 480.11136890951275).toBe(true);
-                expect(textY === 429.62180974477957).toBe(true);
+                expect(shape.getAttribute('d') === 'M 448.1809744779583 396.5166125290023 L 498.1809744779583 396.5166125290023 L 498.1809744779583 437.5166125290023 L 448.1809744779583 437.5166125290023 L 448.1809744779583 396.5166125290023 z').toBe(true);
+                expect(textX === 478.1809744779583).toBe(true);
+                expect(textY === 428.6566125290023).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -902,7 +902,7 @@ describe('Stacking Column Series', () => {
 
         it('Checking Data label template', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('container-series-1-data-label-5').style.left).toBe('714.376px');
+                expect(document.getElementById('container-series-1-data-label-5').style.left).toBe('715.376px');
                 done();
             };
             chartObj.loaded = loaded;
@@ -967,15 +967,15 @@ describe('Stacking Column Series', () => {
                 let point: Element = document.getElementById('container-svg-0-region-series-0-point-0-front-front-front');
                 let path: string[] = point.getAttribute('d').split(' ');
                 let x: number = parseInt(path[1], 10);
-                expect(x).toBe(199);
+                expect(x).toBe(198);
                 point = document.getElementById('container-svg-0-region-series-1-point-0');
                 path = point.getAttribute('d').split(' ');
                 x = parseInt(path[1], 10);
-                expect(x).toBe(90);
+                expect(x).toBe(88);
                 point = document.getElementById('container-svg-0-region-series-2-point-0');
                 path = point.getAttribute('d').split(' ');
                 x = parseInt(path[1], 10);
-                expect(x).toBe(90);
+                expect(x).toBe(88);
                 done();
             };
             chartObj.loaded = loaded;

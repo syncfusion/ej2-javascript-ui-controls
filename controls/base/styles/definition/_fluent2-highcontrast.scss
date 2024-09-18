@@ -30,6 +30,10 @@
   --color-sf-table-bg-color-hover: #1aebff;
   --color-sf-table-bg-color-pressed: #1aebff;
   --color-sf-table-bg-color-selected: #1aebff;
+  --color-sf-taskbar-bg: #3e047d;
+  --color-sf-taskbar-border: #fff;
+  --color-sf-taskbar-progress: #6e06f1;
+  --color-sf-sort-bg-color: #333333;
 
   --color-sf-content-text-color: #fff;
   --color-sf-content-text-color-alt1: var(--color-sf-content-text-color);
@@ -48,12 +52,12 @@
   --color-sf-flyout-text-color-selected: var(--color-sf-content-text-color-hover);
   --color-sf-flyout-text-color-focus: var(--color-sf-content-text-color-hover);
   --color-sf-flyout-text-color-disabled: var(--color-sf-content-text-color-disabled);
+  --color-sf-icon-color-hover: var(--color-sf-content-text-color);
   --color-sf-table-text-color-hover: #000;
   --color-sf-table-text-color-pressed: #000;
   --color-sf-table-text-color-selected: #000;
 
   --color-sf-icon-color: #fff;
-  --color-sf-icon-color-hover: #000;
   --color-sf-icon-color-pressed: #000;
   --color-sf-icon-color-disabled: var(--color-sf-content-text-color-disabled);
 
@@ -76,7 +80,7 @@
 
   --color-sf-primary: #1aebff;
   --color-sf-primary-text-color: #000;
-  --color-sf-primary-light: rgba(26, 235, 255, .8);
+  --color-sf-primary-light: rgba(72, 245, 255, 1);
   --color-sf-primary-lighter: var(--color-sf-primary-light);
   --color-sf-primary-dark: var(--color-sf-primary);
   --color-sf-primary-darker: var(--color-sf-primary);
@@ -104,9 +108,9 @@
   --color-sf-primary-bg-color: #1aebff;
   --color-sf-primary-border-color: var(--color-sf-primary-bg-color);
   --color-sf-primary-text: #000;
-  --color-sf-primary-bg-color-hover: var(--color-sf-primary-bg-color);
-  --color-sf-primary-border-color-hover: var(--color-sf-primary-bg-color);
-  --color-sf-primary-text-hover: var(--color-sf-primary-text);
+  --color-sf-primary-bg-color-hover: #fff;
+  --color-sf-primary-border-color-hover: #fff;
+  --color-sf-primary-text-hover: #000;
   --color-sf-primary-bg-color-pressed: var(--color-sf-primary-bg-color);
   --color-sf-primary-border-color-pressed: var(--color-sf-primary-bg-color);
   --color-sf-primary-text-pressed: var(--color-sf-primary-text);
@@ -116,9 +120,9 @@
   --color-sf-primary-bg-color-disabled: #000;
   --color-sf-primary-border-color-disabled: #3ff23f;
   --color-sf-primary-text-disabled: var(--color-sf-primary-border-color-disabled);
-  --color-sf-primary-bg-color-selected: var(--color-sf-primary-bg-color);
-  --color-sf-primary-border-color-selected: var(--color-sf-primary-bg-color);
-  --color-sf-primary-text-selected: var(--color-sf-primary-text);
+  --color-sf-primary-bg-color-selected: #fff;
+  --color-sf-primary-border-color-selected: #fff;
+  --color-sf-primary-text-selected: #000;
 
   --color-sf-secondary-bg-color: #000;
   --color-sf-secondary-border-color: var(--color-sf-border);
@@ -136,15 +140,15 @@
   --color-sf-secondary-border-color-disabled: #3ff23f;
   --color-sf-secondary-text-color-disabled: var(--color-sf-secondary-border-color-disabled);
   --color-sf-secondary-bg-color-selected: var(--color-sf-secondary-bg-color-hover);
-  --color-sf-secondary-border-color-selected: var(--color-sf-secondary-border-color-hover);
+  --color-sf-secondary-border-color-selected: #fff;
   --color-sf-secondary-text-color-selected: var(--color-sf-secondary-text-color-hover);
 
   --color-sf-success-bg-color: #107c10;
   --color-sf-success-border-color: var(--color-sf-success-bg-color);
   --color-sf-success-text: #fff;
-  --color-sf-success-bg-color-hover: var(--color-sf-success-bg-color);
-  --color-sf-success-border-color-hover: var(--color-sf-success-border-color);
-  --color-sf-success-text-hover: var(--color-sf-success-text);
+  --color-sf-success-bg-color-hover: #fff;
+  --color-sf-success-border-color-hover: #fff;
+  --color-sf-success-text-hover: #000;
   --color-sf-success-bg-color-pressed: var(--color-sf-success-bg-color);
   --color-sf-success-border-color-pressed: var(--color-sf-success-border-color);
   --color-sf-success-text-pressed: var(--color-sf-success-text);
@@ -155,15 +159,15 @@
   --color-sf-success-border-color-disabled: #3ff23f;
   --color-sf-success-text-disabled: var(--color-sf-success-border-color-disabled);
   --color-sf-success-bg-color-selected: var(--color-sf-success-bg-color);
-  --color-sf-success-border-color-selected: var(--color-sf-success-border-color);
+  --color-sf-success-border-color-selected: #fff;
   --color-sf-success-text-selected: var(--color-sf-success-text);
 
   --color-sf-warning-bg-color: #f7630c;
   --color-sf-warning-border-color: var(--color-sf-warning-bg-color);
   --color-sf-warning-text: #000;
-  --color-sf-warning-bg-color-hover: var(--color-sf-warning-bg-color);
-  --color-sf-warning-border-color-hover: var(--color-sf-warning-border-color);
-  --color-sf-warning-text-hover: var(--color-sf-warning-text);
+  --color-sf-warning-bg-color-hover: #fff;
+  --color-sf-warning-border-color-hover: #fff;
+  --color-sf-warning-text-hover: #000;
   --color-sf-warning-bg-color-pressed: var(--color-sf-warning-bg-color);
   --color-sf-warning-border-color-pressed: var(--color-sf-warning-border-color);
   --color-sf-warning-text-pressed: var(--color-sf-warning-text);
@@ -174,15 +178,15 @@
   --color-sf-warning-border-color-disabled: #3ff23f;
   --color-sf-warning-text-disabled: var(--color-sf-primary-text-disabled);
   --color-sf-warning-bg-color-selected: var(--color-sf-warning-bg-color);
-  --color-sf-warning-border-color-selected: var(--color-sf-warning-bg-color-selected);
+  --color-sf-warning-border-color-selected: #fff;
   --color-sf-warning-text-selected: var(--color-sf-warning-text);
 
   --color-sf-info-bg-color: #0099bc;
   --color-sf-info-border-color: var(--color-sf-info-bg-color);
   --color-sf-info-text: #000;
-  --color-sf-info-bg-color-hover: var(--color-sf-info-bg-color);
-  --color-sf-info-border-color-hover: var(--color-sf-info-bg-color-hover);
-  --color-sf-info-text-hover: var(--color-sf-info-text);
+  --color-sf-info-bg-color-hover: #fff;
+  --color-sf-info-border-color-hover: #fff;
+  --color-sf-info-text-hover: #000;
   --color-sf-info-bg-color-pressed: var(--color-sf-info-bg-color);
   --color-sf-info-border-color-pressed: var(--color-sf-info-border-color);
   --color-sf-info-text-pressed: var(--color-sf-info-text);
@@ -193,15 +197,15 @@
   --color-sf-info-border-color-disabled: #3ff23f;
   --color-sf-info-text-disabled: var(--color-sf-info-border-color-disabled);
   --color-sf-info-bg-color-selected: var(--color-sf-info-bg-color);
-  --color-sf-info-border-color-selected: var(--color-sf-info-bg-color-selected);
+  --color-sf-info-border-color-selected: #fff;
   --color-sf-info-text-selected: var(--color-sf-info-text);
 
   --color-sf-danger-bg-color: #c50f1f;
   --color-sf-danger-border-color: var(--color-sf-danger-bg-color);
   --color-sf-danger-text: #fff;
-  --color-sf-danger-bg-color-hover: var(--color-sf-danger-bg-color);
-  --color-sf-danger-border-color-hover: var(--color-sf-danger-bg-color-hover);
-  --color-sf-danger-text-hover: var(--color-sf-danger-text);
+  --color-sf-danger-bg-color-hover: #fff;
+  --color-sf-danger-border-color-hover: #fff;
+  --color-sf-danger-text-hover: #000;
   --color-sf-danger-bg-color-pressed: var(--color-sf-danger-bg-color);
   --color-sf-danger-border-color-pressed: var(--color-sf-danger-bg-color-pressed);
   --color-sf-danger-text-pressed: var(--color-sf-danger-text);
@@ -212,7 +216,7 @@
   --color-sf-danger-border-color-disabled: #3ff23f;
   --color-sf-danger-text-disabled: var(--color-sf-danger-border-color-disabled);
   --color-sf-danger-bg-color-selected: var(--color-sf-danger-bg-color);
-  --color-sf-danger-border-color-selected: var(--color-sf-danger-bg-color-selected);
+  --color-sf-danger-border-color-selected: #fff;
   --color-sf-danger-text-selected: var(--color-sf-danger-text);
 
   --color-sf-primary-outline: var(--color-sf-primary);
@@ -377,6 +381,7 @@
   --color-sf-contextual-text: #000;
   --color-sf-cell-selection-bg-color: #1aecff1f;
   --color-sf-document-editor-border-color: #fff;
+  --color-sf-holiday-bg-color: #333333;
 }
 
 $content-bg-color: mapcolorvariable('content-bg-color') !default;
@@ -667,9 +672,9 @@ $msg-danger-color-alt2: mapcolorvariable('msg-danger-color-alt2') !default;
 $msg-danger-bg-color-alt2: mapcolorvariable('msg-danger-bg-color-alt2') !default;
 $msg-danger-border-color-alt2: mapcolorvariable('msg-danger-border-color-alt2') !default;
 
-$msg-danger-icon-color: mapcolorvariable('$msg-danger-icon-color') !default;
-$msg-danger-icon-color-alt1: mapcolorvariable('$msg-danger-icon-color-alt1') !default;
-$msg-danger-icon-color-alt2: mapcolorvariable('$msg-danger-icon-color-alt2') !default;
+$msg-danger-icon-color: mapcolorvariable('msg-danger-icon-color') !default;
+$msg-danger-icon-color-alt1: mapcolorvariable('msg-danger-icon-color-alt1') !default;
+$msg-danger-icon-color-alt2: mapcolorvariable('msg-danger-icon-color-alt2') !default;
 
 $msg-danger-close-icon-color: mapcolorvariable('msg-danger-close-icon-color') !default;
 $msg-danger-close-icon-color-alt1: mapcolorvariable('msg-danger-close-icon-color-alt1') !default;
@@ -709,7 +714,7 @@ $msg-warning-icon-color-alt2: mapcolorvariable('msg-warning-icon-color-alt2') !d
 
 $msg-warning-close-icon-color: mapcolorvariable('msg-warning-close-icon-color') !default;
 $msg-warning-close-icon-color-alt1: mapcolorvariable('msg-warning-close-icon-color-alt1') !default;
-$msg-warning-close-icon-color-alt2: mapcolorvariable('$msg-warning-close-icon-color-alt2') !default;
+$msg-warning-close-icon-color-alt2: mapcolorvariable('msg-warning-close-icon-color-alt2') !default;
 
 $utility-primary-lighter: mapcolorvariable('utility-primary-lighter');
 $utility-success-lighter: mapcolorvariable('utility-success-lighter');
@@ -767,6 +772,11 @@ $toolbar-icon-color: mapcolorvariable('toolbar-icon-color') !default;
 $contextual-text: mapcolorvariable('contextual-text') !default;
 $cell-selection-bg-color: mapcolorvariable('cell-selection-bg-color') !default;
 $document-editor-border-color: mapcolorvariable('document-editor-border-color') !default;
+$holiday-bg-color: mapcolorvariable('holiday-bg-color') !default;
+$taskbar-bg: mapcolorvariable('taskbar-bg') !default;
+$taskbar-border: mapcolorvariable('taskbar-border') !default;
+$taskbar-progress: mapcolorvariable('taskbar-progress') !default;
+$sort-bg-color: mapcolorvariable('sort-bg-color') !default;
 
 $black:#000 !default;
 $white:#fff !default;
@@ -1037,6 +1047,7 @@ $border-error: $border-error !default;
 $border-success: $border-success !default;
 $border-info: $border-info !default;
 $spreadsheet-gridline: $spreadsheet-gridline !default;
+$spreadsheet-indicator: 'data:image/gif;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==' !default;
 $flyout-border: $flyout-border !default;
 
 $tooltip-bg-color: $tooltip-bg-color !default;
@@ -1251,7 +1262,7 @@ $series-10: #6e7a89;
 $series-11: #3d75a6;
 $series-12: #f3a93c;
 $skin-name: 'fluent2' !default;
-$theme-name: 'fluent2' !default;
+$theme-name: 'fluent2-highcontrast' !default;
 
 $diagram-palette-background: $diagram-palette-background !default;
 $diagram-palette-hover-background: $diagram-palette-hover-background !default;
@@ -1503,4 +1514,5 @@ $gantt-active-parent-task-color: $brand-primary-d10 !default;
 $btn-border-radius:4px !default;
 $btn-border-radius:4px !default;
 
-$switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
+$switch-box-shadow: 0 0 0 3px #000,0 0 0 4px #1aebff,0 0 0 5px #fff !default;
+$progress-btn-spinner-color: #000 !default;

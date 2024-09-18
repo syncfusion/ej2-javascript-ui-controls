@@ -11,7 +11,7 @@ import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-
 import { Axis } from '../axis/axis';
 
 /**
- * `PolarSeries` module is used to render the polar series.
+ * The `PolarSeries` module is used to render the polar series.
  */
 
 export class PolarSeries extends PolarRadarPanel {
@@ -23,6 +23,7 @@ export class PolarSeries extends PolarRadarPanel {
      * @param {Axis} yAxis - The y-axis of the chart.
      * @param {boolean} inverted - A flag indicating whether the chart is inverted or not.
      * @returns {void}
+     * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean): void {
         const seriesType: string = firstToLowerCase(series.drawType);
@@ -48,6 +49,7 @@ export class PolarSeries extends PolarRadarPanel {
      * @param {Axis} xAxis - The x-axis of the chart.
      * @param {Axis} yAxis - The y-axis of the chart.
      * @returns {void}
+     * @private
      */
     public columnDrawTypeRender(series: Series, xAxis: Axis, yAxis: Axis): void {
         let options: PathOption; let argsData: IPointRenderEventArgs;
@@ -144,6 +146,7 @@ export class PolarSeries extends PolarRadarPanel {
      * @param {Series} series - The series to which the point belongs.
      * @param {Points} point - The point for which the event should be triggered.
      * @returns {IPointRenderEventArgs} - The point render event arguments.
+     * @private
      */
     public triggerEvent(chart: Chart, series: Series, point: Points): IPointRenderEventArgs {
         const argsData: IPointRenderEventArgs = {
@@ -161,6 +164,7 @@ export class PolarSeries extends PolarRadarPanel {
      *
      * @param {Series} series - The series for which to get the position.
      * @returns {void}
+     * @private
      */
     public getSeriesPosition(series: Series): void {
         const chart: Chart = series.chart;
@@ -205,6 +209,7 @@ export class PolarSeries extends PolarRadarPanel {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
 
     public doAnimation(series: Series): void {
@@ -235,6 +240,7 @@ export class PolarSeries extends PolarRadarPanel {
      * @param {number} duration - The duration of animation.
      * @param {Series} series - The series for which to perform animation.
      * @returns {void}
+     * @private
      */
     public doPolarRadarAnimation(animateElement: Element, delay: number, duration: number, series: Series): void {
         const chartcenterX: number = series.clipRect.width / 2 + series.clipRect.x;
@@ -253,6 +259,10 @@ export class PolarSeries extends PolarRadarPanel {
                 }
             },
             end: () => {
+                const annotations: HTMLElement = <HTMLElement>document.getElementById(series.chart.element.id + '_Annotation_Collections');
+                if (annotations) {
+                    annotations.style.visibility = 'visible';
+                }
                 (<HTMLElement>animateElement).style.visibility = 'visible';
                 animateElement.removeAttribute('transform');
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });

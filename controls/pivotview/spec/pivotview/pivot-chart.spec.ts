@@ -220,7 +220,7 @@ describe('Chart - ', () => {
             }, 1000);
         });
         it('load y axis properties', () => {
-            pivotGridObj.setProperties({ chartSettings: { primaryYAxis: { labelFormat: 'C', title: 'Custom title', plotOffset: 30 } } }, true);
+            pivotGridObj.setProperties({ chartSettings: { primaryYAxis: { labelFormat: 'C', title: 'Title', plotOffset: 30 } } }, true);
             pivotGridObj.pivotChartModule.refreshChart();
         });
         it('load y axis properties-update', (done: Function) => {
@@ -232,7 +232,7 @@ describe('Chart - ', () => {
         });
         it('load y axis properties-update', (done: Function) => {
             setTimeout(() => {
-                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Custom title');
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Title');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005 - Bike | Amount');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2005 - Van | Quantity');
                 done();
@@ -256,7 +256,7 @@ describe('Chart - ', () => {
         });
         it('customize tooltip, legend and zoom properties-update', (done: Function) => {
             setTimeout(() => {
-                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Custom title');
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Title');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005 - Bike | Amount');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2005 - Van | Quantity');
                 done();

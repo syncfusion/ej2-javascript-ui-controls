@@ -1,7 +1,6 @@
-import { EventHandler, Browser, ScrollEventArgs, select, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
+import { EventHandler, Browser, select, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { debounce, Touch } from '@syncfusion/ej2-base';
-import { IDropdownlist } from './interface'; 
-import { DropDownList } from '../drop-down-list/'; 
+import { IDropdownlist } from './interface';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 export type ScrollDirection = 'up' | 'down';
 type ScrollArg = { direction: string, sentinel: SentinelType, offset: Offsets, focusElement: HTMLElement };
@@ -78,7 +77,7 @@ export class VirtualScroll {
         return 'VirtualScroll';
     }
 
-    private popupScrollHandler(e: ScrollEventArgs): void {
+    private popupScrollHandler(): void {
         this.parent.isMouseScrollAction = true;
         this.parent.isPreventScrollAction = false;
     }
@@ -92,12 +91,13 @@ export class VirtualScroll {
 
     private setGeneratedData(qStartIndex: number, recentlyGeneratedData: object[]): void {
         let loopIteration: number = 0;
-        let endIndex: number = this.parent.listData.length + this.parent.virtualItemStartIndex;
-        for (let i = this.parent.virtualItemStartIndex; i < endIndex; i++) {
+        const endIndex: number = this.parent.listData.length + this.parent.virtualItemStartIndex;
+        for (let i: number = this.parent.virtualItemStartIndex; i < endIndex; i++) {
             const alreadyAddedData: object | undefined = this.parent.generatedDataObject[i as number];
             if (!alreadyAddedData) {
                 if (recentlyGeneratedData !== null && this.parent.listData.slice(loopIteration, loopIteration + 1).length > 0) {
-                    const slicedData = this.parent.listData.slice(loopIteration, loopIteration + 1);
+                    const slicedData: { [key: string]: Object }[] | string[] | boolean[] | number[] =
+                        this.parent.listData.slice(loopIteration, loopIteration + 1);
                     if (slicedData.length > 0) {
                         // Safely assign slicedData to this.parent.generatedDataObject[i]
                         this.parent.generatedDataObject[i as number] = slicedData;
@@ -108,40 +108,46 @@ export class VirtualScroll {
         }
     }
 
-    private generateAndExecuteQueryAsync(query: Query, virtualItemStartIndex: number = 0, virtualItemEndIndex: number = 0, isQueryGenerated: boolean = false): void {
-        let dataSource = this.parent.dataSource;
+    private generateAndExecuteQueryAsync(
+        query: Query,
+        virtualItemStartIndex: number = 0,
+        virtualItemEndIndex: number = 0,
+        isQueryGenerated: boolean = false
+    ): void {
+        const dataSource:  { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[] = this.parent.dataSource;
         if (!isQueryGenerated) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if(!isNullOrUndefined((this.parent as any).query))
+            if (!isNullOrUndefined((this.parent as any).query))
             {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                var newQuery = this.removeSkipAndTakeEvents((this.parent as any).query.clone());
+                const newQuery: Query = this.removeSkipAndTakeEvents((this.parent as any).query.clone());
                 query = this.getPageQuery(newQuery, virtualItemStartIndex, virtualItemEndIndex);
             } else {
                 query = this.getPageQuery(query, virtualItemStartIndex, virtualItemEndIndex);
             }
         }
         const tempCustomFilter: boolean = this.parent.isCustomFilter;
-        if(this.component === 'combobox'){
+        if (this.component === 'combobox') {
             let totalData: number = 0;
-            if(this.parent.dataSource instanceof DataManager){
+            if (this.parent.dataSource instanceof DataManager) {
                 totalData = this.parent.dataSource.dataSource.json.length;
-            }
-            else if(this.parent.dataSource && (this.parent.dataSource as any).length > 0){
+            } else if (this.parent.dataSource && (this.parent.dataSource as any).length > 0) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 totalData = (this.parent.dataSource as any).length;
             }
-            if(totalData > 0){
-                this.parent.isCustomFilter = (totalData == this.parent.totalItemCount && this.parent.queryString != this.parent.typedString) ? true : this.parent.isCustomFilter;
+            if (totalData > 0) {
+                this.parent.isCustomFilter = (
+                    totalData === this.parent.totalItemCount &&
+                    this.parent.queryString !== this.parent.typedString
+                ) ? true : this.parent.isCustomFilter;
             }
         }
         this.parent.resetList(dataSource, this.parent.fields, query);
         this.parent.isCustomFilter = tempCustomFilter;
     }
 
-    private removeSkipAndTakeEvents (query: Query) : Query {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        query.queries = query.queries.filter(function (event:any) {
+    private removeSkipAndTakeEvents(query: Query): Query {
+        query.queries = query.queries.filter(function (event: any): boolean {
             return event.fn !== 'onSkip' && event.fn !== 'onTake';
         });
         return query;
@@ -152,7 +158,7 @@ export class VirtualScroll {
         let currentData: any = [];
         let isResetListCalled: boolean = false;
         let isListUpdated: boolean = true;
-        if(isNullOrUndefined(this.component)){
+        if (isNullOrUndefined(this.component)){
             this.component = (component as any).component;
         }
         let endIndex: number = this.parent.viewPortInfo.endIndex;
@@ -161,54 +167,60 @@ export class VirtualScroll {
                 endIndex = this.parent.viewPortInfo.endIndex - this.parent.value.length;
                 if (this.parent.viewPortInfo.startIndex === 0){
                     this.parent.updateVirtualReOrderList(true);
-                    if(this.parent.value.length < this.parent.itemCount){
-                        var oldUlElement = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
+                    if (this.parent.value.length < this.parent.itemCount) {
+                        const oldUlElement: Element = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
                         if (oldUlElement) {
                             this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);
                         }
-                        var query = this.parent.getForQuery(this.parent.value).clone();
-                        query = query.skip(0).take(this.parent.itemCount - (this.parent.value.length - this.parent.viewPortInfo.startIndex));
+                        let query: Query = this.parent.getForQuery(this.parent.value).clone();
+                        query = query.skip(0)
+                            .take(this.parent.itemCount - (this.parent.value.length - this.parent.viewPortInfo.startIndex));
                         this.parent.appendUncheckList = true;
                         this.parent.setCurrentView = false;
                         this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
                         isListUpdated = false;
-                        this.parent.appendUncheckList = this.parent.dataSource instanceof DataManager ? this.parent.appendUncheckList : false;
+                        this.parent.appendUncheckList = this.parent.dataSource instanceof DataManager ?
+                            this.parent.appendUncheckList : false;
                         isListUpdated = false;
-                    }
-                    else{
-                        var oldUlElement = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
+                    } else {
+                        const oldUlElement: Element = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
                         if (oldUlElement) {
                             this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);
                         }
                     }
                     isListUpdated = false;
                 }
-                else if (this.parent.viewPortInfo.startIndex != 0) {
+                else if (this.parent.viewPortInfo.startIndex !== 0) {
                     this.parent.updateVirtualReOrderList(true);
-                    var oldUlElement = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
+                    const oldUlElement: HTMLElement = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
                     if (oldUlElement) {
                         this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);
                     }
                     isListUpdated = false;
                 }
-                if(this.parent.viewPortInfo.startIndex != 0 && this.parent.viewPortInfo.startIndex-this.parent.value.length != this.parent.itemCount && (this.parent.viewPortInfo.startIndex + this.parent.itemCount > this.parent.value.length)) {
-                    var query = this.parent.getForQuery(this.parent.value).clone();    
-                    query = query.skip(0).take(this.parent.itemCount - (this.parent.value.length-this.parent.viewPortInfo.startIndex));
+                if (
+                    this.parent.viewPortInfo.startIndex !== 0 &&
+                    this.parent.viewPortInfo.startIndex - this.parent.value.length !== this.parent.itemCount &&
+                    (this.parent.viewPortInfo.startIndex + this.parent.itemCount > this.parent.value.length)
+                ) {
+                    let query: Query = this.parent.getForQuery(this.parent.value).clone();
+                    query = query.skip(0).take(this.parent.itemCount - (this.parent.value.length - this.parent.viewPortInfo.startIndex));
                     this.parent.appendUncheckList = true;
                     this.parent.setCurrentView = false;
                     this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
                     isListUpdated = false;
                     this.parent.appendUncheckList = this.parent.dataSource instanceof DataManager ? this.parent.appendUncheckList : false;
-
                 }
             }
             else {
-                var reOrderList = this.parent.list.querySelectorAll('.e-reorder')[0];
+                const reOrderList: Element = this.parent.list.querySelectorAll('.e-reorder')[0];
                 if (this.parent.list.querySelector('.e-virtual-ddl-content') && reOrderList) {
                     this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(reOrderList);
                 }
-                var query = this.parent.getForQuery(this.parent.value).clone();
-                var skipvalue = this.parent.viewPortInfo.startIndex - this.parent.value.length >= 0 ? this.parent.viewPortInfo.startIndex - this.parent.value.length : 0;
+                let query: any = this.parent.getForQuery(this.parent.value).clone(); // Assuming query is of type any
+                const skipvalue: number = this.parent.viewPortInfo.startIndex - this.parent.value.length >= 0
+                    ? this.parent.viewPortInfo.startIndex - this.parent.value.length
+                    : 0;
                 query = query.skip(skipvalue);
                 this.parent.setCurrentView = false;
                 this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
@@ -217,41 +229,47 @@ export class VirtualScroll {
             this.parent.totalItemsCount();
         }
         if (isListUpdated) {
-            for (let i = this.parent.viewPortInfo.startIndex; i < endIndex; i++) {
-                var index = i;
+            for (let i: number = this.parent.viewPortInfo.startIndex; i < endIndex; i++) {
+                const index: number = i;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const alreadyAddedData: any = this.parent.generatedDataObject[index as number];
                 if (this.component === 'multiselect' && this.parent.hideSelectedItem) {
                     if (alreadyAddedData) {
-                        let value = getValue(this.parent.fields.value, alreadyAddedData[0])
-                        if (this.parent.value && value != null && Array.isArray(this.parent.value) && this.parent.value.length > 0 && this.parent.value.indexOf(value) < 0) {
-                            var query = this.parent.getForQuery(this.parent.value as any).clone();
-                            if(this.parent.viewPortInfo.endIndex == this.parent.totalItemCount + (this.parent.value as any).length && this.parent.hideSelectedItem){
+                        const value: any = getValue(this.parent.fields.value, alreadyAddedData[0]);
+                        if (
+                            this.parent.value &&
+                            value !== null &&
+                            Array.isArray(this.parent.value) &&
+                            this.parent.value.length > 0 &&
+                            this.parent.value.indexOf(value) < 0
+                        ) {
+                            let query: Query = this.parent.getForQuery(this.parent.value as any).clone();
+                            if (
+                                this.parent.viewPortInfo.endIndex === this.parent.totalItemCount + (this.parent.value as any).length &&
+                                this.parent.hideSelectedItem
+                            ) {
                                 query = query.skip(this.parent.totalItemCount - this.parent.itemCount);
-                            }
-                            else{
+                            } else {
                                 query = query.skip(this.parent.viewPortInfo.startIndex);
                             }
                             this.parent.setCurrentView = false;
                             this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
                             isResetListCalled = true;
                             break;
-                        }
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        else if ((this.parent.value === null || (this.parent.value && (this.parent.value as any).length === 0))) {
+                        } else if (this.parent.value === null || (this.parent.value && (this.parent.value as any).length === 0)) {
                             currentData.push(alreadyAddedData[0]);
                         }
                     }
                     if (index === endIndex - 1) {
-                        if (currentData.length != this.parent.itemCount) {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        if (currentData.length !== this.parent.itemCount) {
                             if (this.parent.hideSelectedItem) {
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                var query = this.parent.getForQuery(this.parent.value as any).clone();
-                                if(this.parent.viewPortInfo.endIndex == this.parent.totalItemCount + (this.parent.value as any).length && this.parent.hideSelectedItem){
+                                let query: Query = this.parent.getForQuery(this.parent.value as any).clone();
+                                if (
+                                    this.parent.viewPortInfo.endIndex === this.parent.totalItemCount + (this.parent.value as any).length &&
+                                    this.parent.hideSelectedItem
+                                ) {
                                     query = query.skip(this.parent.totalItemCount - this.parent.itemCount);
-                                }
-                                else{
+                                } else {
                                     query = query.skip(this.parent.viewPortInfo.startIndex);
                                 }
                                 this.parent.setCurrentView = false;
@@ -270,30 +288,32 @@ export class VirtualScroll {
             }
         }
         if (!isResetListCalled && isListUpdated) {
-            if(this.component === 'multiselect' && this.parent.allowCustomValue && this.parent.viewPortInfo.startIndex == 0 && this.parent.virtualCustomData){
+            if (this.component === 'multiselect' && this.parent.allowCustomValue && this.parent.viewPortInfo.startIndex === 0 && this.parent.virtualCustomData){
                 currentData.splice(0, 0, this.parent.virtualCustomData);
             }
             let totalData: { [key: string]: Object }[] = [];
-            if(this.component === 'multiselect' && this.parent.allowCustomValue && this.parent.viewPortInfo.endIndex == this.parent.totalItemCount){
-                if(this.parent.virtualCustomSelectData && this.parent.virtualCustomSelectData.length > 0){
+            if (this.component === 'multiselect' && this.parent.allowCustomValue && this.parent.viewPortInfo.endIndex === this.parent.totalItemCount){
+                if (this.parent.virtualCustomSelectData && this.parent.virtualCustomSelectData.length > 0){
                     totalData = currentData.concat(this.parent.virtualCustomSelectData);
                     currentData = totalData;
                 }
             }
-            let ulElement = this.parent.renderItems(currentData, this.parent.fields, this.component === 'multiselect' && this.parent.mode === 'CheckBox');
+            this.parent.renderItems(currentData, this.parent.fields, this.component === 'multiselect' && this.parent.mode === 'CheckBox');
         }
         if (this.component === 'multiselect') {
             this.parent.updatevirtualizationList();
         }
         this.parent.getSkeletonCount();
-        this.parent.skeletonCount = this.parent.totalItemCount != 0 && this.parent.totalItemCount < (this.parent.itemCount * 2) ? 0 : this.parent.skeletonCount;
+        this.parent.skeletonCount = this.parent.totalItemCount !== 0 && this.parent.totalItemCount < this.parent.itemCount * 2 &&
+            ((!(this.parent.dataSource instanceof DataManager)) || ((this.parent.dataSource instanceof DataManager) &&
+            (this.parent.totalItemCount <= this.parent.itemCount))) ? 0 : this.parent.skeletonCount;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const virtualTrackElement = this.parent.list.getElementsByClassName('e-virtual-ddl')[0] as any;
+        const virtualTrackElement: any = this.parent.list.getElementsByClassName('e-virtual-ddl')[0] as HTMLElement;
         if (virtualTrackElement) {
-            (virtualTrackElement).style = this.parent.GetVirtualTrackHeight();
+            virtualTrackElement.style = this.parent.GetVirtualTrackHeight();
         }
         else if (!virtualTrackElement && this.parent.skeletonCount > 0 && this.parent.popupWrapper) {
-            var virualElement = this.parent.createElement('div', {
+            const virualElement: HTMLElement = this.parent.createElement('div', {
                 id: this.parent.element.id + '_popup', className: 'e-virtual-ddl', styles: this.parent.GetVirtualTrackHeight()
             });
             this.parent.popupWrapper.querySelector('.e-dropdownbase').appendChild(virualElement);
@@ -301,15 +321,20 @@ export class VirtualScroll {
         this.parent.UpdateSkeleton();
         this.parent.liCollections = <HTMLElement[] & NodeListOf<Element>>this.parent.list.querySelectorAll('.e-list-item');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const virtualContentElement = this.parent.list.getElementsByClassName('e-virtual-ddl-content')[0] as any;
+        const virtualContentElement: any = this.parent.list.getElementsByClassName('e-virtual-ddl-content')[0] as any;
         if (virtualContentElement) {
             (virtualContentElement).style = this.parent.getTransformValues();
         }
-        if(this.parent.fields.groupBy){
+        if (this.parent.fields.groupBy){
             this.parent.scrollStop();
         }
-        if (this.parent.keyCode == 40 && this.parent.isScrollChanged &&  this.parent.hideSelectedItem && !isNullOrUndefined(this.parent.currentFocuedListElement)) {
-            let currentSelectElem: Element = this.parent.getElementByValue(this.parent.currentFocuedListElement.getAttribute('data-value'));
+        if (
+            this.parent.keyCode === 40 &&
+            this.parent.isScrollChanged &&
+            this.parent.hideSelectedItem &&
+            !isNullOrUndefined(this.parent.currentFocuedListElement)
+        ) {
+            const currentSelectElem: Element = this.parent.getElementByValue(this.parent.currentFocuedListElement.getAttribute('data-value'));
             this.parent.addListFocus(currentSelectElem as HTMLElement);
             this.parent.isScrollChanged = false;
         }
@@ -319,9 +344,9 @@ export class VirtualScroll {
         let isStartIndexInitialised: boolean = false;
         let queryStartIndex: number = 0;
         let queryEndIndex: number = 0;
-        let vEndIndex: number = this.parent.viewPortInfo.endIndex;
+        const vEndIndex: number = this.parent.viewPortInfo.endIndex;
         if (!isPopupOpen && vEndIndex !== 0) {
-            for (let i = this.parent.viewPortInfo.startIndex; i <= vEndIndex; i++) {
+            for (let i: number = this.parent.viewPortInfo.startIndex; i <= vEndIndex; i++) {
                 if (!(i in this.parent.generatedDataObject)) {
                     if (!isStartIndexInitialised) {
                         isStartIndexInitialised = true;
@@ -332,20 +357,41 @@ export class VirtualScroll {
                 }
             }
         }
-        if (isStartIndexInitialised && !((this.parent.totalItemCount == queryStartIndex) && (this.parent.totalItemCount == queryEndIndex))) {
+        if (
+            isStartIndexInitialised &&
+            !(
+                this.parent.totalItemCount === queryStartIndex &&
+                this.parent.totalItemCount === queryEndIndex
+            )
+        ) {
             this.parent.virtualItemStartIndex = queryStartIndex;
             this.parent.virtualItemEndIndex = queryEndIndex;
             this.parent.setCurrentView = true;
             this.generateAndExecuteQueryAsync(query, queryStartIndex, queryEndIndex);
-            if (this.component === 'multiselect' && this.parent.hideSelectedItem && this.parent.value && Array.isArray(this.parent.value) && this.parent.value.length > 0) {
+            if (
+                this.component === 'multiselect' &&
+                this.parent.hideSelectedItem &&
+                this.parent.value &&
+                Array.isArray(this.parent.value) &&
+                this.parent.value.length > 0
+            ) {
                 this.parent.totalItemsCount();
             }
-            if(this.component === 'multiselect' && this.parent.virtualItemStartIndex === this.parent.virtualItemEndIndex) {
+            if (
+                this.component === 'multiselect' &&
+                this.parent.virtualItemStartIndex === this.parent.virtualItemEndIndex
+            ) {
                 this.parent.virtualItemStartIndex = this.parent.viewPortInfo.startIndex;
                 this.parent.virtualItemEndIndex = this.parent.viewPortInfo.endIndex;
             }
         }
-        if (!(this.parent.dataSource instanceof DataManager) || (this.parent.dataSource instanceof DataManager && !this.parent.isRequesting)) {
+        if (
+            !(this.parent.dataSource instanceof DataManager) ||
+            (
+                this.parent.dataSource instanceof DataManager &&
+                !this.parent.isRequesting
+            )
+        ) {
             this.setCurrentViewDataAsync();
         }
     }
@@ -356,7 +402,7 @@ export class VirtualScroll {
         this.generateQueryAndSetQueryIndexAsync(new Query(), isOpenPopup);
     }
     private async virtualScrollRefreshAsync(): Promise<void> {
-        this.parent.isCustomFilter = (!(this.parent.isTyped || (this.component === 'combobox' && this.parent.allowFiltering && this.parent.queryString != this.parent.typedString) || (!isNullOrUndefined(this.parent.filterInput) && !isNullOrUndefined(this.parent.filterInput.value) && this.parent.filterInput.value !=='') && this.component !== 'combobox') && !(this.component === 'autocomplete' && this.parent.value != null)) || this.parent.isCustomFilter;
+        this.parent.isCustomFilter = (!(this.parent.isTyped || (this.component === 'combobox' && this.parent.allowFiltering && this.parent.queryString !== this.parent.typedString) || (!isNullOrUndefined(this.parent.filterInput) && !isNullOrUndefined(this.parent.filterInput.value) && this.parent.filterInput.value !== '') && this.component !== 'combobox') && !(this.component === 'autocomplete' && this.parent.value != null)) || this.parent.isCustomFilter;
         if (this.parent.allowFiltering || this.component === 'autocomplete') {
             if (!isNullOrUndefined(this.parent.typedString) && !(this.component === 'combobox' && !isNullOrUndefined(this.parent.typedString) && this.parent.allowFiltering)) {
                 if (this.parent.viewPortInfo.endIndex >= this.parent.dataCount) {
@@ -365,16 +411,27 @@ export class VirtualScroll {
                 if (this.parent.viewPortInfo.startIndex >= this.parent.dataCount) {
                     this.parent.viewPortInfo.startIndex = this.parent.dataCount - this.parent.itemCount;
                 }
-            }
-            else {
+            } else {
                 this.parent.getSkeletonCount(true);
-                if(this.component === 'combobox'){
-                    this.parent.skeletonCount = this.parent.totalItemCount != 0 && this.parent.totalItemCount < (this.parent.itemCount * 2) ? 0 : this.parent.skeletonCount;
+                if (this.component === 'combobox') {
+                    this.parent.skeletonCount = this.parent.totalItemCount !== 0 &&
+                        this.parent.totalItemCount < (this.parent.itemCount * 2) && ((!(this.parent.dataSource instanceof DataManager)) ||
+                        ((this.parent.dataSource instanceof DataManager) && (this.parent.totalItemCount <= this.parent.itemCount))) ?
+                        0 : this.parent.skeletonCount;
                 }
             }
         }
         await this.dataProcessAsync();
-        if (this.parent.keyboardEvent != null && (!(this.parent.dataSource instanceof DataManager) || (this.parent.dataSource instanceof DataManager && !this.parent.isRequesting))) {
+        if (
+            this.parent.keyboardEvent != null &&
+            (
+                !(this.parent.dataSource instanceof DataManager) ||
+                (
+                    this.parent.dataSource instanceof DataManager &&
+                    !this.parent.isRequesting
+                )
+            )
+        ) {
             this.parent.handleVirtualKeyboardActions(this.parent.keyboardEvent, this.parent.pageCount);
         }
         if (!this.parent.customFilterQuery) {
@@ -385,8 +442,8 @@ export class VirtualScroll {
     public scrollListener(scrollArgs: ScrollArg): void {
         if (!this.parent.isPreventScrollAction && !this.parent.isVirtualTrackHeight) {
             this.parent.preventSetCurrentData = false;
-            let info: SentinelType = scrollArgs.sentinel;
-            let pStartIndex: number = this.parent.previousStartIndex;
+            const info: SentinelType = scrollArgs.sentinel;
+            const pStartIndex: number = this.parent.previousStartIndex;
             this.parent.viewPortInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset, false);
             this.parent.isUpwardScrolling = false;
             if (this.parent.previousStartIndex !== pStartIndex && !this.parent.isKeyBoardAction) {
@@ -421,41 +478,45 @@ export class VirtualScroll {
 
     private getInfoFromView(direction: string, info: SentinelType, e: Offsets, isscrollAction: boolean): VirtualInfo {
 
-        let infoType: VirtualInfo = {
+        const infoType: VirtualInfo = {
             direction: direction, sentinelInfo: info, offsets: e,
             startIndex: this.parent.previousStartIndex, endIndex: this.parent.previousEndIndex
         };
-        let vHeight: string | number = this.parent.popupContentElement.getBoundingClientRect().height;
+        const vHeight: string | number = this.parent.popupContentElement.getBoundingClientRect().height;
         //Row Start and End Index calculation
-        let rowHeight: number = this.parent.listItemHeight;
-        let exactTopIndex: number = e.top / rowHeight;
-        let infoViewIndices: number = vHeight / rowHeight;
-        let exactEndIndex: number = exactTopIndex + infoViewIndices;
-        let pageSizeBy4: number = this.parent.virtualItemCount / 4;
-        let totalItemCount: number = this.parent.totalItemCount;
+        const rowHeight: number = this.parent.listItemHeight;
+        const exactTopIndex: number = e.top / rowHeight;
+        const infoViewIndices: number = vHeight / rowHeight;
+        const exactEndIndex: number = exactTopIndex + infoViewIndices;
+        const pageSizeBy4: number = this.parent.virtualItemCount / 4;
+        const totalItemCount: number = this.parent.totalItemCount;
         if (infoType.direction === 'down') {
-            let sIndex: number = Math.round(exactEndIndex) - Math.round((pageSizeBy4));
+            const sIndex: number = Math.round(exactEndIndex) - Math.round((pageSizeBy4));
             if (isNullOrUndefined(infoType.startIndex) || (exactEndIndex >
                 (infoType.startIndex + Math.round((this.parent.virtualItemCount / 2 + pageSizeBy4)))
                 && infoType.endIndex !== totalItemCount)) {
                 infoType.startIndex = sIndex >= 0 ? Math.round(sIndex) : 0;
                 infoType.startIndex = infoType.startIndex > exactTopIndex ? Math.floor(exactTopIndex) : infoType.startIndex;
-                let eIndex: number = infoType.startIndex + this.parent.virtualItemCount;
+                const eIndex: number = infoType.startIndex + this.parent.virtualItemCount;
                 infoType.startIndex = eIndex < exactEndIndex ? (Math.ceil(exactEndIndex) - this.parent.virtualItemCount)
                     : infoType.startIndex;
                 infoType.endIndex = eIndex < totalItemCount ? eIndex : totalItemCount;
-                infoType.startIndex = eIndex >= totalItemCount ? (infoType.endIndex - this.parent.virtualItemCount > 0 ? infoType.endIndex - this.parent.virtualItemCount : 0) : infoType.startIndex;
+                infoType.startIndex = eIndex >= totalItemCount
+                    ? (infoType.endIndex - this.parent.virtualItemCount > 0
+                        ? infoType.endIndex - this.parent.virtualItemCount
+                        : 0)
+                    : infoType.startIndex;
                 infoType.currentPageNumber = Math.ceil(infoType.endIndex / this.parent.virtualItemCount);
             }
         } else if (infoType.direction === 'up') {
             if ((infoType.startIndex && infoType.endIndex) || (Math.ceil(exactTopIndex) > this.parent.previousStartIndex)) {
-                let loadAtIndex: number = Math.round(((infoType.startIndex * rowHeight) + (pageSizeBy4 * rowHeight)) / rowHeight);
+                const loadAtIndex: number = Math.round(((infoType.startIndex * rowHeight) + (pageSizeBy4 * rowHeight)) / rowHeight);
                 if (exactTopIndex < loadAtIndex || (Math.ceil(exactTopIndex) > this.parent.previousStartIndex)) {
-                    let idxAddedToExactTop: number = (pageSizeBy4) > infoViewIndices ? pageSizeBy4 :
+                    const idxAddedToExactTop: number = (pageSizeBy4) > infoViewIndices ? pageSizeBy4 :
                         (infoViewIndices + infoViewIndices / 4);
-                    let eIndex: number = Math.round(exactTopIndex + idxAddedToExactTop);
+                    const eIndex: number = Math.round(exactTopIndex + idxAddedToExactTop);
                     infoType.endIndex = (eIndex < totalItemCount) ? eIndex : totalItemCount;
-                    let sIndex: number = infoType.endIndex - this.parent.virtualItemCount;
+                    const sIndex: number = infoType.endIndex - this.parent.virtualItemCount;
                     infoType.startIndex = sIndex > 0 ? sIndex : 0;
                     infoType.endIndex = sIndex < 0 ? this.parent.virtualItemCount : infoType.endIndex;
                     infoType.currentPageNumber = Math.ceil(infoType.startIndex / this.parent.virtualItemCount);
@@ -475,7 +536,7 @@ export class VirtualScroll {
     private sentinelInfo: SentinelInfo = {
         'up': {
             check: (rect: ClientRect, info: SentinelType) => {
-                let top: number = rect.top - this.containerElementRect.top;
+                const top: number = rect.top - this.containerElementRect.top;
                 info.entered = top >= 0;
                 return top + (this.parent.listItemHeight * this.parent.virtualItemCount / 2) >= 0;
             },
@@ -483,35 +544,35 @@ export class VirtualScroll {
         },
         'down': {
             check: (rect: ClientRect, info: SentinelType) => {
-                let cHeight: number = this.parent.popupContentElement.clientHeight;
-                let top: number = rect.bottom;
+                const top: number = rect.bottom;
                 info.entered = rect.bottom <= this.containerElementRect.bottom;
-                return top - (this.parent.listItemHeight * this.parent.virtualItemCount / 2) <= this.parent.listItemHeight * this.parent.virtualItemCount / 2;
+                return top - (this.parent.listItemHeight * this.parent.virtualItemCount / 2)
+                    <= this.parent.listItemHeight * this.parent.virtualItemCount / 2;
             }, axis: 'Y'
         }
     };
 
     private virtualScrollHandler(callback?: Function): Function {
-        let delay: number = Browser.info.name === 'chrome' ? 200 : 100;
-        let prevTop: number = 0; let debounced100: Function = debounce(callback, delay);
-        let debounced50: Function = debounce(callback, 50);
+        const delay: number = Browser.info.name === 'chrome' ? 200 : 100;
+        let prevTop: number = 0; const debounced100: Function = debounce(callback, delay);
+        const debounced50: Function = debounce(callback, 50);
         return (e: Event) => {
-            let top: number = (<HTMLElement>e.target).scrollTop;
-            let left: number = (<HTMLElement>e.target).scrollLeft;
-            let direction: ScrollDirection = prevTop < top && !this.parent.isUpwardScrolling ? 'down' : 'up';
+            const top: number = (<HTMLElement>e.target).scrollTop;
+            const left: number = (<HTMLElement>e.target).scrollLeft;
+            const direction: ScrollDirection = prevTop < top && !this.parent.isUpwardScrolling ? 'down' : 'up';
             prevTop = top;
-            let current: SentinelType = this.sentinelInfo[direction as 'up' | 'down'];
-            var pstartIndex = this.parent.scrollPreStartIndex;
-            var scrollOffsetargs = {
+            const current: SentinelType = this.sentinelInfo[direction as 'up' | 'down'];
+            const pstartIndex: number = this.parent.scrollPreStartIndex;
+            const scrollOffsetargs: { top: number, left: number } = {
                 top: top,
                 left: left
-            }
+            };
             if (this.parent.list && this.parent.list.querySelectorAll('.e-virtual-list').length > 0) {
-                var infoview = this.getInfoFromView(direction, current, scrollOffsetargs, true)
-                if (this.parent.scrollPreStartIndex != pstartIndex && !this.parent.isPreventScrollAction) {
+                this.getInfoFromView(direction, current, scrollOffsetargs, true);
+                if (this.parent.scrollPreStartIndex !== pstartIndex && !this.parent.isPreventScrollAction) {
                     this.parent.isScrollActionTriggered = true;
-                    let virtualPoup: HTMLElement = (this.parent.list.querySelector('.e-virtual-ddl-content'));
-                    virtualPoup.style.transform = "translate(0px," + top + "px)";
+                    const virtualPoup: HTMLElement = (this.parent.list.querySelector('.e-virtual-ddl-content'));
+                    virtualPoup.style.transform = 'translate(0px,' + top + 'px)';
                 }
             }
             let debounceFunction: Function = debounced100;

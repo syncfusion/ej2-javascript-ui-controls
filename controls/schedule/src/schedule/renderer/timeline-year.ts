@@ -272,13 +272,17 @@ export class TimelineYear extends Year {
     public getContentRows(): Element[] {
         const tRow: Element[] = [];
         const monthCells: number[] = this.getMonths();
+        const existingGroupIndices: number[] = this.getGroupIndices();
         for (let row: number = 0; row < this.parent.resourceBase.renderedResources.length; row++) {
-            const tr: HTMLElement = createElement('tr');
-            tRow.push(tr);
             let resData: TdData;
             if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
                 resData = this.parent.resourceBase.renderedResources[parseInt(row.toString(), 10)];
+                if (existingGroupIndices.length > 0 && existingGroupIndices.indexOf(resData.groupIndex) > -1) {
+                    continue;
+                }
             }
+            const tr: HTMLElement = createElement('tr');
+            tRow.push(tr);
             let monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), monthCells[parseInt(row.toString(), 10)], 1);
             let date: Date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
             for (let month: number = 0; month < this.columnCount; month++) {

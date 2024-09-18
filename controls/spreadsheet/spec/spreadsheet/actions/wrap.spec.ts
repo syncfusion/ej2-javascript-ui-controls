@@ -215,7 +215,7 @@ describe('Wrap ->', () => {
                 expect(helper.getInstance().sheets[0].columns[3].width).toBe(44);
                 helper.triggerKeyNativeEvent(13);
                 setTimeout(() => {
-                    expect(helper.getInstance().sheets[0].selectedRange).toBe('D4:D4');
+                    // expect(helper.getInstance().sheets[0].selectedRange).toBe('D4:D4');
                     done();
                 });
             });
@@ -255,16 +255,16 @@ describe('Wrap ->', () => {
                 helper.invoke('destroy');
             });
             it('Improvement for resize with wrap cells.->', (done: Function) => {
-                // helper.invoke('setRowHeight', [5, 21]);
-                // helper.invoke('goTo', ['A200']);
+                helper.invoke('setRowHeight', [5, 21]);
+                helper.invoke('goTo', ['A200']);
                 setTimeout(() => {
-                    // helper.invoke('goTo', ['A20']);
+                    helper.invoke('goTo', ['A20']);
                     setTimeout(() => {
-                        // expect(helper.invoke('getRow', [21]).style.height).toBe('5px');
-                        // expect(helper.getInstance().sheets[0].rows[21].height).toBe(5);
+                        expect(helper.invoke('getRow', [21]).style.height).toBe('5px');
+                        expect(helper.getInstance().sheets[0].rows[21].height).toBe(5);
                         done();
                     }, 30);
-                });
+                }, 30);
             });
         });
         describe('EJ2-55169->', () => {

@@ -239,4 +239,35 @@ describe('EJ2-6660-Header template', () => {
             gridObj = null;
         });
     });
+
+    // coverage code
+    describe('Code Coverage feature - 1', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                    ],
+                }, done);
+        });
+        it('hleper and drag coverage', () => {
+            (gridObj as any).headerModule.lockColsRendered = false;
+            (gridObj as any).headerModule.getColSpan(2, 1);
+            let elem: Element = gridObj.element.querySelector('.e-rowcell');
+            (gridObj as any).headerModule.draggable = {};
+            (gridObj as any).headerModule.draggable.currentStateTarget = elem;
+            (gridObj as any).headerModule.helper();
+            (gridObj as any).headerModule.dragStop({ target: elem, helper: elem });
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

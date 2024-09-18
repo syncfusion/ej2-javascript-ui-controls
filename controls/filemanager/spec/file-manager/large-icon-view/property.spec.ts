@@ -630,6 +630,63 @@ describe('FileManager control LargeIcons view', () => {
                 done();
             },400);
         });
+        it('for enableRangeSelection', (done) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                }, enableRangeSelection: true
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(noSorting)
+            });
+            setTimeout(function () {
+                let viewElement: Element = document.querySelector(".e-large-icons");
+                const startEvent = new MouseEvent('mousedown', { clientX: 220, clientY: 220 });
+                viewElement.dispatchEvent(startEvent);
+                const moveEvent = new MouseEvent('mousemove', { clientX: 510, clientY: 110 });
+                viewElement.dispatchEvent(moveEvent);
+                const mouseUpEvent = new MouseEvent('mouseup', {
+                    bubbles: true,
+                    cancelable: true,
+                });
+                viewElement.dispatchEvent(mouseUpEvent);
+                done();
+            }, 400);
+        });
+        it('resize with enableRangeSelection testing', (done) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                enableRangeSelection: true
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(noSorting)
+            });
+            setTimeout(function () {
+                feObj.view = 'Details';
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(noSorting)
+                });
+                setTimeout(function () {
+                    expect(document.getElementById('file_tree').classList.contains('e-treeview')).toEqual(true);
+                    done();
+                }, 500)
+            }, 400);
+        });
     });
     describe('popupTarget property testing', () => {
         let mouseEventArgs: any, tapEvent: any;

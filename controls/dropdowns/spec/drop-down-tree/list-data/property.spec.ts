@@ -1,6 +1,6 @@
 import { createElement, L10n, setCulture } from '@syncfusion/ej2-base';
 import { DropDownTree } from '../../../src/drop-down-tree/drop-down-tree';
-import { listData_1, listData, localData1, localDataString } from '../dataSource.spec';
+import { listData_1, listData, localData1, localDataString, disabledListData } from '../dataSource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
 
@@ -105,6 +105,56 @@ describe('DropDown Tree control List datasource', () => {
             expect((ddtreeObj as any).element.parentElement.classList.contains('custom-dropdowntree')).toBe(false);
             expect((ddtreeObj as any).popupObj.element.classList.contains('custom-dropdowntree')).toBe(false);
             expect((ddtreeObj as any).element.parentElement.classList.contains('')).toBe(false);
+        });
+
+        /**
+        * checkDisabledChildren property
+        */
+        it('checkDisabledChildren - ensure auto check on disabled Nodes', (done: Function) => {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: disabledListData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+                showCheckBox: true, treeSettings: { checkDisabledChildren: false, autoCheck: true }
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.popupObj.element.querySelectorAll('li');
+            expect(li[2].classList.contains('e-disable')).toBe(true);
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.popupObj.element.querySelectorAll('.e-checkbox-wrapper');
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            let checkedEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.popupObj.element.querySelectorAll('.e-check');
+            expect(checkedEle.length).toBe(4);
+            checkEle = <Element[] & NodeListOf<Element>>ddtreeObj.popupObj.element.querySelectorAll('.e-checkbox-wrapper');
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            checkedEle = <Element[] & NodeListOf<Element>>ddtreeObj.popupObj.element.querySelectorAll('.e-check');
+            expect(checkedEle.length).toBe(0);
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+            checkedEle = <Element[] & NodeListOf<Element>>ddtreeObj.popupObj.element.querySelectorAll('.e-check');
+            expect(checkedEle.length).toBe(3);
+            let newli: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.popupObj.element.querySelectorAll('li');
+            mouseEventArgs.target = newli[5].querySelector('.e-icons');
+            expect((newli[5].querySelector('.e-icons') as Element).classList.contains('e-icon-expandable')).toBe(true);
+            expect((newli[5].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(false);
+            ddtreeObj.treeObj.touchClickObj.tap(tapEvent);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let newCheckedEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.popupObj.element.querySelectorAll('.e-check');
+                expect(newCheckedEle.length).toBe(3);
+                done();
+            }, 450);
         });
 
         /**
@@ -1250,6 +1300,46 @@ describe('DropDown Tree control List datasource', () => {
                 expect(li[0].querySelector('b')).toBe(null);
                 expect(li[1].querySelector('b')).not.toBe(null);
                 expect(li[1].querySelector('i')).toBe(null);
+                ddtreeObj.hidePopup();
+                done();
+            }, 400);
+        });
+
+        /**
+         * valueTemplate
+         */
+        it('for valueTemplate support with string', (done: Function) => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: localData1, value: "nodeId", parentValue: 'nodePid', text: "nodeText", hasChildren: "hasChild", expanded: 'nodeExpanded1' }, value: ['01'], valueTemplate: '${if(nodeChild == undefined)}<b>${nodeText} template</b>${else}<i>${nodeText} template</i>${/if}' }, '#ddtree');
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                ddtreeObj.showPopup();
+                let value: Element = <Element & NodeListOf<Element>>ddtreeObj.element.parentElement.querySelector('.e-input-value');
+                expect(value.textContent).toBe("Music template");
+                ddtreeObj.hidePopup();
+                done();
+            }, 400);
+        });
+        it('for valueTemplate support with string and checkbox', (done: Function) => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: localData1, value: "nodeId", parentValue: 'nodePid', text: "nodeText", hasChildren: "hasChild", expanded: 'nodeExpanded1' }, value: ['01'], showCheckBox: true, valueTemplate: '${if(nodeChild == undefined)}<b>${nodeText} template</b>${else}<i>${nodeText} template</i>${/if}' }, '#ddtree');
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                ddtreeObj.showPopup();
+                let value: Element = <Element & NodeListOf<Element>>ddtreeObj.element.parentElement.querySelector('.e-input-value');
+                expect(value.textContent).toBe("Music template");
+                ddtreeObj.hidePopup();
+                done();
+            }, 400);
+        });
+        it('for valueTemplate support with script', (done: Function) => {
+            let template: Element = createElement('div', { id: 'template' });
+            template.innerHTML = '${if(nodeChild == undefined)}<b>${nodeText} template</b>${else}<i>${nodeText} template</i>${/if}';
+            document.body.appendChild(template);
+            ddtreeObj = new DropDownTree({ fields: { dataSource: localData1, value: "nodeId", parentValue: 'nodePid', text: "nodeText", hasChildren: "hasChild", expanded: 'nodeExpanded1' }, value: ['01'], valueTemplate: '#template' }, '#ddtree');
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                ddtreeObj.showPopup();
+                let value: Element = <Element & NodeListOf<Element>>ddtreeObj.element.parentElement.querySelector('.e-input-value');
+                expect(value.textContent).toBe("Music template");
                 ddtreeObj.hidePopup();
                 done();
             }, 400);

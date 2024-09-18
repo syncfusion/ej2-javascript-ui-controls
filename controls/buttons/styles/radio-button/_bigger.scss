@@ -1,0 +1,273 @@
+@mixin fluent-focus-border {
+  @if $skin-name == 'FluentUI' {
+    border: 1px solid transparent;
+  }
+}
+
+@mixin fluent-label-border {
+  @if $skin-name == 'FluentUI' {
+    border: 1px solid $radio-btn-border-color;
+  }
+}
+
+@include export-module('radiobutton-bigger') {
+  .e-bigger.e-small .e-radio + label,
+  .e-radio + label.e-bigger.e-small {
+    @if $skin-name == 'fluent2' {
+      margin: 8.4px;
+    }
+    & .e-label {
+      line-height: $radio-btn-bigger-small-line-height;
+      padding-left: $radio-btn-bigger-small-padding;
+    }
+
+    &::before {
+      height: $radio-btn-bigger-small-height;
+      width: $radio-btn-bigger-small-width;
+    }
+
+    &::after {
+      height: $radio-btn-bigger-small-icon-height;
+      left: $radio-btn-bigger-small-icon-left;
+      top: $radio-btn-bigger-small-icon-top;
+      width: $radio-btn-bigger-small-icon-width;
+    }
+
+    & .e-ripple-container {
+      height: $radio-btn-bigger-small-ripple-size;
+      left: $radio-btn-bigger-ripple-position;
+      top: $radio-btn-bigger-ripple-position;
+      width: $radio-btn-bigger-small-ripple-size;
+    }
+
+    &.e-right,
+    &.e-rtl {
+      & .e-label {
+        padding-left: 0;
+        padding-right: $radio-btn-bigger-small-padding;
+      }
+
+      &::after {
+        left: auto;
+        right: $radio-btn-bigger-small-icon-right;
+      }
+
+      & .e-ripple-container {
+        left: auto;
+        right: $radio-btn-small-ripple-position;
+      }
+    }
+
+    &.e-right {
+      &.e-rtl {
+        & .e-label {
+          padding-left: $radio-btn-bigger-small-padding;
+          padding-right: 0;
+        }
+
+        &::after {
+          left: $radio-btn-bigger-small-icon-right;
+          right: auto;
+        }
+
+        & .e-ripple-container {
+          left: -10px;
+          right: auto;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-radio {
+    &:not(:checked):hover {
+      +label,
+      +label.e-rtl,
+      +label.e-right {
+        @if $skin-name == 'FluentUI' {
+          &::after {
+            background-color: $radio-btn-uncheck-background-color;
+            border: 1px solid;
+            border-radius: 50%;
+            box-sizing: border-box;
+            color: $radio-btn-uncheck-color;
+            content: '';
+            height: $radio-btn-bigger-icon-height;
+            left: $radio-btn-bigger-icon-left;
+            position: absolute;
+            top: $radio-btn-bigger-icon-top;
+            transform: scale(1);
+            width: $radio-btn-bigger-icon-width;
+          }
+        }
+      }
+
+      +label.e-rtl,
+      +label.e-right {
+        &::after {
+          left: auto;
+        }
+      }
+    }
+
+    &:focus,
+    .e-focus {
+      +label,
+      & .e-label {
+        @include fluent-focus-border;
+      }
+    }
+
+    &:focus:not(:focus-visible) {
+      +label,
+      & .e-label {
+        @include fluent-focus-border;
+      }
+    }
+
+    &:focus-visible {
+      +label,
+      & .e-label {
+        @include fluent-label-border;
+      }
+    }
+  }
+
+  .e-bigger .e-radio + label {
+    @if $skin-name == 'FluentUI' {
+      border: 1px solid transparent;
+      height: 28px;
+    }
+  }
+
+  .e-bigger .e-radio + label,
+  .e-radio + label.e-bigger {
+    @if $skin-name == 'fluent2' {
+      margin: 10.4px;
+    }
+
+    & .e-label {
+      font-size: $radio-btn-bigger-font-size;
+      line-height: $radio-btn-bigger-line-height;
+      padding-left: $radio-btn-bigger-padding;
+    }
+
+    &::before {
+      height: $radio-btn-bigger-height;
+      width: $radio-btn-bigger-width;
+    }
+
+    &::after {
+      height: $radio-btn-bigger-icon-height;
+      left: $radio-btn-bigger-icon-left;
+      top: $radio-btn-bigger-icon-top;
+      width: $radio-btn-bigger-icon-width;
+    }
+
+    & .e-ripple-container {
+      height: $radio-btn-bigger-ripple-size;
+      left: $radio-btn-bigger-ripple-position;
+      top: $radio-btn-bigger-ripple-position;
+      width: $radio-btn-bigger-ripple-size;
+    }
+
+    &.e-right,
+    &.e-rtl {
+      & .e-label {
+        padding-left: 0;
+        padding-right: $radio-btn-bigger-padding;
+      }
+
+      &::after {
+        left: auto;
+        right: $radio-btn-bigger-icon-right;
+      }
+
+      & .e-ripple-container {
+        left: auto;
+        right: $radio-btn-bigger-ripple-position;
+      }
+    }
+
+    &.e-right {
+      &.e-rtl {
+        & .e-label {
+          padding-left: $radio-btn-bigger-padding;
+          padding-right: 0;
+        }
+
+        &::after {
+          left: $radio-btn-bigger-icon-right;
+          right: auto;
+        }
+
+        & .e-ripple-container {
+          left: -12px;
+          right: auto;
+        }
+      }
+    }
+
+    &.e-small {
+      & .e-label {
+        line-height: $radio-btn-bigger-small-line-height;
+        padding-left: $radio-btn-bigger-small-padding;
+      }
+
+      &::before {
+        height: $radio-btn-bigger-small-height;
+        width: $radio-btn-bigger-small-width;
+      }
+
+      &::after {
+        height: $radio-btn-bigger-small-icon-height;
+        left: $radio-btn-bigger-small-icon-left;
+        top: $radio-btn-bigger-small-icon-top;
+        width: $radio-btn-bigger-small-icon-width;
+      }
+
+      & .e-ripple-container {
+        height: $radio-btn-bigger-small-ripple-size;
+        left: $radio-btn-bigger-ripple-position;
+        top: $radio-btn-bigger-ripple-position;
+        width: $radio-btn-bigger-small-ripple-size;
+      }
+
+      &.e-right,
+      &.e-rtl {
+        & .e-label {
+          padding-left: 0;
+          padding-right: $radio-btn-bigger-small-padding;
+        }
+
+        &::after {
+          left: auto;
+          right: $radio-btn-bigger-small-icon-right;
+        }
+
+        & .e-ripple-container {
+          left: auto;
+          right: $radio-btn-small-ripple-position;
+        }
+      }
+
+      &.e-right {
+        &.e-rtl {
+          & .e-label {
+            padding-left: $radio-btn-bigger-small-padding;
+            padding-right: 0;
+          }
+
+          &::after {
+            left: $radio-btn-bigger-small-icon-right;
+            right: auto;
+          }
+
+          & .e-ripple-container {
+            left: -10px;
+            right: auto;
+          }
+        }
+      }
+    }
+  }
+}

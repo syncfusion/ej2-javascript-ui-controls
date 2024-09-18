@@ -8,12 +8,10 @@ import { appendChildElement, redrawElement, titlePositionX, textElement } from '
 import { Axis } from '../chart/axis/axis';
 import { Series } from '../chart/series/chart-series';
 import { Size, Rect, TextOption, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';
-import { Periods } from '../common/model/base';
-import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
+import { ITooltipRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
+import { IRangeSelectorRenderEventArgs } from '../range-navigator/model/range-navigator-interface';
 import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs, IZoomingEventArgs  } from '../chart/model/chart-interface';
-import { PeriodsModel } from '../common/model/base-model';
-import { StockTooltipSettings } from '../common/model/base';
-import { StockTooltipSettingsModel } from '../common/model/base-model';
+import { StockTooltipSettingsModel, PeriodsModel } from '../common/model/base-model';
 import { calculateSize, getElement } from '../common/utils/helper';
 import { RangeNavigator } from '../range-navigator/range-navigator';
 import { getRangeValueXByPoint } from '../range-navigator/utils/helper';
@@ -37,7 +35,9 @@ import { StockEvents } from './renderer/stock-events';
 import { IThemeStyle } from '../chart/model/chart-interface';
 import { StockChartLegendSettingsModel } from './legend/legend-model';
 import { StockLegend, StockChartLegendSettings } from './legend/legend';
-import { ColumnSeries, RangeAreaSeries, SeriesModel, SplineRangeAreaSeries, VisibleRangeModel } from './index';
+import { ColumnSeries, RangeAreaSeries, SeriesModel, SplineRangeAreaSeries } from './index';
+import { VisibleRangeModel } from '../common/model/interface';
+import { Periods, StockTooltipSettings } from '../common/model/base';
 
 /**
  * Stock Chart
@@ -783,6 +783,12 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         this.startValue = null;
         this.endValue = null;
         this.currentEnd = null;
+        this.margin = {
+            right: this.margin.right === null ? (Browser.isDevice ? 5 : 10) : this.margin.right,
+            left: this.margin.left === null ? (Browser.isDevice ? 5 : 10) : this.margin.left,
+            top: this.margin.top === null ? (Browser.isDevice ? 5 : 10) : this.margin.top,
+            bottom: this.margin.bottom === null ? (Browser.isDevice ? 5 : 10) : this.margin.bottom
+        };
         this.isStockChartRendered = false;
     }
 

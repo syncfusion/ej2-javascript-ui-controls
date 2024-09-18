@@ -24,6 +24,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
+            let selArray: (NodeModel | ConnectorModel)[] = [];
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 500, offsetY: 400 };
             diagram = new Diagram({
                 width: '1000px', height: '500px', nodes: [node],
@@ -52,34 +53,26 @@ describe('Diagram Control', () => {
             }
             events.mouseWheelEvent(document.getElementById('diagramcontent'), 500, 250, true);
             expect(diagram.scroller.currentZoom).toBe(0.8);
-            expect(diagram.scroller.horizontalOffset == 98.67 && (diagram.scroller.verticalOffset == 48.67 || diagram.scroller.verticalOffset == 50)).toBe(true);
-            console.log("Gowtham - ",diagram.scroller.horizontalOffset, "value = 98.67 ");
-            console.log("Gowtham - ",diagram.scroller.verticalOffset, "value = 48.67 ");
-            
+            expect(diagram.scroller.horizontalOffset == 98.67 && diagram.scroller.verticalOffset == 48.67).toBe(true);
             done();
         });
 
         it('Checking interactive panning', (done: Function) => {
-
             diagram.tool = DiagramTools.ZoomPan;
             let events: MouseEvents = new MouseEvents();
             events.dragAndDropEvent(document.getElementById('diagramcontent'), 400, 300, 400, 200);
-            expect(diagram.scroller.horizontalOffset == 98.67 && (diagram.scroller.verticalOffset == -51.33 || diagram.scroller.verticalOffset == -50)).toBe(true);
-            console.log("Gowtham - ",diagram.scroller.horizontalOffset, "value = 98.67 ");
-            console.log("Gowtham - ",diagram.scroller.verticalOffset, "value = -51.33 ");
-            
+            expect(diagram.scroller.horizontalOffset == 98.67 && diagram.scroller.verticalOffset == -51.33).toBe(true);
             done();
         });
 
         it('Checking zooming based on zoomTo method', (done: Function) => {
             diagram.zoomTo({ type: 'ZoomIn', zoomFactor: 0.5 });
+            console.log('expect(Number(diagram.scroller.currentZoom.toFixed(2))).toBe(' + Number(diagram.scroller.currentZoom.toFixed(2)) + ')');
             expect(Number(diagram.scroller.currentZoom.toFixed(2))).toBe(1.2);
-            console.log("Gowtham - ",Math.round(diagram.scroller.horizontalOffset), "value = -206 or -207 or -102 ");
-            console.log("Gowtham - ",Math.round(diagram.scroller.verticalOffset), "value = -252 or -253 or -202 or -201 ");
-            
+            console.log('expect(Math.round(diagram.scroller.horizontalOffset) == ' + Math.round(diagram.scroller.horizontalOffset) +
+                '&& Math.round(diagram.scroller.verticalOffset) ==' + Math.round(diagram.scroller.verticalOffset) + ').toBe(true);');
             expect((Math.round(diagram.scroller.horizontalOffset) == -206 || Math.round(diagram.scroller.horizontalOffset) == -207 || Math.round (diagram.scroller.horizontalOffset) === -102) &&
-                (Math.round(diagram.scroller.verticalOffset) == -252 || Math.round(diagram.scroller.verticalOffset) == -253 || Math.round(diagram.scroller.verticalOffset) == -202 || Math.round(diagram.scroller.verticalOffset) == -201
-                || Math.round(diagram.scroller.verticalOffset) == -200)).toBe(true);
+                (Math.round(diagram.scroller.verticalOffset) == -252 || Math.round(diagram.scroller.verticalOffset) == -253 || Math.round(diagram.scroller.verticalOffset) == -202 || Math.round(diagram.scroller.verticalOffset) == -201)).toBe(true);
             done();
         });
 

@@ -1,5 +1,5 @@
-import { INotifyPropertyChanged, NotifyPropertyChanges, Component, Property, getUniqueID, isNullOrUndefined, addClass, attributes, removeClass, remove, EmitType, Event } from '@syncfusion/ej2-base';
-import {OtpInputType,OtpInputStyle,OtpChangedEventArgs,OtpFocusEventArgs,OtpInputEventArgs} from "./otp-input";
+import { INotifyPropertyChanged, NotifyPropertyChanges, Component, Property, getUniqueID, isNullOrUndefined, addClass, attributes, removeClass, remove, EmitType, Event, EventHandler } from '@syncfusion/ej2-base';
+import {OtpInputType,OtpInputStyle,TextTransform,OtpChangedEventArgs,OtpFocusEventArgs,OtpInputEventArgs} from "./otp-input";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -84,6 +84,29 @@ export interface OtpInputModel extends ComponentModel{
      * @default ''
      */
     cssClass?: string;
+
+    /**
+     * Specifies whether the OTP input field should automatically receive focus when the component is rendered.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    autoFocus?: boolean;
+
+    /**
+     * Specifies the case transformation for the OTP input text.
+     *
+     * Valid values are:
+     * - `TextTransform.Uppercase` for uppercase transformation.
+     * - `TextTransform.Lowercase` for lowercase transformation.
+     * - `TextTransform.None` for no transformation.
+     *
+     * @isenumeration true
+     * @asptype TextTransform
+     * @type {TextTransform}
+     * @default TextTransform.None
+     */
+    textTransform?: string | TextTransform;
 
     /**
      * Specifies additional HTML attributes to be applied to the Otp (One-Time Password) input component.

@@ -12,7 +12,7 @@ import { PdfStringFormat, PdfVerticalAlignment } from './../fonts/pdf-string-for
 import { PdfGraphics, PdfGraphicsState, _TextRenderingMode, _PdfTransformationMatrix, PdfBrush, PdfPen } from './../graphics/pdf-graphics';
 import { PdfFontFamily, PdfStandardFont, PdfFont, PdfFontStyle, PdfTrueTypeFont } from './../fonts/pdf-standard-font';
 import { PdfAppearance } from './../annotations/pdf-appearance';
-import { _PdfPath } from './../graphics/pdf-path';
+import { PdfPath } from './../graphics/pdf-path';
 import { PdfAnnotationCollection } from '../annotations/annotation-collection';
 import { PdfFieldActions } from '../pdf-action';
 /**
@@ -34,6 +34,8 @@ export abstract class PdfField {
     _ref: _PdfReference;
     _dictionary: _PdfDictionary;
     _crossReference: _PdfCrossReference;
+    _enableGrouping: boolean = false;
+    _isDuplicatePage: boolean = false;
     _form: PdfForm;
     _kids: _PdfReference[];
     _defaultIndex: number;
@@ -1652,7 +1654,7 @@ export abstract class PdfField {
         }
     }
     _drawLeftTopShadow(g: PdfGraphics, bounds: number[], width: number, brush: PdfBrush): void {
-        const path: _PdfPath = new _PdfPath();
+        const path: PdfPath = new PdfPath();
         const points: Array<number[]> = [];
         points.push([bounds[0] + width, bounds[1] + width]);
         points.push([bounds[0] + width, (bounds[1] + bounds[3]) - width]);
@@ -1660,11 +1662,11 @@ export abstract class PdfField {
         points.push([bounds[0] + 2 * width, bounds[1] + 2 * width]);
         points.push([(bounds[0] + bounds[2]) - 2 * width, bounds[1] + 2 * width]);
         points.push([(bounds[0] + bounds[2]) - width, bounds[1] + width]);
-        path._addPolygon(points);
-        g._drawPath(path, null, brush);
+        path.addPolygon(points);
+        g.drawPath(path, brush);
     }
     _drawRightBottomShadow(g: PdfGraphics, bounds: number[], width: number, brush: PdfBrush): void {
-        const path: _PdfPath = new _PdfPath();
+        const path: PdfPath = new PdfPath();
         const points: Array<number[]> = [];
         points.push([bounds[0] + width, (bounds[1] + bounds[3]) - width]);
         points.push([bounds[0] + 2 * width, (bounds[1] + bounds[3]) - 2 * width]);
@@ -1672,23 +1674,27 @@ export abstract class PdfField {
         points.push([(bounds[0] + bounds[2]) - 2 * width, bounds[1] + 2 * width]);
         points.push([bounds[0] + bounds[2] - width, bounds[1] + width]);
         points.push([(bounds[0] + bounds[2]) - width, (bounds[1] + bounds[3]) - width]);
-        path._addPolygon(points);
-        g._drawPath(path, null, brush);
+        path.addPolygon(points);
+        g.drawPath(path, brush);
     }
     _drawRadioButton(graphics: PdfGraphics, parameter: _PaintParameter, checkSymbol: string, state: _PdfCheckFieldState): void {
         if (checkSymbol === 'l') {
             const bounds: number[] = parameter.bounds;
+            let diameter: number = bounds[2];
+            if (this._enableGrouping) {
+                diameter = Math.min(bounds[2], bounds[3]);
+            }
             switch (state) {
             case _PdfCheckFieldState.checked:
             case _PdfCheckFieldState.unchecked:
-                graphics.drawEllipse(bounds[0], bounds[1], bounds[2], bounds[3], parameter.backBrush);
+                graphics.drawEllipse(bounds[0], bounds[1], diameter, bounds[3], parameter.backBrush);
                 break;
             case _PdfCheckFieldState.pressedChecked:
             case _PdfCheckFieldState.pressedUnchecked:
                 if ((parameter.borderStyle === PdfBorderStyle.beveled) || (parameter.borderStyle === PdfBorderStyle.underline)) {
                     graphics.drawEllipse(bounds[0], bounds[1], bounds[2], bounds[3], parameter.backBrush);
                 } else {
-                    graphics.drawEllipse(bounds[0], bounds[1], bounds[2], bounds[3], parameter.shadowBrush);
+                    graphics.drawEllipse(bounds[0], bounds[1], diameter, bounds[3], parameter.shadowBrush);
                 }
                 break;
             }
@@ -1697,7 +1703,7 @@ export abstract class PdfField {
             if (state === _PdfCheckFieldState.checked || state === _PdfCheckFieldState.pressedChecked) {
                 const outward: number[] = [bounds[0] + parameter.borderWidth / 2,
                     bounds[1] + parameter.borderWidth / 2,
-                    bounds[2] - parameter.borderWidth,
+                    diameter - parameter.borderWidth,
                     bounds[3] - parameter.borderWidth];
                 graphics.drawEllipse(outward[0] + (outward[2] / 4),
                                      outward[1] + (outward[2] / 4),
@@ -1711,11 +1717,8 @@ export abstract class PdfField {
     }
     _drawRoundBorder(graphics: PdfGraphics, bounds: number[], borderPen: PdfPen, borderWidth: number): void {
         if (bounds[0] !== 0 || bounds[1] !== 0 || bounds[2] !== 0 || bounds[3] !== 0) {
-            graphics.drawEllipse(bounds[0] + borderWidth / 2,
-                                 bounds[1] + borderWidth / 2,
-                                 bounds[2] - borderWidth,
-                                 bounds[3] - borderWidth,
-                                 borderPen);
+            graphics.drawEllipse(bounds[0] + borderWidth / 2, bounds[1] + borderWidth / 2, (this._enableGrouping ?
+                Math.min(bounds[2], bounds[3]) : bounds[2]) - borderWidth, bounds[3] - borderWidth, borderPen);
         }
     }
     _drawRoundShadow(graphics: PdfGraphics, parameter: _PaintParameter, state: _PdfCheckFieldState): void {
@@ -1941,10 +1944,12 @@ export abstract class PdfField {
             this._dictionary.update('Kids', this._kids);
             this._parsedItems = new Map<number, PdfWidgetAnnotation>();
         }
-        const currentIndex: number = this._kidsCount;
-        item._index = currentIndex;
-        this._kids.push(item._ref);
-        this._parsedItems.set(currentIndex, item);
+        if (this._kids.indexOf(item._ref) === -1) {
+            const currentIndex: number = this._kidsCount;
+            item._index = currentIndex;
+            this._kids.push(item._ref);
+            this._parsedItems.set(currentIndex, item);
+        }
     }
     _drawTemplate(template: PdfTemplate, page: PdfPage, bounds: {x: number, y: number, width: number, height: number}): void {
         if (template && page) {
@@ -2858,7 +2863,7 @@ export class PdfTextBoxField extends PdfField {
         let template: PdfTemplate;
         let bounds: {x: number, y: number, width: number, height: number};
         const source: PdfWidgetAnnotation | PdfTextBoxField = widget ? widget : this;
-        if (this._form._setAppearance || this._setAppearance || (isFlatten && !source._dictionary.has('AP'))) {
+        if ((widget !== null && typeof widget !== 'undefined' && widget._setAppearance && widget._enableGrouping) || this._form._setAppearance || this._setAppearance || (isFlatten && !source._dictionary.has('AP'))) {
             template = this._createAppearance(isFlatten, source);
         } else if (source._dictionary.has('AP')) {
             let appearanceStream: _PdfBaseStream;
@@ -2929,6 +2934,9 @@ export class PdfTextBoxField extends PdfField {
         parameter.rotationAngle = widget.rotate;
         parameter.insertSpaces = this.insertSpaces;
         let text: string = this.text;
+        let pdfFont: PdfFont;
+        let stringFormat: PdfStringFormat;
+        let enableGrouping: boolean = false;
         if (text === null || typeof text === 'undefined') {
             text = '';
         }
@@ -2944,17 +2952,32 @@ export class PdfTextBoxField extends PdfField {
             graphics._sw._beginMarkupSequence('Tx');
             graphics._initializeCoordinates();
         }
-        if (typeof this._font === 'undefined' || this._font === null) {
+        if (widget !== null && typeof widget !== 'undefined' && widget instanceof PdfWidgetAnnotation && widget._enableGrouping) {
+            enableGrouping = true;
+        }
+        if (enableGrouping && widget.font !== null && typeof widget.font !== 'undefined') {
+            pdfFont = widget.font;
+            if (pdfFont.size === 0) {
+                pdfFont._size = 8;
+                pdfFont._fontMetrics._size = 0;
+            }
+        } else if (typeof this._font === 'undefined' || this._font === null) {
             this._font = this._defaultFont;
         }
-        if (typeof this._stringFormat === 'undefined' || this._stringFormat === null) {
+        if (enableGrouping && widget.textAlignment !== null && typeof widget.textAlignment !== 'undefined') {
+            stringFormat = stringFormat = new PdfStringFormat(widget.textAlignment, PdfVerticalAlignment.middle);
+        } else if (typeof this._stringFormat === 'undefined' || this._stringFormat === null) {
             if (typeof this.textAlignment === 'undefined' || this.textAlignment === null) {
                 this._stringFormat = new PdfStringFormat(this.textAlignment, PdfVerticalAlignment.middle);
             } else {
                 this._stringFormat = new PdfStringFormat(PdfTextAlignment.left, PdfVerticalAlignment.middle);
             }
         }
-        this._drawTextBox(graphics, parameter, text, this._font, this._stringFormat, this.multiLine, this.scrollable, this.maxLength);
+        if (enableGrouping) {
+            this._drawTextBox(graphics, parameter, text, pdfFont, stringFormat, this.multiLine, this.scrollable, this.maxLength);
+        } else {
+            this._drawTextBox(graphics, parameter, text, this._font, this._stringFormat, this.multiLine, this.scrollable, this.maxLength);
+        }
         if (!this.required) {
             graphics._sw._endMarkupSequence();
         }
@@ -3588,7 +3611,7 @@ export class PdfButtonField extends PdfField {
         let template: PdfTemplate;
         let bounds: {x: number, y: number, width: number, height: number};
         const source: PdfWidgetAnnotation | PdfButtonField = widget ? widget : this;
-        if (this._form._setAppearance || this._setAppearance || (isFlatten && !source._dictionary.has('AP'))) {
+        if ((widget !== null && typeof widget !== 'undefined' && widget._setAppearance && widget._enableGrouping) || this._form._setAppearance || this._setAppearance || (isFlatten && !source._dictionary.has('AP'))) {
             template = this._createAppearance(source);
         } else if (source._dictionary.has('AP')) {
             let appearanceStream: _PdfBaseStream;
@@ -3635,6 +3658,10 @@ export class PdfButtonField extends PdfField {
         const template: PdfTemplate = new PdfTemplate([0, 0, bounds.width, bounds.height], this._crossReference);
         const parameter: _PaintParameter = new _PaintParameter();
         parameter.bounds = [0, 0, bounds.width, bounds.height];
+        let text: string;
+        let font: PdfFont;
+        let stringFormat: PdfStringFormat;
+        let enableGrouping: boolean = false;
         const backcolor: number[] = widget.backColor;
         if (backcolor) {
             parameter.backBrush = new PdfBrush(backcolor);
@@ -3654,13 +3681,34 @@ export class PdfButtonField extends PdfField {
             parameter.shadowBrush = new PdfBrush(color);
         }
         parameter.rotationAngle = widget.rotate;
-        if (typeof this._font === 'undefined' || this._font === null) {
+        if (widget !== null && typeof widget !== 'undefined' && widget instanceof PdfWidgetAnnotation && widget._enableGrouping) {
+            enableGrouping = true;
+        }
+        if (enableGrouping) {
+            if (widget._mkDictionary && widget._mkDictionary && widget._mkDictionary.has('CA')) {
+                text = widget._mkDictionary.get('CA');
+            } else {
+                text = '';
+            }
+            if (typeof widget.font !== 'undefined' && widget.font.size !== null && widget.font.size !== 0) {
+                font = widget.font;
+            }
+            stringFormat = new PdfStringFormat(widget.textAlignment, PdfVerticalAlignment.middle);
+        } else if (typeof this._font === 'undefined' || this._font === null) {
             this._font = this._defaultFont;
         }
-        if (isPressed) {
-            this._drawPressedButton(template.graphics, parameter, this.text, this._font, this._stringFormat);
-        } else {
-            this._drawButton(template.graphics, parameter, this.text, this._font, this._stringFormat);
+        if (enableGrouping) {
+            if (isPressed) {
+                this._drawPressedButton(template.graphics, parameter, text, font, stringFormat);
+            } else {
+                this._drawButton(template.graphics, parameter, text, font, stringFormat);
+            }
+        } else{
+            if (isPressed) {
+                this._drawPressedButton(template.graphics, parameter, this.text, this._font, this._stringFormat);
+            } else {
+                this._drawButton(template.graphics, parameter, this.text, this._font, this._stringFormat);
+            }
         }
         return template;
     }
@@ -4263,10 +4311,14 @@ export class PdfCheckBoxField extends PdfField {
         parameter.rotationAngle = widget.rotate;
         const template: PdfTemplate = new PdfTemplate(parameter.bounds, this._crossReference);
         const graphics: PdfGraphics = template.graphics;
-        this._drawCheckBox(graphics, parameter, _styleToString(widget._style), state);
+        if (widget._styleText) {
+            this._drawCheckBox(graphics, parameter, widget._styleText, state);
+        } else {
+            this._drawCheckBox(graphics, parameter, _styleToString(widget._style), state);
+        }
         return template;
     }
-    _drawAppearance(item: PdfStateItem): void {
+    _drawAppearance(item: PdfStateItem, itemValue?: string): void {
         let appearance: _PdfDictionary = new _PdfDictionary();
         if (item._dictionary.has('AP')) {
             appearance = item._dictionary.get('AP');
@@ -4293,7 +4345,11 @@ export class PdfCheckBoxField extends PdfField {
         const normalUncheckedReference: _PdfReference = this._crossReference._getNextReference();
         this._crossReference._cacheMap.set(normalUncheckedReference, normalUnchecked._content);
         const normalDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
-        normalDictionary.update('Yes', normalCheckedReference);
+        if (itemValue !== null && typeof itemValue !== 'undefined') {
+            normalDictionary.update(itemValue, normalCheckedReference);
+        } else {
+            normalDictionary.update('Yes', normalCheckedReference);
+        }
         normalDictionary.update('Off', normalUncheckedReference);
         const normalReference: _PdfReference = this._crossReference._getNextReference();
         this._crossReference._cacheMap.set(normalReference, normalDictionary);
@@ -4305,7 +4361,11 @@ export class PdfCheckBoxField extends PdfField {
         const pressUncheckedReference: _PdfReference = this._crossReference._getNextReference();
         this._crossReference._cacheMap.set(pressUncheckedReference, pressUnchecked._content);
         const pressedDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
-        pressedDictionary.update('Yes', pressCheckedReference);
+        if (itemValue !== null && typeof itemValue !== 'undefined') {
+            pressedDictionary.update(itemValue, pressCheckedReference);
+        } else {
+            pressedDictionary.update('Yes', pressCheckedReference);
+        }
         pressedDictionary.update('Off', pressUncheckedReference);
         const pressedReference: _PdfReference = this._crossReference._getNextReference();
         this._crossReference._cacheMap.set(pressedReference, pressedDictionary);
@@ -4839,11 +4899,13 @@ export class PdfRadioButtonListField extends PdfField {
             for (let i: number = 0; i < count; i++) {
                 const item: PdfRadioButtonListItem = this.itemAt(i);
                 const state: _PdfCheckFieldState = this.selectedIndex === i ? _PdfCheckFieldState.checked : _PdfCheckFieldState.unchecked;
-                item._dictionary.update('AS', _PdfName.get(this.selectedIndex === i ? item.value : 'Off'));
+                if (!this._isDuplicatePage) {
+                    item._dictionary.update('AS', _PdfName.get(this.selectedIndex === i ? item.value : 'Off'));
+                }
                 if (isFlatten) {
                     const template: PdfTemplate = this._createAppearance(item, state);
                     this._drawTemplate(template, item._getPage(), item.bounds);
-                } else {
+                } else if (!this._isDuplicatePage) {
                     item._postProcess(this.selectedIndex === i ? item.value : 'Off');
                     this._drawAppearance(item);
                 }
@@ -4877,7 +4939,11 @@ export class PdfRadioButtonListField extends PdfField {
         parameter.rotationAngle = widget.rotate;
         const template: PdfTemplate = new PdfTemplate(parameter.bounds, this._crossReference);
         const graphics: PdfGraphics = template.graphics;
-        this._drawRadioButton(graphics, parameter, _styleToString(widget.style), state);
+        if (widget._styleText) {
+            this._drawRadioButton(graphics, parameter, widget._styleText, state);
+        } else {
+            this._drawRadioButton(graphics, parameter, _styleToString(widget.style), state);
+        }
         return template;
     }
     _drawAppearance(item: PdfRadioButtonListItem): void {
@@ -4907,7 +4973,11 @@ export class PdfRadioButtonListField extends PdfField {
         const normalUncheckedReference: _PdfReference = this._crossReference._getNextReference();
         this._crossReference._cacheMap.set(normalUncheckedReference, normalUnchecked._content);
         const normalDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
-        normalDictionary.update(item.value, normalCheckedReference);
+        let actualValue: string = item.value;
+        if (!actualValue && item._enableGrouping) {
+            actualValue = 'check' + item._index;
+        }
+        normalDictionary.update(actualValue, normalCheckedReference);
         normalDictionary.update('Off', normalUncheckedReference);
         const normalReference: _PdfReference = this._crossReference._getNextReference();
         this._crossReference._cacheMap.set(normalReference, normalDictionary);
@@ -4919,7 +4989,7 @@ export class PdfRadioButtonListField extends PdfField {
         const pressUncheckedReference: _PdfReference = this._crossReference._getNextReference();
         this._crossReference._cacheMap.set(pressUncheckedReference, pressUnchecked._content);
         const pressedDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
-        pressedDictionary.update(item.value, pressCheckedReference);
+        pressedDictionary.update(actualValue, pressCheckedReference);
         pressedDictionary.update('Off', pressUncheckedReference);
         const pressedReference: _PdfReference = this._crossReference._getNextReference();
         this._crossReference._cacheMap.set(pressedReference, pressedDictionary);
@@ -6246,7 +6316,6 @@ export class PdfComboBoxField extends PdfListField {
                     shadowColor[2] >= 0 ? shadowColor[2] : 0];
                 parameter.shadowBrush = new PdfBrush(color);
             }
-            parameter.rotationAngle = item.rotate;
             const alignment: PdfTextAlignment = typeof item.textAlignment !== 'undefined' ? item.textAlignment : PdfTextAlignment.left;
             const verticalAlignment: PdfVerticalAlignment = this.multiSelect ? PdfVerticalAlignment.top : PdfVerticalAlignment.middle;
             parameter.stringFormat = new PdfStringFormat(alignment, verticalAlignment);
@@ -6309,7 +6378,7 @@ export class PdfComboBoxField extends PdfListField {
             this._drawComboBox(graphics, parameter, font, parameter.stringFormat);
         } else {
             if (!this._font) {
-                this._font = new PdfStandardFont(PdfFontFamily.timesRoman, this._getFontHeight(PdfFontFamily.helvetica));
+                this._font = this._defaultFont;
             }
             this._drawComboBox(graphics, parameter, this._font, parameter.stringFormat);
         }
@@ -6667,7 +6736,11 @@ export class PdfListBoxField extends PdfListField {
                     shadowColor[2] >= 0 ? shadowColor[2] : 0];
                 parameter.shadowBrush = new PdfBrush(color);
             }
-            parameter.rotationAngle = item.rotate;
+            if (item._enableGrouping && typeof item.rotate === 'undefined') {
+                parameter.rotationAngle = 0;
+            } else {
+                parameter.rotationAngle = item.rotate;
+            }
             const alignment: PdfTextAlignment = typeof item.textAlignment !== 'undefined' ? item.textAlignment : PdfTextAlignment.left;
             const verticalAlignment: PdfVerticalAlignment = this.multiSelect ? PdfVerticalAlignment.top : PdfVerticalAlignment.middle;
             parameter.stringFormat = new PdfStringFormat(alignment, verticalAlignment);

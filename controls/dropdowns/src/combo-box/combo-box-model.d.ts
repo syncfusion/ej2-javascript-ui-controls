@@ -48,6 +48,13 @@ export interface ComboBoxModel extends DropDownListModel{
     allowFiltering?: boolean;
 
     /**
+     * Defines whether the popup opens in fullscreen mode on mobile devices when filtering is enabled. When set to false, the popup will display similarly on both mobile and desktop devices.
+     *
+     * @default true
+     */
+    isDeviceFullScreen?: boolean;
+
+    /**
      * Accepts the external `Query`
      * that execute along with [`data processing`](../../combo-box/data-binding).
      *
@@ -235,10 +242,10 @@ export interface ComboBoxModel extends DropDownListModel{
     value?: number | string | boolean | object | null;
 
     /**
-    * Defines whether the object binding is allowed or not in the component.
-    *
-    * @default false
-    */
-    allowObjectBinding?: boolean; 
+     * Defines whether the object binding is allowed or not in the component.
+     *
+     * @default false
+     */
+    allowObjectBinding?: boolean;
 
 }

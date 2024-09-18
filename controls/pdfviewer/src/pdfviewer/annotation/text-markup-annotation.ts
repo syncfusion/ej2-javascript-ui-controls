@@ -1574,7 +1574,7 @@ export class TextMarkupAnnotation {
                         }
                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds =
                          JSON.stringify(this.getBoundsForSave(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds,
-                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].pageNumber));
+                                                              pageAnnotationObject.annotations[parseInt(z.toString(), 10)].pageNumber));
                         const colorString: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].color;
                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].color = JSON.stringify(this.getRgbCode(colorString));
                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].rect =
@@ -1796,7 +1796,7 @@ export class TextMarkupAnnotation {
                 this.pdfViewer.annotationCollection.splice(index, 1);
             } else if (action === 'Text Markup Deleted') {
                 this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(pageNumber,
-                                                                                                  annotation.shapeAnnotationType,true);
+                                                                                                  annotation.shapeAnnotationType, true);
                 pageAnnotations.splice(index, 0, annotation);
             }
         }
@@ -1853,7 +1853,7 @@ export class TextMarkupAnnotation {
         if (pageAnnotations) {
             if (action === 'Text Markup Added') {
                 this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(pageNumber,
-                                                                                                  annotation.shapeAnnotationType,false);
+                                                                                                  annotation.shapeAnnotationType, false);
                 pageAnnotations.push(annotation);
             } else if (action === 'Text Markup Deleted') {
                 this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(pageAnnotations[parseInt(index.toString(), 10)], 'textMarkup');

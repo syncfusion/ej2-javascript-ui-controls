@@ -11,7 +11,9 @@ import { DataUtil } from '@syncfusion/ej2-data';
 import { DateFormatOptions } from '@syncfusion/ej2-base';
 import {PathAttributes }  from '@syncfusion/ej2-svg-base';
 /**
- * Base class for multi colored series.
+ * Base class for multi-colored series.
+ *
+ * @private
  */
 
 export class MultiColoredSeries extends LineBase {
@@ -26,6 +28,7 @@ export class MultiColoredSeries extends LineBase {
      * @param {ChartLocation} startPoint startPoint
      * @param {string} startPath startPath
      * @returns {string} Returns the area path direction.
+     * @private
      */
     public getAreaPathDirection(
         xValue: number, yValue: number, series: Series,
@@ -49,6 +52,7 @@ export class MultiColoredSeries extends LineBase {
      * @param {boolean} isInverted isInverted
      * @param {Function} getPointLocation getPointLocation
      * @returns {string} Returns the empty point direction.
+     * @private
      */
     public getAreaEmptyDirection(
         firstPoint: ChartLocation, secondPoint: ChartLocation, series: Series,
@@ -74,6 +78,7 @@ export class MultiColoredSeries extends LineBase {
      * @param {boolean} isXSegment - Indicates whether the point is in the x-segment.
      * @param {ChartSegmentModel[]} segments - The segments associated with the point.
      * @returns {boolean} - Returns true if the color is set successfully, false otherwise.
+     * @private
      */
     public setPointColor(currentPoint: Points, previous: Points, series: Series, isXSegment : boolean,
                          segments: ChartSegmentModel[]): boolean {
@@ -118,6 +123,7 @@ export class MultiColoredSeries extends LineBase {
      * @param {ChartSegmentModel[]} segments chartSegments
      * @param {boolean} pointAnimate pointAnimate
      * @returns {void}
+     * @private
      */
     public applySegmentAxis(series: Series, options: PathOption[], segments: ChartSegmentModel[], pointAnimate?: boolean): void {
         if (series.pointColorMapping !== '') {
@@ -231,6 +237,7 @@ export class MultiColoredSeries extends LineBase {
      * @param {number} index index
      * @param {boolean} isX isX
      * @returns {string} clip rect for segment axis
+     * @private
      */
     public createClipRect(
         startValue: number, endValue: number, series: Series,
@@ -280,6 +287,7 @@ export class MultiColoredSeries extends LineBase {
      * @param {Axis} axis axis
      * @param {Chart} chart chart
      * @returns {number} - Returns segment value.
+     * @private
      */
     public getAxisValue(segmentValue: Object, axis: Axis, chart: Chart): number {
         if (segmentValue === null) {

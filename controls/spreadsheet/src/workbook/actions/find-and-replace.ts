@@ -1,9 +1,10 @@
 import { Workbook, SheetModel, RowModel, CellModel, getCell, getSheet, isHiddenRow, isHiddenCol, getColumn, getRow } from '../base/index';
 import { getCellIndexes, FindOptions, getCellAddress, find, count, getRangeIndexes, getSheetIndexFromAddress, isReadOnly, workbookReadonlyAlert } from '../common/index';
 import { goto, replace, replaceAll, showFindAlert, replaceAllDialog, ReplaceAllEventArgs, ExtendedRowModel, FindArgs } from '../common/index';
-import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined, getNumericObject } from '@syncfusion/ej2-base';
 import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs, updateCell, beginAction } from '../common/index';
-import { isLocked, findToolDlg } from '../common/index';
+import { isLocked, findToolDlg, getFormattedCellObject, FindOptionsArgs, NumberFormatArgs, LocaleNumericSettings } from '../common/index';
+import { isNumber, isCustomDateTime } from '../index';
 /**
  * `WorkbookFindAndReplace` module is used to handle the search action in Spreadsheet.
  */
@@ -47,7 +48,7 @@ export class WorkbookFindAndReplace {
             this.parent.off(findAllValues, this.findAllValues);
         }
     }
-    private find(args: FindOptions): void {
+    private find(args: FindOptionsArgs): void {
         args.sheetIndex = isUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex;
         const sheet: SheetModel = this.parent.sheets[args.sheetIndex];
         const activeCell: number[] = getRangeIndexes(sheet.activeCell);
@@ -107,6 +108,7 @@ export class WorkbookFindAndReplace {
         if (hdrPanel) {
             headerHgt = (hdrPanel.offsetHeight || (sheet.showHeaders ? 30 : 0)) + 1;
         }
+        args.localeObj = <LocaleNumericSettings>getNumericObject(this.parent.locale);
         if (args.findOpt === 'next') {
             this.findNext(args, findArgs);
         } else {
@@ -271,29 +273,40 @@ export class WorkbookFindAndReplace {
         }
         return cellAddr;
     }
-    private checkMatch(args: FindOptions, findVal: string, rowIdx: number, colIdx: number, sheet: SheetModel, curCell?: number[]): string {
+    private checkMatch(
+        args: FindOptionsArgs, findVal: string, rowIdx: number, colIdx: number, sheet: SheetModel, curCell?: number[]): string {
         if (curCell && rowIdx === curCell[0] && colIdx === curCell[1]) {
             return null;
         }
-        const cell: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
+        let cell: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
         if (sheet.isProtected && !sheet.protectSettings.selectCells && sheet.protectSettings.selectUnLockedCells &&
             isLocked(cell, getColumn(sheet, colIdx))) {
             return null;
         }
-        let cellVal: string = this.parent.getDisplayText(cell);
-        if (cellVal) {
-            if (!args.isCSen) {
-                cellVal = cellVal.toLowerCase();
-            }
-            if (args.isEMatch) {
-                if (cellVal === findVal) {
+        const checkValues: (cellVal: string) => string = (cellVal: string): string => {
+            if (cellVal) {
+                if (!args.isCSen) {
+                    cellVal = cellVal.toLowerCase();
+                }
+                if (args.isEMatch) {
+                    if (cellVal === findVal) {
+                        return `${sheet.name}!${getCellAddress(rowIdx, colIdx)}`;
+                    }
+                } else if (cellVal.includes(findVal)) {
                     return `${sheet.name}!${getCellAddress(rowIdx, colIdx)}`;
                 }
-            } else if (cellVal.includes(findVal)) {
-                return `${sheet.name}!${getCellAddress(rowIdx, colIdx)}`;
+            }
+            return null;
+        };
+        const displayText: string = this.getDisplayText(cell, rowIdx, colIdx, args.localeObj);
+        let cellAddr: string = checkValues(displayText);
+        if (!cellAddr) {
+            cell = getCell(rowIdx, colIdx, sheet, false, true);
+            if (cell.format && !isCustomDateTime(cell.format, true) && !displayText.includes('%')) {
+                cellAddr = checkValues(this.getCellVal(cell, args.localeObj));
             }
         }
-        return null;
+        return cellAddr;
     }
     public replace(args: FindOptions): void {
         const sheetIndex: number = isUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex;
@@ -304,19 +317,48 @@ export class WorkbookFindAndReplace {
         }
         const address: string = (args as unknown as { address: string }).address;
         let activeCell: number[] = getRangeIndexes(address || sheet.activeCell);
-        let compareVal: string = this.parent.getDisplayText(getCell(activeCell[0], activeCell[1], sheet, false, true)).toString();
+        let activeCellModel: CellModel = getCell(activeCell[0], activeCell[1], sheet, false, true);
+        let compareVal: string = this.parent.getDisplayText(activeCellModel).toString();
         let checkValue: string;
         args.value = args.value.toString();
         if (!args.isCSen) {
             checkValue = args.value.toLowerCase();
         }
-        let replacedValue: string = this.getReplaceValue(args, compareVal, checkValue);
+        const localeObj: LocaleNumericSettings = <LocaleNumericSettings>getNumericObject(this.parent.locale);
+        const getReplaceValue: (isRecursive?: boolean) => string = (isRecursive?: boolean): string => {
+            let replaceVal: string;
+            if (args.isCSen) {
+                if (args.isEMatch) {
+                    replaceVal = compareVal === args.value && args.replaceValue;
+                } else {
+                    replaceVal = compareVal.indexOf(args.value) > -1 && compareVal.replace(args.value, args.replaceValue);
+                }
+            } else {
+                if (args.isEMatch) {
+                    replaceVal = compareVal.toLowerCase() === checkValue && args.replaceValue;
+                } else {
+                    const regExp: RegExpConstructor = RegExp;
+                    replaceVal = (compareVal.toLowerCase().includes(checkValue)) &&
+                        compareVal.replace(new regExp(args.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig'), args.replaceValue);
+                }
+            }
+            if (!isRecursive && !replacedValue && activeCellModel.format && !isCustomDateTime(activeCellModel.format, true) &&
+                !compareVal.includes('%')) {
+                compareVal = this.getCellVal(activeCellModel, localeObj);
+                if (compareVal) {
+                    replaceVal = getReplaceValue(true);
+                }
+            }
+            return replaceVal;
+        };
+        let replacedValue: string = getReplaceValue();
         if (!replacedValue) {
             args.findOpt = 'next';
             this.find(args);
             activeCell = getCellIndexes(sheet.activeCell);
-            compareVal = this.parent.getDisplayText(getCell(activeCell[0], activeCell[1], sheet)).toString();
-            replacedValue = this.getReplaceValue(args, compareVal, checkValue);
+            activeCellModel = getCell(activeCell[0], activeCell[1], sheet, false, true);
+            compareVal = this.parent.getDisplayText(activeCellModel).toString();
+            replacedValue = getReplaceValue();
             if (!replacedValue) {
                 return;
             }
@@ -368,7 +410,48 @@ export class WorkbookFindAndReplace {
                 this.parent.updateCell({ value: cellValue }, eventArgs.addressCollection[index as number]);
             }
         };
-        let cellval: string; let row: RowModel; let regX: RegExp;
+        const checkMatch: (cellval: string) => boolean = (cellval: string): boolean => {
+            let matchFound: boolean;
+            if (cellval) {
+                if (args.isCSen) {
+                    if (args.isEMatch) {
+                        if (cellval === args.value) {
+                            updateAsync(args.replaceValue, addressCollection.length);
+                            addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
+                            matchFound = true;
+                        }
+                    } else {
+                        if (cellval.indexOf(args.value) > -1) {
+                            updateAsync(cellval.replace(args.value, args.replaceValue), addressCollection.length);
+                            addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
+                            matchFound = true;
+                        }
+                    }
+                } else {
+                    if (args.isEMatch) {
+                        if (cellval.toLowerCase() === args.value) {
+                            updateAsync(args.replaceValue, addressCollection.length);
+                            addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
+                            matchFound = true;
+                        }
+                    } else {
+                        const val: string = cellval.toLowerCase();
+                        if ((cellval === args.value || val.indexOf(args.value.toString().toLowerCase()) > -1) || val ===
+                            args.value || cellval === args.value || val.indexOf(args.value) > -1) {
+                            const regExp: RegExpConstructor = RegExp;
+                            regX = new regExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+                            updateAsync(cellval.replace(regX, args.replaceValue), addressCollection.length);
+                            addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
+                            matchFound = true;
+                        }
+                    }
+                }
+            }
+            return matchFound;
+        };
+        let displayText: string; let row: RowModel; let regX: RegExp;
+        const localeObj: LocaleNumericSettings = <LocaleNumericSettings>getNumericObject(this.parent.locale);
+        let cell: CellModel;
         for (startRow; startRow <= endRow + 1; startRow++) {
             if (startColumn > endColumn && startRow > endRow) {
                 if (args.mode === 'Workbook') {
@@ -386,41 +469,16 @@ export class WorkbookFindAndReplace {
                 if (startColumn === endColumn + 1) { startColumn = 0; }
                 for (startColumn; startColumn <= endColumn; startColumn++) {
                     if (row) {
-                        if (row.cells && row.cells[startColumn as number]) {
-                            if (isReadOnly(getCell(startRow, startColumn, sheet), getColumn(sheet, startColumn), getRow(sheet, startRow))) {
+                        cell = row.cells && row.cells[startColumn as number];
+                        if (cell) {
+                            if (isReadOnly(cell, getColumn(sheet, startColumn), row)) {
                                 continue;
                             }
-                            cellval = this.parent.getDisplayText(sheet.rows[startRow as number].cells[startColumn as number]).toString();
-                            if (cellval) {
-                                if (args.isCSen) {
-                                    if (args.isEMatch) {
-                                        if (cellval === args.value) {
-                                            updateAsync(args.replaceValue, addressCollection.length);
-                                            addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
-                                        }
-                                    } else {
-                                        if (cellval.indexOf(args.value) > -1) {
-                                            updateAsync(cellval.replace(args.value, args.replaceValue), addressCollection.length);
-                                            addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
-                                        }
-                                    }
-                                } else {
-                                    if (args.isEMatch) {
-                                        if (cellval.toLowerCase() === args.value) {
-                                            updateAsync(args.replaceValue, addressCollection.length);
-                                            addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
-                                        }
-                                    } else {
-                                        const val: string = cellval.toLowerCase();
-                                        if ((cellval === args.value || val.indexOf(args.value.toString().toLowerCase()) > -1) || val ===
-                                            args.value || cellval === args.value || val.indexOf(args.value) > -1) {
-                                            const regExp: RegExpConstructor = RegExp;
-                                            regX = new regExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-                                            updateAsync(cellval.replace(regX, args.replaceValue), addressCollection.length);
-                                            addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
-                                        }
-                                    }
-                                }
+                            displayText = this.getDisplayText(
+                                cell, startRow, startColumn, localeObj).toString();
+                            if (!checkMatch(displayText) && cell.format && !isCustomDateTime(cell.format, true) &&
+                                !displayText.includes('%')) {
+                                checkMatch(this.getCellVal(row.cells[startColumn as number], localeObj));
                             }
                         }
                     }
@@ -436,36 +494,50 @@ export class WorkbookFindAndReplace {
             this.parent.notify(replaceAllDialog, { count: eventArgs.addressCollection.length, replaceValue: eventArgs.replaceValue });
         }
     }
-    private getReplaceValue(args: FindOptions, cellval: string, checkValue: string): string {
-        if (args.isCSen) {
-            if (args.isEMatch) {
-                return cellval === args.value && args.replaceValue;
-            } else {
-                return cellval.indexOf(args.value) > -1 && cellval.replace(args.value, args.replaceValue);
-            }
-        } else {
-            if (args.isEMatch) {
-                return cellval.toLowerCase() === checkValue && args.replaceValue;
-            } else {
-                const regExp: RegExpConstructor = RegExp;
-                return (cellval.toLowerCase().includes(checkValue)) &&
-                    cellval.replace(new regExp(args.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig'), args.replaceValue);
-            }
+    private getDisplayText(cell: CellModel, rowIdx: number, colIdx: number, localeObj: LocaleNumericSettings): string {
+        if (!cell) {
+            return '';
         }
+        if (!cell.value && <unknown>cell.value !== 0) {
+            if (cell.hyperlink) {
+                return typeof cell.hyperlink === 'string' ? cell.hyperlink : cell.hyperlink.address || '';
+            }
+            return '';
+        }
+        const cellValue: string = cell.value.toString();
+        if (cell.format || cellValue.includes(localeObj.dateSeparator)) {
+            const eventArgs: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, cell: cell,
+                rowIndex: rowIdx, colIndex: colIdx };
+            this.parent.notify(getFormattedCellObject, eventArgs);
+            return eventArgs.formattedText;
+        } else {
+            return cellValue;
+        }
+    }
+    private getCellVal(cell: CellModel, localeObj: LocaleNumericSettings): string {
+        if (isNumber(cell.value)) {
+            if (localeObj.decimal !== '.') {
+                return cell.value.toString().split('.').join(localeObj.decimal);
+            }
+            return cell.value.toString();
+        }
+        return cell.value ? cell.value.toString().toLowerCase() : '';
     }
     private totalCount(args: FindOptions): void {
         const sheet: SheetModel = this.parent.sheets[args.sheetIndex];
         const activeCell: number[] = getCellIndexes(sheet.activeCell);
         let count: number = 0;
         let requiredCount: number = 0;
-        let cellValue: string;
         const findValue: string = args.value.toLowerCase();
+        const localeObj: LocaleNumericSettings = <LocaleNumericSettings>getNumericObject(this.parent.locale);
+        let displayText: string;
         sheet.rows.filter((row: ExtendedRowModel, rowIdx: number) => row && row.cells && (!row.isFiltered && !row.hidden) &&
             row.cells.filter((cell: CellModel, colIdx: number) => {
                 if (cell && (cell.value || <unknown>cell.value === 0) && !isHiddenCol(sheet, colIdx) && (!sheet.isProtected ||
                     sheet.protectSettings.selectCells || !isLocked(cell, getColumn(sheet, colIdx)))) {
-                    cellValue = (cell.format ? this.parent.getDisplayText(cell) : cell.value.toString()).toLowerCase();
-                    if (cellValue.includes(findValue)) {
+                    displayText = this.getDisplayText(cell, rowIdx, colIdx, localeObj).toLowerCase();
+                    if (displayText.includes(findValue) || (cell.format && !isCustomDateTime(cell.format, true) &&
+                        !displayText.includes('%') && this.getCellVal(cell, localeObj).includes(findValue))) {
                         count++;
                         if ((rowIdx === activeCell[0] && colIdx >= activeCell[1]) || rowIdx > activeCell[0]) {
                             requiredCount++;

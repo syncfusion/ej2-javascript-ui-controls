@@ -13,7 +13,9 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-Chart.Inject(LineSeries, DateTime, BarSeries, ColumnSeries);
+import { ScrollBar } from '../../../src/common/scrollbar/scrollbar';
+import { MouseEvents } from '../base/events.spec';
+Chart.Inject(LineSeries, DateTime, BarSeries, ColumnSeries, ScrollBar);
 export interface Arg {
     chart: Chart;
 }
@@ -33,6 +35,7 @@ describe('Chart Control', () => {
         let svg: HTMLElement;
         let loaded: EmitType<ILoadedEventArgs>;
         let loaded1: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             ele = createElement('div', { id: 'chartContainer' });
             document.body.appendChild(ele);

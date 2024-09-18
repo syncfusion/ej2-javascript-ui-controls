@@ -47,7 +47,7 @@ $selection-border-color: rgba($primary) !default;
 $selection-border-width: 1px !default;
 $hdr-selection-bg-color: $content-bg-color-alt4 !default;
 $hdr-selection-border: 1px solid !default;
-$hdr-selection-border-color: rgba($border-light) !default;
+$spreadsheet-hdr-selection-border-color: rgba($border-light) !default;
 $hdr-selection-color: rgba($content-text-color) !default;
 $hdr-hover-bg-color: $content-bg-color-alt5 !default;
 $copy-indicator-t-b: 'data:image/gif;base64,R0lGODlhBgAEAPAAAGdQpP///yH/C05FVFNDQVBFMi4wAwEAAAAh+QQEAwAAACH/C3htcCBkYXRheG1w/z94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjYtYzE0NSA3OS4xNjM0OTksIDIwMTgvMDgvMTMtMTY6NDA6MjIgICAgICAgICI+PHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3Lncub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJmOmFib3V0PSIiIP94bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bW5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE5IChXaW5kb3dzKSB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjlFMTA1Q0NEMDlFMTFFOUFFODc4MkE0MTA3MTBDMzf/IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGk6OUUxMDVDQzNEMDlFMTFFOUFFODc4MkE0MTA3MTBDMzciPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo5RTEwNUNDMEQwOUUxMUU5QUU4ODJBNDEwNzEwQzM3IiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjlFMTA1Q0MxRDA5RTExRUFFODc4MkE0MTA3MTBDMzciLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcGV0YT4gPD94cGFja2V0IGVu/2Q9InIiPz4B//79/Pv6+fj39vX08/Lx8O/u7ezr6uno5+bl5OPi4eDf3t3c29rZ2NfW1dTT0tHQz87NzMvKycjHxsXEw8LBwL++vby7urm4t7a1tLOysbCvrq2sqqmop6alpKOioaCfnp2cm5qZmJeWlZSTkpGQj46NjIuKiYiHhoWEg4KBgH9+fXx7enl4d3Z1dHNycXBvbm1sa2ppaGdmZWRjYmFgX15dXFtaWVhXVlVUU1JRUE9OTUxLSklIR0ZFRENCQUA/Pj08Ozo5ODc2NTQzMjEwLy4tLCsqKSgnJiUkIyIhIB8eHRwbGhkYFxYVFBMSERAPDg0MCwoJCAgHBgUEAwIBAAAsAAAAAAYABAAAAgeEEXGYerkKACH5BAQDAAAALAAAAAAGAAQAAAIIhBN2CajNQAEAIfkEBQMAAAAsAQAAAAQABACB////Z1Ck////AAAAAgaEEIZ5DAUAIfkEBQMAAAAsAQAAAAQABACB////Z1Ck////AAAAAgYUAoaXLAUAIfkEBAMAAAAsAAAAAAYABAAAAgdMgGDJemkKACH5BAQDAAAALAAAAAAGAAQAAAIIDA5hqJh7QgEAOw==' !default;
@@ -91,6 +91,8 @@ $bigger-insert-function-btn-icon-font-size: $font-icon-18 !default;
 $bigger-formula-bar-drop-icon-font-size: $font-icon-18 !default;
 $formula-bar-btn-icon-line-height: 23px !default;
 $spreadsheet-formula-bar-height: 22px !default;
+$spreadsheet-formula-bar-expanded-height: 71px !default;
+$spreadsheet-formula-bar-expanded-separator-height: 60px !default;
 $bigger-name-box-ddl-input-height: 22px !default;
 $bigger-formula-bar-drop-icon-line-height: 32px !default;
 $bigger-insert-function-height: 87px !default;
@@ -258,6 +260,7 @@ $validation-list-icon-bottom: 1px !default;
 $validation-list-icon-height: 20px !default;
 $validation-list-icon-min-height: 20px !default;
 $validation-dlg-error-padding-top: 4px !default;
+$validation-dlg-content-margin-bottom: 24px !default;
 
 //Chart
 $title-dlg-content-header-font-size: $text-base !default;

@@ -1,0 +1,16 @@
+@include export-module('textbox-bigger') {
+
+  .e-bigger .e-content-placeholder.e-textbox.e-placeholder-textbox,
+  .e-bigger.e-content-placeholder.e-textbox.e-placeholder-textbox {
+    background-size: 300px 40px;
+    min-height: 40px;
+  }
+
+  .e-bigger .e-input-group.e-input-focus.e-multi-line-input textarea.e-textbox {
+    padding-right: 32px;
+  }
+    
+  .e-bigger .e-input-group.e-input-focus.e-rtl.e-multi-line-input textarea.e-textbox {
+    padding-left: 32px;
+  }
+}

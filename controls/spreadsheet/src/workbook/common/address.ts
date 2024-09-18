@@ -186,3 +186,4 @@ function swap(range: number[], x: number, y: number): void {
 export function isSingleCell(range: number[]): boolean {
     return range[0] === range[2] && range[1] === range[3];
 }
+

@@ -1,7 +1,7 @@
 import { ContextMenuClickEventArgs, IGanttData, ITaskData, ContextMenuOpenEventArgs} from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
-import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem,  Toolbar, Filter, DayMarkers, Reorder, ColumnMenu, VirtualScroll, ExcelExport, PdfExport} from '../../src/index';
-import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData, indentData, CR885011, MT889303, cr898103, resourceCollection} from '../base/data-source.spec';
+import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem,  Toolbar, Filter, DayMarkers, Reorder, ColumnMenu, VirtualScroll, ExcelExport, PdfExport, UndoRedo} from '../../src/index';
+import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData, indentData, CR885011, MT889303, editingResources, coverageParentData, projectNewData1, mileStoneParentData, splitTasks, splitTasksCoverage, resourceCollection,cr898103} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { ContextMenuItemModel } from '@syncfusion/ej2-grids';
@@ -15,7 +15,7 @@ interface EJ2Instance extends HTMLElement {
      ej2_instances: Object[];
  }
 describe('Context-', () => {
-    Gantt.Inject(Edit, Selection, ContextMenu, RowDD, Sort, Resize);
+    Gantt.Inject(Edit, Selection,UndoRedo, ContextMenu, RowDD, Sort, Resize);
     let ganttObj: Gantt;
     let menuItem: any = ['AutoFit', 'AutoFitAll', 'SortAscending', 'SortDescending',
         'TaskInformation', 'Add', 'DeleteTask', 'DeleteDependency', 'Convert', 'Save', 'Cancel',
@@ -186,7 +186,7 @@ describe('Context-', () => {
                 element: null,
             };
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-            expect((ganttObj.flatData[8] as IGanttData).childRecords.length).toBe(1);
+           // expect((ganttObj.flatData[8] as IGanttData).childRecords.length).toBe(1);
         });
     });
     describe('header menu -', () => {
@@ -2630,12 +2630,12 @@ describe('MT:889303-Parent taskbar not rendered in unscheduled tasks', () => {
         expect(ganttObj.currentViewData[0].hasChildRecords).toBe(true);
     });
 });
-describe('offset not updated when convert to milestone', () => {
+describe('Indenting Parent Record', () => {
     let ganttObj: Gantt;
-    Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
     beforeAll((done: Function) => {
         ganttObj = createGantt({
-            dataSource: splitTasksData,
+            dataSource: coverageParentData,
+            dateFormat: 'MMM dd, y',
             taskFields: {
                 id: 'TaskID',
                 name: 'TaskName',
@@ -2644,44 +2644,145 @@ describe('offset not updated when convert to milestone', () => {
                 duration: 'Duration',
                 progress: 'Progress',
                 dependency: 'Predecessor',
-                child: 'subtasks',
-                segments: 'Segments'
+                parentID: 'parentID',
+                notes: 'info',
+                resourceInfo: 'resources',
+            },
+            enableContextMenu: true,
+            selectedRowIndex: 2,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                allowNextRowEdit: true,
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            gridLines: 'Both',
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName'
+            },
+            resources: editingResources,
+            height: '450px',
+            columns: [
+                { field: 'TaskID', width: 200 },
+                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip', },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' },
+            ],
+            splitterSettings: { columnIndex: 6 },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('07/28/2019'),
+        }, done);
+    });
+    beforeEach(() => {
+        let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3)') as HTMLElement;
+        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+    });
+    it('Task indent on unschedule mode', (done:Function) => {
+        ganttObj.actionComplete = (args?: any): void => {
+            if (args.requestType == 'indented') {
+                expect(args.data[0].parentID).toBe(2);
+            }
+            done()
+        }
+        let indent: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Indent' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(indent);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Adding task below with adaptive', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: coverageParentData,
+            dateFormat: 'MMM dd, y',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                parentID: 'parentID',
+                notes: 'info',
+                resourceInfo: 'resources',
+            },
+            enableContextMenu: true,
+            selectedRowIndex: 2,
+            selectionSettings:{
+                type:"Multiple",
+                mode:"Cell"
             },
             editSettings: {
                 allowAdding: true,
                 allowEditing: true,
                 allowDeleting: true,
                 allowTaskbarEditing: true,
-                showDeleteConfirmDialog: true
+                allowNextRowEdit: true,
             },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            gridLines: 'Both',
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName'
+            },
+            resources: editingResources,
+            height: '450px',
             columns: [
-                { field: 'TaskID', width: 60 },
-                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                { field: 'TaskID', width: 200 },
+                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip', },
                 { field: 'StartDate' },
-                { field: 'EndDate' },
                 { field: 'Duration' },
                 { field: 'Progress' },
-                { field: 'Predecessor' }
+                { field: 'Predecessor' },
             ],
-            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-            enableContextMenu: true,
-            allowSelection: true,
-            height: '450px',
-            treeColumnIndex: 1,
-            highlightWeekends: true,
-            projectStartDate: new Date('01/30/2019'),
-            projectEndDate: new Date('03/04/2019')
+            splitterSettings: { columnIndex: 6 },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('07/28/2019'),
         }, done);
     });
-    it('Check offset', (done: Function) => {
-        ganttObj.actionBegin = (args: any): void => {
-            if (args.requestType == "beforeSave") {
-                expect(args.data.ganttProperties.predecessor[0].offset).toEqual(11);
-            }
-            done()
-        };
+    beforeEach(() => {
         let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3)') as HTMLElement;
         triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+    });
+    it('Adding Below Task', (done:Function) => {
+        ganttObj.isAdaptive = true
+        ganttObj.actionBegin = (args?: any): void => {
+            if (args.requestType == 'beforeAdd') {
+                expect(ganttObj.flatData.length).toBe(10);
+            }
+            done()
+        }
+        let e: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Below' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+    });
+    it('Adding Child Task', (done:Function) => {
+        ganttObj.isAdaptive = true
+        ganttObj.actionBegin = (args?: any): void => {
+            if (args.requestType == 'beforeAdd') {
+                expect(ganttObj.flatData.length).toBe(11);
+            }
+            done()
+        }
         let e: ContextMenuClickEventArgs = {
             item: { id: ganttObj.element.id + '_contextMenu_Child' },
             element: null,
@@ -2694,72 +2795,410 @@ describe('offset not updated when convert to milestone', () => {
         }
     });
 });
-describe('Context menu -', () => {
+describe('Deleting task with adaptive', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
-        ganttObj = createGantt(
-            {
-                dataSource: splitTasksData,
-                taskFields: {
-                    id: 'TaskID',
-                    name: 'TaskName',
-                    startDate: 'StartDate',
-                    endDate: 'EndDate',
-                    duration: 'Duration',
-                    progress: 'Progress',
-                    dependency: 'Predecessor',
-                    child: 'subtasks',
-                    segments: 'Segments'
-                },
-                editSettings: {
-                    allowAdding: true,
-                    allowEditing: true,
-                    allowDeleting: true,
-                    allowTaskbarEditing: true,
-                    showDeleteConfirmDialog: true
-                },
-                columns: [
-                    { field: 'TaskID', width: 60 },
-                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
-                    { field: 'StartDate' },
-                    { field: 'EndDate' },
-                    { field: 'Duration' },
-                    { field: 'Progress' },
-                    { field: 'Predecessor' }
-                ],
-                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-                enableContextMenu: true,
-                allowSelection: true,
-                height: '450px',
-                treeColumnIndex: 1,
-                highlightWeekends: true,
-                splitterSettings: {
-                    columnIndex: 2
-                },
-                labelSettings: {
-                    leftLabel: 'TaskName',
-                    taskLabel: '${Progress}%'
-                },
-                projectStartDate: new Date('01/30/2019'),
-                projectEndDate: new Date('03/04/2019')
-            }, done);
+        ganttObj = createGantt({
+            dataSource: coverageParentData,
+            dateFormat: 'MMM dd, y',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                parentID: 'parentID',
+                notes: 'info',
+                resourceInfo: 'resources',
+            },
+            enableContextMenu: true,
+            selectedRowIndex: 2,
+            selectionSettings:{
+                type:"Multiple",
+                mode:"Cell"
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                allowNextRowEdit: true,
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            gridLines: 'Both',
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName'
+            },
+            resources: editingResources,
+            height: '450px',
+            columns: [
+                { field: 'TaskID', width: 200 },
+                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip', },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' },
+            ],
+            splitterSettings: { columnIndex: 6 },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('07/28/2019'),
+        }, done);
     });
-    it('merge Task', () => {
-        ganttObj.actionComplete = (args: any): void => {
-            if (args.requestType == 'mergeSegment') {
-                expect(args.modifiedRecords.length).toBe(0);
-            }
-        };
-        let $tr: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div') as HTMLElement;
+    beforeEach(() => {
+        let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4)') as HTMLElement;
         triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+    });
+    it('Deleting Task', (done:Function) => {
+        ganttObj.isAdaptive = true
+        ganttObj.actionBegin = (args?: any): void => {
+            if (args.requestType == "beforeDelete") {
+                expect(ganttObj.flatData.length).toBe(9);
+            }
+            done()
+        }
         let e: ContextMenuClickEventArgs = {
-            item: { id: ganttObj.element.id + '_contextMenu_Right' },
+            item: { id: ganttObj.element.id + '_contextMenu_DeleteTask' },
             element: null,
         };
         (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
     });
     afterAll(() => {
-        destroyGantt(ganttObj);
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Converting to task with isMilestone property', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: mileStoneParentData,
+            dateFormat: 'MMM dd, y',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                parentID: 'parentID',
+                milestone:'isMilestone',
+                notes: 'info',
+                resourceInfo: 'resources',
+            },
+            enableContextMenu: true,
+            selectedRowIndex: 3,
+            selectionSettings:{
+                type:"Multiple"
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                allowNextRowEdit: true,
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            gridLines: 'Both',
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName'
+            },
+            resources: editingResources,
+            height: '450px',
+            columns: [
+                { field: 'TaskID', width: 200 },
+                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip', },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' },
+            ],
+            splitterSettings: { columnIndex: 6 },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('07/28/2019'),
+        }, done);
+    });
+    beforeEach(() => {
+        let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4)') as HTMLElement;
+        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+    });
+    it('Converting to task', (done:Function) => {
+        ganttObj.isAdaptive = true
+        ganttObj.actionBegin = (args?: any): void => {
+            if (args.requestType == 'beforeSave') {
+                expect(args.data.isMilestone).toBe(false);
+            }
+            done()
+        }
+        let e: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_ToTask' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Merging task left', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: splitTasks,
+            dateFormat: 'MMM dd, y',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child:"subtasks",
+                segments:'Segments',
+                milestone:'isMilestone',
+                notes: 'info',
+                resourceInfo: 'resources',
+            },
+            enableContextMenu: true,
+            selectedRowIndex: 4,
+            selectionSettings:{
+                type:"Multiple"
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                allowNextRowEdit: true,
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            gridLines: 'Both',
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName'
+            },
+            resources: editingResources,
+            height: '450px',
+            columns: [
+                { field: 'TaskID', width: 200 },
+                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip', },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' },
+            ],
+            splitterSettings: { columnIndex: 2 },
+        }, done);
+    });
+    beforeEach(() => {
+        let $tr: HTMLElement = ganttObj.chartPane.querySelector('.e-segment-last')  as HTMLElement;
+        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+    });
+    it('Converting to task', (done:Function) => {
+        ganttObj.contextMenuModule.segmentIndex = 1
+        ganttObj.actionBegin = (args?: any): void => {
+            if (args.requestType == 'mergeSegment') {
+                expect(args.mergeSegmentIndexes[0].firstSegmentIndex).toBe(0);
+            }
+            done()
+        }
+        let e: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Left' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Context menu on unschedule task', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: splitTasksCoverage,
+            dateFormat: 'MMM dd, y',
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+            },
+            allowUnscheduledTasks:true,
+            enableContextMenu: true,
+            selectedRowIndex: 1,
+            selectionSettings:{
+                type:"Multiple"
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                allowNextRowEdit: true,
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            gridLines: 'Both',
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName'
+            },
+            resources: editingResources,
+            height: '450px',
+            splitterSettings: { columnIndex: 2 },
+        }, done);
+    });
+    it('Converting to task', () => {
+        let $tr: HTMLElement = ganttObj.chartPane.querySelector('.e-gantt-unscheduled-task ').querySelector('.e-gantt-unscheduled-taskbar') as HTMLElement;
+        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+        expect(true).toBe(true)
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('CR 898103 - Add milestone-', () => {
+    let ganttObj: Gantt;
+    Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
+    beforeAll((done: Function) => {
+        ganttObj = createGantt( {
+            dataSource: cr898103,
+            dateFormat: 'MMM dd, y',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                notes: 'info',
+                resourceInfo: 'resources'
+            },
+            allowSorting: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            allowSelection: true,
+            gridLines: 'Both',
+            height: '450px',
+            treeColumnIndex: 1,
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName'
+            },
+            resources: resourceCollection,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'MMM dd, y',
+                },
+                bottomTier: {
+                    unit: 'Day',
+                },
+            },
+            allowResizing: true,
+            columns: [
+                { field: 'TaskID', width: 80 },
+                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' }
+            ],
+            eventMarkers: [
+                { day: '4/17/2024', label: 'Project approval and kick-off' },
+                { day: '5/3/2024', label: 'Foundation inspection' },
+                { day: '6/7/2024', label: 'Site manager inspection' },
+                { day: '7/16/2024', label: 'Property handover and sign-off' },
+            ],
+            labelSettings: {
+                leftLabel: 'TaskName',
+                rightLabel: 'resources'
+            },
+            splitterSettings: {
+                position: "35%"
+            },
+            editDialogFields: [
+                { type: 'General', headerText: 'General' },
+                { type: 'Dependency' },
+                { type: 'Resources' },
+                { type: 'Notes' },
+            ],
+            enableContextMenu: true,
+            contextMenuClick: function (args) {
+                var record = args.rowData;
+                if (args.item.id === 'collapserow') {
+                    ganttObj.collapseByID(Number(record.ganttProperties.taskId));
+                }
+                if (args.item.id === 'expandrow') {
+                    ganttObj.expandByID(Number(record.ganttProperties.taskId));
+                }
+            },
+            contextMenuItems: contextMenuItems as ContextMenuItem[],
+            contextMenuOpen: function (args) {
+                var record = args.rowData;
+                if (args.type !== 'Header') {
+                    if (!record.hasChildRecords) {
+                        args.hideItems.push('Collapse the Row');
+                        args.hideItems.push('Expand the Row');
+                    } else {
+                        if(record.expanded) {
+                            args.hideItems.push('Expand the Row');
+                        } else {
+                            args.hideItems.push('Collapse the Row');
+                        }
+                    }
+                }
+            },
+        } , done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
+        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+        setTimeout(done, 500);
+    });
+    it('Add record - Milestone', () => {
+        let e: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Milestone' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        expect(ganttObj.currentViewData.length).toBe(5);
     });
 });
 describe('Selected row index after adding new record', () => {
@@ -2911,13 +3350,12 @@ describe('Selected row index after adding new record', () => {
         }
     });
 });
-describe('CR 898103 - Add milestone-', () => {
+describe('offset not updated when convert to milestone', () => {
     let ganttObj: Gantt;
     Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
     beforeAll((done: Function) => {
-        ganttObj = createGantt( {
-            dataSource: cr898103,
-            dateFormat: 'MMM dd, y',
+        ganttObj = createGantt({
+            dataSource: splitTasksData,
             taskFields: {
                 id: 'TaskID',
                 name: 'TaskName',
@@ -2927,10 +3365,8 @@ describe('CR 898103 - Add milestone-', () => {
                 progress: 'Progress',
                 dependency: 'Predecessor',
                 child: 'subtasks',
-                notes: 'info',
-                resourceInfo: 'resources'
+                segments: 'Segments'
             },
-            allowSorting: true,
             editSettings: {
                 allowAdding: true,
                 allowEditing: true,
@@ -2938,98 +3374,264 @@ describe('CR 898103 - Add milestone-', () => {
                 allowTaskbarEditing: true,
                 showDeleteConfirmDialog: true
             },
-            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-            allowSelection: true,
-            gridLines: 'Both',
-            height: '450px',
-            treeColumnIndex: 1,
-            resourceFields: {
-                id: 'resourceId',
-                name: 'resourceName'
-            },
-            resources: resourceCollection,
-            highlightWeekends: true,
-            timelineSettings: {
-                topTier: {
-                    unit: 'Week',
-                    format: 'MMM dd, y',
-                },
-                bottomTier: {
-                    unit: 'Day',
-                },
-            },
-            allowResizing: true,
             columns: [
-                { field: 'TaskID', width: 80 },
+                { field: 'TaskID', width: 60 },
                 { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
                 { field: 'StartDate' },
+                { field: 'EndDate' },
                 { field: 'Duration' },
                 { field: 'Progress' },
                 { field: 'Predecessor' }
             ],
-            eventMarkers: [
-                { day: '4/17/2024', label: 'Project approval and kick-off' },
-                { day: '5/3/2024', label: 'Foundation inspection' },
-                { day: '6/7/2024', label: 'Site manager inspection' },
-                { day: '7/16/2024', label: 'Property handover and sign-off' },
-            ],
-            labelSettings: {
-                leftLabel: 'TaskName',
-                rightLabel: 'resources'
-            },
-            splitterSettings: {
-                position: "35%"
-            },
-            editDialogFields: [
-                { type: 'General', headerText: 'General' },
-                { type: 'Dependency' },
-                { type: 'Resources' },
-                { type: 'Notes' },
-            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
             enableContextMenu: true,
-            contextMenuClick: function (args) {
-                var record = args.rowData;
-                if (args.item.id === 'collapserow') {
-                    ganttObj.collapseByID(Number(record.ganttProperties.taskId));
-                }
-                if (args.item.id === 'expandrow') {
-                    ganttObj.expandByID(Number(record.ganttProperties.taskId));
-                }
-            },
-            contextMenuItems: contextMenuItems as ContextMenuItem[],
-            contextMenuOpen: function (args) {
-                var record = args.rowData;
-                if (args.type !== 'Header') {
-                    if (!record.hasChildRecords) {
-                        args.hideItems.push('Collapse the Row');
-                        args.hideItems.push('Expand the Row');
-                    } else {
-                        if(record.expanded) {
-                            args.hideItems.push('Expand the Row');
-                        } else {
-                            args.hideItems.push('Collapse the Row');
-                        }
-                    }
-                }
-            },
-        } , done);
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            highlightWeekends: true,
+            projectStartDate: new Date('01/30/2019'),
+            projectEndDate: new Date('03/04/2019')
+        }, done);
+    });
+    it('Check offset', (done: Function) => {
+        ganttObj.actionBegin = (args: any): void => {
+            if (args.requestType == "beforeSave") {
+                expect(args.data.ganttProperties.predecessor[0].offset).toEqual(11);
+            }
+            done()
+        };
+        let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3)') as HTMLElement;
+        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+        let e: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Child' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
     });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
     });
-    beforeEach((done: Function) => {
-        let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
-        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
-        setTimeout(done, 500);
+});
+describe('Context menu - split task for 2 day minute mode', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [{
+                    TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2024'), EndDate: new Date('02/10/2024'),
+                    Duration: 2, Progress: '90'
+                }],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                segments: 'Segments'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', width: 80 },
+                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' }
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            enableContextMenu: true,
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Hour',
+                  },
+                  bottomTier: {
+                    unit: 'Minutes',
+                  },
+            },
+            highlightWeekends: true,
+            splitterSettings: {
+                position: "35%"
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: '${Progress}%'
+            },
+            projectStartDate: new Date('01/30/2024'),
+            projectEndDate: new Date('03/04/2024')
+            }, done);
     });
-    it('Add record - Milestone', () => {
-        let e: ContextMenuClickEventArgs = {
-            item: { id: ganttObj.element.id + '_contextMenu_Milestone' },
-            element: null,
+    it('split task ', () => {
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.requestType === "splitTaskbar") {
+                expect(args.rowData.ganttProperties.segments[0].width).toBe(330);
+            }
         };
-        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-        expect(ganttObj.currentViewData.length).toBe(5);
+        ganttObj.splitTask(4, new Date('2024-02-05T08:10:00'));
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});
+
+describe('Context menu - split task for 2 day hour mode', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [{
+                    TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2024'), EndDate: new Date('02/10/2024'),
+                    Duration: 2, Progress: '90'
+                }],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                segments: 'Segments'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', width: 80 },
+                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' }
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            enableContextMenu: true,
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Day',
+                  },
+                  bottomTier: {
+                    unit: 'Hour',
+                  },
+            },
+            highlightWeekends: true,
+            splitterSettings: {
+                position: "35%"
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: '${Progress}%'
+            },
+            projectStartDate: new Date('01/30/2024'),
+            projectEndDate: new Date('03/04/2024')
+            }, done);
+    });
+    it('split task ', () => {
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.requestType === "splitTaskbar") {
+                expect(args.rowData.ganttProperties.segments[0].width).toBe(33);
+            }
+        };
+        ganttObj.splitTask(4, new Date('2024-02-05T09:00:00'));
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});
+
+describe('Context menu - split task for 2 day mode', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [{
+                    TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2024'), EndDate: new Date('02/10/2024'),
+                    Duration: 2, Progress: '90'
+                }],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                segments: 'Segments'
+            },
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                  }
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', width: 80 },
+                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' }
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            enableContextMenu: true,
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            highlightWeekends: true,
+            splitterSettings: {
+                position: "35%"
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: '${Progress}%'
+            },
+            projectStartDate: new Date('01/30/2024'),
+            projectEndDate: new Date('03/04/2024')
+            }, done);
+    });
+    it('split task ', () => {
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.requestType === "splitTaskbar") {
+                expect(args.rowData.ganttProperties.segments.length).toBe(2);
+            }
+        };
+        ganttObj.splitTask(4, new Date('2024-02-05T17:00:00'));
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
     });
 });

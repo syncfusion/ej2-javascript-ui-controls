@@ -917,6 +917,22 @@ describe('Port Draw Connection from group node', () => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         let port = document.getElementById('group_1_port_5_groupElement');
         let bounds:any = port.getBoundingClientRect();
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 3, bounds.y + 3);
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x , bounds.y + 3);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 10, bounds.y + 20);
+        mouseEvents.mouseMoveEvent(diagramCanvas,  bounds.x + 50, bounds.y + 50 );
+        mouseEvents.mouseUpEvent(diagramCanvas,  bounds.x + 50, bounds.y + 50 );
+        console.log(diagram.connectors[0].id);
+        console.log(diagram.connectors[0].sourceID);
+        expect(diagram.connectors.length > 0 && diagram.connectors[0].sourceID === 'group_1').toBe(true);
+        done();
+    });
+    it('Checking connector source id after drawing it from group node port', (done: Function) => {
+        diagram.select([diagram.nameTable['group_1']]);
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let port = document.getElementById('group_1_port_5_groupElement');
+        let bounds:any = port.getBoundingClientRect();
         mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 3, bounds.y + 3 );
         mouseEvents.mouseDownEvent(diagramCanvas,  bounds.x + 3, bounds.y + 3 );
         mouseEvents.mouseMoveEvent(diagramCanvas,  bounds.x + 20, bounds.y + 20 );

@@ -1309,6 +1309,29 @@ describe('ContextMenu', () => {
             const wrap: HTMLElement = contextMenu.getWrapper();
             expect(wrap.children[0].getAttribute('role')).toEqual('menubar');
         });
+
+        it('EJ2-899285 - Context Menu was not opened while using animationSettings effect as none and open method', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu(
+                {
+                    target: '#target',
+                    items: items,
+                    animationSettings: { effect: 'None' },
+                }, '#contextmenu');
+            contextMenu.close();
+            let eleBtn: HTMLElement = createElement('button', { id: 'ejbutton' });
+            eleBtn.innerText = 'Open Context Menu';
+            document.body.appendChild(eleBtn);            
+            eleBtn.onclick = (e: Event) => { 
+                contextMenu.open(20, 17);
+                expect(isVisible(contextMenu.element)).toBeTruthy();
+                const target: HTMLElement = contextMenu.element.children[0];
+                target.click();
+                expect(isVisible(contextMenu.element)).toBeFalsy();
+            };
+            eleBtn.click();            
+        });
     });
 
     it('memory leak', () => {
@@ -1445,4 +1468,5 @@ describe('ContextMenu', () => {
             expect(contextMenu.enablePersistence).toEqual(false);
         });
     });
+
 });

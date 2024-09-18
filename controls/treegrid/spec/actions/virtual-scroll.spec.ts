@@ -20,12 +20,13 @@ import { RowDD } from "../../src/treegrid/actions/rowdragdrop";
 import { Sort } from "../../src/treegrid/actions/sort";
 import { Filter } from "../../src/treegrid/actions/filter";
 import { ITreeData } from "../../src/treegrid/base/interface";
+import { Selection } from "../../src/treegrid/actions/selection";
 
 /**
  * TreeGrid Virtual Scroll spec
  */
 
-TreeGrid.Inject(VirtualScroll, Edit, Toolbar, Sort, Filter, RowDD);
+TreeGrid.Inject(VirtualScroll, Edit, Toolbar, Sort, Filter, RowDD, Selection);
 
 if (!editVirtualData.length) {
   dataSource();
@@ -3265,66 +3266,69 @@ describe("Virtual Scroll Current view data check", () => {
     destroy(treegrid);
   });
 });
-describe("Checking For Selected Record", () => {
-  if (!addVirtualData.length) {
-    dataSource1();
-  }
-  let treegrid: TreeGrid;
+
+describe("Coverage improvement", () => {
+  let gridObj: TreeGrid;
   beforeAll((done: Function) => {
-    treegrid = createGrid(
+    gridObj = createGrid(
       {
-        dataSource: addVirtualData,
+        dataSource: editVirtualData,
         childMapping: "Crew",
         enableVirtualization: true,
-        height: 250,
         treeColumnIndex: 1,
-        rowHeight:40,
-        allowFiltering: true,
-        allowSorting: true,
-        editSettings: {
-          allowEditing: true,
-          allowAdding: true,
-          allowDeleting: true,
-          mode: "Cell",
-          newRowPosition: "Below",
+        allowSelection: true,
+        selectionSettings: {
+          persistSelection: true
         },
-        toolbar: ["Add", "Delete", "Update", "Cancel"],
-        allowPaging: true,
+        height: 400,
         columns: [
           {
             field: "TaskID",
-            headerText: "Task ID",
+            headerText: "Player Jersey",
             isPrimaryKey: true,
-            width: 70,
-            textAlign: "Right",
+            width: 140,
+            textAlign: "Right"
           },
-          { field: "FIELD1", headerText: "Task Name", width: 200, textAlign: "Left" },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
           {
             field: "FIELD2",
-            headerText: "Start Date",
-            width: 90,
+            headerText: "Year",
+            width: 120,
             textAlign: "Right",
           },
-          { field: "FIELD3", headerText: "End Date", width: 90, textAlign: "Right" },
-          { field: "FIELD4", headerText: "Duration", width: 80, textAlign: "Right" },
-          { field: "FIELD5", headerText: "Progress", width: 80, textAlign: "Right" },
-          { field: "FIELD6", headerText: "Priority", width: 90 },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD5",
+            headerText: "TMD",
+            width: 120,
+            textAlign: "Right",
+          },
         ],
       },
       done
     );
   });
-  it("Select Record Check", (done: Function) => {
-    treegrid.selectedRowIndex = 100
+
+
+  it("PersistSelection with collapse action", (done: Function) => {
+    gridObj.collapseRow(gridObj.getRows()[0]);
+    expect((gridObj.getRows()[0] as HTMLTableRowElement).getElementsByClassName("e-treegridcollapse").length).toBe(1);
     done();
   });
-  it("Select Record Check", (done: Function) => {
-    treegrid.selectedRowIndex = 6
-    expect(treegrid.getCurrentViewRecords()[0]['TaskID']).toBe(1)
-    done();
-  });
+
   afterAll(() => {
-    destroy(treegrid);
+    destroy(gridObj);
   });
 });
 
@@ -3428,7 +3432,7 @@ describe("Virtual Scrolling with height", () => {
   it('actionFailure testing with height in percentage', () => {
     expect(actionFailedFunction).toHaveBeenCalled();
   });
-  
+
   afterAll(() => {
     destroy(gridObj);
   });

@@ -73,8 +73,8 @@ export class ExcelExport {
         excelExportProperties?: ExcelExportProperties,
         /* eslint-disable-next-line */
         isMultipleExport?: boolean, workbook?: any, isBlob?: boolean, isCsv?: boolean) : Promise<Object> {
-        const dataSource: Object = this.parent.dataSource;
-        const data: Data = new Data(this.parent.grid);
+        const dataSource: object = this.parent.dataSource;
+        const data:  Data = new Data(this.parent.grid);
         const property: Object = Object();
         setValue('isCsv', isCsv, property);
         setValue('cancel', false, property);
@@ -141,7 +141,9 @@ export class ExcelExport {
     protected manipulateExportProperties(property?: ExcelExportProperties, dtSrc?: Object, queryResult?: Fetch) : Object {
         //count not required for this query
         let args: BeforeDataBoundArgs = Object();
-        setValue('query',  this.parent.grid.getDataModule().generateQuery(true), args);
+        if (!isNullOrUndefined(this.parent.grid.getDataModule())) {
+            setValue('query', this.parent.grid.getDataModule().generateQuery(true), args);
+        }
         setValue('isExport',  true, args);
         if (!isNullOrUndefined(property) && !isNullOrUndefined(property.exportType)) {
             setValue('exportType',  property.exportType, args);

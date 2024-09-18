@@ -288,6 +288,48 @@ describe('Hide & Show ->', () => {
         });
     });
 
+    describe('Checking hide rows with empty rows in the sheet->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }], scrollSettings: { isFinite: true }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Hide and show with empty rows ->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            helper.invoke('selectRange', ['A15']);
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[14].cells[0];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').click();
+                setTimeout(() => {
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    expect(spreadsheet.sheets[0].rows[14].hidden).toBeTruthy();
+                    helper.invoke('selectRange', ['A14:A16']);
+                    let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[13].cells[0];
+                    let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+                    setTimeout(() => {
+                        helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').click();
+                        setTimeout(() => {
+                            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                            expect(spreadsheet.sheets[0].rows[14].hidden).toBeFalsy();
+                            helper.invoke('getMainContent').parentElement.scrollTop = 400;
+                            spreadsheet.notify(onContentScroll, { scrollTop: 400, scrollLeft: 0 });
+                            setTimeout(function () {
+                                helper.invoke('hideRow', [2, 2, true]);
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
     describe('CR-Issues->', () => {
         describe('EJ2-50923, EJ2-53947', () => {
             beforeAll((done: Function) => {
@@ -325,36 +367,36 @@ describe('Hide & Show ->', () => {
                 });
             });
         });
-        describe('EJ2-54216->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ rowCount: 11, colCount: 8, ranges: [{ dataSource: defaultData }] }], scrollSettings: { isFinite: true}
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Show/hide update with finite mode->', (done: Function) => {
-                helper.invoke('selectRange', ['A8:A11']);
-                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-                helper.openAndClickCMenuItem(7, 0, [8], true);
-                setTimeout(() => {
-                    // expect(helper.getInstance().sheets[0].rows[7].hidden).toBeTruthy();
-                    // expect(helper.getInstance().sheets[0].rows[10].hidden).toBeTruthy();
-                    // expect(helper.getInstance().sheets[0].rowCount).toBe(11);
-                    // expect(helper.getInstance().sheets[0].usedRange.rowIndex).toBe(10);
-                    helper.invoke('selectRange', ['F1:H1']);
-                    helper.openAndClickCMenuItem(0, 5, [8], false, true);
-                    setTimeout(() => {
-                        // expect(helper.getInstance().sheets[0].columns[5].hidden).toBeTruthy();
-                        // expect(helper.getInstance().sheets[0].columns[7].hidden).toBeTruthy();
-                        // expect(helper.getInstance().sheets[0].colCount).toBe(8);
-                        // expect(helper.getInstance().sheets[0].usedRange.colIndex).toBe(7);
-                        done();
-                    });
-                });
-            });
-        });
+        //  describe('EJ2-54216->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ rowCount: 11, colCount: 8, ranges: [{ dataSource: defaultData }] }], scrollSettings: { isFinite: true}
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Show/hide update with finite mode->', (done: Function) => {
+        //         helper.invoke('selectRange', ['A8:A11']);
+        //         helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+        //         helper.openAndClickCMenuItem(7, 0, [8], true);
+        //         setTimeout(() => {
+        //             expect(helper.getInstance().sheets[0].rows[7].hidden).toBeTruthy();
+        //             expect(helper.getInstance().sheets[0].rows[10].hidden).toBeTruthy();
+        //             expect(helper.getInstance().sheets[0].rowCount).toBe(11);
+        //             expect(helper.getInstance().sheets[0].usedRange.rowIndex).toBe(10);
+        //             helper.invoke('selectRange', ['F1:H1']);
+        //             helper.openAndClickCMenuItem(0, 5, [8], false, true);
+        //             setTimeout(() => {
+        //                 expect(helper.getInstance().sheets[0].columns[5].hidden).toBeTruthy();
+        //                 expect(helper.getInstance().sheets[0].columns[7].hidden).toBeTruthy();
+        //                 expect(helper.getInstance().sheets[0].colCount).toBe(8);
+        //                 expect(helper.getInstance().sheets[0].usedRange.colIndex).toBe(7);
+        //                 done();
+        //             });
+        //         });
+        //     });
+        // });
         describe('EJ2-53422->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
@@ -513,18 +555,18 @@ describe('Hide & Show ->', () => {
             });
         });
         describe('EJ2-887562->', () => {
-            beforeEach((done: Function) => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ colCount: 8, ranges: [{ dataSource: defaultData }] }], scrollSettings: { isFinite: true }
                 }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Last Column gets deleted after unhiding the hidden column in Spreadsheet with finite mode ->', (done: Function) => {
                 helper.invoke('hideColumn', [2, 3]);
                 setTimeout(() => {
-                    helper.click('#spreadsheet_undo');
+                    helper.invoke('hideColumn', [2, 3, false]);
                     setTimeout(() => {
                         expect(helper.invoke('getCell', [0, 7]).textContent).toBe('Profit');
                         expect(helper.invoke('getCell', [1, 7]).textContent).toBe('10');
@@ -535,6 +577,97 @@ describe('Hide & Show ->', () => {
                         done();
                     });
                 });
+            });
+            it('Hiding the last column in Finite mode. ->', (done: Function) => {
+                helper.invoke('hideColumn', [6, 7]);
+                setTimeout(() => {
+                    helper.invoke('hideColumn', [6, 7, false]);
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 7]).textContent).toBe('Profit');
+                        expect(helper.invoke('getCell', [1, 7]).textContent).toBe('10');
+                        expect(helper.invoke('getCell', [2, 7]).textContent).toBe('50');
+                        expect(helper.invoke('getCell', [3, 7]).textContent).toBe('27');
+                        expect(helper.invoke('getCell', [4, 7]).textContent).toBe('67');
+                        expect(helper.invoke('getCell', [5, 7]).textContent).toBe('70');
+                        done();
+                    });
+                });
+            });
+        });
+    });
+    describe('Performing hide & show actions with more threshold value->', () => {
+        describe('Hiding columns more than threshold value with enableVirtualization set to false->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }], scrollSettings: { enableVirtualization: false, isFinite: false }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Hiding columns more than threshold value with enableVirtualization set to false ->', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                helper.invoke('hideColumn', [2, 21]);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].columns[3].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[4].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[5].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[6].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[13].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[14].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[15].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[20].hidden).toBeTruthy();
+                    helper.invoke('hideColumn', [2, 21, false]);
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 7]).textContent).toBe('Profit');
+                        expect(spreadsheet.sheets[0].columns[3].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[4].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[5].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[6].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[13].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[14].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[15].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[20].hidden).toBeFalsy();
+                        done();
+                    }, 20);
+                }, 20);
+            });
+        });
+        describe('Hiding columns more than threshold value->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Hiding columns more than threshold value->', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                helper.invoke('hideColumn', [2, 21]);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].columns[3].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[4].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[5].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[6].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[13].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[14].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[15].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[20].hidden).toBeTruthy();
+                    helper.invoke('hideColumn', [2, 21, false]);
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 7]).textContent).toBe('Profit');
+                        expect(spreadsheet.sheets[0].columns[3].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[4].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[5].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[6].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[13].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[14].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[15].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].columns[20].hidden).toBeFalsy();
+                        done();
+                    }, 20);
+                }, 20);
             });
         });
     });

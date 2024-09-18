@@ -15,13 +15,16 @@ import { RangeNavigator } from '../../range-navigator/index';
 
 
 /**
- * `DateTime` module is used to render datetime axis.
+ * The `DateTime` module is used to render the datetime axis in charts.
+ *
+ * @private
  */
 
 export class DateTime extends NiceInterval {
 
     public min: number;
     public max: number;
+    public startValue: number;
 
     /**
      * Constructor for the dateTime module.
@@ -37,6 +40,7 @@ export class DateTime extends NiceInterval {
      * The function to calculate the range and labels for the axis.
      *
      * @returns {void}
+     * @private
      */
 
     public calculateRangeAndInterval(size: Size, axis: Axis): void {
@@ -306,6 +310,12 @@ export class DateTime extends NiceInterval {
         const axisLabels: VisibleLabels[] = axis.visibleLabels;
         if (axis.minimum === null) {
             tempInterval = this.alignRangeStart(axis, tempInterval, axis.visibleRange.interval).getTime();
+        }
+        if (this.startValue && this.startValue < tempInterval && (chart as Chart).zoomModule && (chart as Chart).zoomModule.isPanning){
+            tempInterval = this.startValue;
+        }
+        else {
+            this.startValue = tempInterval;
         }
         while (tempInterval <= axis.visibleRange.max) {
             labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));

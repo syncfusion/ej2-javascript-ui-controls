@@ -1,5 +1,5 @@
 /**
- * Numeric Range.
+ * The `DoubleRange` class represents a numeric range with minimum and maximum values.
  *
  * @private
  */

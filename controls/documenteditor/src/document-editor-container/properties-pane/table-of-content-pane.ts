@@ -14,7 +14,6 @@ export class TocProperties {
     private container: DocumentEditorContainer;
     public element: HTMLElement;
     private elementId: string;
-    private template1Div: HTMLElement;
     private showPageNumber: CheckBox;
     private rightalignPageNumber: CheckBox;
     private hyperlink: CheckBox;
@@ -22,11 +21,36 @@ export class TocProperties {
     private updateBtn: Button;
     private cancelBtn: Button;
     private borderLevelStyle: DropDownList;
-    public headerDiv: HTMLElement;
-    private closeButton: HTMLElement;
     private prevContext: ContextType;
     public localObj: L10n;
     private isRtl: boolean;
+
+    //HTML Elements
+    public headerDiv: HTMLElement;
+    private closeButton: HTMLElement;
+    private template1Div: HTMLElement;
+    private title: HTMLElement;
+    private templateContent1: HTMLElement;
+    private templateContent2: HTMLElement;
+    private templateContent3: HTMLElement;
+    private optionsDiv: HTMLElement;
+    private label: HTMLElement;
+    private contentStyleElement: HTMLElement;
+    private checkboxElement: HTMLElement;
+    private showPageNumberDiv: HTMLElement;
+    private showpagenumberCheckboxElement: HTMLElement;
+    private rightAlignDiv: HTMLElement;
+    private rightalignpagenumberCheckboxElement: HTMLElement;
+    private hyperlinkDiv: HTMLElement;
+    private hyperlinkCheckboxElement: HTMLElement;
+    private footerElement: HTMLElement;
+    private updatebuttoncontentStyleElement: HTMLElement;
+    private cancelbuttoncontentStyleElement: HTMLElement;
+    private dropDownLabel: HTMLElement;
+
+    //Events Hook Constants
+    private onCloseClickHook: EventListenerOrEventListenerObject = this.onCloseClick.bind(this);
+    private onInsertToClickHook: EventListenerOrEventListenerObject = this.onInsertToc.bind(this);
 
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
@@ -74,14 +98,15 @@ export class TocProperties {
         this.hyperlink.checked = true;
     }
     private wireEvents(): void {
-        this.cancelBtn.element.addEventListener('click', (): void => {
-            this.onClose();
-        });
-        this.updateBtn.element.addEventListener('click', this.onInsertToc.bind(this));
-        this.closeButton.addEventListener('click', (): void => {
-            this.onClose();
-        });
+        this.cancelBtn.element.addEventListener('click', this.onCloseClickHook);
+        this.updateBtn.element.addEventListener('click', this.onInsertToClickHook);
+        this.closeButton.addEventListener('click', this.onCloseClickHook);
     }
+
+    private onCloseClick(): void {
+        this.onClose();
+    }
+
     private onClose(): void {
         if (this.container.showPropertiesPane
             && this.container.previousContext !== 'TableOfContents') {
@@ -108,22 +133,22 @@ export class TocProperties {
             closeButtonMargin = 'margin-left:7px;';
         }
 
-        const headerDiv: HTMLElement = createElement('div', {
+        this.headerDiv = createElement('div', {
             id: this.elementId + 'toc_id',
             styles: 'display: block;'
         });
-        container.appendChild(headerDiv);
+        container.appendChild(this.headerDiv);
         this.element.appendChild(container);
-        const title: HTMLElement = createElement('label', {
+        this.title = createElement('label', {
             className: 'e-de-ctnr-prop-label'
         });
-        title.textContent = this.localObj.getConstant('Table of Contents');
-        headerDiv.appendChild(title);
+        this.title.textContent = this.localObj.getConstant('Table of Contents');
+        this.headerDiv.appendChild(this.title);
         this.closeButton = createElement('span', {
             className: 'e-de-ctnr-close e-icons',
             styles: 'cursor: pointer;display:inline-block;color: #4A4A4A;' + closeButtonFloat + closeButtonMargin
         });
-        headerDiv.appendChild(this.closeButton);
+        this.headerDiv.appendChild(this.closeButton);
     }
     private initTemplates(container: HTMLElement): void {
         this.template1(container);
@@ -138,33 +163,33 @@ export class TocProperties {
             this.template1Div.classList.add('e-de-rtl');
         }
         container.appendChild(this.template1Div);
-        const templateContent1: HTMLElement = createElement('div', {
+        this.templateContent1 = createElement('div', {
             className: 'e-de-toc-template1-content1'
         });
-        templateContent1.textContent = this.localObj.getConstant('HEADING - - - - 1');
-        this.template1Div.appendChild(templateContent1);
-        const templateContent2: HTMLElement = createElement('div', {
+        this.templateContent1.textContent = this.localObj.getConstant('HEADING - - - - 1');
+        this.template1Div.appendChild(this.templateContent1);
+        this.templateContent2 = createElement('div', {
             className: 'e-de-toc-template1-content2'
         });
-        templateContent2.textContent = this.localObj.getConstant('HEADING - - - - 2');
-        this.template1Div.appendChild(templateContent2);
-        const templateContent3: HTMLElement = createElement('div', {
+        this.templateContent2.textContent = this.localObj.getConstant('HEADING - - - - 2');
+        this.template1Div.appendChild(this.templateContent2);
+        this.templateContent3 = createElement('div', {
             className: 'e-de-toc-template1-content3'
         });
-        templateContent3.textContent = this.localObj.getConstant('HEADING - - - - 3');
-        this.template1Div.appendChild(templateContent3);
+        this.templateContent3.textContent = this.localObj.getConstant('HEADING - - - - 3');
+        this.template1Div.appendChild(this.templateContent3);
     }
 
     private tocOptionsDiv(container: HTMLElement): void {
-        const optionsDiv: HTMLElement = createElement('div');
-        container.appendChild(optionsDiv);
+        this.optionsDiv = createElement('div');
+        container.appendChild(this.optionsDiv);
         this.element.appendChild(container);
         if (this.isRtl) {
-            optionsDiv.classList.add('e-de-rtl');
+            this.optionsDiv.classList.add('e-de-rtl');
         }
-        const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
-        label.textContent = this.localObj.getConstant('Options');
-        optionsDiv.appendChild(label);
+        this.label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+        this.label.textContent = this.localObj.getConstant('Options');
+        this.optionsDiv.appendChild(this.label);
     }
 
     /* eslint-disable-next-line max-len */
@@ -182,9 +207,9 @@ export class TocProperties {
         } else {
             contentStyleElementMargin = 'margin-right:5.5px;';
         }
-        let contentStyleElement: HTMLElement = createElement('div', { id: 'contentstyle_div' });
-        contentStyleElement.setAttribute('title', this.localObj.getConstant('Number of heading or outline levels to be shown in table of contents'));
-        container.appendChild(contentStyleElement);
+        this.contentStyleElement = createElement('div', { id: 'contentstyle_div' });
+        this.contentStyleElement.setAttribute('title', this.localObj.getConstant('Number of heading or outline levels to be shown in table of contents'));
+        container.appendChild(this.contentStyleElement);
         // let items: ItemModel[] = [{ text: '___________', id: 'solid' }];
 
         // this.borderStyle = this.createDropDownButton(
@@ -197,19 +222,19 @@ export class TocProperties {
         } else {
             labelMargin = 'margin-left:8px';
         }
-        let label: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
-        label.textContent = this.localObj.getConstant('Levels');
-        contentStyleElement.appendChild(label);
-        container.appendChild(contentStyleElement);
+        this.dropDownLabel= createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
+        this.dropDownLabel.textContent = this.localObj.getConstant('Levels');
+        this.contentStyleElement.appendChild(this.dropDownLabel);
+        container.appendChild(this.contentStyleElement);
         let dataSource: string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
         this.borderLevelStyle = this.createDropDownButton(
             this.elementId + '_borderLevelDiv',
-            contentStyleElement, '', dataSource, 2
+            this.contentStyleElement, '', dataSource, 2
         );
         this.borderLevelStyle.change = (args: any): void => {
             this.borderLevelStyle.value = args.item.value;
         };
-        container.appendChild(contentStyleElement);
+        container.appendChild(this.contentStyleElement);
     }
 
     private checkboxContent(container: HTMLElement): void {
@@ -219,38 +244,38 @@ export class TocProperties {
         } else {
             checkboxElementMargin = 'margin-right:5.5px;';
         }
-        let checkboxElement: HTMLElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:36px;' });
-        container.appendChild(checkboxElement);
-        let showPageNumberDiv: HTMLElement = createElement('div', { className: 'e-de-toc-checkbox1' });
-        showPageNumberDiv.setAttribute('title', this.localObj.getConstant('Show page numbers in table of contents'));
-        checkboxElement.appendChild(showPageNumberDiv);
-        let showpagenumberCheckboxElement: HTMLElement = createElement('input', { id: 'showpagenumber', styles: 'width:12px;height:12px;margin-bottom:8px', className: 'e-de-prop-sub-label' });
-        showPageNumberDiv.appendChild(showpagenumberCheckboxElement);
+        this.checkboxElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:36px;' });
+        container.appendChild(this.checkboxElement);
+        this.showPageNumberDiv = createElement('div', { className: 'e-de-toc-checkbox1' });
+        this.showPageNumberDiv.setAttribute('title', this.localObj.getConstant('Show page numbers in table of contents'));
+        this.checkboxElement.appendChild(this.showPageNumberDiv);
+        this.showpagenumberCheckboxElement = createElement('input', { id: 'showpagenumber', styles: 'width:12px;height:12px;margin-bottom:8px', className: 'e-de-prop-sub-label' });
+        this.showPageNumberDiv.appendChild(this.showpagenumberCheckboxElement);
         this.showPageNumber = new CheckBox({
             label: this.localObj.getConstant('Show page numbers'),
             enableRtl: this.isRtl
         });
-        this.showPageNumber.appendTo(showpagenumberCheckboxElement);
-        let rightAlignDiv: HTMLElement = createElement('div', { className: 'e-de-toc-checkbox2' });
-        rightAlignDiv.setAttribute('title', this.localObj.getConstant('Right align page numbers in table of contents'));
-        checkboxElement.appendChild(rightAlignDiv);
-        let rightalignpagenumberCheckboxElement: HTMLElement = createElement('input', { id: 'rightalignpagenumber', styles: 'width:12px;height:12px', className: 'e-de-prop-sub-label' });
-        rightAlignDiv.appendChild(rightalignpagenumberCheckboxElement);
+        this.showPageNumber.appendTo(this.showpagenumberCheckboxElement);
+        this.rightAlignDiv= createElement('div', { className: 'e-de-toc-checkbox2' });
+        this.rightAlignDiv.setAttribute('title', this.localObj.getConstant('Right align page numbers in table of contents'));
+        this.checkboxElement.appendChild(this.rightAlignDiv);
+        this.rightalignpagenumberCheckboxElement= createElement('input', { id: 'rightalignpagenumber', styles: 'width:12px;height:12px', className: 'e-de-prop-sub-label' });
+        this.rightAlignDiv.appendChild(this.rightalignpagenumberCheckboxElement);
         this.rightalignPageNumber = new CheckBox({
             label: this.localObj.getConstant('Right align page numbers'),
             enableRtl: this.isRtl
         });
-        this.rightalignPageNumber.appendTo(rightalignpagenumberCheckboxElement);
-        let hyperlinkDiv: HTMLElement = createElement('div', { className: 'e-de-toc-checkbox3' });
-        hyperlinkDiv.setAttribute('title', this.localObj.getConstant('Use hyperlinks instead of page numbers'));
-        checkboxElement.appendChild(hyperlinkDiv);
-        let hyperlinkCheckboxElement: HTMLElement = createElement('input', { id: 'hyperlinkdiv', styles: 'width:12px;height:12px', className: 'e-de-prop-sub-label' });
-        hyperlinkDiv.appendChild(hyperlinkCheckboxElement);
+        this.rightalignPageNumber.appendTo(this.rightalignpagenumberCheckboxElement);
+        this.hyperlinkDiv= createElement('div', { className: 'e-de-toc-checkbox3' });
+        this.hyperlinkDiv.setAttribute('title', this.localObj.getConstant('Use hyperlinks instead of page numbers'));
+        this.checkboxElement.appendChild(this.hyperlinkDiv);
+        this.hyperlinkCheckboxElement = createElement('input', { id: 'hyperlinkdiv', styles: 'width:12px;height:12px', className: 'e-de-prop-sub-label' });
+        this.hyperlinkDiv.appendChild(this.hyperlinkCheckboxElement);
         this.hyperlink = new CheckBox({
             label: this.localObj.getConstant('Use hyperlinks'),
             enableRtl: this.isRtl
         });
-        this.hyperlink.appendTo(hyperlinkCheckboxElement);
+        this.hyperlink.appendTo(this.hyperlinkCheckboxElement);
     }
 
     private buttonDiv(container: HTMLElement): void {
@@ -260,28 +285,29 @@ export class TocProperties {
         } else {
             footerElementFloat = 'float:left';
         }
-        let footerElement: HTMLElement = createElement('div', { id: 'footerDiv', styles: footerElementFloat });
-        container.appendChild(footerElement);
-        let updatebuttoncontentStyleElement: HTMLElement = createElement('button', {
+        this.footerElement = createElement('div', { id: 'footerDiv', styles: footerElementFloat });
+        container.appendChild(this.footerElement);
+        this.updatebuttoncontentStyleElement= createElement('button', {
             id: 'footerupdatebuttonDiv',
             attrs: { type: 'button' }
         });
-        footerElement.appendChild(updatebuttoncontentStyleElement);
+        this.footerElement.appendChild(this.updatebuttoncontentStyleElement);
         this.updateBtn = new Button({
             content: this.localObj.getConstant('Update'), cssClass: 'btn-update', isPrimary: true
         });
-        this.updateBtn.appendTo(updatebuttoncontentStyleElement);
+        this.updateBtn.appendTo(this.updatebuttoncontentStyleElement);
 
-        let cancelbuttoncontentStyleElement: HTMLElement = createElement('button', {
+        this.cancelbuttoncontentStyleElement = createElement('button', {
             id: 'footercancelbuttonDiv',
             attrs: { type: 'button' }
         });
-        footerElement.appendChild(cancelbuttoncontentStyleElement);
+        this.footerElement.appendChild(this.cancelbuttoncontentStyleElement);
         this.cancelBtn = new Button({
             content: this.localObj.getConstant('Cancel'), cssClass: this.isRtl ? 'e-de-btn-cancel-rtl' : 'e-de-btn-cancel'
         });
-        cancelbuttoncontentStyleElement.setAttribute('aria-label', this.cancelBtn.content);
-        this.cancelBtn.appendTo(cancelbuttoncontentStyleElement);
+        this.cancelbuttoncontentStyleElement.setAttribute('aria-label', this.cancelBtn.content);
+        this.cancelBtn.appendTo(this.cancelbuttoncontentStyleElement);
+
     }
 
     private enableDisableInsertButton(enable: boolean): void {
@@ -328,6 +354,8 @@ export class TocProperties {
 
     public destroy(): void {
         this.container = undefined;
+        this.removeHTMLDOM();
+        this.unWireEvents();
         if (this.showPageNumber) {
             this.showPageNumber.destroy();
             this.showPageNumber = undefined;
@@ -356,5 +384,43 @@ export class TocProperties {
             this.cancelBtn.destroy();
         }
         this.cancelBtn = undefined;
+        this.localObj = undefined;
+        this.isRtl = undefined;
+        if (this.element) {
+            this.element.innerHTML = '';
+            this.element = undefined;
+        }
+    }
+
+    private unWireEvents(): void {
+        this.cancelBtn.element.removeEventListener('click', this.onCloseClickHook);
+        this.updateBtn.element.removeEventListener('click', this.onInsertToClickHook);
+        this.closeButton.removeEventListener('click', this.onCloseClickHook);
+
+        this.onCloseClickHook = undefined;
+        this.onInsertToClickHook = undefined;
+    }
+
+    private removeHTMLDOM(): void {
+        this.template1Div.remove();
+        this.headerDiv.remove();
+        this.closeButton.remove();
+        this.title.remove();
+        this.templateContent1.remove();
+        this.templateContent2.remove();
+        this.templateContent3.remove();
+        this.optionsDiv.remove();
+        this.label.remove();
+        this.contentStyleElement.remove();
+        this.checkboxElement.remove();
+        this.showPageNumberDiv.remove();
+        this.showpagenumberCheckboxElement.remove();
+        this.rightAlignDiv.remove();
+        this.rightalignpagenumberCheckboxElement.remove();
+        this.hyperlinkDiv.remove();
+        this.hyperlinkCheckboxElement.remove();
+        this.footerElement.remove();
+        this.updatebuttoncontentStyleElement.remove();
+        this.cancelbuttoncontentStyleElement.remove();
     }
 }

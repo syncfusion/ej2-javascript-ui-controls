@@ -7,7 +7,9 @@ import { LineBase } from './line-base';
 import { AnimationModel } from '../../common/model/base-model';
 
 /**
- * Base for spline type series.
+ * Base class for spline-type series.
+ *
+ * @private
  */
 
 export class SplineBase extends LineBase {
@@ -28,6 +30,7 @@ export class SplineBase extends LineBase {
      *
      * @param {Series} series - The series for which spline points need to be found.
      * @returns {void}
+     * @private
      */
     public findSplinePoint(series: Series): void {
         let value: ControlPoints;
@@ -138,6 +141,7 @@ export class SplineBase extends LineBase {
      *
      * @param {Points[]} points - The data points to check.
      * @returns {boolean} True if the data points are within the range, false otherwise.
+     * @private
      */
     public isPointInRange(points: Points[]): boolean {
         for (const point of points) {
@@ -380,7 +384,7 @@ export class SplineBase extends LineBase {
      * @param {number} ySpline2 - The Y-value of the second spline point.
      * @param {Series} series - The series associated with the data points.
      * @returns {ControlPoints} The calculated control points.
-     * @public
+     * @private
      */
     public getControlPoints(point1: Points, point2: Points, ySpline1: number, ySpline2: number, series: Series): ControlPoints {
         let controlPoint1: ChartLocation;
@@ -456,6 +460,7 @@ export class SplineBase extends LineBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         const option: AnimationModel = series.animation;

@@ -1198,4 +1198,78 @@ describe('Bug 837157: Unwanted display of tooltip in checkbox column feature', (
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Code coverage improvement', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                height: '410',
+                allowSelection: true,
+                selectionSettings:{mode: 'Cell'},
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+                    { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left'},
+                    { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+                    { field: 'endDate', headerText: 'End Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+                    { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+                    { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+    it('Select the expand/collapse icon', (done: Function) => {
+        (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+        (gridObj.getRows()[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+        expect(gridObj.getRows()[0].getElementsByClassName('e-treecolumn-container')[0].children[0].classList.contains('e-treegridexpand')).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Code coverage improvement', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                height: '410',
+                allowSorting: true,
+                autoCheckHierarchy: true,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+                    { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left', showCheckbox: true },
+                    { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+                    { field: 'endDate', headerText: 'End Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+                    { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+                    { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+    it('sorting action', (done: Function) => {
+        (gridObj.element.querySelector('.e-treeselectall') as HTMLElement).click();
+        gridObj.actionBegin = function(args: any){
+            if(args.requestType === 'sorting'){
+                expect(args.cancel).toBe(true);
+            }
+        }
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
 });

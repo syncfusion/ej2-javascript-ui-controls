@@ -74,12 +74,6 @@
   font-size: $ddl-chip-close-font;
 }
 
-.e-bigger .e-multi-select-wrapper .e-chips .e-chips-close::before {
-  @if $ddl-multiselect-skin-name == 'bootstrap4' or $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'FluentUI' {
-    font-size: $ddl-bigger-chip-close-font;
-  }
-}
-
 .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected {
   @if $ddl-multiselect-skin-name == 'Material3' {
     background: $ddl-chip-mobile-bg;
@@ -97,8 +91,7 @@
   color: $ddl-chip-mobile-font;
 }
 
-.e-multi-select-wrapper .e-chips.e-mob-chip,
-.e-bigger .e-multi-select-wrapper .e-chips {
+.e-multi-select-wrapper .e-chips.e-mob-chip {
   height: $ddl-chip-mobile-height;
 }
 
@@ -163,13 +156,16 @@
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active.e-item-focus {
-  @if $ddl-multiselect-skin-name != 'highcontrast' and $ddl-multiselect-skin-name != 'bootstrap5' {
+  @if $ddl-multiselect-skin-name != 'highcontrast' and $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'bootstrap5.3' {
     color: $ddl-multi-list-default-font-color;
+  }
+  @if $ddl-multiselect-skin-name == 'fluent2' {
+    color: $ddl-multi-list-select-color;
   }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active.e-item-focus {
-  @if $ddl-multiselect-skin-name != 'highcontrast' and $ddl-multiselect-skin-name != 'bootstrap5' {
+  @if $ddl-multiselect-skin-name != 'highcontrast' and $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'bootstrap5.3' {
     color: $ddl-multi-list-default-font-color;
   }
   @if$ddl-multiselect-skin-name == 'FluentUI' {
@@ -184,8 +180,11 @@
   @if $ddl-multiselect-skin-name != 'Material3' {
     background-color: $ddl-multi-list-hover-bg-color;
   }
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
+  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
     color: $ddl-multi-list-default-font-color;
+  }
+  @if $ddl-multiselect-skin-name == 'fluent2' {
+    color: $ddl-multi-checkbox-selected-hover-text-color;
   }
 }
 
@@ -196,7 +195,7 @@
   @if $ddl-multiselect-skin-name != 'Material3' {
     background-color: $ddl-multi-list-hover-bg-color;
   }
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
+  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
     color: $content-text-color-alt3;
   }
   @if $ddl-multiselect-skin-name == 'FluentUI' {
@@ -336,7 +335,7 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
     -webkit-text-fill-color: $gray-900;
     color: $gray-900;
   }
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
+  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
     -webkit-text-fill-color: $content-text-color;
     color: $content-text-color;
   }
@@ -353,7 +352,7 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
 }
 
 .e-small .e-multi-select-wrapper .e-chips {
-  @if $ddl-multiselect-skin-name == 'bootstrap5' {
+  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
     border-radius: $ddl-chip-mobile-radius;
   }
   height: $ddl-small-chip-height;
@@ -375,30 +374,10 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   left: $ddl-chip-close-hooker-small-left;
 }
 
-.e-small.e-bigger .e-multi-select-wrapper .e-close-hooker::before {
-  left: $ddl-chip-close-hooker-small-bigger-left;
-}
-
 .e-small .e-multi-select-wrapper .e-down-icon .e-close-hooker::before {
   @if $ddl-multiselect-skin-name == 'FluentUI' {
     left: $ddl-small-down-icon-left;
   }
-}
-
-.e-bigger.e-small .e-multi-select-wrapper .e-chips {
-  height: $ddl-bigger-small-chip-height;
-}
-
-.e-bigger.e-small .e-multi-select-wrapper .e-chips > .e-chipcontent {
-  font-size: $ddl-chip-bigger-small-font-size;
-}
-
-.e-bigger.e-small .e-multi-select-wrapper .e-chips .e-chips-close::before {
-  @if $ddl-multiselect-skin-name == 'bootstrap4' {
-    left: $ddl-chip-close-bigger-left;
-    top: $ddl-chip-close-bigger-top;
-  }
-  font-size: $ddl-bigger-small-chip-close-font;
 }
 
 .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon:hover,

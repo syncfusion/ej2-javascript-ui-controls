@@ -1,4 +1,4 @@
-import { FreeTextSettings, HighlightSettings, LineSettings, StickyNotesSettings, StrikethroughSettings, UnderlineSettings, RectangleSettings, CircleSettings, ArrowSettings, PerimeterSettings, DistanceSettings, AreaSettings, RadiusSettings, VolumeSettings, PolygonSettings, InkAnnotationSettings, StampSettings, CustomStampSettings } from './../pdfviewer';
+import { FreeTextSettings, HighlightSettings, LineSettings, StickyNotesSettings, StrikethroughSettings, UnderlineSettings, RectangleSettings, CircleSettings, ArrowSettings, PerimeterSettings, DistanceSettings, AreaSettings, RadiusSettings, VolumeSettings, PolygonSettings, InkAnnotationSettings, StampSettings, CustomStampSettings, HandWrittenSignatureSettings } from './../pdfviewer';
 import {
     PdfViewer, PdfViewerBase, AnnotationType, ITextMarkupAnnotation, TextMarkupAnnotation, ShapeAnnotation,
     StampAnnotation, StickyNotesAnnotation, IPopupAnnotation, ICommentsCollection, MeasureAnnotation, InkAnnotation,
@@ -354,6 +354,7 @@ export class Annotation {
             const newFormFieldsData : string[] = [];
             if (formFieldsData){
                 for (let x: number = 0; x < formFieldsData.length; x++){
+                    // eslint-disable-next-line
                     if (formFieldsData[parseInt(x.toString(), 10)].uniqueID == selectedAnnotation.id){
                         formFieldsData[parseInt(x.toString(), 10)].Value = '';
                         for (let y: number = 0; y < formFieldsData.length; y++){
@@ -1493,7 +1494,7 @@ export class Annotation {
                         if (actionObject.annotation.measureType === '' || isNullOrUndefined(actionObject.annotation.measureType)) {
                             this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, 'shape', null, true);
                         } else {
-                            this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, 'measure',null,true);
+                            this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, 'measure', null, true);
                         }
                         isAnnotationUpdate = true;
                         const annotationObject: any = actionObject.annotation;
@@ -1630,7 +1631,7 @@ export class Annotation {
 
                     this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
                     this.pdfViewer.annotationModule.stickyNotesAnnotationModule.
-                        addAnnotationComments(actionObject.annotation.pageIndex, shapeType,true);
+                        addAnnotationComments(actionObject.annotation.pageIndex, shapeType, true);
                     if (actionObject.annotation.annotationId) {
                         const removedAnnotationCollection: any =
                         this.removedAnnotationCollection[this.removedAnnotationCollection.length - 1];
@@ -1892,7 +1893,7 @@ export class Annotation {
                     }
                     this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
                     this.pdfViewer.annotationModule.stickyNotesAnnotationModule.
-                        addAnnotationComments(actionObject.annotation.pageIndex, shapeType,false);
+                        addAnnotationComments(actionObject.annotation.pageIndex, shapeType, false);
                     if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                         const mobileAnnotationToolbar: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_propertyToolbar');
                         if (mobileAnnotationToolbar && mobileAnnotationToolbar.children.length > 0) {
@@ -3502,6 +3503,7 @@ export class Annotation {
                             this.pdfViewer.toolbarModule.annotationToolbarModule.selectAnnotationDeleteItem(true);
                             this.pdfViewer.toolbarModule.annotationToolbarModule.setCurrentColorInPicker();
                             this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
+                            // eslint-disable-next-line
                             if (!this.pdfViewer.formDesignerModule && pdfAnnotationBase.id != '' && pdfAnnotationBase.id != null && pdfAnnotationBase.id.slice(0, 4) != 'sign'){
                                 const id: HTMLElement = document.getElementById(pdfAnnotationBase.id);
                                 const isFieldReadOnly: boolean = id && (id as HTMLInputElement).disabled;
@@ -4519,7 +4521,7 @@ export class Annotation {
     public selectSignature(signatureId: string, pageNumber: number, signatureModule: PdfAnnotationBaseModel): void {
         const annotBounds: PdfBoundsModel = signatureModule.bounds;
         const bounds: any = { height: annotBounds.height, width: annotBounds.width, x: annotBounds.x, y: annotBounds.y };
-        if (!this.pdfViewerBase.signatureAdded) {
+        if (!this.pdfViewerBase.signatureAdded && signatureModule.signatureName !== 'ink') {
             const signature: object = { bounds: bounds, opacity: signatureModule.opacity, thickness: signatureModule.thickness,
                 strokeColor: signatureModule.strokeColor };
             this.pdfViewer.fireSignatureSelect(signatureId, pageNumber, signature);
@@ -4642,7 +4644,10 @@ export class Annotation {
         }
         if (annotation.uniqueKey !== undefined) {
             currentAnnotation = (this.pdfViewer.nameTable as any)[annotation.uniqueKey];
-            currentAnnotation.annotationSettings.isLock = annotation.annotationSettings.isLock;
+            if (currentAnnotation && currentAnnotation.annotationSettings &&
+                !isNullOrUndefined(currentAnnotation.annotationSettings.isLock)) {
+                currentAnnotation.annotationSettings.isLock = annotation.annotationSettings.isLock;
+            }
             annotationId = currentAnnotation.annotName;
             pageNumber = currentAnnotation.pageIndex;
             if (isBlazor()) {
@@ -5155,7 +5160,9 @@ export class Annotation {
         if (annotation && annotation.isCommentLock === true) {
             newAnnotation.isCommentLock = annotation.isCommentLock;
         }
-        if (!isNullOrUndefined(annotation) && !isNullOrUndefined(annotation.annotationSettings) && annotation.annotationSettings.isLock === true && annotation.isCommentLock === true) {
+        if (!isNullOrUndefined(annotation) && !isNullOrUndefined(annotation.annotationSettings) &&
+            annotation.annotationSettings.isLock === true && annotation.isCommentLock === true)
+        {
             isModifyStatus = true;
         }
         if (annotation.comments) {
@@ -6565,7 +6572,7 @@ export class Annotation {
     public addAnnotation(annotationType: AnnotationType, options?: FreeTextSettings | StickyNotesSettings |
     HighlightSettings | UnderlineSettings | LineSettings | StrikethroughSettings | RectangleSettings |
     CircleSettings | ArrowSettings | PolygonSettings | DistanceSettings | PerimeterSettings | AreaSettings |
-    RadiusSettings | VolumeSettings | InkAnnotationSettings | StampSettings | CustomStampSettings,
+    RadiusSettings | VolumeSettings | InkAnnotationSettings| HandWrittenSignatureSettings | StampSettings | CustomStampSettings,
                          dynamicStampItem?: DynamicStampItem, signStampItem?: SignStampItem,
                          standardBusinessStampItem?: StandardBusinessStampItem): void {
         //Initialize the bounds and pageNumber
@@ -6649,6 +6656,11 @@ export class Annotation {
             pdfAnnotation[parseInt(pageNumber.toString(), 10)] = this.pdfViewer.annotation.inkAnnotationModule.
                 updateAddAnnotationDetails(options as InkAnnotationSettings, offset, pageNumber);
             this.pdfViewer.annotation.inkAnnotationModule.isAddAnnotationProgramatically = true;
+        }
+        else if (annotationType === 'HandWrittenSignature' || annotationType === 'Initial') {
+            pdfAnnotation[parseInt(pageNumber.toString(), 10)] = this.pdfViewerBase.signatureModule.
+                updateSignatureDetails(options as HandWrittenSignatureSettings, offset, pageNumber);
+            this.pdfViewerBase.signatureModule.isAddAnnotationProgramatically = true;
         }
 
         //Annotation rendering can be done with the import annotation method.
@@ -6810,23 +6822,21 @@ export class Annotation {
      * @param {string} text - text
      * @param {number} rectangle - rectangle
      * @param {number} width - width
-     * @param {number} width - width
      * @private
      * @returns {number} - fontSize
      */
     public calculateFontSize(text: string, rectangle: { width: number, height: number }): number {
-        let canvasElement: HTMLElement = document.createElement('canvas');
+        const canvasElement: HTMLElement = document.createElement('canvas');
         const context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
         let fontSize: number = 10;
         let contextWidth: number = 0;
         while (rectangle.width > contextWidth) {
-            context.font = fontSize + "px" + ' ' + 'Helvetica';
+            context.font = fontSize + 'px' + ' ' + 'Helvetica';
             contextWidth = context.measureText(text).width;
             fontSize++;
         }
         return fontSize;
     }
-
 }
 
 /**

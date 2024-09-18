@@ -153,6 +153,7 @@ export class AnnotationBase {
     /**
      * To process the annotation for accumulation chart.
      *
+     * @private
      * @param annotation
      * @param index
      * @param parentElement

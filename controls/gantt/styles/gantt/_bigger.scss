@@ -1,0 +1,537 @@
+@mixin resizer-styles($display, $position, $top, $width, $index) {
+  display: $display;
+  position: $position;
+  top: $top;
+  width: $width;
+  z-index: $index;
+}
+
+@mixin mask-cell-styles($height, $width, $left, $border-radius) {
+  height: $height;
+  width: $width;
+  left: $left;
+  border-radius: $border-radius;
+}
+
+@mixin inner-cell-styles($innerheight, $innerwidth, $innerleft) {
+  height: $innerheight;
+  width: $innerwidth;
+  left: $innerleft;
+}
+
+@mixin button-styles($back-color, $border-color, $text-color, $font-size, $line-height, $padding) {
+  background-color: $back-color;
+  border-color: $border-color;
+  color: $text-color;
+  font-size: $font-size;
+  line-height: $line-height;
+  padding: $padding;
+}
+
+@mixin border-styles($border-radius, $border-height, $border-width) {
+  border-radius: $border-radius;
+  height: $border-height;
+  width: $border-width;
+}
+
+@mixin float-styles($direction, $padding-style, $width) {
+  float: $direction;
+  padding: $padding-style;
+  width: $width;
+}
+
+@mixin min-styles {
+  min-height: $gantt-bigger-dialog-input-icon;
+  min-width: 35.82px !important; /* stylelint-disable-line declaration-no-important */
+}
+
+.e-bigger {
+  .e-gantt {
+    @if ($theme-name =='material-dark') {
+      .e-grid .e-row .e-input-group {
+        margin: 0 !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+
+    @if ($skin-name=='Material3-dark' or $skin-name =='Material3') {
+      .e-toolbar .e-toolbar-item .e-tbar-btn.e-btn .e-icons.e-btn-icon {
+        font-size: 18px;
+      }
+    }
+
+    .e-gantt-chart {
+
+      .e-taskbar-left-resizer,
+      .e-taskbar-right-resizer {
+        @include resizer-styles(inline-block, absolute, 0, 25px, 4);
+      }
+
+      .e-left-resize-gripper,
+      .e-right-resize-gripper {
+        align-items: center;
+        cursor: ew-resize;
+        display: inline-flex;
+      }
+
+      .e-timeline-header-container {
+        height: $gantt-bigger-header-border-height;
+      }
+
+      .e-timeline-top-header-cell {
+        height: $gantt-bigger-timeline-top-header-cell-height;
+      }
+
+      .e-timeline-single-header-cell {
+        height: $gantt-bigger-header-border-height;
+      }
+
+      .e-event-markers {
+        .e-span-label {
+          border-radius: $gantt-bigger-event-markers-border-radius;
+          font-size: $gantt-bigger-event-arrow-font-size;
+          height: $gantt-bigger-event-markers-height;
+          padding: $gantt-bigger-event-markers-padding;
+          top: $gantt-bigger-event-markers-top;
+        }
+
+        .e-gantt-right-arrow {
+          border-bottom: $gantt-bigger-event-arrow-bottom;
+          border-right: $gantt-bigger-event-arrow-right;
+          border-right-color: $gantt-bigger-event-arrow-color;
+          border-top: $gantt-bigger-event-arrow-top;
+          top: $gantt-bigger-event-arrow-top-value;
+        }
+      }
+
+      @if ($skin-name =='FluentUI' or $skin-name =='bootstrap5' or $skin-name =='tailwind' or $skin-name =='Material3') {
+
+        .e-left-resize-gripper::before,
+        .e-right-resize-gripper::before {
+          content: '\e888';
+        }
+      }
+
+      @else {
+
+        .e-left-resize-gripper::before,
+        .e-right-resize-gripper::before {
+          content: '\e92c';
+        }
+      }
+
+      .e-connectorpoint-right,
+      .e-connectorpoint-left,
+      .e-right-connectorpoint-outer-div,
+      .e-left-connectorpoint-outer-div {
+        border-radius: 50%;
+        display: inline-block;
+        position: absolute;
+      }
+
+      .e-connectorpoint-left-hover,
+      .e-connectorpoint-right-hover {
+        border-style: solid;
+        border-width: 1px;
+        box-sizing: content-box;
+        cursor: pointer;
+        display: inline-block;
+      }
+
+      .e-connectorpoint-left-hover,
+      .e-connectorpoint-right-hover {
+        background-color: $connector-point-hover-color;
+        border-color: $connector-point-border-color;
+        position: relative;
+      }
+
+      .e-connectorpoint-left-hover:hover,
+      .e-connectorpoint-right-hover:hover {
+        background-color: $connector-point-hover-color;
+        border-color: $connector-point-border-color;
+        outline: 2px solid $connector-point-hover-outerline-color;
+      }
+
+      .e-connectorpoint-left-hover::after,
+      .e-connectorpoint-right-hover::after {
+        content: '';
+        position: absolute;
+        width: 30px;
+        height: 40px;
+        top: -10px;
+      }
+
+      .e-connectorpoint-allow-block {
+        cursor: no-drop;
+      }
+    }
+
+    .e-tab .e-content {
+      height: $gantt-bigger-add-dialog-content-height;
+    }
+
+    .e-gantt-tree-grid-pane {
+      .e-columnheader {
+        .e-headercell {
+          height: $gantt-bigger-treegrid-header-border-height !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+    }
+
+    .e-gantt-dialog .e-tab .e-tab-header {
+      padding-left: $gantt-dialog-tab-padding-left;
+
+      @if ($skin-name =='FluentUI') {
+        .e-indicator {
+          display: block;
+          bottom: 0;
+          height: 3px;
+        }
+      }
+
+      @else {
+        .e-indicator {
+          display: block;
+
+          @if ($skin-name =='Material3') {
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+          }
+        }
+      }
+    }
+
+    .e-dialog {
+      .e-dlg-header-content {
+        padding: $gantt-bigger-dialog-header-padding;
+
+        /* stylelint-disable-line declaration-no-important */
+        .e-btn.e-dlg-closeicon-btn {
+          left: -11px;
+
+          @if ($skin-name =='bootstrap5-dark' or $skin-name =='bootstrap5') {
+            top: 2px;
+          }
+
+          @else {
+            top: 3px;
+          }
+        }
+      }
+
+      @if ($skin-name =='FluentUI' or $skin-name =='fluent-dark') {
+        .e-dlg-content {
+          margin-bottom: 0;
+        }
+      }
+
+      @if ($skin-name =='tailwind') {
+        .e-dlg-header-content {
+          height: 68px !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+
+      .e-btn .e-btn-icon.e-icon-dlg-close {
+        font-size: $gantt-bigger-dialog-close-button-size;
+
+        @if ($skin-name =='Material3') {
+          width: $gantt-bigger-dialog-close-button-size;
+        }
+      }
+
+      .e-footer-content {
+        height: $gantt-bigger-filter-dialog-footer-height;
+        padding: $gantt-bigger-filter-dialog-footer-padding;
+
+        .e-btn {
+          margin-left: 12px;
+        }
+      }
+
+      .e-dlg-header:not(.e-gantt-adaptive-dialog .e-dialog .e-dlg-header) {
+        @if ($skin-name=='Material3-dark' or $skin-name =='Material3') {
+          line-height: 28px;
+        }
+
+        @else if ($skin-name !='FluentUI' or $skin-name !='fluent-dark') {
+          line-height: 37px;
+        }
+      }
+    }
+
+    .e-grid .e-flmenu-valuediv {
+      padding: $gantt-bigger-filter-dialog-input-padding;
+    }
+
+    .e-filter-popup {
+      .e-dlg-content {
+        border-radius: $gantt-dialog-bigger-border-radius;
+        padding: $gantt-dialog-bigger-input-padding-field;
+      }
+    }
+
+    .e-grid .e-columnmenu {
+      @if $skin-name =='bootstrap5-dark' or $skin-name =='tailwind-dark' {
+        top: 35px;
+      }
+
+      @else if $skin-name =='fluent-dark' {
+        top: 38px;
+      }
+
+      @else {
+        top: $bigger-column-menu-size;
+      }
+    }
+  }
+
+  .e-gantt-dialog {
+    .e-dialog {
+      border-radius: 6px;
+      width: $gantt-bigger-dialog-width;
+    }
+
+    .e-tab .e-tab-header .e-toolbar-item .e-tab-wrap {
+      padding: 0 16px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-edit-form-column:nth-child(odd) {
+      padding: $gantt-bigger-dialog-edit-form-odd-padding;
+    }
+
+    .e-edit-form-column:nth-child(even) {
+      padding: $gantt-bigger-dialog-edit-form-even-padding;
+    }
+
+    .e-edit-form-row.e-scroll .e-edit-form-column:nth-child(even) {
+      padding: $gantt-bigger-dialog-edit-form-scroll-padding;
+    }
+
+    .e-edit-form-row {
+      height: $gantt-bigger-add-dialog-content-height;
+    }
+
+    .e-edit-form-column {
+      height: $gantt-bigger-add-dialog-input-height;
+    }
+
+    .e-dlg-header-content {
+      border-bottom: 0 !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    >.e-dlg-content {
+      border-radius: 0 !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-dlg-header-content {
+      border-radius: $gantt-bigger-dialog-border-radius;
+      padding-bottom: $gantt-dialog-padding-bottom;
+
+      @if ($skin-name =='bootstrap-dark') {
+        .e-btn.e-dlg-closeicon-btn {
+          @include border-styles(50%, auto !important, auto);
+          box-shadow: none;
+        }
+      }
+
+      @else {
+        .e-btn.e-dlg-closeicon-btn:not(.e-gantt-adaptive-dialog .e-dialog .e-dlg-closeicon-btn) {
+          @include border-styles(50%, auto !important, auto);
+
+          @if ($skin-name=='Material3') {
+            line-height: 0px;
+            padding: 0 !important; /* stylelint-disable-line declaration-no-important */
+          }
+
+          @if ($skin-name =='FluentUI') {
+            margin-right: 6px;
+          }
+        }
+      }
+    }
+
+    .e-tab {
+      .e-tab-header .e-toolbar-item.e-active {
+        margin-left: $gantt-bigger-dialog-tab-padding-left;
+      }
+    }
+
+    @if ($skin-name =='bootstrap4') {
+      .e-icon-dlg-close {
+        color: $gantt-bigger-dialog-icon-color;
+      }
+    }
+
+    .e-control-wrapper .e-input-group-icon.e-date-icon {
+      font-size: 16px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-control-wrapper .e-input-group-icon.e-date-icon {
+      @include min-styles;
+    }
+
+    .e-btn.e-flat {
+      line-height: 24px;
+      padding: 6px 16px 6px 15px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-btn.e-primary {
+      padding: 6px 21px 6px 23px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-datetime-wrapper .e-time-icon.e-icons::before {
+      font-size: 16px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-float-input.e-control-wrapper input ~ label.e-label-top.e-float-text {
+      font-size: 14px;
+      line-height: 22px;
+    }
+
+    .e-float-input.e-control-wrapper input[disabled] ~ label.e-label-top.e-float-text {
+      font-size: 14px;
+      line-height: 22px;
+    }
+
+    .e-float-input.e-control-wrapper input {
+      height: $gantt-bigger-dialog-input-field-height;
+
+      @if ($skin-name =='material') {
+        padding: 5px 0 11px !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+
+    .e-numeric.e-control-wrapper.e-input-group .e-input-group-icon {
+      @include min-styles;
+    }
+
+    .e-control-wrapper .e-input-group-icon.e-time-icon {
+      @include min-styles;
+    }
+
+    .e-input-group.e-control-wrapper {
+      height: $gantt-dialog-bigger-input-field;
+    }
+
+    .e-input-group-icon.e-date-icon {
+      min-width: 36px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    @if ($skin-name =='material') {
+      .e-datetime-wrapper .e-input-group-icon.e-time-icon {
+        margin: 5px 0 6px !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      .e-input-group.e-control-wrapper .e-input-group-icon {
+        margin-right: 0 !important;  /* stylelint-disable-line declaration-no-important */
+      }
+    }
+
+    @if ($skin-name =='tailwind') {
+      .e-input-group.e-control-wrapper .e-input-group-icon {
+        padding: 7px 0 !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+
+    .e-gantt-adaptive-dialog .e-dialog {
+      position: absolute !important; /* stylelint-disable-line declaration-no-important */
+      left: 0 !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-gantt-adaptive-dialog .e-dialog .e-dlg-header-content {
+      padding: 16px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-gantt-adaptive-dialog .e-dialog td {
+      width: 100% !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
+
+  .e-predecessor-tooltip {
+    .e-arrow-tip-outer.e-tip-bottom {
+      border-top: 8px solid $gantt-bigger-tooltip-button-color;
+
+      @if ($skin-name =='FluentUI') {
+        border-top: 12.5px solid $gantt-bigger-tooltip-button-color;
+      }
+
+      @else if ($skin-name =='highcontrast') {
+        border-top: 7px solid $gantt-bigger-tooltip-button-color;
+      }
+    }
+
+    .e-arrow-tip-inner.e-tip-bottom {
+      color: $gantt-bigger-tooltip-button-color;
+    }
+
+    .e-left-btn:disabled {
+      color: $gantt-bigger-tooltip-disabled-button-color;
+    }
+
+    .e-right-btn:disabled {
+      color: $gantt-bigger-tooltip-disabled-button-color;
+    }
+
+    .e-tip-content {
+      padding: 3px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-btn-group:not(.e-rtl):not(.e-vertical) .e-btn:first-of-type {
+      @include button-styles($gantt-bigger-tooltip-button-color, $gantt-bigger-tooltip-button-color, $gantt-bigger-tooltip-button-text-color, 12px, 18px, 0 8px 0 0);
+    }
+
+    .e-btn-group:not(.e-rtl):not(.e-vertical) .e-btn:last-of-type {
+      @include button-styles($gantt-bigger-tooltip-button-color, $gantt-bigger-tooltip-button-color, $gantt-bigger-tooltip-button-text-color, 12px, 18px, 0 0 0 8px);
+    }
+  }
+
+  .e-predecessor-dialog {
+    background-color: $gantt-bigger-tooltip-dialog-color;
+
+    .e-dlg-content {
+      background-color: $gantt-bigger-tooltip-dialog-color;
+      padding: $gantt-bigger-predecessor-dialog-padding;
+      font-size: $gantt-bigger-predecessor-dialog-font-size;
+      font-weight: $gantt-bigger-predecessor-dialog-font-weight;
+      line-height: $gantt-bigger-predecessor-dialog-line-height;
+      color: $gantt-bigger-tooltip-dialog-text-color;
+
+      @if ($skin-name =='FluentUI') {
+        margin-bottom: 0;
+      }
+    }
+
+    .e-touch-predecessor-dialog {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+}
+
+.e-bigger .e-gantt .e-gantt-chart .e-label {
+  font-size: $gantt-bigger-label-font-size;
+}
+
+.e-bigger .e-gantt-dialog .e-control.e-tooltip-wrap.e-popup.e-griderror {
+  min-width: 135px;
+}
+
+.e-bigger .e-filter-popup .e-control .e-dialog .e-lib .e-popup .e-popup-open .e-excelfilter .e-gantt,
+.e-bigger .e-gantt .e-excelfilter .e-dialog .e-dlg-content {
+  padding: 0 18px 0 0 !important; /* stylelint-disable-line declaration-no-important */
+}
+
+.e-bigger .e-filter-popup .e-control .e-dialog .e-lib .e-popup .e-popup-open .e-excelfilter .e-gantt,
+.e-bigger .e-gantt .e-contextmenu-wrapper ul {
+  padding: 0 !important; /* stylelint-disable-line declaration-no-important */
+}
+
+@media (max-width: 767px) {
+  .e-bigger .e-gantt .e-dialog .e-edit-form-column {
+
+    &:nth-child(odd),
+    &:nth-child(even) {
+      @include float-styles(none, $gantt-mobile-bigger-dialog-edit-form-padding, 100%);
+    }
+  }
+}

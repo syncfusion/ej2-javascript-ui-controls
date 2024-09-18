@@ -307,6 +307,14 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
     public canAutoScroll: boolean;
 
     /**
+     * Specifies the interval (in milliseconds) between scroll triggers.
+     *
+     * @default 100
+     */
+    @Property(100)
+    public autoScrollFrequency: number;
+
+    /**
      * Defines the maximum distance to be left between the object and the scroll bar to trigger auto scrolling
      *
      * @default { left: 15, right: 15, top: 15, bottom: 15 }

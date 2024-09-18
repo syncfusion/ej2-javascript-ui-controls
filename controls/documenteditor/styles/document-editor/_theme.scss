@@ -186,6 +186,9 @@
         }
         .e-de-op-search-icon:hover {
             background: $search-icon-hvr;
+            @if $skin-name=='bootstrap5' or $skin-name=='bootstrap5.3' {
+                color: var(--color-sf-secondary-text-color-pressed) !important;
+            }
         }
         .e-de-search-tab-content .e-input-group .e-de-op-search-close-icon:focus {
             border: 1px solid $search-icon-bdr-clr;
@@ -207,6 +210,17 @@
         }
         .e-spin-up:hover {
             background: $spin-up-hvr;
+        }
+        .e-de-search-tab-content {
+            .e-de-op-input-group {
+                .e-spin-up:hover,
+                .e-spin-down:hover {
+                    @if $skin-name=='bootstrap5.3' {
+                        background: var(--color-sf-secondary-bg-color-pressed) !important;
+                        color: var(--color-sf-secondary-text-color-pressed) !important;
+                    }
+                }
+            }
         }
     }
     .e-de-toc-dlg-heading {
@@ -425,14 +439,6 @@
         position: relative;
         width: 300px;
     }
-    @if $skin-name =='FluentUI' {
-      .e-bigger {
-        .e-de-restrict-pane,
-        .e-de-op {
-            width: 300px;
-        }
-      }
-    }
     .e-de-op {
         border-right: 1px solid $de-op-border-clr;
         padding-left: $de-op-padding-left;
@@ -509,14 +515,6 @@
                 font-size: 14px !important;
             }
         }
-      .e-bigger {
-        .e-de-op-more-less,
-        .e-de-rp-more-less {
-          .e-label {
-            font-size: 16px !important;
-          }
-        }
-      }
     }
 
     .e-de-op-replacetabcontentdiv {
@@ -805,16 +803,7 @@
             padding-top: 0px;
         }
     }
-    @if $skin-name=='FluentUI' or $skin-name=='bootstrap5' {
-        .e-bigger {
-            .e-documenteditor .e-de-op-close-button {
-                left: 240px;
-                position: absolute;
-                top: 5px;
-            } 
-        }
-    }
-    @if $skin-name=='bootstrap4' or $skin-name=='bootstrap5' {
+    @if $skin-name=='bootstrap4' or $skin-name=='bootstrap5' or $skin-name=='bootstrap5.3' {
 
         .e-de-style-paragraph-indent-group-button .e-btn.e-active,
         .e-de-style-paragraph-group-button .e-btn.e-active,
@@ -824,8 +813,10 @@
                 box-shadow: $de-toggle-btn-border;
                 box-shadow: none;
                 .e-btn-icon {
-                  @if $skin-name !='bootstrap5' {
+                  @if $skin-name !='bootstrap5' and $skin-name !='bootstrap5.3' {
                     color: $de-style-btn-color;
+                  } @else if $skin-name =='bootstrap5.3' {
+                    color: var(--color-sf-secondary-text-color-pressed);
                   }
                 }
             }
@@ -862,7 +853,7 @@
         .e-de-style-paragraph-group-button .e-btn:active,
         .e-de-style-paragraph-group-button .e-btn:disabled {
             .e-btn-icon {
-                @if $skin-name=='bootstrap5' {
+                @if $skin-name=='bootstrap5' or $skin-name=='bootstrap5.3' {
                     color: $de-style-btn-hover-color
                 }
                 @else {
@@ -889,7 +880,7 @@
             font-size: $de-btn-font-size;
         }
 
-        @if $skin-name != 'bootstrap5' {
+        @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' {
             .e-de-style-font-color-picker .e-split-btn-wrapper .e-split-colorpicker.e-split-btn,
             .e-de-style-font-color-picker .e-btn.e-icon-btn,
             .e-de-dlg-clr-picker .e-split-btn-wrapper .e-split-colorpicker.e-split-btn,
@@ -933,37 +924,6 @@
             .e-styles-list {
                 margin-right: $de-style-list-top;
             }
-            .e-bigger {
-                .e-de-style-dlg-name-input {
-                    height: $e-de-style-input-text-height-bigger;
-                }
-                .e-de-style-bold-button-size {
-                    height: $e-de-style-input-text-height-bigger;
-                }
-                .e-styles-common {
-                    padding-top: $de-style-list-top-bigger;
-                }
-                .e-styles-list {
-                    margin-right: $de-style-list-top-bigger;
-                }
-                .e-bookmark-gotobutton,
-                .e-bookmark-addbutton,
-                .e-styles-addbutton,
-                .e-bookmark-deletebutton {
-                    margin-bottom: $de-style-list-top-bigger;
-                }
-            }
-            .e-bigger .e-de-search-tab-content {
-                margin-top: $de-op-search-tab-content-margin-top-bigger;
-                width: $de-op-search-text-box-container-width;
-            }
-            .e-bigger .e-de-op-more-less {
-                display: inline-flex;
-                margin-top: 16px;
-            }
-            .e-bigger .e-de-op-dlg-footer {
-                margin-top: $de-op-dlg-footer-margin-top-bigger;
-            }
             .e-de-font-dlg-display .e-split-btn-wrapper .e-btn {
                 border-color: $de-style-toggle-btn-color;
             }
@@ -973,359 +933,9 @@
         .e-de-restrict-pane {
             color: $content-text-color;
         }
-        .e-bigger {
-          .e-de-hyperlink-dlg-input,
-          .e-de-insert-table-dlg-input,
-          .e-de-insert-footnote-dlg-header,
-          .e-bookmark-dlgfields,
-          .e-de-ff-dlg-heading {
-            margin-bottom: $de-bigger-padding !important;
-          }
-          @if $skin-name != 'FluentUI' {
-            .e-de-font-dlg-cb-right,
-            .e-bookmark-list.e-de-rtl,
-            .e-styles-list.e-de-rtl,
-            .e-de-ff-dlg-lft-hlf.e-de-rtl {
-                margin-left: $de-bigger-padding;
-            }
-            .e-de-font-dlg-cb-right.e-de-rtl,
-            .e-bookmark-list,
-            .e-styles-list,
-            .e-de-ff-dlg-lft-hlf {
-                margin-right: $de-bigger-padding;
-            }
-          }
-          @else {
-            .e-de-font-dlg-cb-right,
-            .e-bookmark-list.e-de-rtl,
-            .e-styles-list.e-de-rtl,
-            .e-de-ff-dlg-lft-hlf.e-de-rtl {
-                margin-left: 16px;
-            }
-            .e-de-font-dlg-cb-right.e-de-rtl,
-            .e-bookmark-list,
-            .e-styles-list,
-            .e-de-ff-dlg-lft-hlf {
-                margin-right: 16px;
-            }
-          }
-
-          .e-bookmark-textboxdiv {
-            margin-bottom: 12px !important;
-          }
-          .e-de-ff-drpdwn-mvdn,
-          .e-de-ff-drpdwn-mvup {
-              width: 52px !important;
-          }
-          .e-documenteditor {
-            .e-de-op-close-button.e-de-rtl {
-                right: 240px;
-            }
-          }
-          .e-de-track-date {
-              font-size: 12px;
-          }
-          .e-de-page-setup-dlg-sub-container-port {
-            @if $skin-name != 'FluentUI' {
-              margin-top: 19px;
-            } 
-            @else {
-              margin-top: 34px;
-            }
-          }
-          .e-de-table-container-div {
-            margin-top: 13px;
-          }
-          .e-de-table-properties-dlg {
-            width: 470px;
-          }
-          .e-de-table-ppty-dlg-preferred-width-div,
-          .e-de-table-ppty-dlg-measure-drop-down-div,
-          .e-de-ht-wdth-type {
-             width: 155px;
-          }
-          .e-de-row-ht-top,
-          .e-de-cell-ht-top {
-            width: 179px;
-          }
-        }
     }
     @if $skin-name=='tailwind' {
-        .e-bigger {
-            .e-de-table-properties-dlg {
-                width: 485px;
-              }
-              .e-de-table-ppty-dlg-preferred-width-div,
-              .e-de-table-ppty-dlg-measure-drop-down-div,
-              .e-de-ht-wdth-type {
-                 width: 155px;
-              }
-              .e-de-row-ht-top,
-              .e-de-cell-ht-top {
-                width: 179px;
-              }
-            .e-de-restrict-pane {
-                width: 295px;
-            }
-            .e-de-rp-stop-div1 {
-                padding: 12px 16px 12px 16px;
-            }
-            .e-de-rp-stop-div2 {
-                padding: 16px 16px 24px;
-            }
-            .e-de-cmt-sub-container,
-            .e-de-font-dlg-header,
-            .e-de-font-dlg-header-effects,
-            .e-de-font-dlg-header-font-color,
-            .e-de-dlg-sub-header,
-            .e-de-prop-sub-label,
-            .e-de-hyperlink-dlg-title,
-            .e-de-insert-table-dlg-sub-header,
-            .e-de-row-ht-top,
-            .e-de-table-dia-align-label,
-            .e-de-cell-dia-label-common,
-            .e-de-table-setting-labels-heading,
-            .e-de-trckchanges-inner,
-            .e-de-page-setup-dlg-sub-header,
-            .e-de-tbl-indent-lbl,
-            .e-de-table-element-subheading,
-            .e-de-ff-dlg-heading-small,
-            .e-styles-dlgfields,
-            .e-de-insert-footnote-dlg-sub-header,
-            .e-de-list-ddl-subheaderbottom,
-            .e-de-table-measure-lbl,
-            .e-bookmark-dlgfields,
-            .e-de-page-setup-dlg-sub-title-header,
-            .e-de-list-ddl-subheader,
-            .e-de-rp-stop-div1,
-            .e-de-unprotect-dlg-title,
-            .e-de-rp-stop-div2,
-            .e-de-rp-enforce-nav.e-de-rp-nav-lbl .e-label,
-            .e-de-enforce-dlg-title,
-            .e-de-track-date,
-            .e-de-rp-sub-content-div,
-            .e-de-rp-stop-div3,
-            .e-de-cmt-date {
-                font-size: 14px !important;
-            }
-            .e-de-table-setting-heading,
-            .e-de-cell-dia-options-label,
-            .e-de-style-formatting,
-            .e-de-table-border-heading,
-            .e-de-style-properties,
-            .e-de-page-setup-dlg-sub-label,
-            .e-de-toc-dlg-heading,
-            .e-de-ff-dlg-heading,
-            .e-de-toc-dlg-main-heading,
-            .e-de-list-ddl-header,
-            .e-de-prop-header-label,
-            .e-de-table-border-heading,
-            .e-de-dlg-spellchecker-subheader,
-            .e-de-dlg-spellchecker-subheaderbtm,
-            .e-de-list-ddl-header-list-level,
-            .e-de-rp-format,
-            .e-de-track-toolbar-overlay,
-            .e-de-cmt-author-name,
-            .e-de-cmt-readonly,
-            .e-de-op-search-icon,
-            .e-de-op-nav-btn,
-            .e-de-track-user-nme,
-            .e-de-tc-no-chng {
-                font-size: 16px;
-            }
-            .e-de-cell-margin-top {
-                padding-top: 0;
-            }
-            .e-de-op {
-                padding-left: 16px;
-                padding-right: 16px;
-                width: 308px;
-            }
-            .e-de-font-dlg-cb-right.e-de-rtl,
-            .e-de-style-left-div,
-            .e-bookmark-list,
-            .e-de-ff-dlg-lft-hlf,
-            .e-styles-list,
-            .e-de-user-dlg-textbox-input {
-                margin-right: 16px !important;
-            }
-            .e-de-ff-dlg-lft-hlf.e-de-rtl,
-            .e-de-table-ppty-dlg-preferred-width-div,
-            .e-de-font-dlg-cb-right,
-            .e-de-table-ppty-dlg-measure-div,
-            .e-de-ff-drpdwn-listview.e-de-rtl,
-            .e-de-table-ppty-dlg-measure-drop-down-div,
-            .e-bookmark-list.e-de-rtl,
-            .e-de-op.e-de-rtl .e-de-search-tab-content,
-            .e-de-user-dlg-list.e-de-rtl .e-de-user-dlg-textbox-input {
-                margin-left: 16px;
-            }
-            .e-de-toc-dlg-style-label {
-                margin-top: 56px;
-            }
-            .e-de-ff-drpdwn-mvup {
-                margin-right: 12px;
-            }
-            .e-de-font-clr-div,
-            .e-de-toc-dlg-styles,
-            .e-de-font-dlg-padding,
-            .e-de-page-setup-dlg-sub-title-header,
-            .e-de-op-result-container .e-de-list-ddl-subheaderbottom,
-            .e-de-op-more-less,
-            .e-de-op-replacetabcontentdiv,
-            .e-de-op-dlg-footer {
-                margin-top: 16px;
-            }
-            .e-de-ff-drpdwn-mvdn,
-            .e-de-ff-drpdwn-mvup {
-                width: 46px !important;
-            }
-            .e-de-list-dlg-div.e-de-rtl,
-            .e-de-list-dlg-subdiv.e-de-rtl {
-                margin-top: -150px;
-            }
-            .e-de-list-dlg-div:not(.e-de-rtl) {
-                margin-top: 40px;
-            }
-            .e-de-ht-wdth-type {
-                margin-top: -18px;
-            }
-            .e-de-list-dlg {
-                width: 425px;
-            }
-            .e-de-list-dlg-subdiv .e-input {
-                height: 38px;
-            }
-            .e-de-toc-dlg-container {
-                width: 640px;
-            }
-            .e-de-toc-styles-table-div {
-                height: 195px;
-            }
-            .e-de-toc-table-div {
-                height: 127px;
-            }
-            .e-de-toc-list-view {
-                height: 204px;
-            }
-            .e-de-style-options-div,
-            .e-de-ff-dlg-heading,
-            .e-de-table-ppty-options-break,
-            .e-de-page-setup-dlg-first-page-prop,
-            .e-de-style-options-div>div:first-child,
-            .e-de-toc-dlg-sub-container,
-            .e-de-cmt-author,
-            .e-de-font-checkbox-transform,
-            .e-de-font-color-label,
-            .e-bookmark-gotobutton,
-            .e-de-drp-dwn-frst-div,
-            .e-de-font-checkbox-transform-label,
-            .e-bookmark-deletebutton,
-            .e-bookmark-textboxdiv,
-            .e-de-user-dlg-user,
-            .e-de-page-setup-dlg-sub-label {
-                margin-bottom: 12px !important;
-            }
-            .e-de-rp-format{
-                @if $skin-name=='fluent2' { 
-                    color: $de-op-title-clr;
-                    font-size: 16px;
-                }
-            }
-            .e-de-row-ht-top,
-            .e-de-cell-ht-top {
-                padding: 0 16px;
-            }
-            .e-de-style-name,
-            .e-de-style-styletype,
-            .e-de-style-style-based-on,
-            .e-de-style-style-paragraph {
-                font-size: 14px;
-            }
-            .e-de-pagesetup-dlg-container .e-input-group {
-                width: 199px !important;
-            }
-            .e-de-table-measure-lbl {
-                width: 90px !important;
-            }
-            .e-de-list-ddl-subheader,
-            .e-de-cell-dia-label-common,
-            .e-de-page-setup-dlg-sub-container-port {
-                margin-top: 42px;
-            }
-            .e-de-page-setup-dlg-first-page-prop {
-                height: 30px !important;
-            }
-            .e-de-table-dialog-options-label {
-                padding-bottom: 16px;
-            }
-            .e-de-row-ht-top,
-            .e-de-cell-ht-top {
-                margin-top: 4px;
-            }
-            .e-de-table-options-dlg {
-                width: 425px;
-            }
-            .e-de-style-based-para-div .e-input-group,
-            .e-de-style-nametype-div .e-input-group,
-            .e-de-style-nametype-div .e-input {
-                width: 320px !important;
-            }
-            .e-de-font-color-label,
-            .e-de-hyperlink-bookmark-check,
-            .e-de-search-tab-content,
-            .e-de-page-setup-dlg-orientation-prop {
-                margin-top: 16px;
-            }
-            .e-de-page-setup-dlg-sub-size-container,
-            .e-bookmark-addbutton,
-            .e-de-page-setup-dlg-layout-sub-container,
-            .e-de-insert-table-dlg-input,
-            .e-de-insert-footnote-dlg-header,
-            .e-de-hyperlink-dlg-input,
-            .e-de-style-nametype-div,
-            .e-de-rp-format,
-            .e-de-hdr-ftr-frst-page-div,
-            .e-de-page-setup-dlg-sub-container,
-            .e-de-div-seperate-dlg,
-            .e-styles-addbutton,
-            .e-de-user-dlg-list,
-            .e-de-spellcheck-error-container,
-            .e-bookmark-deletebutton,
-            .e-bookmark-gotobutton {
-                margin-bottom: 16px !important;
-            }
-            .e-de-op-header {
-                margin-bottom: 0;
-            }
-            .e-de-style-based-para-div,
-            .e-de-table-options-dlg-div {
-                margin-bottom: 20px;
-            }
-            .e-de-font-dlg .e-input-group {
-                width: max-content !important;
-            }
-            .e-de-list-dlg .e-input-group,
-            .e-de-list-dlg .e-input {
-                width: 203px !important;
-            }
-            .e-de-pagesetup-dlg-container {
-                width: 415px;
-            }
-            .e-style-font-fmaily-right {
-                width: 188px !important;
-            }
-            .e-de-style-format-dropdwn {
-                height: auto !important;
-            }
-            .e-de-table-options-dlg-div .e-input-group {
-                width: 200px !important;
-                margin-right: 16px;
-            }
-        }
-        .e-bigger .e-de-rp-enforce-nav:not(.e-de-rp-nav-lbl) {
-            margin: 0 16px 16px 16px;
-        }
+        
         .e-de-style-font-group-button .e-btn:not(button:last-child),
         .e-de-style-paragraph-group-button .e-btn:not(button:last-child),
         .e-de-style-paragraph-indent-group-button .e-btn:not(button:last-child) {
@@ -1339,9 +949,6 @@
         }
         .e-de-cell-margin-top {
             padding-bottom: 0;
-        }
-        .e-bigger .e-de-ctnr-prop-label.e-de-table-prop-label {
-            margin-bottom: 12px;
         }
         .e-de-ctnr-prop-label.e-de-table-prop-label {
             margin-bottom: 8px;
@@ -1627,17 +1234,6 @@
     .e-de-font-content-checkbox-label-rtl {
         margin-right: $de-font-content-checkbox-right;
     }
-    .e-bigger {
-        .e-de-font-content-checkbox-label {
-            margin-left: $de-font-content-checkbox-left-bg;
-        }
-        .e-de-font-content-checkbox-label-rtl {
-            margin-right: $de-font-content-checkbox-right-bg;
-        }
-        .e-de-font-content-label {
-            width: $de-font-label-width-bg;
-        }
-    }
     .e-de-font-checkbox {
         margin-top: $de-font-style-margin;
     }
@@ -1741,16 +1337,6 @@
             background: none;
         }
     }
-    .e-bigger {
-        .e-de-hyperlink {
-            @if $skin-name=='Material3' {
-                width: 320px;
-            }
-            @else {
-                width: 300px;
-            }
-        }
-    }
     .e-de-insert-table {
         height: $de-insert-table-height;
         width: $de-insert-table-width;
@@ -1763,11 +1349,6 @@
         height: $de-insert-spellchecker-height;
         width: $de-insert-spellchecker-width;
         font-weight: $de-header-font-weight;
-    }
-    .e-bigger {
-        .e-de-insert-spellchecker {
-            width: $de-insert-big-spellchecker-width;
-        }
     }
     .e-de-dlg-spellcheck-listview {
         @if $skin-name !='tailwind' {
@@ -1919,12 +1500,6 @@
         height: $de-bookmark-custom-btn-height;
         width: 100%;
     }
-    .e-bigger {
-        .e-button-custom {
-            height: $de-bigger-style-button-height;
-            width: 100%;
-        }
-    }
     .e-styles-listview,
     .e-bookmark-listview {
         border: 1px solid $bookmark-listview-border-color;
@@ -2001,7 +1576,7 @@
         margin-bottom: 14px;
         width: $de-dlg-table-options-content-div;
     }
-        @if $skin-name !='bootstrap4' and $skin-name !='tailwind' {
+        @if $skin-name !='bootstrap4' and $skin-name !='bootstrap5.3' and $skin-name !='tailwind' {
             .e-de-style-paragraph-indent-group-button .e-btn.e-active,
             .e-de-style-paragraph-group-button .e-btn.e-active,
             .e-de-style-font-group-button .e-btn.e-active {
@@ -2046,85 +1621,10 @@
                 height: 31px;
             }
         }
-        .e-bigger {
-            @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name != 'FluentUI' {
-                .e-de-style-font-color-picker,
-                .e-de-style-icon-button-size,
-                .e-de-style-icon-button-first-size,
-                .e-de-style-icon-button-last-size {
-                    height: 35px;
-                }
-            }
-            .e-de-style-bold-button-size {
-                @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name != 'FluentUI' and $skin-name != 'Material3'{
-                    margin-right: 8px;
-                    height: 31px;
-                }
-                @if $skin-name=='fluent2' {
-                    margin-left: 0;
-                    border-left: 0;
-                    border-right: 0px;
-                    height: 35px;
-                    margin-right: 0;
-                }
-                @else {
-                    margin-left: $de-style-dialog-label-bottom-margin;
-                }
-            }
-        }
-        .e-bigger .e-dlg-container .e-de-dlg-target .e-de-style-dialog {
-            .e-de-style-font-group-button,
-            .e-style-paragraph {
-                button {
-                    @if $skin-name =='Material3' {
-                        height: 40px !important;
-                        width: 44px !important;
-                    }
-                }
-            }
-            .e-de-style-font-color-picker button {
-                height: 40px !important;
-                width: auto !important;
-            }
-        }
-
-        .e-bigger .e-dlg-container .e-de-dlg-target .e-de-style-dialog {
-            .e-de-style-font-group-button,
-            .e-style-paragraph {
-                button {
-                    @if $skin-name =='Material3' {
-                        height: 40px !important;
-                        width: 44px !important;
-                    }
-                }
-            }
-            .e-de-style-font-color-picker button {
-                height: 40px !important;
-                width: auto !important;
-            }
-        }
+        
+        
 
         @if $skin-name =='Material3' {
-            .e-bigger {
-                .e-rtl {
-                    .e-de-style-font-group-button,
-                    .e-de-style-paragraph-indent-group-button,
-                    .e-de-style-paragraph-group-button {
-                        button {
-                            height: 40px !important;
-                            width: 44px !important;
-                        }
-                    }
-                }
-                .e-de-style-font-group-button,
-                .e-de-style-paragraph-indent-group-button,
-                .e-de-style-paragraph-group-button {
-                    button {
-                        height: 40px !important;
-                        width: 44px !important;
-                    }
-                }
-            }
             .e-de-style-font-group-button button,
             .e-de-style-paragraph-indent-group-button button,
             .e-de-style-paragraph-group-button button {
@@ -2265,12 +1765,6 @@
         .e-de-op-input-group,
         .e-de-op-replacewith {
             height: $de-op-input-group-height;
-        }
-        .e-bigger {
-            .e-de-op-input-group,
-            .e-de-op-replacewith {
-                height: 40px;
-            }
         }
         .e-de-hyperlink-bookmark-check {
             margin-top: $de-hyperlink-bookmark-check-margin-top;
@@ -2621,45 +2115,6 @@
             opacity: $de-paradialog-dir-div;
             pointer-events: none;
         }
-        .e-bigger {
-            .e-de-insert-table {
-                height: auto;
-                width: auto;
-            }
-            .e-de-insert-footnote {
-                height: auto;
-                width: auto;
-            }
-            .e-de-dlg-target .e-footer-content .e-control.e-btn.e-flat:not(.e-icon-btn) {
-                height: auto;
-            }
-            .e-de-font-dlg {
-                width: $de-font-dlg-width-big;
-            }
-            .e-para-dlg-sub-height {
-                height: 170px;
-            }
-            .e-de-toc-table-div .e-de-toc-dlg-toc-level.e-de-rtl {
-                margin-right: $de-toc-dlg-toc-level-margin-left;
-            }
-            .e-de-font-content-label-width {
-                width: $de-font-content-label-width;
-            }
-            .e-de-toc-label {
-                margin-left: 0px;
-            }
-            .e-de-toc-label-rtl {
-                margin-left: 0px;
-                margin-right: 0px;
-            }
-            .e-de-outline-rtl {
-                width: 173px;
-            }
-            .e-de-rp-header {
-                font-size: 16px;
-                width: 75%;
-            }
-        }
         .e-de-restrict-format {
             margin-top: 16px;
         }
@@ -2716,10 +2171,6 @@
                 color: $de-cmt-pant-content-font;
                 opacity: 1;
             }
-        }
-        .e-bigger .e-de-rp-btn-enforce {
-            padding-left: $de-rp-btn-enforce-padding-big;
-            padding-right: $de-rp-btn-enforce-padding-big;
         }
         .e-de-rp-nav-btn { 
           width: auto;
@@ -3146,18 +2597,7 @@
             padding-top: $e-de-cmt-textarea-padding-top;
             resize: none;
         }
-        .e-bigger .e-de-cmt-textarea.e-input {
-            padding-top: $e-de-cmt-textarea-padding-top-big;
-        }
         .e-de-cmt-textarea.e-input:focus {
-            @if $skin-name == 'fluent2' {
-                border-color: $content-bg-color-alt1;
-                border-radius: 5px;
-                box-shadow: $border;
-            }
-        }
-
-        .e-bigger .e-de-cmt-textarea.e-input:focus {
             @if $skin-name == 'fluent2' {
                 border-color: $content-bg-color-alt1;
                 border-radius: 5px;
@@ -3304,39 +2744,6 @@
                 text-align: left;
             }
         }
-        .e-bigger {
-            .e-de-cmt-post-btn.e-btn.e-flat,
-            .e-de-cmt-cancel-btn.e-btn.e-flat {
-                height: $de-cmt-post-btn-ht-big;
-                margin-left: 12px;
-                width: $de-cmt-post-btn-wt-big;
-                @if $skin-name == 'tailwind' {
-                    padding-top: $de-cmt-cancel-btn-padding-top-big;
-                    padding-left: $de-cmt-cancel-btn-padding-left-big;
-                }
-            }
-            .e-de-cp-whole-header {
-                height: 56px;
-                padding: 16px;
-                padding-right: 8px;
-            }
-            .e-de-rp-close-icon {
-                float: right;
-                position: relative;
-                top: $de-rp-close-icon-top-bigger;
-                right: $de-rp-close-icon-right-bigger;
-            }
-            .e-rtl {
-                .e-de-cmt-post-btn.e-btn.e-flat,
-                .e-de-cmt-cancel-btn.e-btn.e-flat {
-                    margin-right: 12px;
-                    @if $skin-name == 'tailwind' {
-                        padding-bottom: $de-cmt-cancel-btn-padding-top-big;
-                        padding-right: $de-cmt-cancel-btn-padding-left-big;
-                    }
-                }
-            }
-        }
         .e-de-close-icon.e-btn {
             background-color: $dialog-btn-bg-color !important;
             border-color: $dialog-btn-border-color !important;
@@ -3461,70 +2868,12 @@
                 margin-right: 10px;
             }
         }
-        .e-bigger {
-            .e-de-cmt-author-name {
-                padding-left: $de-cmt-author-nme-padding-left-big;
-            }
-            .e-de-cmt-rply-view{
-                margin-top: $de-cmt-textbox-top-margin-big;
-            }
-            .e-de-cmt-sub-container{
-                padding: $de-cmt-sub-container-padding-big;
-                @if $skin-name=='fluent2' {
-                    background-color: $de-ctnr-prop-bg-clr;
-                } 
-            }
-            .e-de-cmt-sub-container.e-de-cmt-selection {
-                padding-left: $de-cmt-sub-container-padding-left-big;
-            }
-            .e-de-cmt-sub-container:not(.e-de-cmt-selection):not(.e-de-cmt-reply):hover{
-                padding-left: $de-cmt-sub-container-hover-padding-left-big;
-            }
-            .e-de-cmt-sub-container.e-de-cmt-reply{
-                padding: 0%;
-            }
-            .e-de-rp-nav-btn {
-                width: auto;
-            }
-            .e-de-rp-whole-header {
-                padding: $de-rp-whole-header-padding-big;
-            }
-            .e-de-rp-sub-div {
-                border-bottom: 1px solid $de-list-view;
-                padding: $de-rp-sub-div-padding-big;
-            }
-            .e-de-rp-enforce {
-                padding: $de-rp-enforce-padding-big;
-            }
-            .e-de-enforce .e-de-enforce-dlg-input:not(.e-de-enforce .e-de-enforce-dlg-input:last-child) {
-                width: 300px;
-            }
-
-            .e-rtl{
-                .e-de-cmt-author-name {
-                    padding-left: 0%;
-                    padding-right: $de-cmt-author-nme-padding-left-big;
-                }
-                .e-de-cmt-sub-container.e-de-cmt-selection {
-                    padding-left: $de-cmt-sub-container-padding-big;
-                    padding-right: $de-cmt-sub-container-padding-left-big;
-                }
-                .e-de-cmt-sub-container:not(.e-de-cmt-selection):not(.e-de-cmt-reply):hover {
-                    padding-left: $de-cmt-sub-container-padding-big;
-                    padding-right: $de-cmt-sub-container-hover-padding-left-big;
-                }
-                .e-de-rp-close-icon {
-                    float: left;
-                    right: $de-rp-close-icon-right-bigger-rtl;
-                }
-            }
-        }
         .e-de-style-paragraph-indent-group-button .e-btn.e-active,
         .e-de-style-paragraph-group-button .e-btn.e-active,
         .e-de-style-font-group-button .e-btn.e-active {
             @if $skin-name =='fluent2' {
-            background-color: var(--color-sf-content-bg-color-pressed);
-            color: var(--color-sf-toolbar-icon-color);
+                background-color: var(--color-sf-content-bg-color-pressed);
+                color: var(--color-sf-toolbar-icon-color);
             }
         }
         .e-de-hyperlink-bookmark-check .e-checkbox-wrapper .e-frame {

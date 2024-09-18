@@ -1359,7 +1359,7 @@ export interface FormFieldPropertiesChangeArgs extends BaseEventArgs {
     /**
      * Specifies whether the custom data is changed or not.
      */
-    isCustomDataChanged?:boolean;
+    isCustomDataChanged?: boolean;
 }
 
 /**

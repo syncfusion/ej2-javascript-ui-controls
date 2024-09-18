@@ -74,8 +74,8 @@ describe('Chart Control', () => {
         it('Checking Xaxis title default position', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-0');
-                expect(parseInt(area.getAttribute('y'))).toBe(439);
-                expect(parseInt(area.getAttribute('x'))).toBe(397);
+                expect(parseInt(area.getAttribute('y'))).toBe(438);
+                expect(parseInt(area.getAttribute('x'))).toBe(396);
                 done();
             };
             chartObj.loaded = loaded;
@@ -85,8 +85,8 @@ describe('Chart Control', () => {
         it('Checking Yaxis title default position', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-1');
-                expect(parseInt(area.getAttribute('y'))).toBe(202);
-                expect(parseInt(area.getAttribute('x'))).toBe(21);
+                expect(parseInt(area.getAttribute('y'))).toBe(201);
+                expect(parseInt(area.getAttribute('x'))).toBe(23);
                 done();
             };
             chartObj.loaded = loaded;
@@ -96,8 +96,8 @@ describe('Chart Control', () => {
         it('Checking Xaxis title default styles', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-0');
-                expect(area.getAttribute('font-size')).toBe('14px');
-                expect(area.getAttribute('font-weight')).toBe('600');
+                expect(area.getAttribute('font-size')).toBe('16px');
+                expect(area.getAttribute('font-weight')).toBe('700');
                 done();
             };
             chartObj.loaded = loaded;
@@ -106,8 +106,8 @@ describe('Chart Control', () => {
         it('Checking Yaxis title default styles', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-1');
-                expect(area.getAttribute('font-size') ).toBe('14px');
-                expect(area.getAttribute('font-weight')).toBe( '600');
+                expect(area.getAttribute('font-size') ).toBe('16px');
+                expect(area.getAttribute('font-weight')).toBe( '700');
                 done();
             };
             chartObj.loaded = loaded;
@@ -118,57 +118,57 @@ describe('Chart Control', () => {
                 let label = document.getElementById('chartContainer-0-axis-label-0');
                 let content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(64);
-                expect(parseInt(label.getAttribute('y'))).toBe(413);
+                expect(parseInt(label.getAttribute('y'))).toBe(410);
                 expect(content == '0').toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-1');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(132);
-                expect(parseInt(label.getAttribute('y'))).toBe(413);
+                expect(parseInt(label.getAttribute('y'))).toBe(410);
                 expect(content == '0.5').toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-2');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(201);
-                expect(parseInt(label.getAttribute('y'))).toBe(413);
+                expect(parseInt(label.getAttribute('y'))).toBe(410);
                 expect(content == '1').toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-3');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(270);
-                expect(parseInt(label.getAttribute('y'))).toBe(413);
+                expect(parseInt(label.getAttribute('y'))).toBe(410);
                 expect(content == '1.5').toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-4');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(338);
-                expect(parseInt(label.getAttribute('y'))).toBe(413);
+                expect(parseInt(label.getAttribute('y'))).toBe(410);
                 expect(content == '2').toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-5');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(408);
-                expect(parseInt(label.getAttribute('y'))).toBe(413);
+                expect(parseInt(label.getAttribute('y'))).toBe(410);
                 expect(content == '2.5').toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-6');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(477);
-                expect(parseInt(label.getAttribute('y'))).toBe(413);
+                expect(parseInt(label.getAttribute('y'))).toBe(410);
                 expect(content == '3').toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-7');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(545);
-                expect(parseInt(label.getAttribute('y'))).toBe(413);
+                expect(parseInt(label.getAttribute('y'))).toBe(410);
                 expect(content == '3.5').toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-8');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(614);
-                expect(parseInt(label.getAttribute('y'))).toBe(413);
+                expect(parseInt(label.getAttribute('y'))).toBe(410);
                 expect(content == '4').toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-9');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(683);
-                expect(parseInt(label.getAttribute('y'))).toBe(413);
+                expect(parseInt(label.getAttribute('y'))).toBe(410);
                 expect(content == '4.5').toBe(true);
                 label = document.getElementById('chartContainer-0-axis-label-10');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(751);
-                expect(parseInt(label.getAttribute('y'))).toBe(413);
+                expect(parseInt(label.getAttribute('y'))).toBe(410);
                 expect(content === '5').toBe(true);
                 done();
             };
@@ -180,42 +180,42 @@ describe('Chart Control', () => {
                 let label = document.getElementById('chartContainer-1-axis-label-0');
                 let content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(395);
+                expect(parseInt(label.getAttribute('y'))).toBe(392);
                 expect(content == '0').toBe(true);
                 label = document.getElementById('chartContainer-1-axis-label-1');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(361);
+                expect(parseInt(label.getAttribute('y'))).toBe(358);
                 expect(content == '0.5').toBe(true);
                 label = document.getElementById('chartContainer-1-axis-label-2');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(326);
+                expect(parseInt(label.getAttribute('y'))).toBe(324);
                 expect(content == '1').toBe(true);
                 label = document.getElementById('chartContainer-1-axis-label-3');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(292);
+                expect(parseInt(label.getAttribute('y'))).toBe(290);
                 expect(content == '1.5').toBe(true);
                 label = document.getElementById('chartContainer-1-axis-label-4');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(258);
+                expect(parseInt(label.getAttribute('y'))).toBe(256);
                 expect(content == '2').toBe(true);
                 label = document.getElementById('chartContainer-1-axis-label-5');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(223);
+                expect(parseInt(label.getAttribute('y'))).toBe(222);
                 expect(content == '2.5').toBe(true);
                 label = document.getElementById('chartContainer-1-axis-label-6');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(189);
+                expect(parseInt(label.getAttribute('y'))).toBe(187);
                 expect(content == '3').toBe(true);
                 label = document.getElementById('chartContainer-1-axis-label-7');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(155);
+                expect(parseInt(label.getAttribute('y'))).toBe(154);
                 expect(content == '3.5').toBe(true);
                 label = document.getElementById('chartContainer-1-axis-label-8');
                 content = label.textContent;
@@ -230,7 +230,7 @@ describe('Chart Control', () => {
                 label = document.getElementById('chartContainer-1-axis-label-10');
                 content = label.textContent;
                 expect(parseInt(label.getAttribute('x'))).toBe(52);
-                expect(parseInt(label.getAttribute('y'))).toBe(52);
+                expect(parseInt(label.getAttribute('y'))).toBe(51);
                 expect(content == '5').toBe(true);
                 label = document.getElementById('chartContainer-1-axis-label-11');
                 content = label.textContent;
@@ -279,7 +279,7 @@ describe('Chart Control', () => {
         it('Checking Xaxis title Rotation', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-0');
-                expect(area.getAttribute('transform')).toBe('rotate(90,402.6425811437403,424.12881040499417)');
+                expect(area.getAttribute('transform')).toBe('rotate(90,402.1522411128284,424.12881040499417)');
                 done();
             };
             chartObj.loaded = loaded;
@@ -290,7 +290,7 @@ describe('Chart Control', () => {
         it('Checking Yaxis title Rotation', (done: Function) => {
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer-svg-axis-title-1');
-                expect(area.getAttribute('transform')).toBe('rotate(90,16.25463678516229,187.29457547454598)');
+                expect(area.getAttribute('transform')).toBe('rotate(90,16.25463678516229,186.80423544363407)');
                 done();
             };
             chartObj.loaded = loaded;
@@ -301,7 +301,7 @@ describe('Chart Control', () => {
         it('Checking Xaxis label rotation', (done: Function) => {
             loaded = (args: Object): void => {
                 let label = document.getElementById('chartContainer-0-axis-label-0');
-                expect(label.getAttribute('transform')).toBe('rotate(45,60.385239567233384,377.6609857344001)');
+                expect(label.getAttribute('transform')).toBe('rotate(45,59.40455950540958,377.660978252405)');
                 done();
             };
             chartObj.loaded = loaded;
@@ -321,7 +321,7 @@ describe('Chart Control', () => {
         it('Checking secondary Yaxis position oposite', (done: Function) => {
             loaded = (args: Object): void => {
                 let label = document.getElementById('chartContainer-2-axis-label-0');
-                expect(label.getAttribute('x')).toBe('754.7067233384853');
+                expect(label.getAttribute('x')).toBe('755.6874034003091');
                 expect(label.getAttribute('y')).toBe('357.3918083462133');
                 done();
             };

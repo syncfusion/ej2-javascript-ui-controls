@@ -55,10 +55,9 @@ export class BarcodeCanvasRenderer implements IBarcodeRenderer {
     public renderRect(canvas: HTMLCanvasElement, attribute: BaseAttributes): HTMLElement {
         const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
         if (attribute.imageSource) {
-            // For rendering logo
-            var image = new Image();
+            const image: HTMLImageElement = new Image();
             image.src = attribute.imageSource;
-            image.onload = function () {
+            image.onload = function (): void {
                 ctx.drawImage(image, attribute.x, attribute.y, attribute.width, attribute.height);
             };
         }

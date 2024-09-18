@@ -1016,8 +1016,10 @@ export class ColumnsDialog {
             }
             const startParagraphInfo: ParagraphInfo = this.documentHelper.selection.getParagraphInfo(this.documentHelper.selection.start);
             const endParagraphInfo: ParagraphInfo = this.documentHelper.selection.getParagraphInfo(this.documentHelper.selection.end);
-            const startIndex: string = this.documentHelper.selection.getHierarchicalIndex(startParagraphInfo.paragraph, startParagraphInfo.offset.toString());
-            const endIndex: string = this.documentHelper.selection.getHierarchicalIndex(endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
+            const startIndex: string = this.documentHelper.selection.getHierarchicalIndex(
+                startParagraphInfo.paragraph, startParagraphInfo.offset.toString());
+            const endIndex: string = this.documentHelper.selection.getHierarchicalIndex(
+                endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
             this.documentHelper.selection.select(endIndex, endIndex);
             this.documentHelper.owner.editorModule.insertSectionBreak(SectionBreakType.Continuous);
             this.documentHelper.selection.select(startIndex, startIndex);
@@ -1049,7 +1051,7 @@ export class ColumnsDialog {
         sectionFormat.columns = cols;
         sectionFormat.breakCode = currentSectionFormat.breakCode;
         this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
-        if(this.documentHelper.owner.editorHistory){
+        if (this.documentHelper.owner.editorHistory){
             this.documentHelper.owner.editorHistory.updateComplexHistory();
         }
         this.documentHelper.hideDialog();

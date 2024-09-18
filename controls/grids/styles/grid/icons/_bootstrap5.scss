@@ -122,13 +122,6 @@
       content: '\e820';
     }
 
-    .e-ccsearch-icon.e-cc-cancel::before,
-    .e-chkcancel-icon::before,
-    .e-cancel-icon::before,
-    .e-cancel::before {
-      content: '\e7e7';
-    }
-
     .e-copy::before {
       content: '\e77c';
     }
@@ -138,14 +131,25 @@
       content: '\e7c8';
     }
 
-    .e-search-icon::before,
-    .e-ccsearch-icon::before {
-      content: '\e754';
-    }
-
     .e-columnchooser::before {
       content: '\e21e'; // icon not found
     }
+  }
+}
+
+#{&}.e-grid,
+.e-grid-menu,
+.e-grid-popup {
+  .e-search-icon::before,
+  .e-ccsearch-icon::before {
+    content: '\e754';
+  }
+
+  .e-ccsearch-icon.e-cc-cancel::before,
+  .e-chkcancel-icon::before,
+  .e-cancel-icon::before,
+  .e-cancel::before {
+    content: '\e7e7';
   }
 }
 

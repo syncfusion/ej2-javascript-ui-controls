@@ -379,9 +379,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Defines toolbar items for DocumentEditorContainer.
      *
-     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','InsertFootnote','InsertEndnote','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields','UpdateFields','ContentControl']
+     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','InsertFootnote','InsertEndnote','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields','UpdateFields','ContentControl','XML Mapping']
      */
-    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'InsertFootnote', 'InsertEndnote', 'Separator', 'Find', 'Separator', 'Comments', 'TrackChanges', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields','ContentControl'])
+    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'InsertFootnote', 'InsertEndnote', 'Separator', 'Find', 'Separator', 'Comments', 'TrackChanges', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields', 'ContentControl', 'XML Mapping'])
     public toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
     /* eslint-enable max-len */
     /* eslint-disable */
@@ -443,6 +443,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'HEADING - - - - 3': 'HEADING - - - - 3',
         'Header': 'Header',
         'Footer': 'Footer',
+        'XML Mapping Pane': 'XML Mapping Pane',
         'Page Setup': 'Page Setup',
         'Page Number': 'Page Number',
         'Break': 'Break',
@@ -458,6 +459,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Continuous': 'Continuous',
         'Header And Footer': 'Header & Footer',
         'Options': 'Options',
+        'XML Mapping': 'XML Mapping',
+        'Custom XML Part:': 'Custom XML Part:',
+        'Core Properties': 'Core Properties',
         'Levels': 'Levels',
         'Different First Page': 'Different First Page',
         'Different header and footer for odd and even pages': 'Different header and footer for odd and even pages.',
@@ -621,11 +625,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'The address of this site is not valid. Check the address and try again.': 'The address of this site is not valid. Check the address and try again.',
         'OK': 'OK',
         'Information': 'Information',
-        'Rich Text Content Control' : 'Rich Text Content Control',
-        'Plain Text Content Control' : 'Plain Text Content Control',
+        'Rich Text Content Control': 'Rich Text Content Control',
+        'Plain Text Content Control': 'Plain Text Content Control',
         'Picture Content Control': 'Picture Content Control',
-        'Combo Box Content Control' : 'Combo Box Content Control',
-        'Drop-Down List Content Control' : 'Drop-Down List Content Control',
+        'Combo Box Content Control': 'Combo Box Content Control',
+        'Drop-Down List Content Control': 'Drop-Down List Content Control',
         'Date Picker Content Control': 'Date Picker Content Control',
         'Check Box Content Control': 'Check Box Content Control'
     };
@@ -1247,7 +1251,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
-        if (this.documentEditor.documentHelper.contentControlCollection.length>0) {
+        if (this.documentEditor.documentHelper.contentControlCollection.length > 0) {
             this.documentEditor.selection.isHighlightContentControlEditRegion = true;
             this.documentEditor.selection.onHighlightContentControl();
         }
@@ -1260,7 +1264,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public onSelectionChange(): void {
         setTimeout(() => {
-            if(!isNullOrUndefined(this.documentEditor)){
+            if (!isNullOrUndefined(this.documentEditor)) {
                 this.showPropertiesPaneOnSelection();
                 let eventArgs: ContainerSelectionChangeEventArgs = { source: this, isCompleted: this.documentEditor.documentHelper.isSelectionCompleted };
                 this.trigger(selectionChangeEvent, eventArgs);
@@ -1371,8 +1375,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.propertiesPaneContainer.style.display = 'block';
             if (isInHeaderFooter && this.showHeaderProperties) {
                 this.showProperties('headerfooter');
-            } else if (currentContext.indexOf('List') >= 0 || currentContext.indexOf('Text') >= 0
-                && currentContext.indexOf('Table') < 0) {
+            } else if ((currentContext.indexOf('List') >= 0 || currentContext.indexOf('Text') >= 0
+                && currentContext.indexOf('Table') < 0)) {
                 this.showProperties('text');
             } else if (currentContext.indexOf('Image') >= 0) {
                 this.showProperties('image');
@@ -1476,8 +1480,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.statusBar.destroy();
         }
         if (this.propertiesPaneContainer && this.propertiesPaneContainer.parentElement) {
-            this.propertiesPaneContainer.innerHTML = '';
-            this.propertiesPaneContainer.parentElement.removeChild(this.propertiesPaneContainer);
+            this.propertiesPaneContainer.remove();
         }
         this.propertiesPaneContainer = undefined;
         if (this.editorContainer && this.editorContainer.parentElement) {
@@ -1496,6 +1499,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.statusBarElement = undefined;
         this.editorContainer = undefined;
         this.statusBar = undefined;
-        this.previousContext = undefined;
+        this.previousContext = undefined;         
     }
 }

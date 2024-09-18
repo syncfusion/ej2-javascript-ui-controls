@@ -6,7 +6,7 @@ import { createElement, L10n, remove } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
 import { Zoom } from '../../../src/chart/user-interaction/zooming';
 import { LineSeries } from '../../../src/chart/series/line-series';
-import { unbindResizeEvents } from '../base/data.spec';
+import { data, unbindResizeEvents } from '../base/data.spec';
 import { ColumnSeries } from '../../../src/chart/series/column-series';
 import { DataLabel } from '../../../src/chart/series/data-label';
 import { seriesData1 } from '../base/data.spec';
@@ -14,12 +14,16 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { wheel } from '../../chart/user-interaction/zooming.spec';
 import { ILoadedEventArgs, IMouseEventArgs } from '../../../src/chart/model/chart-interface';
-import { profile , inMB, getMemoryProfile} from '../../common.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { Legend, Category } from '../../../src/index';
 import { categoryData } from './data.spec';
 import { Query } from '@syncfusion/ej2-data';
+import { Selection } from '../../../src/chart/user-interaction/selection';
+import { Highlight } from '../../../src/chart/user-interaction/high-light';
+import { Export } from '../../../src/chart/print-export/export';
+import { Data } from '../../../src/common/model/data';
 
-Chart.Inject(LineSeries, Zoom, ColumnSeries, DataLabel, Legend, Category);
+Chart.Inject(LineSeries, Zoom, ColumnSeries, DataLabel, Legend, Category, Selection, Highlight, Export);
 
 
 
@@ -127,7 +131,7 @@ describe('Chart Control', () => {
             chart.title = 'Syncfusion Chart Title';
             chart.dataBind();
             text = document.getElementById('container_ChartTitle');
-            expect(text.textContent == 'Syncfusion Chart Title').toBe(true);            
+            expect(text.textContent == 'Syncfusion Chart Title').toBe(true);
             expect(text.getAttribute('y') == '25' || text.getAttribute('y') == '23.5').toBe(true);
         });
         it('Checking textoverflow title none', () => {
@@ -206,8 +210,8 @@ describe('Chart Control', () => {
             chart.subTitleStyle.textOverflow = 'Trim';
             chart.width = '80';
             chart.subTitle = 'syncfusion Chart SubTitle';
-            chart.isTouch=false;
-            chart.loaded= loaded;
+            chart.isTouch = false;
+            chart.loaded = loaded;
             chart.refresh();
         });
 
@@ -218,14 +222,14 @@ describe('Chart Control', () => {
             text = document.getElementById('container_ChartTitle');
             expect(text.getAttribute('font-size')).toEqual('24px');
         });
-       it('Checking with  subtitle', function () {
+        it('Checking with  subtitle', function () {
             chart.width = '500px';
             chart.subTitle = 'Chart SubTitle';
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.textContent == 'Chart SubTitle').toBe(true);
             expect(text.getAttribute('y') == '51.25' || text.getAttribute('y') == '49.25').toBe(true);
-       });
+        });
 
         it('Checking textoverflow subtitle none', function () {
             chart.subTitle = 'SubTitle';
@@ -255,16 +259,16 @@ describe('Chart Control', () => {
         });
 
         it('Checking textAlignment subtitle center and subtitle is in Title width', function () {
-                chart.width = '500px';
-                chart.title = 'Syncfusion Chart SubTitle';
-                chart.subTitle = 'Checking Syncfusion Chart SubTitle width should be in Chart Title width';
-                chart.subTitleStyle.textOverflow = 'Trim';
-                chart.titleStyle.textOverflow = 'Wrap';
-                chart.dataBind();
-                text = document.getElementById('container_ChartSubTitle');
-                expect(text.textContent.indexOf('...') === -1).toBe(true);
-                expect(text.getAttribute('text-anchor')).toBe('middle');
-            });
+            chart.width = '500px';
+            chart.title = 'Syncfusion Chart SubTitle';
+            chart.subTitle = 'Checking Syncfusion Chart SubTitle width should be in Chart Title width';
+            chart.subTitleStyle.textOverflow = 'Trim';
+            chart.titleStyle.textOverflow = 'Wrap';
+            chart.dataBind();
+            text = document.getElementById('container_ChartSubTitle');
+            expect(text.textContent.indexOf('...') === -1).toBe(true);
+            expect(text.getAttribute('text-anchor')).toBe('middle');
+        });
 
         it('Checking textAlignment subtitle Far', function () {
             chart.subTitleStyle.textAlignment = 'Far';
@@ -287,8 +291,8 @@ describe('Chart Control', () => {
             expect(text.getAttribute('font-size')).toEqual('20px');
         });
 
-         it('Checking with empty subtitle', function () {
-            chart.subTitle= '';
+        it('Checking with empty subtitle', function () {
+            chart.subTitle = '';
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text == null).toBe(true);
@@ -331,7 +335,7 @@ describe('Chart Control', () => {
             expect(chart.isOrientation()).toBe(false);
         });
 
-       it('checking with title alignment default', (done: Function) => {
+        it('checking with title alignment default', (done: Function) => {
             loaded = (args: ILoadedEventArgs) => {
                 text = document.getElementById('container_ChartTitle');
                 expect(text.getAttribute('text-anchor')).toBe('middle');
@@ -365,8 +369,8 @@ describe('Chart Control', () => {
                 expect(background.getAttribute('href') != null).toBe(true);
                 done();
             }, 500);
-            chart.chartArea.backgroundImage = 
-            'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
+            chart.chartArea.backgroundImage =
+                'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
             chart.refresh();
         });
         it('checking chart background image', (done: Function) => {
@@ -376,6 +380,83 @@ describe('Chart Control', () => {
                 done();
             }, 500);
             chart.backgroundImage = 'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
+            chart.refresh();
+        });
+        it('Checking with  title in Bottom', function (done) {
+            loaded = function (args) {
+                text = document.getElementById('container_ChartTitle');
+                expect(text.textContent == 'Syncfusion Chart Title').toBe(true);
+                expect(text.getAttribute('y') == '276.5').toBe(true);
+
+                done();
+            };
+            chart.loaded = loaded;
+            chart.title = 'Syncfusion Chart Title';
+            chart.titleStyle.position = 'Bottom'
+            chart.refresh();
+        });
+        it('Checking with  title in Left', function (done) {
+            loaded = function (args) {
+                text = document.getElementById('container_ChartTitle');
+                expect(text.textContent == 'Syncfusion Chart Title').toBe(true);
+                expect(text.getAttribute('y') == '12').toBe(true);
+
+                done();
+            };
+            chart.loaded = loaded;
+            chart.title = 'Syncfusion Chart Title';
+            chart.titleStyle.position = 'Left';
+            chart.refresh();
+        });
+        it('checking with title alignment Near for left', () => {
+            chart.titleStyle.textAlignment = 'Near';
+            chart.titleStyle.position = 'Left';
+            chart.dataBind();
+            text = document.getElementById('container_ChartTitle');
+            expect(text.getAttribute('text-anchor')).toBe('end');
+        });
+        it('Checking with  title in Right', function (done) {
+            loaded = function (args) {
+                text = document.getElementById('container_ChartTitle');
+                expect(text.textContent == 'Syncfusion Chart Title').toBe(true);
+                expect(text.getAttribute('y') == '12').toBe(true);
+
+                done();
+            };
+            chart.loaded = loaded;
+            chart.title = 'Syncfusion Chart Title';
+            chart.titleStyle.position = 'Right';
+            chart.refresh();
+        });
+        it('checking with title alignment Near for Right', () => {
+            chart.titleStyle.textAlignment = 'Near';
+            chart.titleStyle.position = 'Right';
+            chart.dataBind();
+            text = document.getElementById('container_ChartTitle');
+            expect(text.getAttribute('text-anchor')).toBe('start');
+        });
+        it('Checking with title in Custom', function (done) {
+            loaded = function (args) {
+                text = document.getElementById('container_ChartTitle');
+                expect(text.textContent == 'Syncfusion Chart Title').toBe(true);
+                expect(text.getAttribute('y') == '0').toBe(true);
+
+                done();
+            };
+            chart.loaded = loaded;
+            chart.title = 'Syncfusion Chart Title';
+            chart.titleStyle.position = 'Custom';
+            chart.refresh();
+        });
+        it('Checking chart container name as empty', function (done) {
+            loaded = function () {
+                let containerID: HTMLElement = document.getElementById('chart_57723_1');
+                expect(containerID.id).toBe('chart_57723_1');
+                done();
+            };
+            chart.loaded = loaded;
+            let element: HTMLElement = document.getElementById('container');
+            element.setAttribute('id', '');
             chart.refresh();
         });
     });
@@ -459,7 +540,7 @@ describe('Chart Control', () => {
                     {
                         dataSource: seriesData1, xName: 'x', yName: 'y', fill: 'orange', opacity: 0.7,
                         type: 'Column',
-                        animation: { enable: false},
+                        animation: { enable: false },
                         marker: {
                             dataLabel: {
                                 visible: true,
@@ -538,7 +619,7 @@ describe('Chart Control', () => {
         let chart: Chart;
         let ele: HTMLElement;
         let loaded: EmitType<ILoadedEventArgs>;
-        let element: Element;        
+        let element: Element;
         let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             ele = createElement('div', { id: 'seriesData' });
@@ -639,7 +720,7 @@ describe('Chart Control', () => {
                 element = document.getElementById(args.chart.element.id);
                 trigger.doubleClickEvent(element);
             };
-            chart.chartDoubleClick = (args: IMouseEventArgs) =>{
+            chart.chartDoubleClick = (args: IMouseEventArgs) => {
                 expect(args.name).toEqual('chartDoubleClick');
                 done();
             };
@@ -700,6 +781,7 @@ describe('Chart Control', () => {
         let ele: HTMLElement;
         let loaded: EmitType<ILoadedEventArgs>;
         let element: Element;
+        let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
@@ -711,14 +793,17 @@ describe('Chart Control', () => {
                     height: '400px', width: '900px',
                     title: 'Syncfusion Chart',
                     titleStyle: {
-                        textAlignment : 'Near'                    
+                        textAlignment: 'Near'
                     },
                     subTitle: 'Since 2012',
                     subTitleStyle: {
-                        textAlignment : 'Far'
+                        textAlignment: 'Far'
+                    },
+                    legendSettings: {
+                        visible: true
                     }
                 });
-            
+
         });
         afterAll((): void => {
             chart.destroy();
@@ -755,14 +840,683 @@ describe('Chart Control', () => {
         it('Checking the SubTitle with RTL', (done: Function) => {
             loaded = (args: Object): void => {
                 element = document.getElementById('container_ChartSubTitle');
+                let element2 = document.getElementById('container_Series_0');
                 expect(element.getAttribute('text-anchor') == 'start').toBe(true);
+                trigger.keyboardEvent('keyup', element2, 'ArrowUp', 'ArrowUp');
                 done();
             };
             chart.loaded = loaded;
             chart.appendTo('#container');
         });
+        it('chart checking with keyboard navigation', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartSubTitle');
+                trigger.keyboardEvent('keydown', element, 'Space', 'Space');
+                trigger.keyboardEvent('keydown', element, 'Enter', 'Enter');
+                trigger.keyboardEvent('keydown', element, 'Equal', 'Equal');
+                trigger.keyboardEvent('keyup', element, 'ArrowUp', 'ArrowUp');
+                trigger.keyboardEvent('keydown', element, 'Escape', 'Escape');
+                trigger.keyboardEvent('keyup', element, 'ArrowDown', 'ArrowDown');
+                trigger.keyboardEvent('keyup', element, 'ArrowLeft', 'ArrowLeft');
+                trigger.keyboardEvent('keyup', element, 'ArrowRight', 'ArrowRight');
+                trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                expect(element).not.toBe(null);
+                done();
+            };
+            chart.highlightMode = 'Point';
+            chart.loaded = loaded;
+            chart.appendTo('#container');
+        });
+        it('Chart checking with keyboard navigation and legend', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                element = document.getElementById('container_ChartSubTitle');
+                trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                element = document.getElementById('container_Series_0_Point_0_Symbol');
+                trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                element = document.getElementById('container_chart_legend_g_0');
+                trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                trigger.keyboardEvent('keydown', element, 'Space', 'Space');
+                trigger.keyboardEvent('keydown', element, 'Enter', 'Enter');
+                expect(element).not.toBe(null);
+                done();
+            };
+            chart.legendSettings.visible = true;
+            chart.series[0].name = 'Gold';
+            chart.series[0].marker.visible = true;
+            chart.loaded = loaded;
+            chart.appendTo('#container');
+        });
     });
-    describe('Check the RTL behaviour for title', () => {
+
+
+    describe('Chart- checking public methods', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: Element;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', rangePadding: 'Normal', crosshairTooltip: { enable: true, } },
+                    primaryYAxis: { title: 'PrimaryYAxis', crosshairTooltip: { enable: true } },
+                    series: [
+                        {
+                            dataSource: [{ x: 'USA', y: 50 }, { x: 'China', y: 40 },
+                            { x: 'Japan', y: 70 }, { x: 'Australia', y: 60 },
+                            { x: 'France', y: 50 }, { x: 'Germany', y: null },
+                            { x: 'United States', y: 40 }, { x: 'Sweden', y: 30 }],
+                            xName: 'x', yName: 'y', fill: 'red', animation: { enable: false },
+                            marker: { visible: true, dataLabel: { visible: true } }
+                        }
+                    ],
+                    height: '400px', width: '900px',
+                    title: 'Syncfusion Chart',
+                    titleStyle: {
+                        textAlignment: 'Near'
+                    },
+                    subTitle: 'Since 2012',
+                    subTitleStyle: {
+                        textAlignment: 'Far'
+                    },
+                    tooltip: { enable: true, shared: true, showNearestPoint: false, location: { x: 100, y: 100 } },
+                    crosshair: { enable: true },
+                    legendSettings: {
+                        visible: true
+                    }
+                });
+        });
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('Checking the title with position left and alignment Near', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('text-anchor')).toBe('start');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.titleStyle.textAlignment = 'Far';
+            chart.titleStyle.position = 'Left';
+            chart.appendTo('#container');
+        });
+        it('Checking the title with position left and alignment Center', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('text-anchor')).toBe('middle');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.titleStyle.textAlignment = 'Center';
+            chart.titleStyle.position = 'Left';
+            chart.appendTo('#container');
+        });
+        it('Checking the title with position Right and alignment Near', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('text-anchor')).toBe('end');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.titleStyle.textAlignment = 'Far';
+            chart.titleStyle.position = 'Right';
+            chart.appendTo('#container');
+        });
+        it('Checking the title with position Right and alignment Center', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('text-anchor')).toBe('middle');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.titleStyle.textAlignment = 'Center';
+            chart.titleStyle.position = 'Right';
+            chart.appendTo('#container');
+        });
+        it('Checking the title with position left and alignment Near with RTl', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('text-anchor')).toBe('end');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.titleStyle.textAlignment = 'Far';
+            chart.titleStyle.position = 'Left';
+            chart.enableRtl = true;
+            chart.appendTo('#container');
+        });
+        it('Checking the title with position left and alignment Center with RTl', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('text-anchor')).toBe('middle');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.titleStyle.textAlignment = 'Center';
+            chart.titleStyle.position = 'Left';
+            chart.appendTo('#container');
+        });
+        it('Checking the title with position Right and alignment Near with RTl', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('text-anchor')).toBe('start');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.titleStyle.textAlignment = 'Far';
+            chart.titleStyle.position = 'Right';
+            chart.appendTo('#container');
+        });
+        it('Checking the title with position Right and alignment Center with RTl', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('text-anchor')).toBe('middle');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.titleStyle.textAlignment = 'Center';
+            chart.titleStyle.position = 'Right';
+            chart.appendTo('#container');
+        });
+        it('Checking the title with position Bottom and alignment far', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('text-anchor')).toBe('start');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.titleStyle.textAlignment = 'Far';
+            chart.titleStyle.position = 'Bottom';
+            chart.appendTo('#container');
+        });
+        it('Checking the title with position Bottom and alignment near', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('text-anchor')).toBe('start');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.titleStyle.textAlignment = 'Near';
+            chart.titleStyle.position = 'Bottom';
+            chart.enableRtl = false;
+            chart.appendTo('#container');
+        });
+        it('Checking chart canvasMode', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_canvas');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.enableCanvas = true;
+            chart.refresh();
+        });
+        it('Checking the show tooltip and crosshair methods.', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('x')).toBe('10');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.showTooltip(200, 200);
+            chart.showCrosshair(200, 200);
+            chart.hideTooltip();
+            chart.hideCrosshair();
+            chart.enableCanvas = false;
+            chart.theme = 'Fabric'
+            chart.tooltip.shared = false;
+            chart.refresh();
+        });
+        it('Checking the show tooltip with Fabric', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('x')).toBe('10');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.showTooltip(200, 200);
+            chart.showCrosshair(200, 200);
+            chart.hideTooltip();
+            chart.hideCrosshair();
+            chart.theme = 'Fluent2HighContrast'
+            chart.refresh();
+        });
+        it('Checking the show tooltip with Fluent2HighContrast', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('x')).toBe('10');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.showTooltip(200, 200);
+            chart.showCrosshair(200, 200);
+            chart.hideTooltip();
+            chart.hideCrosshair();
+            chart.theme = 'Fluent';
+            chart.series[0].dataSource = [{ x: 'USA <br> USA', y: 50 }, { x: 'China  <br> China', y: 40 },
+            { x: 'Japan  <br> Japan', y: 70 }, { x: 'Australia <br> Australia', y: 60 },
+            { x: 'France <br> France', y: 50 }, { x: 'Germany <br> Germany', y: null },
+            { x: 'United States  <br> USA', y: 40 }, { x: 'Sweden <br> Sweden', y: 30 }];
+            chart.refresh();
+        });
+        it('Checking the show tooltip with Fluent', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('x')).toBe('10');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.showTooltip(200, 200);
+            chart.showCrosshair(200, 200);
+            chart.hideTooltip();
+            chart.hideCrosshair();
+            chart.theme = 'Fluent2';
+            chart.enableRtl = true;
+            chart.refresh();
+        });
+        it('Checking the show tooltip with Fluent2', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('x')).toBe('10');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.showTooltip(200, 200);
+            chart.showCrosshair(200, 200);
+            chart.hideTooltip();
+            chart.hideCrosshair();
+            chart.theme = 'FabricDark'
+            chart.refresh();
+        });
+        it('Checking the show tooltip with FabricDark', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('x')).toBe('10');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.showTooltip(200, 200);
+            chart.showCrosshair(200, 200);
+            chart.hideTooltip();
+            chart.hideCrosshair();
+            chart.theme = 'FluentDark'
+            chart.refresh();
+        });
+        it('Checking refreshLiveData method.', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element.getAttribute('x')).toBe('10');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.showTooltip('Japan', 70, true);
+            chart.showCrosshair(200, 200);
+            chart.refreshLiveData();
+            chart.refresh();
+        });
+        it('Checking addAxis Method', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                expect(args.chart.axisCollections.length).toBe(2);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refreshLiveData();
+            chart.addAxes([{ name: 'secondary', title: 'SecondaryYAxis' }]);
+        });
+        it('Checking removeAxis Method', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                expect(args.chart.axisCollections.length).toBe(2);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.selectionMode = 'Series';
+            chart.removeAxis(2);
+        });
+        it('Chart: Data Bind - Checking chart theme', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                expect(args.chart.theme).toBe('Material3Dark');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.theme = 'Material3Dark';
+            chart.series[0].name = 'Olymbic gold medal';
+        });
+        it('Chart Data Bind - checking selectedData Indexes', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let chartElement = document.getElementById('container_svg');
+                expect(chartElement !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.selectedDataIndexes = [{ series: 0, point: 1 }];
+            chart.series[0].name = 'Olymbic Gold Medal';
+        });
+        it('Chart Data bind - checking highlight color', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let chartElement = document.getElementById('container_svg');
+                expect(chartElement !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.selectionMode = 'None';
+            chart.highlightMode = 'Series';
+            chart.highlightColor = 'red';
+            chart.refresh();
+        });
+        it('Chart Data Bind - checking selectedData Indexes with highlight', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let chartElement = document.getElementById('container_svg');
+                expect(chartElement !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.selectedDataIndexes = [{ series: 0, point: 1 }];
+            chart.refresh();
+        });
+        it('Chart Data Bind - checking enablecanvas as true', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let chartElement = document.getElementById('container');
+                expect(chartElement !== null).toBe(true);
+                done();
+            };
+            chart.load = (args: ILoadedEventArgs): void => {
+                args.chart.selectionModule.selectedDataIndexes = [];
+            };
+            chart.loaded = loaded;
+            chart.selectedDataIndexes = [];
+            chart.enableCanvas = true;
+            chart.refresh();
+        });
+        it('Chart Data Bind - checking date time data', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let chartElement = document.getElementById('container_svg');
+                expect(chartElement !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.enableCanvas = false;
+            chart.series[0].dataSource = [
+                { x: new Date(2000, 6, 11), y: 10 }, { x: new Date(2002, 3, 7), y: 30 },
+                { x: new Date(2004, 3, 6), y: 15 }, { x: new Date(2006, 3, 30), y: 65 },
+            ];
+            chart.primaryXAxis.valueType = 'DateTime';
+            chart.selectedDataIndexes = null;
+            chart.refresh();
+        });
+        it('Chart Data Bind - checking show tooltip method', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let chartElement = document.getElementById('container_svg');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.showTooltip(1018117800000, 30, true);
+            chart.refresh();
+        });
+        it('Chart Data Bind - checking series properties', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let chartElement = document.getElementById('container_svg');
+                expect(chartElement !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.isBlazor = true;
+            chart.series[0].fill = 'blue';
+            chart.series[0].type = 'Line';
+            chart.enableExport = false;
+            chart.refresh();
+        });
+       
+        it('Chart Data Bind - Checking chart - Title', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let chartElement = document.getElementById('container_svg');
+                expect(chartElement !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.title = 'Chart Title';
+            chart.titleStyle = { position: 'Left', textAlignment: 'Near' };
+            chart.enableRtl = true;
+            chart.refresh();
+        });
+        it('Chart Data Bind - Checking chart - Title with rtl', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let chartElement = document.getElementById('container_svg');
+                expect(chartElement !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.title = 'Chart Title';
+            chart.titleStyle = { position: 'Right', textAlignment: 'Near' };
+            chart.enableRtl = true;
+            chart.refresh();
+        });
+        it('Chart Data Bind - Title position as bottom and alignment as center ', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let chartElement = document.getElementById('container_svg');
+                expect(chartElement !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.title = 'Chart Title';
+            chart.titleStyle = { position: 'Bottom', textAlignment: 'Center' };
+            chart.enableRtl = true;
+            chart.selectionMode = 'None';
+            chart.selectedDataIndexes = [];
+            chart.refresh();
+        });
+        it('Checking ClearSeries method', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                expect(args.chart.series.length).toBe(0);
+                done();
+            };
+            chart.load = (args: ILoadedEventArgs): void => {
+                args.chart.selectionModule.selectedDataIndexes = [];
+            }
+            chart.loaded = loaded;
+            chart.clearSeries();
+        });
+    });
+    describe('Chart- Checking chart events and elements', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: Element;
+        let trigger: MouseEvents = new MouseEvents();
+        let dataManagerMock: any;
+        let dataService: Data;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            dataManagerMock = {
+                ready: true,
+            };
+            dataService = new Data(dataManagerMock);
+            chart = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', rangePadding: 'Normal', crosshairTooltip: { enable: true, } },
+                    primaryYAxis: { title: 'PrimaryYAxis', crosshairTooltip: { enable: true } },
+                    series: [
+                        {
+                            dataSource: [{ x: 'USA', y: 50 }, { x: 'China', y: 40 },
+                            { x: 'Japan', y: 70 }, { x: 'Australia', y: 60 },
+                            { x: 'France', y: 50 }, { x: 'Germany', y: null },
+                            { x: 'United States', y: 40 }, { x: 'Sweden', y: 30 }],
+                            xName: 'x', yName: 'y', fill: 'red', animation: { enable: false },
+                            marker: { visible: true, dataLabel: { visible: true } }
+                        }
+                    ],
+                    height: '400px', width: '900px',
+                    title: 'Syncfusion Chart',
+                    titleStyle: {
+                        textAlignment: 'Near'
+                    },
+                    subTitle: 'Since 2012',
+                    subTitleStyle: {
+                        textAlignment: 'Far'
+                    },
+                    highlightMode: 'Series',
+                    tooltip: { enable: true },
+                    crosshair: { enable: true },
+                    legendSettings: {
+                        visible: true
+                    }
+                });
+        });
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('Checking the chart title element', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container_ChartTitle');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.appendTo('#container');
+        });
+        it('Checking the chart primary x axis properties ', (done: Function) => {
+            loaded = (args: Object): void => {
+                chart.loaded = null;
+                element = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.crosshairTooltip.enable = true;
+            chart.primaryXAxis.edgeLabelPlacement = 'Hide';
+        });
+        it('Checking the chart primary Y axis properties ', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryYAxis.crosshairTooltip.enable = true;
+            chart.primaryYAxis.edgeLabelPlacement = 'Hide';
+        });
+        it('Checking the chart zoom settings ', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Checking the chart selection  mode', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                chart.loaded = null;
+                element = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.selectedDataIndexes = [{ series: 0, point: 1 }];
+            chart.refresh();
+        });
+        it('Checking the chart showTooltip mehtod in touch mode enable', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                args.chart.isTouch = true;
+                args.chart.showTooltip('USA', 50, true);
+                args.chart.showTooltip(0, 0);
+                args.chart.showCrosshair(0, 0);
+                element = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.selectionMode = 'None';
+            chart.selectedDataIndexes = [];
+            chart.refresh();
+        });
+        it('Checking the query and getData method', (done: Function) => {
+            loaded = (args: Object): void => {
+                dataManagerMock.ready = Promise.resolve();
+                const mockQuery: any = { query: 'some query' };
+                (dataService as any).dataManager.ready = dataManagerMock.ready;
+                const result = dataService.getData(mockQuery);
+                let element = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Checking the checking chart refreshLiveData method', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                chart.loaded = null;
+                args.chart.isBlazor = true;
+                args.chart.refreshLiveData();
+                args.chart.isBlazor = false; args.chart.enableCanvas = true;
+                //args.chart.refreshLiveData();
+                element = document.getElementById('container');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].width = 3;
+        });
+        it('Checking the checking chart removeSVG method', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                chart.loaded = null;
+                args.chart.isReact = true;
+                args.chart.removeSvg();
+                element = document.getElementById('container');
+                args.chart.isReact = false;
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Checking the checking chartKeyboard Navigations tab keys', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                chart.loaded = null;
+                element = document.getElementById('container');
+                args.chart.chartKeyboardNavigations(<KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100), element.id, 'Enter');
+                args.chart.chartKeyboardNavigations(<KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100), element.id, 'Space');
+                args.chart.chartKeyboardNavigations(<KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100), element.id, 'Equal');
+                args.chart.chartKeyboardNavigations(<KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100), element.id, 'Minus');
+                args.chart.chartKeyboardNavigations(<KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100), element.id, 'ArrowUp');
+                args.chart.chartKeyboardNavigations(<KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100), element.id, 'ArrowDown');
+                args.chart.chartKeyboardNavigations(<KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100), element.id, 'ArrowLeft');
+                args.chart.chartKeyboardNavigations(<KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100), element.id, 'ArrowRight');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.selectionMode = 'Series';
+            chart.zoomSettings.enableSelectionZooming = true;
+            chart.refresh();
+        });
+        it('Checking the checking chartKeyboard Navigations with keys', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                chart.loaded = null;
+                element = document.getElementById('container');
+                args.chart.chartKeyboardNavigations(<KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100), element.id, 'R');
+                args.chart.chartKeyboardNavigations(<KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100), element.id, 'CtrlP');
+                args.chart.chartKeyboardNavigations(<KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100), 'container_chart_legend_text_0', 'Space');
+                args.chart.setTabIndex(null, null);
+                args.chart.setAnnotationValue(0, null);
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].name = 'Gold';
+            chart.legendSettings.visible = true;
+            chart.enableCanvas = false;
+            chart.refresh();
+        });
+    });
+     describe('Check the RTL behaviour for title', () => {
         let chart: Chart;
         let ele: HTMLElement;
         let ele2: HTMLElement;
@@ -788,7 +1542,7 @@ describe('Chart Control', () => {
                         textAlignment : 'Far'
                     }
                 });
-            
+
         });
         afterAll((): void => {
             chart.destroy();

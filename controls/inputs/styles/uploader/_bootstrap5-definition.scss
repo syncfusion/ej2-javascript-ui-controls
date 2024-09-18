@@ -208,9 +208,3 @@ $clear-icon-focus-color: rgba($black, .12) !default;
 $list-bottom-border: 1px solid $border-light !default;
 $upload-border: 1px dashed $border-dark !default;
 $drag-hover-border: 1px dashed $primary !default;
-
-.e-upload .e-upload-actions,
-.e-bigger.e-small .e-upload .e-upload-actions {
-  background-color: $content-bg-color-alt1;
-  border-radius: 0 0 6px 6px;
-}

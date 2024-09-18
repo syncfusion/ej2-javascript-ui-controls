@@ -318,8 +318,10 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
      * @returns {void}
      */
     public destroy(): void {
-        let classList: string[] = [HIDESPINNER, PROGRESSACTIVE, 'e-round-corner', 'e-' + super.getModuleName(),
-            'e-spin-' + this.spinSettings.position.toLowerCase()];
+        let classList: string[] = [HIDESPINNER, PROGRESSACTIVE, 'e-round-corner', 'e-' + super.getModuleName()];
+        if (this.spinSettings.position) {
+            classList.push('e-spin-' + this.spinSettings.position.toLowerCase());
+        }
         super.destroy();
         this.unWireEvents();
         this.element.innerHTML = '';
@@ -386,28 +388,6 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
         }
         this.element.innerHTML = '';
         this.element.appendChild(this.createElement('span', { className: CONTENTCLS, innerHTML: cont }));
-    }
-
-    private setContentIcon(content: string): void {
-        const contElem: HTMLElement = this.createElement('span', { className: CONTENTCLS, innerHTML: content });
-        if (this.iconCss) {
-            const span: HTMLElement = this.createElement('span', { className: 'e-btn-icon ' + this.iconCss });
-            if (!this.element.textContent.trim()) {
-                this.element.classList.add('e-icon-btn');
-            } else {
-                span.classList.add('e-icon-' + this.iconPosition.toLowerCase());
-                if (this.iconPosition === 'Top' || this.iconPosition === 'Bottom') {
-                    this.element.classList.add('e-' + this.iconPosition.toLowerCase() + '-icon-btn');
-                }
-            }
-            const node: Node = contElem.childNodes[0];
-            if (node && (this.iconPosition === 'Left' || this.iconPosition === 'Top')) {
-                contElem.insertBefore(span, node);
-            } else {
-                contElem.appendChild(span);
-            }
-        }
-        this.element.appendChild(contElem);
     }
 
     private clickHandler(): void {

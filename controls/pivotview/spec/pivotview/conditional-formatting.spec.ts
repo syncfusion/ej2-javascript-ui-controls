@@ -155,6 +155,7 @@ describe('Conditional Formatting', () => {
                         ]
                     },
                     height: 400,
+                    cssClass: 'Check_ID',
                     allowConditionalFormatting: true,
                     dataBound: dataBound,
                 });
@@ -406,6 +407,15 @@ describe('Conditional Formatting', () => {
         beforeEach((done: Function) => {
             setTimeout(() => { done(); }, 100);
         });
+        let click: MouseEvent = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        it('Check for cssClass to be empty', () => {
+            pivotGridObj.cssClass = 'formatPivotGrid0';
+            pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+        })
         it('Check code behind format', () => {
             expect((pivotGridObj.pivotValues[3][2] as any).cssClass === 'formatPivotGrid0').toBeTruthy();
             pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
@@ -422,7 +432,7 @@ describe('Conditional Formatting', () => {
         it('Add format', () => {
             expect(true).toBeTruthy();
             (document.querySelector('.e-format-condition-button') as HTMLElement).click();
-            (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue10') as HTMLInputElement).value = '500';
             (document.querySelectorAll('.e-dropdown-btn')[0] as HTMLElement).click();
             (document.querySelectorAll('.e-tile')[9] as HTMLElement).click();
             (document.querySelector('.e-apply') as HTMLElement).click();
@@ -453,8 +463,8 @@ describe('Conditional Formatting', () => {
             (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
             (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
             (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
-            (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
-            (document.querySelector('.e-format-value2') as HTMLInputElement).value = '50000';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue10') as HTMLInputElement).value = '500';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue20') as HTMLInputElement).value = '50000';
         });
         it('Click apply button', () => {
             expect(true).toBeTruthy();
@@ -477,15 +487,16 @@ describe('Conditional Formatting', () => {
             (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
             (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
             (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
-            (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
-            (document.querySelector('.e-format-value2') as HTMLInputElement).value = '50000';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue10') as HTMLInputElement).value = '500';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue20') as HTMLInputElement).value = '50000';
+            (document.querySelectorAll('.e-check')[0] as HTMLInputElement).dispatchEvent(click);
         });
         it('Click apply button', () => {
-            expect(true).toBeTruthy();
+            expect((pivotGridObj.pivotValues[5][1] as any).cssClass === 'formatPivotGrid0').toBeTruthy();
             (document.querySelector('.e-format-apply-button') as HTMLElement).click();
         });
         it('Check applied format', () => {
-            expect((pivotGridObj.pivotValues[5][3] as any).cssClass === 'formatPivotGrid0').toBeTruthy();
+            expect((pivotGridObj.pivotValues[5][1] as any).cssClass === undefined).toBeTruthy();
             pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
         });
         it('Add format', () => {
@@ -501,7 +512,7 @@ describe('Conditional Formatting', () => {
             (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
             (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
             (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
-            (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue10') as HTMLInputElement).value = '500';
         });
         it('Click apply button', () => {
             expect(true).toBeTruthy();
@@ -609,7 +620,7 @@ describe('Conditional Formatting', () => {
         it('Add format', () => {
             expect(true).toBeTruthy();
             (document.querySelector('.e-format-condition-button') as HTMLElement).click();
-            (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue10') as HTMLInputElement).value = '500';
             (document.querySelectorAll('.e-dropdown-btn')[0] as HTMLElement).click();
             (document.querySelectorAll('.e-tile')[9] as HTMLElement).click();
             (document.querySelector('.e-apply') as HTMLElement).click();
@@ -640,8 +651,8 @@ describe('Conditional Formatting', () => {
             (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
             (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
             (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
-            (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
-            (document.querySelector('.e-format-value2') as HTMLInputElement).value = '50000';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue10') as HTMLInputElement).value = '500';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue20') as HTMLInputElement).value = '50000';
         });
         it('Click apply button', () => {
             expect(true).toBeTruthy();
@@ -664,8 +675,8 @@ describe('Conditional Formatting', () => {
             (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
             (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
             (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
-            (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
-            (document.querySelector('.e-format-value2') as HTMLInputElement).value = '50000';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue10') as HTMLInputElement).value = '500';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue20') as HTMLInputElement).value = '50000';
         });
         it('Click apply button', () => {
             expect(true).toBeTruthy();
@@ -688,7 +699,7 @@ describe('Conditional Formatting', () => {
             (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
             (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
             (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
-            (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue10') as HTMLInputElement).value = '500';
         });
         it('Click apply button', () => {
             expect(true).toBeTruthy();
@@ -807,7 +818,170 @@ describe('Conditional Formatting', () => {
             }
         });
     });
+    describe(' - Conditional formatting value empty', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
+        beforeAll((done: Function) => {
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: true,
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    filters: [],
+                    conditionalFormatSettings: [
+                        {
+                            value1: 500,
+                            value2: 1000,
+                            measure: 'quantity',
+                            conditions: 'Between',
+                            style: {
+                                backgroundColor: '#f48fb1',
+                                color: 'black',
+                                fontFamily: 'Tahoma',
+                                fontSize: '12px'
+                            }
+                        }
+                    ]
+                },
+                height: 300,
+                allowConditionalFormatting: true,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 100);
+        });
 
+        it('Check applied format', function () {
+            pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+        });
+        it('Add format', () => {
+            expect(true).toBeTruthy();
+            const conditionalFormatting = document.querySelector('#' + pivotGridObj.element.id + 'conditionalformatting');
+            let element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'measureinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'balance';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'conditioninput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'Between';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontnameinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'Serif';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontsizeinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
+            (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
+            (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue10') as HTMLInputElement).value = '';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue20') as HTMLInputElement).value = '';
+        });
+        it('Click apply button', () => {
+            expect(true).toBeTruthy();
+            (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+        });
+        it('Check applied format', function () {
+            pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+        });
+        it('Add format', () => {
+            expect(true).toBeTruthy();
+            const conditionalFormatting = document.querySelector('#' + pivotGridObj.element.id + 'conditionalformatting');
+            let element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'measureinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'balance';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'conditioninput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'Between';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontnameinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'Serif';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontsizeinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
+            (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
+            (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue10') as HTMLInputElement).value = '400';
+            (document.querySelector('#' + pivotGridObj.element.id + 'conditionvalue20') as HTMLInputElement).value = '';
+        });
+        it('Click apply button', () => {
+            expect(true).toBeTruthy();
+            (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+        });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+            let element = document.querySelector('#' + pivotGridObj.element.id)
+            while(element) {
+                remove(elem);
+                element = document.querySelector('#' + pivotGridObj.element.id)
+            }
+        });
+        describe(' - Opening the conditional formatting dialog and checking rgba,rgb', () => {
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
+            beforeAll((done: Function) => {
+                document.body.appendChild(elem);
+                let dataBound: EmitType<Object> = () => { done(); };
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: pivot_dataset as IDataSet[],
+                        expandAll: true,
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        filters: [],
+                        conditionalFormatSettings: [
+                            {
+                                measure: 'balance',
+                                value1: 100000,
+                                conditions: 'LessThan',
+                                style: {
+                                    backgroundColor: 'rgba(255, 99, 71, 0.5)',
+                                    color: 'black',
+                                    fontFamily: 'Tahoma',
+                                    fontSize: '12px'
+                                }
+                            },
+                            {
+                                value1: 500,
+                                value2: 1000,
+                                measure: 'quantity',
+                                conditions: 'Between',
+                                style: {
+                                    backgroundColor: 'rgb(255, 99, 71, 0.5)',
+                                    color: 'black',
+                                    fontFamily: 'Tahoma',
+                                    fontSize: '12px'
+                                }
+                            }
+                        ]
+                    },
+                    height: 300,
+                    allowConditionalFormatting: true,
+                    dataBound: dataBound
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            beforeEach((done: Function) => {
+                setTimeout(() => { done(); }, 100);
+            });
+            it('Check applied format', () => {
+                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+            });
+            it('Click apply button', () => {
+                expect(true).toBeTruthy();
+                (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+            });
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+                let element = document.querySelector('#' + pivotGridObj.element.id)
+                while (element) {
+                    remove(elem);
+                    element = document.querySelector('#' + pivotGridObj.element.id)
+                }
+            });
+        });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);
@@ -816,4 +990,5 @@ describe('Conditional Formatting', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
+});
 });

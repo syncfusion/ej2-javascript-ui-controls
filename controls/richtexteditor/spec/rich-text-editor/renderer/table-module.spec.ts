@@ -7,8 +7,123 @@ import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
 import { NodeSelection } from '../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, androidUA, iPhoneUA, currentBrowserUA, ieUA } from './../render.spec';
 import { getLastTextNode } from "../../../src/common/util";
+import { ARROW_DOWN_EVENT_INIT, ARROW_LEFT_EVENT_INIT, ARROW_UP_EVENT_INIT, ARROWRIGHT_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, INSRT_TABLE_EVENT_INIT, SHIFT_ARROW_DOWN_EVENT_INIT, SHIFT_ARROW_LEFT_EVENT_INIT, SHIFT_ARROW_RIGHT_EVENT_INIT, SHIFT_ARROW_UP_EVENT_INIT } from "../../constant.spec";
+
 
 describe('Table Module', () => {
+
+    describe('CSS property change testing, Coverage improvement ', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({toolbarSettings: {
+                items: ['CreateTable']
+            }});
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it ('Update the CSS property dynamically Dialog test', () => {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', INSRT_TABLE_EVENT_INIT));
+            editor.cssClass = 'crm-editor';
+            editor.dataBind();
+            expect(editor.tableModule.editdlgObj.cssClass.includes('crm-editor')).toBe(true);
+            editor.cssClass = 'internal-process-editor';
+            editor.dataBind();
+            expect(editor.tableModule.editdlgObj.cssClass.includes('internal-process-editor')).toBe(true);
+        });
+
+        it ('For coverage', () => {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
+            window.getSelection().removeAllRanges();
+            const range: Range = document.createRange();
+            range.setStart(editor.inputElement.firstChild.firstChild, 0);
+            range.setEnd(editor.inputElement.firstChild.firstChild, 0);
+            document.getSelection().addRange(range);
+            (editor.tableModule as any).getBrElement(range, []);
+        });
+
+        it ('Update the CSS property dynamically Popup test', () => {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
+            (editor.element.querySelector('.e-create-table') as HTMLElement).click()
+            editor.cssClass = 'crm-editor';
+            editor.dataBind();
+            expect(editor.tableModule.popupObj.element.className.includes('crm-editor')).toBe(true);
+            editor.cssClass = 'internal-process-editor';
+            editor.dataBind();
+            expect(editor.tableModule.popupObj.element.className.includes('internal-process-editor')).toBe(true);
+        });
+
+        it ('For coverage', () => {
+            editor.value = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 100%;"><br></td></tr></tbody></table><p><br></p>`;
+            editor.dataBind();
+            (editor.tableModule as any).removeTableSelection();
+        });
+
+        it ('focus of the table cells and then arrow key action to navigate.', () => {
+            editor.value = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`;
+            editor.dataBind();
+            editor.focusIn();
+            document.getSelection().removeAllRanges();
+            const range: Range = document.createRange();
+            range.setStart(editor.inputElement.querySelector('.e-cell-select'), 0);
+            range.setEnd(editor.inputElement.querySelector('.e-cell-select'), 0);
+            document.getSelection().addRange(range);
+            (editor.tableModule as any).previousTableElement = editor.inputElement.querySelector('table');
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', ARROWRIGHT_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', ARROWRIGHT_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', ARROW_LEFT_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', ARROW_LEFT_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', ARROW_DOWN_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', ARROW_DOWN_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', ARROW_UP_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', ARROW_UP_EVENT_INIT));
+            (editor.tableModule as any).closeDialog();
+        });
+
+        it ('focus of the table cells and then shift + arrow keys to select cells.', (done: DoneFn) => {
+            editor.value = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`;
+            editor.dataBind();
+            editor.focusIn();
+            document.getSelection().removeAllRanges();
+            let range: Range = document.createRange();
+            range.setStart(editor.inputElement.querySelector('.e-cell-select'), 0);
+            range.setEnd(editor.inputElement.querySelector('.e-cell-select'), 0);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', SHIFT_ARROW_RIGHT_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', SHIFT_ARROW_RIGHT_EVENT_INIT));
+            range = document.createRange();
+            range.setStart(editor.inputElement.querySelector('.e-cell-select'), 0);
+            range.setEnd(editor.inputElement.querySelector('.e-cell-select'), 0);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', SHIFT_ARROW_LEFT_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', SHIFT_ARROW_LEFT_EVENT_INIT));
+            range = document.createRange();
+            range.setStart(editor.inputElement.querySelector('.e-cell-select'), 0);
+            range.setEnd(editor.inputElement.querySelector('.e-cell-select'), 0);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', SHIFT_ARROW_DOWN_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', SHIFT_ARROW_DOWN_EVENT_INIT));
+            range = document.createRange();
+            range.setStart(editor.inputElement.querySelector('.e-cell-select'), 0);
+            range.setEnd(editor.inputElement.querySelector('.e-cell-select'), 0);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', SHIFT_ARROW_UP_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', SHIFT_ARROW_UP_EVENT_INIT));
+            (editor.tableModule as any).resetTableSelection ();
+            (editor.tableModule as any).deleteTable();
+            done();
+        });
+    });
 
     describe('div content ', () => {
         let rteEle: HTMLElement;
@@ -384,6 +499,37 @@ describe('Table Module', () => {
             expect(tar.querySelectorAll('td')[1].style.width).toBe("25%");
             expect(tar.querySelectorAll('td')[2].style.width).toBe("25%");
             expect(tar.querySelectorAll('td')[3].style.width).toBe("25%");
+            done();
+        });
+    });
+
+    describe('Checking the width for the table elements added - code coverage', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                tableSettings: { width: null, minWidth: null}
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Checking the width for the table elements added - code coverage', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let event: any = {
+                target: (rteObj as any).tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[1],
+                preventDefault: function () { }
+            };
+            (rteObj as any).tableModule.tableCellSelect(event);
+            (rteObj as any).tableModule.tableCellLeave(event);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", false, true);
+            event.target.dispatchEvent(clickEvent);
             done();
         });
     });
@@ -2192,6 +2338,10 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                     let insertBtn: HTMLElement = tablePop.querySelector("#" + controlId + "_quick_TableRows");
                     insertBtn.click();
                     let dropdown: HTMLElement = document.querySelector('#' + controlId + "_quick_TableRows-popup");
+                    (dropdown.querySelectorAll(".e-item")[0] as HTMLElement).click();
+                    insertBtn = tablePop.querySelector("#" + controlId + "_quick_TableRows");
+                    insertBtn.click();
+                    dropdown = document.querySelector('#' + controlId + "_quick_TableRows-popup");
                     (dropdown.querySelectorAll(".e-item")[1] as HTMLElement).click();
                     expect((rteObj as any).inputElement.querySelectorAll("td").length === 6).toBe(true);
                     expect((node.parentNode.parentNode.nextSibling.childNodes[0].childNodes[0] as HTMLElement).tagName === 'TD').toBe(true);
@@ -3416,6 +3566,113 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe("Table code coverage", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                inlineMode:{
+                    enable: true
+                },
+                value: `<table class=\"e-rte-table\" style=\"width: 100%; min-width: 0px;\"><thead style=\"height: 25%;\"><tr style=\"height: 25%;\"><th class = \"e-cell-select\"><br></th><th><br></th><th><br></th><th><br></th></tr></thead><tbody><tr style=\"height: 25%;\"><td class=\"\" style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td></tr><tr style=\"height: 25%;\"><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td></tr><tr style=\"height: 25%;\"><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td></tr></tbody></table><table class=\"e-rte-table\" id = \"e-rte-table1\" style=\"width: 100%; min-width: 0px;\"><tbody><tr><td class=\"e-cell-select\" style=\"width: 33.3333%;\"><br></td><td style=\"width: 33.3333%;\"><br></td><td style=\"width: 33.3333%;\"><br></td></tr><tr><td style=\"width: 33.3333%;\"><br></td><td style=\"width: 33.3333%;\"><br></td><td style=\"width: 33.3333%;\"><br></td></tr><tr><td style=\"width: 33.3333%;\"><br></td><td style=\"width: 33.3333%;\"><br></td><td style=\"width: 33.3333%;\"><br></td></tr></tbody></table><span class="e-table-box" data-col="3" unselectable="on" contenteditable="false" style="top: 89px; left: 544px;"></span><p><br></p><div class="e-table-rhelper e-row-helper" style="width: 540.949px; top: 37px; left: 12px;"></div>
+                <div class="e-table-rhelper e-column-helper" style="width: 540.949px; top: 37px; left: 12px;"></div>
+                `
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Table code coverage', (done: Function) => {
+            let target: HTMLElement = rteEle.querySelector('.e-rte-table th');
+            let activeCell: HTMLElement = rteEle.querySelectorAll("th")[1];
+            let args: any = {
+                event: { target: target },
+                selectNode: [activeCell] as any,
+            };
+            (rteObj as any).formatter.editorManager.tableObj.tableMove(args);
+            expect(target.classList.contains('e-cell-select-end')).toBe(true);
+            args = {
+                event: { target: target },
+                selectNode: [target] as any,
+            };
+            (rteObj as any).formatter.editorManager.tableObj.tableMove(args);
+            expect(target.classList.contains('e-cell-select-end')).toBe(false);
+            target = rteEle.querySelector('#e-rte-table1 td');
+            (rteObj as any).tableModule.helper = '';
+            (rteObj as any).tableModule.removeHelper({ target: target });
+            expect((rteObj as any).tableModule.helper !== null).toBe(true);
+            (rteObj as any).tableModule.helper = null;
+            args = {
+                event: { target: target },
+                selectNode: [activeCell] as any,
+            };
+            (rteObj as any).formatter.editorManager.tableObj.tableMove(args);
+            expect(target.classList.contains('e-cell-select-end')).toBe(false);
+            (rteObj as any).tableModule.curTable = rteEle.querySelector('.e-rte-table');
+            const cssText = (rteObj.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement).style.cssText;
+            (rteObj as any).tableModule.updateResizeIconPosition();
+            expect(((rteObj as any).contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement).style.cssText !== cssText).toBe(true);
+            args = {
+                selectNode: [activeCell]
+            };
+            target = rteEle.querySelector('.e-rte-table th');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            (rteObj as any).tableModule.updateResizeIconPosition();
+            (rteObj as any).tableModule.createDialog({}); 
+            expect(document.querySelector('#' + rteObj.element.id + '_tabledialog') !== null).toBe(true);
+            document.body.appendChild((rteObj as any).tableModule.quickToolObj.inlineQTBar.element);
+            (rteObj as any).tableModule.onIframeMouseDown();
+            expect(document.querySelector('#' + rteObj.element.id + '_tabledialog') === null).toBe(true);
+            (rteObj as any).tableModule.createDialog({});
+            expect(document.querySelector('#' + rteObj.element.id + '_tabledialog') !== null).toBe(true);
+            (rteObj as any).tableModule.applyProperties(args, {});
+            expect(document.querySelector('#' + rteObj.element.id + '_tabledialog') === null).toBe(true);
+            (rteObj as any).tableModule.customTable (args, {});
+            expect((rteObj as any).formatter.editorManager.tableObj.getCorrespondingIndex(null, []).length === 0).toBe(true);
+            (rteObj as any).formatter.editorManager.tableObj.cellMerge(null);
+            expect((rteObj as any).formatter.editorManager.tableObj.curTable.querySelectorAll('.e-cell-select').length === 0).toBe(true);
+            (rteObj as any).formatter.editorManager.tableObj.curTable = null;
+            const element: HTMLElement = rteObj.contentModule.getEditPanel().parentElement;
+            let range: Range = document.createRange();
+            range.setStart(element , 0);
+            (rteObj as any).formatter.editorManager.nodeSelection.save(range, document);
+            (rteObj as any).formatter.editorManager.tableObj.removeTable({ item: { selection: rteObj.formatter.editorManager.nodeSelection}});
+            expect(document.querySelectorAll('.e-rte-table').length === 2).toBe(true);
+            (rteObj as any).focusIn();
+            const tdElement: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table').querySelector('tr');
+            tdElement.setAttribute('valign', 'top');
+            (rteObj as any).formatter.editorManager.tableObj.tableVerticalAlign({item:{tableCell: tdElement, subCommand: 'AlignTop'}});
+            expect(tdElement.attributes.hasOwnProperty('valign')).toBe(false);
+            range = document.createRange();
+            range.setStart(tdElement, 0);
+            (rteObj as any).formatter.editorManager.nodeSelection.save(range, document);
+            (rteObj as any).formatter.editorManager.tableObj.cellMerge(null);
+            expect((rteObj as any).formatter.editorManager.tableObj.curTable.querySelectorAll('.e-cell-select').length === 1).toBe(true);
+            (rteObj as any).isDestroyed = true;
+            (rteObj as any).tableModule.addEventListener();
+            (rteObj as any).renderModule.addEventListener();
+            (rteObj as any).renderModule.removeEventListener();
+            (rteObj as any).isDestroyed = false;
+            (rteObj as any).tableSettings.resize = false;
+            (rteObj as any).contentModule = null;
+            (rteObj as any).tableModule.onIframeMouseDown();
+            (rteObj as any).contentModule = (rteObj as any).tableModule.contentModule;
+            (rteObj as any).tableModule.contentModule = null;
+            (rteObj as any).tableModule.afterRender();
+            (rteObj as any).tableSettings.resize = true;
+            document.body.removeChild((rteObj as any).tableModule.quickToolObj.inlineQTBar.element);
+            (rteObj as any).tableModule.resizeEnd(null);
+            expect((rteObj as any).tableModule.pageX === null).toBe(true);
+            done();
+        });
+    });
+
     describe("EJ2-56516 - Table cell merge with empty columns", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -3495,6 +3752,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                     table: ['TableCell']
                 },
                 value: `<table cellpadding="0" cellspacing="0" width="192" class="e-rte-paste-table" style="width:144pt;">
+
  <tbody><tr height="19" style="height:14.5pt;">
   <td height="19" width="64" style="height:14.5pt;width:48pt;">r1</td>
   <td width="64" style="width:48pt;">c2</td>
@@ -3510,6 +3768,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
   <td>c2</td>
   <td>c3</td>
  </tr>
+
 </tbody></table><p><br></p>`
             });
             rteEle = rteObj.element;
@@ -3969,6 +4228,99 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell, tableCell, 0, 0);
                 (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
                 (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[1] as HTMLElement).click();
+                done();
+            }, 400);
+        });
+    });
+
+    describe("Table cell horizontal split with row span - code coverage", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;" rowspan="3"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;" class=""><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Table cell horizontal split with row span - code coverage', (done: Function) => {
+            var domSelection = new NodeSelection();
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                let tableCell = document.querySelectorAll('tr')[1].querySelectorAll('td')[0];
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell, tableCell, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[1] as HTMLElement).click();
+                done();
+            }, 400);
+        });
+    });
+
+    describe("Table cell horizontal split with default row span - code coverage", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" rowspan="1"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Table cell horizontal split with default row span - code coverage', (done: Function) => {
+            var domSelection = new NodeSelection();
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                let tableCell = document.querySelectorAll('tr')[1].querySelectorAll('td')[0];
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell, tableCell, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[1] as HTMLElement).click();
+                done();
+            }, 400);
+        });
+    });
+
+    describe("Table cell vertical split with default col span - code coverage", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;" colspan="1"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Table cell vertical split with default col span - code coverage', (done: Function) => {
+            var domSelection = new NodeSelection();
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                let tableCell = document.querySelectorAll('tr')[1].querySelectorAll('td')[0];
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell, tableCell, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[2] as HTMLElement).click();
                 done();
             }, 400);
         });
@@ -4964,10 +5316,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
-                value:`<table class="e-rte-table" style="width: 16.9382%; min-width: 0px; height: 76px;"><tbody><tr style="height: 26px;"><td class="" style="width: 25%;"><br></td><td style="width: 14.5363%;" class=""><br></td><td style="width: 45.9482%;" class=""><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;" class="tdElement"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p></td><td style="width: 31.6625%;" class=""><br></td></tr><tr style="height: 24px;"><td style="width: 25%;"><br></td><td style="width: 14.5363%;" class=""><br></td><td style="width: 45.9482%;" class=""><br></td><td style="width: 31.6625%;" class=""><br></td></tr></tbody></table>`,
-                toolbarSettings: {
-                    items: ['Bold', 'CreateTable']
-                },
+                value:`<ul><li class="e-rte-table" style="width: 100%; min-width: 0px;"><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 25%;"></td><td style="width: 25%;"></td><td style="width: 25%;" class=""><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 1%;"></td><td style="width: 1%;"></td></tr><tr><td style="width: 1%;"></td><td style="width: 1%;"></td></tr></tbody></table><p></p></td><td style="width: 25%;"></td></tr><tr><td style="width: 25%;"></td><td style="width: 25%;"></td><td style="width: 25%;"></td><td style="width: 25%;"></td></tr></tbody></table></li></ul><p><br/></p>`,
             });
             rteEle = rteObj.element;
         });
@@ -4978,14 +5327,19 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             var table = rteObj.contentModule.getEditPanel().querySelector('table table');
             var clickEvent = document.createEvent("MouseEvents");
             (<any>rteObj).tableModule.resizeHelper({ target: table, preventDefault: function () { } });
-            var reCol1 = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[1];
+            var reCol1 = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[0];
             (<any>rteObj).tableModule.resizeStart({ target: reCol1, pageX: 100, pageY: 0, preventDefault: function () { } });
             clickEvent.initEvent("mousedown", false, true);
             reCol1.dispatchEvent(clickEvent);
             (<any>rteObj).tableModule.resizeStart(clickEvent);
-            (<any>rteObj).tableModule.resizing({ target: reCol1, pageX: 200, pageY: 200, preventDefault: function () { } });
-            expect(closest(table, 'table').nodeName == "TABLE").toBe(true)
-        });  
+            (<any>rteObj).tableModule.resizing({ target: reCol1, pageX: -10, pageY: -10, preventDefault: function () { } });
+            (<any>rteObj).tableModule.curTable.style.marginLeft = "145px";
+            (<any>rteObj).tableModule.resizing({ target: reCol1, pageX: -100, pageY: -100, preventDefault: function () { } });
+            expect(closest(table, 'table').nodeName == "TABLE").toBe(true);
+            (<any>rteObj).enableRtl = true;
+            (<any>rteObj).tableModule.resizing({ target: reCol1, pageX: -10, pageY: -10, preventDefault: function () { } });
+            (<any>rteObj).enableRtl = false;
+        });
     });
 
     describe('836937 - The read-only setting is true in the Rich Text Editor', () => {
@@ -6388,6 +6742,80 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             });
             expect((document.querySelectorAll('.e-rte-quick-popup') as any).length).toBe(0);
             done();
+        });
+    });
+    
+    describe('896082 - Console Error thrown when we press backspace with editor mode as Markdown.', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<h1>Welcome to the Syncfusion Rich Text Editor</h1><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><h2>Do you know the key features of the editor?</h2>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                editorMode: 'Markdown',
+                value: innerHTML
+
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('press back space ', (done: DoneFn) => {
+            rteObj.focusIn();
+            rteObj.dataBind();
+            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            rteObj.dataBind();
+            (<any>rteObj).tableModule.keyDown({ args: keyBoardEvent });
+            rteObj.dataBind();
+            (<any>rteObj).tableModule.keyUp({ args: keyBoardEvent });
+            setTimeout(() => {
+                expect(rteObj.value).toBe('<h1>Welcome to the Syncfusion Rich Text Editor</h1><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><h2>Do you know the key features of the editor?</h2>');
+                done();
+            }, 100);
+        });
+    });
+
+    describe("904465 - Cell is not properly visible and cursor is not at correct position in cell after merging the all the cells in single row", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Merge two columns in single row', (done: Function) => {
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            let height: any = (rteObj as any).inputElement.querySelector('table td').offsetHeight;
+            (rteObj as any).mouseDownHandler(eventsArg);
+            let ev = new MouseEvent("mousemove", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            rteEle.querySelectorAll("td")[1].dispatchEvent(ev);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[0] as HTMLElement).click();
+                expect((rteObj as any).inputElement.querySelector('table td').offsetHeight).toBe(22);
+                expect(height + 2 ).toEqual((rteObj as any).inputElement.querySelector('table td').offsetHeight);
+                done();
+            }, 400);
         });
     });
 });

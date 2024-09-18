@@ -370,3 +370,46 @@ describe('Newly added bottom record get indented', () => {
       destroy(gridObj);
     });
   });
+
+  describe('code coverage improvement', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData.slice(0, 1),
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          height: 400,
+          selectedRowIndex: 2,
+          editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            newRowPosition: 'Bottom'
+          },
+          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          columns: [
+            {
+              field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
+              validationRules: { required: true, number: true }, width: 90
+            },
+            { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220, validationRules: { required: true }, showCheckbox: true },
+            {
+              field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100, editType: 'numericedit',
+              validationRules: { number: true, min: 0 }, edit: { params: { format: 'n' } }
+            }
+          ]
+        },
+        done
+      );
+    });
+  
+    it('Enable the toolbar item', (done: Function) => {
+      let item: string = gridObj.grid.element.id + '_update';
+      gridObj.enableToolbarItems([item], true);
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });

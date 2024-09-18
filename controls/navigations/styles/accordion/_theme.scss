@@ -1,3 +1,20 @@
+@mixin acrdn-item-header-focus-box-shadow {
+  @if ($skin-name == 'fluent2') {
+    box-shadow: none;
+  }
+  @else {
+    box-shadow: $acrdn-item-header-focus-box-shadow;
+  }
+}
+
+@mixin acrdn-item-header-focus-visible-box-shadow {
+  @if ($skin-name == 'fluent2') {
+    &:focus-visible {
+      box-shadow: $acrdn-item-header-focus-box-shadow;
+    }
+  }
+}
+
 @include export-module('accordion-theme') {
   .e-accordion {
     -webkit-tap-highlight-color: $acrdn-tab-highlight-color;
@@ -218,13 +235,7 @@
         &:focus {
           border: $acrdn-item-header-focus-border;
           background: $acrdn-item-header-focus-bg;
-
-          @if ($skin-name == 'fluent2') {
-            box-shadow: none;
-          }
-          @else {
-            box-shadow: $acrdn-item-header-focus-box-shadow;
-          }
+          @include acrdn-item-header-focus-box-shadow;
 
           &:active {
 
@@ -235,12 +246,7 @@
             }
           }
         }
-
-        @if ($skin-name == 'fluent2') {
-          &:focus-visible {
-            box-shadow: $acrdn-item-header-focus-box-shadow;
-          }
-        }
+        @include acrdn-item-header-focus-visible-box-shadow;
       }
 
       &.e-select {
@@ -349,20 +355,9 @@
           &:focus {
             position: relative;
             z-index: 2;
-
-            @if ($skin-name == 'fluent2') {
-              box-shadow: none;
-            }
-            @else {
-              box-shadow: $acrdn-item-header-focus-box-shadow;
-            }
+            @include acrdn-item-header-focus-box-shadow;
           }
-
-          @if ($skin-name == 'fluent2') {
-            &:focus-visible {
-              box-shadow: $acrdn-item-header-focus-box-shadow;
-            }
-          }
+          @include acrdn-item-header-focus-visible-box-shadow;
         }
 
         + .e-selected {

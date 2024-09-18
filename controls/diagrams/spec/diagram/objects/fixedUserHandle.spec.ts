@@ -240,4 +240,57 @@ describe('Fixed User Handle Tool Tip Support', () => {
             done();
         });
     });
+    
 });
+
+//Providing template support for fixedUserHandles in nodes and connectors
+describe('template support for fixedUserHandles in nodes and connectors', () => {
+    let diagram: Diagram; let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'fixeduserhandletemplate' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node2', width: 50, height: 50, offsetX: 250, offsetY: 100,
+                fixedUserHandles: [{ offset: { x: 1, y: 0 }, visibility: true, iconStrokeColor: 'red', fill: 'green', margin: { right: 20 }, width: 20, handleStrokeColor: 'orange', height: 20, id: 'fixedUserHandle2' }]
+            },
+            {
+                id: 'node3', width: 50, height: 50, offsetX: 350, offsetY: 100,
+               fixedUserHandles: [{ padding: { left: 2, right: 2, top: 2, bottom: 2 },  offset: { x: 0.5, y: 0 },width: 20, height: 20, id: 'fixedUserHandle3',pathData: 'M60.3,18H27.5c-3,0-5.5,2.4-5.5,5.5v38.2h5.5V23.5h32.7V18z M68.5,28.9h-30c-3,0-5.5,2.4-5.5,5.5v38.2c0,3,2.4,5.5,5.5,5.5h30c3,0,5.5-2.4,5.5-5.5V34.4C73.9,31.4,71.5,28.9,68.5,28.9z M68.5,72.5h-30V34.4h30V72.5z'},{padding: { left: 2, right: 2, top: 2, bottom: 2 }, offset: { x: 0, y: 0.5 }, width: 20, height: 20, id: 'fixedUserHandle4'},{ padding: { left: 2, right: 2, top: 2, bottom: 2 },  offset: { x: 1, y: 0 }, width: 20, height: 20, id: 'fixedUserHandle5',pathData: 'M60.3,18H27.5c-3,0-5.5,2.4-5.5,5.5v38.2h5.5V23.5h32.7V18z M68.5,28.9h-30c-3,0-5.5,2.4-5.5,5.5v38.2c0,3,2.4,5.5,5.5,5.5h30c3,0,5.5-2.4,5.5-5.5V34.4C73.9,31.4,71.5,28.9,68.5,28.9z M68.5,72.5h-30V34.4h30V72.5z' }]
+            },
+        ];
+        var connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourcePoint: { x: 800, y: 100 }, targetPoint: { x: 600, y: 300 },
+                fixedUserHandles: [{ padding: { left: 2, right: 2, top: 2, bottom: 2 }, offset: 0.5, width: 20,alignment: 'Before', height: 20, id: 'fixedUserHandle10'}]
+            }
+        ];
+        diagram = new Diagram({
+            width: '100%', height: 900, nodes: nodes, connectors: connectors,
+            fixedUserHandleTemplate : "#fixeduserhandletemplate"
+        });
+        diagram.appendTo('#fixeduserhandletemplate');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('template support for FixedUserHandle in Nodes', function (done) {
+            var fixeduserhandle1 = diagram.nodes[0].fixedUserHandles[0].id;
+            var fixeduserhandle1Element = document.getElementById(diagram.nodes[0].id + '_' + fixeduserhandle1 + '_html_element');
+            expect(fixeduserhandle1Element.children.length==1).toBe(true);
+            expect(fixeduserhandle1Element instanceof HTMLDivElement).toBe(true);
+            var fixeduserhandle2 = diagram.nodes[1].fixedUserHandles[1].id;
+            var fixeduserhandle2Element = document.getElementById(diagram.nodes[1].id + '_' + fixeduserhandle2 + '_html_element');
+            expect(fixeduserhandle2Element.children.length==1).toBe(true);
+            expect(fixeduserhandle2Element instanceof HTMLDivElement).toBe(true);
+            done();
+        });
+        it('template support for FixedUserHandle in Connector', function (done) {
+            var fixeduserhandle1 = diagram.connectors[0].fixedUserHandles[0].id;
+            var fixeduserhandle1Element = document.getElementById(diagram.connectors[0].id + '_' + fixeduserhandle1 + '_html_element');
+            expect(fixeduserhandle1Element.children.length==1).toBe(true);
+            expect(fixeduserhandle1Element instanceof HTMLDivElement).toBe(true);
+            done();
+        });
+    });

@@ -76,7 +76,7 @@ export class NumberFormat {
         dOptions.numberMapper = isBlazor() ? extend({}, numObject) :
             parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
         dOptions.currencySymbol = isBlazor() ? getValue('currencySymbol', numObject) : base.getCurrencySymbol(
-            dependable.numericObject, fOptions.currency || defaultCurrencyCode, option.altSymbol);
+            dependable.numericObject, fOptions.currency || defaultCurrencyCode, option.altSymbol, option.ignoreCurrency);
         dOptions.percentSymbol = isBlazor() ? getValue('numberSymbols.percentSign', numObject) :
             (<any>dOptions).numberMapper.numberSymbols[`${percentSign}`];
         dOptions.minusSymbol = isBlazor() ? getValue('numberSymbols.minusSign', numObject) :

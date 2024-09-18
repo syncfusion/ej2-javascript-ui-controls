@@ -231,6 +231,13 @@ export interface TreeViewModel extends ComponentModel{
     checkedNodes?: string[];
 
     /**
+     * Determines whether the disabled children will be checked or not if their parent is checked.
+     *
+     * @default true
+     */
+    checkDisabledChildren?: boolean;
+
+    /**
      * Specifies one or more than one CSS classes to be added with root element of the TreeView to help customize the appearance of the component.
      * ```html
      * <div id="tree"></div>

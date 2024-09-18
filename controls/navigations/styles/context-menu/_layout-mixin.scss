@@ -99,11 +99,6 @@
   height: auto;
 }
 
-@mixin separator-bigger-size {
-  height: auto;
-  line-height: normal;
-}
-
 @mixin rtl-li-layout {
   & .e-menu-icon {
     margin-right: 0;
@@ -141,54 +136,5 @@
     &.e-menu-caret-icon {
       padding-left: $cmenu-caret-li-padding;
     }
-  }
-}
-
-@mixin bigger-ul-size {
-  font-size: $cmenu-bigger-font-size;
-  padding: $cmenu-ul-bigger-padding;
-  white-space: nowrap;
-}
-
-@mixin bigger-li-size {
-  height: $cmenu-bigger-li-height;
-  line-height: $cmenu-bigger-li-height;
-  @if $skin-name == 'fluent2' {
-    height: 40px;
-    line-height: 21px;
-    padding: 9px;
-  }
-
-  &.e-menu-caret-icon {
-    @if $skin-name == 'fluent2' {
-      padding: 9px 36px 9px 9px;
-    }
-  }
-
-  & .e-menu-icon {
-    font-size: $cmenu-icon-bigger-font-size;
-    line-height: $cmenu-bigger-li-height;
-    @if $skin-name == 'tailwind' {
-      margin-right: $cmenu-icon-bigger-margin-right;
-    }
-  }
-
-  & .e-caret {
-    line-height: $cmenu-bigger-li-height;
-    @if $skin-name == 'fluent2' {
-      margin: 3px 0;
-    }
-  }
-
-  &.e-separator {
-    @include separator-bigger-size;
-  }
-}
-
-@mixin bigger-rtl-blank-icon {
-  padding-left: $cmenu-caret-blank-icon;
-
-  &.e-menu-caret-icon {
-    padding-left: $cmenu-caret-li-padding;
   }
 }

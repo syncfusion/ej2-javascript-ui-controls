@@ -2,7 +2,7 @@ import { Gradient } from '../core/appearance';
 import { Canvas } from '../core/containers/canvas';
 import { Container } from '../core/containers/container';
 import { Diagram } from '../diagram';
-import { GradientType, HorizontalAlignment, NodeConstraints, VerticalAlignment } from '../enum/enum';
+import { GradientType, HorizontalAlignment, IconShapes, NodeConstraints, VerticalAlignment } from '../enum/enum';
 import { AnnotationModel } from '../objects/annotation-model';
 import { IconShapeModel } from '../objects/icon-model';
 import { BasicShape, BpmnActivity, BpmnSubProcess, FlowShape, Shape, SwimLane } from '../objects/node';
@@ -36,7 +36,7 @@ export class NodeProperties {
             const newNode: NodeModel = this.convertToNode(node);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             // eslint-disable-next-line max-len
-            if (newNode.shape && (newNode.shape as BpmnActivity).activity && (newNode.shape as any).activity.subProcess && (newNode.shape as any).activity.subProcess.processes.length > 0) {
+            if (newNode.shape && (newNode.shape as BpmnActivity).activity && (newNode.shape as any).activity.subProcess && (newNode.shape as any).activity.subProcess.processes &&  (newNode.shape as any).activity.subProcess.processes.length > 0) {
                 const processName: any = [];
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 for (let k: number = 0; k < (newNode.shape as any).activity.subProcess.processes.length; k++) {
@@ -52,12 +52,12 @@ export class NodeProperties {
                 (newNode.shape as any).activity.subProcess.processes = processName;
             }
             if (node.type === 'group' && !node.isSwimlane) {
-                const childCollection: any = [];
+                const childCollection: string[] = [];
                 if (newNode.children && newNode.children.length > 0) {
                     for (let j: number = 0; j < newNode.children.length; j++) {
-                        const child: any = newNode.children[parseInt(i.toString(), 10)];
+                        const child: any = newNode.children[parseInt(j.toString(), 10)];
                         nodes.push(child);
-                        childCollection.push(child);
+                        childCollection.push(child.id);
                     }
                     newNode.children = childCollection;
                 }
@@ -166,17 +166,17 @@ export class NodeProperties {
         }
         if (node.expandIcon) {
             newNode.expandIcon = {
-                shape: (node.expandIcon.shape),
+                shape: node.expandIcon.shape.charAt(0).toUpperCase() + (node.expandIcon.shape).slice(1) as IconShapes,
                 width: node.expandIcon.width, height: node.expandIcon.height,
                 margin: {
-                    left: node.expandIcon.margin ? node.expandIcon.margin.left : 0,
-                    right: node.expandIcon.margin ? node.expandIcon.margin.right : 0,
-                    top: node.expandIcon.margin ? node.expandIcon.margin.top : 0,
-                    bottom: node.expandIcon.margin ? node.expandIcon.margin.bottom : 0
+                    left: node.expandIcon.margin.left,
+                    right: node.expandIcon.margin.right,
+                    top: node.expandIcon.margin.top,
+                    bottom: node.expandIcon.margin.bottom
                 },
                 offset: {
-                    x: node.expandIcon.offset ? node.expandIcon.offset.x : 0.5,
-                    y: node.expandIcon.offset ? node.expandIcon.offset.y : 1
+                    x: node.expandIcon.offset.x,
+                    y: node.expandIcon.offset.y
                 },
                 borderColor: node.expandIcon.borderColor, borderWidth: node.expandIcon.borderWidth,
                 cornerRadius: node.expandIcon.cornerRadius,
@@ -184,20 +184,25 @@ export class NodeProperties {
                 pathData: node.expandIcon.pathData
                 // content: getTemplateContent(node.expandIcon.templateId)
             };
+            if (newNode.expandIcon.shape === 'Arrowup' as any) {
+                newNode.expandIcon.shape = 'ArrowUp';
+            }else if (newNode.expandIcon.shape === 'Arrowdown' as any) {
+                newNode.expandIcon.shape = 'ArrowDown';
+            }
         }
         if (node.collapseIcon) {
             newNode.collapseIcon = {
-                shape: (node.collapseIcon.shape),
+                shape: node.collapseIcon.shape.charAt(0).toUpperCase() + (node.collapseIcon.shape).slice(1) as IconShapes,
                 width: node.collapseIcon.width, height: node.collapseIcon.height,
                 margin: {
-                    left: node.collapseIcon.margin ? node.collapseIcon.margin.left : 0,
-                    right: node.collapseIcon.margin ? node.collapseIcon.margin.right : 0,
-                    top: node.collapseIcon.margin ? node.collapseIcon.margin.top : 0,
-                    bottom: node.collapseIcon.margin ? node.collapseIcon.margin.bottom : 0
+                    left:  node.collapseIcon.margin.left,
+                    right: node.collapseIcon.margin.right,
+                    top: node.collapseIcon.margin.top,
+                    bottom: node.collapseIcon.margin.bottom
                 },
                 offset: {
-                    x: node.collapseIcon.offset ? node.collapseIcon.offset.x : 0.5,
-                    y: node.collapseIcon.offset ? node.collapseIcon.offset.y : 1
+                    x: node.collapseIcon.offset.x,
+                    y: node.collapseIcon.offset.y
                 },
                 borderColor: node.collapseIcon.borderColor, borderWidth: node.collapseIcon.borderWidth,
                 cornerRadius: node.collapseIcon.cornerRadius,
@@ -205,6 +210,11 @@ export class NodeProperties {
                 pathData: node.collapseIcon.pathData
                 //  content: getTemplateContent(node.collapseIcon.templateId)
             };
+            if (newNode.collapseIcon.shape === 'Arrowup' as any) {
+                newNode.collapseIcon.shape = 'ArrowUp';
+            }else if (newNode.collapseIcon.shape === 'Arrowdown' as any) {
+                newNode.collapseIcon.shape = 'ArrowDown';
+            }
         }
         if (node.ports) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -216,10 +226,12 @@ export class NodeProperties {
                 newNode.children = this.getChildren(newNode, node as EJ1Node);
             }
         }
-        newNode.minWidth = node.minWidth;
-        newNode.maxWidth = node.maxWidth;
-        newNode.minHeight = node.minHeight;
-        newNode.maxHeight = node.maxHeight;
+        if (!(node.children && node.children.length > 0)) {
+            newNode.maxWidth = node.maxWidth;
+            newNode.maxHeight = node.maxHeight;
+            newNode.minWidth = node.minWidth;
+            newNode.minHeight = node.minHeight;
+        }
         if (node.shape || (node as any).type) {
             newNode = this.setShape(newNode, node);
         }
@@ -368,16 +380,16 @@ export class NodeProperties {
         if (constraints & NodeConstraints.Resize) {
             nodeConstraints = nodeConstraints | NodeConstraints.Resize;
         }
-        if (constraints & NodeConstraints.ResizeSouthEast) {
+        if (constraints & NodeConstraints.Shadow) {
             nodeConstraints = nodeConstraints | NodeConstraints.Shadow;
         }
         if (constraints & NodeConstraints.AspectRatio) {
             nodeConstraints = nodeConstraints | NodeConstraints.AspectRatio;
         }
-        if (constraints & NodeConstraints.ResizeNorthWest) {
+        if (constraints & NodeConstraints.AllowDrop) {
             nodeConstraints = nodeConstraints | NodeConstraints.AllowDrop;
         }
-        if (constraints & NodeConstraints.ResizeNorth) {
+        if (constraints & NodeConstraints.InheritTooltip) {
             nodeConstraints = nodeConstraints | NodeConstraints.InheritTooltip;
         }
         if (constraints & NodeConstraints.PointerEvents) {
@@ -385,6 +397,9 @@ export class NodeProperties {
         }
         if (constraints & NodeConstraints.Inherit) {
             nodeConstraints = nodeConstraints | NodeConstraints.Inherit;
+        }
+        if (constraints & NodeConstraints.Default) {
+            nodeConstraints = nodeConstraints | NodeConstraints.Default;
         }
         return nodeConstraints;
     }
@@ -455,6 +470,7 @@ export class NodeProperties {
                     activity: (node.activity).charAt(0).toUpperCase() + (node.activity).slice(1)
                 }
             };
+            newNode.shape.activity.activity =  newNode.shape.activity.activity === 'Subprocess' ? 'SubProcess' : newNode.shape.activity.activity;
             if (node.activity === 'task') {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (newNode.shape as any).activity.task = {
@@ -471,12 +487,12 @@ export class NodeProperties {
                         collapsed: node.subProcess.collapsed,
                         compensation: node.subProcess.compensation,
                         adhoc: node.subProcess.adhoc,
-                        loop: (node.subProcess.loop).charAt(0).toUpperCase() + (node.subprocess.loop).slice(1),
-                        boundary: (node.subProcess.boundary).charAt(0).toUpperCase() + (node.subprocess.boundary).slice(1),
-                        type: (node.subProcess.type).charAt(0).toUpperCase() + (node.subprocess.type).slice(1),
+                        loop: (node.subProcess.loop).charAt(0).toUpperCase() + (node.subProcess.loop).slice(1),
+                        boundary: (node.subProcess.boundary).charAt(0).toUpperCase() + (node.subProcess.boundary).slice(1),
+                        type: (node.subProcess.type).charAt(0).toUpperCase() + (node.subProcess.type).slice(1),
                         event: {
-                            event: (node.event).charAt(0).toUpperCase() + (node.event).slice(1),
-                            trigger: (node.trigger).charAt(0).toUpperCase() + (node.trigger).slice(1)
+                            event: (node.subProcess.event).charAt(0).toUpperCase() + (node.subProcess.event).slice(1),
+                            trigger: (node.subProcess.trigger).charAt(0).toUpperCase() + (node.subProcess.trigger).slice(1)
                         }
                     };
                 }
@@ -486,9 +502,9 @@ export class NodeProperties {
                         collapsed: node.subProcess.collapsed,
                         compensation: node.subProcess.compensation,
                         adhoc: node.subProcess.adhoc,
-                        loop: (node.subProcess.loop).charAt(0).toUpperCase() + (node.subprocess.loop).slice(1),
-                        boundary: (node.subProcess.boundary).charAt(0).toUpperCase() + (node.subprocess.boundary).slice(1),
-                        type: (node.subProcess.type).charAt(0).toUpperCase() + (node.subprocess.type).slice(1),
+                        loop: (node.subProcess.loop).charAt(0).toUpperCase() + (node.subProcess.loop).slice(1),
+                        boundary: (node.subProcess.boundary).charAt(0).toUpperCase() + (node.subProcess.boundary).slice(1),
+                        type: (node.subProcess.type).charAt(0).toUpperCase() + (node.subProcess.type).slice(1),
                         events: this.renderEventsCollection(node.subProcess.events),
                         processes: this.renderProcessesCollection(node)
                     };
@@ -612,18 +628,6 @@ export class NodeProperties {
             }
         }
         return processesCollection;
-    }
-
-    /**
-     * To destroy the ruler
-     *
-     * @returns {void} To destroy the ruler
-     */
-
-    public destroy(): void {
-        /**
-         * Destroys the Node properties module
-         */
     }
 
     /**

@@ -112,7 +112,7 @@ export class SymmetricLayout {
         this.resetGraphPosition(lstNodes, graph);
     }
     private preLayoutNodes(lstNodes: IGraphObject[], rcBounds: Rect): void {
-        const fMaxSize: number = Math.max(rcBounds ? rcBounds.width : 25, rcBounds ? rcBounds.height : 25);
+        const fMaxSize: number = Math.max(rcBounds.width, rcBounds.height);
         const ptCenter: PointModel = { x: fMaxSize / 2, y: fMaxSize / 2 };
         const dRotateAngle: number = 2 * Math.PI / lstNodes.length;
         let dAngle: number = dRotateAngle;
@@ -148,9 +148,7 @@ export class SymmetricLayout {
             const nodes: IGraphObject[] = forceNode.nodes;
             for (let l: number = 0; l < nodes.length; l++) {
                 const gnChild: IGraphObject = nodes[parseInt(l.toString(), 10)];
-                if (collectionContains(gnChild.id, lstNodes)) {
-                    this.calcNodesForce(forceNode, this.getForceNode(gnChild));
-                }
+                this.calcNodesForce(forceNode, this.getForceNode(gnChild));
             }
             for (let i: number = 0, length: number = nodes.length; i < length; i++) {
                 if (length < 2) {
@@ -212,12 +210,10 @@ export class SymmetricLayout {
         const lstToReturn: IGraphObject[] = [];
         const keys: string[] = Object.keys(lstNodes);
         for (const k of keys) {
-            if (lstNodes[`${k}`]) {
-                const gnNode: IGraphObject = lstNodes[`${k}`];
-                const forceNode: GraphForceNode = new GraphForceNode(gnNode);
-                gnNode.treeInfo.tag = forceNode;
-                lstToReturn.push(gnNode);
-            }
+            const gnNode: IGraphObject = lstNodes[`${k}`];
+            const forceNode: GraphForceNode = new GraphForceNode(gnNode);
+            gnNode.treeInfo.tag = forceNode;
+            lstToReturn.push(gnNode);
         }
         return lstToReturn;
     }
@@ -276,9 +272,7 @@ export class SymmetricLayout {
         const dx: number = pt2.x - pt1.x;
         const dy: number = pt2.y - pt1.y;
         const t: number = (dx * dx) + (dy * dy);
-        if (t > 0) {
-            d = Math.sqrt(t);
-        }
+        d = Math.sqrt(t);
         return d;
     }
     private calcRelatesForce(vtSource: GraphForceNode, vtTarget: GraphForceNode, normalDistance: number): void {
@@ -327,14 +321,12 @@ export class SymmetricLayout {
         const count: number = vtTarget.nodes.length;
         const length: number = distance - minDist;
         const factor: number = this.springFactor / (count * count) * Math.sqrt(count);
-        if (length !== 0) {
-            const fVelocity: number = length * factor;
-            const fOffset: number = fVelocity;
-            const offsetX: number = Math.cos(angle) * fOffset;
-            const offsetY: number = Math.sin(angle) * fOffset;
-            vtTarget.velocityX -= offsetX;
-            vtTarget.velocityY -= offsetY;
-        }
+        const fVelocity: number = length * factor;
+        const fOffset: number = fVelocity;
+        const offsetX: number = Math.cos(angle) * fOffset;
+        const offsetY: number = Math.sin(angle) * fOffset;
+        vtTarget.velocityX -= offsetX;
+        vtTarget.velocityY -= offsetY;
     }
 }
 
@@ -402,19 +394,7 @@ export class GraphLayoutManager {
         for (let i: number = 0; i < selectionList.length; i++) {
             const node: IGraphObject = selectionList[parseInt(i.toString(), 10)];
             const trnsX: number = (viewPort.x - modelBounds.width) / 2;
-            const margin: MarginModel = layout.margin || {};
-            //let marginX: number; let marginY: number;
-            margin.left = margin.left || 0;
-            margin.right = margin.right || 0;
-            margin.top = margin.top || 0;
-            margin.bottom = margin.bottom || 0;
-            if (layout.margin.left) {
-                margin.left = layout.margin.left;
-            }
-            if (layout.margin.top) {
-                margin.top = layout.margin.top;
-            }
-
+            const margin: MarginModel = layout.margin;
             const dx: number = (node.treeInfo.tag.location.x - (node.offsetX - (node.actualSize.width / 2)) -
                 modelBounds.x + trnsX + margin.left);
             const dy: number = (node.treeInfo.tag.location.y - (node.offsetY - (node.actualSize.height / 2)) - modelBounds.y + margin.top);
@@ -483,9 +463,6 @@ export class GraphLayoutManager {
                 symmetricLayout.doLayout(this);
                 this.selectedNode = null;
                 this.visitedStack = [];
-                for (const connector of this.cycleEdgesCollection) {
-                    connector.treeInfo.isCycleEdge = false;
-                }
             }
             this.passedNodes = null;
             this.selectedNode = null;
@@ -495,12 +472,8 @@ export class GraphLayoutManager {
     private getNodesToPosition(nodes: IGraphObject[]): void {
         for (let i: number = 0; i < nodes.length; i++) {
             const node: IGraphObject = nodes[parseInt(i.toString(), 10)];
-            if (!collectionContains(node.id, this.passedNodes)) {
-                if (node) {
-                    this.selectNodes(node);
-                }
-                break;
-            }
+            this.selectNodes(node);
+            break;
         }
     }
     private selectNodes(node: IGraphObject): void {
@@ -515,8 +488,6 @@ export class GraphLayoutManager {
                     this.selectedNode.treeInfo.LeftMargin = 10;
                     this.selectedNode.treeInfo.TopMargin = 10;
                     this.selectConnectedNodes(nodeGraph);
-                } else {
-                    this.selectedNode = node;
                 }
             }
         }
@@ -527,19 +498,18 @@ export class GraphLayoutManager {
             graph.treeInfo.GraphNodes = {};
         }
         const node: IGraphObject = nodeGraph;
-        if (node != null && this.addNode(node, 'passed')) {
-            const nodeName: string = node.id;
-            if (!this.dictionaryContains(graph.treeInfo.GraphNodes, node)) {
-                const gnNode: IGraphObject = this.addGraphNode(node);
-                this.getConnectedRelatives(gnNode);
+        this.addNode(node, 'passed');
+        const nodeName: string = node.id;
+        if (!this.dictionaryContains(graph.treeInfo.GraphNodes, node)) {
+            const gnNode: IGraphObject = this.addGraphNode(node);
+            this.getConnectedRelatives(gnNode);
+            this.exploreRelatives(nodeGraph);
+        } else {
+            const graphNode: IGraphObject = graph.treeInfo.GraphNodes[`${nodeName}`];
+            if (graphNode.treeInfo.Added) {
+                graphNode.treeInfo.Added = false;
+                this.getConnectedRelatives(graphNode);
                 this.exploreRelatives(nodeGraph);
-            } else {
-                const graphNode: IGraphObject = graph.treeInfo.GraphNodes[`${nodeName}`];
-                if (graphNode.treeInfo.Added) {
-                    graphNode.treeInfo.Added = false;
-                    this.getConnectedRelatives(graphNode);
-                    this.exploreRelatives(nodeGraph);
-                }
             }
         }
     }
@@ -551,7 +521,7 @@ export class GraphLayoutManager {
         let edges: string[] = [];
         if (relativesToExplore === 'Parents') {
             edges = nodeGraph.inEdges;
-        } else if (relativesToExplore === 'Children') {
+        } else {
             edges = nodeGraph.outEdges;
         }
         for (let i: number = 0; i < edges.length; i++) {
@@ -659,10 +629,7 @@ export class GraphLayoutManager {
         if (list != null && fullName !== '') {
             for (let i: number = 0, nLength: number = list.length; i < nLength; i++) {
                 const gnNode: IGraphObject = list[parseInt(i.toString(), 10)];
-                if (typeof (gnNode) === 'string' && gnNode === fullName) {
-                    nIndex = i;
-                    break;
-                } else if (gnNode != null && gnNode.id === fullName) {
+                if (gnNode != null && gnNode.id === fullName) {
                     nIndex = i;
                     break;
                 }
@@ -672,16 +639,11 @@ export class GraphLayoutManager {
     }
     private addGraphNode(node: IGraphObject): IGraphObject {
         const graph: IGraphObject = this.selectedNode;
-        if (!graph.treeInfo.GraphNodes) {
-            graph.treeInfo.GraphNodes = {};
-        }
         const gnNode: IGraphObject = node;
-        if (graph != null) {
-            graph.treeInfo.GraphNodes[gnNode.id] = gnNode;
-            const nodeHelper: IGraphObject = this.mhelperSelectedNode;
-            if (nodeHelper != null && node.id === nodeHelper.id) {
-                this.mhelperSelectedNode = gnNode;
-            }
+        graph.treeInfo.GraphNodes[gnNode.id] = gnNode;
+        const nodeHelper: IGraphObject = this.mhelperSelectedNode;
+        if (nodeHelper != null && node.id === nodeHelper.id) {
+            this.mhelperSelectedNode = gnNode;
         }
         return gnNode;
     }
@@ -721,9 +683,7 @@ export class GraphLayoutManager {
             const toNode: IGraphObject = this.nameTable[nodeLink.targetID];
             if (fromNode != null) {
                 this.selectNodes(fromNode);
-            } else if (toNode != null) {
-                this.selectNodes(toNode);
-            } else { this.selectedNode = node; }
+            }
         }
     }
     private addNode(nodeToAdd: IGraphObject, collectionToAdd: string): boolean {

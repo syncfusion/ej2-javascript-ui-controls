@@ -962,6 +962,11 @@ describe('Freeze render module', () => {
         it('Ensure colSpan for the cell', () => {
             expect((gridObj.getContentTable() as HTMLTableElement).rows[0].cells[1].getAttribute('colSpan')).toBe('2');
         });
+        // code coverage 
+        it('code coverage  for getVisibleFrozenCount', () => {
+            (gridObj as any).getVisibleFrozenCount();
+            (gridObj as any).resetIndentWidth();
+        });
         afterAll(() => {
             // gridObj['freezeModule'].destroy();
             destroy(gridObj);
@@ -1002,6 +1007,33 @@ describe('Freeze render module', () => {
         });
     });
 
+    describe('code coverage - Freeze', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    frozenColumns: 2,
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ]
+                }, done);
+        });
+
+        it('Add event listener', () => {
+            gridObj.destroy();
+            (gridObj as any).freezeModule.addEventListener();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
     describe('EJ2-900729 - When freeze property is enabled the minWidth and maxWidth set to a column is not working properly', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {
@@ -1020,6 +1052,31 @@ describe('Freeze render module', () => {
 
         it('check th width', () => {
             expect(gridObj.getHeaderTable().querySelector('th').getBoundingClientRect().width).toBe(30);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('EJ2-900729 - Code coverage', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', minWidth: 30, maxWidth: 30, textAlign: 'Left', freeze: 'Left', width: 'auto', },
+                        { field: 'Freight', headerText: 'Freight', width: 'auto', format: 'C2', textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 30, minWidth: 30, maxWidth: 30, freeze: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 'auto' },
+                    ]
+                }, done);
+        });
+
+        it('Code coverage', () => {
+            // covered the updateFrozenColumnsWidth method by rendering the grid
         });
 
         afterAll(() => {

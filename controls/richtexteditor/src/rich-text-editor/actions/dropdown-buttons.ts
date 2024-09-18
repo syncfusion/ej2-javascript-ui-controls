@@ -577,9 +577,6 @@ export class DropDownButtons {
     }
 
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.iframeMouseDown, this.onIframeMouseDown);
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.beforeDropDownItemRender, this.beforeRender);

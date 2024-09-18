@@ -40,6 +40,7 @@ export class PdfTemplate {
     _isResourceExport : boolean = false;
     _appearance: string;
     _pendingResources: string;
+    _templateOriginalSize: number[];
     /**
      * Initializes a new instance of the `PdfTemplate` class.
      *
@@ -73,6 +74,7 @@ export class PdfTemplate {
             if (bounds && bounds.length > 3) {
                 const rect: { x: number, y: number, width: number, height: number } = _toRectangle(bounds);
                 this._size = [rect.width, rect.height];
+                this._templateOriginalSize = this._size;
             }
             this._isReadOnly = true;
         } else {
@@ -156,6 +158,38 @@ export class PdfTemplate {
     get size(): number[] {
         return this._size;
     }
+    /**
+     * Get the original size of the PDF template. (Read only)
+     *
+     * Remarks: The `_originalSize` property is internal and provides access to the original dimensions of the PDF template.
+     *
+     * @returns {number[]} Template original width and height as number array.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a new rubber stamp annotation
+     * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(50, 100, 100, 50);
+     * // Access the normal template of the appearance
+     * let template: PdfTemplate = appearance.normal;
+     * // Get the width and height of the PDF template as number array
+     * let size: number[] = template._originalSize;
+     * // Create new image object by using JPEG image data as Base64 string format
+     * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
+     * // Draw the image as the custom appearance for the annotation
+     * template.graphics.drawImage(image, 0, 0, size[0], size[1]);
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get _originalSize(): number[] {
+        return this._templateOriginalSize;
+    }
     _initialize(): void {
         this._content.dictionary.set('Type', _PdfName.get('XObject'));
         this._content.dictionary.set('Subtype', _PdfName.get('Form'));
@@ -166,15 +200,6 @@ export class PdfTemplate {
         jsonDocument._isAnnotationExport = true;
         const resourceTable: Map<string, string> = new Map<string, string>();
         jsonDocument._writeObject(resourceTable, dictionary.get('N'), dictionary, 'normal');
-        this._appearance = jsonDocument._convertToJson(resourceTable);
-        jsonDocument._dispose();
-    }
-    _exportResources(dictionary: _PdfDictionary, crossReference: _PdfCrossReference): void {
-        const jsonDocument: _JsonDocument = new _JsonDocument();
-        jsonDocument._crossReference = crossReference;
-        jsonDocument._isAnnotationExport = true;
-        const resourceTable: Map<string, string> = new Map<string, string>();
-        jsonDocument._writeObject(resourceTable, dictionary.get('Resources'), dictionary, 'resources');
         this._appearance = jsonDocument._convertToJson(resourceTable);
         jsonDocument._dispose();
     }

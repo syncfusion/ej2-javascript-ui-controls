@@ -55,6 +55,12 @@
     input:focus-visible+label.e-btn { // only for keybord
       box-shadow: $btn-keyboard-focus-box-shadow !important;
     }
+
+    .e-outline.e-btn:active,
+    .e-outline.e-btn:focus,
+    input:focus+label.e-btn.e-outline {
+      background: transparent !important;
+    }
   }
 
     //Focus state for Normal and Outline GroupButton
@@ -62,10 +68,10 @@
     input:focus-visible+label.e-btn,
     input:focus+label.e-btn {
       @include button-focus;
-      @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
+      @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
         box-shadow: none;
       }
-      @if $skin-name == 'bootstrap5' {
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
         border-color: $btn-focus-bgcolor;
       }
       outline-color: $btn-grp-outline-focus-color;
@@ -80,7 +86,7 @@
       &.e-primary {
         @include primary-focus;
         @include box-shadow-theme;
-        @if $skin-name == 'bootstrap5' {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
           border-color: $btn-primary-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-primary-color;
@@ -89,7 +95,7 @@
       &.e-success {
         @include success-focus;
         @include box-shadow-theme;
-        @if $skin-name == 'bootstrap5' {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
           border-color: $btn-success-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-success-color;
@@ -98,7 +104,7 @@
       &.e-info {
         @include info-focus;
         @include box-shadow-theme;
-        @if $skin-name == 'bootstrap5' {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
           border-color: $btn-info-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-info-color;
@@ -107,7 +113,7 @@
       &.e-warning {
         @include warning-focus;
         @include box-shadow-theme;
-        @if $skin-name == 'bootstrap5' {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
           border-color: $btn-warning-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-warning-color;
@@ -116,7 +122,7 @@
       &.e-danger {
         @include danger-focus;
         @include box-shadow-theme;
-        @if $skin-name == 'bootstrap5' {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
           border-color: $btn-danger-focus-bgcolor;
         }
         outline-color: $btn-grp-outline-focus-danger-color;
@@ -133,14 +139,14 @@
       &.e-outline {
         @include outline-focus;
         @include outline-box-shadow-theme;
-        @if $skin-name == 'bootstrap5' {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
           border-color: $btn-outline-focus-bgcolor;
         }
 
         &.e-primary {
           @include outline-primary-focus;
           @include outline-box-shadow-theme;
-          @if $skin-name == 'bootstrap5' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             border-color: $btn-outline-primary-focus-bgcolor;
           }
         }
@@ -148,7 +154,7 @@
         &.e-success {
           @include outline-success-focus;
           @include outline-box-shadow-theme;
-          @if $skin-name == 'bootstrap5' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             border-color: $btn-success-focus-bgcolor;
           }
         }
@@ -156,7 +162,7 @@
         &.e-info {
           @include outline-info-focus;
           @include outline-box-shadow-theme;
-          @if $skin-name == 'bootstrap5' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             border-color: $btn-info-hover-bgcolor;
           }
         }
@@ -164,7 +170,7 @@
         &.e-warning {
           @include outline-warning-focus;
           @include outline-box-shadow-theme;
-          @if $skin-name == 'bootstrap5' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             border-color: $btn-warning-hover-bgcolor;
           }
         }
@@ -172,7 +178,7 @@
         &.e-danger {
           @include outline-danger-focus;
           @include outline-box-shadow-theme;
-          @if $skin-name == 'bootstrap5' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             border-color: $btn-danger-hover-bgcolor;
           }
         }

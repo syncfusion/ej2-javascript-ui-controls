@@ -137,5 +137,52 @@ describe('Iframe Content renderer module', () => {
             destroy(rteObj);
         });
     });
-    
+
+    describe('903715 - Provide property to add CSP headers with the meta tag in RichTextEditor IFrameSettings - metaTags', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true,
+                    metaTags: [
+                        { name: "description", content: "This is a rich text editor" },
+                        { charset: "UTF-8" },
+                        { httpEquiv: "Content-Security-Policy", content: "default-src 'self'" },
+                        { property: "og:title", content: "Rich Text Editor" }
+                    ]
+                },
+                value: `<p>Rich Text Editor</p>`
+            });
+        });
+        it('Check the meta tag added into the iframe header', (done) => {
+            let content = (rteObj.contentModule.getPanel() as HTMLIFrameElement).contentDocument;
+            expect(content.head.querySelectorAll("meta").length >= rteObj.iframeSettings.metaTags.length).toBe(true);
+            done();
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+
+    describe('903715 - Provide property to add CSP headers with the meta tag in RichTextEditor IFrameSettings - sandbox', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true,
+                    sandbox: ["allow-forms", "allow-orientation-lock"],
+                },
+                value: `<p>Rich Text Editor</p>`
+            });
+        });
+        it('Check the sandbox attribute added into the iframe element', (done) => {
+            expect(rteObj.contentModule.getPanel().getAttribute('sandbox') === 'allow-forms allow-orientation-lock allow-same-origin').toBe(true);
+            done();
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
 });

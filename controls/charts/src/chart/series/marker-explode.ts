@@ -1,4 +1,4 @@
-import { drawSymbol, ChartLocation } from '../../common/utils/helper';
+import { drawSymbol, ChartLocation} from '../../common/utils/helper';
 import { PathOption, Size } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Border } from '../../common/model/base';
@@ -6,12 +6,14 @@ import { MarkerSettingsModel } from '../series/chart-series-model';
 import { Series, Points } from './chart-series';
 import { Browser, extend, remove, isNullOrUndefined, Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { ChartData } from '../../chart/utils/get-data';
-import { withInBounds, PointData, stopTimer } from '../../common/utils/helper';
+import { withInBounds, PointData, stopTimer, getElement } from '../../common/utils/helper';
 import { ColorValue, colorNameToHex, convertHexToColor } from '../../common/utils/helper';
 import { ChartShape } from '../../index';
 
 /**
- * `Marker` Module used to render the marker for line type series.
+ * The `Marker` module is used to render markers for line-type series.
+ *
+ * @private
  */
 export class MarkerExplode extends ChartData {
     private markerExplode: number;
@@ -35,6 +37,7 @@ export class MarkerExplode extends ChartData {
      * Adds event listeners for the series.
      *
      * @returns {void}
+     * @private
      */
     public addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -44,6 +47,8 @@ export class MarkerExplode extends ChartData {
     }
     /**
      * Removes event listeners for the series.
+     *
+     * @private
      *
      * @returns {void}
      */
@@ -60,7 +65,7 @@ export class MarkerExplode extends ChartData {
      */
     private mouseUpHandler(): void {
         const chart: Chart = this.chart;
-        if (chart.isTouch && !chart.crosshair.enable && !this.isSelected(chart)) {
+        if (chart.isTouch && !chart.crosshair.enable && !this.isSelected(chart) && !(this.chart.zoomModule && getElement(this.elementId + '_ZoomArea'))) {
             this.markerMove(true);
         }
     }
@@ -69,10 +74,12 @@ export class MarkerExplode extends ChartData {
      * Handles the mouse move event.
      *
      * @returns {void}
+     * @private
      */
     public mouseMoveHandler(): void {
         const chart: Chart = this.chart;
-        if ((chart.highlightMode !== 'None' || (chart.tooltip.enable)) && (!chart.isTouch || chart.startMove) && !this.isSelected(chart)) {
+        if ((chart.highlightMode !== 'None' || (chart.tooltip.enable)) && (!chart.isTouch || chart.startMove) && !this.isSelected(chart)
+            && !(this.chart.zoomModule && getElement(this.elementId + '_ZoomArea'))) {
             this.markerMove(false);
         }
     }
@@ -200,7 +207,6 @@ export class MarkerExplode extends ChartData {
         if (this.chart.selectionModule && this.chart.selectionMode !== 'None') {
             className = this.chart.selectionModule.generateStyle(series);
         }
-
         const symbolId: string = this.elementId + '_Series_' + series.index + '_Point_' + point.index + '_Trackball' +
             (index ? index : '');
         const size: Size = new Size(
@@ -254,7 +260,8 @@ export class MarkerExplode extends ChartData {
             symbol.setAttribute('transform', element.getAttribute('transform'));
             if (this.chart.enableCanvas) {
                 svg.appendChild(symbol);
-            } else {
+            }
+            else {
                 this.chart.svgObject.appendChild(symbol);
             }
         }
@@ -268,10 +275,11 @@ export class MarkerExplode extends ChartData {
      * @param {Points} point - The point to animate.
      * @param {boolean} [endAnimate=false] - Flag to indicate if the animation is ending.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series, point: Points, endAnimate: boolean = false): void {
         const duration: number = this.animationDuration();
-        const delay: number = series.animation.delay;
+        const delay: number = 0;
         const rectElements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.elementId + '_EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
         for (let i: number = 0, len: number = rectElements.length; i < len; i++) {
             this.trackballAnimate(
@@ -293,6 +301,7 @@ export class MarkerExplode extends ChartData {
      * @param {boolean} isLabel - Flag to indicate if the animated element is a label.
      * @param {boolean} [endAnimate=false] - Flag to indicate if the animation is ending.
      * @returns {void}
+     * @private
      */
     public trackballAnimate(
         elements: Element, delays: number, durations: number, series: Series,
@@ -339,6 +348,7 @@ export class MarkerExplode extends ChartData {
      * @param {Points} [point=null] - The point associated with the marker to remove. Defaults to null.
      * @param {boolean} [fadeOut=false] - Flag to indicate if the removal should be faded out. Defaults to false.
      * @returns {void}
+     * @private
      */
     public removeHighlightedMarker(series: Series = null, point: Points = null, fadeOut: boolean = false): void {
         if (!isNullOrUndefined(series) && !isNullOrUndefined(point)) {

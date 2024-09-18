@@ -4,7 +4,7 @@
 
 A common package of Essential JS 2 which contains base libraries, methods and class definitions.
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of [Syncfusion's EULA](https://www.syncfusion.com/eula/es/). To acquire a license, you can purchase [here](https://www.syncfusion.com/sales/products) or start a free 30-day trial [here](https://www.syncfusion.com/account/manage-trials/start-trials).
+> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's [EULA](https://www.syncfusion.com/eula/es/). To acquire a license, you can purchase [here](https://www.syncfusion.com/sales/products) or start a free 30-day trial [here](https://www.syncfusion.com/account/manage-trials/start-trials).
 >
 > A free [community license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
 
@@ -98,5 +98,5 @@ Product support is available for through following mediums.
 
 Check the changelog [here](https://ej2.syncfusion.com/documentation/release-notes/index/?utm_source=npm&utm_campaign=ej2-base).
 
-    © Copyright 2022 Syncfusion, Inc. All Rights Reserved.
+    © Copyright 2024 Syncfusion, Inc. All Rights Reserved.
     The Syncfusion Essential Studio license and copyright applies to this distribution.

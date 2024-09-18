@@ -986,6 +986,104 @@ describe('Adaptive renderer', () => {
         });
     });
 
+    describe('Code Coverage - 1', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending; //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    enableAdaptiveUI: true,
+                    rowRenderingMode: 'Vertical',
+                    allowFiltering: true,
+                    allowSorting: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Excel' },
+                    editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true, mode: 'Dialog' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Search'],
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', width: 120 },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 120 },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 120 },
+                    ],
+                    dataBound: () => {
+                        expect(gridObj.enableHover).toBeFalsy();
+                    },
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'EmployeeID',
+                            format: 'C2',
+                            footerTemplate: 'Sum: ${Sum}'
+                        }]
+                    }]
+                }, done);
+        });
+
+        // it('Adaptive coverage - 2', () => {
+        //     gridObj.filterModule.responsiveDialogRenderer.editComplate( { requestType: 'cancel'} );
+        //     gridObj.filterModule.responsiveDialogRenderer.removeCustomDlgFilterEle( { target: gridObj.element.querySelector('.e-rowcell') } );
+        // });
+
+
+        it('Adaptive coverage - 1', (done: Function) => {
+            let actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterchoicerequest') {
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterModule.responsiveDialogRenderer.sortButtonClickHandler();
+            gridObj.filterModule.responsiveDialogRenderer.refreshCustomFilterClearBtn();
+            gridObj.filterModule.responsiveDialogRenderer.showResponsiveDialog(gridObj.getColumns()[0]);
+        });
+
+        it('Adaptive coverage - 3', () => {
+            gridObj.filterModule.responsiveDialogRenderer.action = 5;
+            gridObj.filterModule.responsiveDialogRenderer.renderResponsiveContextMenu();
+            gridObj.filterModule.responsiveDialogRenderer.removeCustomDlgFilterEle(document.querySelector('.e-rowcell'));
+            gridObj.filterModule.responsiveDialogRenderer.keyHandler({ keyCode: 13, target: document.querySelector('.e-searchinput') });
+        });
+
+        it('Adaptive coverage - 4', () => {
+            gridObj.filterModule.responsiveDialogRenderer.action = 1;
+            gridObj.filterModule.responsiveDialogRenderer.dialogHdrBtnClickHandler();
+        });
+
+        it('Adaptive coverage - 5', () => {
+            gridObj.filterModule.responsiveDialogRenderer.action = 5;
+            gridObj.filterModule.responsiveDialogRenderer.getButtonText();
+        });
+
+        it('Adaptive coverage - 5', () => {
+            gridObj.filterModule.responsiveDialogRenderer.isSortApplied = false;
+            gridObj.filterModule.responsiveDialogRenderer.sortColumn();
+        });
+
+        it('Adaptive coverage - 6', () => {
+            (gridObj as any).headerModule.updateCustomResponsiveToolbar( { module: 'grid' } );
+            gridObj.element.querySelector('.e-toolbar').classList.add('e-responsive-toolbar');
+            (gridObj as any).headerModule.updateCustomResponsiveToolbar( { module: 'toolbar' } );
+        });
+
+        it('Adaptive coverage - 7', () => {
+            gridObj.filterModule.responsiveDialogRenderer.editComplate( { requestType: 'cancel'} );
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
     describe('EJ2-899558-Responsive Back Element not showing when search is aligned left in Toolbar with AdaptiveUI', () => {
         let gridObj: any;
         beforeAll((done: Function) => {
@@ -1026,6 +1124,7 @@ describe('Adaptive renderer', () => {
     describe('EJ2-899450-Programmatic open column chooser dialog not opening with OK and Cancel buttons on adaptive vertical view', () => {
         let gridObj: Grid;
         let openButton: HTMLElement;
+    
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -1061,6 +1160,49 @@ describe('Adaptive renderer', () => {
     
         afterAll(() => {
             document.body.removeChild(openButton);
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    
+    describe('Code coverage', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending; //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    enableAdaptiveUI: true,
+                    allowFiltering: true,
+                    allowSorting: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Excel', enableInfiniteScrolling: true, loadingIndicator: 'Shimmer' },
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', width: 120 },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 120 },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 120 },
+                    ],
+                }, done);
+        });
+        it('Adaptive on demand filter dialog check', (done: Function) => {
+            let actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterchoicerequest') {
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterModule.responsiveDialogRenderer.showResponsiveDialog(gridObj.getColumns()[0]);
+        });
+
+        afterAll(() => {
             destroy(gridObj);
             gridObj = null;
         });

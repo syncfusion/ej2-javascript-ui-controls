@@ -274,10 +274,7 @@ describe('Testing Resizing', () => {
         let bounds: Rect = (diagram.nodes[0] as NodeModel).wrapper.bounds;
         mouseEvents.clickEvent(diagramCanvas, 295, 295);
         mouseEvents.dragAndDropEvent(diagramCanvas, topRight.x, topRight.y, topRight.x - 10, topRight.y + 10);
-        expect(bounds.topRight.y === 250 && bounds.topRight.x === 350).toBe(true);
-        console.log("Gowtham - ","bounds.topRight.y = " , bounds.topRight.y, "node.wrapper.bounds.topRight.y = " , node.wrapper.bounds.topRight.y);
-        console.log("Gowtham - ","bounds.topRight.x = " , bounds.topRight.x, "node.wrapper.bounds.topRight.x = " , node.wrapper.bounds.topRight.x);
-        
+        expect(bounds.topRight.y === node.wrapper.bounds.topRight.y && bounds.topRight.x === node.wrapper.bounds.topRight.x).toBe(true);
         done();
     });
 
@@ -336,10 +333,7 @@ describe('Testing Resizing', () => {
 
         //increase size at top 240, 360
         mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x, topCenter.y, topCenter.x - 10, topCenter.y - 20);
-        // expect(bounds.topCenter.x === 280 && bounds.topCenter.y === 250).toBe(true);
-        console.log("Gowtham - ","bounds.topCenter.x = " , bounds.topCenter.x, "node.wrapper.bounds.topCenter.x = ", node.wrapper.bounds.topCenter.x);
-        console.log("Gowtham - ","bounds.topCenter.y = " , bounds.topCenter.y, "node.wrapper.bounds.topCenter.y = ", node.wrapper.bounds.topCenter.y);
-        
+        expect(bounds.topCenter.x === node.wrapper.bounds.topCenter.x && bounds.topCenter.y === node.wrapper.bounds.topCenter.y).toBe(true);
         done();
 
 
@@ -686,15 +680,13 @@ describe('checking lock not allowed cursor issue', () => {
         mouseEvents.clickEvent(diagramCanvas, 900, 100);
         mouseEvents.mouseMoveEvent(diagramCanvas, 899, 99);
         let value: HTMLElement = document.getElementById('diagram5555_SelectorElement')
-        // expect((value.childNodes[3] as SVGElement).getAttribute('class') === 'e-diagram-resize-handle e-northwest e-disabled').toBe(true);
-        console.log("Gowtham - ","expected = " , (value.childNodes[1] as SVGElement ).getAttribute('class'), 'value = e-diagram-resize-handle e-northwest e-disabled');
-        
+        expect((value.childNodes[1] as SVGElement).getAttribute('class') === 'e-diagram-resize-handle e-northwest e-disabled')
         var nodelement = document.getElementById('diagram5555content');
 
-        // expect(nodelement.style.cursor === 'move').toBe(true);
+        expect(nodelement.style.cursor === 'move').toBe(true);
         mouseEvents.mouseMoveEvent(diagramCanvas, 400, 100);
         var nodelement = document.getElementById('diagram5555content');
-        // expect(nodelement.style.cursor === 'default').toBe(true);
+        expect(nodelement.style.cursor === 'default').toBe(true);
         done();
     });
     it('checking shawdow for the path element', function (done) {

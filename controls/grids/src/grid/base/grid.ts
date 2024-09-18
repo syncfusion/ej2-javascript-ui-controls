@@ -33,7 +33,7 @@ import { Column, ColumnModel, ActionEventArgs } from '../models/column';
 import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode } from './enum';
 import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition, ClipMode, freezeMode, IndicatorType } from './enum';
 import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode, ResizeMode } from './enum';
-import { ColumnQueryModeType, RowRenderingDirection } from './enum';
+import { ColumnQueryModeType, RowRenderingDirection, AdaptiveMode  } from './enum';
 import { Data } from '../actions/data';
 import { Cell } from '../models/cell';
 import { RowRenderer } from '../renderer/row-renderer';
@@ -1524,6 +1524,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property(false)
     public enableAdaptiveUI: boolean;
+
+    /**
+     * One of the adaptiveUIMode enumeration that specifies the Adaptive Mode. The default value is Both.
+     *
+     * @default Both
+     */
+    @Property('Both')
+    public adaptiveUIMode: AdaptiveMode;
 
     /**
      * If `allowReordering` is set to true, Grid columns can be reordered.
@@ -6047,7 +6055,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private getFrozenCount(cols: Column[], cnt: number, index?: number): number {
-        for (let i: number = 0, len: number = (!isNullOrUndefined(cols) ? cols.length: 0); i < len; i++) {
+        for (let i: number = 0, len: number = (!isNullOrUndefined(cols) ? cols.length : 0); i < len; i++) {
             if (cols[parseInt(i.toString(), 10)].columns) {
                 cnt = this.getFrozenCount(cols[parseInt(i.toString(), 10)].columns as Column[], cnt, index);
             } else {
@@ -6947,8 +6955,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.enableHover) {
             this.element.classList.add('e-gridhover');
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && this.adaptiveUIMode === 'Desktop') {
             this.element.classList.add('e-device');
+            this.enableAdaptiveUI = false;
+        }
+        if (this.adaptiveUIMode === 'Mobile' && !Browser.isDevice) {
+            this.enableAdaptiveUI = false;
         }
         if (this.rowHeight) {
             this.element.classList.add('e-grid-min-height');
@@ -8194,7 +8206,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private getNoncontentHeight(): number {
         let height: number = 0;
-        if (!isNullOrUndefined(this.getHeaderContent().clientHeight)) {
+        if (this.getHeaderContent() && !isNullOrUndefined(this.getHeaderContent().clientHeight)) {
             height += this.getHeaderContent().clientHeight;
         }
         if (this.toolbar && !isNullOrUndefined(this.element.querySelector('.e-toolbar').clientHeight))
@@ -8379,7 +8391,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (header) {
             const target: Element = header.querySelector('.e-filtermenudiv');
             const filterDlg: HTMLElement = this.element.querySelector('.e-filter-popup');
-            if (target && filterDlg) {
+            if (target) {
                 const gClient: ClientRect = this.element.getBoundingClientRect();
                 const fClient: ClientRect = target.getBoundingClientRect();
                 if (filterDlg) {

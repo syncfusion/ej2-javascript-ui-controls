@@ -3,7 +3,7 @@
  */
 import { RichTextEditor, ToolbarConfigItems } from '../../src/rich-text-editor/index';
 import { ENTERKEY_EVENT_INIT } from '../constant.spec';
-import { renderRTE, destroy } from '../rich-text-editor/render.spec';
+import { renderRTE, destroy, clickImage, clickGripper, moveGripper, leaveGripper, ImageResizeGripper } from '../rich-text-editor/render.spec';
 
 const content: string = `<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href="https://ej2.syncfusion.com/home/" target="_blank" rel="noopener" aria-label="Open in new window">HTML markup</a> or <a href="https://ej2.syncfusion.com/home/" target="_blank" rel="noopener" aria-label="Open in new window">markdown</a> of the content</p>
 <p><strong>Toolbar</strong></p>
@@ -606,4 +606,163 @@ describe('UI Spec ', () => {
         });
     });
 
+    describe('832079 - Not able to resize the image propely Potrait image (Inline Width alone)', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: Function) => {
+            editor = renderRTE({
+                value: `
+                <p>Image with Width and Height</p>
+                <p><img alt="image 1" src="/base/spec/content/image/RTE-Portrait.png" style="width: 450px;" /></p>`
+            });
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(editor);
+            done();
+        });
+        it('Should resize the image properly Case 1 Top Right Increase size', (done: DoneFn) => {
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            clickGripper(gripperElement);
+            const width = image.width;
+            // Start position x: 481 y: 86
+            moveGripper(gripperElement, 500, 100);
+            leaveGripper(gripperElement);
+            setTimeout(() => {
+                expect(image.width > width);
+                done();
+            }, 150);
+        });
+        it('Should resize the image properly Case 1 Top Right Decrease size', (done: DoneFn) => {
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            clickGripper(gripperElement);
+            const width = image.width;
+            // Start position x: 481 y: 86
+            moveGripper(gripperElement, 400, 60);
+            leaveGripper(gripperElement);
+            setTimeout(() => {
+                expect(image.width < width);
+                done();
+            }, 150);
+        });
+        it('Should resize the image properly Case 3 Resize by percentage Top Right Increase size', (done: DoneFn) => {
+            editor.insertImageSettings.resizeByPercent = true;
+            editor.dataBind();
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            clickGripper(gripperElement);
+            const width = image.width;
+            // Start position x: 481 y: 86
+            moveGripper(gripperElement, 500, 100);
+            leaveGripper(gripperElement);
+            setTimeout(() => {
+                expect(image.width > width);
+                done();
+            }, 150);
+        });
+        it('Should resize the image properly Case 4 Resize by percentage Top Right Decrease size', (done: DoneFn) => {
+            editor.insertImageSettings.resizeByPercent = true;
+            editor.dataBind();
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            clickGripper(gripperElement);
+            const width = image.width;
+            // Start position x: 481 y: 86
+            moveGripper(gripperElement, 400, 60);
+            leaveGripper(gripperElement);
+            setTimeout(() => {
+                expect(image.width < width);
+                done();
+            }, 150);
+        });
+    });
+
+    describe('832079 - Not able to resize the image propely Potrait image (Inline Height alone)', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: Function) => {
+            editor = renderRTE({
+                value: `
+                <p>Image with Width and Height</p>
+                <p><img alt="image 1" src="/base/spec/content/image/RTE-Portrait.png" style="height: 450px;" /></p>`
+            });
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(editor);
+            done();
+        });
+        it('Should resize the image properly Case 1 Top Right Increase size', (done: DoneFn) => {
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            clickGripper(gripperElement);
+            const width = image.width;
+            // Start position x: 481 y: 86
+            moveGripper(gripperElement, 500, 100);
+            leaveGripper(gripperElement);
+            setTimeout(() => {
+                expect(image.width > width);
+                done();
+            }, 150);
+        });
+        it('Should resize the image properly Case 1 Top Right Decrease size', (done: DoneFn) => {
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            clickGripper(gripperElement);
+            const width = image.width;
+            // Start position x: 481 y: 86
+            moveGripper(gripperElement, 400, 60);
+            leaveGripper(gripperElement);
+            setTimeout(() => {
+                expect(image.width < width);
+                done();
+            }, 150);
+        });
+        it('Should resize the image properly Case 3 Resize by percentage Top Right Increase size', (done: DoneFn) => {
+            editor.insertImageSettings.resizeByPercent = true;
+            editor.dataBind();
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            clickGripper(gripperElement);
+            const width = image.width;
+            // Start position x: 481 y: 86
+            moveGripper(gripperElement, 500, 100);
+            leaveGripper(gripperElement);
+            setTimeout(() => {
+                expect(image.width > width);
+                done();
+            }, 150);
+        });
+        it('Should resize the image properly Case 4 Resize by percentage Top Right Decrease size', (done: DoneFn) => {
+            editor.insertImageSettings.resizeByPercent = true;
+            editor.dataBind();
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            clickGripper(gripperElement);
+            const width = image.width;
+            // Start position x: 481 y: 86
+            moveGripper(gripperElement, 400, 60);
+            leaveGripper(gripperElement);
+            setTimeout(() => {
+                expect(image.width < width);
+                done();
+            }, 150);
+        });
+    });
 });

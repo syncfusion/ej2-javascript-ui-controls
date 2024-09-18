@@ -24,6 +24,13 @@ describe('Markdown renderer module', () => {
             expect(rteObj.contentModule.getPanel().querySelectorAll('.e-content')[0].tagName.toLowerCase() === 'textarea').toBe(true);
         });
 
+        it('Markdown coverage', () => {
+            (rteObj as any).markdownEditorModule.parent.isDestroyed = true;
+            (rteObj as any).markdownEditorModule.parent.addEventListener();
+            (rteObj as any).markdownEditorModule.parent.isDestroyed = false;
+            (rteObj as any).markdownEditorModule.destroy();
+        });
+
         afterAll(() => {
             destroy(rteObj);
         });

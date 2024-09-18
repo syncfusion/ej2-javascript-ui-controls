@@ -766,7 +766,7 @@ export class Timeline {
                 tr = null;
                 this.restrictRender = false;
             }
-            if (this.parent.height === 'Auto' || this.parent.timelineModule.isSingleTier) {
+            if (this.parent.height === 'auto' || this.parent.timelineModule.isSingleTier) {
                 const timelineContainer: number = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
                 this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
                 if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-gridcontent')[0])) {
@@ -796,7 +796,7 @@ export class Timeline {
                 tr = null;
             }
             this.wholeTimelineWidth = this.totalTimelineWidth;
-            if (this.parent.height === 'Auto' || this.parent.timelineModule.isSingleTier) {
+            if (this.parent.height === 'auto' || this.parent.timelineModule.isSingleTier) {
                 const timelineContainer: number = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
                 this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
                 if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-gridcontent')[0])) {
@@ -1130,20 +1130,20 @@ export class Timeline {
                 increment = Math.abs(this.getIncrement(startDate, count, mode));
                 newTime = startDate.getTime() + increment;
             }
-            let dubStartDate: Date = new Date(startDate.getTime());
+            const dubStartDate: Date = new Date(startDate.getTime());
             isFirstCell = false;
             startDate.setTime(newTime);
-            let dubStartHour: number = dubStartDate.getHours();
-            let startHour: number = startDate.getHours();
-            let difference: number = startHour - dubStartHour;
-            if (difference != count && difference > 1) {
+            const dubStartHour: number = dubStartDate.getHours();
+            const startHour: number = startDate.getHours();
+            const difference: number = startHour - dubStartHour;
+            if (difference !== count && difference > 1) {
                 if ((!this.parent.isInDst(startDate) && this.parent.isInDst(dubStartDate)) ||
                     (this.parent.isInDst(startDate) && !this.parent.isInDst(dubStartDate))) {
                     if (startDate.getTimezoneOffset() > dubStartDate.getTimezoneOffset()) {
                         startDate.setTime(startDate.getTime() - ((1000 * 60 * 60) * (difference - count)));
                     }
-                    const differenceIncrement: number = ((increment / 60000) / count)
-                    if (mode === 'Minutes' && differenceIncrement != difference && count === 15) {
+                    const differenceIncrement: number = ((increment / 60000) / count);
+                    if (mode === 'Minutes' && differenceIncrement !== difference && count === 15) {
                         startDate.setTime(startDate.getTime() - (60000 * (count * difference)));
                     }
                 }
@@ -1407,7 +1407,7 @@ export class Timeline {
             this.parent.globalize.formatDate(scheduleWeeks, { format: this.parent.getDateFormat() }) :
             this.customFormat(scheduleWeeks, format, tier, mode, formatter);
         thWidth = (this.getIncrement(scheduleWeeks, count, mode, isFirstCell) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
-        let incrementValue: number = this.getIncrement(scheduleWeeks, count, mode);
+        const incrementValue: number = this.getIncrement(scheduleWeeks, count, mode);
         const newDate: Date = new Date(scheduleWeeks.getTime() + incrementValue);
         const dubNewDate: Date = new Date(scheduleWeeks.getTime() + ((60 * 60 * 1000) * count));
         const newDateOffset: number = newDate.getTime();
@@ -1417,61 +1417,62 @@ export class Timeline {
         const transitions: Object = this.parent.dataOperation.getDSTTransitions(scheduleWeeks.getFullYear());
         const dstStartTime: number = transitions['dstStart'].getTime();
         if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks)) ||
-            (this.parent.isInDst(newDate) && !this.parent.isInDst(scheduleWeeks)) || (newDateOffset != dubNewDateOffset && dubNewDateOffset > newDateOffset &&
+            (this.parent.isInDst(newDate) && !this.parent.isInDst(scheduleWeeks)) ||
+            (newDateOffset !== dubNewDateOffset && dubNewDateOffset > newDateOffset &&
                 timelineStartTime <= dstStartTime)) {
             let temp: number;
             let totalHour: number = 0;
-            let incrementHour: number = incrementValue / (1000 * 60 * 60)
+            const incrementHour: number = incrementValue / (1000 * 60 * 60);
             if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks))) {
                 switch (mode) {
-                    case 'Hour':
-                        totalHour = 1 * count
-                        break;
-                    case 'Day':
-                        totalHour = 24 * count
-                        break;
-                    case 'Week':
-                        totalHour = 7 * 24 * count;
-                        break;
-                    case 'Minutes':
-                        totalHour = count / 60;
-                        break;
+                case 'Hour':
+                    totalHour = 1 * count;
+                    break;
+                case 'Day':
+                    totalHour = 24 * count;
+                    break;
+                case 'Week':
+                    totalHour = 7 * 24 * count;
+                    break;
+                case 'Minutes':
+                    totalHour = count / 60;
+                    break;
                 }
-                if (incrementHour != totalHour && incrementHour > totalHour) {
+                if (incrementHour !== totalHour && incrementHour > totalHour) {
                     temp = this.getIncrement(scheduleWeeks, count, mode) - ((1000 * 60 * 60) * (incrementHour - totalHour));
                     thWidth = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
                     if (thWidth === 0 && mode === 'Minutes') {
                         const perMinuteWidth: number = this.parent.perDayWidth / 1440;
-                        thWidth = perMinuteWidth * count
+                        thWidth = perMinuteWidth * count;
                     }
                 }
             }
             else {
                 const zoomOrTimeline: Object = this.parent.currentZoomingLevel ? this.parent.currentZoomingLevel :
                     this.parent.timelineSettings;
-                const bottomTierSettings = zoomOrTimeline['bottomTier'] !== null ? zoomOrTimeline['bottomTier'] :
+                const bottomTierSettings: Object = zoomOrTimeline['bottomTier'] !== null ? zoomOrTimeline['bottomTier'] :
                     zoomOrTimeline['topTier'];
-                const bottomTierCountIsOneAndUnitIsHour = (bottomTierSettings.count === 1 && bottomTierSettings.unit === 'Hour');
+                const bottomTierCountIsOneAndUnitIsHour: boolean = (bottomTierSettings['count'] === 1 && bottomTierSettings['unit'] === 'Hour');
                 switch (mode) {
-                    case 'Hour':
-                        totalHour = 1 * count
-                        break;
-                    case 'Day':
-                        totalHour = 24 * count
-                        break;
-                    case 'Week':
-                        totalHour = 7 * 24 * count;
-                        break;
-                    case 'Minutes':
-                        totalHour = count / 60;
-                        break;
+                case 'Hour':
+                    totalHour = 1 * count;
+                    break;
+                case 'Day':
+                    totalHour = 24 * count;
+                    break;
+                case 'Week':
+                    totalHour = 7 * 24 * count;
+                    break;
+                case 'Minutes':
+                    totalHour = count / 60;
+                    break;
                 }
-                if (incrementHour != totalHour && incrementHour < totalHour && !(tier === 'topTier' && bottomTierCountIsOneAndUnitIsHour)) {
+                if (incrementHour !== totalHour && incrementHour < totalHour && !(tier === 'topTier' && bottomTierCountIsOneAndUnitIsHour)) {
                     temp = this.getIncrement(scheduleWeeks, count, mode) + (1000 * 60 * 60);
                     thWidth = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
                     if (thWidth === 0 && mode === 'Minutes') {
                         const perMinuteWidth: number = this.parent.perDayWidth / 1440;
-                        thWidth = perMinuteWidth * count
+                        thWidth = perMinuteWidth * count;
                     }
                 }
             }
@@ -1521,6 +1522,7 @@ export class Timeline {
         } else {
             th.append(div);
         }
+        /* eslint-disable-next-line */
         parentTr += th.outerHTML;
 
         if ((this.isSingleTier || tier === 'topTier') && !isLast) {
@@ -1779,8 +1781,8 @@ export class Timeline {
                     (pdc: IGanttData) => { return !isNullOrUndefined(pdc.ganttProperties.endDate); });
                 let minStartDate: Date = filteredStartDateRecord.length > 0 ?
                     new Date(DataUtil.aggregates.min(filteredStartDateRecord, 'ganttProperties.startDate')) : null;
-                let minEndDate: Date = filteredStartDateRecord.length > 0 ?
-                    new Date(DataUtil.aggregates.min(filteredEndDateRecord, 'ganttProperties.endDate')) : null;    
+                const minEndDate: Date = filteredStartDateRecord.length > 0 ?
+                    new Date(DataUtil.aggregates.min(filteredEndDateRecord, 'ganttProperties.endDate')) : null;
                 let maxEndDate: Date = filteredEndDateRecord.length > 0 ?
                     new Date(DataUtil.aggregates.max(filteredEndDateRecord, 'ganttProperties.endDate')) : null;
                 const validStartDate: Date = new Date(this.parent.dataOperation.checkStartDate(this.timelineStartDate).getTime());
@@ -1816,11 +1818,11 @@ export class Timeline {
                 } else if (!isNullOrUndefined(temp[0].ganttProperties.segments)) {
                     this.parent.dataOperation.updateWidthLeft(temp[0]);
                 }
-                if (!isNullOrUndefined(minStartDate) && !isNullOrUndefined(minEndDate) && minEndDate <= minStartDate && (action === "CellEditing" ||action === "DialogEditing") && this.parent.allowUnscheduledTasks){
+                if (!isNullOrUndefined(minStartDate) && !isNullOrUndefined(minEndDate) && minEndDate <= minStartDate && (action === 'CellEditing' || action === 'DialogEditing') && this.parent.allowUnscheduledTasks){
                     minStartDate = new Date(Math.min(minStartDate.getTime(), minEndDate.getTime()));
                     minStartDate = new Date(Math.min(minStartDate.getTime(), this.timelineStartDate.getTime()));
                     this.performTimeSpanAction('prevTimeSpan', action, minStartDate, maxEndDate);
-                } else if(isNullOrUndefined(minEndDate) && minEndDate <= minStartDate && (action === "CellEditing" ||action === "DialogEditing") && this.parent.allowUnscheduledTasks && tempArray[0].length === 1 && !isNullOrUndefined(tempArray[0][0].ganttProperties.endDate)){
+                } else if (isNullOrUndefined(minEndDate) && minEndDate <= minStartDate && (action === 'CellEditing' || action === 'DialogEditing') && this.parent.allowUnscheduledTasks && tempArray[0].length === 1 && !isNullOrUndefined(tempArray[0][0].ganttProperties.endDate)) {
                     minStartDate = new Date(Math.min(tempArray[0][0].ganttProperties.endDate.getTime(), minStartDate.getTime()));
                     this.performTimeSpanAction('prevTimeSpan', action, minStartDate, maxEndDate);
                 }

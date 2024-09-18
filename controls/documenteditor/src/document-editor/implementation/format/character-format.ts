@@ -66,6 +66,12 @@ export class WCharacterFormat {
     public set underline(value: Underline) {
         this.setPropertyValue('underline', value);
     }
+    public get underlineColor(): string {
+        return this.getPropertyValue('underlineColor') as string;
+    }
+    public set underlineColor(value: string) {
+        this.setPropertyValue('underlineColor', value);
+    }
     public get strikethrough(): Strikethrough {
         return this.getPropertyValue('strikethrough') as Strikethrough;
     }
@@ -350,6 +356,7 @@ export class WCharacterFormat {
         this.addUniqueCharacterFormat('bold', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('italic', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('underline', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('underlineColor', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('strikethrough', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('baselineAlignment', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('highlightColor', property, propValue, uniqueCharFormatTemp);
@@ -398,6 +405,9 @@ export class WCharacterFormat {
             break;
         case 'underline':
             value = 'None';
+            break;
+        case 'underlineColor':
+            value = undefined;
             break;
         case 'strikethrough':
             value = 'None';

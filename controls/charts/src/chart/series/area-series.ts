@@ -7,7 +7,7 @@ import { Axis } from '../../chart/axis/axis';
 import { MultiColoredSeries } from './multi-colored-base';
 
 /**
- * `AreaSeries` module is used to render the area series.
+ * The `AreaSeries` module is used to render the area series.
  */
 export class AreaSeries extends MultiColoredSeries {
 
@@ -128,11 +128,8 @@ export class AreaSeries extends MultiColoredSeries {
             }
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -166,6 +163,7 @@ export class AreaSeries extends MultiColoredSeries {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         const option: AnimationModel = series.animation;

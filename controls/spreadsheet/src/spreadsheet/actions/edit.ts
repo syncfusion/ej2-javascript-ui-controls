@@ -1,17 +1,16 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs, getUpdateUsingRaf } from '../index';
 import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined, select, detach, getComponent } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
-import { keyDown, editOperation, clearCopy, mouseDown, enableToolbarItems, completeAction } from '../common/event';
+import { keyDown, editOperation, clearCopy, enableToolbarItems, completeAction } from '../common/index';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells, isNavigationKey, isReadOnlyCells } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula, refreshChart } from '../../workbook/common/event';
-import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation, getRow } from '../../workbook/base/index';
-import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs, setVisibleMergeIndex, isReadOnly } from '../../workbook/index';
-import { beginAction, updateCell, checkCellValid, NumberFormatArgs, parseLocaleNumber, getViewportIndexes } from '../../workbook/index';
-import { RefreshValueArgs } from '../integrations/index';
+import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation } from '../../workbook/base/index';
+import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs, setVisibleMergeIndex } from '../../workbook/index';
+import { beginAction, updateCell, CheckCellValidArgs, NumberFormatArgs, isReadOnly, getViewportIndexes, getRow } from '../../workbook/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth, readonlyAlert } from '../common/index';
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference, workbookFormulaOperation } from '../../workbook/index';
 import { initiateFormulaReference, initiateCur, clearCellRef, addressHandle, clearRange, dialog, locale } from '../common/index';
-import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, activeSheetChanged } from '../common/event';
+import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, activeSheetChanged, mouseDown } from '../common/index';
 import { checkFormulaRef, getData, VisibleMergeIndexArgs } from '../../workbook/index';
 import { L10n } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/dialog';
@@ -90,8 +89,11 @@ export class Edit {
             this.cancelEdit(true, false);
         }
         this.removeEventListener();
-        this.parent = null;
         this.editorElem = null;
+        if (this.formulaErrorStrings) { this.formulaErrorStrings = []; }
+        if (this.editCellData) { this.editCellData = {}; }
+        if (this.keyCodes) { this.keyCodes = {}; }
+        this.parent = null;
     }
 
     private addEventListener(): void {
@@ -899,7 +901,12 @@ export class Edit {
                 'height:' + height + (cell && cell.wrap ? ('width:' + minWidth + 'px;') : '') + 'min-height:' + minHeight + 'px;' +
                 (zIndex ? 'z-index: ' + zIndex + ';' : '') + (preventWrap && ((cell && !cell.wrap) || (tdElem && isWrap)) && (getTextWidth(
                 cell.value, cell.style, this.parent.cellStyle) > editWidth || (tdElem && isWrap)) ? 'overflow: auto;' : '');
-            inlineStyles += tdElem.style.cssText;
+            const styles: string[] = tdElem.style.cssText.split(';');
+            styles.forEach((style: string) => {
+                if (!style.includes('border')) {
+                    inlineStyles += style + ';';
+                }
+            });
             const editorElem: HTMLElement = this.getEditElement(sheet, true);
             editorElem.setAttribute('style', inlineStyles);
             if (getTextWidth(editorElem.textContent, cell.style, this.parent.cellStyle) > editWidth) {
@@ -932,17 +939,19 @@ export class Edit {
             const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, false, true);
             const column: ColumnModel = getColumn(sheet, cellIndex[1]);
             if (cell.validation || checkColumnValidation(column, cellIndex[0], cellIndex[1])) {
-                const value: string = parseLocaleNumber(
-                    [this.editCellData.value || this.getEditElement(sheet).innerText], this.parent.locale)[0];
-                const isCell: boolean = true;
+                const editedValue: string = this.editCellData.value || this.getEditElement(sheet).innerText;
                 const sheetIdx: number = this.parent.activeSheetIndex;
                 const range: number[] = typeof this.editCellData.addr === 'string' ? getRangeIndexes(this.editCellData.addr) :
                     this.editCellData.addr;
-                const validEventArgs: checkCellValid = { value, range, sheetIdx, isCell, td: null, isValid: true };
+                const validEventArgs: CheckCellValidArgs = { value: editedValue, range, sheetIdx, isEdit: true, td: null, isValid: true };
                 this.parent.notify(isValidation, validEventArgs);
                 isValidCellValue = validEventArgs.isValid;
                 if (isValidCellValue) {
-                    if ((cell.format && value !== validEventArgs.value) || (!this.editCellData.value && validEventArgs.value)) {
+                    if (checkIsFormula(editedValue) || !cell.format) {
+                        if (!this.editCellData.value) {
+                            this.editCellData.value = editedValue;
+                        }
+                    } else if (editedValue !== validEventArgs.value || (!this.editCellData.value && validEventArgs.value)) {
                         this.editCellData.value = validEventArgs.value;
                     }
                 } else {
@@ -1049,6 +1058,10 @@ export class Edit {
             if (<boolean>evtArgs.isFormulaDependent) {
                 indexes = getViewportIndexes(this.parent, this.parent.viewport);
             }
+            const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
+            const eventArgs: NumberFormatArgs = this.getRefreshNodeArgs(
+                cell, this.editCellData.element, this.editCellData.rowIndex, this.editCellData.colIndex);
+            this.editCellData.value = <string>eventArgs.value;
             this.parent.notify(
                 refreshChart, { cell: null, rIdx: this.editCellData.rowIndex, cIdx: this.editCellData.colIndex, viewportIndexes: indexes });
             if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
@@ -1058,10 +1071,6 @@ export class Edit {
                         refreshAll: evtArgs.isFormulaDependent, isEdit: true
                     });
             }
-            const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
-            const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(
-                cell, this.editCellData.element, this.editCellData.rowIndex, this.editCellData.colIndex);
-            this.editCellData.value = <string>eventArgs.value;
             if (cell && cell.formula) {
                 this.editCellData.formula = cell.formula;
             }
@@ -1193,21 +1202,19 @@ export class Edit {
                     if (actCell[0] === rowIdx && actCell[1] === colIdx) {
                         this.uniqueActCell = cell.value;
                     }
-                    const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell, td, rowIdx, colIdx);
+                    const eventArgs: NumberFormatArgs = this.getRefreshNodeArgs(cell, td, rowIdx, colIdx);
                     this.parent.refreshNode(td, eventArgs);
                 }
             }
         }
     }
 
-    private getRefreshNodeArgs(cell: CellModel, tdEle: HTMLElement, rowIdx: number, colIdx: number): RefreshValueArgs {
+    private getRefreshNodeArgs(cell: CellModel, tdEle: HTMLElement, rowIdx: number, colIdx: number): NumberFormatArgs {
         cell = cell || {};
-        const eventArgs: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: '', isRightAlign: false,
+        const eventArgs: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, isRightAlign: false,
             type: 'General', cell: cell, rowIndex: rowIdx, td: tdEle, colIndex: colIdx, refresh: true, isEdit: true };
         this.parent.notify(getFormattedCellObject, eventArgs);
-        return <RefreshValueArgs>{ isRightAlign: eventArgs.isRightAlign, type: eventArgs.type, value: <string>eventArgs.value,
-            result: this.parent.allowNumberFormatting ? eventArgs.formattedText : <string>eventArgs.value, curSymbol: eventArgs.curSymbol,
-            isRowFill: eventArgs.isRowFill, rowIndex: rowIdx, colIndex: colIdx };
+        return eventArgs;
     }
 
     public endEdit(refreshFormulaBar: boolean = false, event?: MouseEvent & TouchEvent | KeyboardEventArgs, isPublic?: boolean): void {

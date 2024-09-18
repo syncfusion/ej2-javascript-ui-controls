@@ -1,5 +1,5 @@
 import { Browser, createElement, EventHandler, isNullOrUndefined, remove } from "@syncfusion/ej2-base";
-import { OtpInput } from "../src/otp-input/index";
+import { OtpInput, OtpInputType, TextTransform } from "../src/otp-input/index";
 import { getMemoryProfile, inMB, profile } from "./common.spec";
 
 describe('OtpInput', () => {
@@ -71,6 +71,75 @@ describe('OtpInput', () => {
             remove(otpInputElement1);
         });
 
+        it('Rtl testing', () => {
+            otpInput = new OtpInput({ enableRtl: true });
+            otpInput.appendTo('#otp-input');
+            expect(otpInputElement.classList.contains('e-rtl')).toEqual(true);
+            otpInput.enableRtl = false;
+            otpInput.dataBind();
+            expect(otpInputElement.classList.contains('e-rtl')).toEqual(false);
+            otpInput.enableRtl = true;
+            otpInput.dataBind();
+            expect(otpInputElement.classList.contains('e-rtl')).toEqual(true);
+        });
+
+    });
+
+    describe('Events', () => {
+        let otpInput: OtpInput;
+        let otpInputElement: HTMLElement;
+        let index: number;
+
+        beforeEach(() => {
+            otpInputElement = createElement('div', { id: 'otp-input' });
+            document.body.appendChild(otpInputElement);
+        });
+
+        afterEach(() => {
+            if (otpInput) {
+                otpInput.destroy();
+                otpInput = undefined;
+            }
+            remove(otpInputElement);
+        });
+
+        it('type Blur', () => {
+            otpInput = new OtpInput({
+                length: 5,
+                blur: (args) => {
+                    index = args.index;
+                }
+            });
+            otpInput.appendTo('#otp-input');
+            const inputElementArray: any = otpInputElement.querySelectorAll('.e-otp-input-field');
+            inputElementArray[1].dispatchEvent((new MouseEvent('blur')));
+            expect(index).toBe(1);
+        });
+        it('type Focus', () => {
+            otpInput = new OtpInput({
+                length: 5,
+                focus: (args) => {
+                    index = args.index;
+                }
+            });
+            otpInput.appendTo('#otp-input');
+            const inputElementArray: any = otpInputElement.querySelectorAll('.e-otp-input-field');
+            inputElementArray[3].dispatchEvent((new MouseEvent('focus')));
+            expect(index).toBe(3);
+        });
+        it('type Input', () => {
+            otpInput = new OtpInput({
+                value: 52,
+                length: 5,
+                input: (args) => {
+                    index = args.index;
+                }
+            });
+            otpInput.appendTo('#otp-input');
+            const inputElementArray: any = otpInputElement.querySelectorAll('.e-otp-input-field');
+            inputElementArray[2].dispatchEvent((new MouseEvent('input')));
+            expect(index).toBe(2);
+        });
     });
 
     describe('DOM Properties', () => {
@@ -115,7 +184,36 @@ describe('OtpInput', () => {
             otpInput.dataBind();
             expect(otpInputElement.classList.contains('e-rtl')).toEqual(true);
         });
-        
+
+        it('Auto Focus', () => {
+            otpInput = new OtpInput({
+                autoFocus: true,
+                value: 42
+            });
+            otpInput.appendTo('#otp-input');
+            expect((otpInput as any).inputs[2].classList.contains('e-otp-input-focus')).toEqual(true);
+            otpInput.value = 123;
+            otpInput.autoFocus = false;
+            otpInput.dataBind();
+            expect((otpInput as any).inputs[2].classList.contains('e-otp-input-focus')).toEqual(false);
+            expect((otpInput as any).inputs[3].classList.contains('e-otp-input-focus')).toEqual(true);
+        });
+
+        it('TextTransform', () => {
+            otpInput = new OtpInput({
+                autoFocus: true,
+                value: 'abd',
+                type: 'text',
+                textTransform: TextTransform.Lowercase
+            });
+            otpInput.appendTo('#otp-input');
+            const hiddenInputEle: HTMLInputElement = otpInputElement.querySelector('#otpInput_hidden');
+            expect(hiddenInputEle.value).toBe('abd');
+            otpInput.textTransform = TextTransform.Uppercase;
+            otpInput.dataBind();
+            expect(hiddenInputEle.value).toBe('ABD');
+        });
+
         it('Value characters equal to length', () => {
             const otpValue = "1234";
             otpInput = new OtpInput({ value: otpValue });
@@ -568,20 +666,61 @@ describe('OtpInput', () => {
             otpInput.length = 5;
             otpInput.dataBind();
             expect(otpInputElement.querySelectorAll('.e-otp-input-field').length).toBe(5);
+            otpInput.separator = '/';
+            otpInput.dataBind();
+            expect(otpInputElement.querySelectorAll('.e-otp-separator').length).toBe(4);
             otpInput.length = 1;
             otpInput.dataBind();
             expect(otpInputElement.querySelectorAll('.e-otp-input-field').length).toBe(1);
+            otpInput.length = 0;
+            otpInput.dataBind();
+            expect(otpInputElement.querySelectorAll('.e-otp-input-field').length).toBe(0);
+            expect(otpInputElement.querySelector('.e-otp-separator')).toBeNull();
         });
 
         it('HTMLAttributess', () => {
-            otpInput = new OtpInput({htmlAttributes: {'class': 'customClass', 'name': 'otp-input'}});
+            otpInput = new OtpInput({htmlAttributes: {'class': 'customClass', 'name': 'otp-input', 'inputmode': 'tel'}});
             otpInput.appendTo('#otp-input');
             expect(otpInputElement.classList.contains('e-otpinput')).toEqual(true);
             expect(otpInputElement.classList.contains('e-outline') != null).toEqual(true);
             expect(otpInputElement.classList.contains('customClass')).toEqual(true);
             expect(otpInputElement.querySelector('#otpInput_hidden') != null).toEqual(true);
+            expect((otpInput as any).inputs[2].getAttribute('inputmode')).toBe('tel');
             const hiddenInputEle: HTMLInputElement = otpInputElement.querySelector('#otpInput_hidden');
             expect(hiddenInputEle.getAttribute('name')).toBe('otp-input');
+        });
+
+        it('Inputmode with type property', () => {
+            otpInput = new OtpInput({ type: 'number' });
+            otpInput.appendTo('#otp-input');
+            expect(otpInputElement.classList.contains('e-otpinput')).toEqual(true);
+            expect(otpInputElement.querySelector('#otpInput_hidden') != null).toEqual(true);
+            expect((otpInput as any).inputs[2].getAttribute('inputmode')).toBe('numeric');
+        });
+
+        it('Inputmode with type property remaining values', () => {
+            otpInput = new OtpInput({ type: 'password' });
+            otpInput.appendTo('#otp-input');
+            expect(otpInputElement.classList.contains('e-otpinput')).toEqual(true);
+            expect(otpInputElement.querySelector('#otpInput_hidden') != null).toEqual(true);
+            expect((otpInput as any).inputs[0].getAttribute('inputmode')).toBe('text');
+            otpInput.type = OtpInputType.Text;
+            otpInput.dataBind();
+            expect(otpInput.type).toBe('text');
+            expect((otpInput as any).inputs[1].getAttribute('type')).toBe('text');
+            expect((otpInput as any).inputs[2].getAttribute('inputmode')).toBe('text');
+        });
+
+        it('Inputmode with html property', () => {
+            otpInput = new OtpInput({
+                type: 'tel',
+                htmlAttributes: {'class': 'customClass', 'name': 'otp-input', 'inputmode': 'text'}
+            });
+            otpInput.appendTo('#otp-input');
+            expect(otpInputElement.classList.contains('e-otpinput')).toEqual(true);
+            expect(otpInput.type).toBe('tel');
+            expect(otpInputElement.querySelector('#otpInput_hidden') != null).toEqual(true);
+            expect((otpInput as any).inputs[2].getAttribute('inputmode')).toBe('text');
         });
 
         it('FocusIn and FocusOut method', () => {

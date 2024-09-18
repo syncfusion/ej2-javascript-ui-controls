@@ -86,9 +86,12 @@ export class PdfTimeline {
                     }
                 }
                 //Primary header Event Arguments
+                const reWidth: number = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? renderWidth : pixelToPoint(renderWidth);
                 /* eslint-disable-next-line */
-                this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? renderWidth : pixelToPoint(renderWidth), pHeader.value, true, this.parent.timelineModule.isSingleTier && this.parent.timelineSettings.topTier.unit === 'Day' ? pHeader.startDate : null);
-                this.topTierPoint.x += (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? renderWidth : pixelToPoint(renderWidth);
+                this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, reWidth,
+                                              pHeader.value, true, this.parent.timelineModule.isSingleTier &&
+                                              this.parent.timelineSettings.topTier.unit === 'Day' ? pHeader.startDate : null);
+                this.topTierPoint.x += reWidth;
                 remainWidth -= renderWidth;
                 if (isCompleted) {
                     this.topTierIndex++;
@@ -107,18 +110,20 @@ export class PdfTimeline {
                 let width: number = secondHeader.width;
                 if (remainWidth < width) {
                     width = remainWidth;
+                    /* eslint-disable-next-line */
                     isCompleted = false;
                     secondHeader.completedWidth = width;
                 }
                 //Secondary header Event Arguments
-                this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? width : pixelToPoint(width),
+                this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight,
+                                              (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? width : pixelToPoint(width),
                                               secondHeader.value, false, secondHeader.startDate);
                 this.bottomTierPoint.x = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ?
                     this.bottomTierPoint.x + width : this.bottomTierPoint.x + pixelToPoint(width);
                 remainWidth -= width;
                 secondHeader.completedWidth = width;
                 // if (isCompleted) {
-                    this.bottomTierIndex++;
+                this.bottomTierIndex++;
                 // }
                 if (remainWidth > 0 && remainWidth < width) {
                     remainWidth = secondHeader.width - 1;
@@ -164,8 +169,7 @@ export class PdfTimeline {
                 if (secondHeader.completedWidth > 0) {
                     //Secondary header Event Arguments
                     /* eslint-disable-next-line */
-                    this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight,(this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? secondHeader.width :pixelToPoint( secondHeader.width) , secondHeader.value, false,secondHeader.startDate);
-                    this.bottomTierPoint.x = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ?
+                    this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight,(this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? secondHeader.width :pixelToPoint( secondHeader.width) , secondHeader.value, false,secondHeader.startDate);                    this.bottomTierPoint.x = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ?
                         this.bottomTierPoint.x + secondHeader.width : this.bottomTierPoint.x + pixelToPoint(secondHeader.width);
                 }
             }

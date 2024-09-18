@@ -2777,3 +2777,83 @@ describe('Min and Max validation', () => {
         formObj.destroy();
     });
 });
+
+describe('FormValidator Null or undefined value testing', function (){
+    let formObj: any;
+    beforeEach(function() {
+        document.body.appendChild(formElement);
+    });
+    afterEach(function() {
+        document.body.removeChild(formElement);
+    });
+    it('errorClass',function() {
+        formObj = new FormValidator(formElement);
+        formObj.errorClass = null;
+        expect(formObj.errorClass).toBe(null);
+        formObj.destroy();
+        formObj = new FormValidator(formElement);
+        formObj.errorClass = undefined;
+        expect(formObj.errorClass).toBe('e-error');
+        formObj.destroy();
+    });
+    it('errorContainer',function() {
+        formObj = new FormValidator(formElement);
+        formObj.errorContainer = null;
+        expect(formObj.errorContainer).toBe(null);
+        formObj.destroy();
+        formObj = new FormValidator(formElement);
+        formObj.errorContainer = undefined;
+        expect(formObj.errorContainer).toBe('div');
+        formObj.destroy();
+    });
+    it('errorElement',function() {
+        formObj = new FormValidator(formElement);
+        formObj.errorElement = null;
+        expect(formObj.errorElement).toBe(null);
+        formObj.destroy();
+        formObj = new FormValidator(formElement);
+        formObj.errorElement = undefined;
+        expect(formObj.errorElement).toBe('label');
+        formObj.destroy();
+    });
+    it('errorOption',function() {
+        formObj = new FormValidator(formElement);
+        formObj.errorOption = null;
+        expect(formObj.errorOption).toBe(null);
+        formObj.destroy();
+        formObj = new FormValidator(formElement);
+        formObj.errorOption = undefined;
+        expect(formObj.errorOption).toBe(ErrorOption.Label);
+        formObj.destroy();
+    });
+    it('ignore',function() {
+        formObj = new FormValidator(formElement);
+        formObj.ignore = null;
+        expect(formObj.ignore).toBe(null);
+        formObj.destroy();
+        formObj = new FormValidator(formElement);
+        formObj.ignore = undefined;
+        expect(formObj.ignore).toBe('e-hidden');
+        formObj.destroy();
+    });
+    it('rules',function() {
+        formObj = new FormValidator(formElement);
+        formObj.rules = null;
+        expect(formObj.rules).toBe(null);
+        formObj.destroy();
+        formObj = new FormValidator(formElement);
+        formObj.rules = undefined;
+        expect(formObj.rules).toBe(undefined);
+        formObj.destroy();
+    });
+    it('validClass',function() {
+        formObj = new FormValidator(formElement);
+        formObj.validClass = null;
+        expect(formObj.validClass).toBe(null);
+        formObj.destroy();
+        formObj = new FormValidator(formElement);
+        formObj.validClass = undefined;
+        expect(formObj.validClass).toBe('e-valid');
+        formObj.destroy();
+    });
+});

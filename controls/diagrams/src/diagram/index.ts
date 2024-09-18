@@ -94,7 +94,6 @@ export * from './diagram/custom-cursor';
 export * from './diagram/custom-cursor-model';
 export * from './diagram/data-mapping';
 export * from './diagram/data-mapping-model';
-export * from './blazor-tooltip/blazor-Tooltip';
 
 
 //layout
@@ -105,6 +104,7 @@ export * from './layout/hierarchical-tree';
 export * from './layout/radial-tree';
 export * from './layout/symmetrical-layout';
 export * from './layout/complex-hierarchical-tree';
+export * from './layout/flowChart/flow-chart-layout';
 
 export * from './load-utility/connectorProperties';
 export * from './load-utility/labelProperties';

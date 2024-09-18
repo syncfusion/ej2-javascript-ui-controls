@@ -100,7 +100,7 @@ export class WorkbookInsert {
             } else {
                 this.parent.setUsedRange(args.model.usedRange.rowIndex + model.length, args.model.usedRange.colIndex, args.model, true);
             }
-            const curIdx: number = index + model.length; let style: CellStyleModel; let cell: CellModel;
+            const curIdx: number = index + model.length; let style: CellStyleModel; let cell: CellModel; let newStyle: CellStyleModel;
             for (let i: number = 0; i <= args.model.usedRange.colIndex; i++) {
                 if (args.model.rows[curIdx as number] && args.model.rows[curIdx as number].cells &&
                     args.model.rows[curIdx as number].cells[i as number]) {
@@ -110,17 +110,25 @@ export class WorkbookInsert {
                             range: [curIdx, i, curIdx, i], insertCount: model.length, insertModel: 'Row'
                         });
                     }
-                    if (cell.style && getCell(index - 1, i, args.model, false, true).style) {
-                        style = this.checkBorder(cell.style, args.model.rows[index - 1].cells[i as number].style);
-                        if (style !== {}) {
-                            model.forEach((row: RowModel): void => {
-                                if (!row.cells) { row.cells = []; }
-                                if (!row.cells[i as number]) { row.cells[i as number] = {}; }
-                                if (!row.cells[i as number].style) { row.cells[i as number].style = {}; }
-                                Object.assign(row.cells[i as number].style, style);
-                            });
+                }
+                style = getCell(index - 1, i, args.model, false, true).style;
+                cell = getCell(index + 1, i, args.model, false, true);
+                if (style) {
+                    newStyle = {};
+                    Object.keys(style).forEach((key: string) => {
+                        if (!(key === 'borderLeft' || key === 'borderRight' || key === 'borderTop' || key === 'borderBottom')) {
+                            newStyle[key as string] = style[key as string];
                         }
+                    });
+                    if (cell.style) {
+                        this.checkBorder(cell.style, args.model.rows[index - 1].cells[i as number].style, newStyle);
                     }
+                    model.forEach((row: RowModel): void => {
+                        if (!row.cells) { row.cells = []; }
+                        if (!row.cells[i as number]) { row.cells[i as number] = {}; }
+                        if (!row.cells[i as number].style) { row.cells[i as number].style = {}; }
+                        Object.assign(row.cells[i as number].style, newStyle);
+                    });
                 }
             }
             eventArgs.sheetCount = args.model.rows.length;
@@ -150,7 +158,7 @@ export class WorkbookInsert {
             if (!args.columnCellsModel) { args.columnCellsModel = []; }
             for (let i: number = 0; i < model.length; i++) { cellModel.push(null); }
             mergeCollection = [];
-            let cell: CellModel; let style: CellStyleModel;
+            let cell: CellModel; let style: CellStyleModel; let newStyle: CellStyleModel;
             for (let i: number = 0; i <= args.model.usedRange.rowIndex; i++) {
                 if (!args.model.rows[i as number]) {
                     args.model.rows[i as number] = { cells: [] };
@@ -170,19 +178,27 @@ export class WorkbookInsert {
                             range: [i, curIdx, i, curIdx], insertCount: cellModel.length, insertModel: 'Column'
                         });
                     }
-                    if (cell.style && getCell(i, index - 1, args.model, false, true).style) {
-                        style = this.checkBorder(cell.style, args.model.rows[i as number].cells[index - 1].style);
-                        if (style !== {}) {
-                            for (let j: number = index; j < curIdx; j++) {
-                                if (!args.model.rows[i as number].cells[j as number]) {
-                                    args.model.rows[i as number].cells[j as number] = {};
-                                }
-                                if (!args.model.rows[i as number].cells[j as number].style) {
-                                    args.model.rows[i as number].cells[j as number].style = {};
-                                }
-                                Object.assign(args.model.rows[i as number].cells[j as number].style, style);
-                            }
+                }
+                style = getCell(i, index - 1, args.model, false, true).style;
+                cell = getCell(i, index + 1, args.model, false, true);
+                if (style) {
+                    newStyle = {};
+                    Object.keys(style).forEach((key: string) => {
+                        if (!(key === 'borderLeft' || key === 'borderRight' || key === 'borderTop' || key === 'borderBottom')) {
+                            newStyle[key as string] = style[key as string];
                         }
+                    });
+                    if (cell.style) {
+                        this.checkBorder(cell.style, args.model.rows[i as number].cells[index - 1].style, newStyle);
+                    }
+                    for (let j: number = index; j < curIdx; j++) {
+                        if (!args.model.rows[i as number].cells[j as number]) {
+                            args.model.rows[i as number].cells[j as number] = {};
+                        }
+                        if (!args.model.rows[i as number].cells[j as number].style) {
+                            args.model.rows[i as number].cells[j as number].style = {};
+                        }
+                        Object.assign(args.model.rows[i as number].cells[j as number].style, newStyle);
                     }
                 }
             }
@@ -258,13 +274,11 @@ export class WorkbookInsert {
             }
         });
     }
-    private checkBorder(style: CellStyleModel, adjStyle: CellStyleModel): CellStyleModel {
-        const matchedStyle: CellStyleModel = {};
-        if (style.borderLeft && style.borderLeft === adjStyle.borderLeft) { matchedStyle.borderLeft = style.borderLeft; }
-        if (style.borderRight && style.borderRight === adjStyle.borderRight) { matchedStyle.borderRight = style.borderRight; }
-        if (style.borderTop && style.borderTop === adjStyle.borderTop) { matchedStyle.borderTop = style.borderTop; }
-        if (style.borderBottom && style.borderBottom === adjStyle.borderBottom) { matchedStyle.borderBottom = style.borderBottom; }
-        return matchedStyle;
+    private checkBorder(style: CellStyleModel, adjStyle: CellStyleModel, newStyle: CellStyleModel): void {
+        if (style.borderLeft && style.borderLeft === adjStyle.borderLeft) { newStyle.borderLeft = style.borderLeft; }
+        if (style.borderRight && style.borderRight === adjStyle.borderRight) { newStyle.borderRight = style.borderRight; }
+        if (style.borderTop && style.borderTop === adjStyle.borderTop) { newStyle.borderTop = style.borderTop; }
+        if (style.borderBottom && style.borderBottom === adjStyle.borderBottom) { newStyle.borderBottom = style.borderBottom; }
     }
     private setInsertInfo(sheet: SheetModel, startIndex: number, count: number, totalKey: string, modelType: ModelType = 'Row'): void {
         const endIndex: number = count = startIndex + (count - 1);

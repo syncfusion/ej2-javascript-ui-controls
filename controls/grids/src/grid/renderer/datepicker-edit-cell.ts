@@ -24,7 +24,8 @@ export class DatePickerEditCell extends EditCellBase implements IEditCell {
                 extend(
                     dateanddatetimerender(args, this.parent.editSettings.mode, this.parent.enableRtl, this.parent.cssClass, this),
                     args.column.edit.params));
-        } else if (args.column.editType === 'datetimepickeredit') {
+        }
+        if (args.column.editType === 'datetimepickeredit') {
             this.obj = new DateTimePicker(
                 extend(dateanddatetimerender(args, this.parent.editSettings.mode, this.parent.enableRtl, this.parent.cssClass, this),
                        args.column.edit.params));

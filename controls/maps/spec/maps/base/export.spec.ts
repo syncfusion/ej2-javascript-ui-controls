@@ -194,8 +194,446 @@ describe('Map layer testing', () => {
       
     });
     
-  
-
+    describe('Map layer testing background as transparent, theme as materials', () => {
+        let mapObj: Maps;
+        let mapElement: Element;
+        let temp: Element;
+        mapElement = createElement('div', { id: 'container' });
+        temp = createElement('div', { id: 'tempElement' });
+        (<any>window).open = () => {
+            return {
+                document: { write: () => { }, close: () => { } },
+                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+            };
+        };
+        beforeAll(() => {
+            let template: Element = createElement('div', { id: 'template', styles: 'display: none;border: 2px solid red' });
+            document.body.appendChild(template);
+            template.innerHTML = "<div id='templateWrap' style='background-color:#4472c4;border-radius: 3px;'>" +
+                "<img src='./img1.jpg' style='border-radius: 0px;width: 24px;height: 24px;padding: 2px;' />" +
+                "<div style='color:white;float: right;padding: 2px;line-height: 20px; text-align: center; font-family:Roboto; font-style: medium; fontp-size:14px;'><span>Print</span></div></div>";
+            document.body.appendChild(mapElement);
+            document.body.appendChild(temp);
+            mapObj = new Maps({
+                background: 'transparent',
+                theme: 'Material3',
+                allowImageExport: true,
+                allowPdfExport : true,
+                allowPrint : true,
+                layers: [{
+                    shapeSettings: {
+                        fill: '#C3E6ED',
+                    },
+                    dataLabelSettings: {
+                        visible: true,
+                        labelPath: 'name',
+                    },
+                    shapeData: usMap,
+                },
+                ],
+                annotations: [{
+                    content: '#template',
+                    x: '50%',
+                    y: '50%'
+                }]
+            });
+            mapObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            remove(mapElement);
+            mapObj.destroy();
+        });
+        it('checking a print', (done: Function) => {
+            mapObj.beforePrint = (args: IPrintEventArgs): void => {
+                expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-control e-maps e-lib" aria-label="Maps Element" tabindex="1"') >= -1).toBe(true);
+                done();
+            };
+            mapObj.print();
+        });
+        it('Checking export - PDF - Potrait', (done: Function) => {
+            mapObj.export('PDF', 'map', PdfPageOrientation.Portrait);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Checking Image export- JPEG', (done: Function) => {
+            mapObj.export('JPEG', 'map');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Checking  Image export - SVG', (done: Function) => {
+            mapObj.export('SVG', 'map');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+    });
+    describe('Map layer testing background as rgba(255,255,255, 0.0), theme as materials', () => {
+        let mapObj: Maps;
+        let mapElement: Element;
+        let temp: Element;
+        mapElement = createElement('div', { id: 'container' });
+        temp = createElement('div', { id: 'tempElement' });
+        (<any>window).open = () => {
+            return {
+                document: { write: () => { }, close: () => { } },
+                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+            };
+        };
+        beforeAll(() => {
+            let template: Element = createElement('div', { id: 'template', styles: 'display: none;border: 2px solid red' });
+            document.body.appendChild(template);
+            template.innerHTML = "<div id='templateWrap' style='background-color:#4472c4;border-radius: 3px;'>" +
+                "<img src='./img1.jpg' style='border-radius: 0px;width: 24px;height: 24px;padding: 2px;' />" +
+                "<div style='color:white;float: right;padding: 2px;line-height: 20px; text-align: center; font-family:Roboto; font-style: medium; fontp-size:14px;'><span>Print</span></div></div>";
+            document.body.appendChild(mapElement);
+            document.body.appendChild(temp);
+            mapObj = new Maps({
+                background: 'rgba(255,255,255, 0.0)',
+                theme: 'Material3',
+                allowImageExport: true,
+                allowPdfExport : true,
+                allowPrint : true,
+                layers: [{
+                    shapeSettings: {
+                        fill: '#C3E6ED',
+                    },
+                    dataLabelSettings: {
+                        visible: true,
+                        labelPath: 'name',
+                    },
+                    shapeData: usMap,
+                },
+                ],
+                annotations: [{
+                    content: '#template',
+                    x: '50%',
+                    y: '50%'
+                }]
+            });
+            mapObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            remove(mapElement);
+            mapObj.destroy();
+        });
+        it('checking a print', (done: Function) => {
+            mapObj.beforePrint = (args: IPrintEventArgs): void => {
+                expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-control e-maps e-lib" aria-label="Maps Element" tabindex="1"') >= -1).toBe(true);
+                done();
+            };
+            mapObj.print();
+        });
+        it('Checking export - PDF - Potrait', (done: Function) => {
+            mapObj.export('PDF', 'map', PdfPageOrientation.Portrait);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Checking Image export- JPEG', (done: Function) => {
+            mapObj.export('JPEG', 'map');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Checking  Image export - SVG', (done: Function) => {
+            mapObj.export('SVG', 'map');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+    });
+    describe('Map layer testing theme as Material3Dark, background as transparent', () => {
+        let mapObj: Maps;
+        let mapElement: Element;
+        let temp: Element;
+        mapElement = createElement('div', { id: 'container' });
+        temp = createElement('div', { id: 'tempElement' });
+        (<any>window).open = () => {
+            return {
+                document: { write: () => { }, close: () => { } },
+                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+            };
+        };
+        beforeAll(() => {
+            let template: Element = createElement('div', { id: 'template', styles: 'display: none;border: 2px solid red' });
+            document.body.appendChild(template);
+            template.innerHTML = "<div id='templateWrap' style='background-color:#4472c4;border-radius: 3px;'>" +
+                "<img src='./img1.jpg' style='border-radius: 0px;width: 24px;height: 24px;padding: 2px;' />" +
+                "<div style='color:white;float: right;padding: 2px;line-height: 20px; text-align: center; font-family:Roboto; font-style: medium; fontp-size:14px;'><span>Print</span></div></div>";
+            document.body.appendChild(mapElement);
+            document.body.appendChild(temp);
+            mapObj = new Maps({
+                background: 'transparent',
+                theme: 'Material3Dark',
+                allowImageExport: true,
+                allowPdfExport : true,
+                allowPrint : true,
+                layers: [{
+                    shapeSettings: {
+                        fill: '#C3E6ED',
+                    },
+                    dataLabelSettings: {
+                        visible: true,
+                        labelPath: 'name',
+                    },
+                    shapeData: usMap,
+                },
+                ],
+                annotations: [{
+                    content: '#template',
+                    x: '50%',
+                    y: '50%'
+                }]
+            });
+            mapObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            remove(mapElement);
+            mapObj.destroy();
+        });
+        it('checking a print', (done: Function) => {
+            mapObj.beforePrint = (args: IPrintEventArgs): void => {
+                expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-control e-maps e-lib" aria-label="Maps Element" tabindex="1"') >= -1).toBe(true);
+                done();
+            };
+            mapObj.print();
+        });
+        it('Checking export - PDF - Potrait', (done: Function) => {
+            mapObj.export('PDF', 'map', PdfPageOrientation.Portrait);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Checking Image export- JPEG', (done: Function) => {
+            mapObj.export('JPEG', 'map');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Checking  Image export - SVG', (done: Function) => {
+            mapObj.export('SVG', 'map');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+    });
+    describe('Map layer testing theme as Material3Dark, background as rgba(255,255,255, 0.0)', () => {
+        let mapObj: Maps;
+        let mapElement: Element;
+        let temp: Element;
+        mapElement = createElement('div', { id: 'container' });
+        temp = createElement('div', { id: 'tempElement' });
+        (<any>window).open = () => {
+            return {
+                document: { write: () => { }, close: () => { } },
+                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+            };
+        };
+        beforeAll(() => {
+            let template: Element = createElement('div', { id: 'template', styles: 'display: none;border: 2px solid red' });
+            document.body.appendChild(template);
+            template.innerHTML = "<div id='templateWrap' style='background-color:#4472c4;border-radius: 3px;'>" +
+                "<img src='./img1.jpg' style='border-radius: 0px;width: 24px;height: 24px;padding: 2px;' />" +
+                "<div style='color:white;float: right;padding: 2px;line-height: 20px; text-align: center; font-family:Roboto; font-style: medium; fontp-size:14px;'><span>Print</span></div></div>";
+            document.body.appendChild(mapElement);
+            document.body.appendChild(temp);
+            mapObj = new Maps({
+                background: 'rgba(255,255,255, 0.0)',
+                theme: 'Material3Dark',
+                allowImageExport: true,
+                allowPdfExport : true,
+                allowPrint : true,
+                layers: [{
+                    shapeSettings: {
+                        fill: '#C3E6ED',
+                    },
+                    dataLabelSettings: {
+                        visible: true,
+                        labelPath: 'name',
+                    },
+                    shapeData: usMap,
+                },
+                ],
+                annotations: [{
+                    content: '#template',
+                    x: '50%',
+                    y: '50%'
+                }]
+            });
+            mapObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            remove(mapElement);
+            mapObj.destroy();
+        });
+        it('checking a print', (done: Function) => {
+            mapObj.beforePrint = (args: IPrintEventArgs): void => {
+                expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-control e-maps e-lib" aria-label="Maps Element" tabindex="1"') >= -1).toBe(true);
+                done();
+            };
+            mapObj.print();
+        });
+        it('Checking export - PDF - Potrait', (done: Function) => {
+            mapObj.export('PDF', 'map', PdfPageOrientation.Portrait);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Checking Image export- JPEG', (done: Function) => {
+            mapObj.export('JPEG', 'map');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Checking  Image export - SVG', (done: Function) => {
+            mapObj.export('SVG', 'map');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+    });
+    describe('Testing the osm maps', () => {
+        let mapObj: Maps;
+        let mapElement: Element;
+        let temp: Element;
+        mapElement = createElement('div', { id: 'container' });
+        temp = createElement('div', { id: 'tempElement' });
+        (<any>window).open = () => {
+            return {
+                document: { write: () => { }, close: () => { } },
+                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+            };
+        };
+        beforeAll(() => {
+            let template: Element = createElement('div', { id: 'template', styles: 'display: none;border: 2px solid red' });
+            document.body.appendChild(template);
+            template.innerHTML = "<div id='templateWrap' style='background-color:#4472c4;border-radius: 3px;'>" +
+                "<img src='./img1.jpg' style='border-radius: 0px;width: 24px;height: 24px;padding: 2px;' />" +
+                "<div style='color:white;float: right;padding: 2px;line-height: 20px; text-align: center; font-family:Roboto; font-style: medium; fontp-size:14px;'><span>Print</span></div></div>";
+            document.body.appendChild(mapElement);
+            document.body.appendChild(temp);
+            mapObj = new Maps({
+                background: 'rgba(255,255,255, 0.0)',
+                theme: 'Material3Dark',
+                allowImageExport: true,
+                allowPdfExport : true,
+                allowPrint : true,
+                layers: [{
+                    urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png'                  
+                },
+                ],
+                annotations: [{
+                    content: '#template',
+                    x: '50%',
+                    y: '50%'
+                }]
+            });
+            mapObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            remove(mapElement);
+            mapObj.destroy();
+        });
+        it('Checking zoom factor value as 0', () => {
+            mapObj.loaded = (args) => {
+                let element = document.getElementById("container_Annotations_Group");
+                expect(element.childElementCount).toBe(1);
+            };
+            mapObj.refresh();
+        });
+        it('checking a print', (done: Function) => {
+            mapObj.beforePrint = (args: IPrintEventArgs): void => {
+                expect(args.htmlContent != null).toBe(true);
+                done();
+            };
+            mapObj.print();
+        });
+        it('Checking export - PDF - Potrait', (done: Function) => {
+            mapObj.export('PDF', 'map', PdfPageOrientation.Portrait);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Checking Image export- JPEG', (done: Function) => {
+            mapObj.export('JPEG', 'map');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+    });
+    describe('Testing the osm maps background as transparent', () => {
+        let mapObj: Maps;
+        let mapElement: Element;
+        let temp: Element;
+        mapElement = createElement('div', { id: 'container' });
+        temp = createElement('div', { id: 'tempElement' });
+        (<any>window).open = () => {
+            return {
+                document: { write: () => { }, close: () => { } },
+                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+            };
+        };
+        beforeAll(() => {
+            let template: Element = createElement('div', { id: 'template', styles: 'display: none;border: 2px solid red' });
+            document.body.appendChild(template);
+            template.innerHTML = "<div id='templateWrap' style='background-color:#4472c4;border-radius: 3px;'>" +
+                "<img src='./img1.jpg' style='border-radius: 0px;width: 24px;height: 24px;padding: 2px;' />" +
+                "<div style='color:white;float: right;padding: 2px;line-height: 20px; text-align: center; font-family:Roboto; font-style: medium; fontp-size:14px;'><span>Print</span></div></div>";
+            document.body.appendChild(mapElement);
+            document.body.appendChild(temp);
+            mapObj = new Maps({
+                background: 'transparent',
+                theme: 'Material3Dark',
+                allowImageExport: true,
+                allowPdfExport : true,
+                allowPrint : true,
+                layers: [{                    
+                    urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png',
+                },
+                ],
+                annotations: [{
+                    content: '#template',
+                    x: '50%',
+                    y: '50%'
+                }]
+            });
+            mapObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            remove(mapElement);
+            mapObj.destroy();
+        });
+        it('Checking export - PDF - Potrait', (done: Function) => {
+            mapObj.export('PDF', 'map', PdfPageOrientation.Portrait);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Checking Image export- JPEG', (done: Function) => {
+            mapObj.export('JPEG', 'map');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+    });
     describe('Map Tile layer testing', () => {
         let mapObj: Maps;
         let mapElement: Element;
@@ -254,6 +692,13 @@ describe('Map layer testing', () => {
         afterAll((): void => {
             remove(mapElement);
             mapObj.destroy();
+        });
+        it('Checking print for Tile map - SVG', (done: Function) => {
+            mapObj.export('SVG', 'map');
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
         });
         it('Checking Image export for Tile map - SVG', (done: Function) => {
             mapObj.export('SVG', 'map');

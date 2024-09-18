@@ -1,0 +1,28 @@
+@include export-module('v-scroll-bigger') {
+  .e-bigger #{&}.e-vscroll,
+  #{&}.e-vscroll.e-bigger {
+
+    &:not(.e-scroll-device) {
+      padding: $vscroll-bgr-padding;
+    }
+
+    .e-icons {
+      font-size: 18px;
+    }
+
+    &.e-rtl .e-scroll-overlay.e-scroll-down-overlay {
+      left: $vscroll-nav-bgr-width;
+    }
+
+    .e-scroll-overlay {
+
+      &.e-scroll-down-overlay {
+        right: $vscroll-nav-bgr-width;
+      }
+    }
+
+    .e-scroll-nav {
+      height: $vscroll-nav-bgr-width;
+    }
+  }
+}

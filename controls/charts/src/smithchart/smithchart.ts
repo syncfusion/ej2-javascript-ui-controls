@@ -869,8 +869,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
             break;
         }
     }
-
-    private setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
+    /* @private */
+    public setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
         if (previousElement) {
             previousElement.removeAttribute('tabindex');
         }

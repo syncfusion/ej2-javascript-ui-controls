@@ -493,8 +493,8 @@ export namespace Input {
         if (!isNullOrUndefined(args.element)) {
             delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers;
             if (args.element.classList.contains(CLASSNAMES.INPUT)) {
-                    args.element.classList.remove(CLASSNAMES.INPUT)
-                }
+                args.element.classList.remove(CLASSNAMES.INPUT);
+            }
         }
         privateInputObj = null;
     }
@@ -603,7 +603,7 @@ export namespace Input {
             return;
         }
         const elementWidth : number | Element = moduleName === 'multiselect' ? element : element.clientWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'), 10);
-        if (!isNullOrUndefined(container) && !isNullOrUndefined(container.getElementsByClassName('e-float-text-content')[0])) {
+        if ( !isNullOrUndefined(container) && !isNullOrUndefined(container.getElementsByClassName('e-float-text-content')[0])) {
             if (container.getElementsByClassName('e-float-text-content')[0].classList.contains('e-float-text-overflow')) {
                 container.getElementsByClassName('e-float-text-content')[0].classList.remove('e-float-text-overflow');
             }
@@ -934,7 +934,7 @@ export namespace Input {
         // Check if the element or any of its parents are hidden using display: none
         let currentElement: any = element;
         while (currentElement && currentElement !== document.body) {
-            const style = window.getComputedStyle(currentElement);
+            const style: CSSStyleDeclaration  = window.getComputedStyle(currentElement);
             if (style.display === 'none') {
                 return false;
             }

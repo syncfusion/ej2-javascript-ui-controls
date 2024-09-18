@@ -147,9 +147,32 @@ describe('Circular-Gauge Control', () => {
             gauge.tooltip.template = '<div id="tooltip1" style="border:2px solid red;"><div class="des"><span>${value} MPH</span></div></div>';
             gauge.refresh();
         });
+        it('Checking Tooltip template and vue', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = gauge.axes[0].minimum; i < gauge.axes[0].maximum; i++) {
+                    gauge.setPointerValue(0, 0, i);
+                    ele = document.getElementById('container_Axis_0_Pointer_NeedleRect_0');
+                    gauge.isVue = true;
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].maximum = 120;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.tooltip.showAtMousePosition = false;
+            gauge.tooltip.template = '<div id="tooltip1" style="border:2px solid red;"><div class="des"><span>${value} MPH</span></div></div>';
+            gauge.refresh();
+        });
 
         it('Checking Tooltip template with none content', () => {
             gauge.loaded = (args: ILoadedEventArgs) => {
+                gauge.isVue = false;
                 for (let i: number = gauge.axes[0].minimum; i < gauge.axes[0].maximum; i++) {
                     gauge.setPointerValue(0, 0, i);
                     ele = document.getElementById('container_Axis_0_Pointer_NeedleRect_0');
@@ -349,6 +372,7 @@ describe('Circular-Gauge Control', () => {
                         changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
                     }
                     gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                    gauge.mouseMove
                 }
                 let tooltip = document.getElementById("container_CircularGauge_Tooltip");
                 let split = tooltip.getAttribute('style').split(" ");
@@ -414,6 +438,21 @@ describe('Circular-Gauge Control', () => {
             gauge.tooltip.enable = true;
             gauge.tooltip.type = ['Pointer'];
             gauge.tooltip.rangeSettings.showAtMousePosition = true;
+            gauge.refresh();
+        });
+        it('Checking range with pointer tooltip', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                ele = document.getElementById('container_CircularGaugeTitle');
+                eventObj = {
+                    target: ele,
+                    type: 'touchend',
+                    changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }],
+                    pageX: ele.getBoundingClientRect().left,
+                    pageY: ele.getBoundingClientRect().top
+                }
+                gauge.mouseEnd(<PointerEvent>eventObj);
+            };
+            gauge.title = 'Gauge with Multiple Axes Gauge with Multiple Axes Gauge with Multiple Axes Gauge with Multiple AxesGauge with Multiple Axes Gauge with Multiple AxesGauge with Multiple Axes Gauge with Multiple AxesGauge with Multiple Axes Gauge with Multiple AxesGauge with Multiple Axes Gauge with Multiple Axes';
             gauge.refresh();
         });
 

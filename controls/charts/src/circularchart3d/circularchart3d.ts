@@ -1023,6 +1023,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
             break;
         case 'Fluent2':
         case 'Fluent2Dark':
+        case 'Fluent2HighContrast':
             tabColor = '#0078D4';
             break;
         default:

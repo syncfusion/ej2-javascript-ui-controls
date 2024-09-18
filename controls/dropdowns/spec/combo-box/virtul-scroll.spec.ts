@@ -371,12 +371,11 @@ describe('Combobox_virtualization', () => {
                 document.body.innerHTML = '';
             });
             it(' value property - remote data  ', (done) => {
-                setTimeout(() => {
+                
                     // expect(dropObj.inputElement.value.toString()).toBe('10004');
                     // expect(dropObj.text.toString()).toBe('10004');
                     // expect(dropObj.value.toString()).toBe('10004');
                     done();
-            }, 500);
             });
         });
         describe('Virtualization with clear value', () => {
@@ -418,6 +417,28 @@ describe('Combobox_virtualization', () => {
         });
     });
 
+    describe('Virtualization with custom preselect values with', () => {
+        let dropObj: any;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('input', { id: 'DropDownList' });
+            document.body.appendChild(ele);
+            dropObj = new ComboBox({
+                dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'id' }, value: 'id160', allowCustom:true
+            });
+            dropObj.appendTo(ele);
+        });
+        afterAll(() => {
+            dropObj.destroy();
+            ele.remove();
+            document.body.innerHTML = '';
+        });
+        it(' value property - local data  ', () => {
+            expect(dropObj.inputElement.value).toBe('id160');
+            expect(dropObj.text).toBe('id160');
+            expect(dropObj.value).toBe('id160');
+        });
+    });
 });
 
 function done() {

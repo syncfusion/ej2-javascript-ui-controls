@@ -62,13 +62,9 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
         palette = ['#8B5CF6', '#22D3EE', '#F87171', '#4ADE80', '#E879F9',
             '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
         break;
-    case 'Bootstrap5':
-        palette = ['#6355C7', '#FFB400', '#2196F5', '#F7523F', '#963C70',
-            '#4BE0BC', '#FD7400', '#C9E422', '#DE3D8A', '#162F88'];
-        break;
     case 'Bootstrap5Dark':
-        palette = ['#8F80F4', '#FFD46D', '#6CBDFF', '#FF7F71', '#FF6DB3',
-            '#63F5D2', '#FCAA65', '#ECFF77', '#EF8EFF', '#5F82FD'];
+    case 'Bootstrap5':
+        palette = ['#FD7E14', '#6610F2', '#6F42C1', '#D63384', '#DC3545', '#FFC107', '#198754', '#0DCAF0'];
         break;
     case 'FluentDark':
         palette = ['#1AC9E6', '#DA4CB2', '#EDBB40', '#AF4BCF', '#FF7266',
@@ -83,6 +79,10 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
             '#0364DE', '#66CD15', '#F3A93C', '#107C10', '#C19C00'];
         break;
     case 'Fluent2Dark':
+        palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
+            '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
+        break;
+    case 'Fluent2HighContrast':
         palette = ['#9BB449', '#2A72D5', '#43B786', '#3F579A', '#584EC6',
             '#E85F9C', '#6E7A89', '#EA6266', '#0B6A0B', '#C19C00'];
         break;
@@ -422,131 +422,131 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme, canvas: boo
         break;
     case 'Bootstrap5':
         style = {
-            axisLabel: '#495057',
-            axisTitle: '#343A40',
-            axisLine: '#D1D5DB',
-            majorGridLine: '#E5E7EB',
-            minorGridLine: '#E5E7EB',
-            majorTickLine: '#D1D5DB',
-            minorTickLine: ' #D1D5DB',
-            chartTitle: '#343A40',
-            legendLabel: '#343A40',
-            background: canvas ? '#FFFFFF' : 'transparent',
-            areaBorder: ' #DEE2E6',
-            errorBar: '#1F2937',
-            crosshairLine: '#1F2937',
-            crosshairFill: '#212529',
-            crosshairLabel: '#F9FAFB',
-            tooltipFill: '#212529',
-            tooltipBoldLabel: '#F9FAFB',
-            tooltipLightLabel: '#F9FAFB',
-            tooltipHeaderLine: '#9CA3AF',
+            axisLabel: '#212529',
+            axisTitle: '#212529',
+            axisLine: '#DEE2E6',
+            majorGridLine: '#E9ECEF',
+            minorGridLine: '#E9ECEF',
+            majorTickLine: '#DEE2E6',
+            minorTickLine: '#E9ECEF',
+            chartTitle: '#212529',
+            legendLabel: '#212529',
+            background: canvas ? '#212529' : 'transparent',
+            areaBorder: '#E9ECEF',
+            errorBar: '#343A40',
+            crosshairLine: '#343A40',
+            crosshairFill: '#000000',
+            crosshairLabel: '#FFFFFF',
+            tooltipFill: '#E9ECEF',
+            tooltipBoldLabel: '#FFFFFF',
+            tooltipLightLabel: '#FFFFFF',
+            tooltipHeaderLine: '#FFFFFF',
             markerShadow: null,
-            selectionRectFill: 'rgba(79,70,229, 0.1)',
-            selectionRectStroke: '#4F46E5',
+            selectionRectFill: 'rgba(134,183,254, 0.1)',
+            selectionRectStroke: '#0D6EFD',
             selectionCircleStroke: '#6B7280',
             tabColor: '#0D6EFD',
-            bearFillColor: '#2ecd71',
-            bullFillColor : '#e74c3d',
-            toolkitSelectionColor: '#0D6EFD',
-            toolkitFill: '#737373',
-            toolkitIconRectOverFill: 'transparent',
-            toolkitIconRectSelectionFill: 'transparent',
-            toolkitIconRect: new Rect(0, 0, 16, 16),
+            bearFillColor: '#DC3545',
+            bullFillColor : '#6F42C1',
+            toolkitSelectionColor: '#6E757D',
+            toolkitFill: '#6E757D',
+            toolkitIconRectOverFill: '#F8F9FA',
+            toolkitIconRectSelectionFill: '#F8F9FA',
+            toolkitIconRect: new Rect(-6, -8, 32, 32),
             chartTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#212529', fontFamily: 'Segoe UI', size: chart.getModuleName() === 'accumulationchart' ? '16px' : '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: chart.getModuleName() === 'accumulationchart' ? '#21252980' : '#212529', fontFamily: 'Segoe UI', size: chart.getModuleName() === 'accumulationchart' ? '14px' : '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             crosshairLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             stripLineLabelFont: {
-                color: '#ADB5BD', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#6C757D', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
     case 'Bootstrap5Dark':
         style = {
-            axisLabel: '#CED4DA',
-            axisTitle: '#E9ECEF',
+            axisLabel: '#DEE2E6',
+            axisTitle: '#DEE2E6',
             axisLine: '#495057',
             majorGridLine: '#343A40',
             minorGridLine: '#343A40',
             majorTickLine: '#495057',
-            minorTickLine: ' #495057',
-            chartTitle: '#E9ECEF',
-            legendLabel: '#E9ECEF',
+            minorTickLine: '#343A40',
+            chartTitle: '#DEE2E6',
+            legendLabel: '#DEE2E6',
             background: canvas ? '#212529' : 'transparent',
-            areaBorder: ' #444C54',
+            areaBorder: '#343A40',
             errorBar: '#ADB5BD',
             crosshairLine: '#ADB5BD',
-            crosshairFill: '#E9ECEF',
+            crosshairFill: '#FFFFFF',
             crosshairLabel: '#212529',
-            tooltipFill: '#E9ECEF',
+            tooltipFill: '#FFFFFF',
             tooltipBoldLabel: '#212529',
             tooltipLightLabel: '#212529',
-            tooltipHeaderLine: '#ADB5BD',
+            tooltipHeaderLine: '#212529',
             markerShadow: null,
-            selectionRectFill: 'rgba(79,70,229, 0.1)',
-            selectionRectStroke: '#4F46E5',
-            selectionCircleStroke: '#6B7280',
+            selectionRectFill: 'rgba(134,183,254, 0.25)',
+            selectionRectStroke: '#0D6EFD',
+            selectionCircleStroke: '#0D6EFD',
             tabColor: '#0D6EFD',
-            bearFillColor: '#2ecd71',
-            bullFillColor : '#e74c3d',
-            toolkitSelectionColor: '#0D6EFD',
-            toolkitFill: '#737373',
-            toolkitIconRectOverFill: 'transparent',
-            toolkitIconRectSelectionFill: 'transparent',
-            toolkitIconRect: new Rect(0, 0, 16, 16),
+            bearFillColor: '#DC3545',
+            bullFillColor : '#6F42C1',
+            toolkitSelectionColor: '#F8F9FA',
+            toolkitFill: '#ADB5BD',
+            toolkitIconRectOverFill: '#2B3035',
+            toolkitIconRectSelectionFill: '#343A40',
+            toolkitIconRect: new Rect(-6, -8, 32, 32),
             chartTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '16px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: chart.getModuleName() === 'accumulationchart' ? '16px' : '14px', fontStyle: 'Normal', fontWeight: '600'
             },
             axisLabelFont: {
-                color: '#CED4DA', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             legendLabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#212529', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
             },
             axisTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '600'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             datalabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             chartSubTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: chart.getModuleName() === 'accumulationchart' ? '#DEE2E680' : '#DEE2E6', fontFamily: 'Segoe UI', size: chart.getModuleName() === 'accumulationchart' ? '14px' : '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             crosshairLabelFont: {
-                color: '#212529', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
             },
             stripLineLabelFont: {
-                color: '#6C757D', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -742,6 +742,71 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme, canvas: boo
             },
             stripLineLabelFont: {
                 color: '#616161', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            }
+        };
+        break;
+    case 'Fluent2HighContrast':
+        style = {
+            axisLabel: '#FFFFFF',
+            axisTitle: '#FFFFFF',
+            axisLine: '#3B3A39',
+            majorGridLine: '#292827',
+            minorGridLine: '#3B3A39',
+            majorTickLine: '#292827',
+            minorTickLine: '#292827',
+            chartTitle: '#FFFFFF',
+            legendLabel: '#FFFFFF',
+            background: canvas ? '#383838' : 'transparent',
+            areaBorder: '#292827',
+            errorBar: '#8A8886',
+            crosshairLine: '#8A8886',
+            crosshairFill: '#000000',
+            crosshairLabel: '#FFFFFF',
+            tooltipFill: '#292929',
+            tooltipBoldLabel: '#FFFFFF',
+            tooltipLightLabel: '#FFFFFF',
+            tooltipHeaderLine: '#3B3A39',
+            markerShadow: null,
+            selectionRectFill: 'rgba(26, 235, 255, 0.2)',
+            selectionRectStroke: '#1AEBFF',
+            selectionCircleStroke: '#1AEBFF',
+            tabColor: '#0078D4',
+            bearFillColor: '#584EC6',
+            bullFillColor: '#43B786',
+            toolkitSelectionColor: '#FFFFFF',
+            toolkitFill: '#FFFFFF',
+            toolkitIconRectOverFill: '#1AEBFF',
+            toolkitIconRectSelectionFill: '#1AEBFF',
+            toolkitIconRect: new Rect(-6, -8, 32, 32),
+            chartTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: chart.getModuleName() === 'accumulationchart' ? '16px' : '14px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            axisLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            legendTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            legendLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            tooltipLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal'
+            },
+            axisTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            datalabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            chartSubTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: chart.getModuleName() === 'chart' ? '12px' : '14px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            crosshairLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '700'
+            },
+            stripLineLabelFont: {
+                color: '#ADADAD', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -1083,13 +1148,23 @@ export function getScrollbarThemeColor(theme: ChartTheme): IScrollbarThemeStyle 
             grip: '#FFFFFF'
         };
         break;
+    case 'Bootstrap5':
+        scrollStyle = {
+            backRect: '#E9ECEF',
+            thumb: '#ADB5BD',
+            circle: '#F8F9FA',
+            circleHover: '#F8F9FA',
+            arrow: '#6E757D',
+            grip: '#6E757D'
+        };
+        break;
     case 'Bootstrap5Dark':
         scrollStyle = {
-            backRect: '#282D31',
-            thumb: '#3B4248',
-            circle: '#495057',
-            circleHover: '#6C757D',
-            arrow: '#A19F9D',
+            backRect: '#343A40',
+            thumb: '#ADB5BD',
+            circle: '#2B3035',
+            circleHover: '#2B3035',
+            arrow: '#ADB5BD',
             grip: '#ADB5BD'
         };
         break;
@@ -1151,6 +1226,16 @@ export function getScrollbarThemeColor(theme: ChartTheme): IScrollbarThemeStyle 
             circleHover: '#1F1F1F',
             arrow: '#D6D6D6',
             grip: '#D6D6D6'
+        };
+        break;
+    case 'Fluent2HighContrast':
+        scrollStyle = {
+            thumb: '#333333',
+            backRect: '#000000',
+            circle: '#000000',
+            circleHover: '#000000',
+            arrow: '#FFFFFF',
+            grip: '#FFFFFF'
         };
         break;
     case 'Material3':

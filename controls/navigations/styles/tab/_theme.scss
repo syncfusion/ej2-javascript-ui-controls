@@ -163,11 +163,20 @@
           &:active {
             color: $tab-close-icon-active-color;
           }
+
+          @if $skin-name == 'bootstrap5.3' {
+            &:focus {
+              color: $tab-close-icon-focus-color;
+            }
+          }
         }
 
         &.e-disable.e-overlay {
           background: inherit;
           opacity: 1;
+          @if $skin-name =='bootstrap5.3' {
+            opacity: .65;
+          }
           pointer-events: none;
 
           .e-tab-text,
@@ -213,12 +222,10 @@
               .e-tab-text,
               .e-tab-icon,
               .e-close-icon {
-                color: $tab-hover-text-color;
-              }
-
-              .e-tab-icon,
-              .e-close-icon {
                 color: $tab-pop-wrap-hover-close-color;
+                @if $skin-name == 'bootstrap5.3' {
+                  color: $tab-alt-active-style-hover-text-color;
+                }
               }
             }
 
@@ -296,6 +303,12 @@
           box-shadow: none;
           background: $tab-scroll-nav-bg;
           border: $tab-scroll-active-border;
+          @if $skin-name == 'bootstrap5.3' or $skin-name == 'fluent2' {
+            background: $tab-vertical-scroll-hover-active-bg;
+            .e-nav-arrow {
+              color: $tab-pop-focus-icon-active-color;
+            }
+          }
         }
 
         &.e-overlay {
@@ -367,12 +380,21 @@
 
           &:active {
             background: transparent;
+            @if $skin-name == 'bootstrap5.3' {
+              background: $tab-pop-focus-bg;
+            }
           }
         }
 
         &:active {
           box-shadow: none;
           background: $tab-pop-focus-bg;
+          @if $skin-name == 'bootstrap5.3' or $skin-name == 'fluent2' {
+            .e-popup-down-icon,
+            .e-popup-up-icon {
+              color: $tab-pop-focus-icon-active-color;
+            }
+          }
         }
 
         &.e-nav-active {
@@ -527,6 +549,12 @@
                 background: none;
                 border: 0;
               }
+            }
+          }
+
+          &:active {
+            @if $skin-name == 'bootstrap5.3' {
+              background: $tab-vertical-scroll-hover-active-bg;
             }
           }
         }
@@ -1270,6 +1298,11 @@
               border-style: solid;
               border-width: $tab-background-vertical-left-active-border-width;
               margin: 0;
+              @if ($skin-name == 'fluent2') {
+                &::before {
+                  background-color: $tab-background-text-color;
+                }
+              }
 
               .e-tab-wrap {
                 border-color: $tab-background-bottom-active-wrap-border-color;
@@ -1286,6 +1319,12 @@
               border-style: solid;
               border-width: $tab-background-vertical-right-active-border-width;
               margin: 0;
+
+              @if ($skin-name == 'fluent2') {
+                &::before {
+                  background-color: $tab-background-text-color;
+                }
+              }
 
               .e-tab-wrap {
                 border-color: $tab-background-bottom-active-wrap-border-color;

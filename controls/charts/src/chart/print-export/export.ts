@@ -13,69 +13,101 @@ import { ErrorBarSettingsModel, Series, SeriesModel, AxisModel } from '../../cha
 
 /**
  * Defines the cell style in an Excel export.
+ * The `ExcelCellStyle` interface specifies the styling options for cells in an Excel export.
+ *
+ * @private
  */
 interface ExcelCellStyle {
     /**
-     * Defines the horizontal alignment for cell style.
+     * Defines the horizontal alignment for the cell style.
+     *
+     * @private
      */
     hAlign?: string;
     /**
-     * Defines the vertical alignment for cell style.
+     * Defines the vertical alignment for the cell style.
+     *
+     * @private
      */
     vAlign?: string;
     /**
-     * Defines the bold style for fonts.
+     * Specifies whether the font is bold.
+     * The `bold` property determines if the font should be rendered in a bold style.
+     *
+     * @private
      */
     bold?: boolean;
     /**
-     * Defines whether to wrap text for cell style.
+     * Specifies whether to wrap text for the cell style.
+     *
+     * @private
      */
     wrapText?: boolean;
 }
 /**
  * Defines the cell in an Excel export.
+ *
+ * @private
  */
 interface ExcelCell {
     /**
-     * Defines the index for the cell.
+     * The `index` property specifies the position of the cell within the row or column.
+     *
+     * @private
      */
     index?: number;
     /**
-     * Defines the column span for the cell.
+     * Specifies the number of columns the cell spans across in the worksheet.
+     *
+     * @private
      */
     colSpan?: number;
     /**
-     * Defines the row span for the cell.
+     * Specifies the number of rows the cell spans across in the worksheet.
+     *
+     * @private
      */
     rowSpan?: number;
     /**
-     * Defines the value of the cell.
+     * The `value` property specifies the content of the cell in the worksheet and can accept text, numbers, boolean values, or dates.
+     *
+     * @private
      */
     value?: string | boolean | number | Date ;
     /**
-     * Defines the style of the cell.
+     * The `style` property specifies how the cell is visually styled in the worksheet.
+     *
+     * @private
      */
     style?: ExcelCellStyle;
 }
 /**
- * Defines the row and column in an Excel export.
+ * Defines the row and column position in an Excel export.
+ *
+ * @private
  */
 interface ExcelRowAndColumn {
     /**
-     * Defines the index for cells.
+     * The `index` property specifies the position of a cell within a row or column.
+     *
+     * @private
      */
     index?: number;
     /**
      * Defines the cells in a row and column.
+     *
+     * @private
      */
     cells?: ExcelCell[];
     /**
      * Defines the width of each row and column.
+     *
+     * @private
      */
     width?: number;
 }
 /**
- * `ExportModule` module is used to print and export the rendered chart.
+ * The `Export` module is used to print and export the rendered chart.
  */
 export class Export {
 

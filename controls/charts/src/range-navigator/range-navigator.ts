@@ -6,7 +6,7 @@ import { createSvg, removeElement } from '../common/utils/helper';
 import { Rect, measureText, Size, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { RangeTooltip } from '../range-navigator/user-interaction/tooltip';
 import { Border, Margin, PeriodSelectorSettings } from '../common/model/base';
-import { BorderModel, MarginModel, PeriodSelectorSettingsModel } from '../common/model/base-model';
+import { BorderModel, MarginModel, PeriodSelectorSettingsModel} from '../common/model/base-model';
 import { RangeSeries } from './renderer/chart-render';
 import { RangeNavigatorAxis } from './renderer/range-axis';
 import { RangeNavigatorSeries, StyleSettings, RangeTooltipSettings } from './model/range-base';
@@ -39,7 +39,8 @@ import { RangeIntervalType, ExportType, SkeletonType, ChartTheme } from '../comm
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { PeriodSelector } from '../common/period-selector/period-selector';
 import { AccumulationChart } from '../accumulation-chart/accumulation';
-import { IRangeSelectorRenderEventArgs, IPrintEventArgs } from '../chart/model/chart-interface';
+import { IPrintEventArgs } from '../chart/model/chart-interface';
+import { IRangeSelectorRenderEventArgs } from './model/range-navigator-interface';
 import { StockChart } from '../stock-chart/stock-chart';
 import { DateTimeCategory } from '../chart/axis/date-time-category-axis';
 import { PrintUtils } from '../common/utils/print';

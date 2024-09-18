@@ -3,7 +3,7 @@ import { Canvas } from '../core/containers/canvas';
 import { Diagram } from '../diagram';
 import { ConnectorConstraints, Shapes } from '../enum/enum';
 import { Segment } from '../interaction/scroller';
-import { AnnotationModel } from '../objects/annotation-model';
+import { AnnotationModel, PathAnnotationModel } from '../objects/annotation-model';
 import { BezierSegment, Connector, ConnectorShape } from '../objects/connector';
 import { BezierSegmentModel, ConnectorModel, ConnectorSegmentModel } from '../objects/connector-model';
 import { Shape } from '../objects/node';
@@ -57,7 +57,8 @@ export class ConnectorProperties {
             newConnector.cornerRadius = connector.cornerRadius;
         }
         if ((connector as EJ1Connector).labels) {
-            newConnector.annotations = this.labelProperties.setLabelProperties((connector as EJ1Connector).labels, connector);
+            newConnector.annotations = this.labelProperties.setLabelProperties((connector as EJ1Connector).labels,
+                                                                               connector) as PathAnnotationModel[];
         }
         if ((connector as EJ1Connector).lineColor) {
             newConnector.style.fill = (connector as EJ1Connector).lineColor;
@@ -79,7 +80,7 @@ export class ConnectorProperties {
             newConnector.margin = { left: connector.margin.left, right: connector.margin.right, top: connector.margin.top, bottom: connector.margin.bottom };
         }
         if (connector.segments) {
-            (newConnector as any).type = connector.segments[0].type;
+            (newConnector as any).type = connector.segments[0].type.charAt(0).toUpperCase() + (connector.segments[0].type).slice(1);
             newConnector.segments = this.setConnectorSegments(connector.segments);
         }
         if (connector.shape) {
@@ -119,11 +120,11 @@ export class ConnectorProperties {
                 }
             };
         }
-        if (connector.sourceID) {
-            newConnector.sourceID = connector.sourceID;
+        if ((connector as EJ1Connector).sourceNode) {
+            newConnector.sourceID = (connector as EJ1Connector).sourceNode;
         }
-        if (connector.targetID) {
-            newConnector.targetID = connector.targetID;
+        if ((connector as EJ1Connector).targetNode) {
+            newConnector.targetID = (connector as EJ1Connector).targetNode;
         }
         if (connector.sourcePoint) {
             newConnector.sourcePoint = { x: connector.sourcePoint.x, y: connector.sourcePoint.y };
@@ -131,11 +132,11 @@ export class ConnectorProperties {
         if (connector.targetPoint) {
             newConnector.targetPoint = { x: connector.targetPoint.x, y: connector.targetPoint.y };
         }
-        if (connector.sourcePortID) {
-            newConnector.sourcePortID = connector.sourcePortID;
+        if ((connector as EJ1Connector).sourcePort) {
+            newConnector.sourcePortID = (connector as EJ1Connector).sourcePort;
         }
-        if (connector.targetPortID) {
-            newConnector.targetPortID = connector.targetPortID;
+        if ((connector as EJ1Connector).targetPort) {
+            newConnector.targetPortID = (connector as EJ1Connector).targetPort;
         }
         if (connector.tooltip) {
             newConnector.tooltip = {
@@ -146,8 +147,8 @@ export class ConnectorProperties {
         if (connector.visible) {
             newConnector.visible = connector.visible;
         }
-        if (connector.zIndex) {
-            newConnector.zIndex = connector.zIndex;
+        if ((connector as EJ1Connector).zOrder) {
+            newConnector.zIndex = (connector as EJ1Connector).zOrder;
         }
         return newConnector;
     }
@@ -225,7 +226,7 @@ export class ConnectorProperties {
                 const segmentProp: any = segments[parseInt(i.toString(), 10)];
                 // eslint-disable-next-line max-len
                 segment.direction = segmentProp.direction ? segmentProp.direction.charAt(0).toUpperCase() + segmentProp.direction.slice(1) : segmentProp._direction ? segmentProp._direction.charAt(0).toUpperCase() + segmentProp._direction.slice(1) : null;
-                segment.length = segmentProp.length;
+                segment.length = segmentProp.length ? segmentProp.length : segmentProp._length ? segmentProp._length : null;
                 segment.point = segmentProp.point ? { x: segmentProp.point.x, y: segmentProp.point.y } : null;
                 segment.point1 = segmentProp.point1 ? { x: segmentProp.point1.x, y: segmentProp.point1.y } : null;
                 segment.point2 = segmentProp.point2 ? { x: segmentProp.point2.x, y: segmentProp.point2.y } : null;
@@ -312,17 +313,6 @@ export class ConnectorProperties {
     }
 
     /**
-     * To destroy the ruler
-     *
-     * @returns {void} To destroy the ruler
-     */
-
-    public destroy(): void {
-        /**
-         * Destroys the Node properties module
-         */
-    }
-    /**
      * Get module name.
      *
      * @returns {string} Returns the module name
@@ -352,5 +342,13 @@ export interface EJ1Connector extends ConnectorModel {
     opacity: number;
 
     lineHitPadding: number;
+
+    sourceNode: string;
+
+    targetNode: string;
+
+    zOrder: number;
+    sourcePort: string;
+    targetPort: string;
 
 }

@@ -1,4 +1,4 @@
-import { RectOption, ChartLocation, appendChildElement, getElement, appendClipElement } from '../../common/utils/helper';
+import { RectOption, ChartLocation, appendChildElement, getElement, appendClipElement, withInBounds } from '../../common/utils/helper';
 import { findlElement, drawSymbol, markerAnimate, CircleOption } from '../../common/utils/helper';
 import { PathOption, Rect, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
@@ -14,7 +14,7 @@ import { ChartShape } from '../utils/enum';
 
 export const markerShapes: ChartShape[] = ['Circle', 'Triangle', 'Diamond', 'Rectangle', 'Pentagon', 'InvertedTriangle', 'VerticalLine', 'Cross', 'Plus', 'HorizontalLine', 'Star'];
 /**
- * Marker module used to render the marker for line type series.
+ * The `Marker` module is used to render markers for line-type series.
  */
 export class Marker extends MarkerExplode {
 
@@ -72,7 +72,7 @@ export class Marker extends MarkerExplode {
         const isBoxPlot: boolean = series.type === 'BoxAndWhisker';
         const fill: string = marker.fill || ((isBoxPlot || series.marker.isFilled) ? point.interior || series.interior : '#ffffff');
         let markerElement: Element;
-        const parentElement: Element = isBoxPlot ?
+        const parentElement: Element = isBoxPlot && !this.chart.enableCanvas ?
             findlElement(series.seriesElement.childNodes, 'Series_' + series.index + '_Point_' + point.index)
             : series.symbolElement;
         border.color = borderColor || series.setPointColor(point, series.interior);
@@ -218,17 +218,42 @@ export class Marker extends MarkerExplode {
     }
 
     /**
+     * Calculates the distance between two points in a chart.
+     *
+     * @param {ChartLocation} startPoint - The starting point with x and y coordinates.
+     * @param {ChartLocation} endPoint - The ending point with x and y coordinates.
+     * @returns {number} - The distance between the startPoint and endPoint.
+     */
+    private calculateDistance(startPoint: ChartLocation, endPoint: ChartLocation): number {
+        const dx: number = endPoint.x - startPoint.x;
+        const dy: number = endPoint.y - startPoint.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    /**
      * Perform marker animation for the given series.
      *
      * @param {Series} series - The series for which marker animation needs to be performed.
      * @returns {void}
+     * @private
      */
     public doMarkerAnimation(series: Series): void {
         if (!(series.type === 'Scatter' || series.type === 'Bubble' || series.type === 'Candle' || series.type === 'Hilo' ||
             series.type === 'HiloOpenClose' || (series.chart.chartAreaType === 'PolarRadar' && (series.drawType === 'Scatter')))) {
             const markerElements: NodeList = series.symbolElement.childNodes;
             const delay: number = series.animation.delay + (series.animation.duration === 0 && animationMode === 'Enable' ? 1000 : series.animation.duration);
-            const duration: number = series.chart.animated ? series.chart.duration : 200;
+            let duration: number = series.chart.animated ? series.chart.duration : 200;
+            let markerDelay: number = delay;
+            const pathLength: number = <SVGPathElement>series.pathElement ? (<SVGPathElement>series.pathElement).getTotalLength() : 0;
+            const distances: number[] = [];
+            for (let i: number = 1; (series.type === 'Line' && i < series.points.length); i++) {
+                if (series.points[i - 1 as number].symbolLocations[0] && series.points[i as number].symbolLocations[0])
+                {
+                    const distance: number = this.calculateDistance(series.points[i - 1 as number].symbolLocations[0],
+                                                                    series.points[i as number].symbolLocations[0]);
+                    distances.push(distance);
+                }
+            }
             let j: number = 1;
             const incFactor: number = (series.type === 'RangeArea' || series.type === 'RangeColumn' || series.type === 'SplineRangeArea' || series.type === 'RangeStepArea') ? 2 : 1;
             for (let i: number = 0; i < series.points.length; i++) {
@@ -236,11 +261,18 @@ export class Marker extends MarkerExplode {
                     if (!series.points[i as number].symbolLocations.length || !markerElements[j as number]) {
                         continue;
                     }
-                    markerAnimate(markerElements[j as number] as HTMLElement, delay, duration, series,
+                    if (series.type === 'Line') {
+                        if (i === 0) { markerDelay = 0; }
+                        if (i > 0) {
+                            markerDelay += (distances[i - 1] / pathLength) * delay;
+                            duration = 0;
+                        }
+                    }
+                    markerAnimate(markerElements[j as number] as HTMLElement, markerDelay, duration, series,
                                   i, series.points[i as number].symbolLocations[0], false);
                     if (incFactor === 2) {
                         const lowPoint: ChartLocation = this.getRangeLowPoint(series.points[i as number].regions[0], series);
-                        markerAnimate(markerElements[j + 1] as HTMLElement, delay, duration, series, i, lowPoint, false);
+                        markerAnimate(markerElements[j + 1] as HTMLElement, markerDelay, duration, series, i, lowPoint, false);
                     }
                     j += incFactor;
                 }

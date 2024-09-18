@@ -227,11 +227,11 @@ export class DataManipulation {
             this.parent.query.expands = [];
         }
         if (!this.parent.hasChildMapping && !this.parentItems.length &&
-      (!this.parent.loadChildOnDemand)) {
+      (this.parent.loadChildOnDemand)) {
             this.zerothLevelData = args;
             setValue('cancel', true, args);
         } else {
-            if (!this.parent.loadChildOnDemand) {
+            if (this.parent.loadChildOnDemand) {
                 for (let rec: number = 0; rec < records.length; rec++) {
                     if (isCountRequired(this.parent) && records[parseInt(rec.toString(), 10)].hasChildRecords &&
                     this.parent.initialRender) {
@@ -271,22 +271,22 @@ export class DataManipulation {
             } else {
                 const dataResults: string = 'dataResults';
                 const expandRecord: string = 'expandRecord';
-                if (!isNullOrUndefined(records) && !((this.parent.loadChildOnDemand) && isCountRequired(this.parent) && !isNullOrUndefined(this.parent[`${dataResults}`][`${expandRecord}`])) &&
-                !(isRemoteData(this.parent) && this.parent.loadChildOnDemand && args[`${actionArgs}`].isExpandCollapse && this.parent.enableVirtualization)) {
+                if (!isNullOrUndefined(records) && !((!this.parent.loadChildOnDemand) && isCountRequired(this.parent) && !isNullOrUndefined(this.parent[`${dataResults}`][`${expandRecord}`])) &&
+                !(isRemoteData(this.parent) && !this.parent.loadChildOnDemand && args[`${actionArgs}`].isExpandCollapse && this.parent.enableVirtualization)) {
                     this.convertToFlatData(records);
                 }
             }
         }
-        if (isRemoteData(this.parent) && this.parent.loadChildOnDemand && args[`${actionArgs}`].isExpandCollapse && this.parent.enableVirtualization) {
+        if (isRemoteData(this.parent) && !this.parent.loadChildOnDemand && args[`${actionArgs}`].isExpandCollapse && this.parent.enableVirtualization) {
             args.result = records;
         }
-        else if (isRemoteData(this.parent) && this.parent.enableVirtualization && !this.parent.loadChildOnDemand) {
+        else if (isRemoteData(this.parent) && this.parent.enableVirtualization && this.parent.loadChildOnDemand) {
             args.result = records;
         }
         else {
-            args.result = this.parent.loadChildOnDemand ? this.parent.flatData : records;
+            args.result = !this.parent.loadChildOnDemand ? this.parent.flatData : records;
         }
-        if (isRemoteData(this.parent) && this.parent.enableVirtualization && this.parent.loadChildOnDemand
+        if (isRemoteData(this.parent) && this.parent.enableVirtualization && !this.parent.loadChildOnDemand
             && this.parent.grid.aggregates.length && this.parent.grid.sortSettings.columns.length === 0
             && this.parent.grid.filterSettings.columns.length === 0 && !this.parent.grid.searchSettings.key.length) {
             const query: string = 'query';
@@ -321,7 +321,7 @@ export class DataManipulation {
             }
             for (let i: number = 0; i < rowDetails.rows.length; i++) {
                 rowDetails.rows[parseInt(i.toString(), 10)].style.display = 'table-row';
-                if (this.parent.loadChildOnDemand) {
+                if (!this.parent.loadChildOnDemand) {
                     const targetEle: Element = rowDetails.rows[parseInt(i.toString(), 10)].getElementsByClassName('e-treegridcollapse')[0];
                     childRecord = this.parent.rowTemplate ?
                         this.parent.grid.getCurrentViewRecords()[rowDetails.rows[parseInt(i.toString(), 10)].rowIndex] :
@@ -388,7 +388,7 @@ export class DataManipulation {
             let datas: ITreeData[] = this.parent.grid.currentViewData.slice();
             let inx: number;
             const idMapping: string = this.parent.idMapping;
-            if (this.parent['isGantt'] && !this.parent.loadChildOnDemand && this.parent.hasChildMapping) {
+            if (this.parent['isGantt'] && this.parent.loadChildOnDemand && this.parent.hasChildMapping) {
                 for (let i: number = 0; i < this.parent.grid.currentViewData.length; i++) {
                     if (rowDetails.record[idMapping as string] === this.parent.grid.currentViewData[i as number][idMapping as string]) {
                         inx = i;
@@ -512,7 +512,7 @@ export class DataManipulation {
                     this.parentItems.indexOf(result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`]) !== -1)
                     && !(haveChild && !haveChild[parseInt(r.toString(), 10)])) {
                     result[parseInt(r.toString(), 10)].hasChildRecords = true;
-                    if (this.parent.enableVirtualization && this.parent.loadChildOnDemand) {
+                    if (this.parent.enableVirtualization && !this.parent.loadChildOnDemand) {
                         for (let i: number = 0; i < this.parent[`${remoteCollapsedData}`].length; i++) {
                             if (result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === this.parent[`${remoteCollapsedData}`][parseInt(i.toString(), 10)][`${this.parent.idMapping}`]) {
                                 result[parseInt(r.toString(), 10)].expanded = this.parent[`${remoteCollapsedData}`][parseInt(i.toString(), 10)]['expanded'];
@@ -546,7 +546,7 @@ export class DataManipulation {
                     else if (this.parent.enableVirtualization && result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`] && rowDetails.action !== 'collapse') {
                         result[parseInt(r.toString(), 10)].expanded = true;
                     }
-                    else if (!(this.parent.enableVirtualization && this.parent.loadChildOnDemand)) {
+                    else if (!(this.parent.enableVirtualization && !this.parent.loadChildOnDemand)) {
                         result[parseInt(r.toString(), 10)].expanded = false;
                     }
                 }
@@ -567,7 +567,7 @@ export class DataManipulation {
                 }
             }
             if (rowDetails.action === 'remoteExpand' && this.parent.allowPaging && this.parent.pageSettings.pageSizeMode === 'All') {
-                this.parent.grid.pageSettings.totalRecordsCount = this.parent.grid.currentViewData.length + result.length;
+                this.parent.grid.pageSettings.totalRecordsCount = this.parent.grid.pageSettings.totalRecordsCount + result.length;
             }
             if (this.parent.enableVirtualization) {
                 this.parent.grid.pageSettings.totalRecordsCount = e.count;
@@ -622,20 +622,19 @@ export class DataManipulation {
             if (!Object.prototype.hasOwnProperty.call(currentData, 'index')) {
                 currentData.index = this.storedIndex;
             }
-            if ((!isNullOrUndefined(currentData[this.parent.childMapping]) && !isCountRequired(this.parent)) ||
-            ((currentData[this.parent.hasChildMapping]) && isCountRequired(this.parent))) {
-                if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
-                    if (currentData[this.parent.childMapping].length > 0) {
-                        currentData.hasChildRecords = true;
-                    } else {
-                        currentData.hasChildRecords = false;
-                    }
-                }
-                else {
-                    currentData.hasChildRecords = true;
-                }
+            const childMapping: any = currentData[this.parent.childMapping];
+            const hasChildren: boolean = !isNullOrUndefined(childMapping) && childMapping.length > 0;
+            const shouldCount: boolean = isCountRequired(this.parent);
+            const hasChildMapping: any = currentData[this.parent.hasChildMapping];
+            if ((hasChildren && !shouldCount) || (hasChildMapping && shouldCount)) {
+                currentData.hasChildRecords = true;
+            } else {
+                currentData.hasChildRecords = false;
+            }
+            if ((!isNullOrUndefined(childMapping) && !shouldCount) ||
+                (hasChildMapping) && shouldCount) {
                 if (this.parent.enableCollapseAll || !isNullOrUndefined(this.parent.dataStateChange)
-            && isNullOrUndefined(currentData[this.parent.childMapping])) {
+                    && isNullOrUndefined(childMapping)) {
                     currentData.expanded = false;
                 } else {
                     currentData.expanded = !isNullOrUndefined(currentData[this.parent.expandStateMapping])
@@ -666,7 +665,7 @@ export class DataManipulation {
             }
             currentData.checkboxState = 'uncheck';
             const remoteCollapsedData: string = 'remoteCollapsedData';
-            if (this.parent.enableVirtualization && this.parent.loadChildOnDemand && isRemoteData(this.parent)
+            if (this.parent.enableVirtualization && !this.parent.loadChildOnDemand && isRemoteData(this.parent)
                  && !this.parent.initialRender){
                 if (!currentData.hasChildRecords && isNullOrUndefined(currentData[`${this.parent.parentIdMapping}`])) {
                     currentData.hasChildRecords = true;

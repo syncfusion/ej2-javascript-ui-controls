@@ -389,7 +389,7 @@ export class Clipboard {
                         cell = isExternal ? (rows[i as number] && rows[i as number].cells[j as number]) || {} :
                             extend({}, (isInRange && cRows[i as number] && cRows[i as number].cells[j as number]) ?
                                 cRows[i as number].cells[j as number] : getCell(i, j, prevSheet), null, true);
-                        column = getColumn(curSheet, j);
+                        column = getColumn(prevSheet, j);
                         if (!cell.validation && column.validation) {
                             cell.validation = column.validation;
                         }
@@ -1061,7 +1061,7 @@ export class Clipboard {
                         data += cell.value.toString().includes('"') ? ' cell-value=\'' + val + '\'' : ' cell-value="' + cell.value + '"';
                         data += cell.format.includes('"') ? ' num-format=\'' + cell.format + '\'' : ' num-format="' + cell.format + '"';
                         const eventArgs: NumberFormatArgs = { formattedText: val, value: val, format: cell.format, cell: cell, rowIndex: i,
-                            colIndex: j };
+                            colIndex: j, dataUpdate: true };
                         this.parent.notify(getFormattedCellObject, eventArgs);
                         val = <string>eventArgs.formattedText;
                     }

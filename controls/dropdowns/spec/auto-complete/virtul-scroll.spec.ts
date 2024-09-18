@@ -266,6 +266,43 @@ describe('Autocomplete_Virtualization', () => {
                 }, 500)
             });
         });
+        describe('virtualization remote filtering actions', () => {
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+            let dropObj: any;
+            let ele: HTMLElement;
+            beforeAll(() => {
+                ele = createElement('input', { id: 'AutoComplete' });
+                document.body.appendChild(ele);
+                let remoteData: DataManager = new DataManager({
+                    url: 'https://services.syncfusion.com/js/production/api/orders',
+                    adaptor: new WebApiAdaptor,
+                    crossDomain: true
+                });
+                dropObj = new AutoComplete({
+                    dataSource: remoteData, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'OrderID', value: 'OrderID' }
+                });
+                dropObj.appendTo(ele);
+            });
+            afterAll(() => {
+                ele.remove();
+                dropObj.destroy();
+                document.body.innerHTML = '';
+            });
+            it('filter a not present item', (done) => {
+                dropObj.dataBind();
+                dropObj.showPopup();
+                setTimeout(() => {
+                    dropObj.filterInput.value = "a";
+                    dropObj.onInput()
+                    dropObj.onFilterUp(keyEventArgs);
+                    setTimeout(() => {
+                        let isNoDataElement: boolean = dropObj.list.classList.contains('e-nodata');
+                        expect(isNoDataElement).toBe(false);
+                        done();
+                    }, 500);
+                }, 500)
+            });
+        });
         describe('virtualization mouse actions with clear value', () => {
             let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
             let dropObj: any;
@@ -373,6 +410,77 @@ describe('Autocomplete_Virtualization', () => {
                     done();
                 }, 500);
             });
+        });
+    });
+    describe('Custom filtering action', () => {
+        let dropDowns: any;
+        let e: any = { preventDefault: function () { }, target: null };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            dropDowns.destroy();
+            element.remove();
+        });
+        it('', (done) => {
+            dropDowns = new AutoComplete({
+                dataSource: datasource, 
+                popupHeight: '200px', 
+                enableVirtualization: true, 
+                allowFiltering: true, 
+                showClearButton: true,
+                
+                fields: { text: 'text', value: 'id' },
+                filtering(e)
+                {
+                    let query: Query = new Query();
+                    query = (e.text != "") ? query.where("text", "contains", e.text, true) : query;
+                    e.updateData(datasource, query);
+                }
+            });
+            dropDowns.appendTo(element);
+               
+                dropDowns.showPopup();
+                dropDowns.isPopupOpen = true;
+                dropDowns.inputElement.value = '1';
+                e.keyCode = 49;
+                dropDowns.onInput(e);
+                dropDowns.onFilterUp(e);
+                //setTimeout(function () {
+                    var activeElement = dropDowns.list.querySelectorAll('li:not(.e-virtual-list)');
+                    expect(activeElement[0].textContent).toBe('Item 1');
+                    done();
+              //  }, 550);
+        });
+        it('virtualization false', (done) => {
+            dropDowns = new AutoComplete({
+                dataSource: datasource, 
+                popupHeight: '200px',  
+                allowFiltering: true, 
+                showClearButton: true,
+                
+                fields: { text: 'text', value: 'id' },
+                filtering(e)
+                {
+                    let query: Query = new Query();
+                    query = (e.text != "") ? query.where("text", "contains", e.text, true) : query;
+                    e.updateData(datasource, query);
+                }
+            });
+            dropDowns.appendTo(element);
+               
+                dropDowns.showPopup();
+                dropDowns.isPopupOpen = true;
+                dropDowns.inputElement.value = '1';
+                e.keyCode = 49;
+                dropDowns.onInput(e);
+                dropDowns.onFilterUp(e);
+                //setTimeout(function () {
+                    var activeElement = dropDowns.list.querySelectorAll('li:not(.e-virtual-list)');
+                    expect(activeElement[0].textContent).toBe('Item 1');
+                    done();
+              //  }, 550);
         });
     });
 

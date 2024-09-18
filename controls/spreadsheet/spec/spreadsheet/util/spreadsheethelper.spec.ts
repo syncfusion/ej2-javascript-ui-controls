@@ -14,17 +14,18 @@ export class SpreadsheetHelper extends TestHelper {
         }
     }
 
-    public initializeSpreadsheet(model: SpreadsheetModel = {}, done?: Function): void {
-        let dataBound: EmitType<Object> = () => {
+    public initializeSpreadsheet(model: SpreadsheetModel = {}, done?: Function): Spreadsheet {
+        const sampleCreatedHandler: Function = model.created;
+        const createdHandler: EmitType<Object> = () => {
+            if (sampleCreatedHandler) {
+                sampleCreatedHandler();
+            }
             setTimeout(() => {
                 if (done) { done(); }
             }, 50);
         };
-        let options: SpreadsheetModel = {
-            dataBound: dataBound,
-            ...model
-        };
-        new Spreadsheet(options, '#' + this.id);
+        model.created = createdHandler;
+        return new Spreadsheet(model, '#' + this.id);
     }
 
     /**
@@ -177,7 +178,7 @@ export class SpreadsheetHelper extends TestHelper {
     }
 
     public edit(address: string, value: string): void {
-        let spreadsheet: Spreadsheet = this.getInstance();
+        const spreadsheet: Spreadsheet = this.getInstance();
         spreadsheet.selectRange(address);
         (spreadsheet as any).editModule.startEdit();
         (spreadsheet as any).editModule.editCellData.value = value;

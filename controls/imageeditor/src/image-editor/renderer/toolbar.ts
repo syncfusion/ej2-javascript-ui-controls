@@ -6,7 +6,8 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ColorPicker, ColorPickerEventArgs, Uploader, Slider, TextBox } from '@syncfusion/ej2-inputs';
 import { ImageEditor, SelectionPoint, ToolbarEventArgs, Point, ImageFilterEventArgs, ZoomTrigger, Transition, CurrentObject, FrameValue,
-    ImageDimension, FrameSettings, FrameType, FrameLineStyle, ShapeSettings, ShapeChangeEventArgs, ShapeType } from '../index';
+    ImageDimension, FrameSettings, FrameType, FrameLineStyle, ShapeSettings, ShapeChangeEventArgs, ShapeType,
+    EditCompleteEventArgs } from '../index';
 import { QuickAccessToolbarEventArgs, ImageFilterOption } from '../index';
 import { Dialog, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { addClass, removeClass } from '@syncfusion/ej2-base';
@@ -219,7 +220,13 @@ export class ToolbarModule {
             SendBackward: 'Send Backward',
             SendToBack: 'Send to Back',
             BringToFront: 'Bring to Front',
-            ZOrder: 'Z-Order'
+            ZOrder: 'Z-Order',
+            Redact: 'Redact',
+            Pixelate: 'Pixelate',
+            BorderRadius: 'Border Radius',
+            TextOutlineColor: 'Outline Color',
+            TextOutlineWidth: 'Outline Width',
+            PixelSize: 'Pixel Size'
         };
         this.l10n = new L10n('image-editor', this.defaultLocale, this.parent.locale);
     }
@@ -347,9 +354,6 @@ export class ToolbarModule {
         case 'getFrameToolbar':
             args.value['obj']['bool'] = this.isFrameToolbar;
             break;
-        case 'callFrameToolbar':
-            this.callFrameToolbar();
-            break;
         case 'resizeClick':
             this.resizeClick();
             break;
@@ -367,6 +371,18 @@ export class ToolbarModule {
             break;
         case 'setInitialSize':
             this.initialSize = Number(args.value['value']);
+            break;
+        case 'widthPress':
+            this.widthPress(args.value['e']);
+            break;
+        case 'heightPress':
+            this.heightPress(args.value['e']);
+            break;
+        case 'widthAspectRatio':
+            this.widthAspectRatio(args.value['e']);
+            break;
+        case 'heightAspectRatio':
+            this.heightAspectRatio(args.value['e']);
             break;
         }
     }
@@ -535,15 +551,15 @@ export class ToolbarModule {
     }
 
     private initMainToolbar(isApplyOption?: boolean, isDevice?: boolean, isOkBtn?: boolean, isResize?: boolean,
-                            isFrame?: boolean, isMainToolbar?: boolean): void {
+                            isFrame?: boolean, isMainToolbar?: boolean, isRedact?: boolean): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         if (this.isToolbar()) {
             const leftItem: ItemModel[] = this.getLeftToolbarItem(isOkBtn, isResize);
-            const rightItem: ItemModel[] = this.getRightToolbarItem(isOkBtn, isMainToolbar);
-            const mainItem: ItemModel[] = this.getMainToolbarItem(isApplyOption, isFrame);
+            const rightItem: ItemModel[] = this.getRightToolbarItem(isOkBtn, isMainToolbar, isRedact);
+            const mainItem: ItemModel[] = this.getMainToolbarItem(isApplyOption, isFrame, isRedact);
             const zoomItem: ItemModel[] = this.getZoomToolbarItem();
             if (isDevice) {
-                if (isFrame) {
+                if (isFrame || isRedact) {
                     this.defToolbarItems = mainItem;
                 } else {
                     this.defToolbarItems = [...leftItem, ...rightItem];
@@ -567,7 +583,7 @@ export class ToolbarModule {
                         parent.trigger('toolbarCreated', {toolbarType: 'main'});
                     }
                 });
-                if (isDevice && isFrame) {
+                if ((isDevice && isFrame) || (isDevice && isRedact)) {
                     toolbarObj.appendTo('#' + id + '_bottomToolbar');
                 } else {
                     toolbarObj.appendTo('#' + id + '_toolbar');
@@ -647,10 +663,10 @@ export class ToolbarModule {
         return toolbarItems;
     }
 
-    private getRightToolbarItem(isOkBtn?: boolean, isMainToolbar?: boolean): ItemModel[] {
+    private getRightToolbarItem(isOkBtn?: boolean, isMainToolbar?: boolean, isRedact?: boolean): ItemModel[] {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         const toolbarItems: ItemModel[] = [];
-        if (isOkBtn) {
+        if (isOkBtn || isRedact) {
             toolbarItems.push({ id: id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
                 tooltipText: this.l10n.getConstant('OK'), align: 'Right', tabIndex: 0 });
             toolbarItems.push({ id: id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
@@ -673,7 +689,7 @@ export class ToolbarModule {
         return toolbarItems;
     }
 
-    private getMainToolbarItem(isApplyOption?: boolean, isFrame?: boolean): ItemModel[] {
+    private getMainToolbarItem(isApplyOption?: boolean, isFrame?: boolean, isRedact?: boolean): ItemModel[] {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         const toolbarItems: ItemModel[] = [];
         if (isFrame) {
@@ -701,6 +717,15 @@ export class ToolbarModule {
                 toolbarItems.push({ id: id + '_hook', prefixIcon: 'e-icons e-frame-hook', cssClass: 'top-icon e-frame-hook',
                     tooltipText: this.l10n.getConstant('Hook'), align: 'Center' });
             }
+        } else if (isRedact) {
+            toolbarItems.push({ id: id + '_redactBlur', prefixIcon: 'e-icons e-tint', cssClass: 'top-icon e-opacity',
+                tooltipText: this.l10n.getConstant('Blur'), align: 'Center' });
+            toolbarItems.push({ id: id + '_pixelate', prefixIcon: 'e-icons e-opacity', cssClass: 'top-icon e-opacity',
+                tooltipText: this.l10n.getConstant('Pixelate'), align: 'Center' });
+            toolbarItems.push({ id: id + '_duplicate', prefixIcon: 'e-icons e-order', cssClass: 'top-icon e-order',
+                tooltipText: this.l10n.getConstant('Duplicate'), align: 'Center' });
+            toolbarItems.push({ id: id + '_remove', prefixIcon: 'e-icons e-trash', cssClass: 'top-icon e-trash',
+                tooltipText: this.l10n.getConstant('Remove'), align: 'Center' });
         } else {
             if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Crop') > -1)) {
                 toolbarItems.push({ id: id + '_cropTransform', prefixIcon: 'e-icons e-crop', cssClass: 'top-icon e-crop',
@@ -725,6 +750,10 @@ export class ToolbarModule {
             if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Resize') > -1)) {
                 toolbarItems.push({ id: id + '_resize', prefixIcon: 'e-icons e-resize', cssClass: 'top-icon e-resize',
                     tooltipText: this.l10n.getConstant('Resize'), align: 'Center' });
+            }
+            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Redact') > -1)) {
+                toolbarItems.push({ id: id + '_redact', prefixIcon: 'e-icons e-redact', cssClass: 'top-icon e-opacity',
+                    tooltipText: this.l10n.getConstant('Redact'), align: 'Center' });
             }
         }
         const tempToolbarItems: ItemModel[] = this.processToolbar('center');
@@ -1090,9 +1119,15 @@ export class ToolbarModule {
         }
         const frame: HTMLElement = document.querySelector('#' + id + '_frame');
         if (frame && ((parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') || parent.isCircleCrop)) {
-            frame.classList.add('e-disabled');
+            frame.classList.add('e-overlay');
         } else if (frame) {
-            frame.classList.remove('e-disabled');
+            frame.classList.remove('e-overlay');
+        }
+        const ratio: HTMLElement = document.querySelector('#' + id + '_aspectratio');
+        if (ratio && ((parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') || parent.isCircleCrop)) {
+            ratio.classList.add('e-overlay');
+        } else if (ratio) {
+            ratio.classList.remove('e-overlay');
         }
     }
 
@@ -1107,6 +1142,7 @@ export class ToolbarModule {
                 const uploadBtnElem: HTMLElement = uploadDiv.getElementsByTagName('button')[0];
                 uploadBtnElem.className = 'e-tbar-btn e-tbtn-txt top-icon';
                 uploadBtnElem.innerHTML = '';
+                uploadBtnElem.title = this.l10n.getConstant('Browse');
                 uploadBtnElem.appendChild(parent.createElement('span', {
                     className: 'e-btn-icon e-icons e-upload-icon e-icon-left'
                 }));
@@ -1173,29 +1209,13 @@ export class ToolbarModule {
         }
         const obj: Object = {freehandDrawSelectedId: null };
         parent.notify('freehand-draw', { prop: 'getFreehandDrawSelectedId', onPropertyChange: false, value: {obj: obj }});
-        const duplicateElement: HTMLElement = document.querySelector('#' + id + '_duplicate');
-        const removeElement: HTMLElement = document.querySelector('#' + id + '_remove');
-        const editTextElement: HTMLElement = document.querySelector('#' + id + '_editText');
-        const zOrderElement: HTMLElement = document.querySelector('#' + id + '_zOrderBtn');
-        if ((parent.activeObj.activePoint.width === 0 && parent.activeObj.activePoint.height === 0) &&
-            (isNullOrUndefined(parent.activeObj.pointColl) || (parent.activeObj.pointColl
-            && parent.activeObj.pointColl.length === 0)) &&
-            isNullOrUndefined(obj['freehandDrawSelectedId'])) {
-            if (duplicateElement) {duplicateElement.classList.add('e-disabled'); }
-            if (removeElement) {removeElement.classList.add('e-disabled'); }
-            if (editTextElement) {editTextElement.classList.add('e-disabled'); }
-            if (zOrderElement) {zOrderElement.classList.add('e-disabled'); }
-        } else {
-            if (duplicateElement) {duplicateElement.classList.remove('e-disabled'); }
-            if (removeElement) {removeElement.classList.remove('e-disabled'); }
-            if (editTextElement) {editTextElement.classList.remove('e-disabled'); }
-            if (zOrderElement) {zOrderElement.classList.remove('e-disabled'); }
-        }
+        const toolbarId: string = Browser.isDevice ? '#' + id + '_bottomToolbar ' + '#' + id : '#' + id ;
+        this.enableDisableCloneBtn(toolbarId, obj);
         const iconCss: string = isContextualToolbar ? this.getCurrentShapeIcon(parent.activeObj.shape) : 'e-annotation';
         const drpDownBtn: DropDownButton = new DropDownButton({ items: items, iconCss: 'e-icons ' + iconCss,
             cssClass: 'e-image-popup',
             open: (args: OpenCloseMenuEventArgs) => {
-                if (parent.currObjType.isFiltered) {
+                if (parent.currObjType.isFiltered || parent.currObjType.isRedact) {
                     parent.okBtn();
                     (parent.element.querySelector('#' + id + '_annotationBtn') as HTMLInputElement).click();
                 }
@@ -1231,11 +1251,16 @@ export class ToolbarModule {
                 parent.notify('freehand-draw', {prop: 'getCurrentFreehandDrawIndex', value: {obj: obj }});
                 const prevObj: Object = {shapeSettingsObj: {} as ShapeSettings };
                 let shapeSettings: ShapeSettings; let shapeChangingArgs: ShapeChangeEventArgs;
+                const shapes: string[] = ['ellipse', 'rectangle', 'text', 'image'];
+                let allowOutofBound: boolean;
                 drpDownBtn.iconCss = 'e-icons ' + this.getCurrentShapeIcon(args.item.id);
                 parent.notify('draw', { prop: 'updateTempObjColl'});
                 parent.notify('draw', { prop: 'updateTempPointColl'});
+                const penStrokeWidthObj: Object = {penStrokeWidth: 2 };
                 switch (args.item.id) {
                 case 'pen':
+                    parent.notify('freehand-draw', {prop: 'getPenStrokeWidth', onPropertyChange: false, value: {obj: penStrokeWidthObj }});
+                    parent.notify('draw', {prop: 'setTempStrokeWidth', value: {strokeWidth: penStrokeWidthObj['penStrokeWidth'] }});
                     parent.drawingShape = null;
                     parent.notify('draw', {prop: 'setTempFreehandCounter', value: {tempFreehandCounter: parent.freehandCounter }});
                     parent.notify('draw', {prop: 'setTempCurrentFreehandDrawIndex', value: {tempCurrentFreehandDrawIndex: obj['currentFreehandDrawIndex'] }});
@@ -1243,6 +1268,8 @@ export class ToolbarModule {
                     parent.freeHandDraw(true);
                     parent.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: prevObj}});
                     shapeSettings = prevObj['shapeSettingsObj'];
+                    parent.notify('freehand-draw', {prop: 'getPenStrokeWidth', onPropertyChange: false, value: {obj: penStrokeWidthObj }});
+                    shapeSettings.strokeWidth = penStrokeWidthObj['penStrokeWidth'];
                     shapeSettings.type = ShapeType.FreehandDraw;
                     shapeChangingArgs = {cancel: false, action: 'insert', previousShapeSettings: shapeSettings,
                         currentShapeSettings: shapeSettings};
@@ -1275,9 +1302,11 @@ export class ToolbarModule {
                         isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
                     parent.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: prevObj}});
                     shapeSettings = prevObj['shapeSettingsObj'];
+                    allowOutofBound = shapes.indexOf(this.parent.activeObj.shape) !== -1 ? false : true;
                     shapeChangingArgs = {cancel: false, action: 'insert', previousShapeSettings: shapeSettings,
-                        currentShapeSettings: shapeSettings};
+                        currentShapeSettings: shapeSettings, allowShapeOverflow: allowOutofBound};
                     parent.trigger('shapeChanging', shapeChangingArgs);
+                    parent.editCompleteArgs = shapeChangingArgs;
                     parent.notify('shape', {prop: 'updateShapeChangeEventArgs', value: { shapeSettings: shapeChangingArgs.currentShapeSettings}});
                     break;
                 }
@@ -1290,6 +1319,34 @@ export class ToolbarModule {
         });
         // Render initialized DropDownButton.
         drpDownBtn.appendTo('#' + id + '_annotationBtn');
+    }
+
+    private enableDisableCloneBtn(toolbarId: string, obj: Object): void {
+        const parent: ImageEditor = this.parent;
+        let isDummyTextClick: boolean = false;
+        if (parent.activeObj.shape && parent.activeObj.shape === 'text' &&
+            parent.activeObj.textSettings.fontSize === 11 && Math.floor(parent.activeObj.activePoint.width) === 55 &&
+            Math.floor(parent.activeObj.activePoint.height) === 11) {
+            isDummyTextClick = true;
+        }
+        const duplicateElement: HTMLElement = document.querySelector(toolbarId + '_duplicate');
+        const removeElement: HTMLElement = document.querySelector(toolbarId + '_remove');
+        const editTextElement: HTMLElement = document.querySelector(toolbarId + '_editText');
+        const zOrderElement: HTMLElement = document.querySelector(toolbarId + '_zOrderBtn');
+        if (isDummyTextClick || (parent.activeObj.activePoint.width === 0 && parent.activeObj.activePoint.height === 0) &&
+            (isNullOrUndefined(parent.activeObj.pointColl) || (parent.activeObj.pointColl
+            && parent.activeObj.pointColl.length === 0)) &&
+            isNullOrUndefined(obj['freehandDrawSelectedId'])) {
+            if (duplicateElement) {duplicateElement.classList.add('e-overlay'); }
+            if (removeElement) {removeElement.classList.add('e-overlay'); }
+            if (editTextElement) {editTextElement.classList.add('e-overlay'); }
+            if (zOrderElement) {zOrderElement.classList.add('e-overlay'); }
+        } else {
+            if (duplicateElement) {duplicateElement.classList.remove('e-overlay'); }
+            if (removeElement) {removeElement.classList.remove('e-overlay'); }
+            if (editTextElement) {editTextElement.classList.remove('e-overlay'); }
+            if (zOrderElement) {zOrderElement.classList.remove('e-overlay'); }
+        }
     }
 
     private renderStraightenSlider(): void {
@@ -1618,12 +1675,7 @@ export class ToolbarModule {
                     if (args.item.id !== 'jpeg') {
                         qualityContainer.style.display = 'none';
                         imageNameLabel.style.display = 'block';
-                        if (this.initialSize > 1000) {
-                            const megabytes: number = this.initialSize / 1048576;
-                            imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + megabytes.toFixed(2) + ' MB';
-                        } else {
-                            imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + this.initialSize.toFixed(2) + ' KB';
-                        }
+                        this.updateImageSize(1, obj['canvas'], this.fileType);
                         if (slider) {
                             if (this.isSlider) {
                                 (getComponent(slider, 'slider') as Slider).destroy();
@@ -1635,7 +1687,7 @@ export class ToolbarModule {
                         qualityContainer.style.display = 'block';
                         removeClass([qualityBtnGrp], 'e-hide');
                         slider.style.display = 'none'; imageNameLabel.style.display = 'block';
-                        this.updateImageSize(isNullOrUndefined(this.currentQuality) ? 1 : this.currentQuality, obj['canvas']);
+                        this.updateImageSize(isNullOrUndefined(this.currentQuality) ? 1 : this.currentQuality, obj['canvas'], this.fileType);
                         (document.getElementById(id + '_' + this.imageQuality) as HTMLInputElement).checked = true;
                     }
                 }
@@ -1651,9 +1703,9 @@ export class ToolbarModule {
             if (Browser.isDevice) {
                 (document.getElementById(id + '_dialogImgContent') as HTMLElement).style.display = 'none';
                 document.getElementById(id + '_dialogRightContent').style.width = '100%';
-                this.updateImageSize(1, obj['canvas']);
+                this.updateImageSize(1, obj['canvas'], this.fileType);
             } else {
-                this.updateImageSize(1, obj['canvas']);
+                this.updateImageSize(1, obj['canvas'], this.fileType);
             }
         }
         (document.getElementById(id + '_' + this.imageQuality) as HTMLInputElement).checked = true;
@@ -1689,14 +1741,14 @@ export class ToolbarModule {
                 type: 'MinRange',
                 width: Browser.isDevice ? '80%' : '190px',
                 created: () => {
-                    this.updateImageSize(this.currentQuality, obj['canvas']);
+                    this.updateImageSize(this.currentQuality, obj['canvas'], 'jpeg');
                     qualitySliderValueSpan.innerHTML = (Math.round(this.currentQuality * 100)).toString();
                 },
                 changed: (args: SliderChangeEventArgs) => {
                     this.currentQuality = args.value as number;
                     qualitySliderValueSpan.innerHTML = (Math.round(this.currentQuality * 100)).toString();
                     parent.notify('export', { prop: 'setImageQuality', value: {value: args.value }});
-                    this.updateImageSize(args.value, obj['canvas']);
+                    this.updateImageSize(args.value, obj['canvas'], 'jpeg');
                 }
             });
             sliderObj.appendTo('#' + id + '_qualitySlider');
@@ -1714,12 +1766,12 @@ export class ToolbarModule {
             ((event.target as HTMLElement).previousElementSibling as HTMLInputElement).checked = true;
             this.currentQuality = compressionValues[target.textContent];
             this.imageQuality = target.textContent.toLowerCase();
-            this.updateImageSize(compressionValues[target.textContent], obj['canvas']);
+            this.updateImageSize(compressionValues[target.textContent], obj['canvas'], 'jpeg');
         }
 
     }
 
-    private updateImageSize(quality: number | number[], tempCanvas: HTMLCanvasElement): void {
+    private updateImageSize(quality: number | number[], tempCanvas: HTMLCanvasElement, fileType: string): void {
         let fileSize: number;
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -1731,30 +1783,44 @@ export class ToolbarModule {
         } else {
             imageNameLabel = document.getElementById(id + '_imageNameLabel');
         }
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        tempCanvas.toBlob((function (blob: any): void {
-            fileSize = Math.floor(blob.size / 1024);
-            if (fileSize > 1000) {
-                const megabytes: number = fileSize / 1024;
-                imageNameLabel.innerHTML = 'Image size: ' + megabytes.toFixed(2) + ' MB';
-                fileSize = +megabytes.toFixed(2);
-            } else {
-                imageNameLabel.innerHTML = 'Image size: ' + fileSize.toFixed(2) + ' KB';
-                fileSize = +fileSize.toFixed(2);
-            }
+        if (fileType.toLowerCase() === 'jpeg') {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            tempCanvas.toBlob((function (blob: any): void {
+                fileSize = Math.floor(blob.size / 1024);
+                if (fileSize > 1000) {
+                    const megabytes: number = fileSize / 1024;
+                    imageNameLabel.innerHTML = 'Image size: ' + megabytes.toFixed(2) + ' MB';
+                    fileSize = +megabytes.toFixed(2);
+                } else {
+                    imageNameLabel.innerHTML = 'Image size: ' + fileSize.toFixed(2) + ' KB';
+                    fileSize = +fileSize.toFixed(2);
+                }
+                if (Browser.isDevice) {
+                    canvas.style.display = 'none';
+                } else {
+                    const compressedImage: HTMLImageElement = new Image();
+                    compressedImage.src = URL.createObjectURL(blob);
+                    // eslint-disable-next-line @typescript-eslint/tslint/config
+                    compressedImage.onload = function () {
+                        ctx.drawImage(compressedImage, 0, 0);
+                        URL.revokeObjectURL(compressedImage.src);
+                    };
+                }
+                this.fileSize = fileSize;
+            }).bind(this), 'image/jpeg', quality);
+        } else {
             if (Browser.isDevice) {
                 canvas.style.display = 'none';
             } else {
-                const compressedImage: HTMLImageElement = new Image();
-                compressedImage.src = URL.createObjectURL(blob);
-                // eslint-disable-next-line @typescript-eslint/tslint/config
-                compressedImage.onload = function () {
-                    ctx.drawImage(compressedImage, 0, 0);
-                    URL.revokeObjectURL(compressedImage.src);
-                };
+                ctx.drawImage(tempCanvas, 0, 0);
+                if (this.initialSize > 1000) {
+                    const megabytes: number = this.initialSize / 1048576;
+                    imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + megabytes.toFixed(2) + ' MB';
+                } else {
+                    imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + this.initialSize.toFixed(2) + ' KB';
+                }
             }
-            this.fileSize = fileSize;
-        }).bind(this), 'image/jpeg', quality);
+        }
     }
 
     private download(): void {
@@ -1833,15 +1899,19 @@ export class ToolbarModule {
                 template: '<button id="' + id + '_borderColorBtn"></button>' });
         }
         if (items.indexOf('strokeWidth') > -1) {
-            toolbarItems.push({ id: id + '_strokeWidth', cssClass: 'top-icon e-size', tooltipText: 'Stroke Width', align: 'Center',
+            toolbarItems.push({ id: id + '_strokeWidth', cssClass: 'top-icon e-size', tooltipText: this.l10n.getConstant('StrokeWidth'), align: 'Center',
                 type: 'Input', template: '<button id="' + id + '_borderWidthBtn"></button>' });
         }
         if (items.indexOf('start') > -1) {
-            toolbarItems.push({ id: id + '_start', cssClass: 'top-icon e-size', tooltipText: 'Start', align: 'Center',
+            toolbarItems.push({ id: id + '_start', cssClass: 'top-icon e-size', tooltipText: this.l10n.getConstant('Start'), align: 'Center',
                 type: 'Input', template: '<button id="' + id + '_startBtn"></button>' });
         }
+        if (items.indexOf('borderRadius') > -1) {
+            toolbarItems.push({ id: id + '_rectangleRadius', cssClass: 'top-icon e-size', tooltipText: this.l10n.getConstant('BorderRadius'), align: 'Center',
+                type: 'Input', template: '<button id="' + id + '_rectangleRadiusBtn"></button>' });
+        }
         if (items.indexOf('end') > -1) {
-            toolbarItems.push({ id: id + '_end', cssClass: 'top-icon e-size', tooltipText: 'End', align: 'Center',
+            toolbarItems.push({ id: id + '_end', cssClass: 'top-icon e-size', tooltipText: this.l10n.getConstant('End'), align: 'Center',
                 type: 'Input', template: '<button id="' + id + '_endBtn"></button>' });
         }
         if (items.indexOf('flip') > -1) {
@@ -2022,6 +2092,7 @@ export class ToolbarModule {
             clicked: this.defToolbarClicked.bind(this),
             created: () => {
                 this.renderAnnotationBtn(true);
+                this.createRectangleRadius(items);
                 this.createShapeColor(items);
                 this.createShapeBtn(items);
                 this.createZOrderBtn(items);
@@ -2057,6 +2128,60 @@ export class ToolbarModule {
             toolbar.appendTo('#' + id + '_toolbar');
         }
         this.enableDisableTbrBtn();
+    }
+
+    private createRectangleRadius(items: (string | ItemModel)[]): void {
+        const parent: ImageEditor = this.parent; const id: string = parent.element.id;
+        if (items.indexOf('borderRadius') > -1) {
+            const strokeWidthItems: DropDownButtonItemModel[] = [
+                { id: '1', text: this.l10n.getConstant('0') },
+                { id: '2', text: this.l10n.getConstant('20') },
+                { id: '3', text: this.l10n.getConstant('40') },
+                { id: '4', text: this.l10n.getConstant('60') },
+                { id: '5', text: this.l10n.getConstant('80') },
+                { id: '6', text: this.l10n.getConstant('100') }
+            ];
+            const strokeWidthBtn: HTMLElement = document.getElementById(id + '_rectangleRadiusBtn');
+            const spanElem: HTMLElement = document.createElement('span');
+            spanElem.innerHTML = this.l10n.getConstant(parent.frameObj.radius.toString());
+            spanElem.className = 'e-shape-rectangle-radius';
+            strokeWidthBtn.appendChild(spanElem);
+            // Initialize the DropDownButton component.
+            const drpDownBtn: DropDownButton = new DropDownButton({ items: strokeWidthItems,
+                open: (args: OpenCloseMenuEventArgs) => {
+                    if (Browser.isDevice) {
+                        const parentElem: HTMLElement = args.element.parentElement;
+                        parentElem.style.top = drpDownBtn.element.getBoundingClientRect().top -
+                        parentElem.offsetHeight + 'px';
+                    }
+                    const activeBtn: string = drpDownBtn.element.childNodes[0].textContent;
+                    if (activeBtn !== '') {
+                        args.element.querySelector('[aria-label = ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
+                    }
+                },
+                select: (args: MenuEventArgs) => {
+                    this.triggerTbarClickEvent(args);
+                    spanElem.textContent = args.item.text;
+                    parent.updateStrokeWidth(args.item.id, 'radius');
+                    if (Browser.isDevice) {
+                        if (document.getElementById(id + '_bottomToolbar')) {
+                            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                            const toolbar: any = getComponent(id + '_bottomToolbar', 'toolbar') as Toolbar;
+                            toolbar.refreshOverflow();
+                        }
+                    } else {
+                        if (document.getElementById(id + '_toolbar')) {
+                            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                            const toolbar: any = getComponent(id + '_toolbar', 'toolbar') as Toolbar;
+                            toolbar.refreshOverflow();
+                        }
+                    }
+                    parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
+                }
+            });
+            // Render initialized DropDownButton.
+            drpDownBtn.appendTo('#' + id + '_rectangleRadiusBtn');
+        }
     }
 
     private beforeModeSwitch(args: ModeSwitchEventArgs, inst: ColorPicker): void {
@@ -2127,7 +2252,7 @@ export class ToolbarModule {
                     if (Browser.isDevice) {
                         parenElem.style.top = fillDDB.element.getBoundingClientRect().top -
                         parenElem.offsetHeight + 'px';
-                        parenElem.style.left = parent.element.offsetLeft + 'px';
+                        if (window.innerWidth <= 520) { parenElem.style.left = parent.element.offsetLeft + 'px'; }
                     }
                 },
                 target: '.e-shape-fill-color',
@@ -2173,7 +2298,7 @@ export class ToolbarModule {
                     if (Browser.isDevice) {
                         parenElem.style.top = strokeDDB.element.getBoundingClientRect().top -
                         parenElem.offsetHeight + 'px';
-                        parenElem.style.left = parent.element.offsetLeft + 'px';
+                        if (window.innerWidth <= 520) { parenElem.style.left = parent.element.offsetLeft + 'px'; }
                     }
                 },
                 target: '.e-shape-stroke-color',
@@ -2226,7 +2351,7 @@ export class ToolbarModule {
                 select: (args: MenuEventArgs) => {
                     this.triggerTbarClickEvent(args);
                     spanElem.textContent = args.item.text;
-                    parent.updateStrokeWidth(args.item.id);
+                    parent.updateStrokeWidth(args.item.id, 'width', parent.activeObj.shape);
                     if (Browser.isDevice) {
                         if (document.getElementById(id + '_bottomToolbar')) {
                             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -2437,6 +2562,17 @@ export class ToolbarModule {
                 tooltipText: this.l10n.getConstant('FontColor'), align: 'Center',
                 type: 'Input', template: '<button id="' + id + '_fontColorBtn"></button>' });
         }
+        if (items.indexOf('strokeColor') > -1) {
+            toolbarItems.push({ cssClass: 'top-icon e-stroke-text-font-color', id: id + '_stroke_text_color',
+                tooltipText: this.l10n.getConstant('TextOutlineColor'), align: 'Center',
+                type: 'Input', template: '<button id="' + id + '_strokeTextColorBtn"></button>' });
+        }
+        if (items.indexOf('fillColor') > -1) {
+            toolbarItems.push({ cssClass: 'top-icon e-text-background-color', id: id + '_text_backgroundcolor',
+                tooltipText: this.l10n.getConstant('FillColor'), align: 'Center',
+                type: 'Input', template: '<button id="' + id + '_bgColorBtn"></button>'
+            });
+        }
         if (items.indexOf('bold') > -1) {
             toolbarItems.push({ id: id + '_bold', prefixIcon: 'e-icons e-bold', cssClass: 'top-icon e-bold',
                 tooltipText: this.l10n.getConstant('Bold'), align: 'Center' });
@@ -2444,6 +2580,10 @@ export class ToolbarModule {
         if (items.indexOf('italic') > -1) {
             toolbarItems.push({ id: id + '_italic', prefixIcon: 'e-icons e-italic', cssClass: 'top-icon e-italic',
                 tooltipText: this.l10n.getConstant('Italic'), align: 'Center' });
+        }
+        if (items.indexOf('strokeWidth') > -1) {
+            toolbarItems.push({ id: id + '_strokeWidth', cssClass: 'top-icon e-size', tooltipText: this.l10n.getConstant('TextOutlineWidth'), align: 'Center',
+                type: 'Input', template: '<button id="' + id + '_borderWidthBtn"></button>' });
         }
         if (items.indexOf('transparency') > -1) {
             toolbarItems.push({ id: id + '_transparency', prefixIcon: 'e-opacity',
@@ -2522,6 +2662,9 @@ export class ToolbarModule {
             created: () => {
                 this.renderAnnotationBtn(true);
                 this.createTextColor(items);
+                this.createStrokeTextColor(items);
+                this.createShapeBtn(items);
+                this.createBackgroundColor(items);
                 this.createTextBtn(items);
                 this.createZOrderBtn(items);
                 this.wireZoomBtnEvents();
@@ -2564,7 +2707,7 @@ export class ToolbarModule {
                 },
                 presetColors: this.presetColors,
                 change: (args: ColorPickerEventArgs): void => {
-                    parent.updateFontColor(args.value);
+                    parent.updateFontColor(args.value, 'Text');
                     (strokeDDB.element.children[0] as HTMLElement).style.backgroundColor = args.currentValue.rgba;
                     strokeDDB.toggle();
                     if (parent.activeObj.activePoint.width !== 0 || parent.activeObj.activePoint.height !== 0) {
@@ -2587,7 +2730,7 @@ export class ToolbarModule {
                     if (Browser.isDevice) {
                         parenElem.style.top = strokeDDB.element.getBoundingClientRect().top -
                         parenElem.offsetHeight + 'px';
-                        parenElem.style.left = parent.element.offsetLeft + 'px';
+                        if (window.innerWidth <= 520) { parenElem.style.left = parent.element.offsetLeft + 'px'; }
                     }
                 },
                 target: '.e-text-fontt-color',
@@ -2597,6 +2740,156 @@ export class ToolbarModule {
             fontColor.inline = true;
             fontColor.value = fontColor.getValue(fontColor.value, 'rgba');
             (parent.element.querySelector('.e-text-font-color.e-template .e-dropdownbtn-preview') as HTMLElement).style.background
+                = '#fff';
+        }
+    }
+
+    private createBackgroundColor(items: (string | ItemModel)[]): void {
+        const parent: ImageEditor = this.parent; const id: string = parent.element.id;
+        if (items.indexOf('fillColor') > -1 && parent.element.querySelector('.e-template.e-text-background-color')) {
+            parent.element.querySelector('.e-template.e-text-background-color').appendChild(parent.createElement('input', {
+                id: id + '_text_bgColor'
+            }));
+            const backgroundColor: ColorPicker = new ColorPicker({
+                modeSwitcher: true, noColor: true, value: '', inline: true,
+                showButtons: false, mode: 'Palette', cssClass: 'e-text-fontt-color',
+                beforeModeSwitch: (args: ModeSwitchEventArgs): void => {
+                    this.popupLeft = (args.element.offsetParent as HTMLElement).style.left;
+                    this.beforeModeSwitch(args, backgroundColor);
+                },
+                presetColors: {
+                    'custom': ['', '#f44336', '#e91e63', '#9c27b0', '#673ab7', '#2196f3',
+                        '#03a9f4', '#00bcd4', '#009688', '#ffeb3b', '#ffffff', '#ffebee', '#fce4ec', '#f3e5f5', '#ede7f6', '#e3f2fd',
+                        '#e1f5fe', '#e0f7fa', '#e0f2f1', '#fffde7', '#f2f2f2', '#ffcdd2', '#f8bbd0', '#e1bee7', '#d1c4e9', '#bbdefb',
+                        '#b3e5fc', '#b2ebf2', '#b2dfdb', '#fff9c4', '#e6e6e6', '#ef9a9a', '#f48fb1', '#ce93d8', '#b39ddb', '#90caf9',
+                        '#81d4fa', '#80deea', '#80cbc4', '#fff59d', '#cccccc', '#e57373', '#f06292', '#ba68c8', '#9575cd', '#64b5f6',
+                        '#4fc3f7', '#4dd0e1', '#4db6ac', '#fff176', '#b3b3b3', '#ef5350', '#ec407a', '#ab47bc', '#7e57c2', '#42a5f5',
+                        '#29b6f6', '#26c6da', '#26a69a', '#ffee58', '#999999', '#e53935', '#d81b60', '#8e24aa', '#5e35b1', '#1e88e5',
+                        '#039be5', '#00acc1', '#00897b', '#fdd835', '#808080', '#d32f2f', '#c2185b', '#7b1fa2', '#512da8', '#1976d2',
+                        '#0288d1', '#0097a7', '#00796b', '#fbc02d', '#666666', '#c62828', '#ad1457', '#6a1b9a', '#4527a0', '#1565c0',
+                        '#0277bd', '#00838f', '#00695c', '#f9a825', '#4d4d4d', '#b71c1c', '#880e4f', '#4a148c', '#311b92', '#0d47a1',
+                        '#01579b', '#006064', '#004d40', '#f57f17']
+                },
+                beforeTileRender: (args: PaletteTileEventArgs): void => {
+                    if (args.value === '') {
+                        args.element.classList.add('e-nocolor-item');
+                    }
+                },
+                change: (args: ColorPickerEventArgs): void => {
+                    parent.updateFontColor(args.value, 'Background');
+                    if (args.currentValue.rgba === '') {
+                        (strokeDDB.element.children[0] as HTMLElement).classList.add('e-nocolor-item');
+                    }
+                    else {
+                        (strokeDDB.element.children[0] as HTMLElement).classList.remove('e-nocolor-item');
+                        (strokeDDB.element.children[0] as HTMLElement).style.backgroundColor = args.currentValue.rgba;
+                    }
+                    strokeDDB.toggle();
+                    if (parent.activeObj.activePoint.width !== 0 || parent.activeObj.activePoint.height !== 0) {
+                        parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
+                    }
+                },
+                onModeSwitch: (args: ModeSwitchEventArgs): void => {
+                    if (Browser.isDevice) {
+                        args.element.parentElement.parentElement.style.left = this.popupLeft;
+                        args.element.parentElement.parentElement.style.top = (strokeDDB.element.getBoundingClientRect().top - args.element.parentElement.parentElement.offsetHeight) + 'px';
+                    }
+                },
+                beforeClose: (): void => {
+                    strokeDDB.toggle();
+                }
+            }, '#' + id + '_text_bgColor');
+            const strokeDDB: DropDownButton = new DropDownButton({
+                open: (args: OpenCloseMenuEventArgs) => {
+                    const parenElem: HTMLElement = args.element.parentElement;
+                    if (Browser.isDevice) {
+                        parenElem.style.top = strokeDDB.element.getBoundingClientRect().top -
+                        parenElem.offsetHeight + 'px';
+                        if (window.innerWidth <= 520) { parenElem.style.left = parent.element.offsetLeft + 'px'; }
+                    }
+                },
+                target: '.e-text-fontt-color',
+                iconCss: 'e-dropdownbtn-preview',
+                cssClass: 'e-ie-ddb-popup'
+            }, '#' + id + '_bgColorBtn');
+            backgroundColor.inline = true;
+            backgroundColor.value = backgroundColor.getValue(backgroundColor.value, 'rgba');
+            (parent.element.querySelector('.e-text-background-color.e-template .e-dropdownbtn-preview') as HTMLElement).style.background
+                = '#fff';
+        }
+    }
+
+    private createStrokeTextColor(items: (string | ItemModel)[]): void {
+        const parent: ImageEditor = this.parent; const id: string = parent.element.id;
+        if (items.indexOf('strokeColor') > -1 && parent.element.querySelector('.e-template.e-stroke-text-font-color')) {
+            parent.element.querySelector('.e-template.e-stroke-text-font-color').appendChild(parent.createElement('input', {
+                id: id + '_stroke_text'
+            }));
+            const fontColor: ColorPicker = new ColorPicker({
+                modeSwitcher: true, noColor: true, value: '', inline: true,
+                showButtons: false, mode: 'Palette', cssClass: 'e-text-fontt-color',
+                beforeModeSwitch: (args: ModeSwitchEventArgs): void => {
+                    this.popupLeft = (args.element.offsetParent as HTMLElement).style.left;
+                    this.beforeModeSwitch(args, fontColor);
+                },
+                presetColors: {
+                    'custom': ['', '#f44336', '#e91e63', '#9c27b0', '#673ab7', '#2196f3',
+                        '#03a9f4', '#00bcd4', '#009688', '#ffeb3b', '#ffffff', '#ffebee', '#fce4ec', '#f3e5f5', '#ede7f6', '#e3f2fd',
+                        '#e1f5fe', '#e0f7fa', '#e0f2f1', '#fffde7', '#f2f2f2', '#ffcdd2', '#f8bbd0', '#e1bee7', '#d1c4e9', '#bbdefb',
+                        '#b3e5fc', '#b2ebf2', '#b2dfdb', '#fff9c4', '#e6e6e6', '#ef9a9a', '#f48fb1', '#ce93d8', '#b39ddb', '#90caf9',
+                        '#81d4fa', '#80deea', '#80cbc4', '#fff59d', '#cccccc', '#e57373', '#f06292', '#ba68c8', '#9575cd', '#64b5f6',
+                        '#4fc3f7', '#4dd0e1', '#4db6ac', '#fff176', '#b3b3b3', '#ef5350', '#ec407a', '#ab47bc', '#7e57c2', '#42a5f5',
+                        '#29b6f6', '#26c6da', '#26a69a', '#ffee58', '#999999', '#e53935', '#d81b60', '#8e24aa', '#5e35b1', '#1e88e5',
+                        '#039be5', '#00acc1', '#00897b', '#fdd835', '#808080', '#d32f2f', '#c2185b', '#7b1fa2', '#512da8', '#1976d2',
+                        '#0288d1', '#0097a7', '#00796b', '#fbc02d', '#666666', '#c62828', '#ad1457', '#6a1b9a', '#4527a0', '#1565c0',
+                        '#0277bd', '#00838f', '#00695c', '#f9a825', '#4d4d4d', '#b71c1c', '#880e4f', '#4a148c', '#311b92', '#0d47a1',
+                        '#01579b', '#006064', '#004d40', '#f57f17']
+                },
+                beforeTileRender: (args: PaletteTileEventArgs): void => {
+                    if (args.value === '') {
+                        args.element.classList.add('e-nocolor-item');
+                    }
+                },
+                change: (args: ColorPickerEventArgs): void => {
+                    parent.updateStrokeTextColor(args.value);
+                    if (args.currentValue.rgba === '') {
+                        (strokeDDB.element.children[0] as HTMLElement).classList.add('e-nocolor-item');
+                    }
+                    else {
+                        (strokeDDB.element.children[0] as HTMLElement).classList.remove('e-nocolor-item');
+                        (strokeDDB.element.children[0] as HTMLElement).style.backgroundColor = args.currentValue.rgba;
+                    }
+                    strokeDDB.toggle();
+                    if (parent.activeObj.activePoint.width !== 0 || parent.activeObj.activePoint.height !== 0) {
+                        parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
+                    }
+                },
+                onModeSwitch: (args: ModeSwitchEventArgs): void => {
+                    if (Browser.isDevice) {
+                        args.element.parentElement.parentElement.style.left = this.popupLeft;
+                        args.element.parentElement.parentElement.style.top = (strokeDDB.element.getBoundingClientRect().top - args.element.parentElement.parentElement.offsetHeight) + 'px';
+                    }
+                },
+                beforeClose: (): void => {
+                    strokeDDB.toggle();
+                }
+            }, '#' + id + '_stroke_text');
+            const strokeDDB: DropDownButton = new DropDownButton({
+                open: (args: OpenCloseMenuEventArgs) => {
+                    const parenElem: HTMLElement = args.element.parentElement;
+                    if (Browser.isDevice) {
+                        parenElem.style.top = strokeDDB.element.getBoundingClientRect().top -
+                        parenElem.offsetHeight + 'px';
+                        if (window.innerWidth <= 520) { parenElem.style.left = parent.element.offsetLeft + 'px'; }
+                    }
+                },
+                target: '.e-text-fontt-color',
+                iconCss: 'e-dropdownbtn-preview',
+                cssClass: 'e-ie-ddb-popup'
+            }, '#' + id + '_strokeTextColorBtn');
+            fontColor.inline = true;
+            fontColor.value = fontColor.getValue(fontColor.value, 'rgba');
+            (parent.element.querySelector('.e-stroke-text-font-color.e-template .e-dropdownbtn-preview') as HTMLElement).style.background
                 = '#fff';
         }
     }
@@ -2646,6 +2939,10 @@ export class ToolbarModule {
                     }
                     parent.updateFontFamily(args.item.id);
                     parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
+                    const toolbar: HTMLElement = document.getElementById(parent.element.id + '_toolbar');
+                    if (toolbar && toolbar.classList.contains('e-control')) {
+                        (getComponent(toolbar, 'toolbar') as Toolbar).refreshOverflow();
+                    }
                 }
             });
             fontFamilyBtn.appendTo('#' + id + '_fontFamilyBtn');
@@ -2743,6 +3040,8 @@ export class ToolbarModule {
                 args.toolbarItems = ['strokeColor', 'strokeWidth', 'start', 'end', 'z-order', 'duplicate', 'remove'];
             } else if (parent.activeObj.shape === 'image') {
                 args.toolbarItems = ['flip', 'z-order', 'duplicate', 'remove', 'transparency'];
+            } else if (parent.activeObj.shape === 'rectangle'){
+                args.toolbarItems = ['fillColor', 'strokeColor', 'strokeWidth', 'borderRadius', 'z-order', 'duplicate', 'remove'];
             } else {
                 args.toolbarItems = ['fillColor', 'strokeColor', 'strokeWidth', 'z-order', 'duplicate', 'remove'];
             }
@@ -2761,7 +3060,7 @@ export class ToolbarModule {
             if (Browser.isDevice) {
                 this.initMainToolbar(false, true, true);
             }
-            args.toolbarItems = ['fontFamily', 'fontSize', 'fontColor', 'bold', 'italic', 'z-order', 'duplicate', 'remove', 'text'];
+            args.toolbarItems = ['fontFamily', 'fontSize', 'fontColor', 'fillColor', 'strokeColor', 'strokeWidth', 'bold', 'italic', 'z-order', 'duplicate', 'remove', 'text'];
             this.initTextToolbarItem(args.toolbarItems);
             break;
         case 'pen':
@@ -2810,6 +3109,9 @@ export class ToolbarModule {
             if (isNullOrUndefined(isTransform)) {parent.updateCropTransformItems(); }
             this.initCropTransformToolbar(shape, isTransform);
             if (Browser.isDevice && this.isToolbar()) {this.updateContextualToolbar('color', 'straighten', true); }
+            if (parent.isMaskImage) {
+                this.refreshToolbar('main');
+            }
             break;
         case 'frame':
             this.isFrameToolbar = true;
@@ -2829,10 +3131,59 @@ export class ToolbarModule {
             }
             parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
             break;
+        case 'redact':
+            if (Browser.isDevice) {
+                this.initMainToolbar(false, true, true);
+                this.initMainToolbar(false, true, true, null, null, null, true);
+            } else {
+                this.initMainToolbar(isApplyBtn, Browser.isDevice, null, null, null, null, true);
+            }
+            this.enableDisableTbrBtn();
+            if (parent.activeObj.redactType === 'blur') {
+                const redactBlurElement: HTMLElement = parent.element.querySelector('#' + id + '_' + 'redactBlur') as HTMLElement;
+                if (redactBlurElement) {
+                    redactBlurElement.classList.add('e-selected-btn');
+                }
+            } else {
+                const pixelateElement: HTMLElement = parent.element.querySelector('#' + id + '_' + 'pixelate') as HTMLElement;
+                if (pixelateElement) {
+                    pixelateElement.classList.add('e-selected-btn');
+                }
+            }
+            this.redactSlider(parent.activeObj.redactType);
+            break;
         }
         this.refreshDropDownBtn(isCropping);
         this.updateKBDNavigation(type);
         this.currToolbar = type;
+    }
+
+    private updateRedactObj(): void {
+        const parent: ImageEditor = this.parent;
+        const objColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
+        parent.objColl = [];
+        const activeObj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
+        parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
+        parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
+        parent.objColl = objColl;
+        for (let i: number = 0; i < parent.objColl.length; i++) {
+            const obj: SelectionPoint = parent.objColl[i as number];
+            if (obj.shape === 'redact') {
+                obj.redactImage = parent.createElement('canvas');
+                obj.redactImage.width = obj.activePoint.width;
+                obj.redactImage.height = obj.activePoint.height;
+                obj.redactImage.getContext('2d').drawImage(parent.lowerCanvas, obj.activePoint.startX,
+                                                           obj.activePoint.startY, obj.activePoint.width, obj.activePoint.height, 0, 0,
+                                                           obj.redactImage.width, obj.redactImage.height);
+            }
+        }
+        parent.isCropTab = false;
+        parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
+        parent.isCropTab = true;
+        if (activeObj) {
+            parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: { canvas: 'duplicate', obj: activeObj,
+                isCropRatio: null, points: null, isPreventDrag: true } });
+        }
     }
 
     private updateKBDNavigation(type: string): void {
@@ -2843,13 +3194,25 @@ export class ToolbarModule {
             let tbarInitialChild: Element; let tbarInitialBtn: HTMLButtonElement;
             if (tbar) {
                 tbarInitialChild = tbar.querySelector('.e-toolbar-center');
-                if (!tbarInitialChild || !tbarInitialChild.children[0]) {return; }
+                if (!tbarInitialChild || !tbarInitialChild.children[0]) {
+                    return;
+                }
                 tbarInitialBtn = tbarInitialChild.children[0].querySelector('.e-btn');
                 let tempElem: Element = tbarInitialChild.children[1];
-                if (tempElem) {tempElem = tempElem.children[0]; }
-                if (tempElem) {tempElem = tempElem.children[0]; }
+                if (tempElem) {
+                    tempElem = tempElem.children[0];
+                }
+                if (tempElem) {
+                    tempElem = tempElem.children[0];
+                }
                 if (type === 'resize' && tempElem) {
                     tbarInitialBtn = tempElem as HTMLButtonElement;
+                }
+                if (type === 'filter') {
+                    const defaultFilter: HTMLElement = document.querySelector('#' + id + '_defaultCanvas') as HTMLElement;
+                    if (defaultFilter) {
+                        setTimeout(() => defaultFilter.focus(), 50);
+                    }
                 }
                 if (tbarInitialBtn) {
                     if (type === 'main') {
@@ -2867,7 +3230,7 @@ export class ToolbarModule {
         if (isNullOrUndefined(isTransform)) {
             parent.notify('draw', {prop: 'setTempStraightenZoomDeg' });
             parent.tempStraighten = parent.transform.straighten;
-            if (parent.currObjType.isFiltered) {parent.okBtn(); }
+            if (parent.currObjType.isFiltered || parent.currObjType.isRedact) {parent.okBtn(); }
             parent.isStraightening = true;
         }
         this.refreshToolbar('croptransform', null, null, null, null, shape, isTransform);
@@ -3131,7 +3494,7 @@ export class ToolbarModule {
                     if (Browser.isDevice) {
                         parentElem.style.top = strokeDDB.element.getBoundingClientRect().top -
                         parentElem.offsetHeight + 'px';
-                        parentElem.style.left = parent.element.offsetLeft + 'px';
+                        if (window.innerWidth <= 520) { parentElem.style.left = parent.element.offsetLeft + 'px'; }
                     }
                 },
                 target: '.e-pen-color',
@@ -3209,7 +3572,10 @@ export class ToolbarModule {
                             toolbar.refreshOverflow();
                         }
                     }
+                    const widthObj: Object = {penStrokeWidth: null };
+                    parent.notify('freehand-draw', {prop: 'getPenStrokeWidth', onPropertyChange: false, value: {obj: widthObj }});
                     parent.notify('undo-redo', { prop: 'updateUndoRedoStack', value: { isPenDraw: true }});
+                    parent.notify('freehand-draw', {prop: 'setPenStrokeWidth', onPropertyChange: false, value: {value: widthObj['penStrokeWidth'] }});
                 }
             });
             // Render initialized DropDownButton.
@@ -3381,7 +3747,7 @@ export class ToolbarModule {
                     const parentElem: HTMLElement = args.element.parentElement;
                     parentElem.style.top = fillDDB.element.getBoundingClientRect().top -
                     parentElem.offsetHeight + 'px';
-                    parentElem.style.left = parent.element.offsetLeft + 'px';
+                    if (window.innerWidth <= 520) { parentElem.style.left = parent.element.offsetLeft + 'px'; }
                 }
             },
             target: '.e-frame-gradient-fill-color',
@@ -3445,7 +3811,7 @@ export class ToolbarModule {
                     const parentElem: HTMLElement = args.element.parentElement;
                     parentElem.style.top = fillDDB.element.getBoundingClientRect().top -
                     parentElem.offsetHeight + 'px';
-                    parentElem.style.left = parent.element.offsetLeft + 'px';
+                    if (window.innerWidth <= 520) { parentElem.style.left = parent.element.offsetLeft + 'px'; }
                 }
             },
             target: '.e-frame-fill-color',
@@ -3960,6 +4326,9 @@ export class ToolbarModule {
             filter.style.width = '100px'; filter.style.height = '100px';
             parent.notify('filter', {prop: 'updateAdj', value: { type: type, value: null, isPreview: true, ctx: ctx }});
             ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+            if (parent.isSafari) {
+                parent.notify('filter', { prop: 'apply-filter', onPropertyChange: false, value: {context: ctx}});
+            }
         }
     }
 
@@ -3969,7 +4338,10 @@ export class ToolbarModule {
         const toolbarItems: (string | ItemModel)[] = [];
         if (isNullOrUndefined(isPenEdit)) {
             if (parent.activeObj.shape === 'image') {toolbarItems.push('Flip'); }
-            toolbarItems.push('BringToFront'); toolbarItems.push('Clone'); toolbarItems.push('Delete');
+            if (parent.activeObj.shape !== 'redact') {
+                toolbarItems.push('BringToFront');
+            }
+            toolbarItems.push('Clone'); toolbarItems.push('Delete');
             if (parent.activeObj.shape === 'text') {
                 toolbarItems.push('EditText');
             }
@@ -4034,16 +4406,19 @@ export class ToolbarModule {
                 });
                 toolbarObj.appendTo('#' + id + '_quickAccessToolbar');
             }
-            const height: number = this.toolbarHeight && this.toolbarHeight !== 0 ? this.toolbarHeight : qtArea.clientHeight;
+            let height: number = this.toolbarHeight && this.toolbarHeight !== 0 ? this.toolbarHeight : qtArea.clientHeight;
+            const wrapperElement: Element =  parent.element.querySelector('#' + id + '_headWrapper') as HTMLElement;
             if (isNullOrUndefined(isPenEdit) && (parent.activeObj.activePoint.width !== 0 ||
                 parent.activeObj.activePoint.height !== 0 ||
                 (parent.activeObj.shape && parent.activeObj.shape === 'path' && parent.activeObj.pointColl.length > 0))) {
                 const orderObj: Object = {order: null };
                 parent.notify('shape', { prop: 'getHighestOrder', onPropertyChange: false, value: {obj: orderObj } });
-                if (parent.activeObj.order > orderObj['order']) {
-                    document.getElementById(parent.element.id + '_bringToFront').classList.add('e-disabled');
+                if (parent.activeObj.order > orderObj['order'] && document.getElementById(parent.element.id + '_bringToFront')) {
+                    document.getElementById(parent.element.id + '_bringToFront').classList.add('e-overlay');
                 } else {
-                    document.getElementById(parent.element.id + '_bringToFront').classList.remove('e-disabled');
+                    if (document.getElementById(parent.element.id + '_bringToFront')) {
+                        document.getElementById(parent.element.id + '_bringToFront').classList.remove('e-overlay');
+                    }
                 }
                 qtArea.style.width = 'auto';
                 parent.activeObj.activePoint.width = Math.abs(parent.activeObj.activePoint.width);
@@ -4068,9 +4443,18 @@ export class ToolbarModule {
                     const diff: number = (x + (width / 2)) - (parseFloat(qtArea.style.left) + (qtArea.clientWidth / 2));
                     qtArea.style.left = parseFloat(qtArea.style.left) + diff + 'px';
                 }
+                if (wrapperElement) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    height = (wrapperElement as any).offsetHeight + height;
+                }
                 if (y - (height + (height / 1.5)) < parent.img.destTop) {
                     qtArea.style.top = parent.img.destTop + 'px';
+                    if (wrapperElement) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        qtArea.style.top = (parent.img.destTop < 0 ? 0 : parent.img.destTop) + (wrapperElement as any).offsetHeight + 'px';
+                    }
                 } else {
+                    height = this.toolbarHeight;
                     qtArea.style.top = y - (height + (height / 1.5)) + 'px';
                 }
             } else if (isPenEdit) {
@@ -4079,10 +4463,12 @@ export class ToolbarModule {
                 const orderObj: Object = {order: null };
                 parent.notify('shape', { prop: 'getHighestOrder', onPropertyChange: false, value: {obj: orderObj } });
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if ((parent.getObjFromId(parent.pointColl[indexObj['freehandSelectedIndex']].id) as any).order >= orderObj['order']) {
-                    document.getElementById(parent.element.id + '_bringToFront').classList.add('e-disabled');
+                if ((parent.getObjFromId(parent.pointColl[indexObj['freehandSelectedIndex']].id) as any).order >= orderObj['order'] && document.getElementById(parent.element.id + '_bringToFront')) {
+                    document.getElementById(parent.element.id + '_bringToFront').classList.add('e-overlay');
                 } else {
-                    document.getElementById(parent.element.id + '_bringToFront').classList.remove('e-disabled');
+                    if (document.getElementById(parent.element.id + '_bringToFront')) {
+                        document.getElementById(parent.element.id + '_bringToFront').classList.remove('e-overlay');
+                    }
                 }
                 const obj: Object = {activePoint: null };
                 parent.notify('freehand-draw', {prop: 'getSqPtFD',
@@ -4191,7 +4577,7 @@ export class ToolbarModule {
             let shapeId: string; let isDisabled: boolean; const orderObj: Object = {order: null };
             switch (type) {
             case 'duplicate':
-                if (!parent.element.querySelector('#' + id + '_duplicate').classList.contains('e-disabled')) {
+                if (!parent.element.querySelector('#' + id + '_duplicate').classList.contains('e-overlay')) {
                     this.refreshSlider();
                     if (!pathObject['isNewPath'] && JSON.stringify(object['tempObj']) === JSON.stringify(parent.activeObj)) {
                         isPreventUndoRedo = true;
@@ -4200,14 +4586,14 @@ export class ToolbarModule {
                 }
                 break;
             case 'remove':
-                if (!parent.element.querySelector('#' + id + '_remove').classList.contains('e-disabled')) {
+                if (!parent.element.querySelector('#' + id + '_remove').classList.contains('e-overlay')) {
                     parent.noPushUndo = false;
                     this.refreshSlider();
                     parent.notify('selection', { prop: 'deleteItem', onPropertyChange: false});
                 }
                 break;
             case 'edittext':
-                if (!parent.element.querySelector('#' + id + '_editText').classList.contains('e-disabled')) {
+                if (!parent.element.querySelector('#' + id + '_editText').classList.contains('e-overlay')) {
                     this.editText();
                 }
                 break;
@@ -4236,7 +4622,7 @@ export class ToolbarModule {
                 parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
                 break;
             case 'bringtofront':
-                if (!parent.element.querySelector('#' + id + '_bringToFront').classList.contains('e-disabled')) {
+                if (!parent.element.querySelector('#' + id + '_bringToFront').classList.contains('e-overlay')) {
                     parent.notify('freehand-draw', {prop: 'getFreehandSelectedIndex', onPropertyChange: false, value: {obj: indexObj }});
                     shapeId = indexObj['freehandSelectedIndex'] !== null ? parent.pointColl[indexObj['freehandSelectedIndex']].id :
                         parent.activeObj.currIndex;
@@ -4254,9 +4640,9 @@ export class ToolbarModule {
                         isDisabled = order > orderObj['order'] ? true : false;
                     }
                     if (isDisabled) {
-                        document.getElementById(parent.element.id + '_bringToFront').classList.add('e-disabled');
+                        document.getElementById(parent.element.id + '_bringToFront').classList.add('e-overlay');
                     } else {
-                        document.getElementById(parent.element.id + '_bringToFront').classList.remove('e-disabled');
+                        document.getElementById(parent.element.id + '_bringToFront').classList.remove('e-overlay');
                     }
                     parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
                 }
@@ -4400,7 +4786,21 @@ export class ToolbarModule {
         parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate', obj: parent.activeObj,
             isCropRatio: null, points: null, isPreventDrag: true }});
         parent.notify('undo-redo', { prop: 'updateUrObj', onPropertyChange: false, value: {objColl: objColl}});
+        parent.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: { isMouseDown: true } });
+        parent.noPushUndo = false;
+        parent.notify('undo-redo', { prop: 'updateCurrUrc', value: { type: 'ok' } });
+        parent.noPushUndo = true;
+        parent.notify('selection', { prop: 'redrawShape', onPropertyChange: false,
+            value: { obj: parent.objColl[parent.objColl.length - 1] } });
+        const id: string = parent.element.id;
+        const toolbarId: string = Browser.isDevice ? '#' + id + '_bottomToolbar ' + '#' + id : '#' + id ;
+        const object: Object = {freehandDrawSelectedId: null };
+        parent.notify('freehand-draw', { prop: 'getFreehandDrawSelectedId', onPropertyChange: false, value: {obj: object }});
+        this.enableDisableCloneBtn(toolbarId, object);
         this.renderQAT();
+        if (parent.activeObj.shape && parent.activeObj.shape === 'redact') {
+            this.redactSlider(parent.activeObj.redactType);
+        }
     }
 
     private defToolbarClicked(args: ClickEventArgs): void {
@@ -4455,6 +4855,7 @@ export class ToolbarModule {
         const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + id + '_resizeHeight');
         const aspectRatioWidth: HTMLElement = parent.element.querySelector('#' + id + '_resizeWidth');
         let isCropSelection: boolean = false;  let panBtn: HTMLElement; let splitWords: string[];
+        let actionType: string; let actionArgs: EditCompleteEventArgs;
         if (parent.activeObj.shape !== undefined) {splitWords = parent.activeObj.shape.split('-'); }
         if (splitWords === undefined && parent.currObjType.isCustomCrop) {
             isCropSelection = true;
@@ -4465,6 +4866,7 @@ export class ToolbarModule {
             switch (type) {
             case 'pan':
                 parent.currObjType.isCustomCrop = parent.currObjType.isFiltered = false;
+                parent.currObjType.isRedact = false;
                 if (parent.currObjType.isUndoAction) {
                     parent.notify('undo-redo', {prop: 'refreshUrc', value: {bool: null }});
                 }
@@ -4498,9 +4900,18 @@ export class ToolbarModule {
                 this.refreshToolbar('main');
                 break;
             case 'cancel':
+                if (parent.currObjType.isRedact) {
+                    parent.currObjType.isRedact = false;
+                }
+                if (this.isFrameToolbar && parent.element.querySelector('.e-contextual-toolbar-wrapper') && !parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.contains('e-hide')) {
+                    parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
+                }
                 parent.notify('draw', {prop: 'performCancel', value: {isContextualToolbar: isContextualToolbar, isFinalCancel: true}});
                 break;
             case 'ok':
+                if (Browser.isDevice && this.isFrameToolbar && parent.element.querySelector('.e-contextual-toolbar-wrapper') && !parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.contains('e-hide')) {
+                    parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
+                }
                 parent.okBtn(null, true);
                 parent.drawingShape = null;
                 this.refreshDropDownBtn(false);
@@ -4569,12 +4980,12 @@ export class ToolbarModule {
                 this.refreshToolbar('resize');
                 break;
             case 'resize':
-                if (parent.currObjType.isFiltered) {parent.okBtn(); }
+                if (parent.currObjType.isFiltered || parent.currObjType.isRedact) {parent.okBtn(); }
                 this.resizeClick();
                 break;
             case 'adjustment':
                 if (!isDisabledAdjustment) {
-                    if (parent.currObjType.isFiltered) {parent.okBtn(); }
+                    if (parent.currObjType.isFiltered || parent.currObjType.isRedact) {parent.okBtn(); }
                     this.refreshToolbar('adjustment');
                     parent.setTempFilterProperties();
                     parent.notify('draw', {prop: 'updateFinetune' });
@@ -4672,12 +5083,17 @@ export class ToolbarModule {
             case 'horizontalflip':
             case 'verticalflip':
                 parent.transformSelect(type);
+                this.updateRedactObj();
                 if (type === 'rotateleft' || type === 'rotateright') {
                     parent.notify('draw', { prop: 'resetStraightenDestPoints' });
                     parent.notify('draw', { prop: 'setDestForStraighten' });
                 }
                 parent.notify('transform', { prop: 'disableZoomOutBtn', value: {isZoomOut: true }});
                 if (Browser.isDevice) {this.updateContextualToolbar('color', 'straighten'); }
+                actionType = type === 'rotateleft' || type === 'rotateright' ?
+                    'rotate' : 'flip';
+                actionArgs = { action: actionType, actionEventArgs: parent.editCompleteArgs };
+                parent.triggerEditCompleteEvent(actionArgs);
                 break;
             case 'save':
                 parent.noPushUndo = false; parent.okBtn(); parent.drawingShape = null;
@@ -4711,8 +5127,90 @@ export class ToolbarModule {
                 parent.isFrameBtnClick = true;
                 parent.curFrameObjEvent = {previousFrameSetting: parent.tempFrameObj, currentFrameSetting: parent.frameObj };
                 break;
+            case 'redact':
+                parent.currObjType.isRedact = true;
+                parent.drawingShape = 'redact';
+                if (isNullOrUndefined(parent.activeObj.redactBlur)) {
+                    parent.activeObj.redactBlur = 20;
+                }
+                if (isNullOrUndefined(parent.activeObj.redactPixelate)) {
+                    parent.activeObj.redactPixelate = 20;
+                }
+                parent.notify('selection', { prop: 'annotate', value: { shape: 'redact' } });
+                this.refreshToolbar('redact');
+                this.redactSlider(parent.activeObj.redactType);
+                break;
+            case 'pixelate':
+                parent.currObjType.isRedact = true;
+                parent.drawingShape = 'redact';
+                parent.notify('selection', { prop: 'annotate', value: { shape: 'redact' } });
+                if (parent.activeObj.redactType === 'blur') {
+                    this.updateRedactType('pixelate');
+                }
+                parent.notify('shape', { prop: 'setRedactType', onPropertyChange: false,
+                    value: { redactType: 'pixelate'}});
+                if (parent.activeObj.redactType === 'pixelate') {
+                    const pixelateBtn: HTMLElement = parent.element.querySelector('#' + id + '_' + 'pixelate') as HTMLElement;
+                    const redactBlurBtn: HTMLElement = parent.element.querySelector('#' + id + '_' + 'redactBlur') as HTMLElement;
+                    if (pixelateBtn) { pixelateBtn.classList.add('e-selected-btn'); }
+                    if (redactBlurBtn && redactBlurBtn.classList.contains('e-selected-btn')) {
+                        redactBlurBtn.classList.remove('e-selected-btn');
+                    }
+                } else {
+                    const redactBlurBtn: HTMLElement = parent.element.querySelector('#' + id + '_' + 'redactBlur') as HTMLElement;
+                    if (redactBlurBtn) { redactBlurBtn.classList.add('e-selected-btn'); }
+                }
+                this.redactSlider(parent.activeObj.redactType);
+                if (parent.activeObj.activePoint.width !== 0 || parent.activeObj.activePoint.height !== 0) {
+                    parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
+                        value: {operation: 'shapeTransform', previousObj: null, previousObjColl: null,
+                            previousPointColl: null, previousSelPointColl: null,
+                            previousCropObj: null, previousText: null,
+                            currentText: null, previousFilter: null, isCircleCrop: null}});
+                }
+                break;
+            case 'redactblur':
+                parent.currObjType.isRedact = true;
+                parent.drawingShape = 'redact';
+                parent.notify('selection', { prop: 'annotate', value: { shape: 'redact' } });
+                parent.notify('shape', { prop: 'setRedactType', onPropertyChange: false,
+                    value: {redactType: 'blur'}});
+                if (parent.activeObj.redactType === 'pixelate') {
+                    this.updateRedactType('blur');
+                }
+                parent.notify('shape', { prop: 'setRedactType', onPropertyChange: false, value: {redactType: 'blur'}});
+                if (parent.activeObj.redactType === 'blur') {
+                    const redactBlurBtn: HTMLElement = parent.element.querySelector('#' + id + '_' + 'redactBlur') as HTMLElement;
+                    const pixelateBtn: HTMLElement = parent.element.querySelector('#' + id + '_' + 'pixelate') as HTMLElement;
+                    if (redactBlurBtn) { redactBlurBtn.classList.add('e-selected-btn'); }
+                    if (pixelateBtn && pixelateBtn.classList.contains('e-selected-btn')) {
+                        pixelateBtn.classList.remove('e-selected-btn');
+                    }
+                } else {
+                    const pixelateBtn: HTMLElement = parent.element.querySelector('#' + id + '_' + 'pixelate') as HTMLElement;
+                    if (pixelateBtn) {
+                        pixelateBtn.classList.add('e-selected-btn');
+                    }
+                }
+                this.redactSlider(parent.activeObj.redactType);
+                if (parent.activeObj.activePoint.width !== 0 || parent.activeObj.activePoint.height !== 0) {
+                    parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
+                        value: {operation: 'shapeTransform', previousObj: null, previousObjColl: null,
+                            previousPointColl: null, previousSelPointColl: null,
+                            previousCropObj: null, previousText: null,
+                            currentText: null, previousFilter: null, isCircleCrop: null}});
+                }
+                break;
             }
         }
+    }
+
+    private updateRedactType(value: string): void {
+        const parent: ImageEditor = this.parent;
+        parent.activeObj.redactType = value;
+        parent.notify('shape', {prop: 'setRedactType', value: {type: value }});
+        this.parent.objColl.push(parent.activeObj);
+        parent.notify('selection', { prop: 'redrawShape', value: { obj: parent.objColl[parent.objColl.length - 1] }});
     }
 
     private frameToolbarClick(): void {
@@ -4720,8 +5218,8 @@ export class ToolbarModule {
         const frame: HTMLElement = document.querySelector('#' + id + '_frame');
         let zoom: number; let frameObj: FrameValue; let tempFrameObj: FrameValue;
         parent.notify('draw', { prop: 'updateCropSelection', onPropertyChange: false });
-        if (parent.currObjType.isFiltered) {parent.okBtn(); }
-        if (frame && !frame.classList.contains('e-disabled')) {
+        if (parent.currObjType.isFiltered || parent.currObjType.isRedact) {parent.okBtn(); }
+        if (frame && !frame.classList.contains('e-overlay')) {
             zoom = parent.transform.zoomFactor;
             parent.frameDestPoints = extend({}, parent.img, {}, true) as ImageDimension;
             if (isNullOrUndefined(parent.cxtTbarHeight)) {
@@ -4796,6 +5294,7 @@ export class ToolbarModule {
         const type: string = args.item.id.replace(parent.element.id, '').split('_')[1];
         const imageFiltering: ImageFilterEventArgs = { filter: parent.toPascalCase(type) as ImageFilterOption, cancel: false};
         parent.trigger('imageFiltering', imageFiltering);
+        parent.editCompleteArgs = imageFiltering;
         if (imageFiltering.cancel) { return; }
         document.getElementById(args.item.id + 'Canvas').parentElement.parentElement.classList.add('e-selected');
         parent.currObjType.isFiltered = true;
@@ -4851,6 +5350,7 @@ export class ToolbarModule {
                 parent.isZoomBtnClick = true;
                 this.applyPreviewFilter();
                 parent.currObjType.isFiltered = false;
+                parent.currObjType.isRedact = false;
                 if (parent.togglePen) {
                     parent.currObjType.isZoomed = true;
                     parent.freeHandDraw(false);
@@ -4869,6 +5369,10 @@ export class ToolbarModule {
                     parent.notify('draw', { prop: 'resetStraightenDestPoints' });
                     parent.notify('draw', { prop: 'setDestForStraighten' });
                 }
+                const actionArgs: EditCompleteEventArgs  = { action: 'zoom-in',
+                    actionEventArgs: parent.editCompleteArgs };
+                parent.triggerEditCompleteEvent(actionArgs);
+                if (Browser.isDevice) {zoomIn.focus(); }
             }
         }
     }
@@ -4906,6 +5410,7 @@ export class ToolbarModule {
                 parent.isZoomBtnClick = true;
                 this.applyPreviewFilter();
                 parent.currObjType.isFiltered = false;
+                parent.currObjType.isRedact = false;
                 if (parent.togglePen) {
                     parent.currObjType.isZoomed = true;
                     parent.freeHandDraw(false);
@@ -4924,6 +5429,10 @@ export class ToolbarModule {
                     parent.notify('draw', { prop: 'resetStraightenDestPoints' });
                     parent.notify('draw', { prop: 'setDestForStraighten' });
                 }
+                const actionArgs: EditCompleteEventArgs  = { action: 'zoom-out',
+                    actionEventArgs: parent.editCompleteArgs };
+                parent.triggerEditCompleteEvent(actionArgs);
+                if (Browser.isDevice) {zoomOut.focus(); }
             }
         }
     }
@@ -5232,8 +5741,11 @@ export class ToolbarModule {
             const selFillElem: HTMLElement = parent.element.querySelector('.e-fill.e-template .e-dropdownbtn-preview') as HTMLElement;
             const selStrokeElem: HTMLElement = parent.element.querySelector('.e-stroke.e-template .e-dropdownbtn-preview') as HTMLElement;
             const selTextStrokeElem: HTMLElement = parent.element.querySelector('.e-text-font-color.e-template .e-dropdownbtn-preview') as HTMLElement;
+            const selStrokeTextColorElem: HTMLElement = parent.element.querySelector('.e-stroke-text-font-color.e-template .e-dropdownbtn-preview') as HTMLElement;
+            const selTextBGElem: HTMLElement = parent.element.querySelector('.e-text-background-color.e-template .e-dropdownbtn-preview') as HTMLElement;
             const selPenStrokeElem: HTMLElement = parent.element.querySelector('.e-pen-stroke-color.e-template .e-dropdownbtn-preview') as HTMLElement;
             const strokeWidthElem: HTMLElement = parent.element.querySelector('.e-shape-stroke-width') as HTMLElement;
+            const rectangleRadiusElem: HTMLElement = parent.element.querySelector('.e-shape-rectangle-radius') as HTMLElement;
             const fontFamilyElem: HTMLElement = parent.element.querySelector('.e-text-font-family') as HTMLElement;
             const fontSizeElem: HTMLElement = parent.element.querySelector('.e-text-font-size') as HTMLElement;
             const boldBtn: HTMLElement = parent.element.querySelector('#' + id + '_bold') as HTMLElement;
@@ -5241,6 +5753,9 @@ export class ToolbarModule {
             if (parent.activeObj.strokeSettings && parent.activeObj.textSettings) {
                 if (isNullOrUndefined(parent.activeObj.strokeSettings.strokeWidth)) {
                     parent.activeObj.strokeSettings.strokeWidth = 2;
+                }
+                if (isNullOrUndefined(parent.activeObj.strokeSettings.outlineWidth)) {
+                    parent.activeObj.strokeSettings.outlineWidth = 2;
                 }
                 if (selFillElem) {
                     const value: string = parent.activeObj.strokeSettings.fillColor;
@@ -5266,6 +5781,30 @@ export class ToolbarModule {
                     selTextStrokeElem.style.background = value;
                     if (document.querySelector('#' + id + '_text_font')) {
                         (getComponent(id + '_text_font', 'colorpicker') as ColorPicker).value = value;
+                    }
+                }
+                if (selStrokeTextColorElem) {
+                    const value: string = parent.activeObj.strokeSettings.outlineColor;
+                    if (!/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$|^[a-zA-Z]+$/.test(parent.activeObj.strokeSettings.outlineColor)) {
+                        selStrokeTextColorElem.classList.add('e-nocolor-item');
+                    } else {
+                        selStrokeTextColorElem.classList.remove('e-nocolor-item');
+                        selStrokeTextColorElem.style.background = value;
+                    }
+                    if (document.querySelector('#' + id + '_stroke_text')) {
+                        (getComponent(id + '_stroke_text', 'colorpicker') as ColorPicker).value = value;
+                    }
+                }
+                if (selTextBGElem) {
+                    const value: string = parent.activeObj.strokeSettings.fillColor;
+                    if (parent.activeObj.strokeSettings.fillColor === '' || parent.activeObj.strokeSettings.fillColor === 'transparent') {
+                        selTextBGElem.classList.add('e-nocolor-item');
+                    } else {
+                        selTextBGElem.classList.remove('e-nocolor-item');
+                        selTextBGElem.style.background = value;
+                    }
+                    if (document.querySelector('#' + id + '_text_bgColor')) {
+                        (getComponent(id + '_text_bgColor', 'colorpicker') as ColorPicker).value = value;
                     }
                 }
                 if (selPenStrokeElem) {
@@ -5307,8 +5846,13 @@ export class ToolbarModule {
                     }
                 }
                 if (strokeWidthElem) {
-                    const strokeWidth: string = Math.round((parent.activeObj.strokeSettings.strokeWidth)).toString();
+                    const width: number = parent.activeObj.shape === 'text' ? parent.activeObj.strokeSettings.outlineWidth : parent.activeObj.strokeSettings.strokeWidth;
+                    const strokeWidth: string = Math.round(width).toString();
                     strokeWidthElem.textContent = this.getStrokeWidth(strokeWidth);
+                }
+                if (rectangleRadiusElem) {
+                    const rectRadius: string = Math.round((parent.activeObj.strokeSettings.radius)).toString();
+                    rectangleRadiusElem.textContent = this.getRectRadius(rectRadius);
                 }
             }
         }
@@ -5338,6 +5882,32 @@ export class ToolbarModule {
             break;
         }
         return strokeWidth;
+    }
+
+    private getRectRadius(text: string): string {
+        let rectRadius: string;
+        const currentWidth: number = parseInt(text, 10) / 2;
+        switch (currentWidth) {
+        case 0:
+            rectRadius = this.l10n.getConstant('0');
+            break;
+        case 1:
+            rectRadius = this.l10n.getConstant('20');
+            break;
+        case 2:
+            rectRadius = this.l10n.getConstant('40');
+            break;
+        case 3:
+            rectRadius = this.l10n.getConstant('60');
+            break;
+        case 4:
+            rectRadius = this.l10n.getConstant('80');
+            break;
+        case 5:
+            rectRadius = this.l10n.getConstant('100');
+            break;
+        }
+        return rectRadius;
     }
 
     private cancelPan(): void {
@@ -5454,5 +6024,85 @@ export class ToolbarModule {
 
     public getModuleName(): string {
         return 'toolbar-module';
+    }
+
+    private redactSlider(type: string): void {
+        const parent: ImageEditor = this.parent; const id: string = parent.element.id;
+        const toolbarArea: Element = parent.element.querySelector('#' + id + '_toolbarArea');
+        const contextualToolbarArea: Element = parent.element.querySelector('#' + id + '_contextualToolbarArea');
+        if (!contextualToolbarArea) { return; }
+        contextualToolbarArea.classList.remove('e-hide');
+        (contextualToolbarArea as HTMLElement).style.left = (toolbarArea as HTMLElement).offsetLeft + 'px';
+        const canvasWrapper: HTMLElement = document.querySelector('#' + id + '_contextualToolbarArea');
+        let hdrWrapper: HTMLElement = document.querySelector('#' + id + '_headWrapper');
+        let labelWrapper: HTMLElement = document.querySelector('#' + id + '_labelWrapper');
+        const ctxTbar: HTMLElement = document.querySelector('#' + id + '_contextualToolbar');
+        if (hdrWrapper) {
+            hdrWrapper.remove(); labelWrapper.remove();
+        }
+        if (ctxTbar) {
+            ctxTbar.remove();
+            this.createContextualToolbar();
+        }
+        hdrWrapper = canvasWrapper.appendChild(parent.createElement('div', {
+            id: id + '_headWrapper',
+            styles: 'position: relative'
+        }));
+        labelWrapper = hdrWrapper.appendChild(parent.createElement('label', {
+            id: id + '_labelWrapper',
+            className: 'e-ie-finetune-slider-label',
+            styles: Browser.isDevice ? ('position: absolute; top: 31%; left: calc(50% - 160px); font-size: 15px; text-transform: capitalize; font-weight: 400;')
+                : 'position: absolute; top: 25%; left: calc(50% - 226px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+        }));
+        const text: string = type === 'blur' ? this.l10n.getConstant('Blur') : this.l10n.getConstant('PixelSize');
+        labelWrapper.textContent = text;
+        const sliderWrapper: HTMLElement = hdrWrapper.appendChild(parent.createElement('div', {
+            id: id + '_sliderWrapper',
+            className: 'e-ie-finetune-slider-wrap',
+            styles: 'position: absolute'
+        }));
+        hdrWrapper.appendChild(parent.createElement('label', {
+            id: id + '_redactSpan',
+            className: 'e-ie-redact-value-span',
+            styles: Browser.isDevice ? ('position: absolute; top: 30%; margin-left: 20px; font-size: 15px; text-transform: capitalize; font-weight: 400;') :
+                'position: absolute; top: 30%; left: calc(50% + 190px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+        }));
+        sliderWrapper.parentElement.classList.add('e-finetune-slider');
+        const value: number = parent.activeObj.redactType === 'blur' ? parent.activeObj.redactBlur :
+            parent.activeObj.redactPixelate;
+        const redactSlider: Slider = new Slider({
+            tooltip: { placement: 'Before', isVisible: true, showOn: 'Focus' },
+            min: 10, max: 100, step: 1, value: value,
+            type: 'MinRange',
+            width: Browser.isDevice ? '130px' : '300px',
+            created: () => {
+                (parent.element.querySelector('.e-ie-redact-value-span') as HTMLSpanElement).innerText = value.toString();
+            },
+            change: (args: SliderChangeEventArgs) => {
+                (parent.element.querySelector('.e-ie-redact-value-span') as HTMLSpanElement).innerText = args.value.toString();
+                if (parent.activeObj.redactType === 'blur') {
+                    parent.activeObj.redactBlur = parent.tempRedactBlur = args.value as number;
+                } else if (parent.activeObj.redactType === 'pixelate') {
+                    parent.activeObj.redactPixelate = parent.tempRedactPixel = args.value as number;
+                }
+                parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate', obj: parent.activeObj, isCropRatio: null,
+                    points: null, isPreventDrag: true, saveContext: null, isPreventSelection: true} });
+            },
+            changed: (): void => {
+                setTimeout((): void => {
+                    parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
+                }, 50);
+            }
+        });
+        redactSlider.appendTo('#' + id + '_sliderWrapper');
+        if (Browser.isDevice) {
+            let cHt: number = (contextualToolbarArea as HTMLElement).offsetHeight + 1;
+            const cusWrapper: HTMLElement = parent.element.querySelector('#' + id + '_customizeWrapper');
+            if (this.isFrameToolbar && cusWrapper) {
+                cHt = cusWrapper.offsetHeight + 2;
+            }
+            const ht: number = (parent.element.querySelector('#' + id + '_canvasWrapper') as HTMLElement).offsetHeight;
+            (contextualToolbarArea as HTMLElement).style.top = this.toolbarHeight + 1 + ht - cHt + 'px';
+        }
     }
 }

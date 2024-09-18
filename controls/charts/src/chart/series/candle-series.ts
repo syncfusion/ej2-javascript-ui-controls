@@ -7,7 +7,7 @@ import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { BorderModel } from '../../common/model/base-model';
 
 /**
- * `CandleSeries` module is used to render the candle series.
+ * The `CandleSeries` module is used to render the candle series.
  */
 export class CandleSeries extends ColumnBase {
 
@@ -78,11 +78,8 @@ export class CandleSeries extends ColumnBase {
             this.renderPoint(series, series.points[point[i as number]], this.sideBySideInfo[series.index], borderWidth);
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -135,6 +132,7 @@ export class CandleSeries extends ColumnBase {
      * @param {Rect} midRect - The mid rectangle.
      * @param {Series} series - The series for which the path string is generated.
      * @returns {string} - The SVG path string.
+     * @private
      */
     public getPathString(topRect: Rect, midRect: Rect, series: Series): string {
         let direction: string = '';
@@ -211,6 +209,7 @@ export class CandleSeries extends ColumnBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         this.animate(series);

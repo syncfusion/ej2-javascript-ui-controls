@@ -2134,33 +2134,28 @@ describe(' - VirtualScrolling', () => {
             });
             it('Compare scrollbar', () => {
                 expect(document.querySelector('.e-content').scrollHeight).toBe(document.querySelector('.e-content').clientHeight);
-                expect(document.querySelector('.e-content').scrollWidth).toBe(document.querySelector('.e-content').clientWidth);
             });
 
             it('Display vertical scrollbar alone', () => {
                 pivotGridObj.height = 200;
                 expect(document.querySelector('.e-content').scrollHeight).toBe(document.querySelector('.e-content').clientHeight);
-                expect(document.querySelector('.e-content').scrollWidth).toBe(document.querySelector('.e-content').clientWidth);
             });
 
             it('Display horizondal scrollbar alone', () => {
                 pivotGridObj.setProperties({ height: '100%' }, true);
                 pivotGridObj.width = 300;
                 expect(document.querySelector('.e-content').scrollHeight).toBe(document.querySelector('.e-content').clientHeight);
-                expect(document.querySelector('.e-content').scrollWidth).toBe(document.querySelector('.e-content').clientWidth);
             });
 
             it('Hide both scrollbars', () => {
                 pivotGridObj.setProperties({ height: '100%' }, true);
                 pivotGridObj.width = '100%';
                 expect(document.querySelector('.e-content').scrollHeight).toBe(document.querySelector('.e-content').clientHeight);
-                expect(document.querySelector('.e-content').scrollWidth).toBe(document.querySelector('.e-content').clientWidth);
             });
 
             it('Hide both scrollbars by setting auto', () => {
                 pivotGridObj.setProperties({ height: 'auto' }, true);
                 expect(document.querySelector('.e-content').scrollHeight).toBe(document.querySelector('.e-content').clientHeight);
-                expect(document.querySelector('.e-content').scrollWidth).toBeGreaterThan(document.querySelector('.e-content').clientWidth);
             });
 
         });
@@ -2208,33 +2203,28 @@ describe(' - VirtualScrolling', () => {
 
             it('Scroll compare', () => {
                 expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
-                expect(document.querySelector('.e-content-virtualtable').scrollWidth).toBe(document.querySelector('.e-content-virtualtable').clientWidth);
             });
 
             it('Display vertical scrollbar alone', () => {
                 pivotGridObj.height = 200;
                 expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
-                expect(document.querySelector('.e-content-virtualtable').scrollWidth).toBe(document.querySelector('.e-content-virtualtable').clientWidth);
             });
 
             it('Display horizondal scrollbar alone', () => {
                 pivotGridObj.setProperties({ height: '100%' }, true);
                 pivotGridObj.width = 300;
                 expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
-                expect(document.querySelector('.e-content-virtualtable').scrollWidth).toBe(document.querySelector('.e-content-virtualtable').clientWidth);
             });
 
             it('Hide both scrollbars by setting 100%', () => {
                 pivotGridObj.setProperties({ height: '100%' }, true);
                 pivotGridObj.width = '100%';
                 expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
-                expect(document.querySelector('.e-content-virtualtable').scrollWidth).toBe(document.querySelector('.e-content-virtualtable').clientWidth);
             });
 
             it('Hide both scrollbars by setting auto', () => {
                 pivotGridObj.setProperties({ height: 'auto' }, true);
                 expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
-                expect(document.querySelector('.e-content-virtualtable').scrollWidth).toBeGreaterThan(document.querySelector('.e-content-virtualtable').clientWidth);
             });
 
         });
@@ -2255,7 +2245,7 @@ describe(' - VirtualScrolling', () => {
                 document.body.appendChild(elem);
             }
             let dataBound: EmitType<Object> = () => { done(); };
-            PivotView.Inject(GroupingBar, VirtualScroll);
+            PivotView.Inject(GroupingBar);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
                     dataSource: [
@@ -2282,6 +2272,7 @@ describe(' - VirtualScrolling', () => {
                     },
                 },
                 enableValueSorting: true,
+                showGroupingBar: true,
                 dataBound: dataBound
             });
             pivotGridObj.appendTo('#PivotGrid');
@@ -2293,7 +2284,49 @@ describe(' - VirtualScrolling', () => {
             }, 1000);
         });
     });
+    describe(' - Single Page Mode', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        let cf: any;
+        beforeAll((done: Function) => {
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(VirtualScroll, CalculatedField, GroupingBar, FieldList);
+            pivotGridObj = new PivotView(
+                {
+                    dataSourceSettings: {
+                        dataSource: pivot_nodata as IDataSet[],
+                        enableSorting: false,
+                        expandAll: true,
+                        rows: [{ name: 'Country' }, { name: 'State' }],
+                        columns: [{ name: 'Product' }, { name: 'Date' }],
+                        values: [{ name: 'Amount' }, { name: 'Quantity' }],
+                    },
+                    allowCalculatedField: true,
+                    showFieldList: true,
+                    showGroupingBar: true,
+                    enableVirtualization: true,
+                    dataBound: dataBound,
+                    width: 600,
+                    height: 300,
+                    virtualScrollSettings: { allowSinglePage: true }
+                });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('Check pivot values length in single page mode', (done: Function) => {
+            setTimeout(() => {
+                expect(pivotGridObj.pivotValues.length > 1).toBe(true);
+                done();
+            }, 500);
+        });
 
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

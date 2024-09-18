@@ -301,7 +301,7 @@ export class LayerPanel {
         bing.imageUrl = layer.urlTemplate;
         bing.subDomains = ['t0', 't1', 't2', 't3'];
         bing.maxZoom = '21';
-        proxy.mapObject['bingMap'] = bing;
+        proxy.mapObject.bingMap = bing;
         proxy.renderTileLayer(proxy, layer, layerIndex, bing);
         this.mapObject.arrangeTemplate();
         if (this.mapObject.zoomModule && (this.mapObject.previousScale !== this.mapObject.scale)) {
@@ -1157,7 +1157,7 @@ export class LayerPanel {
         const endX: number = Math.min(xcount, ((-tileTranslatePoint.x + size.width + (xRight * 256)) / 256) + 1);
         const startX: number = (-((tileTranslatePoint.x + (xLeft * 256)) + 256) / 256);
         const startY: number = (-(tileTranslatePoint.y + 256) / 256);
-        bing = bing || this.bing || this.mapObject['bingMap'];
+        bing = bing || this.bing || this.mapObject.bingMap;
         for (let i: number = Math.round(startX); i < Math.round(endX); i++) {
             for (let j: number = Math.round(startY); j < Math.round(endY); j++) {
                 const x: number = 256 * i + tileTranslatePoint.x;
@@ -1171,9 +1171,10 @@ export class LayerPanel {
                         const tile: Tile = new Tile(tileI % ycount, j);
                         tile.left = Math.round(x);
                         tile.top = Math.round(y);
-                        if ((bing && !isNullOrUndefined(baseLayer.urlTemplate) && baseLayer.urlTemplate !== '')) {
+                        if ((bing && !isNullOrUndefined(baseLayer.urlTemplate) && baseLayer.urlTemplate !== '' && baseLayer.urlTemplate.indexOf('quadkey') > -1)) {
                             tile.src = bing.getBingMap(tile, '', '', userLang, bing.imageUrl, bing.subDomains);
                         } else {
+                            bing = null;
                             tile.src = this.urlTemplate.replace('level', zoomLevel.toString()).replace('tileX', tile.x.toString())
                                 .replace('tileY', tile.y.toString());
                         }
@@ -1352,61 +1353,6 @@ export class LayerPanel {
                 && animationMode === 'Enable') ? '1000ms' : this.mapObject.layersCollection[0].animationDuration + 'ms';
             animatedTiles.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scaleValue + ')';
         }
-    }
-
-    /**
-     * Static map rendering.
-     *
-     * @param {string} apikey - Specifies the api key
-     * @param {number} zoom - Specifies the zoom value
-     * @returns {void}
-     * @private
-     */
-    public renderGoogleMap(apikey: string, zoom: number): void {
-        const map: Maps = this.mapObject;
-        // zoom = this.mapObject.zoomSettings.shouldZoomInitially ? this.mapObject.markerZoomFactor : zoom;
-        zoom = this.mapObject.tileZoomLevel;
-        const totalSize: number = Math.pow(2, zoom) * 256;
-        const x: number = (map.mapAreaRect.width / 2) - (totalSize / 2);
-        const y: number = (map.mapAreaRect.height / 2) - (totalSize / 2);
-        const centerPoint: Point = new Point(null, null);
-        let diffX: number = 0; let diffY: number = 0;
-        const position: MapLocation = convertTileLatLongToPoint(
-            centerPoint, zoom, { x: x, y: y }, this.isMapCoordinates);
-        if (map.zoomModule && map.zoomSettings.enable) {
-            diffX = map.zoomModule.mouseDownLatLong['x'] - map.zoomModule.mouseMoveLatLong['x'];
-            diffY = map.zoomModule.mouseDownLatLong['y'] - map.zoomModule.mouseMoveLatLong['y'];
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const panLatLng: any = map.pointToLatLong(position.x - diffX, position.y - diffY);
-        map.centerPosition.latitude = panLatLng['latitude'];
-        map.centerPosition.longitude = panLatLng['longitude'];
-        let mapWidth: number;
-        let mapHeight: number;
-        if (isNullOrUndefined(parseInt(map.width, 10))) {
-            mapWidth = parseInt(map.width, 10) - 22;
-        } else {
-            mapWidth = Math.round(map.mapAreaRect.width);
-        }
-        if (isNullOrUndefined(parseInt(map.height, 10))) {
-            mapHeight = parseInt(map.height, 10) - 22;
-        } else {
-            mapHeight = Math.round(map.mapAreaRect.height);
-        }
-        const eleWidth: number = mapWidth > 640 ? (mapWidth - 640) / 2 : 0;
-        const eleHeight: number = mapHeight > 640 ? (mapHeight - 640) / 2 : 0;
-        let center: string;
-        const mapType: string = 'roadmap';
-        if (map.centerPosition.latitude && map.centerPosition.longitude) {
-            center =  map.centerPosition.latitude.toString() + ',' + map.centerPosition.longitude.toString();
-        } else {
-            center = '0,0';
-        }
-        const staticMapString: string = 'https://maps.googleapis.com/maps/api/staticmap?size=' + mapWidth + 'x' + mapHeight +
-            '&zoom=' + zoom + '&center=' + center + '&maptype=' + mapType + '&key=' + apikey;
-        document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML
-            = '<div id="' + this.mapObject.element.id + '_StaticGoogleMap"' + 'style="position:absolute; left:' + eleWidth + 'px; top:'
-            + eleHeight + 'px"><img src="' + staticMapString + '"' + 'alt="' + this.mapObject.getLocalizedLabel('ImageNotFound') + '"></div>';
     }
 
     /**

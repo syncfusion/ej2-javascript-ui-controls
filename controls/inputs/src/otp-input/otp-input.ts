@@ -1,4 +1,4 @@
-import { INotifyPropertyChanged, NotifyPropertyChanges, Component, Property, getUniqueID, isNullOrUndefined, addClass, attributes, removeClass, remove, EmitType, Event } from '@syncfusion/ej2-base';
+import { INotifyPropertyChanged, NotifyPropertyChanges, Component, Property, getUniqueID, isNullOrUndefined, addClass, attributes, removeClass, remove, EmitType, Event, EventHandler } from '@syncfusion/ej2-base';
 import { OtpInputModel } from './otp-input-model';
 
 const INPUTFIELD: string = 'e-otp-input-field';
@@ -38,6 +38,27 @@ export enum OtpInputStyle {
      * Specifies the style of the Otp input to be filled.
      */
     Filled = 'filled',
+}
+
+/**
+ * Enum for the case transformation options for OTP input text.
+ *
+ * @readonly
+ * @enum {string}
+ */
+export enum TextTransform {
+    /**
+     * No case transformation. The input text remains unchanged.
+     */
+    None = 'none',
+    /**
+     * Convert the input text to uppercase.
+     */
+    Uppercase = 'uppercase',
+    /**
+     * Convert the input text to lowercase.
+     */
+    Lowercase = 'lowercase',
 }
 
 /**
@@ -93,6 +114,11 @@ export interface OtpFocusEventArgs {
      * Provides the current value of the Otp input.
      */
     value: string | number;
+
+    /**
+     * The index of the OTP input field that is currently focused.
+     */
+    index: number;
 }
 
 /**
@@ -118,6 +144,11 @@ export interface OtpInputEventArgs {
      * Provides the current value of the Otp input.
      */
     value: string | number;
+
+    /**
+     * The index of the OTP input field that is currently focused.
+     */
+    index: number;
 }
 
 /**
@@ -222,6 +253,31 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
     public cssClass: string;
 
     /**
+     * Specifies whether the OTP input field should automatically receive focus when the component is rendered.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    @Property(false)
+    public autoFocus: boolean;
+
+    /**
+     * Specifies the case transformation for the OTP input text.
+     *
+     * Valid values are:
+     * - `TextTransform.Uppercase` for uppercase transformation.
+     * - `TextTransform.Lowercase` for lowercase transformation.
+     * - `TextTransform.None` for no transformation.
+     *
+     * @isenumeration true
+     * @asptype TextTransform
+     * @type {TextTransform}
+     * @default TextTransform.None
+     */
+    @Property(TextTransform.None)
+    public textTransform: string | TextTransform;
+
+    /**
      * Specifies additional HTML attributes to be applied to the Otp (One-Time Password) input component.
      *
      * {% codeBlock src='otp-input/htmlAttributes/index.md' %}{% endcodeBlock %}
@@ -319,6 +375,7 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
             this.element.classList.add(RTL);
         }
         this.previousValue = this.value.toString();
+        if (this.autoFocus) { this.focusIn(); }
     }
 
     private renderInputs(): void {
@@ -356,7 +413,7 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
             attrs: {
                 maxlength: '1',
                 type: this.type,
-                inputmode: (this.type === 'number' ? 'numeric' : 'text')
+                inputmode: 'inputmode' in this.htmlAttributes ? this.htmlAttributes['inputmode'] : (this.type === 'number' ? 'numeric' : 'text')
             }
         });
         if (this.disabled) {
@@ -369,6 +426,10 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.wireEvents(inputEle, index);
     }
+
+    private handleWheelEvent = (e: WheelEvent): void => {
+        e.preventDefault();
+    };
 
     private renderSeparator(index: number, length: number): void {
         if (this.separator.length > 0) {
@@ -405,18 +466,27 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
     private updateInputType(inputType: string): void {
         this.inputs.forEach((input: HTMLInputElement) => {
             input.type = inputType;
-            input.setAttribute('inputmode', (inputType === 'number' ? 'numeric' : 'text'));
+            input.setAttribute('inputmode', 'inputmode' in this.htmlAttributes ? this.htmlAttributes['inputmode'] : (inputType === 'number' ? 'numeric' : 'text'));
         });
     }
 
     private getDefaultValue (): string[] | undefined {
-        const extractedValue: string = typeof this.value === 'number' ? this.value.toString() : this.value;
+        let extractedValue: string = typeof this.value === 'number' ? this.value.toString() : this.value;
+        if (this.textTransform) {
+            extractedValue = this.getTransformedText(extractedValue);
+        }
         // To remove the white space if present.
         const value: string = extractedValue.replace(/\s/g, '');
         if (value.length > 0) {
             return value.split('');
         }
         return undefined;
+    }
+
+    private getTransformedText(transformingText: string): string {
+        const transformedText: string = this.textTransform.toLowerCase() === TextTransform.Lowercase ? transformingText.toLowerCase() :
+            this.textTransform.toLowerCase() === TextTransform.Uppercase ? transformingText.toUpperCase() : transformingText;
+        return transformedText;
     }
 
     private handleInputChange(index: number, event: KeyboardEvent): void {
@@ -433,7 +503,10 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
         if (target.value.length > 1) {
             target.value = target.value.slice(0, 1);
         }
-        this.triggerInputEvent(event);
+        if (this.textTransform) {
+            target.value = this.getTransformedText(target.value);
+        }
+        this.triggerInputEvent(index, event);
         this.triggerValuechanged(event, true);
     }
 
@@ -460,7 +533,7 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
             if (value.length > 0){
-                this.triggerInputEvent(event);
+                this.triggerInputEvent(index, event);
             }
         }
         else if (event.key === 'Backspace') {
@@ -469,7 +542,7 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
                 previousInputElement.value = '';
                 previousInputElement.focus();
                 if (previousValue.length > 0) {
-                    this.triggerInputEvent(event);
+                    this.triggerInputEvent(index, event);
                 }
             }
         }
@@ -513,6 +586,7 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
             const eventArgs: OtpFocusEventArgs = {
                 element: this.element,
                 event: event,
+                index: index,
                 isInteracted: this.isFocusInCalled ? false : true,
                 value: this.value
             };
@@ -527,8 +601,9 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
             const eventArgs: OtpFocusEventArgs = {
                 element: this.element,
                 event: event,
-                isInteracted: this.isFocusOutCalled ? false : true,
-                value: this.value
+                value: this.value,
+                index: index,
+                isInteracted: this.isFocusOutCalled ? false : true
             };
             this.trigger('blur', eventArgs);
         }
@@ -553,14 +628,15 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    private triggerInputEvent (event: KeyboardEvent): void {
+    private triggerInputEvent (index: number, event: KeyboardEvent): void {
         const previousValue: string = this.value.toString();
         this.updateValueProperty();
         const inputEventArgs: OtpInputEventArgs = {
             element: this.element,
             event: event,
             previousValue: previousValue,
-            value: this.value.toString()
+            value: this.value.toString(),
+            index: index
         };
         this.trigger('input', inputEventArgs);
     }
@@ -582,23 +658,25 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private wireEvents (inputEle: HTMLInputElement, index: number): void {
-        inputEle.addEventListener('focus', this.handleFocus.bind(this, index));
-        inputEle.addEventListener('blur', this.handleBlur.bind(this, index));
-        inputEle.addEventListener('input', this.handleInputChange.bind(this, index));
-        inputEle.addEventListener('keydown', this.handleKeyAction.bind(this, index));
-        inputEle.addEventListener('click', this.handleSelection.bind(this, index));
-        inputEle.addEventListener('paste', this.handlePaste.bind(this, index));
+        EventHandler.add(inputEle, 'focus', this.handleFocus.bind(this, index), this);
+        EventHandler.add(inputEle, 'blur', this.handleBlur.bind(this, index), this);
+        EventHandler.add(inputEle, 'input', this.handleInputChange.bind(this, index), this);
+        EventHandler.add(inputEle, 'keydown', this.handleKeyAction.bind(this, index), this);
+        EventHandler.add(inputEle, 'click', this.handleSelection.bind(this, index), this);
+        EventHandler.add(inputEle, 'paste', this.handlePaste.bind(this, index), this);
+        EventHandler.add(inputEle, 'wheel', this.handleWheelEvent, this);
     }
 
     private unWireEvents (): void {
         for (let i: number = 0; i < this.inputs.length; i++) {
             const currentInputElement: HTMLInputElement = this.inputs[parseInt(i.toString(), 10)];
-            currentInputElement.removeEventListener('focus', this.handleFocus.bind(this, i));
-            currentInputElement.removeEventListener('blur', this.handleBlur.bind(this, i));
-            currentInputElement.removeEventListener('input', this.handleInputChange.bind(this, i));
-            currentInputElement.removeEventListener('keydown', this.handleKeyAction.bind(this, i));
-            currentInputElement.removeEventListener('click', this.handleSelection.bind(this, i));
-            currentInputElement.removeEventListener('paste', this.handlePaste.bind(this, i));
+            EventHandler.remove(currentInputElement, 'focus', this.handleFocus.bind(this, i));
+            EventHandler.remove(currentInputElement, 'blur', this.handleBlur.bind(this, i));
+            EventHandler.remove(currentInputElement, 'input', this.handleInputChange.bind(this, i));
+            EventHandler.remove(currentInputElement, 'keydown', this.handleKeyAction.bind(this, i));
+            EventHandler.remove(currentInputElement, 'click', this.handleSelection.bind(this, i));
+            EventHandler.remove(currentInputElement, 'paste', this.handlePaste.bind(this, i));
+            EventHandler.remove(currentInputElement, 'wheel', this.handleWheelEvent);
         }
     }
 
@@ -615,7 +693,10 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private updateInputValue(previousValue: string | number): void {
-        const stringifiedValue: string = this.value.toString();
+        let stringifiedValue: string = this.value.toString();
+        if (this.textTransform) {
+            stringifiedValue = this.getTransformedText(stringifiedValue);
+        }
         for (let i: number = 0; i < this.inputs.length; i++) {
             const isValueChanged: boolean = previousValue.toString().charAt(i) !== stringifiedValue.charAt(i);
             if (isValueChanged) {
@@ -674,6 +755,9 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
                         addClass([element], elementClass.split(' '));
                     }
                 }
+                else if (key === 'inputmode') {
+                    this.setInputMode(htmlAttributes[`${key}`]);
+                }
                 else if (key === 'name' && this.element.id === element.id) {
                     this.hiddenInputEle.setAttribute(key, htmlAttributes[`${key}`]);
                 }
@@ -681,6 +765,12 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
                     element.setAttribute(key, htmlAttributes[`${key}`]);
                 }
             }
+        }
+    }
+
+    private setInputMode(inputModeValue: string): void {
+        for (let i: number = 0; i < this.inputs.length; i++) {
+            this.inputs[parseInt(i.toString(), 10)].setAttribute('inputmode', inputModeValue);
         }
     }
 
@@ -763,12 +853,13 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
      */
     public focusIn (): void {
         this.isFocusInCalled = true;
-        let focusIndex: number = 0;
-        this.inputs.forEach((input: HTMLInputElement, index: number) => {
-            if (input.value.length > 0) {
+        let focusIndex: number = this.inputs.length - 1;
+        for ( let index: number = 0; index < this.inputs.length; index++) {
+            if (!(this.inputs[parseInt(index.toString(), 10)].value.length > 0)) {
                 focusIndex = index;
+                break;
             }
-        });
+        }
         this.inputs[parseInt(focusIndex.toString(), 10)].focus();
         this.isFocusInCalled = false;
     }
@@ -797,10 +888,12 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
     public onPropertyChanged(newProp: OtpInputModel, oldProp?: OtpInputModel): void {
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-            case 'value': {
+            case 'textTransform':
+                this.updateInputValue(this.value);
+                break;
+            case 'value':
                 this.updateInputValue(oldProp.value);
                 this.triggerValuechanged();
-            }
                 break;
             case 'placeholder':
                 this.addPlaceHolder();
@@ -819,6 +912,9 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
                     this.updateSeparatorValue();
                 }
                 break;
+            case 'htmlAttributes':
+                this.setElementAttributes(newProp.htmlAttributes, this.element);
+                break;
             case 'type':
                 this.updateInputType(newProp.type);
                 break;
@@ -833,6 +929,9 @@ export class OtpInput extends Component<HTMLElement> implements INotifyPropertyC
                 break;
             case 'enableRtl':
                 this.element.classList[this.enableRtl ? 'add' : 'remove'](RTL);
+                break;
+            case 'autoFocus':
+                if (this.autoFocus) { this.focusIn(); }
                 break;
             }
         }

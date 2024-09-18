@@ -76,7 +76,6 @@ export type LabelAlignment =
  * Defines the intersect action. They are
  * * none - Shows all the labels.
  * * hide - Hide the label when it intersect.
- * *
  */
 export type RangeLabelIntersectAction =
     /** Shows all the labels. */

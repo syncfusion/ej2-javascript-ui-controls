@@ -1,7 +1,7 @@
 /**
  * Defines Theme of the smithchart. They are
  * * Material - Render a smithchart with Material theme.
- * * Fabric - Render a smithchart with Fabric theme
+ * * Fabric - Render a smithchart with Fabric theme.
  */
 export type SmithchartTheme =
     /**  Render a smithchart with Material theme. */
@@ -36,6 +36,8 @@ export type SmithchartTheme =
     'Fluent2' |
     /**  Render a smithchart with Fluent 2 dark theme. */
     'Fluent2Dark' |
+    /**  Render a smithchart with Fluent 2 highcontrast theme. */
+    'Fluent2HighContrast' |
     /**  Render a smithchart with FluentDark theme. */
     'FluentDark' |
     /**  Render a smithchart with Material 3 theme. */
@@ -50,20 +52,29 @@ export type SmithchartTheme =
  */
 
 export type RenderType =
-/**  Render a smithchart with Impedance type. */
+    /**  Render a smithchart with Impedance type. */
     'Impedance' |
     /**  Render a smithchart with Admittance type. */
     'Admittance';
 
+/**
+ * Defines the position of axis labels. They are:
+ * * Outside - Render the axis label with position outside the axis.
+ * * Inside - Render the axis label with position inside the axis.
+ */
 export type AxisLabelPosition =
-
-/**  Render a axis label with label position as outside. */
+    /**  Render a axis label with label position as outside. */
     'Outside' |
     /**  Render a axis label with label position as outside. */
     'Inside';
 
+/**
+ * Defines actions for handling overlapping labels in a smith chart. They are:
+ * * Hide - Hide the overlapped axis label.
+ * * None - Render all axis labels, even if they overlap.
+ */
 export type SmithchartLabelIntersectAction =
-/**  Hide the overlapped axis label. */
+    /**  Hide the overlapped axis label. */
     'Hide' |
     /**  Render the overlapped axis label */
     'None';
@@ -73,7 +84,6 @@ export type SmithchartLabelIntersectAction =
  * * near - Align the element to the left.
  * * center - Align the element to the center.
  * * far - Align the element to the right.
- * *
  */
 
 export type SmithchartAlignment =
@@ -84,6 +94,13 @@ export type SmithchartAlignment =
     /** Define the right alignment. */
     'Far';
 
+/**
+ * Defines the export types supported by smith chart. Ther are
+ * * PNG - Export as PNG format.
+ * * JPEG - Export as JPEG format.
+ * * SVG - Export as SVG format.
+ * * PDF - Export as PDF format.
+ */
 export type SmithchartExportType =
 /** Used to export a image as png format */
 'PNG' |
@@ -93,6 +110,7 @@ export type SmithchartExportType =
 'SVG'|
 /** Used to export a file as pdf format */
 'PDF';
+
 /**
  * Specifies TreeMap beforePrint event name.
  *

@@ -473,6 +473,12 @@ export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings
      */
     @Property(null)
     public customData: object;
+
+    /**
+     * Allows setting the font name for typed signatures at specific indices. The maximum number of font names is limited to 4, so the key values should range from 0 to 3.
+     */
+    @Property()
+    public typeSignatureFonts: { [key: number]: string };
 }
 
 /**
@@ -589,6 +595,12 @@ export class InitialFieldSettings extends ChildProperty<InitialFieldSettings> {
      */
     @Property(null)
     public customData: object;
+
+    /**
+     * Allows setting the font name for typed initials at specific indices. The maximum number of font names is limited to 4, so the key values should range from 0 to 3.
+     */
+    @Property()
+    public typeInitialFonts: { [key: number]: string };
 }
 
 /**
@@ -715,7 +727,8 @@ export class SignatureDialogSettings extends ChildProperty<SignatureDialogSettin
  *      exportAnnotations: "ExportAnnotations",
  *      importFormFields: "ImportFormFields",
  *      exportFormFields: "ExportFormFields",
- *      renderTexts: "RenderPdfTexts"
+ *      renderTexts: "RenderPdfTexts",
+ *      validatePassword: "ValidatePassword"
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -793,6 +806,12 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
      */
     @Property('RenderPdfTexts')
     public renderTexts: string;
+
+    /**
+     * Specifies the password validation action of PDF Viewer.
+     */
+    @Property('ValidatePassword')
+    public validatePassword: string;
 
 }
 
@@ -3893,6 +3912,45 @@ export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSigna
     @Property()
     public initialDialogSettings: SignatureDialogSettingsModel;
 
+    /**
+     * Gets or sets the signature offset.
+     *
+     * @default {x:0,y:0}
+     */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+    /**
+     * Gets or sets the signature page number.
+     *
+     * @default 1
+     */
+    @Property(1)
+    public pageNumber: number;
+
+    /**
+     * Gets or sets the path of the signature.
+     *
+     * @default ''
+     */
+    @Property('')
+    public path: string;
+
+    /**
+     * Gets or sets the font family for text signature.
+     *
+     * @default 'Helvetica'
+     */
+    @Property('Helvetica')
+    public fontFamily: string;
+
+    /**
+     * Allows saving of programmatically added signatures.
+     *
+     * @default false
+     */
+    @Property(false)
+    public canSave: boolean;
 }
 
 /**
@@ -5424,7 +5482,8 @@ export class CommandManager extends ChildProperty<CommandManager> {
  *           canInsert: true,
  *           canRotate: true,
  *           canCopy: true,
- *           canRearrange: true
+ *           canRearrange: true,
+ *           canImport: true;
  *   };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -5462,6 +5521,56 @@ export class PageOrganizerSettings extends ChildProperty<PageOrganizerSettings> 
     @Property(true)
     public canRearrange: boolean;
 
+    /**
+     * Specifies whether the other PDF document can be imported.
+     */
+    @Property(true)
+    public canImport: boolean;
+
+}
+
+/**
+ * Specifies the properties of the text search result bounds.
+ */
+export interface IPdfRectBounds {
+
+    /**
+     * Returns the x position of the rectangle.
+     */
+    x: number;
+
+    /**
+     * Returns the y position of the rectangle.
+     */
+    y: number;
+
+    /**
+     * Returns the rectangle width.
+     */
+    width: number;
+
+    /**
+     * Returns the rectangle height.
+     */
+    height: number
+}
+
+/**
+ * The `SearchResult` provides the page index along with an array of bounds that indicate the locations of the search text identified on that page.
+ */
+export class SearchResult extends ChildProperty<SearchResult> {
+
+    /**
+     * Returns the page index of the search text.
+     */
+    @Property(0)
+    public pageIndex: number;
+
+    /**
+     * Returns the bounds of the search text.
+     */
+    @Property([])
+    public bounds: IPdfRectBounds[];
 }
 
 /**
@@ -5498,13 +5607,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public pageCount: number;
 
     /**
-     * gets the printScaleRatio value of the document loaded in the PdfViewer control.
+     *Specifies the document printing quality. The default printing quality is set to 1.0. This limit varies from 0.5 to 5.0. If an invalid value is specified, the default value of 1.0 will be used. For documents with smaller page dimensions, a higher print quality is recommended.
      *
-     * @private
-     * @default 1
+     *{% codeBlock src='pdfviewer/printScaleFactor/index.md' %}{% endBlock %}
+     *
+     * @default 1.0
      */
     @Property(1)
-    public printScaleRatio: number;
+    public printScaleFactor: number;
 
     /**
      * Get File byte array of the PDF document.
@@ -5830,6 +5940,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enablePrintRotation: boolean;
 
     /**
+     * Specifies a collection of font names as strings. These fonts must be located in the resourceUrl folder.
+     *
+     * @default []
+     */
+    public customFonts: string[];
+
+    /**
      * Enables or disables the thumbnail view in the PDF viewer
      *
      * {% codeBlock src='pdfviewer/enableThumbnail/index.md' %}{% endcodeBlock %}
@@ -5865,7 +5982,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * {% codeBlock src='pdfviewer/pageOrganizerSettings/index.md' %}{% endcodeBlock %}
      *
      */
-    @Property({canDelete: true, canInsert: true, canRotate: true, canCopy: true, canRearrange: true})
+    @Property({canDelete: true, canInsert: true, canRotate: true, canCopy: true, canRearrange: true, canImport: true})
     public pageOrganizerSettings: PageOrganizerSettingsModel;
 
     /**
@@ -6449,7 +6566,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      */
 
-    @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments', importAnnotations: 'ImportAnnotations', exportAnnotations: 'ExportAnnotations', importFormFields: 'ImportFormFields', exportFormFields: 'ExportFormFields', renderTexts: 'RenderPdfTexts' })
+    @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments', importAnnotations: 'ImportAnnotations', exportAnnotations: 'ExportAnnotations', importFormFields: 'ImportFormFields', exportFormFields: 'ExportFormFields', renderTexts: 'RenderPdfTexts', validatePassword: 'ValidatePassword' })
     public serverActionSettings: ServerActionSettingsModel;
 
     /**
@@ -6704,7 +6821,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      */
 
-    @Property({ signatureItem: ['Signature', 'Initial'], saveSignatureLimit: 1, saveInitialLimit: 1, opacity: 1, strokeColor: '#000000', width: 150, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], signatureDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false }, initialDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false} })
+    @Property({ signatureItem: ['Signature', 'Initial'], saveSignatureLimit: 1, saveInitialLimit: 1, opacity: 1, strokeColor: '#000000', width: 150, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], signatureDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false }, initialDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false } })
     public handWrittenSignatureSettings: HandWrittenSignatureSettingsModel;
 
     /**
@@ -7832,6 +7949,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
             this.viewerBase.pdfViewerRunner.postMessage({
                 url: this.getScriptPathForPlatform(),
+                fonts: this.customFonts,
                 message: 'initialLoading'
             });
             this.viewerBase.pdfViewerRunner.onmessage = function (event: any): void {
@@ -7881,7 +7999,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             imageDeatils = this.pdfRendererModule.exportAsImagesWithSize(startIndex, endIndex, size);
         }
         else {
-            imageDeatils = this.pdfRendererModule.exportAsImages(startIndex, endIndex)
+            imageDeatils = this.pdfRendererModule.exportAsImages(startIndex, endIndex);
         }
         return imageDeatils;
     }
@@ -8203,6 +8321,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     if (isNullOrUndefined(newProp.pageOrganizerSettings.canRearrange)){
                         this.pageOrganizerSettings.canRearrange = true;
                     }
+                    if (isNullOrUndefined(newProp.pageOrganizerSettings.canImport)){
+                        this.pageOrganizerSettings.canImport = true;
+                    }
                 }
                 break;
             }
@@ -8341,6 +8462,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Save': 'Save',
         'Save As': 'Save As',
         'Select All': 'Select All',
+        'Import Document': 'Import Document',
         'Password Protected': 'Password Required',
         'Copy': 'Copy',
         'Text Selection': 'Text selection tool',
@@ -8348,12 +8470,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Text Search': 'Find text',
         'Find in document': 'Find in document',
         'Match case': 'Match case',
+        'Match any word': 'Match any word',
         'Apply': 'Apply',
         'GoToPage': 'Go to Page',
-        'No Matches':'PDF Viewer has finished searching the document. No matches were found.',
-        'No More Matches':'PDF Viewer has finished searching the document. No more matches were found.',
-        'No Search Matches':'No matches found',
-        'No More Search Matches':'No more matches found',
+        'No Matches': 'PDF Viewer has finished searching the document. No matches were found.',
+        'No More Matches': 'PDF Viewer has finished searching the document. No more matches were found.',
+        'No Search Matches': 'No matches found',
+        'No More Search Matches': 'No more matches found',
+        'Exact Matches': 'EXACT MATCHES',
+        'Total Matches': 'TOTAL MATCHES',
         'Undo': 'Undo',
         'Redo': 'Redo',
         'Annotation': 'Add or Edit annotations',
@@ -8747,6 +8872,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         target.checked = fieldValue.isChecked;
                     }
                 }
+                // eslint-disable-next-line
                 if (target.value != fieldValue.value){
                     target.value = fieldValue.value;
                 }
@@ -8805,26 +8931,27 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
         } else {
             const data: string = this.viewerBase.getItemFromSessionStorage('_formfields');
-            if(isNullOrUndefined(data))
+            if (isNullOrUndefined(data))
             {
-                const data_1: string = this.viewerBase.getItemFromSessionStorage('_formDesigner');
-                const FormFieldsData_1 : any = JSON.parse(data_1);
+                const data1: string = this.viewerBase.getItemFromSessionStorage('_formDesigner');
+                const FormFieldsData1 : any = JSON.parse(data1);
                 const filteredCollection : any = this.viewerBase.formFieldCollection.filter((field: any) => {
-                    return field.FormField.id.split("_")[0] === fieldValue.id;
+                    return field.FormField.id.split('_')[0] === fieldValue.id;
                 });
-                
+
                 filteredCollection.forEach((field: any) => {
                     field.FormField.signatureType = fieldValue.signatureType;
                     field.FormField.value = fieldValue.value;
                 });
-                for (let m: number = 0; m < FormFieldsData_1.length; m++) {
-                    if (FormFieldsData_1[parseInt(m.toString(), 10)].FormField.id.split("_")[0] == fieldValue.id) {
-                        FormFieldsData_1[parseInt(m.toString(), 10)].FormField.value = fieldValue.value;
-                        FormFieldsData_1[parseInt(m.toString(), 10)].FormField.signatureType = fieldValue.signatureType;
+                for (let m: number = 0; m < FormFieldsData1.length; m++) {
+                    // eslint-disable-next-line
+                    if (FormFieldsData1[parseInt(m.toString(), 10)].FormField.id.split('_')[0] == fieldValue.id) {
+                        FormFieldsData1[parseInt(m.toString(), 10)].FormField.value = fieldValue.value;
+                        FormFieldsData1[parseInt(m.toString(), 10)].FormField.signatureType = fieldValue.signatureType;
                     }
                 }
             }
-            
+
             else {
                 const FormFieldsData: any = JSON.parse(data);
                 for (let m: number = 0; m < FormFieldsData.length; m++) {
@@ -9102,6 +9229,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     if (importData.indexOf('</xfdf>') > -1) {
                         this.viewerBase.importAnnotations(importData, annotationDataFormat, false);
                     } else {
+                        // eslint-disable-next-line
                         if (annotationDataFormat == 'Json') {
                             if (importData.includes('pdfAnnotation')) {
                                 this.importAnnotationsAsJson(importData);
@@ -9109,8 +9237,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                                 this.viewerBase.isPDFViewerJson = true;
                                 this.viewerBase.importAnnotations(importData, annotationDataFormat, isXfdfFile);
                             } else {
-                                const newImportData: any = importData.split(',')[1] ? importData.split(',')[1] : importData.split(',')[0];
-                                importData = decodeURIComponent(escape(atob(newImportData)));
                                 this.importAnnotationsAsJson(importData);
                             }
                         } else {
@@ -9122,6 +9248,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         if (importData.includes('pdfAnnotation')) {
                             this.importAnnotationsAsJson(importData);
                         } else {
+                            const newImportData: any = importData.split(',')[1] ? importData.split(',')[1] : importData.split(',')[0];
+                            importData = decodeURIComponent(escape(atob(newImportData)));
                             this.importAnnotationsAsJson(importData);
                         }
                     } else {
@@ -9457,6 +9585,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param {boolean} isRequiredChanged - Specifies whether the is required option of the form field is changed or not.
      * @param {boolean} isPrintChanged - Specifies whether the print option of the form field is changed or not.
      * @param {boolean} isToolTipChanged - Specifies whether the tool tip property is changed or not.
+     * @param {boolean} isCustomDataChanged - Specifies isCustomDataChanged
      * @param {any} oldValue - Specifies the old value of the form field.
      * @param {any} newValue - Specifies the new value of the form field.
      * @param {any} isNamechanged - Specifies whether the name changed property is changed or not.
@@ -9468,7 +9597,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                                               isColorChanged: boolean, isBackgroundColorChanged: boolean, isBorderColorChanged: boolean,
                                               isBorderWidthChanged: boolean, isAlignmentChanged: boolean, isReadOnlyChanged: boolean,
                                               isVisibilityChanged: boolean, isMaxLengthChanged: boolean,
-                                              isRequiredChanged: boolean, isPrintChanged: boolean, isToolTipChanged: boolean, isCustomDataChanged: boolean,
+                                              isRequiredChanged: boolean, isPrintChanged: boolean, isToolTipChanged: boolean,
+                                              isCustomDataChanged: boolean,
                                               oldValue?: any, newValue?: any, isNamechanged?: any): void {
         const eventArgs: FormFieldPropertiesChangeArgs = {
             name: name, field: field, pageIndex: pageIndex, isValueChanged: isValueChanged,
@@ -10060,7 +10190,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      * @returns {void}
      */
-    public fireSignatureUnselect(id: string, pageNumber: number, signature: object) {
+    public fireSignatureUnselect(id: string, pageNumber: number, signature: object): void {
         const eventArgs: SignatureUnselectEventArgs = { id: id, pageIndex: pageNumber, signature: signature };
         this.trigger('signatureUnselect', eventArgs);
     }

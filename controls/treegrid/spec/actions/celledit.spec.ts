@@ -1336,6 +1336,134 @@ describe('Bug 871546: Action Complete with args.requestType Cancel not passed on
         destroy(gridObj);
     });
 });
+
+describe('code coverage', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                height: 400,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    mode: 'Cell',
+                    newRowPosition: 'Below'
+
+                },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+                columns: [
+                    {
+                        field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 90
+                    },
+                    { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220, validationRules: { required: true } },
+                    {
+                        field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
+                        format: 'yMd', validationRules: { date: true }
+                    },
+                    {
+                        field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 140, editType: 'numericedit',
+                        validationRules: { number: true, min: 0 }, edit: { params: { format: 'n' } }
+                    }
+                ],
+            },
+            done
+        );
+    });
+    it('action complete with cell edit action', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args['requestType'] === 'cancel') {
+                expect(args.requestType === 'cancel').toBe(true);
+            }
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.editCell(2, 'taskName');
+        gridObj.endEdit();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('code coverage', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, newRowPosition: 'Top' },
+
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'startDate', headerText: 'Start Date' }
+                ]
+            },
+            done
+        );
+    });
+    it('record double click', (done: Function) => {
+        gridObj.cellEdit = (args?: CellEditArgs): void => {
+            expect(args.columnName).toBe('taskName');
+            done();
+        };
+        const event: MouseEvent = new MouseEvent('dblclick', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
+        gridObj.saveCell();
+        gridObj.actionComplete = (args?: any): void => {
+            expect(gridObj.dataSource[0].subtasks[1].taskName).toBe('test');
+            done();
+        };
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('code coverage', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, newRowPosition: 'Top' },
+
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: false },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'startDate', headerText: 'Start Date' }
+                ]
+            },
+            done
+        );
+    });
+    it('add record method', (done: Function) => {
+        gridObj.addRecord({TaskID: 111, TaskName: 'Child record'}, 3, 'Child');
+        expect(gridObj.flatData.length === 37).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
 describe('Without bind EditSettings', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {

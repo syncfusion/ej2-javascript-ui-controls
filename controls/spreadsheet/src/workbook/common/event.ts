@@ -32,6 +32,8 @@ export const applyNumberFormatting: string = 'applyNumber';
 /** @hidden */
 export const getFormattedCellObject: string = 'getFormattedCell';
 /** @hidden */
+export const calculateFormula: string = 'calculateFormula';
+/** @hidden */
 export const refreshCellElement: string = 'refreshCellElem';
 /** @hidden */
 export const setCellFormat: string = 'setCellFormat';
@@ -210,8 +212,6 @@ export const refreshChart: string = 'refreshChart';
 /** @hidden */
 export const refreshChartSize: string = 'refreshChartSize';
 /** @hidden */
-export const updateChart: string = 'updateChart';
-/** @hidden */
 export const deleteChartColl: string = 'deleteChartColl';
 /** @hidden */
 export const initiateChartModel: string = 'initiateChartModel';
@@ -258,8 +258,6 @@ export const duplicateSheetFilterHandler: string = 'duplicateSheetFilterHandler'
 /** @hidden */
 export const unMerge: string = 'unMerge';
 /** @hidden */
-export const addFormatToCustomFormatDlg: string = 'addFormatToCustomFormatDlg';
-/** @hidden */
 export const checkFormulaRef: string = 'checkFormulaRef';
 /** @hidden */
 export const parseFormulaArgument: string = 'parseFormulaArgument';
@@ -269,3 +267,9 @@ export const getChartRowIdxFromClientY: string = 'getChartRowIdxFromClientY';
 export const getChartColIdxFromClientX: string = 'getChartColIdxFromClientX';
 /** @hidden */
 export const refreshChartCellOnInit: string = 'refreshChartCellOnInit';
+/** @hidden */
+export const localizedFormatAction: string = 'localizedFormatAction';
+/** @hidden */
+export const moveSheetHandler: string = 'moveSheetHandler';
+/** @hidden */
+export const addListValidationDropdown: string = 'addListValidationDropdown';

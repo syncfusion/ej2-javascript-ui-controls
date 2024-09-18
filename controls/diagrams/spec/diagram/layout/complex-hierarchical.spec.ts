@@ -95,7 +95,7 @@ describe('Diagram Control', () => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'RightToLeft';
             diagram.dataBind();
-            expect(diagram.nodes[0].offsetX == 800 && (diagram.nodes[0].offsetY == 215.13003698807424 ||diagram.nodes[0].offsetY == 159 || diagram.nodes[0].offsetY == 57.09756405520557)).toBe(true);
+            expect(diagram.nodes[0].offsetX == 800 && (diagram.nodes[0].offsetY == 215.13003698807424 || diagram.nodes[0].offsetY == 159 || diagram.nodes[0].offsetY == 57.09756405520557)).toBe(true);
             done();
         });
         it('Checking Margin layout', (done: Function) => {
@@ -133,6 +133,173 @@ describe('Diagram Control', () => {
         });
     });
 
+});
+
+var testData: object[] = [
+    { "Name": "node11", "fillColor": "#ff6329" },
+    { "Name": "node21", "fillColor": "#ff6329" },
+    { "Name": "node31", "fillColor": "#ff6329" },
+    { "Name": "node114", "ReportingPerson": ["node11", "node21", "node31"], "fillColor": "#941100" },
+    { "Name": "node12", "ReportingPerson": ["node114"], "fillColor": "#669be5" },
+    { "Name": "node22", "ReportingPerson": ["node114"], "fillColor": "#669be5" },
+];
+
+describe('Diagram Control', () => {
+    describe('Complex Tree Layout', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let items: DataManager = new DataManager(testData as JSON[], new Query().take(6));
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagramComplexHierarchicalTree' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: 600, height: 720,
+                layout: { type: 'ComplexHierarchicalTree', horizontalSpacing: 30, verticalSpacing: 30, orientation: 'TopToBottom' },
+                dataSourceSettings: {
+                    id: 'Name', parentId: 'ReportingPerson', dataSource: items
+                },
+                getNodeDefaults: (node: NodeModel, diagram: Diagram) => {
+                    let obj: NodeModel = {};
+                    obj.height = 40;
+                    obj.width = 40;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                }, getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+                    let connector: ConnectorModel = {};
+                    connector.targetDecorator = { shape: 'None' };
+                    connector.type = 'Orthogonal';
+                    return connector;
+                },
+            });
+            diagram.appendTo('#diagramComplexHierarchicalTree');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking RightToLeft complex tree layout with Right alignment', (done: Function) => {
+            diagram.layout.type = 'ComplexHierarchicalTree';
+            diagram.layout.orientation = 'RightToLeft';
+            diagram.layout.horizontalAlignment = 'Right';
+            diagram.layout.verticalAlignment = 'Center';
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 580 && diagram.nodes[0].offsetY == 290).toBe(true);
+            done();
+        });
+        it('Checking RightToLeft complex tree layout with Center alignment', (done: Function) => {
+            diagram.layout.type = 'ComplexHierarchicalTree';
+            diagram.layout.orientation = 'RightToLeft';
+            diagram.layout.horizontalAlignment = 'Center';
+            diagram.layout.verticalAlignment = 'Center';
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 370 && diagram.nodes[0].offsetY == 290).toBe(true);
+            done();
+        });
+        it('Checking BottomToTop complex tree layout with Bottom alignment', (done: Function) => {
+            diagram.layout.type = 'ComplexHierarchicalTree';
+            diagram.layout.orientation = 'BottomToTop';
+            diagram.layout.horizontalAlignment = 'Center';
+            diagram.layout.verticalAlignment = 'Bottom';
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 230 && diagram.nodes[0].offsetY == 700).toBe(true);
+            done();
+        });
+        it('Checking BottomToTop complex tree layout with Center alignment', (done: Function) => {
+            diagram.layout.type = 'ComplexHierarchicalTree';
+            diagram.layout.orientation = 'BottomToTop';
+            diagram.layout.horizontalAlignment = 'Center';
+            diagram.layout.verticalAlignment = 'Center';
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 230 && diagram.nodes[0].offsetY == 430).toBe(true);
+            done();
+        });
+        it('Checking BottomToTop complex tree layout with Top alignment', (done: Function) => {
+            diagram.layout.type = 'ComplexHierarchicalTree';
+            diagram.layout.orientation = 'BottomToTop';
+            diagram.layout.horizontalAlignment = 'Center';
+            diagram.layout.verticalAlignment = 'Top';
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 230 && diagram.nodes[0].offsetY == 210).toBe(true);
+            done();
+        });
+        it('Checking TopToBottom complex tree layout with Center alignment', (done: Function) => {
+            diagram.layout.type = 'ComplexHierarchicalTree';
+            diagram.layout.orientation = 'TopToBottom';
+            diagram.layout.horizontalAlignment = 'Center';
+            diagram.layout.verticalAlignment = 'Center';
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 230 && diagram.nodes[0].offsetY == 290).toBe(true);
+            done();
+        });
+        it('Checking RightToLeft complex tree layout with Bounds defined', (done: Function) => {
+            diagram.layout.type = 'ComplexHierarchicalTree';
+            diagram.layout.orientation = 'RightToLeft';
+            diagram.layout.horizontalAlignment = 'Right';
+            diagram.layout.verticalAlignment = 'Center';
+            diagram.layout.bounds = new Rect(0, 0, 500, 720);
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 480 && diagram.nodes[0].offsetY == 290).toBe(true);
+            done();
+        });
+    });
+});
+
+var testGroupData: object[] = [
+    { "Name": "node11", "fillColor": "#ff6329" },
+    { "Name": "node21", "fillColor": "#ff6329" },
+    { "Name": "node31", "fillColor": "#ff6329" },
+    { "Name": "node41", "fillColor": "#ff6329" },
+    { "Name": "node12", "ReportingPerson": ["node11", "node21", "node31", "node41"], "fillColor": "#941100" },
+    { "Name": "node13", "ReportingPerson": ["node12"], "fillColor": "#669be5" },
+    { "Name": "node23", "ReportingPerson": ["node12"], "fillColor": "#669be5" },
+    { "Name": "node34", "ReportingPerson": ["node31", "node41", "node23"], "fillColor": "#669be5" }
+];
+
+describe('Diagram Control', () => {
+    describe('Complex Tree Layout', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let items: DataManager = new DataManager(testGroupData as JSON[], new Query().take(6));
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagramComplexHierarchicalTree' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: 600, height: 720,
+                layout: { type: 'ComplexHierarchicalTree', horizontalSpacing: 30, verticalSpacing: 30, orientation: 'TopToBottom' },
+                dataSourceSettings: {
+                    id: 'Name', parentId: 'ReportingPerson', dataSource: items
+                },
+                getNodeDefaults: (node: NodeModel, diagram: Diagram) => {
+                    let obj: NodeModel = {};
+                    obj.height = 40;
+                    obj.width = 40;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                }, getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+                    let connector: ConnectorModel = {};
+                    connector.targetDecorator = { shape: 'None' };
+                    connector.type = 'Orthogonal';
+                    return connector;
+                },
+            });
+            diagram.appendTo('#diagramComplexHierarchicalTree');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking RightToLeft complex tree layout with Grouped Connectors', (done: Function) => {
+            diagram.layout.type = 'ComplexHierarchicalTree';
+            diagram.layout.orientation = 'TopToBottom';
+            diagram.layout.horizontalAlignment = 'Left';
+            diagram.layout.verticalAlignment = 'Top';
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 70 && diagram.nodes[0].offsetY == 70).toBe(true);
+            done();
+        });
+    });
 });
 
 let complexData: Object[] = [
@@ -789,6 +956,148 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+    describe(' layout for Horizontal and  vertical alignment ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+    
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let data: object[] = [
+                { "Name": "node11", "fillColor": "#ff6329" },
+                { "Name": "node12", "ReportingPerson": ["node114"], "fillColor": "#669be5" },
+                { "Name": "node13", "ReportingPerson": ["node12"], "fillColor": "#30ab5c" },
+                { "Name": "node14", "ReportingPerson": ["node12"], "fillColor": "#30ab5c" },
+                { "Name": "node15", "ReportingPerson": ["node12"], "fillColor": "#30ab5c" },
+                { "Name": "node16", "ReportingPerson": [], "fillColor": "#14ad85" },
+                { "Name": "node17", "ReportingPerson": ["node13", "node14", "node15"], "fillColor": "#ff9400" },
+                { "Name": "node18", "ReportingPerson": [], "fillColor": "#14ad85" },
+                { "Name": "node19", "ReportingPerson": ["node16", "node17", "node18"], "fillColor": "#99bb55" },
+                { "Name": "node110", "ReportingPerson": ["node16", "node17", "node18"], "fillColor": "#99bb55" },
+                { "Name": "node111", "ReportingPerson": ["node16", "node17", "node18", "node116"], "fillColor": "#99bb55" },
+                { "Name": "node21", "fillColor": "#ff6329" },
+                { "Name": "node22", "ReportingPerson": ["node114"], "fillColor": "#669be5" },
+                { "Name": "node23", "ReportingPerson": ["node22"], "fillColor": "#30ab5c" },
+                { "Name": "node24", "ReportingPerson": ["node22"], "fillColor": "#30ab5c" },
+                { "Name": "node25", "ReportingPerson": ["node22"], "fillColor": "#30ab5c" },
+                { "Name": "node26", "ReportingPerson": [], "fillColor": "#14ad85" },
+                { "Name": "node27", "ReportingPerson": ["node23", "node24", "node25"], "fillColor": "#ff9400" },
+                { "Name": "node28", "ReportingPerson": [], "fillColor": "#14ad85" },
+                { "Name": "node29", "ReportingPerson": ["node26", "node27", "node28", "node116"], "fillColor": "#99bb55" },
+                { "Name": "node210", "ReportingPerson": ["node26", "node27", "node28"], "fillColor": "#99bb55" },
+                { "Name": "node211", "ReportingPerson": ["node26", "node27", "node28"], "fillColor": "#99bb55" },
+                { "Name": "node31", "fillColor": "#ff6329" },
+                { "Name": "node114", "ReportingPerson": ["node11", "node21", "node31"], "fillColor": "#941100" },
+                { "Name": "node116", "ReportingPerson": ["node12", "node22"], "fillColor": "#30ab5c" },
+            ];
+    
+            let items: DataManager = new DataManager(data as JSON[], new Query().take(25));
+            diagram = new Diagram({
+                width: 900, height: 1000,
+                layout: { type: 'ComplexHierarchicalTree', horizontalSpacing: 30, verticalSpacing: 30 },
+                dataSourceSettings: {
+                    id: 'Name', parentId: 'ReportingPerson', dataSource: items
+                },
+    
+                getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
+                    obj.height = 40; obj.width = 40;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                },
+                getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.targetDecorator.shape = 'None';
+                    connector.type = 'Orthogonal';
+                    return connector;
+                },
+            });
+    
+            diagram.appendTo('#diagram');
+        });
+    
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+    
+        it('Checking Complex hiericha layout orientation and alignment', (done: Function) => {
+            // Test case for TopToBottom orientation with Right horizontal alignment
+            diagram.layout.orientation = "TopToBottom";
+            diagram.layout.horizontalAlignment = "Right";
+            diagram.dataBind();
+            expect(diagram.layout.horizontalAlignment).toBe("Right");
+    
+            // Test case for TopToBottom orientation with Bottom vertical alignment
+            diagram.layout.verticalAlignment = "Bottom";
+            diagram.dataBind();
+            expect(diagram.layout.verticalAlignment).toBe("Bottom");
+    
+            // Test case for LeftToRight orientation with Right horizontal alignment
+            diagram.layout.orientation = "LeftToRight";
+            diagram.layout.horizontalAlignment = "Right";
+            diagram.dataBind();
+            expect(diagram.layout.horizontalAlignment).toBe("Right");
+    
+            // Test case for LeftToRight orientation with Bottom vertical alignment
+            diagram.layout.verticalAlignment = "Bottom";
+            diagram.dataBind();
+            expect(diagram.layout.verticalAlignment).toBe("Bottom");
+    
+            done();
+        });
+    });
+    describe('setXY to cover the in edges and out Edges', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+    
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let data: object[] = [
+                { "Name": "node11", "fillColor": "#ff6329" },
+                
+            ];
+    
+            let items: DataManager = new DataManager(data as JSON[], new Query().take(25));
+            diagram = new Diagram({
+                width: 900, height: 1000,
+                layout: { type: 'ComplexHierarchicalTree',orientation: 'LeftToRight', horizontalSpacing: 30, verticalSpacing: 30 },
+                dataSourceSettings: {
+                    id: 'Name', parentId: 'ReportingPerson', dataSource: items
+                },
+    
+                getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
+                    obj.height = 40; obj.width = 40;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                },
+                getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.targetDecorator.shape = 'None';
+                    connector.type = 'Orthogonal';
+                    return connector;
+                },
+            });
+    
+            diagram.appendTo('#diagram');
+        });
+    
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+    
+        it(' ComplexTree layout orientation to setXY ', (done: Function) => {
+            diagram.layout.horizontalAlignment = "Right";
+            diagram.dataBind();
+            expect(diagram.layout.horizontalAlignment).toBe("Right");
+            done();
+        });
+
+    
+    });
+       
+    });
     describe('Expand and collapse', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -1345,7 +1654,7 @@ describe('Diagram Control', () => {
             done();
         });
     });
-});
+
 
 
 describe('Complex Tree Layout with routing', () => {
@@ -1382,8 +1691,8 @@ describe('Complex Tree Layout with routing', () => {
     });
     it('Checking complex tree layout with enableRouting true', (done: Function) => {
         diagram.doLayout();
-        expect(diagram.nodes[0].offsetX == 85 && diagram.nodes[1].offsetY == 473.625 && diagram.nodes[2].offsetX == 365).toBe(true);
-        expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 120 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 520.79).toBe(true);
+        expect(diagram.nodes[0].offsetX == 85 && diagram.nodes[1].offsetY == 482.25 && diagram.nodes[2].offsetX == 365).toBe(true);
+        expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 120 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 529.42).toBe(true);
         done();
     });
 });
@@ -6368,6 +6677,78 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
     // });
 
 
+});
+describe('Complex Hierarchical Tree Layout', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let data: object[] = [
+        { "Name": "node11", "fillColor": "#ff6329" },
+        { "Name": "node12", "ReportingPerson": ["node114"], "fillColor": "#669be5" },
+        { "Name": "node13", "ReportingPerson": ["node12"], "fillColor": "#30ab5c" },
+        { "Name": "node14", "ReportingPerson": ["node12"], "fillColor": "#30ab5c" },
+        { "Name": "node15", "ReportingPerson": ["node12"], "fillColor": "#30ab5c" },
+        { "Name": "node16", "ReportingPerson": [], "fillColor": "#14ad85" },
+        { "Name": "node17", "ReportingPerson": ["node13", "node14", "node15"], "fillColor": "#ff9400" },
+        { "Name": "node18", "ReportingPerson": [], "fillColor": "#14ad85" },
+        { "Name": "node19", "ReportingPerson": ["node16", "node17", "node18"], "fillColor": "#99bb55" },
+        { "Name": "node110", "ReportingPerson": ["node16", "node17", "node18"], "fillColor": "#99bb55" },
+        { "Name": "node111", "ReportingPerson": ["node16", "node17", "node18", "node116"], "fillColor": "#99bb55" },
+        { "Name": "node21", "fillColor": "#ff6329" },
+        { "Name": "node22", "ReportingPerson": ["node114"], "fillColor": "#669be5" },
+        { "Name": "node23", "ReportingPerson": ["node22"], "fillColor": "#30ab5c" },
+        { "Name": "node24", "ReportingPerson": ["node22"], "fillColor": "#30ab5c" },
+        { "Name": "node25", "ReportingPerson": ["node22"], "fillColor": "#30ab5c" },
+        { "Name": "node26", "ReportingPerson": [], "fillColor": "#14ad85" },
+        { "Name": "node27", "ReportingPerson": ["node23", "node24", "node25"], "fillColor": "#ff9400" },
+        { "Name": "node28", "ReportingPerson": [], "fillColor": "#14ad85" },
+        { "Name": "node29", "ReportingPerson": ["node26", "node27", "node28", "node116"], "fillColor": "#99bb55" },
+        { "Name": "node210", "ReportingPerson": ["node26", "node27", "node28"], "fillColor": "#99bb55" },
+        { "Name": "node211", "ReportingPerson": ["node26", "node27", "node28"], "fillColor": "#99bb55" },
+        { "Name": "node31", "fillColor": "#ff6329" },
+        { "Name": "node114", "ReportingPerson": ["node11", "node21", "node31"], "fillColor": "#941100" },
+        { "Name": "node116", "ReportingPerson": ["node12", "node22"], "fillColor": "#30ab5c" },
+    ];
+
+    let items: DataManager = new DataManager(data as JSON[], new Query().take(25));
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagram' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: 900, height: 1000,
+            layout: {
+                type: 'ComplexHierarchicalTree', horizontalSpacing: 30, verticalSpacing: 30,
+                connectionPointOrigin: ConnectionPointOrigin.DifferentPoint,
+                horizontalAlignment: 'Left',
+                verticalAlignment: 'Top',
+                enableRouting: true
+            },
+            dataSourceSettings: {
+                id: 'Name', parentId: 'ReportingPerson', dataSource: items
+            },
+            getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
+                obj.height = 40; obj.width = 40;
+                obj.backgroundColor = 'lightgrey';
+                obj.style = { fill: 'transparent', strokeWidth: 2 };
+                return obj;
+            }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                connector.targetDecorator.shape = 'None';
+                connector.type = 'Orthogonal';
+                return connector;
+            },
+        });
+        diagram.appendTo('#diagram');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('code coverage', (done: Function) => {
+        expect(diagram.nodes[0].offsetX === 210).toBe(true);
+        expect(diagram.nodes[0].offsetY === 70).toBe(true);
+        expect(diagram.nodes[16].offsetX === 490).toBe(true);
+        expect(diagram.nodes[16].offsetY === 420).toBe(true);
+        done();
+    });
 });
 export interface DataInfo {
     [key: string]: string;

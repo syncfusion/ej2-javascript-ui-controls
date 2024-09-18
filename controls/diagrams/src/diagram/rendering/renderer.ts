@@ -700,17 +700,19 @@ export class DiagramRenderer {
     public renderOrthogonalThumbs(
         id: string, selector: DiagramElement, segment: OrthogonalSegment, canvas: HTMLCanvasElement | SVGElement,
         visibility: boolean, t: Transforms, connector: ConnectorModel): void {
-        let orientation: string; let visible: boolean; let length: number; let j: number = 0;
+        let orientation: string; let visible: boolean; let length: number; let j: number = 0; let direction: string;
         // (EJ2-57115) - Added below code to check if maxSegmentThumb is zero or not
         if (!connector.maxSegmentThumb) {
             for (j = 0; j < segment.points.length - 1; j++) {
                 length = Point.distancePoints(segment.points[parseInt(j.toString(), 10)], segment.points[j + 1]);
                 orientation = (segment.points[parseInt(j.toString(), 10)].y.toFixed(2) === segment.points[j + 1].y.toFixed(2)) ? 'horizontal' : 'vertical';
+                //850501-Added below code to check the direction of the segments
+                direction = Point.direction(segment.points[parseInt(j.toString(), 10)], segment.points[j + 1]);
                 visible = (length >= 50 && segment.allowDrag) ? true : false;
                 this.renderOrthogonalThumb(
                     (id + '_' + (j + 1)), selector, (((segment.points[parseInt(j.toString(), 10)].x + segment.points[j + 1].x) / 2)),
                     (((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2)), canvas, visible,
-                    orientation, t, connector);
+                    orientation, t, connector, direction);
             }
         } else {
             // (EJ2-57115) - Added below code to check if maxSegmentThumb greater then 3 means then we have ignore the rendering of
@@ -728,7 +730,7 @@ export class DiagramRenderer {
                 this.renderOrthogonalThumb(
                     (id + '_' + (j + 1)), selector, (((segment.points[parseInt(j.toString(), 10)].x + segment.points[j + 1].x) / 2)),
                     (((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2)), canvas, visible,
-                    orientation, t, connector);
+                    orientation, t, connector, direction);
             }
         }
     }
@@ -747,12 +749,14 @@ export class DiagramRenderer {
      * @param { string } orientation - Provide the orientation value.
      * @param { Transforms } t - Provide the Transforms value.
      * @param { ConnectorModel } connector - Provide the connector value.
+     * @param { string } direction - Provide the direction of the segment.
      * @private
      */
     public renderOrthogonalThumb(
         id: string, selector: DiagramElement, x: number, y: number, canvas: HTMLCanvasElement | SVGElement,
-        visible: boolean, orientation: string, t: Transforms, connector: ConnectorModel): void {
-        let path: string; let h: number; let v: number;
+        visible: boolean, orientation: string, t: Transforms, connector: ConnectorModel, direction: string): void {
+        let path: string;
+        let segmentThumbAngle : number = 0;
         const diagramElement: HTMLElement = document.getElementById(this.diagramId);
         const instance: string = 'ej2_instances';
         let diagram: Diagram;
@@ -762,85 +766,52 @@ export class DiagramRenderer {
         //824805-Support to modify connector segment thumb shape and style based on constraints
         const inheritsegmentThumbShape: number = (connector.constraints & ConnectorConstraints.InheritSegmentThumbShape);
         const segmentThumbShape: SegmentThumbShapes = inheritsegmentThumbShape ? diagram.segmentThumbShape : connector.segmentThumbShape;
+        //850501-Added below code to modify connector segment thumb size based on constraints
+        const inheritSegmentThumbSize: number = (connector.constraints & ConnectorConstraints.InheritSegmentThumbSize);
+        const segmentThumbSize: number = inheritSegmentThumbSize ? diagram.segmentThumbSize : connector.segmentThumbSize;
         if (orientation === 'horizontal') {
             path = getSegmentThumbShapeHorizontal(segmentThumbShape);
-            switch (segmentThumbShape) {
-            case 'Arrow':
-            case 'OpenArrow':
-            case 'DoubleArrow':
-                h = -15;
-                v = -15;
-                break;
-            case 'Square':
-            case 'Rectangle':
-            case 'Ellipse':
-                h = -5;
-                v = -5;
-                break;
-            case 'Rhombus':
-            case 'Diamond':
-                h = -10;
-                v = -5;
-                break;
-            case 'Circle':
-                h = -5;
-                v = -5;
-                break;
-            case 'IndentedArrow':
-            case 'OutdentedArrow':
-                h = -5;
-                v = -4;
-                break;
-            case 'Fletch':
-            case 'OpenFetch':
-                h = -5;
-                v = -4.5;
-                break;
-            }
         }
         else {
             path = getSegmentThumbShapeVertical(segmentThumbShape);
-            switch (segmentThumbShape)
-            {
-            case 'Arrow':
-            case 'OpenArrow':
-            case  'DoubleArrow':
-                h = -15;
-                v = -15;
+        }
+        //850501-Added the below code to change the angles of the segmentThumbShape(arrows) based on the direction
+        if (segmentThumbShape === 'Arrow' || segmentThumbShape === 'DoubleArrow' || segmentThumbShape === 'OpenArrow') {
+            switch (direction) {
+            case 'Bottom':
+            case 'Right':
+                segmentThumbAngle = 180;
                 break;
-            case 'Square':
-            case 'IndentedArrow':
-            case 'OutdentedArrow':
-            case 'Fletch':
-            case 'OpenFetch':
-                h = -5;
-                v = -5;
+            default:
+                segmentThumbAngle = 0;
+            }
+        }
+        else if (segmentThumbShape === 'Fletch' || segmentThumbShape === 'OpenFetch' || segmentThumbShape === 'IndentedArrow' || segmentThumbShape === 'OutdentedArrow') {
+            switch (direction) {
+            case 'Bottom':
+                segmentThumbAngle = -90;
                 break;
-            case 'Rhombus':
-            case 'Diamond':
-                h = -5;
-                v = -15;
+            case 'Top':
+                segmentThumbAngle = 90;
                 break;
-            case 'Rectangle':
-                h = -7;
-                v = -5;
+            case 'Right':
+                segmentThumbAngle = 180;
                 break;
-            case 'Circle':
-                h = -5;
-                v = -7;
-                break;
-            case 'Ellipse':
-                h = -7;
-                v = -7;
-                break;
+            default:
+                segmentThumbAngle = 0;
             }
         }
         const options: PathAttributes = {
-            x: ((x + t.tx) * t.scale) + h, y: ((y + t.ty) * t.scale) + v, angle: 0,
+            x: ((x + t.tx) * t.scale) - segmentThumbSize / 2 , y: ((y + t.ty) * t.scale) - segmentThumbSize / 2, angle: segmentThumbAngle,
             fill: '#e2e2e2', stroke: 'black', strokeWidth: 1, dashArray: '', data: path,
-            width: 20, height: 20, pivotX: 0, pivotY: 0, opacity: 1, visible: visible, id: id,
+            width: segmentThumbSize, height: segmentThumbSize, pivotX: 0.5, pivotY: 0.5, opacity: 1, visible: visible, id: id,
             class: 'e-diagram-ortho-segment-handle'
         };
+        //850501-Added the below code to adjust size for the segment thumb shape based on the size given
+        const absoluteBounds: Rect = measurePath(options.data);
+        const desiredSize: Size = new Size(options.width, options.height);
+        const pathElement: PathElement = new PathElement();
+        options.data = pathElement.updatePath(options.data, absoluteBounds, desiredSize);
         this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId);
     }
 
@@ -1019,7 +990,6 @@ export class DiagramRenderer {
         count?: number, className?: string, handleSize?: number)
         :
         void {
-        let h: number = 0; let v: number = 0;
         const diagramElement: HTMLElement = document.getElementById(this.diagramId);
         const instance: string = 'ej2_instances';
         let diagram: Diagram;
@@ -1035,34 +1005,10 @@ export class DiagramRenderer {
         }
         const inheritsegmentThumbShape: number = (connector.constraints & ConnectorConstraints.InheritSegmentThumbShape);
         const segmentThumbShape: SegmentThumbShapes = inheritsegmentThumbShape ? diagram.segmentThumbShape : connector.segmentThumbShape;
+        //850501-Added below code to modify connector segment thumb size based on constraints
+        const inheritSegmentThumbSize: number = (connector.constraints & ConnectorConstraints.InheritSegmentThumbSize);
+        const segmentThumbSize: number = inheritSegmentThumbSize ? diagram.segmentThumbSize : connector.segmentThumbSize;
         const path: string = getSegmentThumbShapeVertical(segmentThumbShape);
-        switch (segmentThumbShape) {
-        case 'Arrow':
-        case 'OpenArrow':
-        case 'DoubleArrow':
-            h = -10;
-            v = -5;
-            break;
-        case 'Circle':
-            h = 2;
-            v = 1;
-            break;
-        case 'Square':
-        case 'IndentedArrow':
-        case 'OutdentedArrow':
-        case 'Fletch':
-        case 'OpenFetch':
-        case 'Rhombus':
-        case 'Diamond':
-            h = 1;
-            v = 1;
-            break;
-        case 'Rectangle':
-        case 'Ellipse':
-            h = -1;
-            v = 1;
-            break;
-        }
         const options: PathAttributes = this.getBaseAttributes(wrapper) as PathAttributes;
         options.stroke = 'black';
         options.strokeWidth = 1;
@@ -1076,12 +1022,12 @@ export class DiagramRenderer {
         options.id = id;
         options.visible = visible;
         options.class = className;
-        options.width = handleSize;
-        options.height = handleSize;
+        options.width = segmentThumbSize;
+        options.height = segmentThumbSize;
         // EJ2-65895 - Added below code to calculate the rect x and y if node pivot is not equal to 0.5
         options.data = path;
-        options.x = ((newPoint.x + t.tx) * t.scale) + h;
-        options.y = ((newPoint.y + t.ty) * t.scale) + v;
+        options.x = ((newPoint.x + t.tx) * t.scale) ;
+        options.y = ((newPoint.y + t.ty) * t.scale) ;
         options.x = options.x - options.width / 2;
         options.y = options.y - options.height / 2;
         if (connected) {
@@ -1090,6 +1036,11 @@ export class DiagramRenderer {
         if (canMask) {
             options.visible = false;
         }
+        //850501-Added the below code to adjust size for the segment thumb shape based on the size given
+        const absoluteBounds: Rect = measurePath(options.data);
+        const desiredSize: Size = new Size(options.width, options.height);
+        const pathElement: PathElement = new PathElement();
+        options.data = pathElement.updatePath(options.data, absoluteBounds, desiredSize);
         const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
         this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId, true, parentSvg);
     }
@@ -1726,8 +1677,8 @@ export class DiagramRenderer {
         if (centerPoint) {
             //Bug 827039: Bezier annotation content alignment is not working properly.
             // Removed -2 cx-2 and cy-2 from the below two line to resolve the alignment issue.
-            options.x = (centerPoint as any).cx;
-            options.y = (centerPoint as any).cy;
+            options.x = centerPoint[element.id] ? centerPoint[element.id].cx : options.x;
+            options.y = centerPoint[element.id] ? centerPoint[element.id].cy : options.y;
             // (EJ2-56874) - Set the calculated x and y position to the bezier connector annotation's(text element) bounds x,y position
             element.bounds.x = options.x;
             element.bounds.y = options.y;

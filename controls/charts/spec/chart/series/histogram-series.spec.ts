@@ -18,8 +18,9 @@ import { bar } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { Export} from '../../../src/chart/print-export/export';
 
-Chart.Inject(ColumnSeries, Tooltip, Crosshair, DataLabel,HistogramSeries);
+Chart.Inject(ColumnSeries, Tooltip, Crosshair, DataLabel,HistogramSeries, Export);
 
 
 
@@ -359,6 +360,18 @@ describe('Chart Control', () => {
             chartObj.refresh();
 
         });
+        it('Checking animation with duration as zero', (done: Function) => {
+            animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                let point = document.getElementById('container_Series_' + args.series.index + '_Point_0');
+                expect(point !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].showNormalDistribution = true;
+            chartObj.series[0].animation.enable = true;
+            chartObj.series[0].animation.duration = 0;
+            chartObj.animationComplete = animationComplete;
+            chartObj.refresh();
+        });
     });
     describe('Histogram Series with data label', () => {
         let chartObj: Chart;
@@ -455,6 +468,179 @@ describe('Chart Control', () => {
             chartObj.loaded = loaded;
             chartObj.title = 'Events Changed';
             chartObj.dataBind();
+        });
+        it('Checking a XLSX export', (): void => {
+            chartObj.loaded = (args: Object): void => {
+                const element: Element = document.getElementById('container');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            chartObj.enableExport = true
+            chartObj.export('XLSX', 'Chart');
+            chartObj.refresh();
+        });
+    });
+
+    describe('Histogram Series Checking animation on data chages.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement;
+        let chartData: Object[] = [];
+        let points: number[] = [5.250, 7.750, 0, 8.275, 9.750, 7.750, 8.275, 6.250, 5.750,
+            5.250, 23.000, 26.500, 27.750, 25.025, 26.500, 26.500, 28.025, 29.250, 26.750, 27.250,
+            26.250, 25.250, 34.500, 25.625, 25.500, 26.625, 36.275, 36.250, 26.875, 40.000, 43.000,
+            46.500, 47.750, 45.025, 56.500, 56.500, 58.025, 59.250, 56.750, 57.250,
+            46.250, 55.250, 44.500, 45.525, 55.500, 46.625, 46.275, 56.250, 46.875, 43.000,
+            46.250, 55.250, 44.500, 45.425, 55.500, 56.625, 46.275, 56.250, 46.875, 43.000,
+            46.250, 55.250, 44.500, 45.425, 55.500, 46.625, 56.275, 46.250, 56.875, 41.000, 63.000,
+            66.500, 67.750, 65.025, 66.500, 76.500, 78.025, 79.250, 76.750, 77.250,
+            66.250, 75.250, 74.500, 65.625, 75.500, 76.625, 76.275, 66.250, 66.875, 80.000, 85.250,
+            87.750, 89.000, 88.275, 89.750, 97.750, 98.275, 96.250, 95.750, 95.250
+        ];
+        points.map((value: number) => {
+            chartData.push({
+                y: value
+            });
+        });
+        beforeAll(() => {
+            element = createElement('div', { id: 'HistogramContainer' });
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        majorGridLines: { width: 0 }, title: 'Score of Final Examination',
+                        minimum: 0, maximum: 100, edgeLabelPlacement: 'Shift'
+                    },
+                    chartArea: { border: { width: 0 } },
+                    legendSettings: { visible: false },
+                    primaryYAxis: {
+                        title: 'Number of Students',
+                        minimum: 0, maximum: 50, interval: 10,
+                        lineStyle: { width: 0 }
+                    },
+                    series: [
+                        {
+                            type: 'Histogram', width: 2, yName: 'y',
+                            dataSource: chartData, binInterval: 20,
+                            marker: { visible: true, height: 7, width: 7, dataLabel: { visible: true, position: 'Top', font: { fontWeight: '600', color: '#ffffff' } } },
+                            showNormalDistribution: true, columnWidth: 0.99
+                        }
+                    ],
+                    width: '75%',
+                    title: 'Examination Result', tooltip: { enable: true },
+                });
+            chartObj.appendTo('#HistogramContainer');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+        it('Checking Histrogram series updated direction.', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement: Element = document.getElementById('HistogramContainer_Series_0_Point_2');
+                expect(seriesElement.getAttribute('d')).toBe('M 206.01375000000002 63.09000000000002 Q 206.01375000000002 63.09000000000002 206.01375000000002 63.09000000000002 L 307.73625 63.09000000000002 Q 307.73625 63.09000000000002 307.73625 63.09000000000002 L 307.73625 350.5 Q 307.73625 350.5 307.73625 350.5 L 206.01375000000002 350.5 Q 206.01375000000002 350.5 206.01375000000002 350.5 L 206.01375000000002 63.09000000000002 Z');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].setData(chartData);
+            chartObj.refresh();
+        });
+        it('Checking Histrogram series x axis minimum', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement: Element = document.getElementById('HistogramContainer_Series_0_Point_2');
+                expect(seriesElement.getAttribute('d')).toBe('M 171.82083333333333 63.09000000000002 Q 171.82083333333333 63.09000000000002 171.82083333333333 63.09000000000002 L 284.8458333333333 63.09000000000002 Q 284.8458333333333 63.09000000000002 284.8458333333333 63.09000000000002 L 284.8458333333333 350.5 Q 284.8458333333333 350.5 284.8458333333333 350.5 L 171.82083333333333 350.5 Q 171.82083333333333 350.5 171.82083333333333 350.5 L 171.82083333333333 63.09000000000002 Z');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.primaryXAxis.minimum = 10;
+            chartObj.primaryXAxis.maximum = null;
+            chartObj.series[0].showNormalDistribution = true;
+            chartObj.series[0].animation = { enable: true, duration: 1000 };
+            chartObj.refresh();
+        });
+        it('Histogram - Checking addPoint', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement: Element = document.getElementById('HistogramContainer_Series_0_Point_2');
+                expect(seriesElement.getAttribute('d')).toBe('M 171.82083333333333 56.08000000000001 Q 171.82083333333333 56.08000000000001 171.82083333333333 56.08000000000001 L 284.8458333333333 56.08000000000001 Q 284.8458333333333 56.08000000000001 284.8458333333333 56.08000000000001 L 284.8458333333333 350.5 Q 284.8458333333333 350.5 284.8458333333333 350.5 L 171.82083333333333 350.5 Q 171.82083333333333 350.5 171.82083333333333 350.5 L 171.82083333333333 56.08000000000001 Z');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].addPoint({ y: 50 });
+            chartObj.refresh();
+        });
+        it('Histogram - Checking canvas Mode', (done: Function) => {
+            loaded = (args: Object): void => {
+                expect(document.querySelectorAll('canvas')[0].height).toBe(450);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.enableCanvas = true;
+            chartObj.primaryXAxis.maximum = 50;
+            chartObj.refresh();
+        });
+    });
+    describe('Histogram Series: Checking single point', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement;
+        let chartData: Object[] = [];
+        let points: number[] = [5.250, 6];
+        points.map((value: number) => {
+            chartData.push({
+                y: value
+            });
+        });
+        beforeAll(() => {
+            element = createElement('div', { id: 'HistogramContainer' });
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        majorGridLines: { width: 0 }, title: 'Score of Final Examination',
+                         edgeLabelPlacement: 'Shift', maximum: 3
+                    },
+                    chartArea: { border: { width: 0 } },
+                    legendSettings: { visible: false },
+                    primaryYAxis: {
+                        title: 'Number of Students',
+                        minimum: 0, maximum: 50, interval: 10,
+                        lineStyle: { width: 0 }
+                    },
+                    series: [
+                        {
+                            type: 'Histogram', width: 2, yName: 'y',
+                            dataSource: chartData,
+                            marker: { visible: true, height: 7, width: 7, dataLabel: { visible: true, position: 'Top', font: { fontWeight: '600', color: '#ffffff' } } },
+                            showNormalDistribution: true, columnWidth: 0.99
+                        }
+                    ],
+                    width: '75%',
+                    title: 'Examination Result', tooltip: { enable: true },
+                });
+            chartObj.appendTo('#HistogramContainer');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+        it('Histogram - Checking series and axis with minimum values', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement: Element = document.getElementById('HistogramContainer_svg');
+                expect(seriesElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.primaryXAxis.maximum = 3;
+            chartObj.refresh();
+        });
+        it('Histogram - Checking series checking without data', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElement: Element = document.getElementById('HistogramContainer_svg');
+                expect(seriesElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].dataSource = [];
+            chartObj.refresh();
         });
     });
     it('memory leak', () => {

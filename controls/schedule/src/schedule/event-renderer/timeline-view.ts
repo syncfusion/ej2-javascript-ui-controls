@@ -122,7 +122,10 @@ export class TimelineEvent extends MonthEvent {
             for (let i: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; i < len; i++) {
                 const source: TdData = this.parent.crudModule.crudObj.sourceEvent[parseInt(i.toString(), 10)];
                 this.rowIndex = source.groupIndex;
-                this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, source);
+                if (!this.parent.uiStateValues.isGroupAdaptive ||
+                    (this.parent.uiStateValues.groupIndex === source.groupIndex && this.parent.uiStateValues.isGroupAdaptive)) {
+                    this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, source);
+                }
                 if (this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)] && this.parent.crudModule.crudObj.sourceEvent[parseInt(i.toString(), 10)].groupIndex !==
                     this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)].groupIndex) {
                     const target: TdData = this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)];

@@ -1,4 +1,4 @@
-import { FileType, ShapeType, ImageFinetuneOption, ImageFilterOption, FrameType, FrameLineStyle, ArrowheadType } from '../index';
+import { FileType, ShapeType, ImageFinetuneOption, ImageFilterOption, FrameType, FrameLineStyle, ArrowheadType, RedactType } from '../index';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 
 /**
@@ -208,6 +208,10 @@ export interface ShapeChangeEventArgs {
      * Returns `the object of shape which is inserted or moved or deleted or resized or customized the UI.
      */
     currentShapeSettings?: ShapeSettings;
+    /**
+     * Prevents shapes from being dragged outside the image boundary.
+     */
+    allowShapeOverflow?: boolean;
 }
 
 /**
@@ -484,6 +488,10 @@ export interface ShapeSettings {
      * Returns the order of the annotation in which it is placed on the image.
      */
     index?: number;
+    /**
+     * Returns the border radius of the rectangle annotation.
+     */
+    borderRadius?: number;
 }
 
 /**
@@ -743,6 +751,16 @@ export interface FrameSettings {
 }
 
 /**
+ * The Interface which contains the properties for loading an image into Image Editor.
+ */
+export interface ImageSettings {
+    /**
+     * Returns the background color of an image.
+     */
+    backgroundColor: string;
+}
+
+/**
  * Interface for active object in the imageEditor.
  *
  * @private
@@ -900,6 +918,14 @@ export interface CurrentObject {
      * Specifies the action collections performed after cropping in Image Editor.
      */
     currSelectionPoint?: SelectionPoint;
+    /**
+     * Specifies the source of the loaded image in Image Editor.
+     */
+    imageSource?: string;
+    /**
+     * Specifies the background color of image in Image Editor.
+     */
+    bgColor?: string;
 }
 
 /**
@@ -924,6 +950,18 @@ export interface StrokeSettings {
      * Specifies the flip state for the object in Image Editor.
      */
     flipState?: string;
+    /**
+     * Specifies the flip state for the object in Image Editor.
+     */
+    radius?: number;
+    /**
+     * Specifies the stroke text color for Text Annotation.
+     */
+    outlineColor?: string;
+    /**
+     * Specifies the stroke width for the object in Image Editor.
+     */
+    outlineWidth?: number;
 }
 
 /**
@@ -1276,6 +1314,10 @@ export interface Interaction {
      * Gets function name called from the canvas.
      */
     isResize: boolean;
+    /**
+     * Gets function name called from the canvas.
+     */
+    isRedact: boolean;
 }
 
 /**
@@ -1529,4 +1571,105 @@ export interface SelectionPoint {
      * Gets the opacity value of image annotation.
      */
     opacity?: number;
+    /**
+     * Prevents shapes from being dragged outside the image boundary.
+     */
+    preventShapeDragOut?: boolean;
+    /**
+     * Gets redact type.
+     */
+    redactType?: string;
+    /**
+     * Gets blur value of redact.
+     */
+    redactBlur?: number;
+    /**
+     * Gets pixelate value of redact.
+     */
+    redactPixelate?: number;
+    /**
+     * Gets redact image.
+     */
+    redactImage?: HTMLCanvasElement;
+}
+
+/**
+ *  Interface for RedactSettings in the Image Editor.
+ */
+export interface RedactSettings {
+    /**
+     * Returns the id of the shape.
+     */
+    type : RedactType;
+    /**
+     * Returns the type of the shape.
+     */
+    id : string;
+    /**
+     * Returns the start x position of the redaction.
+     */
+    startX : number;
+    /**
+     * Returns the start y position of the redaction.
+     */
+    startY : number;
+    /**
+     * Returns the width of the redaction.
+     */
+    width: number;
+    /**
+     * Returns the height of the redaction.
+     */
+    height: number;
+    /**
+     * Returns the intensity of the blur effect used in blur-type redactions within the image editor.
+     *
+     * @remarks
+     * This property is specifically applicable for redactions that use the blur effect. For other redaction, the value should be null by default.
+     * The default blur value is 20, with a permissible range from a minimum of 10 to maximum) of 50 to control the intensity of the redaction.
+     *
+     */
+    blurIntensity?: number;
+    /**
+     * Returns the pixel size for the pixelate-type redaction within the image editor.
+     *
+     * @remarks
+     * This property is specific to redaction using the pixelate effect. For other redaction the pixel size should default to null.
+     * The default value is 5, with a permissible range from a minimum of 1 to a maximum of 20.
+     *
+     * @value
+     * An integer value representing the size of the pixels used in the pixelate redaction. This determines the granularity of the pixelation effect.
+     */
+    pixelSize?: number;
+}
+
+/**
+ * Defines the properties related to actions performed within the Image Editor.
+ *
+ * This interface encapsulates the details of various actions that can be performed on an image, such as cropping, drawing annotations, applying filters, and fine-tuning. It provides a structured way to access and manage the state and data associated with these actions.
+ *
+ */
+export interface EditCompleteEventArgs  {
+    /**
+     * Represents an action performed within the Image Editor.
+     *
+     * Specifies an editing action, such as cropping, drawing annotations, applying filters, undoing or redoing changes, or any other modification made to the image.
+     *
+     */
+    action: string;
+    /**
+     * Represents the event arguments for actions performed in the image editor, such as applying a shape, redaction, frame, filter, fine-tuning adjustments, resizing, zooming, or cropping.
+     *
+     * This property provides detailed information about the specific action taken, including related details for shapes, redactions, frames, filters, fine-tuning, cropping, resizing, and zooming.
+     *
+     * @type {object | RotateEventArgs | FlipEventArgs | CropEventArgs | FinetuneEventArgs | FrameChangeEventArgs | ImageFilterEventArgs |
+     * PanEventArgs | ResizeEventArgs | ShapeChangeEventArgs | ZoomEventArgs }
+     * @default object
+     *
+     * @remarks
+     * This property helps to identify and retrieve detailed information about the action performed in the image editor.
+     *
+     */
+    actionEventArgs: object | RotateEventArgs | FlipEventArgs | CropEventArgs | FinetuneEventArgs| FrameChangeEventArgs
+    | ImageFilterEventArgs | PanEventArgs | ResizeEventArgs | ShapeChangeEventArgs | ZoomEventArgs;
 }

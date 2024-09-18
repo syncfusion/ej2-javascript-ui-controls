@@ -643,8 +643,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected getCultureValues(): string[] {
         const culShortNames: string[] = [];
         let cldrObj: string[];
-        const dayFormat: string = 'days.stand-alone.' + this.dayHeaderFormat.toLowerCase();
-        if (this.locale === 'en' || this.locale === 'en-US') {
+        const dayFormat: string = !isNullOrUndefined(this.dayHeaderFormat) ? 'days.stand-alone.' + this.dayHeaderFormat.toLowerCase() : null;
+        if ((this.locale === 'en' || this.locale === 'en-US') && !isNullOrUndefined(dayFormat)) {
             cldrObj = <string[]>(getValue(dayFormat, getDefaultDateObject()));
         } else {
             cldrObj = <string[]>(this.getCultureObjects(cldrData, '' + this.locale));
@@ -874,7 +874,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             else if (e.target === this.todayElement && !(e.target as HTMLElement).className.includes(DISABLED)) {
                 this.todayButtonClick(e, value);
                 if (this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') {
-                    this.element.focus();
+                    if ((this as any).isAngular) {
+                        (this as any).inputElement.focus();
+                    } else {
+                        (this as any).element.focus();
+                    }
                 }
             } else {
                 const element: Element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
@@ -884,10 +888,14 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                         const d: Date = new Date(parseInt('' + (element).id, 0));
                         this.selectDate(e, d, (element));
                         if (this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') {
-                            this.element.focus();
+                            if ((this as any).isAngular) {
+                                (this as any).inputElement.focus();
+                            } else {
+                                (this as any).element.focus();
+                            }
                         }
                     } else {
-                        if( !(e.target as HTMLElement).className.includes(DISABLED)){
+                        if ( !(e.target as HTMLElement).className.includes(DISABLED)){
                             this.contentClick(null, --view, (element), value);
                         }
                     }
@@ -970,11 +978,15 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         case 'shiftTab':
             if ((this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') && e.target === this.headerTitleElement) {
                 e.preventDefault();
-                (this as any).element.focus();
+                if ((this as any).isAngular) {
+                    (this as any).inputElement.focus();
+                } else {
+                    (this as any).element.focus();
+                }
                 (this as any).hide();
             }
             break;
-        case 'escape': 
+        case 'escape':
             if ((this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') && (e.target === this.headerTitleElement || e.target === this.previousIcon || e.target === this.nextIcon || e.target === this.todayElement)) {
                 (this as any).hide();
             }
@@ -1060,12 +1072,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if (this.calendarMode === 'Gregorian') {
             tdEles = this.renderDays(this.currentDate, value, null, null, isCustomDate, e);
         } else {
-            tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
+            tdEles = !isNullOrUndefined(this.islamicModule) ? this.islamicModule.islamicRenderDays(this.currentDate, value) : null;
         }
         this.createContentHeader();
         if (this.calendarMode === 'Gregorian') {
             this.renderTemplate(tdEles, numCells, MONTH, e, value);
-        } else {
+        } else if (!isNullOrUndefined(this.islamicModule)) {
             this.islamicModule.islamicRenderTemplate(tdEles, numCells, MONTH, e, value);
         }
     }
@@ -1985,8 +1997,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected getCultureObjects(ld: Object, c: string): Object {
-        const gregorianFormat: string = '.dates.calendars.gregorian.days.format.' + this.dayHeaderFormat.toLowerCase();
-        const islamicFormat: string = '.dates.calendars.islamic.days.format.' + this.dayHeaderFormat.toLowerCase();
+        const gregorianFormat: string = !isNullOrUndefined(this.dayHeaderFormat) ? '.dates.calendars.gregorian.days.format.' + this.dayHeaderFormat.toLowerCase() : null;
+        const islamicFormat: string = !isNullOrUndefined(this.dayHeaderFormat) ? '.dates.calendars.islamic.days.format.' + this.dayHeaderFormat.toLowerCase() : null;
         const mainVal: string = 'main.';
         if (this.calendarMode === 'Gregorian') {
             return getValue(mainVal + '' + this.locale + gregorianFormat, ld);
@@ -2904,6 +2916,7 @@ export class Calendar extends CalendarBase {
         if (!isNullOrUndefined(this.value)) {
             this.setProperties({ value: this.value }, true);
         }
+        // eslint-disable-next-line
         if (!this.isMultiSelection && +this.value !== Number.NaN && (!isNullOrUndefined(this.value) &&
          !isNullOrUndefined(this.previousDate) || this.previousDate === null
             && !isNaN(+this.value))) {

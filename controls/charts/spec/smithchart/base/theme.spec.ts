@@ -823,7 +823,70 @@ describe('Smithchart legend properties tesing', () => {
             };
             smithchart.refresh();
         });
-
+        it('Checking with Bootstrap5', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
+                expect(element.getAttribute('font-size')).toEqual('12px');
+            };
+            smithchart.theme="Bootstrap5"
+            smithchart.refresh();
+        });
+        it('Checking with Bootstrap5Dark', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
+                expect(element.getAttribute('font-size')).toEqual('12px');
+            };
+            smithchart.theme="Bootstrap5Dark"
+            smithchart.refresh();
+        });
+        it('Checking with Fluent', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
+                expect(element.getAttribute('font-size')).toEqual('12px');
+            };
+            smithchart.theme="Fluent"
+            smithchart.refresh();
+        });
+        it('Checking with FluentDark', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
+                expect(element.getAttribute('font-size')).toEqual('12px');
+            };
+            smithchart.theme="FluentDark"
+            smithchart.refresh();
+        });
+        it('Checking with Fluent2', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
+                expect(element.getAttribute('font-size')).toEqual('12px');
+            };
+            smithchart.theme="Fluent2"
+            smithchart.refresh();
+        });
+        it('Checking with Fluent2Dark', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
+                expect(element.getAttribute('font-size')).toEqual('12px');
+            };
+            smithchart.theme="Fluent2Dark"
+            smithchart.refresh();
+        });
+        it('Checking with Material3', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
+                expect(element.getAttribute('font-size')).toEqual('12px');
+            };
+            smithchart.theme="Material3"
+            smithchart.refresh();
+        });
+        it('Checking with Material3Dark', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
+                expect(element.getAttribute('font-size')).toEqual('12px');
+            };
+            smithchart.theme="Material3Dark"
+            smithchart.refresh();
+        });
 
     });
 });

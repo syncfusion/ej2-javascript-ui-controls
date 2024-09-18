@@ -2,54 +2,17 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 27.1.48 (2024-09-18)
 
-### Image Editor
+### ImageEditor
 
-#### Bug Fixes
+#### Features
 
-- `#I629675` - The issue with "On initial load the ImageEditor component's image cannot fit within the canvas while using the toolbar template" has been resolved.
+- `Redact support` - The Redact support in the Image Editor allows users to effortlessly conceal sensitive information by applying blur or pixel effect to specific areas of an image. Ideal for maintaining privacy in photos. This feature is particularly valuable for protecting privacy and complying with data protection regulations, making it easier to securely share images without compromising sensitive information.
 
-## 26.2.9 (2024-08-13)
+- `Text annotation enhancement` - The enhanced Text Annotation feature in the Image Editor allows users to customize their annotations with fill color, outline color, and outline width. Ideal for making text stand out and improving readability, this tool ensures that your annotations are both clear and visually appealing for any image.
 
-### Image Editor
-
-#### Bug Fixes
-
-- `#I901333` - The issue with "script error thrown while saving the image" has been resolved.
-
-## 26.2.8 (2024-08-06)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I898988` - The issue with "script error thrown while using the drawText method" has been resolved.
-- `#I612658` - The issue with "Zoom action was not working in ImageEditor after drawing a rectangle and performing the zoom action via touch mode" has been resolved.
-
-## 26.2.5 (2024-07-26)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I614410` - The issue with "Pinch zoom functionality is not working properly on touch devices" has been resolved.
-
-## 26.2.4 (2024-07-24)
-
-### Image Editor
-
-#### Bug Fixes
-
-- The issue with "Finetune slider keyboard focus not proper" has been resolved.
-
-## 26.1.41 (2024-07-09)
-
-### Image Editor
-
-#### Bug Fixes
-
-- The issue with "keyboard navigation not proper" has been resolved.
+- `Rectangle annotation enhancement` - The enhanced Rectangle Annotation feature in the Image Editor now includes support for adjusting the border radius, allowing users to create annotations with rounded or sharp corners. This enhancement provides greater flexibility in customizing the look of your annotations, adding a touch of style and refinement to your visual content.
 
 ## 26.1.40 (2024-07-02)
 
@@ -57,6 +20,7 @@
 
 #### Bug Fixes
 
+- The issue with "keyboard navigation not proper" has been resolved.
 - `#I603404` - The issue with "ImageEditor drawText method text selection issue with multiline" has been resolved.
 - `#I603806` - The issue with "ImageEditor Undo/Redo collection was not working properly for pen drawing annotation" has been resolved.
 

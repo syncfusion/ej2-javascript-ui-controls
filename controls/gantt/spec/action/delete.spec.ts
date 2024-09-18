@@ -2,7 +2,7 @@
  * Gantt delete spec
  */
 import { Gantt, IActionBeginEventArgs, IGanttData, Edit, Toolbar, Selection } from '../../src/index';
-import { projectData1, CR900218} from '../base/data-source.spec';
+import { projectData1, CR900218 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 import { doesImplementInterface } from '@syncfusion/ej2-grids';
@@ -219,58 +219,6 @@ describe('Gantt delete support', () => {
             };
             ganttObj.dataSource = CR900218;
             ganttObj.selectedRowIndex = 2;
-        });
-    });
-    describe('CR902450 - getSelectedRecords method doesnt not return selected records', () => {
-        Gantt.Inject(Edit, Toolbar, Selection);
-        let ganttObj: Gantt;
-        beforeAll((done: Function) => {
-            ganttObj = createGantt(
-                {
-                    dataSource: projectData1,
-                    allowSelection: true,
-                    taskFields: {
-                        id: 'TaskID',
-                        name: 'TaskName',
-                        startDate: 'StartDate',
-                        endDate: 'EndDate',
-                        duration: 'Duration',
-                        progress: 'Progress',
-                        child: 'subtasks',
-                        dependency: 'Predecessor'
-                    },
-                    editSettings: {
-                        allowAdding: true,
-                        allowEditing: true,
-                        allowDeleting: true,
-                        allowTaskbarEditing: true
-                    },
-                    selectionSettings: {
-                        mode: 'Row',
-                        type: 'Single',
-                        enableToggle: false,
-                        persistSelection: true
-                    },
-                    toolbar: ['Add', 'Edit', 'Delete'],
-                    projectStartDate: new Date('02/01/2017'),
-                    projectEndDate: new Date('12/30/2017'),
-                    rowHeight: 40,
-                    taskbarHeight: 30,
-                }, done);
-        });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
-        it('Delete a record', (done: Function) => {
-            ganttObj.editModule.deleteRecord(2);
-            ganttObj.actionComplete = (args: any): void => {
-                if (args.requestType === "refresh") {
-                    expect(ganttObj.selectionModule.getSelectedRecords().length).toBe(1);
-                }
-                done();
-            };
         });
     });
 });

@@ -45,7 +45,14 @@ describe('Circular-Gauge Control', () => {
                                 color: '#DDDDDD'
                             }
                         }
-                    }]
+                    },
+                    {
+                        animation: { enable: false },
+                        value: 40,
+                        type: "RangeBar",
+                        offset: '0%'
+                    }
+                ]
                 }]
             });
             gauge.appendTo('#container');
@@ -53,6 +60,21 @@ describe('Circular-Gauge Control', () => {
         afterAll((): void => {
             gauge.destroy();
             ele.remove();
+        });
+
+        it('Checking with default pointer angle', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_Needle_0');
+                trigger.mousedownEvent(svg,812,197,'mousedown',gauge);
+                svg = document.getElementById('container_Axis_0_Pointer_NeedleTail_0');
+                trigger.mousedownEvent(svg,812,197,'mousedown',gauge);
+                svg = document.getElementById('container_Axis_0_Pointer_NeedleCap_0');
+                trigger.mousedownEvent(svg,812,197,'mousedown',gauge);
+                svg = document.getElementById('container_Axis_0_Pointer_RangeBar_1');
+                trigger.mousedownEvent(svg,812,197,'mousedown',gauge);
+                done();
+            };
+            gauge.refresh();
         });
 
         // it('Checking with default pointer angle', (done: Function) => {
@@ -313,8 +335,10 @@ describe('Circular-Gauge Control', () => {
             ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             gauge = new CircularGauge({
+                enablePointerDrag: true,
                 axes: [{
                     pointers: [{
+                        animation: { enable: false },
                         type: 'Marker', color: '#b5b5b5',
                         needleTail: {
                             length: '10%'
@@ -347,16 +371,25 @@ describe('Circular-Gauge Control', () => {
     //         gauge.refresh();
     //     });
 
-    //     it('Checking default drag and drop for event', (done: Function) => {
-    //         gauge.loaded = (args: ILoadedEventArgs): void => {
-    //             trigger.dragAndDropEvent(ele, 200, 200, 350, 350, '', gauge);
-    //             svg = document.getElementById('container_Axis_0_Pointer_Marker_0');
-    //             expect(svg.getAttribute('transform') == 'rotate(110,379,225)' ||
-    //                 svg.getAttribute('transform') == 'rotate(110,384.5,225)').toBe(true);
-    //             done();
-    //         };
-    //         gauge.refresh();
-    //     });
+        it('Checking default drag and drop for event', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                trigger.dragAndDropEvent(ele, 200, 200, 350, 350, '', gauge);
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_0');
+                expect(svg.getAttribute('fill')).toBe('#b5b5b5');
+                done();
+            };
+            gauge.refresh();
+        });
+        it('Checking stroke of the marker', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void =>{
+                ele = document.getElementById("container_Axis_0_Pointer_Marker_0");
+                trigger.mousedownEvent(ele,812,197,'touchstart',gauge);
+                trigger.mousemoveEvent(ele,812,197,813,265);
+                expect(ele.getAttribute('stroke')).toBe('#DDDDDD');
+                done();
+            };
+            gauge.refresh();
+        });
 
     //     it('Checking drag for marker - pointer drag false', (done: Function) => {
     //         gauge.loaded = (args: ILoadedEventArgs): void => {

@@ -180,6 +180,19 @@ export type GridLine =
     'Default';
 
 /**
+ * Defines modes of AdaptiveMode, They are
+ * ```props
+ * * Both :- Adaptive layout for both mobile and desktop devices.
+ * * Mobile :- Adaptive layout only for smaller devices.
+ * * Desktop :- Adaptive layout only for desktop devices.
+ * ```
+ */
+export type AdaptiveMode =
+'Both' |
+'Mobile' |
+'Desktop';
+
+/**
  * Defines types of Render
  *
  * @hidden
@@ -892,6 +905,15 @@ export type FocusKeys =
     'shiftEnter' |
     'tab' |
     'shiftTab'
+
+/**
+ * Defines focus type.
+ *
+ * @hidden
+ */
+export type FocusType =
+    'key' |
+    'click'
 
 /**
  * Defines Loading Indicator of the Grid.

@@ -718,8 +718,7 @@ describe('Spec for empty method ', () => {
     });
     afterEach(() => {
         if (element) {
-            let parent: HTMLElement = element.parentElement as HTMLElement;
-            parent.remove();
+            element.remove();
         };
         document.body.innerHTML = '';
     });
@@ -727,5 +726,32 @@ describe('Spec for empty method ', () => {
         listObj = new DropDownBase({ dataSource: datasource });
         listObj.appendTo(element);
         listObj.updateDataList();
+    });
+
+    describe('coverage', function () {
+        let listObj: any;
+        let element: HTMLElement
+        let datasource1: string[] = ['Audi', 'BMW', 'Bently', 'Rolls Royce', 'Tata'];
+        beforeEach(function () {
+            element = createElement('div', { id: 'dropdownbase', attrs: { 'tabindex': '1' } });
+            document.body.appendChild(element);
+        });
+        afterEach(function () {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('check value case ', function (done) {
+            listObj = new DropDownBase({
+                dataSource: datasource1,
+                fields: { groupBy: 'category' },
+                itemTemplate: '<div class="ename"> ${text} </div><div class="desig"> ${id} </div>',
+            });
+            listObj.appendTo(element);
+            (<any>listObj).checkValueCase('Audi', true, true, true);
+            (<any>listObj).checkValueCase('BMW', false, true, true);
+            done();
+        });
     });
 });

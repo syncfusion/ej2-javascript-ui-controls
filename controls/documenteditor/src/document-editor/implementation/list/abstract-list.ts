@@ -1,5 +1,6 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WListLevel } from './list-level';
+import { HelperMethods } from '../editor/editor-helper';
 
 /**
  * @private
@@ -8,6 +9,9 @@ export class WAbstractList {
     private abstractListIdIn: number = -1;
     public nsid: number = -1;
     public levels: WListLevel[] = [];
+    constructor() {
+        this.nsid = parseInt(HelperMethods.generateHexDecimal(), 16);
+    }
     public get abstractListId(): number {
         return this.abstractListIdIn;
     }

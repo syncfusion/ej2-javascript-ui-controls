@@ -431,7 +431,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             if (this.element.hasAttribute('data-val')) {
                 this.element.setAttribute('data-val', 'false');
             }
-            if (!this.element.hasAttribute('aria-labelledby') && !this.element.hasAttribute('placeholder')) {
+            if (!this.element.hasAttribute('aria-labelledby') && !this.element.hasAttribute('placeholder') && !this.element.hasAttribute('aria-label')) {
                 this.element.setAttribute('aria-label', 'numerictextbox');
             }
             if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
@@ -1223,7 +1223,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             return;
         }
         this.isFocused = true;
-        removeClass([this.container], ERROR);
         this.prevValue = this.value;
         if ((this.value || this.value === 0)) {
             const formatValue: string = this.formatNumber();

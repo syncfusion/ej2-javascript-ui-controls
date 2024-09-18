@@ -87,7 +87,7 @@ describe('Range navigator', () => {
             range.theme = 'Bootstrap';
             range.refresh();
         });
-        it('checking with highContrast theme', (done: Function) => {
+        it('checking with highContrast light theme', (done: Function) => {
             range.loaded = (args: Object) => {
                 let selectedElement: Element = document.getElementById('container_SelectedArea');
                 expect(selectedElement.getAttribute('fill')).toEqual('#FFD939');
@@ -279,7 +279,7 @@ describe('Range navigator', () => {
             range.theme = 'Bootstrap';
             range.refresh();
         });
-        it('checking with highcontrast theme', (done: Function) => {
+        it('checking with highcontrast light theme for transparent', (done: Function) => {
             range.loaded = (args: Object) => {
                 let selectedElement: Element = document.getElementById('container_SelectedArea');
                 expect(selectedElement.getAttribute('fill')).toEqual('transparent');
@@ -299,12 +299,117 @@ describe('Range navigator', () => {
             range.series[0].type = 'Area';
             range.refresh();
         });
+        it('checking with tailwind theme with series', (done: Function) => {
+            range.loaded = (args: Object) => {
+                var selectedElement = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('rgba(79, 70, 229, 0.3)');
+                done();
+            };
+            range.theme = 'Tailwind';
+            range.refresh();
+        });
+        it('checking with TailwindDark theme with series', (done: Function) => {
+            range.loaded = (args: Object) => {
+                var selectedElement = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('rgba(255, 255, 255, 0.6)');
+                done();
+            };
+            range.theme = 'TailwindDark';
+            range.refresh();
+        });
+        it('checking with Fluent2 theme with series', (done: Function) => {
+            range.loaded = (args: Object) => {
+                var selectedElement = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('rgba(161, 159, 157, 0.4)');
+                done();
+            };
+            range.theme = 'Fluent2';
+            range.refresh();
+        });
+        it('checking with Fluent2Dark theme with series', (done: Function) => {
+            range.loaded = (args: Object) => {
+                var selectedElement = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('rgba(138, 136, 134, 0.4)');
+                done();
+            };
+            range.theme = 'Fluent2Dark';
+            range.refresh();
+        });
+        it('checking with highcontrast theme', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                var selectedElement = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('rgba(22, 22, 22, 0.6)');
+                done();
+            };
+            range.theme = 'HighContrast';
+            range.refresh();
+        });
+        it('checking with Bootstrap5 theme', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                var selectedElement = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('rgba(52, 58, 64, 0.1)');
+                done();
+            };
+
+            range.theme = 'Bootstrap5';
+            range.refresh();
+        });
+        it('checking with Bootstrap5Dark theme', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                var selectedElement = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('rgba(173, 181, 189, 0.1)');
+                done();
+            };
+
+            range.theme = 'Bootstrap5Dark';
+            range.refresh();
+        });
+        it('checking with Fluent theme', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                var selectedElement = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('rgba(0, 120, 212, 0.1)');
+                done();
+            };
+
+            range.theme = 'Fluent';
+            range.refresh();
+        });
+        it('checking with FluentDark theme', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                var selectedElement = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('rgba(121, 119, 117, 0.1)');
+                done();
+            };
+
+            range.theme = 'FluentDark';
+            range.refresh();
+        });  
+        it('checking with Material3 theme', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                var selectedElement = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('rgba(73, 69, 78, 0.1)');
+                done();
+            };
+
+            range.theme = 'Material3';
+            range.refresh();
+        }); 
+        it('checking with Material3Dark theme', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                var selectedElement = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('rgba(202, 196, 208, 0.1)');
+                done();
+            };
+
+            range.theme = 'Material3Dark';
+            range.refresh();
+        });
         it('checking with line series', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_Series_0');
                 expect(element.getAttribute('fill')).toBe('none');
                 expect(element.getAttribute('stroke-width')).toBe('1');
-                expect(element.getAttribute('stroke')).toBe('#00bdae');
+                expect(element.getAttribute('stroke')).toBe('#4EAAFF');
                 done();
             };
             range.series[0].type = 'Line';
@@ -329,9 +434,9 @@ describe('Range navigator', () => {
                 element = document.getElementById('container_Series_0');
                 expect(element.getAttribute('fill')).toBe('none');
                 expect(element.getAttribute('stroke-width')).toBe('1');
-                expect(element.getAttribute('stroke')).toBe('#00bdae');
+                expect(element.getAttribute('stroke')).toBe('#4EAAFF');
                 element = document.getElementById('container_Series_1');
-                expect(element.getAttribute('fill')).toBe('#404041');
+                expect(element.getAttribute('fill')).toBe('#FA4EAB');
                 done();
             };
             range.value = [20, 50];
@@ -343,7 +448,6 @@ describe('Range navigator', () => {
             range.loaded = (args: object): void => {
                 element = document.getElementById('container_chart');
                 expect(element !== null).toBe(true);
-
             };
             range.dataSource = dataManager;
             range.xName = 'Id';
@@ -414,6 +518,42 @@ describe('Range navigator', () => {
                 // done();
             };
             range.theme = 'BootstrapDark';
+            range.refresh();
+        });
+        it('checking with HighContrastLight with no series', () => {
+            range.loaded = (args: Object): void => {
+                let container = document.getElementById('container_SelectedArea').getAttribute('fill');
+                expect(container === '#FFD939').toBe(true);
+            };
+            range.theme = 'HighContrastLight';
+            range.series = null;
+            range.refresh();
+        });
+        it('checking with Bootstrap5 with no series', () => {
+            range.loaded = (args: Object): void => {
+                let container = document.getElementById('container_SelectedArea').getAttribute('fill');
+                expect(container === '#4F46E5').toBe(true);
+            };
+            range.theme = 'Bootstrap5';
+            range.series = null;
+            range.refresh();
+        });
+        it('checking with Bootstrap5Dark with no series', () => {
+            range.loaded = (args: Object): void => {
+                let container = document.getElementById('container_SelectedArea').getAttribute('fill');
+                expect(container === '#ADB5BD').toBe(true);
+            };
+            range.theme = 'Bootstrap5Dark';
+            range.series = null;
+            range.refresh();
+        });
+        it('checking with Fluent with no series', () => {
+            range.loaded = (args: Object): void => {
+                let container = document.getElementById('container_SelectedArea').getAttribute('fill');
+                expect(container === '#ADB5BD').toBe(true);
+            };
+            range.theme = 'Fluent';
+            range.series = null;
             range.refresh();
         });
     });

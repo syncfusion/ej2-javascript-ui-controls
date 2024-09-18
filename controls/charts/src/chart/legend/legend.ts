@@ -3,10 +3,9 @@
  */
 import { remove, Browser, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Series } from '../series/chart-series';
-import { Indexes } from '../../common/model/base';
 import { ChartSeriesType, ChartDrawType } from '../utils/enum';
 import { LegendOptions, BaseLegend } from '../../common/legend/legend';
-import { Chart, Points } from '../../chart';
+import { Chart, Indexes, Points } from '../../chart';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
 import { textTrim, ChartLocation, removeElement, RectOption, withInBounds, blazorTemplatesReset} from '../../common/utils/helper';
 import { getUnicodeText} from '../../common/utils/helper';
@@ -19,7 +18,7 @@ import { LegendTitlePosition } from '../../common/utils/enum';
 import { textWrap } from '../../common/utils/helper';
 import { TrendlineModel } from '../series/chart-series-model';
 /**
- * `Legend` module is used to render legend for the chart.
+ * The `Legend` module is used to render the legend for the chart.
  */
 export class Legend extends BaseLegend {
     constructor(chart: Chart) {
@@ -92,6 +91,7 @@ export class Legend extends BaseLegend {
      * @param {Series[]} visibleSeriesCollection - The collection of visible series.
      * @param {Chart} chart - The chart instance.
      * @returns {void}
+     * @private
      */
     public getLegendOptions(visibleSeriesCollection: Series[], chart: Chart): void {
         this.legendCollections = [];
@@ -182,6 +182,7 @@ export class Legend extends BaseLegend {
      * @param {Rect} legendBounds - The current bounds of the legend.
      * @param {LegendSettingsModel} legend - The legend settings.
      * @returns {void}
+     * @private
      */
     public getLegendBounds(availableSize: Size, legendBounds: Rect, legend: LegendSettingsModel): void {
         this.calculateLegendTitle(legend, legendBounds);
@@ -299,6 +300,7 @@ export class Legend extends BaseLegend {
      * @param {number} legendHeight - The current height of the legend.
      * @param {number} padding - The padding around the legend items.
      * @returns {void}
+     * @private
      */
     public getLegendHeight(legendOption: LegendOptions, legend: LegendSettingsModel, legendBounds: Rect,
                            rowWidth: number, legendHeight : number, padding : number): void  {
@@ -332,6 +334,7 @@ export class Legend extends BaseLegend {
      * @param {number} count - The count of legend items.
      * @param {number} firstLegend - The index of the first legend item.
      * @returns {void}
+     * @private
      */
     public getRenderPoint(
         legendOption: LegendOptions, start: ChartLocation, textPadding: number, previousLegend: LegendOptions,
@@ -384,6 +387,7 @@ export class Legend extends BaseLegend {
      * @param {number} index - The index of the clicked legend item.
      * @param {Event | PointerEvent} event - The click event.
      * @returns {void}
+     * @private
      */
     public LegendClick(index: number, event: Event | PointerEvent): void {
         const chart: Chart = <Chart>this.chart;
@@ -497,7 +501,7 @@ export class Legend extends BaseLegend {
             chart.selectionModule.selectedDataIndexes = selectedDataIndexes;
             chart.selectionModule.redrawSelection(chart, chart.selectionMode);
         }
-        if (chart.highlightModule && chart.highlightMode !== 'None' || chart.legendSettings.enableHighlight) {
+        if (!chart.enableCanvas && chart.highlightModule && (chart.highlightMode !== 'None' || chart.legendSettings.enableHighlight)) {
             chart.highlightModule.redrawSelection(chart, chart.highlightMode);
         }
         chart.redraw = false;
@@ -549,6 +553,7 @@ export class Legend extends BaseLegend {
      *
      * @param {Event | PointerEvent} event - The click event.
      * @returns {void}
+     * @private
      */
     public click(event: Event | PointerEvent): void {
         if (!this.chart.legendSettings.visible) {

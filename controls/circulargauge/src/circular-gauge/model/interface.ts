@@ -397,6 +397,8 @@ export interface IThemeStyle {
     fontWeight?: string;
     /** Specifies the font-family for the axis label in circular gauge. */
     labelFontFamily?: string;
+    /** Specifies the font size for the title text in circular gauge. */
+    titleFontSize?: string;
     /** Specifies the opacity for the tooltip in circular gauge. */
     tooltipFillOpacity?: number;
     /** Specifies the opacity for the text in tooltip in circular gauge. */

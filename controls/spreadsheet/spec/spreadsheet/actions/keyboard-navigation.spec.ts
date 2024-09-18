@@ -34,6 +34,11 @@ describe('Spreadsheet cell navigation module ->', () => {
             helper.invoke('selectRange', ['H5']);
             helper.triggerKeyNativeEvent(36);
             expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A5');
+            helper.getInstance().selectionSettings.mode = 'Single';
+            helper.invoke('selectRange', ['H5']);
+            helper.triggerKeyNativeEvent(36);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A5');
+            helper.getInstance().selectionSettings.mode = 'Multiple';
             done();
         });
         it('Ctrl + Home key', (done: Function) => {
@@ -571,7 +576,7 @@ describe('Spreadsheet cell navigation module ->', () => {
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('B4:B4');
                 done();
-            }, 10);
+            }, 30);
         });
         it('Left arrow button from first unlocked column for navigation', (done: Function) => {
             helper.invoke('selectRange', ['B3']);
@@ -987,6 +992,65 @@ describe('Spreadsheet cell navigation module ->', () => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('C4:C4');
                 done();
             }, 50);
+        });
+    });
+
+    describe('Testing keyboard navigation with protect sheet->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }], scrollSettings: { enableVirtualization: false, isFinite: true } }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Hide Row and Column in Protect Sheet.', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet('Sheet1', { selectCells: false, formatRows: true, formatColumns: true, formatCells: true });
+            setTimeout(() => {
+                helper.triggerKeyNativeEvent(36, false, false);
+                setTimeout(() => {
+                    expect(spreadsheet.activeSheetIndex).toEqual(0);
+                    spreadsheet.protectSheet('Sheet1', { selectCells: false, formatRows: false, formatColumns: false, formatCells: false });
+                    done();
+                });
+            });
+        });
+        it('Name box Shitf + Tab Navigation', (done: Function) => {
+            helper.setModel('enableRtl', true);
+            setTimeout(() => {
+                let nameBox: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('#' + helper.id + '_name_box');
+                nameBox.click();
+                nameBox.value = 'TestName';
+                helper.triggerKeyEvent('keydown', 9, null, false, true, nameBox);
+                expect(helper.getInstance().activeSheetIndex).toEqual(0);
+                done();
+            }, 20);
+        });
+        it('Home key Navigation with freeze panes', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(2, 3)
+            setTimeout(() => {
+                helper.invoke('selectRange', ['E5']);
+                helper.triggerKeyEvent('keydown', 36, null, false, false, null);
+                expect(helper.getInstance().activeSheetIndex).toEqual(0);
+                done();
+            });
+        });
+        it('Shift + Home key Navigation with freeze panes', (done: Function) => {
+            helper.setModel('enableRtl', true);
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(2, 3)
+            setTimeout(() => {
+                helper.invoke('selectRange', ['D5']);
+                helper.triggerKeyEvent('keydown', 36, null, false, true, null);
+                expect(helper.getInstance().activeSheetIndex).toEqual(0);
+                done();
+            });
+        });
+        it('Alt + End key Navigation', (done: Function) => {
+            helper.invoke('selectRange', ['F6']);
+            helper.triggerKeyNativeEvent(40, false, false, null, null, true);
+            expect(helper.getInstance().activeSheetIndex).toEqual(0);
+            done();
         });
     });
 });

@@ -386,7 +386,12 @@ export class PdfPage {
     _addWidget(reference: _PdfReference): void {
         let annots: Array<_PdfReference>;
         if (this._pageDictionary.has('Annots')) {
+            const annotsRef: any = this._pageDictionary.getRaw('Annots'); // eslint-disable-line
             annots = this._getProperty('Annots');
+            if (annotsRef instanceof _PdfReference) {
+                delete this._pageDictionary._map.Annots;
+                this._pageDictionary.update('Annots', annots);
+            }
         }
         if (annots && Array.isArray(annots)) {
             annots.push(reference);
@@ -655,8 +660,6 @@ export class PdfPage {
             template._content.dictionary.set('BBox', [0, 0, this.size[0], this.size[1]]);
             template._size = [this.size[0], this.size[1]];
         }
-        template._exportResources(this._pageDictionary, this._crossReference);
-        template._isResourceExport = true;
         return template;
     }
     _combineIntoSingleArray(arrays: Uint8Array[]): Uint8Array {

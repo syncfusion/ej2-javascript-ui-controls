@@ -1,7 +1,7 @@
 /**
  * Grid Grouping spec document
  */
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
 import { ReturnType } from '../../../src/grid/base/type';
@@ -14,14 +14,17 @@ import { Group } from '../../../src/grid/actions/group';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { getComplexFieldID } from '../../../src/grid/base/util';
-import { filterData } from '../base/datasource.spec';
+import { employeeSelectData, filterData } from '../base/datasource.spec';
 import { createGrid, destroy, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Render } from '../../../src/grid/renderer/render';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { DetailRow } from '../../../src/grid/actions/detail-row';
+import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
+import { Edit } from '../../../src/grid/actions/edit';
 
-Grid.Inject(Sort, Page, Filter, Group, Selection, Reorder, VirtualScroll, Aggregate, Toolbar);
+Grid.Inject(Sort, Page, Filter, Group, Selection, Reorder, VirtualScroll, Aggregate, Toolbar, DetailRow, InfiniteScroll, Edit);
 
 
 function copyObject(source: Object, destiation: Object): Object {
@@ -2209,6 +2212,45 @@ describe('EJ2-881066-Refreshing aggregateModule throws script error with Groupin
     });
 });
 
+// used for code coverage
+describe('Code Coverage => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowPaging:true,
+                allowGrouping:true,
+                groupSettings: { columns: ['CustomerID'] },
+                columns: [
+                    { field: 'OrderID' ,textAlign: 'Right',width:100,headerText:"Order ID"},
+                    { field: 'CustomerID' ,width:120, headerText:"Customer ID"},
+                    { field: 'Freight',textAlign: 'Right',width:110 ,format:'C2',headerText:"Freight"},
+                ],
+            }, done);
+    });
+    it('grid file coverage', function () {
+        gridObj.showResponsiveCustomFilter();
+        gridObj.showResponsiveCustomSort();
+        gridObj.showResponsiveCustomColumnChooser();
+        gridObj.showAdaptiveFilterDialog();
+        gridObj.showAdaptiveSortDialog();
+    });
+    it('refresh grid', function(done: Function){
+        gridObj['isExpanded'] = false;
+        let dataBound = () => {
+            gridObj.dataBound = null;
+            done();
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.refresh();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
 describe('EJ2-904971-Issue with Initial Grouping and Sorting in the Grid  => ', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {
@@ -2237,39 +2279,6 @@ describe('EJ2-904971-Issue with Initial Grouping and Sorting in the Grid  => ', 
         gridObj = null;
     });
 });
-
-// used for code coverage
-describe('Code Coverage => ', () => {
-    let gridObj: Grid;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: filterData,
-                allowPaging:true,
-                allowGrouping:true,
-                groupSettings: { columns: ['CustomerID'] },
-                columns: [
-                    { field: 'OrderID' ,textAlign: 'Right',width:100,headerText:"Order ID"},
-                    { field: 'CustomerID' ,width:120, headerText:"Customer ID"},
-                    { field: 'Freight',textAlign: 'Right',width:110 ,format:'C2',headerText:"Freight"},
-                ],
-            }, done);
-    });
-    it('refresh grid', function(done: Function){
-        gridObj['isExpanded'] = false;
-        let dataBound = () => {
-            gridObj.dataBound = null;
-            done();
-        };
-        gridObj.dataBound = dataBound;
-        gridObj.refresh();
-    });
-    afterAll(() => {
-        destroy(gridObj);
-        gridObj = null;
-    });
-});
-
 
 // used for code coverage
 describe('Code Coverage => ', () => {
@@ -2426,7 +2435,7 @@ describe('Code Coverage => ', () => {
         });
     });
 
-    describe('Code Coverage => ', () => {
+    describe('Code Coverage - 1=> ', () => {
         let gridObj: Grid;
         let e: any;
         beforeAll((done: Function) => {
@@ -2435,7 +2444,7 @@ describe('Code Coverage => ', () => {
                     dataSource: filterData,
                     allowGrouping: true,
                     toolbar: ['Add', 'Edit'],
-                    groupSettings: { columns: ['ProductID'] },
+                    groupSettings: { columns: ['CustomerID'] },
                     columns: [
                         { field: 'OrderID' ,textAlign: 'Right',width:100,headerText:"Order ID"},
                         { field: 'CustomerID' ,width:120, minWidth:'100', headerText:"Customer ID"},
@@ -2507,6 +2516,509 @@ describe('Code Coverage => ', () => {
 
         it('check groupcaption template class name', () => {
             expect(gridObj.getContent().querySelectorAll('.e-groupcaption')[0].classList.contains('e-freezeleftborder')).toBeTruthy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('EJ2-907737 - Height 100% is not working when dynamically changing properties', () => {
+        let gridObj: Grid;
+        let contentHeight: string;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 1),
+                    allowGrouping: true,
+                    groupSettings: { columns: ['CustomerID'] },
+                    height: '100%',
+                    width: 200,
+                    columns: [{ field: 'OrderID', headerText: 'Order ID', width: 180 },
+                    { field: 'CustomerID', headerText: 'Customer Full Name', width: 180 },
+                    { field: 'ShipCity', headerText: 'Customer Ship City', width: 180 },
+                    { field: 'Freight', width: 200 }],
+                }, done);
+        });
+        it('Get the initial height', () => {
+            contentHeight = (gridObj.element.querySelector('.e-gridcontent') as HTMLElement).style.height;
+            expect(contentHeight).not.toBeUndefined();
+        });
+        it('remove grouping', (done: Function) => {
+            actionComplete = () => {
+                let newHeight: string = (gridObj.element.querySelector('.e-gridcontent') as HTMLElement).style.height;
+                expect(contentHeight).not.toEqual(newHeight);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.ungroupColumn('CustomerID');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = contentHeight = actionComplete = null;
+        });
+    });
+
+    describe('Code Coverage - 2 => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowGrouping: true,
+                    enableVirtualization: true,
+                    height: 400,
+                    groupSettings: { columns: ['CustomerID'] },
+                    columns: [
+                        { field: 'OrderID' ,textAlign: 'Right',width:100,headerText:"Order ID"},
+                        { field: 'CustomerID' ,width:120, minWidth:'100', headerText:"Customer ID"},
+                        { field: 'Freight',textAlign: 'Right',width:110 ,format:'C2',headerText:"Freight"},
+                    ],
+                }, done);
+        });
+
+
+
+        it('vertical scroll in down direction', (done: Function) => {
+            (gridObj as any).contentModule.droppableDestroy();
+            (gridObj as any).contentModule.setRowsInLazyGroup();
+            (gridObj as any).contentModule.getCurrentBlockInfiniteRecords();
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 700;
+            setTimeout(done, 200);
+        });
+
+        it('vertical scroll in down 1 direction', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 200000;
+            setTimeout(done, 200);
+        });
+
+        it('vertical scroll in up direction', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 200;
+            setTimeout(done, 200);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - Group => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 10),
+                    allowGrouping: true,
+                    allowSorting: true,
+                    height: 400,
+                    groupSettings: { columns: ['CustomerID'], allowReordering: true },
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, minWidth: '100', headerText: "Customer ID" },
+                        { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                    ],
+                }, done);
+        });
+
+        it('Click handler for text in descending', () => {
+            (gridObj.groupModule.element.querySelector('.e-grouptext') as HTMLElement).click();
+        });
+
+        it('Click handler for sort', () => {
+            (gridObj.groupModule.element.querySelector('.e-groupsort') as HTMLElement).click();
+        });
+
+        it('Group helper', () => {
+            (gridObj.groupModule as any).helper({
+                sender: { target: createElement('div') }
+            });
+        });
+
+        it('Group drag stop 1', () => {
+            let dragGroupedElem: Element = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[0].querySelector('.e-drag');
+            (gridObj.groupModule as any).helper({
+                element: dragGroupedElem,
+                sender: { target: dragGroupedElem }
+            });
+            const dropClone: HTMLElement = document.querySelector('.e-cloneproperties.e-dragclone.e-gdclone');
+            (gridObj.groupModule as any).dragStop({
+                helper: dropClone,
+                target: gridObj.getHeaderContent(),
+            });
+        });
+
+        it('Group drag stop 2', () => {
+            let dragGroupedElem: Element = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[0].querySelector('.e-drag');
+            (gridObj.groupModule as any).helper({
+                element: dragGroupedElem,
+                sender: { target: dragGroupedElem }
+            });
+            const dropClone: HTMLElement = document.querySelector('.e-cloneproperties.e-dragclone.e-gdclone');
+            (gridObj.groupModule as any).dragStop({
+                helper: dropClone,
+                target: gridObj.element,
+            });
+        });
+
+        it('Group drag stop 3', () => {
+            let dragGroupedElem: Element = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[0].querySelector('.e-drag');
+            (gridObj.groupModule as any).helper({
+                element: dragGroupedElem,
+                sender: { target: dragGroupedElem }
+            });
+            const dropClone: HTMLElement = document.querySelector('.e-cloneproperties.e-dragclone.e-gdclone');
+            dropClone.setAttribute('e-mappinguid', gridObj.getColumns()[0].uid);
+            (gridObj.groupModule as any).dragStop({
+                helper: dropClone,
+                target: createElement('div'),
+            });
+        });
+
+        it('Group drag stop 4', () => {
+            let dragGroupedElem: Element = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[0].querySelector('.e-drag');
+            (gridObj.groupModule as any).helper({
+                element: dragGroupedElem,
+                sender: { target: dragGroupedElem }
+            });
+            const dropClone: HTMLElement = document.querySelector('.e-cloneproperties.e-dragclone.e-gdclone');
+            (gridObj.groupModule as any).dragStop({
+                helper: dropClone,
+                target: createElement('div'),
+            });
+        });
+
+        it('destroy', () => {
+            gridObj.destroy();
+            gridObj.groupModule.addEventListener();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - Group - expandCollapseRows => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 10),
+                    allowGrouping: true,
+                    allowSorting: true,
+                    height: 400,
+                    groupSettings: { columns: ['CustomerID'] },
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, minWidth: '100', headerText: "Customer ID" },
+                        { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                    ],
+                    childGrid: {
+                        dataSource: employeeSelectData,
+                        queryString: 'EmployeeID',
+                        allowPaging: true,
+                        columns: [
+                            { field: 'FirstName', headerText: 'First Name', width: 120 },
+                            { field: 'Region', headerText: 'Region', width: 120 },
+                        ],
+                    }
+                }, done);
+        });
+
+        it('Case 1', () => {
+            (gridObj.element.querySelector('.e-detailrowcollapse') as HTMLElement).click();
+        });
+
+        it('Case 2', () => {
+            (gridObj.element.querySelector('.e-recordplusexpand') as HTMLElement).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - Group - enableInfiniteScrolling expandCollapseRows => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 10),
+                    allowGrouping: true,
+                    allowSorting: true,
+                    height: 400,
+                    groupSettings: { columns: ['CustomerID'] },
+                    enableInfiniteScrolling: true,
+                    infiniteScrollSettings: { enableCache: true },
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, minWidth: '100', headerText: "Customer ID" },
+                        { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                    ],
+                    childGrid: {
+                        dataSource: employeeSelectData,
+                        queryString: 'EmployeeID',
+                        allowPaging: true,
+                        columns: [
+                            { field: 'FirstName', headerText: 'First Name', width: 120 },
+                            { field: 'Region', headerText: 'Region', width: 120 },
+                        ],
+                    }
+                }, done);
+        });
+
+        it('Case 1', () => {
+            (gridObj.element.querySelector('.e-detailrowcollapse') as HTMLElement).click();
+        });
+
+        it('Case 2', () => {
+            const expand = gridObj.element.querySelector('.e-recordplusexpand');
+            const arrow = createElement('div');
+            arrow.classList.add('e-icon-gdownarrow');
+            expand.append(arrow);
+            (gridObj.element.querySelector('.e-recordplusexpand') as HTMLElement).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - Group - expandCollapseRows showAddNewRow Top => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 10),
+                    allowGrouping: true,
+                    allowSorting: true,
+                    height: 400,
+                    groupSettings: { columns: ['CustomerID'] },
+                    editSettings: { allowAdding: true, showAddNewRow: true, newRowPosition: 'Top' },
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, minWidth: '100', headerText: "Customer ID" },
+                        { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                    ],
+                }, done);
+        });
+
+        it('Case 1', () => {
+            (gridObj.element.querySelector('.e-recordplusexpand') as HTMLElement).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - Group - expandCollapseRows showAddNewRow Bottom => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 10),
+                    allowGrouping: true,
+                    allowSorting: true,
+                    height: 400,
+                    groupSettings: { columns: ['CustomerID'] },
+                    editSettings: { allowAdding: true, showAddNewRow: true, newRowPosition: 'Bottom' },
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, minWidth: '100', headerText: "Customer ID" },
+                        { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                    ],
+                }, done);
+        });
+
+        it('Case 1', () => {
+            (gridObj.element.querySelector('.e-recordplusexpand') as HTMLElement).click();
+        });
+
+        it('Case 2', () => {
+            gridObj.getContentTable().querySelector('tbody').lastElementChild.classList.remove('e-addedrow');
+            (gridObj.element.querySelector('.e-recordplusexpand') as HTMLElement).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - Group - addLabel => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 10),
+                    allowGrouping: true,
+                    allowSorting: true,
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, minWidth: '100', headerText: "Customer ID" },
+                        { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                    ],
+                }, done);
+        });
+
+        it('Case 1', () => {
+            (gridObj.groupModule as any).addLabel();
+        });
+
+        it('columnDragStart', () => {
+            const cell: HTMLElement = gridObj.getHeaderTable().querySelector('.e-headercell');
+            cell.classList.add('e-stackedheadercell');
+            (gridObj.groupModule as any).columnDragStart({ target: cell });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - Group - expandCollapseRows enableVirtualization => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowGrouping: true,
+                    allowSorting: true,
+                    enableVirtualization: true,
+                    groupSettings: { columns: ['CustomerID'] },
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, minWidth: '100', headerText: "Customer ID" },
+                        { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                    ],
+                }, done);
+        });
+
+        it('Case 1', () => {
+            (gridObj.element.querySelector('.e-recordplusexpand') as HTMLElement).click();
+        });
+
+        it('Case 2', () => {
+            (gridObj.element.querySelector('.e-recordpluscollapse') as HTMLElement).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - Group - Group Aggregates enableInfiniteScrolling => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowGrouping: true,
+                    enableInfiniteScrolling: true,
+                    groupSettings: { showGroupedColumn: true, allowReordering: true, columns: ['CustomerID', 'OrderDate'] },
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, headerText: "Customer ID" },
+                        { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCity', headerText: 'Ship City' },
+                        { field: 'ShipCountry', width: 130, headerText: "Ship Country" }
+                    ],
+                }, done);
+        });
+
+        it('for coverage - 1', () => {
+            const dragRowObject: any = gridObj.getRowObjectFromUID(gridObj.getRowByIndex(0).getAttribute('data-uid'));
+            const dropRowObject: any = gridObj.getRowObjectFromUID(gridObj.getRowByIndex(1).getAttribute('data-uid'));
+            gridObj.groupModule.groupedRowReorder(dragRowObject, dropRowObject);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - Group - React => ', () => {
+        let gridObj: Grid;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowGrouping: true,
+                    groupSettings: { showGroupedColumn: true, allowReordering: true, columns: ['CustomerID'] },
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, headerText: "Customer ID" },
+                        { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                    ],
+                }, done);
+        });
+
+        it('for coverage - 1', () => {
+            (gridObj.groupModule as any).addOrRemoveFocus({ target: gridObj.element });
+        });
+
+        it('for coverage - 2', () => {
+            const element = gridObj.getContentTable().querySelector('.e-icon-gdownarrow');
+            (gridObj.groupModule as any).auxilaryclickHandler({ target: element, button: 1, preventDefault });
+        });
+
+        it('for coverage - 3', () => {
+            gridObj.isReact = true;
+            (gridObj.groupModule as any).onGroupAggregates({ OrderID: 10248, CustomerID: 'GG', Freight: 1 });
+        });
+
+        it('for coverage - 4', () => {
+            (gridObj.groupModule as any).destroyRefreshGroupCaptionFooterTemplate();
+        });
+
+        it('for coverage - 5', () => {
+            (gridObj.groupModule as any).updateLazyLoadGroupAggregates();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - Group - keyPressHandler => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowGrouping: true,
+                    allowSorting: true,
+                    groupSettings: { columns: ['CustomerID'] },
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, minWidth: '100', headerText: "Customer ID" },
+                        { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                    ],
+                }, done);
+        });
+
+        it('Case 1', () => {
+            (gridObj.groupModule as any).keyPressHandler({ target: gridObj.groupModule.element.querySelector('.e-ungroupbutton'), action: 'tab' });
+        });
+
+        it('Case 2', () => {
+            gridObj.groupModule.render();
         });
 
         afterAll(() => {

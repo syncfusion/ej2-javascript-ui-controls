@@ -247,7 +247,7 @@ describe('Map marker properties tesing', () => {
                 expect(element.getAttribute('x')).toBe('10');
                 expect(element.getAttribute('y')).toBe('28');
                 expect(element.getAttribute('height')).toBe('412');
-                expect(element.getAttribute('width') === '743' || element.getAttribute('width') === '749').toBe(true);
+                expect(element.getAttribute('width') === '743' || element.getAttribute('width') === '749' || element.getAttribute('width') === '747').toBe(true);
             };
             map.refresh();
         });

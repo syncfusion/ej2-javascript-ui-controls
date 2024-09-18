@@ -6,7 +6,7 @@ import { Axis } from '../../chart/axis/axis';
 
 
 /**
- * `SplineAreaSeries` module used to render the spline area series.
+ * The `SplineAreaSeries` module is used to render the spline area series.
  */
 
 export class SplineAreaSeries extends SplineBase {
@@ -21,6 +21,7 @@ export class SplineAreaSeries extends SplineBase {
      * @param {boolean} pointAnimate - Specifies whether the point has to be animated.
      * @param {boolean} pointUpdate - Specifies whether the point has to be updated.
      * @returns {void}
+     * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean, pointAnimate: boolean, pointUpdate?: boolean): void {
         let firstPoint: Points = null;
@@ -129,11 +130,8 @@ export class SplineAreaSeries extends SplineBase {
             }
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -145,6 +143,7 @@ export class SplineAreaSeries extends SplineBase {
      * @param {string} clipRect - The clip rectangle for the path.
      * @param {ChartLocation[]} [firstSymbol] - The location of the first symbol.
      * @returns {void}
+     * @private
      */
     public addPath(options: PathOption, series: Series, clipRect: string): void {
         const points: { element: Element; previousDirection: string; } =
@@ -197,7 +196,7 @@ export class SplineAreaSeries extends SplineBase {
                             else {
                                 firstPointBeforeCurve = endPathCommands[endPathCommands.length - (options.id.indexOf('border') !== -1 ? 1 : 2)].split(' ').slice(5).join(' ');
                             }
-                            var curveCommand = 'C ' + firstPointBeforeCurve + firstPointBeforeCurve + firstPointBeforeCurve;
+                            const curveCommand: string = 'C ' + firstPointBeforeCurve + firstPointBeforeCurve + firstPointBeforeCurve;
                             if (options.id.indexOf('border') !== -1) {
                                 endPathCommands.push(curveCommand);
                             }

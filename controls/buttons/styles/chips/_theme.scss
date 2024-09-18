@@ -84,13 +84,18 @@
   
         &.e-outline {
           @include chip-color($chip-outline-choice-active-bg-color, $chip-outline-choice-active-border-color, $chip-outline-choice-active-font-color, $chip-outline-choice-active-font-color, $chip-outline-avatar-choice-active-bg-color, $chip-outline-avatar-choice-active-font-color);
-  
+          @if ($skin-name =='fluent2') {
+            border-width: 2px;
+          }
           &.e-focused {
             @if ($skin-name == 'bootstrap4') {
               @include chip-color($chip-outline-choice-focus-active-bg-color, $chip-outline-choice-focus-active-border-color, $chip-outline-choice-focus-active-font-color, $chip-outline-choice-icon-focus-active-font-color, $chip-outline-avatar-choice-focus-active-bg-color, $chip-outline-avatar-choice-focus-active-font-color, $chip-primary-close-icon-font-color);
             }
             @else {
               @include chip-color($chip-outline-choice-focus-active-bg-color, $chip-outline-choice-focus-active-border-color, $chip-outline-choice-focus-active-font-color, $chip-outline-choice-icon-focus-active-font-color, $chip-outline-avatar-choice-focus-active-bg-color, $chip-outline-avatar-choice-focus-active-font-color);
+            }
+            @if ($skin-name == 'fluent2') {
+              box-shadow: $keyboard-focus;
             }
           }
   
@@ -116,7 +121,12 @@
 
     &.e-chip,
     & .e-chip {
-      @include chip-color($chip-bg-color, $chip-border-color, $chip-font-color, $chip-icon-font-color, $chip-avatar-bg-color, $chip-avatar-font-color, $chip-close-icon-font-color);
+      @if ($skin-name == 'fluent2') {
+        @include chip-color($secondary-chip-bg-color, $secondary-chip-border-color, $secondary-chip-text-color, $chip-icon-font-color, $chip-avatar-bg-color, $chip-avatar-font-color, $chip-close-icon-font-color);
+      }
+      @else {
+        @include chip-color($chip-bg-color, $chip-border-color, $chip-font-color, $chip-icon-font-color, $chip-avatar-bg-color, $chip-avatar-font-color, $chip-close-icon-font-color);
+      }
       @include chip-dlt-btn-color($chip-close-icon-hover-font-color, $chip-close-icon-pressed-font-color);
 
       &:hover {
@@ -124,7 +134,9 @@
       }
 
       &.e-focused {
-        box-shadow: $chip-focus-box-shadow;
+        @if ($skin-name != 'bootstrap5.3') {
+          box-shadow: $chip-focus-box-shadow;
+        }
         @if ($skin-name == 'bootstrap4') {
           @include chip-color($chip-focus-bg-color, $chip-focus-border-color, $chip-focus-font-color, $chip-icon-focus-font-color, $chip-avatar-hover-bg-color, $chip-avatar-hover-font-color, $chip-close-icon-font-color);
         }
@@ -142,7 +154,13 @@
           @else {
             @include chip-color($chip-focus-active-bg-color, $chip-focus-active-border-color, $chip-focus-active-font-color, $chip-icon-focus-active-font-color, $chip-avatar-focus-active-bg-color, $chip-avatar-focus-active-font-color);
           }
-          box-shadow: $chip-focus-box-shadow;
+
+          @if ($skin-name == 'fluent2') {
+            box-shadow: $keyboard-focus;
+          }
+          @else {
+            box-shadow: $chip-focus-box-shadow;
+          }
         }
       }
 
@@ -191,6 +209,9 @@
             @include chip-color($chip-outline-focus-active-bg-color, $chip-outline-focus-active-border-color, $chip-outline-focus-active-font-color, $chip-outline-icon-focus-active-font-color, $chip-outline-avatar-focus-active-bg-color, $chip-outline-avatar-focus-active-font-color);
             @if ($skin-name == 'bootstrap4' or $skin-name == 'FluentUI') {
               box-shadow: $chip-primary-box-shadow;
+            }
+            @if ($skin-name == 'fluent2') {
+              box-shadow: $keyboard-focus;
             }
           }
         }
@@ -247,6 +268,12 @@
             }
             @else {
               @include chip-color($chip-primary-focus-active-bg-color, $chip-primary-focus-active-border-color, $chip-primary-focus-active-font-color, $chip-primary-focus-active-font-color, $chip-primary-avatar-focus-active-bg-color, $chip-primary-avatar-focus-active-font-color);
+              @if ($skin-name == 'bootstrap5.3') {
+                box-shadow: $chip-primary-box-shadow;
+              }
+              @if ($skin-name == 'fluent2') {
+                box-shadow: $keyboard-focus;
+              }
             }
           }
         }
@@ -293,6 +320,12 @@
               }
               @else {
                 @include chip-color($chip-outline-primary-focus-active-bg-color, $chip-outline-primary-focus-active-border-color, $chip-outline-primary-focus-active-font-color, $chip-outline-primary-focus-active-font-color, $chip-outline-primary-avatar-focus-active-bg-color, $chip-outline-primary-avatar-focus-active-font-color);
+                @if ($skin-name == 'bootstrap5.3') {
+                  box-shadow: $chip-primary-box-shadow;
+                }
+                @if ($skin-name == 'fluent2') {
+                  box-shadow: $keyboard-focus;
+                }
               }
             }
           }
@@ -342,6 +375,12 @@
             }
             @else {
               @include chip-color($chip-success-focus-active-bg-color, $chip-success-focus-active-border-color, $chip-success-focus-active-font-color, $chip-success-focus-active-font-color, $chip-success-avatar-focus-active-bg-color, $chip-success-avatar-focus-active-font-color);
+              @if ($skin-name == 'bootstrap5.3') {
+                box-shadow: $chip-success-box-shadow;
+              }
+              @if ($skin-name == 'fluent2') {
+                box-shadow: $keyboard-focus;
+              }
             }
           }
         }
@@ -388,6 +427,12 @@
               }
               @else {
                 @include chip-color($chip-outline-success-focus-active-bg-color, $chip-outline-success-focus-active-border-color, $chip-outline-success-focus-active-font-color, $chip-outline-success-focus-active-font-color, $chip-outline-success-avatar-focus-active-bg-color, $chip-outline-success-avatar-focus-active-font-color);
+                @if ($skin-name == 'bootstrap5.3') {
+                  box-shadow: $chip-success-box-shadow;
+                }
+                @if ($skin-name == 'fluent2') {
+                  box-shadow: $keyboard-focus;
+                }
               }
             }
           }
@@ -437,6 +482,12 @@
             }
             @else {
               @include chip-color($chip-info-focus-active-bg-color, $chip-info-focus-active-border-color, $chip-info-focus-active-font-color, $chip-info-focus-active-font-color, $chip-info-avatar-focus-active-bg-color, $chip-info-avatar-focus-active-font-color);
+              @if ($skin-name == 'bootstrap5.3') {
+                box-shadow: $chip-info-box-shadow;
+              }
+              @if ($skin-name == 'fluent2') {
+                box-shadow: $keyboard-focus;
+              }
             }
           }
         }
@@ -483,6 +534,12 @@
               }
               @else {
                 @include chip-color($chip-outline-info-focus-active-bg-color, $chip-outline-info-focus-active-border-color, $chip-outline-info-focus-active-font-color, $chip-outline-info-focus-active-font-color, $chip-outline-info-avatar-focus-active-bg-color, $chip-outline-info-avatar-focus-active-font-color);
+                @if ($skin-name == 'bootstrap5.3') {
+                  box-shadow: $chip-info-box-shadow;
+                }
+                @if ($skin-name == 'fluent2') {
+                  box-shadow: $keyboard-focus;
+                }
               }
             }
           }
@@ -532,6 +589,12 @@
             }
             @else {
               @include chip-color($chip-warning-focus-active-bg-color, $chip-warning-focus-active-border-color, $chip-warning-focus-active-font-color, $chip-warning-focus-active-font-color, $chip-warning-avatar-focus-active-bg-color, $chip-warning-avatar-focus-active-font-color);
+              @if ($skin-name == 'bootstrap5.3') {
+                box-shadow: $chip-warning-box-shadow;
+              }
+              @if ($skin-name == 'fluent2') {
+                box-shadow: $keyboard-focus;
+              }
             }
           }
         }
@@ -578,6 +641,12 @@
               }
               @else {
                 @include chip-color($chip-outline-warning-focus-active-bg-color, $chip-outline-warning-focus-active-border-color, $chip-outline-warning-focus-active-font-color, $chip-outline-warning-focus-active-font-color, $chip-outline-warning-avatar-focus-active-bg-color, $chip-outline-warning-avatar-focus-active-font-color);
+                @if ($skin-name == 'bootstrap5.3') {
+                  box-shadow: $chip-warning-box-shadow;
+                }
+                @if ($skin-name == 'fluent2') {
+                  box-shadow: $keyboard-focus;
+                }
               }
             }
           }
@@ -632,6 +701,12 @@
             }
             @else {
               @include chip-color($chip-danger-focus-active-bg-color, $chip-danger-focus-active-border-color, $chip-danger-focus-active-font-color, $chip-danger-focus-active-font-color, $chip-danger-avatar-focus-active-bg-color, $chip-danger-avatar-focus-active-font-color);
+              @if ($skin-name == 'bootstrap5.3') {
+                box-shadow: $chip-danger-box-shadow;
+              }
+              @if ($skin-name == 'fluent2') {
+                box-shadow: $keyboard-focus;
+              }
             }
           }
         }
@@ -678,6 +753,12 @@
               }
               @else {
                 @include chip-color($chip-outline-danger-focus-active-bg-color, $chip-outline-danger-focus-active-border-color, $chip-outline-danger-focus-active-font-color, $chip-outline-danger-focus-active-font-color, $chip-outline-danger-avatar-focus-active-bg-color, $chip-outline-danger-avatar-focus-active-font-color);
+                @if ($skin-name == 'bootstrap5.3') {
+                  box-shadow: $chip-danger-box-shadow;
+                }
+                @if ($skin-name == 'fluent2') {
+                  box-shadow: $keyboard-focus;
+                }
               }
             }
           }

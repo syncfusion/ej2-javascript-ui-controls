@@ -1,10 +1,10 @@
 /*! component's theme wise override definitions and variables */
-$hscroll-skin: 'bootstrap5' !default;
+$hscroll-skin: 'bootstrap5.3' !default;
 $border-type: solid;
-$hscroll-hover-font: $icon-color !default;
+$hscroll-hover-font: $secondary-text-color-hover !default;
 $hscroll-active-font-color: $content-text-color-alt2 !default;
 $hscroll-default-bg: $content-bg-color-alt2 !default;
-$hscroll-press-bg: $content-bg-color-alt2 !default;
+$hscroll-press-bg: $secondary-bg-color-pressed !default;
 $hscroll-active-bg: $content-bg-color-alt2 !default;
 $hscroll-border-size: 1px !default;
 $hscroll-nav-nrml-minheight: 38px !default;
@@ -16,7 +16,7 @@ $hscroll-nrml-padding: 0 $hscroll-nav-nrml-width !default;
 $hscroll-bgr-padding: 0 $hscroll-nav-bgr-width !default;
 $hscroll-border-type: $border-type !default;
 $hscroll-box-shadow: none !default;
-$hscroll-hover-bg: $content-bg-color-alt3 !default;
+$hscroll-hover-bg: $secondary-bg-color !default;
 $hscroll-hover-border-color: $border-light !default;
 $hscroll-default-icon-color: $icon-color !default;
 $hscroll-focus-border: 0 !default;
@@ -38,7 +38,7 @@ $hscroll-device-arrow-border-color: $border-light !default;
 $hscroll-device-arrow-color: $icon-color !default;
 $hscroll-device-arrow-size: 18px !default;
 $hscroll-device-arrow-icon-size: 18px !default;
-$hscroll-device-arrow-size-bigger: 22px !default;
+$hscroll-device-arrow-size-bigger: 18px !default;
 $hscroll-device-arrow-width: 48px !default;
 
 $hscroll-default-border: $hscroll-hover-border-color !default;
@@ -46,11 +46,11 @@ $hscroll-ribble-animation-border-frame: rgba(255, 255, 255, .5) !default;
 $hscroll-ribble-animation-shadow-frame: 0 0 0 0 $hscroll-ribble-animation-border-frame !default;
 $hscroll-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12) !default;
 
-$hscroll-nav-hover-press-bg: $hscroll-hover-bg !default;
-$hscroll-nav-hover-icons-color: $hscroll-default-icon-color !default;
-$hscroll-nav-focus-bg-color: $hscroll-hover-bg !default;
+$hscroll-nav-hover-press-bg: $hscroll-press-bg !default;
+$hscroll-nav-hover-icons-color: $secondary-text-color-focus !default;
+$hscroll-nav-focus-bg-color: $secondary-bg-color-focus !default;
 $hscroll-nav-focus-border: $hscroll-focus-border !default;
-$hscroll-nav-active-color: $hscroll-default-icon-color !default;
+$hscroll-nav-active-color: $secondary-text-color-pressed !default;
 
 @mixin hscroll-btn-animation {
   background-color: transparent;

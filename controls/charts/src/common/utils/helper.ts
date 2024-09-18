@@ -12,7 +12,7 @@ import { Chart } from '../../chart/chart';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { RangeNavigator } from '../../range-navigator/range-navigator';
 import { AccumulationSeries, AccPoints } from '../../accumulation-chart/model/acc-base';
-import { IShapes, VisibleRangeModel } from '../model/interface';
+import { IShapes } from '../model/interface';
 import { IAxisLabelRenderEventArgs } from '../../chart/model/chart-interface';
 import { axisLabelRender, regSub } from '../model/constants';
 import { StockChart } from '../../stock-chart/stock-chart';
@@ -25,6 +25,7 @@ import { Chart3D } from '../../chart3d';
 import { Chart3DAxis } from '../../chart3d/axis/axis';
 import { Chart3DPoint, Chart3DSeries} from '../../chart3d/series/chart-series';
 import { CircularChart3D } from '../../circularchart3d';
+import { VisibleRangeModel } from '../model/interface';
 
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
@@ -215,7 +216,9 @@ export function logBase(value: number, base: number): number {
  * @param {Element} element - The element to which the tooltip is appended.
  * @param {boolean} isTouch - Indicates whether the tooltip is displayed on a touch device.
  * @param {boolean} isTitleOrLegendEnabled - Indicates whether the tooltip is enabled for title or legend.
+ * @param {Rect} bound - The bounding rectangle in which the tooltip should be confined.
  * @returns {void}
+ * @private
  */
 export function showTooltip(
     text: string, x: number, y: number, areaWidth: number, id: string, element: Element,
@@ -295,8 +298,12 @@ export function logWithIn(value: number, axis: Axis): number {
  * @param {Points} nextPoint - The next point in the series.
  * @param {Series} series - The series to which the points belong.
  * @returns {boolean} - A boolean indicating if the point is within the range.
+ * @private
  */
 export function withInRange(previousPoint: Points, currentPoint: Points, nextPoint: Points, series: Series): boolean {
+    if (series.chart.zoomModule && series.chart.zoomSettings.enableAnimation) {
+        return true;
+    }
     const mX2: number = logWithIn(currentPoint.xValue, series.xAxis);
     const mX1: number = previousPoint ? logWithIn(previousPoint.xValue, series.xAxis) : mX2;
     const mX3: number = nextPoint ? logWithIn(nextPoint.xValue, series.xAxis) : mX2;
@@ -327,6 +334,7 @@ export function sum(values: number[]): number {
  * @param {number[]} index - The array of indices.
  * @param {Series} series - The series object.
  * @returns {number} - The sum of elements in the subarray.
+ * @private
  */
 export function subArraySum(values: Object[], first: number, last: number, index: number[], series: Series): number {
     let sum: number = 0;
@@ -428,9 +436,9 @@ export function getRotatedRectangleCoordinates(
  * Helper function to determine whether there is an intersection between the two polygons described
  * by the lists of vertices. Uses the Separating Axis Theorem.
  *
- * @param {ChartLocation[]} a an array of connected points [{x:, y:}, {x:, y:},...] that form a closed polygon
- * @param {ChartLocation[]} b an array of connected points [{x:, y:}, {x:, y:},...] that form a closed polygon
- * @returns {boolean} if there is any intersection between the 2 polygons, false otherwise
+ * @param {ChartLocation[]} a an array of connected points [{x:, y:}, {x:, y:},...] that form a closed polygon.
+ * @param {ChartLocation[]} b an array of connected points [{x:, y:}, {x:, y:},...] that form a closed polygon.
+ * @returns {boolean} if there is any intersection between the 2 polygons, false otherwise.
  */
 export function isRotatedRectIntersect(a: ChartLocation[], b: ChartLocation[]): boolean {
     const polygons: ChartLocation[][] = [a, b];
@@ -1051,6 +1059,7 @@ export function getAnimationFunction(effect: string): Function {
  * @param {number} endValue - The ending value of the animation.
  * @param {number} duration - The duration of the animation.
  * @returns {number} The interpolated value at the current time.
+ * @private
  */
 export function linear(currentTime: number, startValue: number, endValue: number, duration: number): number {
     return -endValue * Math.cos(currentTime / duration * (Math.PI / 2)) + endValue + startValue;
@@ -1072,10 +1081,6 @@ export function markerAnimate(
     element: Element, delay: number, duration: number, series: Series | AccumulationSeries,
     pointIndex: number, point: ChartLocation, isLabel: boolean
 ): void {
-
-    const centerX: number = point.x;
-    const centerY: number = point.y;
-    let height: number = 0;
     (<HTMLElement>element).style.visibility = 'hidden';
     const transform: string = element.getAttribute('transform');
     new Animation({}).animate(<HTMLElement>element, {
@@ -1084,12 +1089,13 @@ export function markerAnimate(
         progress: (args: AnimationOptions): void => {
             if (args.timeStamp > args.delay) {
                 args.element.style.visibility = 'visible';
-                height = ((args.timeStamp - args.delay) / args.duration);
-                element.setAttribute('transform', 'translate(' + centerX
-                    + ' ' + centerY + ') scale(' + height + ') translate(' + (-centerX) + ' ' + (-centerY) + ')');
             }
         },
         end: () => {
+            const annotations: HTMLElement = <HTMLElement>document.getElementById((series as Series).chart.element.id + '_Annotation_Collections');
+            if (annotations && series.type !== 'Line') {
+                annotations.style.visibility = 'visible';
+            }
             (<HTMLElement>element).style.visibility = '';
             element.setAttribute('transform', transform ? transform : '');
             if ((series.type === 'Scatter' || series.type === 'Bubble') && !isLabel && (pointIndex === series.points.length - 1)) {
@@ -1754,6 +1760,7 @@ export function createTemplate(
  * Gets the font style.
  *
  * @param {FontModel} font - The font settings.
+ * @param {FontModel} themeFontStyle - The theme font settings.
  * @returns {string} - The font style.
  * @private
  */
@@ -1842,7 +1849,6 @@ export function getPoint(x: number, y: number, xAxis: Axis, yAxis: Axis, isInver
  * @param {string} [y='y'] - The y-coordinate for the position of the child element. Default is 'y'.
  * @param {number} duration - duration of the animation
  * @returns {void}
- * @private
  */
 export function appendElement(
     child: Element, parent: Element, redraw: boolean = false, animate: boolean = false,
@@ -1873,7 +1879,9 @@ export function appendElement(
  * @param {boolean} scatterElement - The scatter element.
  * @param {number} angle - The angle of the element.
  * @param {ChartLocation} currentTransform - The current transform of the element.
+ * @param {string} previousTranslate - The previous translate of the element.
  * @returns {void}
+ * @private
  */
 export function appendChildElement(
     isCanvas: boolean,
@@ -1881,7 +1889,7 @@ export function appendChildElement(
     redraw?: boolean, isAnimate: boolean = false, x: string = 'x', y: string = 'y',
     start?: ChartLocation, direction?: string, forceAnimate: boolean = false,
     isRect: boolean = false, previousRect: Rect = null, animateDuration?: number, scatterElement: boolean = false,
-    angle: number = 0, currentTransform?: ChartLocation
+    angle: number = 0, currentTransform?: ChartLocation, previousTranslate?: string
 ): void {
     if (isCanvas) {
         return null;
@@ -1909,7 +1917,7 @@ export function appendChildElement(
                 new ChartLocation(+(child.style[x as string].split('px')[0]), +(child.style[y as string].split('px')[0])) :
                 new ChartLocation(+child.getAttribute(x), +child.getAttribute(y));
             const previousTranform: string = element.getAttribute('transform');
-            animateRedrawElement(child, duration, start, end, x, y, angle, currentTransform, previousTranform ? new ChartLocation(parseFloat(previousTranform.split(',')[1]), parseFloat(previousTranform.split(',')[2])) : new ChartLocation(0, 0));
+            animateRedrawElement(child, duration, start, end, x, y, angle, currentTransform, previousTranslate !== undefined ? new ChartLocation(previousTranslate.match(/\d+/g).map(Number)[0], previousTranslate.match(/\d+/g).map(Number)[1]) : previousTranform ? new ChartLocation(parseFloat(previousTranform.split(',')[1]), parseFloat(previousTranform.split(',')[2])) : new ChartLocation(0, 0), previousTranslate !== undefined);
         }
     } else if (redraw && isAnimate && !element && forceAnimate) {
         templateAnimate(child, 0, 600, 'FadeIn');
@@ -2107,7 +2115,6 @@ export function convertToHexCode(value: ColorValue): string {
  *
  * @param {number} value - The component value to convert.
  * @returns {string} - Returns the hexadecimal representation of the component.
- * @private
  */
 export function componentToHex(value: number): string {
     const hex: string = value.toString(16);
@@ -2477,11 +2484,12 @@ export function redrawElement(
  * @param {number} [angle=0] - The angle of rotation for the element.
  * @param {ChartLocation} [newTransform=new ChartLocation(0, 0)] - The new transform location of the element.
  * @param {ChartLocation} [previousTransform=new ChartLocation(0, 0)] - The previous transform location of the element.
+ * @param {boolean} [pointAnimation] - Specifies the animation based on points.
  * @returns {void}
  */
 export function animateRedrawElement(
     element: Element | HTMLElement, duration: number, start: ChartLocation, end: ChartLocation,
-    x: string = 'x', y: string = 'y', angle: number = 0, newTransform: ChartLocation = new ChartLocation(0, 0), previousTransform: ChartLocation = new ChartLocation(0, 0)
+    x: string = 'x', y: string = 'y', angle: number = 0, newTransform: ChartLocation = new ChartLocation(0, 0), previousTransform: ChartLocation = new ChartLocation(0, 0), pointAnimation?: boolean
 ): void {
     const isDiv: boolean = element.tagName === 'DIV';
     const setStyle: Function = (xValue: number, yValue: number, rotateX?: number, rotateY?: number): void => {
@@ -2493,6 +2501,9 @@ export function animateRedrawElement(
             element.setAttribute(y, yValue + '');
             if (angle && newTransform.x && newTransform.y && previousTransform.x && previousTransform.y && rotateX && rotateY) {
                 element.setAttribute('transform', 'rotate(' + angle + ',' + rotateX + ',' + rotateY + ')');
+            }
+            if (pointAnimation) {
+                element.setAttribute('transform', 'translate(' + rotateX + ',' + rotateY + ')');
             }
         }
     };
@@ -2512,6 +2523,43 @@ export function animateRedrawElement(
         }
     });
 }
+
+/**
+ * Animates the text content of an HTML element from a start value to an end value over a specified duration.
+ *
+ * @param {HTMLElement} element - The HTML element whose text content will be animated.
+ * @param {number} duration - The duration of the animation in milliseconds.
+ * @param {number} start - The starting value of the animation.
+ * @param {number} end - The ending value of the animation.
+ * @param {string} customLabelFormat - A custom format string that includes a placeholder for the value.
+ * @returns {void}
+ */
+export function animateTextElement(element: HTMLElement, duration: number, start: number, end: number, customLabelFormat: string): void {
+    if (element && start && end) {
+        const formatText: (value: number) => string = (value: number): string => {
+            return customLabelFormat ? customLabelFormat.replace('{value}', value.toString()) : value.toString();
+        };
+        new Animation({}).animate(createElement('div'), {
+            duration: duration,
+            progress: (args: AnimationOptions): void => {
+                element.style.animation = '';
+                const progress: number = args.timeStamp / args.duration;
+                let currentValue: number = start + (end - start) * progress;
+                if (start % 1 !== 0 || end % 1 !== 0) {
+                    currentValue = parseFloat(currentValue.toFixed(1));
+                }
+                else {
+                    currentValue = Math.round(currentValue);
+                }
+                element.textContent = formatText(currentValue);
+            },
+            end: (): void => {
+                element.textContent = formatText(end);
+            }
+        });
+    }
+}
+
 /**
  * Renders a text element using the specified renderer and options.
  *
@@ -2532,6 +2580,7 @@ export function animateRedrawElement(
  * @param {boolean} [isDataLabelWrap] - Indicates whether data labels are wrapped.
  * @param {FontModel} [themeFontStyle] - The font settings based on the theme.
  * @param {ChartLocation} [transform] - The location to transform the text element.
+ * @param {string} [previousTransform] - The previous transform of the text element.
  * @returns {Element} - The rendered text element.
  */
 export function textElement(
@@ -2539,7 +2588,7 @@ export function textElement(
     parent: HTMLElement | Element, isMinus: boolean = false, redraw?: boolean, isAnimate?: boolean,
     forceAnimate: boolean = false, animateDuration?: number, seriesClipRect?: Rect,
     labelSize?: Size, isRotatedLabelIntersect?: boolean, isCanvas?: boolean, isDataLabelWrap?: boolean, themeFontStyle?: FontModel,
-    transform?: ChartLocation
+    transform?: ChartLocation, previousTransform?: string
 ): Element {
     let renderOptions: Object = {};
     let tspanElement: Element;
@@ -2600,7 +2649,7 @@ export function textElement(
     if (!isRotatedLabelIntersect) {
         appendChildElement(
             renderer instanceof CanvasRenderer, parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null,
-            forceAnimate, false, null, animateDuration, false, option.labelRotation, transform
+            forceAnimate, false, null, animateDuration, false, option.labelRotation, transform, previousTransform
         );
     }
     return htmlObject;
@@ -2636,8 +2685,10 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
             height = periodHeight;
         }
         if ((chart as RangeNavigator).stockChart && (chart as RangeNavigator).stockChart.chart.axisCollections[1].labelPosition === 'Outside') {
-            const padding: number = (chart as RangeNavigator).stockChart.chart.axisCollections[1].labelPadding + (chart as RangeNavigator).stockChart.chart.axisCollections[1].lineStyle.width * 0.5;
-            chart.width = ((chart as RangeNavigator).stockChart.availableSize.width - ((chart as RangeNavigator).stockChart.chart.axisCollections[1].maxLabelSize.width + padding)).toString();
+            const padding: number = (chart as RangeNavigator).stockChart.chart.axisCollections[1].labelPadding +
+                (chart as RangeNavigator).stockChart.chart.axisCollections[1].lineStyle.width * 0.5;
+            chart.width = ((chart as RangeNavigator).stockChart.availableSize.width -
+                ((chart as RangeNavigator).stockChart.chart.axisCollections[1].maxLabelSize.width + padding)).toString();
         }
     }
     chart.availableSize = new Size(
@@ -2647,14 +2698,14 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
     if (chart.getModuleName() === 'chart') {
         let scaleX: number = 1; let scaleY: number = 1;
         if (chart.width === '' || chart.width === null || chart.width === '100%') {
-            if (containerWidth && chart.element.parentElement.style.transform.indexOf('scale') > -1) {
+            if (containerWidth && chart.element.parentElement && chart.element.parentElement.style.transform.indexOf('scale') > -1) {
                 scaleX = 1;
             }
             else {
                 scaleX = chart.element.getBoundingClientRect().width > 0 ?
                     chart.element.getBoundingClientRect().width / chart.availableSize.width : 1;
             }
-            if (containerHeight && chart.element.parentElement.style.transform.indexOf('scale') > -1) {
+            if (containerHeight && chart.element.parentElement && chart.element.parentElement.style.transform.indexOf('scale') > -1) {
                 scaleY = 1;
             } else {
                 scaleY = chart.element.getBoundingClientRect().height > 0 ?
@@ -2802,6 +2853,7 @@ export function textWrap(currentLabel: string, maximumWidth: number, font: FontM
  * @param {FontModel} font - The font style used for rendering the text.
  * @param {FontModel} [themeFontStyle] - The font style used as the base for the text wrapping operation.
  * @returns {string[]} An array of strings representing the wrapped lines of text.
+ * @private
  */
 export function textWrapAnyWhere(currentLabel: string, maximumWidth: number, font: FontModel, themeFontStyle?: FontModel) : string[] {
     let size : number = measureText(currentLabel, font,  themeFontStyle).width;

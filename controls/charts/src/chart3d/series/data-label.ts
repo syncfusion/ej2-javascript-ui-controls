@@ -127,7 +127,7 @@ export class DataLabel3D {
             fontWeight: argsData.textStyle.fontWeight || this.chart.themeStyle.datalabelFont.fontWeight,
             fontStyle: argsData.textStyle.fontStyle || chart.themeStyle.datalabelFont.fontStyle,
             fontFamily: argsData.textStyle.fontFamily || this.chart.themeStyle.datalabelFont.fontFamily,
-            color: argsData.textStyle.color,
+            color: argsData.textStyle.color || (this.chart.theme === 'Bootstrap5' ? '#212529' : this.chart.theme === 'Bootstrap5Dark' ? '#DEE2E6' : argsData.textStyle.color),
             opacity: argsData.textStyle.opacity
         };
         const element: Chart3DLabelElement = {
@@ -240,7 +240,7 @@ export class DataLabel3D {
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(backgroundColor));
         const vAxis: Chart3DAxis = series.chart.requireInvertedAxis ? series.xAxis : series.yAxis;
         const hAxis: Chart3DAxis = series.chart.requireInvertedAxis ? series.yAxis : series.xAxis;
-        childElement.style.color = dataLabel.font.color ||
+        childElement.style.color = dataLabel.font.color || this.chart.theme === 'Bootstrap5' ? '#212529' : this.chart.theme === 'Bootstrap5Dark' ? '#DEE2E6' :
             ((Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000)) >= 128 ? 'black' : 'white');
         if (childElement.childElementCount && !isOverlap && (!isCollide(rect, this.chart.dataLabelCollections, clip))
             && (point.yValue === undefined ||

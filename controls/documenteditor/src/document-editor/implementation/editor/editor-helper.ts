@@ -7,7 +7,7 @@ import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/p
 import { Dictionary, MentionDataEditInfo } from '../..';
 import { WBorder, WBorders, WParagraphFormat } from '../format';
 import {
-    boldProperty, italicProperty, fontSizeProperty, fontFamilyProperty, underlineProperty,
+    boldProperty, italicProperty, fontSizeProperty, fontFamilyProperty, underlineProperty, underlineColorProperty,
     strikethroughProperty, baselineAlignmentProperty, highlightColorProperty, fontColorProperty,
     styleNameProperty, bidiProperty, bdoProperty, boldBidiProperty, italicBidiProperty, fontSizeBidiProperty,
     fontFamilyBidiProperty, allCapsProperty, localeIdBidiProperty, localeIdProperty, complexScriptProperty, fontFamilyAsciiProperty,
@@ -18,7 +18,7 @@ import {
     keepLinesTogetherProperty, keepWithNextProperty, contextualSpacingProperty, widowControlProperty,
     topProperty, leftProperty, rightProperty, bottomProperty, horizontalProperty, verticalProperty,
     colorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, shadowProperty, spaceProperty, inlinesProperty,
-    characterFormatProperty, textProperty, fieldTypeProperty, hasFieldEndProperty, 
+    characterFormatProperty, textProperty, fieldTypeProperty, hasFieldEndProperty
 } from '../../index';
 import { FieldSettingsModel } from '@syncfusion/ej2-navigations';
 
@@ -161,6 +161,21 @@ export class HelperMethods {
         } else {
             return this.isSameListIDExists(randomNumber, lists) ? this.generateUniqueId(lists) : randomNumber;
         }
+    }
+    /**
+     * @private
+     * @returns {string} returns a string value
+     */
+    public static generateHexDecimal(): string {
+        return (Math.floor(Math.random() * (4000000000 - 270000000)) + 270000000).toString(16).toUpperCase();
+    }
+    /**
+     * @private
+     * @param {number} id id need to be converted
+     * @returns {string} returns a string value
+     */
+    public static numberToHexDecimal(id: number): string {
+        return id.toString(16).toUpperCase();
     }
     /**
      * @returns {boolean} returns a boolean value
@@ -382,7 +397,7 @@ export class HelperMethods {
         case 0:
             return 'Top';
         case 1:
-            return 'Center';
+            return 'Middle';
         case 2:
             return 'Bottom';
         default:
@@ -810,6 +825,7 @@ export class HelperMethods {
         characterFormat[underlineProperty[keywordIndex]] = isWriteAllValues? format.underline :isInline ? 
         keywordIndex == 1 ? HelperMethods.getUnderlineEnumValue(format.underline): format.underline : 
         keywordIndex == 1 ? HelperMethods.getUnderlineEnumValue(format.getValue('underline') as Underline): format.getValue('underline') as Underline;
+        characterFormat[underlineColorProperty[keywordIndex]] = isWriteAllValues? format.underlineColor :isInline ? this.toWriteInline(format, 'underlineColor') : format.getValue('underlineColor');
         characterFormat[strikethroughProperty[keywordIndex]] = isWriteAllValues? format.strikethrough :isInline ? 
         keywordIndex == 1 ? HelperMethods.getStrikeThroughEnumValue(format.strikethrough) :(format.strikethrough) : 
         keywordIndex == 1 ? HelperMethods.getStrikeThroughEnumValue(format.getValue('strikethrough') as Strikethrough):(format.getValue('strikethrough') as Strikethrough);

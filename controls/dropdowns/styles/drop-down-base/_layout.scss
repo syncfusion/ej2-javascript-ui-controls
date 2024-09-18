@@ -1,32 +1,4 @@
 @include export-module('dropdownbase-layout') {
-  .e-bigger .e-dropdownbase,
-  .e-dropdownbase.e-bigger {
-    min-height: 45px;
-    @at-root {
-      #{if(&, '&', '*')} .e-list-item {
-        line-height: $ddl-line-height;
-        text-indent: $ddl-bigger-text-indent;
-      }
-
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
-        line-height: $ddl-line-height;
-        @if $skin-name != 'tailwind' {
-          text-indent: $ddl-bigger-text-indent;
-        }
-      }
-
-      #{if(&, '&', '*')} .e-list-item .e-list-icon {
-        @if $skin-name == 'fluent2' {
-          font-size: 18px;
-        }
-        @else {
-          font-size: 20px;
-        }
-      }
-    }
-  }
-
   .e-dropdownbase {
     display: block;
     height: 100%;
@@ -122,24 +94,10 @@
     white-space: pre-wrap;
   }
 
-  .e-bigger.e-ddl .e-dropdownbase.e-nodata,
-  .e-bigger .e-ddl .e-dropdownbase.e-nodata {
-    @if ($skin-name == 'FluentUI' or $skin-name == 'tailwind') {
-      font-size: $ddl-bigger-list-nodata-font-size;
-    }
-  }
-
   .e-small.e-ddl .e-dropdownbase.e-nodata,
   .e-small .e-ddl .e-dropdownbase.e-nodata {
     @if ($skin-name == 'FluentUI' or $skin-name == 'tailwind') {
       font-size: $ddl-small-list-nodata-font-size;
-    }
-  }
-
-  .e-bigger.e-small.e-ddl .e-dropdownbase.e-nodata,
-  .e-bigger.e-small .e-ddl .e-dropdownbase.e-nodata {
-    @if ($skin-name == 'FluentUI' or $skin-name == 'tailwind') {
-      font-size: $ddl-bigger-small-list-nodata-font-size;
     }
   }
 
@@ -159,20 +117,6 @@
     }
   }
 
-  .e-bigger .e-dropdownbase.e-dd-group .e-list-item {
-    padding-left: $ddl-group-list-bigger-padding-left;
-    @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-      text-indent: 0;
-    }
-  }
-
-  .e-small.e-bigger .e-dropdownbase.e-dd-group .e-list-item {
-    padding-left: $ddl-group-list-bigger-small-padding-left;
-    @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-      text-indent: 0;
-    }
-  }
-
   .e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-dropdownbase.e-dd-group .e-list-group-item {
     text-indent: $ddl-group-list-item-text-intent;
   }
@@ -186,7 +130,7 @@
     vertical-align: middle;
     white-space: nowrap;
     width: 100%;
-    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
+    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5.3' {
       font-weight: 500;
     }
   }

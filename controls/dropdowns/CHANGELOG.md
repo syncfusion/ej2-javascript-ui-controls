@@ -2,19 +2,27 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 27.1.48 (2024-09-18)
 
-### ComboBox
+### ListBox
 
 #### Bug Fixes
 
-- `#FB60719` - The issue where the "Change Event Was Not Triggered When Removing Bound Value Using the Backspace Key" has been resolved.
+- `#I904248` - Issue with "The `removeItems` method not working properly after drag and drop and specific the index value" has been resolved.
 
 ### DropDownTree
+
+#### New Features
+
+- `#I621087` - Provided support to prevent the check action of disabled child nodes using `checkDisabledChildren` API.
+- `#I610462` - Provided valueTemplate support to customize the display of selected values in the Dropdown Tree component.
 
 #### Bug Fixes
 
 - `#I622674` - The issue where, when multi selection is enabled, selected items were just appended into one string for the aria-label in the Dropdown Tree has been resolved.
+- `#I630411` - Facing an console error when all nodes are not selectable while opening the popup in the Dropdown Tree component have been resolved.
+- `#I624932` - Multiple focus issue when enabled the showSelectAll and allowFiltering properties in the Dropdown Tree component has been resolved.
+- `#I625088` - The issue with selected field in the Dropdown Tree component has been resolved.
 
 ## 26.2.11 (2024-08-27)
 

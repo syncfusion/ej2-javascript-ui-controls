@@ -259,9 +259,6 @@ export class ContextMenu {
             }
             this.parent.chartRowsModule.splitTask(this.rowData[taskSettings.id], currentClickedDate);
             this.parent.chartRowsModule.updateSegment(this.rowData.ganttProperties.segments, this.rowData.ganttProperties.taskId);
-            if (this.parent.projectEndDate >= this.rowData.ganttProperties.endDate) {
-            this.parent.nextTimeSpan()
-            }
         });
     }
     private mergeCall(item: string): void {
@@ -324,12 +321,21 @@ export class ContextMenu {
             splitTaskDuration = Math.ceil(currentTaskDifference / this.parent.timelineSettings.timelineUnitSize);
             splitTaskDuration -= 1;
         }
-
-        const contextMenuClickDate: Date =
-            this.parent.dataOperation.getEndDate(startDate, splitTaskDuration, splitTaskDuration > 1 ?
-                this.rowData.ganttProperties.durationUnit : (this.parent.timelineSettings.bottomTier.unit !== 'None') ?
-                    this.parent.timelineSettings.bottomTier.unit.toLocaleLowerCase() :
-                    this.parent.timelineSettings.topTier.unit.toLocaleLowerCase(), this.rowData, false);
+        let contextMenuClickDate: Date;
+        if (!isNullOrUndefined(this.parent.timelineSettings.bottomTier) && (this.parent.timelineSettings.bottomTier.unit === 'Minutes' || this.parent.timelineSettings.bottomTier.unit === 'Hour')) {
+            splitTaskDuration = Math.ceil(currentTaskDifference / this.parent.timelineSettings.timelineUnitSize);
+            splitTaskDuration -= 1;
+            contextMenuClickDate = this.parent.dataOperation.getEndDate(
+                startDate, splitTaskDuration, this.parent.timelineSettings.bottomTier.unit.toLocaleLowerCase()
+                , this.rowData, false);
+        }
+        else {
+            contextMenuClickDate =
+                this.parent.dataOperation.getEndDate(startDate, splitTaskDuration, this.rowData.ganttProperties.duration > 1 ?
+                    this.rowData.ganttProperties.durationUnit : (this.parent.timelineSettings.bottomTier.unit !== 'None') ?
+                        this.parent.timelineSettings.bottomTier.unit.toLocaleLowerCase() :
+                        this.parent.timelineSettings.topTier.unit.toLocaleLowerCase(), this.rowData, false);
+        }
         return contextMenuClickDate;
     }
     private contextMenuBeforeOpen(args: CMenuOpenEventArgs): void | Deferred {

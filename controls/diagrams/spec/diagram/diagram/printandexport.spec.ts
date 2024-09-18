@@ -1752,7 +1752,6 @@ describe('Print and export', () => {
             done();
         });
     });
-
     describe('898304 - exportImage function export images only in "PNG" format', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -1842,6 +1841,6 @@ describe('Print and export', () => {
             expect(data !== null).toBe(true);
             done();
         });
-        
+
     });
 });

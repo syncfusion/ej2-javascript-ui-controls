@@ -124,7 +124,11 @@ export class ResourceBase {
         const resColl: ResourcesModel[] = this.resourceCollection;
         const tr: Element = createElement('tr');
         const td: Element = createElement('td', { attrs: { tabindex: isVirtualScroll ? '-1' : '0' } });
+        const existingGroupIndices: number[] = this.parent.activeView.getGroupIndices();
         for (let i: number = 0; i < resData.length; i++) {
+            if (existingGroupIndices.length > 0 && existingGroupIndices.indexOf(resData[parseInt(i.toString(), 10)].groupIndex) > -1) {
+                continue;
+            }
             const ntd: Element = td.cloneNode() as Element;
             rIndex = util.findIndexInData(<Record<string, any>[]>resColl, 'name', resData[parseInt(i.toString(), 10)].resource.name);
             if (rIndex === resColl.length - 1) {
@@ -303,6 +307,7 @@ export class ResourceBase {
         this.setExpandedResources();
         const resourceCount: number = this.parent.virtualScrollModule.getRenderedCount();
         const startIndex: number = this.expandedResources.indexOf(this.renderedResources[0]);
+        this.parent.virtualScrollModule.existingDataCollection = this.renderedResources;
         this.renderedResources = this.expandedResources.slice(startIndex, startIndex + resourceCount);
         if (this.renderedResources.length < resourceCount) {
             let sIndex: number = this.expandedResources.length - resourceCount;

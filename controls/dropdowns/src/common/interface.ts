@@ -73,9 +73,10 @@ export interface IDropdownlist extends Component<HTMLElement> {
     keyCode: number;
     preventSetCurrentData: boolean;
     virtualGroupDataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
+    renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement;
+    renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel, isCheckBoxUpdate?: boolean): HTMLElement;
     updatevirtualizationList(): void;
     scrollTop(selectedLI: HTMLElement, activeIndex: number, keyCode: number | null): void;
-    renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel, isCheckBoxUpdate?: boolean): HTMLElement
     updateVirtualReOrderList(isCheckBoxUpdate?: boolean): void;
     getForQuery(valuecheck: string[] | number[] | boolean[]): Query;
     skeletonCount: number;
@@ -91,7 +92,6 @@ export interface IDropdownlist extends Component<HTMLElement> {
     GetVirtualTrackHeight(): string;
     getPageCount(returnExactCount?: boolean): number;
     handleVirtualKeyboardActions(e: KeyboardEventArgs, pageCount: number): void;
-    renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement
     resetList(
         dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
         fields?: FieldSettingsModel, query?: Query, e?: MouseEvent | KeyboardEventArgs | TouchEvent): void

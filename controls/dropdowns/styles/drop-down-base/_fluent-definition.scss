@@ -92,27 +92,8 @@ $ddl-group-list-item-text-intent: 0 !default;
     font-size: $text-xxs;
   }
 
-  .e-bigger .e-dropdownbase .e-list-group-item,
-  .e-bigger .e-fixed-head,
-  .e-bigger.e-dropdownbase .e-list-group-item,
-  .e-bigger.e-fixed-head {
-    font-size: $text-sm;
-  }
-
-  .e-bigger.e-small .e-dropdownbase .e-list-group-item,
-  .e-bigger.e-small .e-fixed-head,
-  .e-bigger.e-small.e-dropdownbase .e-list-group-item,
-  .e-bigger.e-small.e-fixed-head {
-    font-size: $text-xs;
-  }
-
   .e-dropdownbase .e-list-item .e-list-icon {
     padding: 0 8px 0 0;
-  }
-
-  .e-bigger .e-dropdownbase .e-list-item .e-list-icon,
-  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
-    padding: 0 12px 0 0;
   }
 
   .e-small .e-dropdownbase .e-list-item .e-list-icon {

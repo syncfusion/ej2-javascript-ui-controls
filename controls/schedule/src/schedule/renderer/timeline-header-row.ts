@@ -42,7 +42,7 @@ export class TimelineHeaderRow {
             const jsDate: number = +new Date(1970, 0, 1);
             const tzOffsetDiff: number = d.getTimezoneOffset() - new Date(1970, 0, 1).getTimezoneOffset();
             let key: number = Math.ceil(((((+d - jsDate) - (tzOffsetDiff * 60 * 1000)) / MS_PER_DAY) + new Date(jsDate).getDay() + 1) / 7);
-            if (this.parent.firstDayOfWeek && this.parent.firstDayOfWeek > new Date(+d).getDay()) {
+            if (this.parent.activeViewOptions.firstDayOfWeek && this.parent.activeViewOptions.firstDayOfWeek > new Date(+d).getDay()) {
                 key = key - 1;
             }
             result[parseInt(key.toString(), 10)] = result[parseInt(key.toString(), 10)] || [];

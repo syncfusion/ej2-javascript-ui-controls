@@ -1,10 +1,10 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction } from './index';
-import { HideShowEventArgs, invalidData, resizeRowHeight } from './../common/index';
+import { HideShowEventArgs, invalidData, refreshFilterCellsOnResize } from './../common/index';
 import { Cell, CellUpdateArgs, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, isReadOnly, moveSheet, protectsheetHandler, refreshChartSize, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
 import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
-import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, CFArgs, RowModel } from '../../workbook/index';
+import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, CFArgs, RowModel, isImported } from '../../workbook/index';
 import { RangeModel, getRangeIndexes, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, isLocked } from '../../workbook/index';
 import { cellValidation, clearCFRule, ConditionalFormatModel, getColumn, getRow, updateCell } from '../../workbook/index';
@@ -1377,7 +1377,7 @@ export function updateAction(
             } else {
                 spreadsheet.hideRow(eventArgs.index, eventArgs.index, eventArgs.hide);
             }
-            spreadsheet.notify(resizeRowHeight, { rowIndex: eventArgs.index });
+            spreadsheet.notify(refreshFilterCellsOnResize, { rowIndex: eventArgs.index });
         }
         break;
     case 'renameSheet':
@@ -1682,7 +1682,7 @@ export function updateAction(
     case 'hyperlink':
         spreadsheet.notify(
             setLinkModel, { hyperlink: eventArgs.hyperlink, cell: eventArgs.address, displayText: eventArgs.displayText,
-                triggerEvt: false });
+                isUndoRedo: true });
         spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
             getIndexesFromAddress(eventArgs.address), false, false, false, false, isImported(spreadsheet));
         break;
@@ -2174,16 +2174,6 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
 }
 
 /**
- * Check whether the sheets are imported.
- *
- * @param {Spreadsheet} context - Specifies the spreadsheet instance.
- * @returns {boolean} - It returns true if the sheets are imported otherwise false.
- * @hidden
- */
-export function isImported(context: Spreadsheet): boolean {
-    return context.allowOpen && context.openModule.preventFormatCheck;
-}
-/**
  * @param {Spreadsheet} parent - Specifies the spreadsheet instance.
  * @param {number} top - Specifies the top.
  * @returns {number} - It returns bottom offset.
@@ -2259,6 +2249,7 @@ export function getSheetProperties(context: Spreadsheet, keys?: string[]): strin
         let propList: { colPropNames: string[], complexPropNames: string[], propNames: string[] } = Object.getPrototypeOf(
             new Cell(<any>context, 'cells', {}, true)).constructor.prototype.propList;
         const cellProps: string[] = propList.colPropNames.concat(propList.complexPropNames).concat(propList.propNames);
+        cellProps.push('formattedText');
         propList = Object.getPrototypeOf(new Row(<any>context, 'rows', {}, true)).constructor.prototype.propList;
         const rowProps: string[] = propList.colPropNames.concat(propList.complexPropNames).concat(propList.propNames);
         propList = Object.getPrototypeOf(new Column(<any>context, 'columns', {}, true)).constructor.prototype.propList;
@@ -2340,7 +2331,6 @@ export function isReadOnlyCells(parent: Spreadsheet, rangeIndexes?: number[]): b
     return hasReadOnlyCell;
 }
 
-
 /**
  * Sets the standard height for a specified sheet in a spreadsheet.
  *
@@ -2366,3 +2356,19 @@ export function setStandardHeight(context: Spreadsheet, sheetIndex: number, stan
 export function getStandardHeight(context: Spreadsheet, sheetIndex: number): number {
     return context.sheets[sheetIndex as number].standardHeight;
 }
+
+/**
+ * Removes the specified elements from the DOM.
+ *
+ * @param {HTMLElement[]} elements - An array of HTML elements that need to be removed from the DOM.
+ * @returns {void}
+ * @hidden
+ */
+export function removeElements(elements: HTMLElement[]): void {
+    elements.forEach((element: HTMLElement) => {
+        if (element && element.parentNode) {
+            element.parentNode.removeChild(element);
+        }
+    });
+}
+

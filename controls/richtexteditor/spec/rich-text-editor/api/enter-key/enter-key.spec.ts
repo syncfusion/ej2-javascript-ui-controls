@@ -86,6 +86,8 @@ describe('841897 - Enter key press submits the form when Rich Text Editor contro
         var enterKeyEvent = new KeyboardEvent("keydown", { key: "Enter" ,code:"Enter"});
         var divElement = document.querySelector('.e-dialog');
         divElement.dispatchEvent(enterKeyEvent);
+        var keyEvent = new KeyboardEvent("keydown", { key: "Entre" ,code:"Entre"});
+        divElement.dispatchEvent(keyEvent);
         (<any>rteObj).keyDown(keyboardEventArgs);
         expect(rteObj.inputElement.innerHTML === `<div><br></div><p class="focusNode"><br></p>`).toBe(true);
     });

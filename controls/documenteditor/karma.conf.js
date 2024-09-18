@@ -83,7 +83,8 @@ module.exports = function(config) {
         browserNoActivityTimeout: 180000,
 
         // start these browsers
-        // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
+        // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher 
+        // changed browser from ChromeNoSandbox to ChromeHeadless
         browsers: ['ChromeHeadless'],
         customLaunchers: {
             ChromeNoSandbox: {

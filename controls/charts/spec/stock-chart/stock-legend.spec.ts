@@ -642,16 +642,20 @@ describe('Stock Chart with Legend', () => {
             chart.loaded = (args: IStockChartEventArgs) => {
                 seriesElement = document.getElementById('stock_stockChart_chartSeriesGroup1') as HTMLElement;
                 seriesCollection = document.getElementById('stock_stockChart_chartSeriesCollection') as HTMLElement;
+                expect(seriesCollection!=null).toBe(true);
+                trigger.mousemoveEvent(seriesCollection, 0, 0, 100, 100);
                 done();
             };
             chart.series = [{
                 xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
-                dataSource: chartData, type: 'Line', yName: 'high', name: 'StockChart-1'
+                dataSource: chartData, type: 'Line', yName: 'high', name: 'StockChart-1', fill:'Red'
             },
             {
                 xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
-                dataSource: chartData, type: 'Spline', yName: 'close', name: 'StockChart-2'
+                dataSource: chartData, type: 'Spline', yName: 'close', name: 'StockChart-2', fill:'Red'
             }];
+            chart.legendSettings.height= '20'
+            chart.legendSettings.enablePages = false;
             chart.legendSettings.isInversed = false;
             chart.refresh();
         });

@@ -35,7 +35,7 @@ export function createFloatLabel(
     element.id = id;
     if (!isNullOrUndefined(element.id) && element.id !== '') {
         floatLabelElement.id = 'label_' + element.id.replace(/ /g, '_');
-        floatLabelElement.setAttribute('for',element.id);
+        floatLabelElement.setAttribute('for', element.id);
         attributes(inputElement, { 'aria-labelledby': floatLabelElement.id });
     }
     if (!isNullOrUndefined(inputElement.placeholder) && inputElement.placeholder !== '') {
@@ -114,7 +114,8 @@ export function removeFloating(
  * @param {HTMLInputElement} inputElement - Specify the input wrapper.
  * @param {string} placeholder - Specify the PlaceHolder text.
  */
-export function setPlaceHolder(value: number[] | string[] | boolean[] | object[], inputElement: HTMLInputElement, placeholder: string): void {
+export function setPlaceHolder(value: number[] | string[] | boolean[] | object[],
+                               inputElement: HTMLInputElement, placeholder: string): void {
     if (value && value.length) {
         inputElement.placeholder = '';
     } else {

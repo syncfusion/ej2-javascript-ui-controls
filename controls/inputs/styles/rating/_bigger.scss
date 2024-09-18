@@ -1,0 +1,14 @@
+@include export-module('rating-bigger') {
+
+  .e-bigger.e-rating-container,
+  .e-bigger .e-rating-container {
+    @include rating-container-properties($rating-bigger-li-font-size, $rating-bigger-li-line-height, $rating-bigger-label-font-size, $rating-bigger-label-line-height, $rating-bigger-reset-font-size);
+  }
+
+  .e-bigger.e-small.e-rating-container,
+  .e-bigger.e-small .e-rating-container,
+  .e-bigger .e-small.e-rating-container,
+  .e-small .e-bigger.e-rating-container {
+    @include rating-container-properties($rating-bigger-small-li-font-size, $rating-bigger-small-li-line-height, $rating-bigger-small-label-font-size, $rating-bigger-small-label-line-height, $rating-bigger-small-reset-font-size);
+  }
+}

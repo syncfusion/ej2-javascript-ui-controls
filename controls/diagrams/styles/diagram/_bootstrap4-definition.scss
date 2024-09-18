@@ -1,58 +1,55 @@
 @import 'definition.scss';
 
-$skin-name: 'bootstrap4';
-
 $diagram-endpoint-handle-color: $white;
 $diagram-endpoint-handle-connected-border: $white;
-$diagram-endpoint-handle-connected-color: $blue;
+$diagram-endpoint-handle-connected-color: $primary;
 
-$diagram-resize-handle-color: $blue;
-$diagram-resize-handle-stroke: $blue;
-$diagram-border-stroke: $blue;
+$diagram-resize-handle-color: $primary;
+$diagram-resize-handle-stroke: $primary;
+$diagram-border-stroke: $primary;
 
-$diagram-resize-handle-disable-color:  $gray-400;
-$diagram-resize-handle-disable-stroke: $white;
-$diagram-border-stroke-disabled: $gray-400;
+$diagram-resize-handle-disable-color:  $gray-600;
+$diagram-resize-handle-disable-stroke: $primary-font;
+$diagram-border-stroke-disabled: $gray-600;
 
-$diagram-rotate-handle-color: $blue;
+$diagram-rotate-handle-color: $primary;
 
-$diagram-helper-stroke:  $blue;
+$diagram-helper-stroke:  $primary;
 
-$diagram-highlighter-stroke: $blue;
-$diagram-selected-region-stroke: $blue;
-$diagram-pivot-line-stroke: $blue;
+$diagram-highlighter-stroke: $primary;
+$diagram-selected-region-stroke: $primary;
+$diagram-pivot-line-stroke: $primary;
 
-$diagram-bezier-handle-color: $blue;
-$diagram-bezier-line-color: $blue;
+$diagram-bezier-handle-color: $primary-font;
+$diagram-bezier-line-color: $primary;
 
 $diagram-text-edit-selection-color: $white;
-$diagram-text-edit-selection-background: $blue;
+$diagram-text-edit-selection-background: $primary;
 
 $diagram-symbolpalette-hover: $gray-200;
 $diagram-symbolpalette-shape-radius: 4px;
-$diagram-symbolpalette-selected: $blue;
+$diagram-symbolpalette-selected: $gray-300;
 
 $diagram-tooltip: none;
 
-$diagram-ruler-color: $gray-100;
+$diagram-ruler-color: $gray-600;
 $diagram-ruler-font: $gray-700;
 $diagram-ruler-font-size: 10px;
-$diagram-ruler-marker-stroke: $blue;
-$diagram-ruler-marker-background-color: $gray-100;
-$diagram-ruler-label-fill: $gray-700;
-$diagram-ruler-tick-stroke: $gray-300;
-
+$diagram-ruler-marker-stroke: $primary;
+$diagram-ruler-marker-background-color: $white;
+$diagram-ruler-label-fill: $gray-600;
+$diagram-ruler-tick-stroke: $gray-500;
+$diagram-overview-resizer-color:$primary;
 $diagram-background-color: $white;
-
-$palette-background-color: #fff;
+$palette-background-color: $white;
 
 $diagram-editbox-background: $white;
-$diagram-editbox-fontcolor: $gray-900;
+$diagram-editbox-fontcolor: $gray-700;
 $diagram-border-stroke-width: 2;
 $diagram-lane-border-stroke-width: 2;
 $diagram-highlighter-border-stroke-width: 2;
-$diagram-border-strokes: $blue;
-$diagram-lane-border-strokes: $blue;
+$diagram-border-strokes: $primary;
+$diagram-lane-border-strokes: $primary;
 
 $diagram-multiselect-stroke: $diagram-resize-handle-stroke;
 
@@ -66,33 +63,8 @@ $diagram-multiselect-stroke: $diagram-resize-handle-stroke;
 }
 
 @include export-module('diagram-bootstrap-icons') {
-  .e-diagram-menu {
-    .e-bringforward::before{ content: '\e801'; }
-    .e-bringfront::before{ content: '\e803'; }
-    .e-sendback::before{ content: '\e7fe'; }
-    .e-sendbackward::before{ content: '\e7fd'; }
-    .e-delete::before{ content: '\e7fd'; }
-    .e-ungroup::before{ content: '\e800'; }
-    .e-group::before{ content: '\e802'; }
-    .e-undo::before{ content: '\e752'; }
-    .e-cut::before{ content: '\e73f'; }
-    .e-save::before{ content: '\e74d'; }
-    .e-paste::before{ content: '\e739'; }
-    .e-copy::before{ content: '\e77b'; }
-    .e-redo::before{ content: '\e778'; }
-    .e-zoomin::before{ content: '\e70a'; }
-    .e-italic::before{ content: '\e78e'; }
-    .e-close::before{ content: '\e745'; }
-    .e-pan::before{ content: '\e711'; }
-    .e-bold::before{ content: '\e78b'; }
-    .e-underline::before{ content: '\e792'; }
-    .e-zoomout::before{ content: '\e74a'; }
-    .e-export::before{ content: '\e780'; }
-    .e-print::before{ content: '\e743'; }
-    .e-order::before{ content: '\e7ff'; }
-  }
 
   .e-symbolpalette {
-    .e-clear-searchtext::before{ content: '\e724'; }
+    .e-clear-searchtext::before{ content: '\e745'; }
   }
 }

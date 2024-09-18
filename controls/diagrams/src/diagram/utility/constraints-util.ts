@@ -357,6 +357,10 @@ export function canEnableToolTip(node: ConnectorModel | NodeModel | PointPortMod
         } else if (node.constraints & PortConstraints.InheritTooltip) {
             state = diagram.constraints & DiagramConstraints.Tooltip;
         }
+    }  else if (node instanceof ShapeAnnotation || node instanceof PathAnnotation) {
+        if (node.constraints & AnnotationConstraints.Tooltip) {
+            state = node.constraints & AnnotationConstraints.Tooltip;
+        }
     }  else {
         if (node.constraints & NodeConstraints.Tooltip) {
             state = node.constraints & NodeConstraints.Tooltip;

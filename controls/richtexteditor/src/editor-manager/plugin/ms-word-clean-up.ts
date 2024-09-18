@@ -207,7 +207,7 @@ export class MsWordPaste {
         const base64Src: { [key: string]: string | boolean }[] = [];
         const imgName: string[] = [];
         // eslint-disable-next-line
-        const linkRegex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+        const linkRegex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.)|(blob\:))(\S+))/gi);
         if (imgElem.length > 0) {
             for (let i: number = 0; i < imgElem.length; i++) {
                 imgSrc.push(imgElem[i as number].getAttribute('src'));
@@ -692,7 +692,7 @@ export class MsWordPaste {
             if (content && content.indexOf('mso-list:') !== -1) {
                 let msoListValue: string[];
                 if (content.match(/mso-list:[^;]+;?/)) {
-                    const changedContent: string = content.replace(new RegExp('\n', 'g'), '').split(' ').join('');
+                    const changedContent: string = content.replace(new RegExp('\\n', 'g'), '').split(' ').join('');
                     msoListValue = changedContent.match(/mso-list:[^;]+;?/)[0].split(':l');
                     listFormatOverride = isNOU(msoListValue) ? null : parseInt(msoListValue[1].split('level')[0], 10);
                 } else {

@@ -90,14 +90,10 @@ export class Table {
         this.parent.on(events.tableModulekeyUp, this.tableModulekeyUp, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
-        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
         this.parent.on(events.afterKeyDown, this.afterKeyDown, this);
     }
 
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.createTable, this.renderDlgContent);
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.dynamicModule, this.afterRender);
@@ -117,7 +113,6 @@ export class Table {
         this.parent.off(events.tableModulekeyUp, this.tableModulekeyUp);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
-        this.parent.off(events.moduleDestroy, this.moduleDestroy);
         this.parent.off(events.afterKeyDown, this.afterKeyDown);
         if (!Browser.isDevice && this.parent.tableSettings.resize) {
             EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
@@ -135,8 +130,7 @@ export class Table {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/tslint/config
-    private setCssClass(e: ICssClassArgs) {
+    private setCssClass(e: ICssClassArgs): void {
         if (this.popupObj && e.cssClass) {
             if (isNullOrUndefined(e.oldCssClass)) {
                 addClass([this.popupObj.element], e.cssClass);
@@ -306,7 +300,7 @@ export class Table {
         if (event.ctrlKey && event.key === 'a') {
             this.handleSelectAll();
         }
-        if ((event.code === 'Delete' && event.which === 46) || (event.code === 'Backspace' && event.which === 8)) {
+        if (((event.code === 'Delete' && event.which === 46) || (event.code === 'Backspace' && event.which === 8)) && this.parent.editorMode === 'HTML') {
             const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             if (range.startContainer.nodeType === Node.ELEMENT_NODE && range.startContainer.nodeName === 'DIV' && (range.startContainer as HTMLElement).classList.contains('e-table-fake-selection'))
             {
@@ -672,7 +666,6 @@ export class Table {
         this.removeTableSelection();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private tableModulekeyUp(e: NotifyArgs): void {
         if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule) {
             const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
@@ -682,10 +675,10 @@ export class Table {
                 const closestTd: HTMLElement = closest(ele, 'td') as HTMLElement;
                 ele = !isNullOrUndefined(closestTd) && this.parent.inputElement.contains(closestTd) ? closestTd : ele;
             }
+            const eventArgs: KeyboardEventArgs = e.args as KeyboardEventArgs;
             if (this.previousTableElement !== ele && !isNullOrUndefined(this.previousTableElement)
-                && !((event as KeyboardEventArgs).shiftKey
-                    && ((event as KeyboardEventArgs).keyCode === 39 || (event as KeyboardEventArgs).keyCode === 37 ||
-                        (event as KeyboardEventArgs).keyCode === 38 || (event as KeyboardEventArgs).keyCode === 40))) {
+                && !eventArgs.shiftKey && (eventArgs.keyCode === 39 || eventArgs.keyCode === 37 ||
+                eventArgs.keyCode === 38 || eventArgs.keyCode === 40)) {
                 removeClassWithAttr([this.previousTableElement], classes.CLS_TABLE_SEL);
                 this.removeTableSelection();
             }
@@ -1043,10 +1036,10 @@ export class Table {
         };
         if (proxy.popupObj) {
             const rows: HTMLElement[] = Array.prototype.slice.call((e.target as HTMLElement).parentElement.parentElement.children);
-            for(let i: number = 0; i < rows.length; i++) {
+            for (let i: number = 0; i < rows.length; i++) {
                 EventHandler.remove(rows[i as number], 'mouseleave', this.tableCellLeave);
                 const cells: HTMLElement[] = Array.prototype.slice.call(rows[i as number].children);
-                for(let j: number = 0; j < cells.length; j++) {
+                for (let j: number = 0; j < cells.length; j++) {
                     EventHandler.remove(cells[j as number], 'mousemove', this.tableCellSelect);
                     EventHandler.remove(cells[j as number], 'mouseup', this.tableCellClick);
                 }
@@ -2110,12 +2103,13 @@ export class Table {
 
     private customTable(args: ITableNotifyArgs, e: MouseEvent): void {
         const proxy: Table = ((this as ITableNotifyArgs).self) ? (this as ITableNotifyArgs).self : this;
-        if (proxy.rowTextBox.value && proxy.columnTextBox.value) {
+        if (proxy && proxy.rowTextBox && proxy.rowTextBox.value && proxy.columnTextBox && proxy.columnTextBox.value) {
             const argument: ITableNotifyArgs = ((Browser.isDevice || (!isNullOrUndefined(args.args as ClickEventArgs)
                 && !isNullOrUndefined((args.args as ClickEventArgs).originalEvent) &&
                 ((args.args as ClickEventArgs).originalEvent as
                     KeyboardEventArgs).action === 'insert-table')
-                || proxy.parent.inlineMode.enable || ((!isNullOrUndefined(proxy.parent.quickToolbarSettings.text)) && !(args instanceof PointerEvent))) ? args :
+                || proxy.parent.inlineMode.enable ||
+                ((!isNullOrUndefined(proxy.parent.quickToolbarSettings.text)) && !(args instanceof PointerEvent))) ? args :
                 this as ITableNotifyArgs);
             proxy.tableInsert(proxy.rowTextBox.value, proxy.columnTextBox.value, e, argument);
         }
@@ -2131,8 +2125,9 @@ export class Table {
     private applyProperties(args: ITableNotifyArgs, e: MouseEvent): void {
         const dialogEle: Element = this.editdlgObj.element;
         const table: HTMLTableElement = closest((args as ITableNotifyArgs).selectNode[0] as HTMLElement, 'table') as HTMLTableElement;
-        table.style.width = (dialogEle.querySelector('.e-table-width') as HTMLInputElement).value + 'px';
-        if ((dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value !== '') {
+        table.style.width = dialogEle.querySelector('.e-table-width') ? (dialogEle.querySelector('.e-table-width') as HTMLInputElement).value + 'px'
+            : table.style.width;
+        if (dialogEle.querySelector('.e-cell-padding') && (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value !== '') {
             const tdElm: NodeListOf<HTMLElement> = table.querySelectorAll('td');
             for (let i: number = 0; i < tdElm.length; i++) {
                 let padVal: string = '';
@@ -2146,7 +2141,8 @@ export class Table {
                 tdElm[i as number].setAttribute('style', padVal);
             }
         }
-        table.cellSpacing = (dialogEle.querySelector('.e-cell-spacing') as HTMLInputElement).value;
+        table.cellSpacing = dialogEle.querySelector('.e-cell-spacing') ? (dialogEle.querySelector('.e-cell-spacing') as HTMLInputElement).value
+            : table.cellSpacing;
         if (!isNOU(table.cellSpacing) && table.cellSpacing !== '0') {
             addClass([table], classes.CLS_TABLE_BORDER);
         } else {
@@ -2248,10 +2244,6 @@ export class Table {
             this.createTableButton = null;
         }
         this.isDestroyed = true;
-    }
-
-    private moduleDestroy(): void {
-        this.parent = null;
     }
 
     /**

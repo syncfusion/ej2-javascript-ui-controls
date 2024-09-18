@@ -86,10 +86,12 @@ export class HeaderRenderer {
                 items: args.items,
                 overflowMode: 'Popup',
                 clicked: this.toolbarClickHandler.bind(this),
+                created: this.toolbarCreateHandler.bind(this),
                 enableRtl: this.parent.enableRtl,
                 enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 locale: this.parent.locale
             });
+            this.toolbarObj.isStringTemplate = true;
             this.toolbarObj.root = this.parent.root ? this.parent.root : this.parent;
             this.toolbarObj.appendTo(this.parent.element.querySelector('.' + cls.HEADER_TOOLBAR) as HTMLElement);
             this.toolbarObj.element.setAttribute('aria-label', 'Scheduler');
@@ -535,6 +537,13 @@ export class HeaderRenderer {
         return views.indexOf(target);
     }
 
+    private toolbarCreateHandler(): void {
+        if (this.parent && this.parent.portals && this.toolbarObj && this.toolbarObj.portals) {
+            this.parent.portals = this.parent.portals.concat(this.toolbarObj.portals);
+            this.parent['renderReactTemplates']();
+        }
+    }
+
     private toolbarClickHandler(args: ClickEventArgs): void {
         if (!args.item) {
             return;
@@ -677,7 +686,7 @@ export class HeaderRenderer {
         let firstDate: Date = new Date(dates[0].getTime());
         let lastDate: Date = new Date(dates[dates.length - 1].getTime());
         if (this.parent.currentView === 'WorkWeek' || this.parent.currentView === 'TimelineWorkWeek') {
-            firstDate = util.getWeekFirstDate(util.resetTime(this.parent.selectedDate), this.parent.firstDayOfWeek);
+            firstDate = util.getWeekFirstDate(util.resetTime(this.parent.selectedDate), this.parent.activeViewOptions.firstDayOfWeek);
             lastDate = util.addDays(firstDate, 7 * this.parent.activeViewOptions.interval);
         }
         else if (this.parent.currentView === 'Month') {

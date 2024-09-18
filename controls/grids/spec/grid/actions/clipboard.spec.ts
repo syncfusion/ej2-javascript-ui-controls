@@ -390,6 +390,14 @@ describe('Coverage Improvemnet - Lazy Load Grouping with Virtual Scroll  => ', (
         gridObj.copy();
     });
 
+
+    // coverage improvement
+    it('lazy load addEventListener coverage ', () => {
+        gridObj.isDestroyed = true;
+        (gridObj as any).lazyLoadGroupModule.addEventListener();
+        gridObj.isDestroyed = false;
+    });
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
@@ -420,6 +428,19 @@ describe('Coverage Improvemnet - Infinite Scroll  => ', () => {
         gridObj.selectRow(0, true);
         gridObj.copy();
     });
+
+
+    // clipboard coverage
+    it('clipboard coverage', () => {
+        (gridObj as any).clipboardModule.paste('', 1, 10);
+        gridObj.selectionSettings.mode = 'Cell';
+        (gridObj as any).selectionModule.selectedRowCellIndexes = [{ rowIndex: 1, cellIndexes: [] }];
+        (gridObj as any).clipboardModule.checkBoxSelection();
+        (gridObj as any).clipboardModule.clipBoardTextArea = null;
+        (gridObj as any).clipboardModule.isSelect = false;
+        gridObj.clipboardModule.copy();
+    });
+
 
     afterAll(() => {
         destroy(gridObj);

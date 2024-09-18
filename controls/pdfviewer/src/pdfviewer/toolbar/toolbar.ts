@@ -7,8 +7,10 @@ import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { DropDownButton, ItemModel, OpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ToolbarItem, FormFieldDataFormat } from '../base/types';
 import { FormDesignerToolbar } from './formdesigner-toolbar';
+/* eslint-disable valid-jsdoc */
 /**
  * Toolbar module
+ *
  * @param {string} args - args
  * @param {Event} event - args
  * @returns {void}
@@ -95,7 +97,10 @@ export class Toolbar {
     private isDownloadBtnVisible: boolean = true;
     private isPrintBtnVisible: boolean = true;
     private isSearchBtnVisible: boolean = true;
-    private isTextSearchBoxDisplayed: boolean = false;
+    /**
+     * @private
+     */
+    public isTextSearchBoxDisplayed: boolean = false;
     private isUndoRedoBtnsVisible: boolean = true;
     private isAnnotationEditBtnVisible: boolean = true;
     private isFormDesignerEditBtnVisible: boolean = true;
@@ -225,19 +230,20 @@ export class Toolbar {
             toolbar = this.toolbarElement;
         }
         if (enableToolbar) {
-            if (!isNullOrUndefined(toolbar)) {
+            if (!isNullOrUndefined(toolbar) && !(this.pdfViewerBase.navigationPane &&
+                this.pdfViewerBase.navigationPane.isNavigationToolbarVisible)) {
                 toolbar.style.display = 'block';
             }
             const toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
             if (toolbarContainer) {
-                let toolbarHeight: number = toolbarContainer.clientHeight;;
+                let toolbarHeight: number = toolbarContainer.clientHeight;
                 if (toolbarHeight === 0) {
                     toolbarHeight = parseFloat(window.getComputedStyle(toolbarContainer)['height']) + 1;
                 }
                 this.pdfViewerBase.toolbarHeight = toolbarHeight;
             }
             if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.pdfViewer.toolbarModule &&
-                this.pdfViewer.toolbarModule.annotationToolbarModule) {
+            this.pdfViewer.toolbarModule.annotationToolbarModule) {
                 this.pdfViewer.toolbarModule.annotationToolbarModule.hideMobileAnnotationToolbar();
             }
         } else {
@@ -1858,30 +1864,17 @@ export class Toolbar {
             if (uploadedFile) {
                 this.uploadedDocumentName = uploadedFile.name;
                 const reader: FileReader = new FileReader();
-                if (this.pdfViewerBase.clientSideRendering) {
-                    reader.readAsArrayBuffer(uploadedFile);
-                } else {
-                    reader.readAsDataURL(uploadedFile);
-                }
+                reader.readAsDataURL(uploadedFile);
                 reader.onload = (e: any): void => {
                     args.target.value = null;
                     const uploadedFileUrl: any = e.currentTarget.result;
-                    this.pdfViewer.uploadedFileByteArray = new Uint8Array(uploadedFileUrl);
                     if (isBlazor()) {
                         this.pdfViewer._dotnetInstance.invokeMethodAsync('LoadDocumentFromClient', uploadedFileUrl);
                     } else {
-                        if (this.pdfViewerBase.clientSideRendering) {
-                            const binaryString: string = Array.from(this.pdfViewer.uploadedFileByteArray, (byte: any) => String.fromCharCode(byte)).join('');
-                            this.uploadedFile = btoa(binaryString);
-                            this.pdfViewer.load(this.pdfViewer.uploadedFileByteArray, null);
-                            this.pdfViewerBase.isSkipDocumentPath = true;
-                            this.pdfViewer.documentPath = btoa(binaryString);
-                        } else {
-                            this.uploadedFile = uploadedFileUrl;
-                            this.pdfViewer.load(uploadedFileUrl, null);
-                            this.pdfViewerBase.isSkipDocumentPath = true;
-                            this.pdfViewer.documentPath = uploadedFileUrl;
-                        }
+                        this.uploadedFile = uploadedFileUrl;
+                        this.pdfViewer.load(uploadedFileUrl, null);
+                        this.pdfViewerBase.isSkipDocumentPath = true;
+                        this.pdfViewer.documentPath = uploadedFileUrl;
                     }
                     if (!isNullOrUndefined(this.fileInputElement)) {
                         (this.fileInputElement as any).value = '';

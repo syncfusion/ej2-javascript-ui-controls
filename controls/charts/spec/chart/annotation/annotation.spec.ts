@@ -1,7 +1,7 @@
 /**
  * Specifies the chart annotation spec.
  */
-import { createElement, remove } from '@syncfusion/ej2-base';
+import {createElement, remove } from '@syncfusion/ej2-base';
 import { getElement } from '../../../src/common/utils/helper';
 import { Chart } from '../../../src/chart/chart';
 import { LineSeries } from '../../../src/chart/series/line-series';
@@ -779,15 +779,27 @@ describe('Chart Control', () => {
             chartObj.annotations[0].y = '1000000';
             chartObj.refresh();
         });
+        it('Checking annotation with y axis with animation', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                element = getElement('container_Annotation_0');
+                expect(element).not.toBe(null);
+                done();
+            };
+            chartObj.annotations[0].y = '10000';
+            chartObj.series[0].type = 'Spline';
+            chartObj.series[0].animation.enable = true;
+            chartObj.animated = true;
+            chartObj.refresh();
+        });
     });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });
 

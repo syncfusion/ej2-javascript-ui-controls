@@ -46,7 +46,9 @@
       width: $protect-dlg-width;
 
       & .e-sheet-password-content {
-        font-size: $protect-sheet-dlg-password-header-font-size;
+        @if $skin-name != 'bootstrap5.3' {
+          font-size: $protect-sheet-dlg-password-header-font-size;
+        }
         @if $sheet-skin == 'Material3' {
           padding: 4px 0 16px;
         }
@@ -54,6 +56,9 @@
           @if $sheet-skin != 'Material3' {
             line-height: $protect-dlg-password-header-line-height;
             margin-bottom: 4px;
+            @if $skin-name == 'bootstrap5.3' {
+              margin-bottom: 6px;
+            }
           }
         }
       }
@@ -71,7 +76,7 @@
 
       & .e-dlg-content {
         display: inline-table;
-        @if $sheet-skin != 'Material3' {
+        @if $sheet-skin != 'Material3' and $skin-name != 'bootstrap5.3' {
           padding-top: 3px;
         }
       }
@@ -83,7 +88,7 @@
           color: $dlg-error-color;
           font-size: $unprotectsheet-alert-span-font-size;
           padding-top: $protect-unprotect-dlg-alert-span-padding-top;
-          @if $sheet-skin == 'Material3' or $skin-name == 'fluent2' {
+          @if $sheet-skin == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
             display: block;
           }
         }
@@ -112,7 +117,7 @@
           color: $dlg-error-color;
           font-size: $reenterpwd-dlg-alert-span-font-size;
           padding-top: $protect-unprotect-dlg-alert-span-padding-top;
-          @if $sheet-skin == 'Material3' or $skin-name == 'fluent2' {
+          @if $sheet-skin == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
             display: block;
           }
         }
@@ -257,7 +262,7 @@
 
     & .e-protect-checkbox {
       @if $sheet-skin != 'Material3' {
-        @if $skin-name != 'fluent2' {
+        @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
           height: 30px;
         }
         margin-top: $protect-dlg-protect-check-margin-top;
@@ -290,15 +295,23 @@
         border: 1px solid $custom-listview-color;
         border-radius: 3px;
       }
+      @if $skin-name == 'bootstrap5.3' {
+        border-radius: 4px;
+      }
       height: 300px;
     }
 
     & .e-protect-content {
       font-size: $protect-content-font-size;
-      height: $protect-content-height;
+      @if $skin-name != 'bootstrap5.3' {
+        height: $protect-content-height;
+      }
       width: 100%;
       @if $sheet-skin == 'Material3' or $skin-name == 'fluent2'{
         padding: $protect-dlg-protect-content-padding;
+      }
+      @else if $skin-name == 'bootstrap5.3' {
+        padding-top: 12px;
       }
       @else {
         padding-top: 20px;
@@ -308,6 +321,9 @@
     & .e-formula-bar-panel {
       align-items: center;
       border: $spreadsheet-border;
+      @if $skin-name == 'bootstrap5.3' {
+        border: $spreadsheet-outline-border;
+      }
       display: flex;
       width: 100%;
 
@@ -364,6 +380,9 @@
               font-size: $namebox-icon-size;
               @if $skin-name == 'Material3' {
                 margin-right: 5px;
+              }
+              @else if $skin-name == 'bootstrap5.3' {
+                line-height: 24px;
               }
             }
           }
@@ -475,6 +494,9 @@
 
       & .e-scrollbar {
         border-top: $spreadsheet-border;
+        @if $skin-name == 'bootstrap5.3' {
+          border-top: $spreadsheet-outline-border;
+        }
         position: relative;
         z-index: 4;
 
@@ -533,7 +555,9 @@
         }
       }
       & .e-spreadsheet-ftrchk {
-        padding-left: $filter-selectall-padding;
+        @if $skin-name != 'bootstrap5.3' {
+          padding-left: $filter-selectall-padding;
+        }
 
         & .e-chk-hidden {
           margin: 3px 3px 3px 4px;
@@ -545,18 +569,24 @@
       }
 
       &.e-rtl .e-spreadsheet-ftrchk {
-        padding-left: 0;
-        padding-right: $filter-selectall-padding;
+        @if $skin-name != 'bootstrap5.3' {
+          padding-left: 0;
+          padding-right: $filter-selectall-padding;
+        }
       }
     }
 
     & .e-checkboxtree {
       ul {
-        padding-left: 0;
+        @if $skin-name != 'bootstrap5.3' {
+          padding-left: 0;
+        }
       }
 
       &.e-rtl ul {
-        padding-right: 0;
+        @if $skin-name != 'bootstrap5.3' {
+          padding-right: 0;
+        }
       }
     }
 
@@ -816,6 +846,9 @@
 
     & .e-sheet {
       border: $spreadsheet-border;
+      @if $skin-name == 'bootstrap5.3' {
+        border: $spreadsheet-outline-border;
+      }
 
       &.e-hide-headers {
         &:not(.e-frozen-rows) .e-main-panel {
@@ -1032,6 +1065,10 @@
       border-top-width: 0;
       display: flex;
       padding: 0 8px;
+      @if $skin-name == 'bootstrap5.3' {
+        border: $spreadsheet-outline-border;
+        height: 36px;
+      }
     }
 
     & .e-sheet-tab {
@@ -1055,6 +1092,11 @@
 
         & .e-tab-header {
           @include tab-header-layout;
+          @if $skin-name == 'bootstrap5.3' {
+            height: 36px;
+            min-height: 36px;
+          }
+
           @if $skin-name == 'fluent2' {
             border-bottom: 0;
           }
@@ -1095,6 +1137,9 @@
           @else {
             & .e-toolbar-items .e-toolbar-item {
               border-right: $spreadsheet-border;
+              @if $skin-name == 'bootstrap5.3' {
+                border-right: $spreadsheet-outline-border;
+              }
               @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
                 padding: 0;
               }
@@ -1150,6 +1195,20 @@
 
           & .e-toolbar-items {
             border-left: $spreadsheet-border;
+            @if $skin-name == 'bootstrap5.3' {
+              border-left: $spreadsheet-outline-border;
+            }
+            @if $skin-name == 'bootstrap5.3' {
+              height: 36px;
+              min-height: 36px;
+            }
+
+            & .e-scroll-nav {
+              @if $skin-name == 'bootstrap5.3' {
+                height: 36px;
+                min-height: 36px;
+              }
+            }
           }
         }
 
@@ -1162,7 +1221,12 @@
     @include default-props;
 
     & .e-sheets-list {
-      margin-right: 8px;
+      @if $skin-name == 'bootstrap5.3' {
+        margin-right: 6px;
+      }
+      @else {
+        margin-right: 8px;
+      }
     }
 
     .e-hide {
@@ -1286,6 +1350,9 @@
           & .e-caret {
             flex: 1;
             text-align: right;
+            @if $skin-name == 'bootstrap5.3' {
+              margin-top: 2px;
+            }
           }
         }
       }
@@ -1328,7 +1395,7 @@
           }
         }
 
-        @if $skin-name !='fluent2' {
+        @if $skin-name !='fluent2' and $skin-name != 'bootstrap5.3' {
           & .e-btn-icon {
             margin-top: 0;
           }
@@ -1341,7 +1408,7 @@
         }
 
         &:not(.e-split-colorpicker) .e-btn-icon {
-          @if $skin-name != 'bootstrap5'and $skin-name != 'Material3' and $skin-name != 'fluent2' {
+          @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'Material3' and $skin-name != 'fluent2' {
             line-height: $spreadsheet-ribbon-btn-height;
             min-height: $spreadsheet-ribbon-btn-height;
             vertical-align: bottom;
@@ -1384,6 +1451,9 @@
           }
           @else {
             margin-right: 5px;
+          }
+          @if $skin-name == 'bootstrap5.3' {
+            margin-top: -6px;
           }
         }
 
@@ -1461,6 +1531,9 @@
     &.e-mobile-view {
       & .e-header-toolbar {
         border: $spreadsheet-border;
+        @if $skin-name == 'bootstrap5.3' {
+          border: $spreadsheet-outline-border;
+        }
         border-bottom-width: 0;
 
         &.e-toolbar .e-toolbar-items .e-toolbar-item:last-child {
@@ -1508,6 +1581,9 @@
         &.e-focused {
           & .e-formula-bar {
             border-right: $spreadsheet-border;
+            @if $skin-name == 'bootstrap5.3' {
+              border-right: $spreadsheet-outline-border;
+            }
             width: calc(100% - 72px);
           }
         }
@@ -1765,7 +1841,7 @@
       }
 
       & .e-dlg-content {
-        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
           padding-bottom: 0;
           padding-left: 0;
           padding-right: 0;
@@ -1796,7 +1872,7 @@
     & .e-conditionalformatting-dlg {
       & .e-input,
       & .e-input-group {
-        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
           height: $cf-dlg-input-height;
         }
       }
@@ -1805,6 +1881,9 @@
         & .e-header {
           @if $skin-name != 'fluent2' {
             font-size: $cfmain-header-font-size;
+          }
+          @if $skin-name == 'bootstrap5.3' {
+            line-height: $validation-dlg-content-header-line;
           }
         }
         @if $skin-name == 'Material3' {
@@ -1819,6 +1898,9 @@
         & .e-header {
           @if $skin-name != 'fluent2' {
             font-size: $cfmain-header-font-size;
+          }
+          @if $skin-name == 'bootstrap5.3' {
+            line-height: $validation-dlg-content-header-line;
           }
         }
         @if $skin-name == 'Material3' {
@@ -1862,7 +1944,7 @@
 
     & .e-datavalidation-dlg {
       & .e-validation-dlg {
-        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
           margin-top: 14px;
         }
 
@@ -1870,8 +1952,8 @@
           @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
             padding-top: 4px;
           }
-          @else if $skin-name != 'Material3' {
-            margin-bottom: 24px;
+          @else if $skin-name != 'Material3' and $skin-name != 'bootstrap5.3' {
+            margin-bottom: $validation-dlg-content-margin-bottom;
           }
 
           & .e-header {
@@ -1880,23 +1962,23 @@
           }
 
           & .e-input {
-            @if $skin-name == 'fluent2' {
-              margin-top: 4px;
+            @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+              margin-top: $validation-dlg-content-input-margin-top;
             }
             @else if $skin-name != 'Material3' {
               height: 32px;
-              margin-top: 5px;
+              margin-top: $validation-dlg-content-input-margin-top;
               font-size: $validation-dlg-content-input-font-size;
             }
           }
         }
 
         & .e-allowdata {
-          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
             padding-top: $validation-dlg-content-header-padding-top;
           }
           @else {
-            margin-bottom: 24px;
+            margin-bottom: $validation-dlg-content-margin-bottom;
           }
 
           & .e-allow {
@@ -1910,12 +1992,12 @@
             }
 
             & .e-valid-input {
-              @if $skin-name == 'fluent2' {
-                margin-top: 4px;
+              @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+                margin-top: $validation-dlg-content-input-margin-top;
               }
               @else if $skin-name != 'Material3' {
-                height: 34px;
-                margin-top: 5px;
+                height: $validation-dlg-content-valid-input-height;
+                margin-top: $validation-dlg-content-input-margin-top;
               }
             }
           }
@@ -1931,23 +2013,23 @@
             }
 
             & .e-valid-input {
-              @if $skin-name == 'fluent2' {
-                margin-top: 4px;
+              @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+                margin-top: $validation-dlg-content-input-margin-top;
               }
               @else if $skin-name != 'Material3' {
-                height: 34px;
-                margin-top: 5px;
+                height: $validation-dlg-content-valid-input-height;
+                margin-top: $validation-dlg-content-input-margin-top;
               }
             }
           }
         }
 
         & .e-values {
-          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
             padding-top: $validation-dlg-content-header-padding-top;
           }
           @else {
-            margin-bottom: 24px;
+            margin-bottom: $validation-dlg-content-margin-bottom;
           }
 
           & .e-minimum {
@@ -1961,13 +2043,13 @@
             }
 
             & .e-input {
-              @if $skin-name == 'fluent2' {
-                margin-top: 4px;
+              @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+                margin-top: $validation-dlg-content-input-margin-top;
               }
               @else if $skin-name != 'Material3' {
                 font-size: $validation-dlg-content-input-font-size;
                 height: 32px;
-                margin-top: 5px;
+                margin-top: $validation-dlg-content-input-margin-top;
               }
             }
           }
@@ -1983,13 +2065,13 @@
             }
 
             & .e-input {
-              @if $skin-name == 'fluent2' {
-                margin-top: 4px;
+              @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+                margin-top: $validation-dlg-content-input-margin-top;
               }
               @else if $skin-name != 'Material3' {
                 font-size: $validation-dlg-content-input-font-size;
                 height: 32px;
-                margin-top: 5px;
+                margin-top: $validation-dlg-content-input-margin-top;
               }
             }
           }
@@ -2008,6 +2090,9 @@
             @if $skin-name == 'fluent2' {
               margin-top: 4px;
             }
+            @else if $skin-name == 'bootstrap5.3' {
+              margin-top: 6px;
+            }
             @else if $skin-name != 'Material3' {
               font-size: $validation-dlg-content-input-font-size;
               height: 32px;
@@ -2017,7 +2102,7 @@
 
         & .e-ignoreblank {
           margin-bottom: 5px;
-          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
             padding-top: $validation-dlg-content-header-padding-top;
           }
         }
@@ -2042,10 +2127,14 @@
         max-height: 640px !important; /* stylelint-disable-line declaration-no-important */
       }
       & .e-dlg-content {
-        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
           padding-bottom: 0;
           padding-left: 0;
           padding-right: 0;
+        }
+
+        @if $skin-name == 'bootstrap5.3' {
+          padding-bottom: 0;
         }
 
         & .e-link-dialog {
@@ -2053,7 +2142,7 @@
             @if $skin-name == 'bootstrap5' {
               padding: 0 12px;
             }
-            @else if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+            @else if $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
               padding: 0 24px 0 25px;
             }
 
@@ -2081,7 +2170,7 @@
               }
 
               & .e-text {
-                @if $skin-name != 'Material3' and  $skin-name != 'fluent2' {
+                @if $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
                   font-size: $hyperlink-dlg-content-text-font-size;
                   height: 32px;
                   line-height: 16px;
@@ -2092,6 +2181,9 @@
                 }
                 @if $skin-name == 'fluent2' {
                   margin-top: 4px;
+                }
+                @if $skin-name == 'bootstrap5.3' {
+                  margin-top: 6px;
                 }
                 @if $skin-name == 'FluentUI'  {
                   padding-bottom: 4px;
@@ -2107,7 +2199,7 @@
                 height: 165px;
                 margin: $hyperlink-dlg-refcont-margin;
                 overflow: auto;
-                @if $skin-name != 'fluent2' {
+                @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
                   width: 273px;
                 }
               }
@@ -2150,12 +2242,17 @@
       }
 
       & .e-dlg-content {
+        @if $skin-name == 'bootstrap5.3' {
+          padding-top: 0;
+        }
         & .e-find-alert-span,
         & .e-replace-alert-span {
           color: $dlg-error-color;
           font-size: $find-dlg-alert-span-font-size;
-          padding-top: 7px;
-          @if $skin-name == 'Material3' {
+          @if $skin-name != 'bootstrap5.3' {
+            padding-top: 7px;
+          }
+          @if $skin-name == 'Material3' or $skin-name == 'bootstrap5.3' {
             display: block;
           }
         }
@@ -2196,8 +2293,8 @@
           font-size: $find-dialog-header-font-size;
           padding-bottom: 0;
         }
-        @if $skin-name == 'fluent2' {
-          padding-bottom: 4px;
+        @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+          padding-bottom: $find-dialog-header-padding-bottom;
         }
         @else {
           padding-bottom: 8px;
@@ -2211,7 +2308,7 @@
 
     & .e-protectworkbook-dlg.e-dialog {
       & .e-dlg-content {
-        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
           & .e-password-content {
             padding: $protectworkbook-dlg-password-content-padding1;
           }
@@ -2222,7 +2319,7 @@
         & .e-pwd-alert-span {
           color: $dlg-error-color;
           font-size: $protectworkbook-dlg-alert-span-font-size;
-          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
             display: block;
             padding-top: 4px;
           }
@@ -2232,14 +2329,19 @@
         }
 
         & .e-password-content {
-          @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+          @if $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
             padding-top: 12px;
           }
           & .e-header {
             font-size: $protectworkbook-dlg-content-header-font-size;
             line-height: $protectworkbook-dlg-content-header-line;
             @if $skin-name != 'Material3' {
-              margin-bottom: 4px;
+              @if $skin-name == 'bootstrap5.3' {
+                margin-bottom: 6px;
+              }
+              @else {
+                margin-bottom: 4px;
+              }
             }
           }
         }
@@ -2252,7 +2354,7 @@
           color: $dlg-error-color;
           font-size: $protectworkbook-dlg-alert-span-font-size;
           padding-top: $protect-unprotect-dlg-alert-span-padding-top;
-          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
             display: block;
           }
         }
@@ -2278,7 +2380,7 @@
           color: $dlg-error-color;
           font-size: $protectworkbook-dlg-alert-span-font-size;
           padding-top: $protectworkbook-dlg-alert-span-padding-top;
-          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
             display: block;
           }
         }
@@ -2303,9 +2405,9 @@
             color: $spreadsheet-label-font-color;
             font-size: $open-dialog-header-font-size;
           }
-          @if $skin-name =='fluent2' {
-            line-height: 20px;
-            padding-bottom: 4px;
+          @if $skin-name =='fluent2' or $skin-name =='bootstrap5.3' {
+            line-height: $open-dlg-header-line-height;
+            padding-bottom: $open-dlg-header-padding-bttom;
           }
         }
 
@@ -2317,16 +2419,17 @@
       }
     }
     
-    @if $skin-name =='Material3' or $skin-name =='fluent2' {
+    @if $skin-name =='Material3' or $skin-name =='fluent2' or $skin-name =='bootstrap5.3' {
       & .e-open-dlg.e-dialog {
         & .e-open-dialog {
           & .e-open-head .e-header {
             margin-top: 0;
             margin-bottom: 0;
           }
-
-          & .e-input-group .e-input-group-icon:hover {
-            background: none;
+          @if $skin-name != 'bootstrap5.3' {
+            & .e-input-group .e-input-group-icon:hover {
+              background: none;
+            }
           }
         }
       }
@@ -2336,6 +2439,9 @@
       margin-bottom: $filter-icon-margin-bottom;
       @if $skin-name == 'FluentUI' {
         margin-top: -9px;
+      }
+      @if $skin-name == 'bootstrap5.3' {
+        margin-top: -8px;
       }
       @if $skin-name == 'fluent2' {
         margin-top: 2px;
@@ -2359,7 +2465,7 @@
 
       &::before {
         font-size: $filter-icon-before-font-size;
-        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
           margin-left: -3px;
         }
       }
@@ -2375,13 +2481,60 @@
       right: 0;
       width: $spreadsheet-filter-btn-width;
       z-index: 2;
-      @if $sheet-skin == 'Material3' or $skin-name == 'fluent2' {
+      @if $sheet-skin == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
         background-color: $cell-background;
         border-color: $cell-border-color;
         box-shadow: none;
       }
-      @if $skin-name == 'fluent2' {
+      @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
         border: 0;
+      }
+    }
+
+    &.sf-spreadsheet {
+      .e-col-header-row.e-header-cell.e-highlight,
+      .e-rowhdr-table .e-header-cell.e-highlight {
+        border-right-color: $spreadsheet-hdr-selection-border-color;
+      }
+
+      .e-resize-cursor {
+        cursor: col-resize;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        right: 1px;
+        width: 4px;
+      }
+
+      .e-sheet-panel .back_content {
+        & .axis {
+          position: absolute;
+          background-color: rgba(231, 224, 226);
+          z-index: 0;
+        }
+
+        & .vaxis {
+          width: 1px;
+        }
+
+        & .haxis {
+          height: 1px;
+        }
+      }
+ 
+      .e-header-cell span {
+        position: absolute;
+        top: 7px;
+      }
+ 
+      .e-column-header .e-resize-helper {
+        position: absolute;
+        border-left: 2px solid;
+        z-index: 2;
+      }
+
+      .e-sheet-tab-panel .e-tab {
+        position: unset;
       }
     }
   }
@@ -2400,16 +2553,6 @@
 
       & .e-selected-value {
         display: flex;
-      }
-    }
-  }
-
-  .e-bigger {
-    & .e-colorpicker-wrapper.e-border-colorpicker {
-      & .e-container {
-        @if $skin-name == 'fluent2' {
-          width: 340px !important; /* stylelint-disable-line declaration-no-important */
-        }
       }
     }
   }
@@ -2444,7 +2587,7 @@
       padding: $align-ddb-ul-padding;
 
       & .e-item {
-        @if $sheet-skin == 'Material3' {
+        @if $sheet-skin == 'Material3' or $skin-name == 'bootstrap5.3' {
           border-radius: $align-ddb-item-border-radius;
         }
         display: inline-flex;
@@ -2654,6 +2797,9 @@
             & .e-5rating,
             & .e-5boxes {
               @include cf-menu-iconsets(left, 33%, 50%);
+              @if $skin-name == 'bootstrap5.3' {
+                padding: 2px 12px;
+              }
             }
           }
         }
@@ -2726,12 +2872,16 @@
             & .e-clusteredbar3d,
             & .e-stackedbar3d,
             & .e-stackedbar1003d {
-              @if $skin-name != 'fluent2' {
+              @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
                 @include chart-type-styles(inline-block, 40px, 100%, 0, 10px, 55px);
               }
-              @else {
+              @else if $skin-name == 'fluent2' {
                 @include chart-type-styles(inline-block, 32px, 100%, 0, 10px, 56px);
                 line-height: 32px;
+              }
+              @else if $skin-name == 'bootstrap5.3' {
+                @include chart-type-styles(inline-block, 36px, 100%, 0, 10px, 54px);
+                line-height: 36px;
               }
             }
           }
@@ -2764,12 +2914,16 @@
             & .e-doughnut,
             & .e-radar,
             & .e-radar-markers {
-              @if $skin-name != 'fluent2' {
+              @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
                 @include chart-type-styles(inline-block, 40px, 60px, 0, 10px, 55px);
               }
-              @else {
+              @else if $skin-name == 'fluent2' {
                 @include chart-type-styles(inline-block, 32px, 56px, 0, 10px, 56px);
                 line-height: 38px;
+              }
+              @else if $skin-name == 'bootstrap5.3' {
+                @include chart-type-styles(inline-block, 36px, 54px, 0, 8px 10px, 54px);
+                line-height: 36px;
               }
             }
           }
@@ -2807,11 +2961,15 @@
             & .e-line-marker,
             & .e-stackedline-marker,
             & .e-stackedline100-marker {
-              @if $skin-name != 'fluent2' {
+              @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
                 @include chart-type-styles(inline-block, 40px, 60px, 0, 10px, 55px);
               }
-              @else {
+              @else if $skin-name == 'fluent2' {
                 @include chart-type-styles(inline-block, 32px, 56px, 0, 10px, 56px);
+                line-height: 36px;
+              }
+              @else if $skin-name == 'bootstrap5.3' {
+                @include chart-type-styles(inline-block, 36px, 54px, 0, 10px, 54px);
                 line-height: 36px;
               }
             }
@@ -2839,10 +2997,10 @@
             height: 60%;
 
             & .e-scatter {
-              @if $skin-name != 'fluent2' {
+              @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
                 @include chart-type-styles(inline-block, 60px, 60px, 0, 10px, 100%);
               }
-              @else {
+              @else if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
                 @include chart-type-styles(inline-block, 60px, 56px, 0, 10px, 100%);
                 line-height: 36px;
               }
@@ -2857,7 +3015,7 @@
     min-height: $dlg-min-height;
     user-select: none;
     & .e-dlg-content {
-      @if $sheet-skin != 'Material3' and $skin-name != 'fluent2' {
+      @if $sheet-skin != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
         overflow: hidden;
         padding-left: $dlg-content-padding;
         padding-right: $dlg-content-padding;
@@ -2878,7 +3036,7 @@
       }
 
       & .e-formula-description {
-        @if $sheet-skin != 'Material3' and $skin-name != 'fluent2' {
+        @if $sheet-skin != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
           margin-left: -4px;
           margin-top: 5px;
         }
@@ -2927,9 +3085,15 @@
   .e-spreadsheet:not(.e-mobile-view) {
     & .e-formula-bar-panel {
       border-bottom-width: 0;
+      @if $skin-name == 'bootstrap5.3' {
+        border-top-width: 0;
+      }
 
       & .e-btn.e-css.e-insert-function {
         border-left: $spreadsheet-border;
+        @if $skin-name == 'bootstrap5.3' {
+          border-left: $spreadsheet-outline-border;
+        }
         height: $spreadsheet-formula-bar-height;
 
         @if $skin-name == 'Material3' {
@@ -2951,14 +3115,14 @@
       &.e-expanded {
         & .e-formula-bar,
         & .e-btn.e-css.e-insert-function {
-          height: 71px;
+          height: $spreadsheet-formula-bar-expanded-height;
           @if $skin-name == 'Material3' {
             line-height: 24px;
           }
         }
 
         & .e-btn.e-css.e-insert-function {
-          line-height: 71px;
+          line-height: $spreadsheet-formula-bar-expanded-height;
         }
 
         & .e-drop-icon {
@@ -2966,7 +3130,7 @@
         }
 
         & .e-separator {
-          height: 60px;
+          height: $spreadsheet-formula-bar-expanded-separator-height;
         }
       }
     }
@@ -3012,6 +3176,13 @@
         }
       }
     }
+    @if $skin-name == 'bootstrap5.3' {
+      & .e-sheets-list.e-dropdown-btn {
+        & .e-btn-icon {
+          font-size: 16px;
+        }
+      }
+    }
 
     & .e-aggregate-list {
       font-size: $aggregate-list-font-size;
@@ -3019,10 +3190,24 @@
       @if $skin-name == 'fluent2' {
         font-weight: $aggregate-list-font-weight;
       }
+      @else if $skin-name == 'bootstrap5.3' {
+        line-height: $aggregate-list-line-height;
+        & .e-btn-icon.e-caret {
+          line-height: $aggregate-list-caret-line-height;
+        }
+      }
     }
 
     & .e-ribbon {
-      border-bottom-width: 0;
+      @if $skin-name != 'bootstrap5.3' {
+        border-bottom-width: 0;
+      }
+
+      &.e-collapsed {
+        @if $skin-name == 'bootstrap5.3' {
+          border-bottom-width: 0;
+        }
+      }
     }
   }
 
@@ -3030,532 +3215,6 @@
     & .e-sheet-tab {
       & .e-hscroll-bar {
         margin-left: 0;
-      }
-    }
-  }
-
-  .e-bigger .e-spreadsheet,
-  .e-bigger.e-spreadsheet {
-    @if $skin-name == 'FluentUI' {
-      & .e-protect-dlg.e-dialog {
-        height: 790px !important; /* stylelint-disable-line declaration-no-important */
-      }
-
-      & .e-delete-sheet-dlg.e-dialog {
-        height: 240px !important; /* stylelint-disable-line declaration-no-important */
-      }
-
-      & .e-merge-alert-dlg.e-dialog {
-        height: 215px;
-
-        .e-dlg-content {
-          padding-bottom: 0;
-        }
-      }
-
-      .e-validation-error-dlg .e-dlg-content {
-        padding-bottom: 0;
-      }
-
-      .e-spreadsheet-function-dlg.e-dialog {
-        height: 515px !important; /* stylelint-disable-line declaration-no-important */
-      }
-    }
-    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
-      & .e-validation-list .e-ddl-icon {
-        min-height: 0;
-        min-width: 0;
-        padding: 0;
-      }
-
-      & .e-findtool-dlg .e-find-toolbar .e-input {
-        width: calc(100% - 70px);
-      }
-    }
-
-    & .e-findtool-dlg.e-device .e-toolbar-items {
-      width: 100%;
-    }
-
-    .e-spreadsheet-function-dlg.e-dialog {
-      & .e-dlg-content {
-        & .e-description-content {
-          @if $sheet-skin == 'Material3' {
-            padding-top: 16px;
-          }
-        }
-      }
-    }
-
-    & .e-ribbon {
-      & .e-toolbar .e-btn:not(.e-tbar-btn) {
-        &:not(.e-split-colorpicker) {
-          @if $skin-name != 'fluent2' {
-            line-height: $bigger-spreadsheet-ribbon-btn-height;
-          }
-          @if $sheet-skin == 'Material3' {
-            font-size: $function-dlg-header-content-font-size;
-          }
-        }
-
-        & .e-btn-icon.e-icons.e-caret {
-          @if $skin-name == 'fluent2' {
-            font-size: $bigger-toolbar-dropdown-font-size;
-          }
-        }
-
-        &.e-chart-ddb {
-          @if $sheet-skin == 'Material3' {
-            padding-left: 26px;
-          }
-        }
-
-        &.e-split-colorpicker {
-          line-height: $bigger-cpicker-btn-line-height;
-          padding-bottom: $bigger-cpicker-btn-padding-bottom;
-          width: $bigger-cpicker-btn-width;
-          @if $skin-name == 'fluent2' {
-            padding-top: 0;
-          }
-        }
-
-        &:not(.e-dropdown-btn):not(.e-split-btn) {
-          padding-left: $bigger-spreadsheet-ribbon-btn-padding;
-          padding-right: $bigger-spreadsheet-ribbon-btn-padding;
-        }
-
-        &:not(.e-split-colorpicker) .e-btn-icon {
-          @if $skin-name != 'fluent2' {
-            line-height: $bigger-spreadsheet-ribbon-btn-line-height;
-            min-height: $bigger-spreadsheet-ribbon-btn-line-height;
-          }
-
-          &:not(.e-caret) {
-            font-size: $bigger-spreadsheet-tbar-btn-icon-font-size;
-          }
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'fabric-dark' {
-            &.e-wrap-icon {
-              font-size: $bigger-toolbar-wrap-icon-font-size;
-            }
-          }
-        }
-      }
-
-      & .e-toolbar .e-toolbar-items .e-toolbar-item {
-        & .e-dropdown-btn.e-datavalidation-ddb,
-        & .e-dropdown-btn.e-addchart-ddb,
-        & .e-dropdown-btn.e-charttheme-ddb,
-        & .e-dropdown-btn.e-chart-type-ddb,
-        & .e-dropdown-btn.e-chart-ddb,
-        & .e-dropdown-btn.e-numformat-ddb,
-        & .e-dropdown-btn.e-font-family {
-          @if $skin-name == 'fluent2' {
-            font-size: $bigger-data-validation-toolbar-font-size;
-          }
-        }
-        & .e-btn.e-dropdown-btn.e-chart-ddb,
-        & .e-btn.e-dropdown-btn.e-chart-type-ddb {
-          @if $skin-name == 'fluent2' {
-            height: 40px;
-          }
-        }
-
-        & .e-btn .e-chart-icon,
-        & .e-btn .e-chart-type-icon {
-          @if $skin-name == 'fluent2' {
-            font-size: $bigger-spreadsheet-chart-icon-size !important; /* stylelint-disable-line declaration-no-important */
-            margin-right: 18px;
-            padding: 0 10px;
-          }
-        }
-      }
-
-      & .e-toolbar .e-toolbar-item .e-btn {
-        &.e-tbar-btn .e-icons.e-btn-icon:not(.e-caret) {
-          font-size: $bigger-spreadsheet-tbar-btn-icon-font-size;
-        }
-      }
-      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
-        & .e-toolbar .e-toolbar-item .e-btn {
-
-          & .e-chart-icon,
-          & .e-chart-type-icon {
-            @if $skin-name == 'Material3' {
-              font-size: $bigger-spreadsheet-chart-icon-size !important; /* stylelint-disable-line declaration-no-important */
-              margin-right: 0;
-              padding: 0;
-              width: 36px;
-            }
-          }
-
-          &.e-split-colorpicker {
-            & .e-icons.e-btn-icon:not(.e-caret) {
-              &.e-font-color {
-                font-size: $bigger-spreadsheet-cpicker-font-color-font-size;
-              }
-
-              &.e-fill-color {
-                font-size: $bigger-spreadsheet-tbar-btn-icon-font-size;
-              }
-            }
-          }
-        }
-      }
-
-      & .e-dropdown-btn.e-font-size-ddb {
-        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
-          width: $bigger-fontsize-btn-width;
-        }
-      }
-
-      & .e-colorpicker-wrapper .e-split-btn-wrapper .e-split-colorpicker.e-split-btn .e-selected-color {
-        height: auto;
-        width: auto;
-      }
-
-      & .e-content .e-hscroll-bar {
-        height: auto;
-        overflow: hidden;
-      }
-    }
-
-    & .e-formula-bar-panel {
-      & .e-input-group.e-control-wrapper.e-ddl.e-name-box .e-input-group-icon {
-        font-size: $bigger-name-box-ddl-icon-font-size;
-        @if $skin-name != 'Material3' {
-          margin: 0;
-        }
-        @if $skin-name == 'Material3' {
-          margin: 10px;
-        }
-      }
-
-      // Need to remove the below properties & its variable once touch support provided by UX team
-      & .e-css.e-btn.e-icon-btn {
-        padding-left: $normal-btn-padding;
-        padding-right: $normal-btn-padding;
-      }
-    }
-
-    & .e-add-sheet-tab.e-btn.e-icon-btn.e-css,
-    & .e-sheets-list.e-dropdown-btn {
-      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
-        height: $bigger-spreadsheet-sheet-tab-icon-height;
-        padding: 0;
-        width: $bigger-spreadsheet-sheet-tab-icon-height;
-      }
-      @else {
-        height: 39px;
-        width: 39px;
-      }
-
-      & .e-btn-icon {
-        @if $skin-name == 'Material3' {
-          line-height: $bigger-spreadsheet-sheet-tab-icon-height;
-        }
-        @else if $skin-name == 'fluent2' {
-          font-size: $bigger-spreadsheet-sheet-tab-icon-font;
-          line-height: $bigger-spreadsheet-sheet-tab-sheetlist-icon-height;
-        }
-        @else {
-          line-height: 39px;
-        }
-      }
-    }
-    @if $skin-name == 'Material3' {
-      & .e-add-sheet-tab,
-      & .e-sheets-list {
-        margin-left: 9px;
-      }
-    }
-
-    & .e-sheet-tab-panel {
-      @include bigger-tab-header-layout;
-    }
-
-    & .e-sheet-tab .e-tab-header .e-toolbar-item {
-      & .e-tab-wrap {
-        padding: 0 16px;
-      }
-    }
-    @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap4' {
-      & .e-drop-icon {
-        font-size: $spreadsheet-drop-icon-font-size;
-        margin-right: 5px;
-      }
-    }
-
-    &:not(.e-mobile-view) .e-formula-bar-panel {
-      & .e-btn.e-css.e-insert-function {
-        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
-          height: $bigger-insert-function-icon-height;
-        }
-        @else {
-          height: 29px;
-        }
-
-        & .e-btn-icon {
-          font-size: $bigger-insert-function-btn-icon-font-size;
-          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
-            line-height: $bigger-insert-function-icon-height;
-          }
-          @else {
-            line-height: 30px;
-          }
-        }
-      }
-
-      & .e-input-group.e-control-wrapper.e-ddl.e-name-box input.e-input {
-        height: $bigger-name-box-ddl-input-height;
-        @if $skin-name == 'Material3' {
-          padding: 5px 0 5px 8px;
-          font-size: $bigger-name-box-ddl-icon-font-size;
-        }
-      }
-
-      & .e-drop-icon {
-        line-height: $bigger-formula-bar-drop-icon-line-height;
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'fluent2' {
-          font-size: $bigger-formula-bar-drop-icon-font-size;
-        }
-      }
-
-      & .e-separator {
-        height: 18px;
-      }
-
-      & .e-formula-bar {
-        font-size: $bigger-formula-bar-font-size;
-        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
-          height: $bigger-formula-bar-height;
-          line-height: $bigger-formula-bar-line-height;
-        }
-        @else {
-          height: 29px;
-          line-height: 29px;
-        }
-      }
-
-      &.e-expanded {
-        & .e-formula-bar {
-          height: 89px;
-        }
-        & .e-btn.e-css.e-insert-function {
-          height: $bigger-insert-function-height;
-          line-height: $bigger-insert-function-height;
-        }
-
-        & .e-formula-bar {
-          @if $skin-name == 'Material3' {
-            line-height: 34px;
-          }
-        }
-
-        & .e-separator {
-          height: 78px;
-        }
-      }
-    }
-
-    & .e-dlg-content {
-      @if $skin-name == 'Material3' {
-        margin-top: 0;
-      }
-      .e-custom-dialog {
-        & .e-input.e-dialog-input {
-          float: left;
-          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
-            margin-right: 16px;
-            width: 74%;
-          }
-          @else {
-            margin-right: 2.8%;
-            width: 77%;
-          }
-          @if $skin-name == 'FluentUI' {
-            height: 40px;
-          }
-        }
-        & .e-custom-sample {
-          @if $skin-name == 'Material3' {
-            margin-top: 8px;
-          }
-        }
-      }
-    }
-
-    & .e-customsort-dlg.e-dialog {
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
-        width: 630px !important; /* stylelint-disable-line declaration-no-important */
-      }
-      @else if $sheet-skin == 'Material3' or $skin-name == 'fluent2' {
-        width: 625px !important; /* stylelint-disable-line declaration-no-important */
-      }
-      @else {
-        width: 590px !important; /* stylelint-disable-line declaration-no-important */
-      }
-    }
-
-    .e-sort-dialog .e-sort-template .e-list-item {
-      height: auto;
-      @if $skin-name != 'fluent2' {
-        line-height: 1;
-      }
-    }
-
-    & .e-filter-icon {
-      margin-bottom: $filter-icon-bigger-margin-bottom;
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-        font-size: $bigger-filter-icon-font-size;
-        margin-top: -3px;
-      }
-      @if $sheet-skin == 'Material3' {
-        font-size: $bigger-filter-icon-font-size;
-      }
-    }
-
-    & .e-find-dlg .e-footer-content .e-btn {
-      @if $skin-name != 'fluent2' {
-        font-size: $bigger-find-dlg-btn-font-size;
-        margin-top: 6px;
-      }
-    }
-
-    & .e-findtool-dlg {
-      @if $sheet-skin != 'Material3'{
-        height: $bigger-find-tool-dlg-height;
-        width: $bigger-find-tool-dlg-width;
-      }
-    }
-
-    & .e-goto-dlg.e-dialog {
-      height: auto;
-
-      & .e-btn {
-        font-size: $goto-dlg-btn-font-size;
-      }
-    }
-
-    & .e-protectworkbook-dlg.e-dialog .e-dlg-content {
-      & .e-pwd-alert-span {
-        color: $dlg-error-color;
-        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
-          padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
-        }
-        @else {
-          font-size: $protectworkbook-dlg-pwd-alert-span-font-size;
-          padding-top: 16px;
-        }
-      }
-
-      & .e-password-content {
-        @if $sheet-skin != 'Material3' and $skin-name != 'fluent2'{
-          padding-top: 16px;
-          margin-bottom: 8px;
-        }
-
-        & .e-header {
-          @if $skin-name != 'Material3' {
-            font-size: $protectworkbook-dlg-pwd-content-font-size;
-            line-height: 28px;
-            margin-bottom: 4px;
-          }
-        }
-      }
-    }
-
-    & .e-validation-dlg {
-      & .e-cellrange {
-        @if $skin-name == 'Material3' {
-          margin-bottom: 8px;
-        }
-      }
-
-      & .e-allowdata {
-        & .e-allow {
-          @if $skin-name == 'Material3' {
-            margin-bottom: 12px;
-          }
-        }
-      }
-
-      & .e-values {
-        @if $skin-name == 'Material3' {
-          margin-bottom: 8px;
-        }
-      }
-    }
-
-    & .e-excelfilter {
-      & .e-dlg-content {
-        @if $skin-name == 'fluent2' {
-          padding-right: 7px;
-        }
-      }
-
-      & .e-spreadsheet-ftrchk {
-        padding-left: $filter-selectall-bigger-padding;
-      }
-
-      &.e-rtl .e-spreadsheet-ftrchk {
-        padding-left: 0;
-        padding-right: $filter-selectall-bigger-padding;
-      }
-    }
-
-    & .e-checkboxtree {
-      ul {
-        @if $skin-name != 'fluent2' {
-          padding-left: 0;
-        }
-      }
-
-      &.e-rtl ul {
-        @if $skin-name != 'fluent2' {
-          padding-right: 0;
-        }
-      }
-    }
-
-    & .e-validation-list {
-      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-        width: $bigger-validation-list-width;
-      }
-
-      & .e-ddl-icon.e-search-icon {
-        @if $skin-name == 'material' or $skin-name == 'material-dark' {
-          bottom: $bigger-validation-list-icon-bottom;
-        }
-        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' {
-          min-height: $bigger-validation-list-icon-height-width;
-          min-width: $bigger-validation-list-icon-height-width;
-        }
-      }
-    }
-  }
-
-  .e-bigger.e-dropdown-popup,
-  .e-bigger .e-dropdown-popup {
-    &.e-font-size-ddb ul {
-      min-width: 70px;
-    }
-    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
-      &.e-dragfill-ddb ul,
-      &.e-numformat-ddb ul {
-        max-width: initial;
-      }
-    }
-  }
-
-  .e-bigger .e-spreadsheet .e-hyperlink-dlg.e-dialog {
-    & .e-dlg-content .e-link-dialog .e-content {
-      @if $skin-name == 'Material3' {
-        padding-top: 24px;
-      }
-      @if $skin-name == 'FluentUI' {
-        & .e-cont {
-          margin: 0 0 16px 24px;
-        }
       }
     }
   }
@@ -3579,14 +3238,17 @@
     }
 
     & .e-sort-listwrapper {
-      @if $skin-name != 'fluent2' {
+      @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
         padding-left: 2px;
       }
     }
 
     & .e-sort-listwrapper .text {
       font-size: $sort-dlg-listwrapper-text-font-size;
-      @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+      @if $skin-name == 'bootstrap5.3' {
+        line-height: $validation-dlg-content-header-line;
+      }
+      @if $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
         padding: 10px 0 5px;
       }
     }
@@ -3605,7 +3267,7 @@
     & .e-sort-header,
     & .e-sort-casecheckbox,
     & .e-sort-listsection {
-      @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+      @if $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
         padding-left: $dlg-content-padding;
         padding-right: $dlg-content-padding;
         padding-bottom: $dlg-content-padding-bottom;
@@ -3628,6 +3290,12 @@
       }
     }
 
+    & .e-sort-casecheckbox {
+      @if $skin-name == 'bootstrap5.3' {
+        margin-left: 16px;
+      }
+    }
+
     & .e-sort-error {
       bottom: $spreadsheet-sort-dlg-error-bottom;
       display: none;
@@ -3644,6 +3312,9 @@
       & .e-list-item {
         height: auto;
         line-height: unset;
+        @if $skin-name == 'bootstrap5.3' {
+          border: 0;
+        }
 
         &:not(:first-child) {
           padding: $spreadsheet-sort-template-item-padding;
@@ -3691,6 +3362,10 @@
       margin-right: 5px;
       padding-left: 22px;
       vertical-align: middle;
+      @if $skin-name == 'bootstrap5.3' {
+        padding-left: 18px;
+        margin-right: 20px;
+      }
 
       &::before {
         cursor: pointer;
@@ -3701,17 +3376,17 @@
   .e-spreadsheet .e-ribbon .e-tab .e-tab-header .e-toolbar-item {
     & .e-tab-wrap:focus .e-text-wrap,
     &:not(.e-separator) .e-text-wrap {
-      @if $skin-name =='bootstrap5' or $skin-name =='bootstrap5-dark' {
+      @if $skin-name =='bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name =='bootstrap5-dark' {
         height: 32px;
       }
     }
     &:not(.e-separator) .e-tab-wrap {
-      @if $skin-name =='bootstrap5' or $skin-name =='bootstrap5-dark' or $skin-name =='fluent2' {
+      @if $skin-name =='bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name =='bootstrap5-dark' or $skin-name =='fluent2' {
         height: $spreadsheet-ribbon-toolbar-item-height;
       }
     }
     &.e-active {
-      @if $skin-name =='bootstrap5' or $skin-name =='bootstrap5-dark' {
+      @if $skin-name =='bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name =='bootstrap5-dark' {
         margin: 0;
       }
     }
@@ -3720,369 +3395,6 @@
     .e-spreadsheet .e-ribbon .e-tab .e-tab-header .e-toolbar-item {
       &.e-active {
         margin: 0;
-      }
-    }
-  }
-
-  .e-bigger .e-spreadsheet,
-  .e-bigger.e-spreadsheet {
-    @if $skin-name =='fluent2' {
-      & .e-customsort-dlg.e-dialog {
-        & .e-dlg-content {
-          & .e-sort-listsection {
-            padding-top: $bigger-spreadsheet-sort-dlg-list-padding;
-          }
-        }
-        & .e-sort-dialog {
-          & .e-sort-row {
-            padding: $bigger-spreadsheet-sort-row-padding;
-          }
-        }
-      }
-
-      & .e-findtool-dlg {
-        & .e-find-toolbar {
-          & .e-toolbar-item:not(.e-separator):not(.e-spacer) {
-            min-width: 40px;
-            padding: 0 4px;
-          }
-        }
-      }
-
-      & .e-goto-dlg.e-dialog {
-        & .e-dlg-content .e-header {
-          @if $skin-name == 'fluent2' {
-            margin: 0;
-            padding: 4px 0;
-          }
-        }
-
-        & .e-dlg-content .e-goto-alert-span {
-          color: $dlg-error-color;
-          display: block;
-          font-size: 14px;
-          padding-top: 6px;
-        }
-      }
-    }
-
-    @if $skin-name =='Material3' or $skin-name =='fluent2' {
-      & .e-sheet-tab {
-        & .e-tab-header {
-          & .e-toolbar-item {
-            & input.e-input.e-sheet-rename {
-              height: 48px;
-              line-height: 48px;
-              margin-bottom: 0;
-            }
-          }
-        }
-      }
-
-      & .e-validation-list {
-        .e-input-group {
-          &.e-input-focus .e-input,
-          & .e-input {
-            @if $skin-name == 'fluent2' {
-              padding-left: 0;
-            }
-          }
-        }
-
-        & .e-ddl-icon {
-          bottom: 0;
-          font-size: $spreadsheet-drop-icon-font-size;
-          height: 20px;
-          min-height: 20px;
-          @if $skin-name =='Material3'{
-            min-width: 20px;
-          }
-          @else {
-            min-width: 16px;
-          }
-          width: 20px;
-          @if $skin-name =='fluent2'{
-            padding: 0;
-          }
-        }
-      }
-
-      & .e-open-dlg.e-dialog {
-        & .e-open-dialog {
-          & .e-open-head .e-header {
-            font-size: $bigger-spreadsheet-dlg-label-font-size;
-          }
-        }
-
-        & .e-dlg-content {
-          & .e-file-alert-span {
-            font-size: $bigger-spreadsheet-dlg-error-font-size;
-            padding-top: $bigger-spreadsheet-dlg-error-padding-top;
-          }
-        }
-      }
-
-      & .e-dlg-content .e-custom-dialog .e-custom-sample {
-        font-size: $bigger-spreadsheet-dlg-label-font-size;
-        margin: $bigger-spreadsheet-custom-sample-margin;
-      }
-
-      & .e-conditionalformatting-dlg {
-        & .e-cfmain {
-          & .e-header {
-            font-size: $bigger-spreadsheet-dlg-label-font-size;
-          }
-          margin: $bigger-spreadsheet-cf-main-margin;
-        }
-
-        & .e-cfsub {
-          & .e-header {
-            font-size: $bigger-spreadsheet-dlg-label-font-size;
-          }
-          margin-bottom: $bigger-spreadsheet-cf-sub-margin;
-        }
-
-        & .e-header-2 {
-          margin-top: $bigger-spreadsheet-cf-header2-margin;
-        }
-      }
-      & .e-sort-dialog {
-        & .e-sort-listwrapper .text {
-          font-size: $bigger-spreadsheet-dlg-label-font-size;
-        }
-
-        & .e-sort-error {
-          font-size: $bigger-spreadsheet-dlg-error-font-size;
-        }
-      }
-
-      & .e-find-dlg.e-dialog {
-        & .e-dlg-header-content {
-          @if $skin-name == 'Material3' {
-            padding-bottom: 8px;
-          }
-        }
-        & .e-dlg-content {
-          & .e-find-alert-span,
-          & .e-replace-alert-span {
-            font-size: $bigger-spreadsheet-dlg-error-font-size;
-            padding-top: 7px;
-          }
-
-          & .e-findnreplace-casecheckbox {
-            padding-bottom: $bigger-find-replace-casecheck-padding-bottom;
-            padding-top: $bigger-find-replace-casecheck-padding-top;
-          }
-
-          & .e-findnreplace-exactmatchcheckbox {
-            padding: $bigger-find-replace-exactmatch-padding;
-          }
-        }
-
-        & p.e-header {
-          font-size: $bigger-spreadsheet-dlg-label-font-size;
-          padding-bottom: $bigger-spreadsheet-dlg-label-padding-bottom;
-          padding-top: 16px;
-        }
-      }
-
-      & .e-hyperlink-dlg.e-dialog,
-      .e-edithyperlink-dlg.e-dialog {
-        & .e-dlg-content {
-          & .e-link-dialog {
-            & .e-content {
-              padding-top: $bigger-hyperlink-dlg-content-padding;
-
-              & .e-cont {
-                margin: $bigger-hyperlink-dlg-content-margin;
-
-                & .e-header {
-                  font-size: $bigger-spreadsheet-dlg-label-font-size;
-                  line-height: $bigger-hyperlink-dlg-header-line-height;
-                }
-
-                & .e-refcont {
-                  @if $skin-name != 'fluent2' {
-                    border: 0;
-                    margin: 0 16px 0 0;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      & .e-spreadsheet-function-dlg.e-dialog {
-        & .e-dlg-content {
-          & .e-category-content {
-            font-size: $bigger-spreadsheet-dlg-label-font-size;
-            padding: 4px 0 0;
-          }
-
-          & .e-formula-description {
-            padding: 4px 0;
-          }
-
-          & .e-description-content {
-            font-size: $bigger-spreadsheet-dlg-label-font-size;
-            padding-top: $bigger-function-dlg-description-padding-top;
-          }
-        }
-      }
-      & .e-protect-dlg.e-dialog {
-        & .e-sheet-password-content {
-          font-size: $bigger-spreadsheet-dlg-label-font-size;
-          padding: $bigger-protect-sheet-password-content-padding;
-
-          & .e-header {
-            line-height: $bigger-protect-sheet-password-header-line;
-          }
-        }
-
-        & .e-protect-content {
-          font-size: $bigger-spreadsheet-dlg-label-font-size;
-          line-height: $bigger-protect-sheet-password-header-line;
-          padding: $bigger-protect-content-padding;
-        }
-      }
-
-      & .e-reenterpwd-dlg.e-dialog {
-        & .e-dlg-content {
-          & .e-reenterpwd-alert-span {
-            font-size: $bigger-spreadsheet-dlg-error-font-size;
-            padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
-          }
-
-          & .e-reenterpwd-content {
-            & .e-header {
-              font-size: $bigger-spreadsheet-dlg-label-font-size;
-              line-height: $bigger-protect-sheet-password-header-line;
-            }
-          }
-        }
-      }
-
-      & .e-unprotectworksheet-dlg.e-dialog {
-        & .e-dlg-content {
-          & .e-unprotectsheetpwd-alert-span {
-            font-size: $bigger-spreadsheet-dlg-error-font-size;
-            padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
-          }
-
-          & .e-unprotectsheetpwd-content {
-            & .e-header {
-              font-size: $bigger-spreadsheet-dlg-label-font-size;
-              line-height: $bigger-protect-sheet-password-header-line;
-            }
-          }
-        }
-      }
-
-      & .e-protectworkbook-dlg.e-dialog {
-        & .e-dlg-content {
-          padding-bottom: 8px;
-          & .e-pwd-alert-span {
-            font-size: $bigger-spreadsheet-dlg-error-font-size;
-          }
-
-          & .e-password-content + .e-password-content {
-            padding: $bigger-protect-password-content-padding2;
-          }
-
-          & .e-password-content {
-            padding: $bigger-protect-password-content-padding;
-
-            & .e-header {
-              font-size: $bigger-spreadsheet-dlg-label-font-size;
-              line-height: $bigger-protect-sheet-password-header-line;
-            }
-          }
-        }
-      }
-    
-      & .e-unprotectworkbook-dlg.e-dialog {
-        & .e-dlg-content {
-          & .e-unprotectpwd-alert-span {
-            font-size: $bigger-spreadsheet-dlg-error-font-size;
-            padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
-          }
-
-          & .e-unprotectpwd-content {
-            & .e-header {
-              font-size: $bigger-spreadsheet-dlg-label-font-size;
-              line-height: $bigger-protect-sheet-password-header-line;
-            }
-          }
-        }
-      }
-
-      & .e-datavalidation-dlg {
-        & .e-validation-dlg {
-          & .e-header {
-            font-size: $bigger-spreadsheet-dlg-label-font-size;
-            line-height: $bigger-protect-sheet-password-header-line;
-          }
-
-          & .e-cellrange {
-            padding-top: 4px;
-
-            & .e-header {
-              font-size: $bigger-spreadsheet-dlg-label-font-size;
-              line-height: $bigger-protect-sheet-password-header-line;
-            }
-          }
-
-          & .e-allowdata {
-            padding-top: $bigger-data-validation-content-padding-top;
-
-            & .e-allow {
-              & .e-header {
-                font-size: $bigger-spreadsheet-dlg-label-font-size;
-                line-height: $bigger-protect-sheet-password-header-line;
-              }
-            }
-
-            & .e-data {
-              & .e-header {
-                font-size: $bigger-spreadsheet-dlg-label-font-size;
-                line-height: $bigger-protect-sheet-password-header-line;
-              }
-            }
-          }
-
-          & .e-values {
-            padding-top: $bigger-data-validation-content-padding-top;
-
-            & .e-minimum {
-              & .e-header {
-                font-size: $bigger-spreadsheet-dlg-label-font-size;
-                line-height: $bigger-protect-sheet-password-header-line;
-              }
-            }
-
-            & .e-maximum {
-              & .e-header {
-                font-size: $bigger-spreadsheet-dlg-label-font-size;
-                line-height: $bigger-protect-sheet-password-header-line;
-              }
-            }
-
-            & .e-dlg-error {
-              font-size: $bigger-spreadsheet-dlg-error-font-size;
-              padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
-            }
-
-            & .e-header {
-              font-size: $bigger-spreadsheet-dlg-label-font-size;
-              line-height: $bigger-protect-sheet-password-header-line;
-            }
-          }
-
-          & .e-ignoreblank {
-            margin-bottom: 8px;
-            padding-top: $bigger-data-validation-content-padding-top;
-          }
-        }
       }
     }
   }

@@ -21,7 +21,7 @@
         }
 
         &:hover {
-          @if $skin-name == 'bootstrap5' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             background: $drop-down-btn-li-hover-bgcolor;
           }
           @else {
@@ -59,6 +59,11 @@
           @if $theme-name == 'fluent2' {
             background-color: $flyout-bg-color-focus;
             box-shadow: $btn-keyboard-focus-box-shadow;
+            color: $flyout-text-color-focus;
+
+            & .e-menu-icon {
+              color: $flyout-text-color-focus;
+            }
           }
         }
       }

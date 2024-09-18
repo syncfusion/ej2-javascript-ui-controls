@@ -2176,6 +2176,236 @@ describe('Chart Control Series', () => {
             };
             chartObj.refresh();
         });
+        it('Checking line series updated direction', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+
+                let element: Element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('d')).toBe('M 22.8125 59.070546874999984 L 68.4375 100.9966140625 L 68.4375 100.9966140625 L 114.0625 88.97347265624997 L 114.0625 88.97347265624997 L 159.6875 116.199942890625 L 159.6875 116.199942890625 L 205.3125 27.575798828125006 L 205.3125 27.575798828125006 L 250.9375 43.243043906249966 L 250.9375 43.243043906249966 L 296.5625 81.763986796875 L 296.5625 81.763986796875 L 342.1875 35.802424062500016 L 342.1875 35.802424062500016 L 387.8125 92.175622890625 L 387.8125 92.175622890625 L 433.4375 73.44726265625 L 433.4375 73.44726265625 L 479.0625 76.10142359374998 L 479.0625 76.10142359374998 L 524.6875 34.673854453125 ');
+                done();
+            };
+            let dataSource: object[] = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 50.56382, text: "50.56%" },
+                { x: "Mar", y: 51.68715, text: "53.69%" },
+                { x: "Apr", y: 49.143363, text: "49.14%" },
+                { x: "May", y: 57.423575, text: "57.42%" },
+                { x: "Jun", y: 55.959774, text: "55.96%" },
+                { x: "Jul", y: 52.360737, text: "52.36%" },
+                { x: "Aug", y: 56.654956, text: "56.65%" },
+                { x: "Sep", y: 51.387971, text: "51.39%" },
+                { x: "Oct", y: 53.137774, text: "53.14%" },
+                { x: "Nov", y: 52.889794, text: "54.89%" },
+                { x: "Dec", y: 56.760399, text: "56.76%" }
+            ];
+            chartObj.series[0].setData(dataSource);
+            chartObj.refresh();
+        });
+        it('Checking line series updated direction', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].dataSource = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 50.56382, text: "50.56%" },];
+            chartObj.refresh();
+            chartObj.series[0].removePoint(1);
+        });
+    });
+
+    describe('Area Series - Checking animation on data changes.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let series1: object[] = [
+            { x: "Jan", y: 54.481, text: "54.48%" },
+            { x: "Feb", y: 50.56382, text: "50.56%" },
+            { x: "Mar", y: 53.68715, text: "53.69%" },
+            { x: "Apr", y: 49.143363, text: "49.14%" },
+            { x: "May", y: 57.423575, text: "57.42%" },
+            { x: "Jun", y: 55.959774, text: "55.96%" },
+            { x: "Jul", y: 52.360737, text: "52.36%" },
+            { x: "Aug", y: 56.654956, text: "56.65%" },
+            { x: "Sep", y: 51.387971, text: "51.39%" },
+            { x: "Oct", y: 53.137774, text: "53.14%" },
+            { x: "Nov", y: 54.889794, text: "54.89%" },
+            { x: "Dec", y: 56.760399, text: "56.76%" }];
+        let chartContainerDiv: Element;
+        chartContainerDiv = createElement('div', { id: 'AreaContainer', styles: 'height:250px;width:590px;float: left;' });
+        beforeAll(() => {
+            document.body.appendChild(chartContainerDiv);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', labelRotation: 45},
+                    series: [
+                        {
+                            dataSource: series1, xName: 'x', yName: 'y', type: 'Area', fill: 'red',
+                            animation: { enable: false }, name: 'series1', legendShape: 'Circle',
+                            marker: {
+                                visible: true,
+                                dataLabel: {
+                                    visible: true,
+                                    position: 'Outer',
+                                    font: { color: 'red', size: '12px' }
+                                }
+                            }
+                        }
+                    ],
+
+                });
+            chartObj.appendTo('#AreaContainer');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            chartContainerDiv.remove();
+        });
+
+        it('Checking area series updated direction', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('AreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            let dataSource: object[] = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 50.56382, text: "50.56%" },
+                { x: "Mar", y: 51.68715, text: "53.69%" },
+                { x: "Apr", y: 49.143363, text: "49.14%" },
+                { x: "May", y: 57.423575, text: "57.42%" },
+                { x: "Jun", y: 55.959774, text: "55.96%" },
+                { x: "Jul", y: 52.360737, text: "52.36%" },
+                { x: "Aug", y: 56.654956, text: "56.65%" },
+                { x: "Sep", y: 51.387971, text: "51.39%" },
+                { x: "Oct", y: 53.137774, text: "53.14%" },
+                { x: "Nov", y: 52.889794, text: "54.89%" },
+                { x: "Dec", y: 56.760399, text: "56.76%" }
+            ];
+            chartObj.series[0].setData(dataSource);
+            chartObj.refresh();
+        });
+        it('Checking area series addPoint method', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('AreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            let dataSource: object[] = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 50.56382, text: "50.56%" },
+                { x: "Mar", y: 51.68715, text: "53.69%" },
+                { x: "Apr", y: 49.143363, text: "49.14%" },
+                { x: "May", y: 57.423575, text: "57.42%" },
+                { x: "Jun", y: 55.959774, text: "55.96%" },
+                { x: "Jul", y: 52.360737, text: "52.36%" },
+                { x: "Aug", y: 56.654956, text: "56.65%" },
+                { x: "Sep", y: 51.387971, text: "51.39%" },
+                { x: "Oct", y: 53.137774, text: "53.14%" },
+                { x: "Nov", y: 52.889794, text: "54.89%" },
+                { x: "Dec", y: 56.760399, text: "56.76%" }
+            ];
+            chartObj.series[0].addPoint({ x: "Decemeber", y: 54.481, text: "54.48%" });
+            chartObj.refresh();
+        });
+        it('Checking area series removePoint method', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('AreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].removePoint(0);
+            chartObj.refresh();
+        });
+        it('Checking area series addPoint method with single point', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('AreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].border.width = 1;
+            chartObj.series[0].dataSource = [
+                { x: "Jan", y: 54.481, text: "54.48%" }
+            ];
+            chartObj.refresh();
+            chartObj.series[0].border.width = 1;
+            chartObj.series[0].addPoint({ x: "Decemeber", y: 54.481, text: "54.48%" });
+        });
+        it('Checking area series setData method', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('AreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].setData( [{ x: "Jan", y: 54.481, text: "54.48%" }, { x: "Decemeber", y: 55.481, text: "55.48%" }]);;
+            chartObj.refresh();
+        });
+        it('Checking area series removePoint method', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('AreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].removePoint(1);
+            chartObj.refresh();
+        });
+        it('Checking area series removePoint method without border', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('AreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].border.width = 0;
+            chartObj.refresh();
+            chartObj.series[0].removePoint(1);
+           
+        });
+        it('Checking area series addPoint method without point', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('AreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].border.width = 1;
+            chartObj.series[0].dataSource = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 54.481, text: "54.48%" },
+            ];
+            chartObj.refresh();
+            chartObj.series[0].border.width = 0;
+            chartObj.series[0].addPoint({ x: "Decemeber", y: 54.481, text: "54.48%" });
+        });
+        it('Checking area series animation with duration as zero', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('AreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].border.width = 1;
+            chartObj.series[0].dataSource = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 54.481, text: "54.48%" },
+            ];
+            chartObj.series[0].animation.enable = true;
+            chartObj.series[0].animation.duration = 0;
+            chartObj.refresh();
+        });
+        it('Checking line series animation with duration as zero', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('AreaContainer_Series_0');
+                expect(element.getAttribute('d') !== null).toBe(true);
+                done();
+            };
+            chartObj.series[0].border.width = 1;
+            chartObj.series[0].dataSource = [
+                { x: "Jan", y: 54.481, text: "54.48%" },
+                { x: "Feb", y: 54.481, text: "54.48%" },
+            ];
+            chartObj.series[0].animation.enable = true;
+            chartObj.series[0].animation.duration = 0;
+            chartObj.series[0].type = 'Line';
+            chartObj.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

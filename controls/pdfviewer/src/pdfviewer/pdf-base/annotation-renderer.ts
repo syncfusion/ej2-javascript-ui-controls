@@ -1,6 +1,6 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Rect, Size } from '@syncfusion/ej2-drawings';
-import { PdfAnnotationBorder, PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, _PdfDictionary, _PdfName, PdfBorderEffectStyle, PdfBorderEffect, PdfAnnotationState, PdfAnnotationStateModel, PdfCircleAnnotation, PdfPopupAnnotation, PdfLineAnnotation, PdfLineEndingStyle, PdfFont, PdfFontStyle, PdfFontFamily, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfRubberStampAnnotation, PdfPen, PdfBrush, PdfGraphics, PdfVerticalAlignment, PdfGraphicsState, _PdfPath, PdfRubberStampAnnotationIcon, PdfBitmap, PdfImage, PdfPolyLineAnnotation, PdfCircleMeasurementType, PdfPopupIcon, PdfFreeTextAnnotation, PdfBorderStyle, PdfAnnotationCollection, PdfRectangleAnnotation, PdfPolygonAnnotation, PdfEllipseAnnotation, PdfTextMarkupAnnotation, PdfAnnotation, PdfInkAnnotation, PdfLineIntent, PdfAppearance, PdfTemplate, PdfTextMarkupAnnotationType, PdfLineCaptionType, PdfMeasurementUnit, PdfAnnotationIntent, PdfTrueTypeFont, _decode, _PdfBaseStream} from '@syncfusion/ej2-pdf';
+import { PdfAnnotationBorder, PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, _PdfDictionary, _PdfName, PdfBorderEffectStyle, PdfBorderEffect, PdfAnnotationState, PdfAnnotationStateModel, PdfCircleAnnotation, PdfPopupAnnotation, PdfLineAnnotation, PdfLineEndingStyle, PdfFont, PdfFontStyle, PdfFontFamily, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfRubberStampAnnotation, PdfPen, PdfBrush, PdfGraphics, PdfVerticalAlignment, PdfGraphicsState, PdfPath, PdfRubberStampAnnotationIcon, PdfBitmap, PdfImage, PdfPolyLineAnnotation, PdfCircleMeasurementType, PdfPopupIcon, PdfFreeTextAnnotation, PdfBorderStyle, PdfAnnotationCollection, PdfRectangleAnnotation, PdfPolygonAnnotation, PdfEllipseAnnotation, PdfTextMarkupAnnotation, PdfAnnotation, PdfInkAnnotation, PdfLineIntent, PdfAppearance, PdfTemplate, PdfTextMarkupAnnotationType, PdfLineCaptionType, PdfMeasurementUnit, PdfAnnotationIntent, PdfTrueTypeFont, _decode, _PdfBaseStream, _annotationFlagsToString} from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase, SizeBase, PageRenderer } from '../index';
 
 /**
@@ -102,24 +102,7 @@ export class AnnotationRenderer {
             }
             const reviewDetails: any = shapeAnnotation.review;
             lineAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, lineAnnotation.bounds));
-            if (!isNullOrUndefined(shapeAnnotation.isLocked && shapeAnnotation.isLocked)) {
-                lineAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            }
-            let isPrint : boolean = false;
-            let isCommentLock : boolean = false;
-            if (shapeAnnotation.isCommentLock && shapeAnnotation['isCommentLock'] !== null) {
-                isCommentLock = Boolean(shapeAnnotation['isCommentLock'].toString());
-            }
-            if (shapeAnnotation.isPrint && shapeAnnotation['isPrint'] !== null) {
-                isPrint = Boolean(shapeAnnotation['isPrint'].toString());
-            }
-            if (isCommentLock && isPrint) {
-                lineAnnotation._annotFlags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
-            } else if (isPrint) {
-                lineAnnotation._annotFlags = PdfAnnotationFlag.print;
-            } else if (isCommentLock) {
-                lineAnnotation._annotFlags = PdfAnnotationFlag.readOnly;
-            }
+            this.preserveIsLockProperty(shapeAnnotation, lineAnnotation);
             if (!isNullOrUndefined(shapeAnnotation.customData)) {
                 lineAnnotation.setValues('CustomData', shapeAnnotation.customData);
             }
@@ -215,24 +198,7 @@ export class AnnotationRenderer {
                     squareAnnotation._dictionary.update('RD', rd);
                 }
             }
-            if (!isNullOrUndefined(shapeAnnotation.isLocked) && shapeAnnotation.isLocked) {
-                squareAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            }
-            let isPrint : boolean = false;
-            let isCommentLock : boolean = false;
-            if (shapeAnnotation.isCommentLock && shapeAnnotation['isCommentLock'] !== null) {
-                isCommentLock = Boolean(shapeAnnotation['isCommentLock'].toString());
-            }
-            if (shapeAnnotation.isPrint && shapeAnnotation['isPrint'] !== null) {
-                isPrint = Boolean(shapeAnnotation['isPrint'].toString());
-            }
-            if (isCommentLock && isPrint) {
-                squareAnnotation._annotFlags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
-            } else if (isPrint) {
-                squareAnnotation._annotFlags = PdfAnnotationFlag.print;
-            } else if (isCommentLock) {
-                squareAnnotation._annotFlags = PdfAnnotationFlag.readOnly;
-            }
+            this.preserveIsLockProperty(shapeAnnotation, squareAnnotation);
             if (!isNullOrUndefined(shapeAnnotation.customData)) {
                 squareAnnotation.setValues('CustomData', shapeAnnotation.customData);
             }
@@ -327,24 +293,7 @@ export class AnnotationRenderer {
                     circleAnnotation._dictionary.update('RD', rd);
                 }
             }
-            if (!isNullOrUndefined(shapeAnnotation.isLocked && shapeAnnotation.isLocked)) {
-                circleAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            }
-            let isPrint : boolean = false;
-            let isCommentLock : boolean = false;
-            if (shapeAnnotation.isCommentLock && shapeAnnotation['isCommentLock'] !== null) {
-                isCommentLock = Boolean(shapeAnnotation['isCommentLock'].toString());
-            }
-            if (shapeAnnotation.isPrint && shapeAnnotation['isPrint'] !== null) {
-                isPrint = Boolean(shapeAnnotation['isPrint'].toString());
-            }
-            if (isCommentLock && isPrint) {
-                circleAnnotation._annotFlags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
-            } else if (isPrint) {
-                circleAnnotation._annotFlags = PdfAnnotationFlag.print;
-            } else if (isCommentLock) {
-                circleAnnotation._annotFlags = PdfAnnotationFlag.readOnly;
-            }
+            this.preserveIsLockProperty(shapeAnnotation, circleAnnotation);
             if (!isNullOrUndefined(shapeAnnotation.customData)) {
                 circleAnnotation.setValues('CustomData', shapeAnnotation.customData);
             }
@@ -431,29 +380,7 @@ export class AnnotationRenderer {
                     polygonAnnotation._dictionary.update('RD', rd);
                 }
             }
-            if (!isNullOrUndefined(shapeAnnotation.isLocked && shapeAnnotation.isLocked)) {
-                polygonAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            }
-            let isPrint: boolean = true;
-            let isCommentLock: boolean = false;
-            if (!isNullOrUndefined(shapeAnnotation.isCommentLock) && shapeAnnotation.isCommentLock) {
-                isCommentLock = true;
-            }
-            if (!isNullOrUndefined(shapeAnnotation.isPrint) && shapeAnnotation.isPrint) {
-                isPrint = true;
-            }
-            if (isCommentLock && isPrint){
-                polygonAnnotation.flags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
-            }
-            if (isLock){
-                polygonAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            }
-            else if (isCommentLock){
-                polygonAnnotation.flags = PdfAnnotationFlag.readOnly;
-            }
-            else {
-                polygonAnnotation.flags = PdfAnnotationFlag.print;
-            }
+            this.preserveIsLockProperty(shapeAnnotation, polygonAnnotation);
             if (!isNullOrUndefined(shapeAnnotation.customData)) {
                 polygonAnnotation.setValues('CustomData', shapeAnnotation.customData);
             }
@@ -530,15 +457,7 @@ export class AnnotationRenderer {
                     polylineAnnotation._dictionary.update('RD', rd);
                 }
             }
-            if ((!isNullOrUndefined(shapeAnnotation.isLocked) && shapeAnnotation.isLocked) || isLock) {
-                polylineAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            }
-            else if (!isNullOrUndefined(shapeAnnotation.isCommentLock) && shapeAnnotation.isCommentLock) {
-                polylineAnnotation.flags = PdfAnnotationFlag.readOnly;
-            }
-            else {
-                polylineAnnotation.flags = PdfAnnotationFlag.print;
-            }
+            this.preserveIsLockProperty(shapeAnnotation, polylineAnnotation);
             polylineAnnotation.setAppearance(true);
             if (!isNullOrUndefined(shapeAnnotation.customData)) {
                 polylineAnnotation.setValues('CustomData', shapeAnnotation.customData);
@@ -548,20 +467,88 @@ export class AnnotationRenderer {
             }
             page.annotations.add(polylineAnnotation);
         }
-
+        if (!isNullOrUndefined(shapeAnnotation.enableShapeLabel)  && shapeAnnotation.enableShapeLabel ) {
+            const labelBounds: { [Key: string]: number } = JSON.parse(shapeAnnotation.labelBounds.toString());
+            const left: number = this.convertPixelToPoint(labelBounds.left);
+            let top: number = this.convertPixelToPoint(labelBounds.top);
+            if (shapeAnnotation.shapeAnnotationType === 'Line') {
+                top = top - 5;
+            }
+            const labelWidth: number = this.convertPixelToPoint(labelBounds.width);
+            const labelHeight: number = this.convertPixelToPoint(labelBounds.height);
+            const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation(top, left, labelWidth, labelHeight);
+            annotation.author = shapeAnnotation.author;
+            let dateValue: Date;
+            if (!isNullOrUndefined(shapeAnnotation.modifiedDate) && !isNaN(Date.parse(shapeAnnotation.modifiedDate))) {
+                dateValue = new Date(Date.parse(shapeAnnotation.modifiedDate));
+                annotation.modifiedDate = dateValue;
+            }
+            annotation._dictionary.set('NM', shapeAnnotation.annotName.toString() + 'freeText');
+            annotation.lineEndingStyle = PdfLineEndingStyle.openArrow;
+            annotation.annotationIntent = PdfAnnotationIntent.freeTextTypeWriter;
+            let fontSize: number = 0;
+            if (!isNullOrUndefined(shapeAnnotation.fontSize)) {
+                fontSize = parseFloat(shapeAnnotation.fontSize);
+            }
+            fontSize = !isNullOrUndefined(fontSize) && !isNaN(fontSize) && fontSize > 0 ? fontSize : 16;
+            const fontFamily: PdfFontFamily = this.getFontFamily(shapeAnnotation.fontFamily);
+            const fontJson: { [key: string]: boolean } = {};
+            const fontStyle: PdfFontStyle = this.getFontStyle(fontJson);
+            annotation.font = new PdfStandardFont(fontFamily, this.convertPixelToPoint(fontSize), fontStyle);
+            annotation.subject = 'Text Box';
+            annotation.text = '';
+            if (!isNullOrUndefined(shapeAnnotation.labelContent)) {
+                if (shapeAnnotation.labelContent.toString() !== null) {
+                    annotation.text = shapeAnnotation.labelContent.toString();
+                }
+            }
+            annotation.rotationAngle = this.getRotateAngle(shapeAnnotation.rotateAngle);
+            annotation.border = new PdfAnnotationBorder();
+            if (Object.prototype.hasOwnProperty.call(shapeAnnotation, 'thickness')) {
+                if (!isNullOrUndefined(shapeAnnotation.thickness)) {
+                    const thickness: number = parseInt(shapeAnnotation.thickness.toString(), 10);
+                    annotation.border.width = thickness;
+                }
+            }
+            annotation.opacity = 1.0;
+            if (Object.prototype.hasOwnProperty.call(shapeAnnotation, 'opacity')) {
+                if (!isNullOrUndefined(shapeAnnotation.opacity)) {
+                    annotation.opacity = parseFloat(shapeAnnotation.opacity);
+                }
+            }
+            const color: { [key: string]: number } = JSON.parse(shapeAnnotation.labelBorderColor);
+            const color1: number[] = [color.r, color.g, color.b];
+            annotation.borderColor = color1;
+            const fillColor: { [key: string]: number } = JSON.parse(shapeAnnotation.labelFillColor);
+            const color2: number[] = [fillColor.r, fillColor.g, fillColor.b];
+            annotation.color = color2;
+            const textMarkupColor: { [key: string]: number } = JSON.parse(shapeAnnotation.fontColor);
+            const color3: number[] = [textMarkupColor.r, textMarkupColor.g, textMarkupColor.b];
+            annotation.textMarkUpColor = color3;
+            const commentsDetails: any = annotation.comments;
+            if (commentsDetails.length > 0) {
+                for (let i: number = 0; i < commentsDetails.length; i++) {
+                    annotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], annotation.bounds));
+                }
+            }
+            if (!isNullOrUndefined(shapeAnnotation.customData)) {
+                annotation.setValues('CustomData', shapeAnnotation.customData);
+            }
+            page.annotations.add(annotation);
+        }
     }
 
     /**
      * @private
      * @param {any} details - details
-     * @param {PdfPage} page - page.
+     * @param {PdfPage} page - page
      * @returns {void}
      */
     public saveInkSignature(details: any, page: PdfPage): PdfInkAnnotation {
         const inkSignatureAnnotation: any = details;
         const bounds: Rect = JSON.parse(inkSignatureAnnotation.bounds);
         const stampObjects: any = JSON.parse(inkSignatureAnnotation.data.toString());
-        const rotationAngle: number = this.getRotateAngle(page.rotation.toString());
+        const rotationAngle: number = this.getInkRotateAngle(page.rotation.toString());
         const cropValues: PointBase = this.getCropBoxValue(page, false);
         const left: number = cropValues.x + this.convertPixelToPoint(bounds.x);
         let top: number = this.convertPixelToPoint(bounds.y);
@@ -581,13 +568,14 @@ export class AnnotationRenderer {
         let minimumY: number = -1;
         let maximumX: number = -1;
         let maximumY: number = -1;
-        const drawingPath: _PdfPath = new _PdfPath();
+        const drawingPath: PdfPath = new PdfPath();
         for (let p: number = 0; p < stampObjects.length; p++) {
             const val: any = stampObjects[parseInt(p.toString(), 10)];
-            drawingPath._addLine(val.x, val.y, 0, 0);
+            drawingPath.addLine(val.x, val.y, 0, 0);
         }
-        for (let k: number = 0; k < drawingPath._points.length; k += 2) {
-            const value: number[] = drawingPath._points[parseInt(k.toString(), 10)];
+        const rotatedPath: Path = this.getRotatedPathForMinMax(drawingPath._points, rotationAngle);
+        for (let k: number = 0; k < rotatedPath.points.length; k += 2) {
+            const value: number[] = rotatedPath.points[parseInt(k.toString(), 10)];
             if (minimumX === -1) {
                 minimumX = value[0];
                 minimumY = value[1];
@@ -632,11 +620,11 @@ export class AnnotationRenderer {
                 linePoints.push((parseFloat(val['x'].toString())));
                 linePoints.push((parseFloat(val['y'].toString())));
             }
-            const rotatedPoints: _PdfPath = this.getRotatedPath(linePoints, rotationAngle);
+            const rotatedPoints: PdfPath = this.getRotatedPath(linePoints, rotationAngle);
             linePoints = [];
             for (let z: number = 0; z < rotatedPoints._points.length; z += 2) {
                 linePoints.push((rotatedPoints._points[parseInt(z.toString(), 10)][0] - minimumX) / newDifferenceX + left);
-                linePoints.push(page.size[1] - (rotatedPoints._points[z + 1][1] - minimumY) / newDifferenceY - top);
+                linePoints.push(page.size[1] - (rotatedPoints._points[parseInt(z.toString(), 10)][1] - minimumY) / newDifferenceY - top);
             }
         }
         else {
@@ -680,10 +668,11 @@ export class AnnotationRenderer {
                     let graphicsPoints: any = [];
                     const pointsCollections: number[] = pathCollection[parseInt(g.toString(), 10)];
                     if (pointsCollections.length > 0) {
-                        const rotatedPoints: _PdfPath = this.getRotatedPath(pointsCollections, rotationAngle);
+                        const rotatedPoints: PdfPath = this.getRotatedPath(pointsCollections, rotationAngle);
                         for (let z: number = 0; z < rotatedPoints._points.length; z += 2) {
-                            graphicsPoints.push(rotatedPoints._points[parseInt(g.toString(), 10)][0] / minimumX + left);
-                            graphicsPoints.push((rotatedPoints._points[z + 1][1] - minimumY / newDifferenceY) - top);
+                            graphicsPoints.push((rotatedPoints._points[parseInt(z.toString(), 10)][0] - minimumX) / newDifferenceX + left);
+                            graphicsPoints.push(page.size[1] - (rotatedPoints._points[parseInt(z.toString(), 10)][1]
+                                               - minimumY) / newDifferenceY - top);
                         }
                         inkAnnotation.inkPointsCollection.push(graphicsPoints);
                     }
@@ -737,15 +726,7 @@ export class AnnotationRenderer {
                 inkAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], inkAnnotation.bounds));
             }
         }
-        if (!isNullOrUndefined(inkSignatureAnnotation.isLocked) && inkSignatureAnnotation.isLocked) {
-            inkAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-        }
-        else if (!isNullOrUndefined(inkSignatureAnnotation.isCommentLock) && inkSignatureAnnotation.isCommentLock) {
-            inkAnnotation.flags = PdfAnnotationFlag.readOnly;
-        }
-        else {
-            inkAnnotation.flags = PdfAnnotationFlag.print;
-        }
+        this.preserveIsLockProperty(inkSignatureAnnotation, inkAnnotation);
         if (!isNullOrUndefined(inkSignatureAnnotation.customData)) {
             inkAnnotation.setValues('CustomData', inkSignatureAnnotation.customData);
         }
@@ -762,14 +743,62 @@ export class AnnotationRenderer {
         return inkSignatureAnnotation;
     }
 
-    private getRotatedPath(linePoints: number[], rotationAngle: number): _PdfPath {
-        const graphicsPath: _PdfPath = new _PdfPath();
-        for (let j: number = 0; j < linePoints.length; j += 2) {
-            graphicsPath._addLine(linePoints[parseInt(j.toString(), 10)], linePoints[j + 1], 0, 0);
+    /**
+     * @private
+     * @param {number[]} linePoints - points
+     * @param {number} rotationAngle - rotateAngle
+     * @returns {PdfPath} - graphicsPath
+     */
+    public getRotatedPath(linePoints: number[], rotationAngle: number): PdfPath {
+        const docPath: Path = this.getRotatedPoints(linePoints, rotationAngle);
+        const graphicsPath: PdfPath = new PdfPath();
+        for (let j: number = 0; j < docPath.points.length; j += 2) {
+            graphicsPath.addLine(docPath.points[parseInt(j.toString(), 10)][0], docPath.points[parseInt(j.toString(), 10)][1],
+                                 docPath.points[parseInt((j + 1).toString(), 10)][0], docPath.points[j + 1][1]);
         }
         return graphicsPath;
     }
 
+    private getRotationMatrix(angleInDegrees: number): [number, number, number][] {
+        const angleInRadians: number = angleInDegrees * (Math.PI / 180);
+        const cosTheta: number = Math.cos(angleInRadians);
+        const sinTheta: number = Math.sin(angleInRadians);
+        return [
+            [cosTheta, -sinTheta, 0],
+            [sinTheta, cosTheta, 0],
+            [0, 0, 1]
+        ];
+    }
+
+    private getRotatedPoints(pointsCollection: any, rotationAngle: any): Path {
+        const graphicsPath: Path = new Path();
+        for (let j: number = 0; j < pointsCollection.length; j += 2) {
+            graphicsPath.moveTo(pointsCollection[parseInt(j.toString(), 10)], pointsCollection[parseInt((j + 1).toString(), 10)]);
+            graphicsPath.lineTo(0, 0);
+        }
+        const rotationMatrix: [number, number, number][] = this.getRotationMatrix(rotationAngle);
+        graphicsPath.transform(rotationMatrix);
+        return graphicsPath;
+    }
+
+    /**
+     * Rotates a path based on the provided points collection and rotation angle.
+     * @param {number[]} pointsCollection - The collection of points to be rotated.
+     * @param {number} rotationAngle - The angle to rotate the points, in degrees.
+     * @returns {Path} - The rotated graphics path.
+     * @private
+     */
+    public getRotatedPathForMinMax(pointsCollection: number[][], rotationAngle: number): Path {
+        const graphicsPath: Path = new Path();
+        for (let j: number = 0; j < pointsCollection.length; j += 2) {
+            graphicsPath.moveTo(pointsCollection[parseInt(j.toString(), 10)][0], pointsCollection[parseInt(j.toString(), 10)][1]);
+            graphicsPath.lineTo(pointsCollection[parseInt((j + 1).toString(), 10)][0],
+                                pointsCollection[parseInt((j + 1).toString(), 10)][1]);
+        }
+        const rotationMatrix: [number, number, number][] = this.getRotationMatrix(rotationAngle);
+        graphicsPath.transform(rotationMatrix);
+        return graphicsPath;
+    }
 
     /**
      * @param {any} details -details
@@ -884,26 +913,7 @@ export class AnnotationRenderer {
             const color: number[] = [annotColor.r, annotColor.g, annotColor.b];
             annotation.textMarkUpColor = color;
         }
-        let isPrint: boolean = true;
-        let isCommentLock: boolean = false;
-        if (!isNullOrUndefined(markupAnnotation.isCommentLock) && markupAnnotation.isCommentLock) {
-            isCommentLock = true;
-        }
-        if (!isNullOrUndefined(markupAnnotation.isPrint) && markupAnnotation.isPrint) {
-            isPrint = true;
-        }
-        if (isCommentLock && isPrint){
-            annotation.flags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
-        }
-        if (isLock){
-            annotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-        }
-        else if (isCommentLock){
-            annotation.flags = PdfAnnotationFlag.readOnly;
-        }
-        else {
-            annotation.flags = PdfAnnotationFlag.print;
-        }
+        this.preserveIsLockProperty(markupAnnotation, annotation);
         if (!isNullOrUndefined(markupAnnotation.customData)) {
             annotation.setValues('CustomData', markupAnnotation.customData);
         }
@@ -917,7 +927,13 @@ export class AnnotationRenderer {
         page.annotations.add(annotation);
     }
 
-    private getCropBoxValue( page: PdfPage, isPath: boolean): PointBase
+    /**
+     * @private
+     * @param {PdfPage} page - page
+     * @param {boolean} isPath - path
+     * @returns {PointBase} - points
+     */
+    public getCropBoxValue( page: PdfPage, isPath: boolean): PointBase
     {
         let cropBoxX: number = 0;
         let cropBoxY: number = 0;
@@ -933,6 +949,42 @@ export class AnnotationRenderer {
         const cropBoxX: number = page.cropBox[0];
         const cropBoxY: number = page.cropBox[1];
         return [cropBoxX, cropBoxY];
+    }
+
+    private preserveIsLockProperty(annotation: any, annotPDF: any): void {
+        let isLock: boolean = this.checkAnnotationLock(annotation);
+        let isPrint: boolean = false;
+        let isCommentLock: boolean = false;
+        if (annotation.isCommentLock && annotation['isCommentLock'] !== null) {
+            isCommentLock = Boolean(annotation['isCommentLock'].toString());
+        }
+        if (annotation.isPrint && annotation['isPrint'] !== null) {
+            isPrint = Boolean(annotation['isPrint'].toString());
+        }
+        if ((!isNullOrUndefined(annotation.isLocked) && annotation.isLocked) || isLock) {
+            isLock = true;
+        }
+        if (isLock && isCommentLock && isPrint) {
+            annotPDF.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
+        }
+        else if (isLock && isCommentLock) {
+            annotPDF.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.readOnly;
+        }
+        else if (isLock && isPrint) {
+            annotPDF.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
+        }
+        else if (isCommentLock && isPrint) {
+            annotPDF.flags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
+        }
+        else if (isLock) {
+            annotPDF.flags = PdfAnnotationFlag.locked;
+        }
+        else if (isCommentLock) {
+            annotPDF.flags = PdfAnnotationFlag.readOnly;
+        }
+        else {
+            annotPDF.flags = PdfAnnotationFlag.print;
+        }
     }
 
     /**
@@ -1052,15 +1104,7 @@ export class AnnotationRenderer {
             if (!isNullOrUndefined(stampAnnotation.subject) && stampAnnotation.subject) {
                 rubberStampAnnotation.subject = stampAnnotation.subject.toString();
             }
-            if ((!isNullOrUndefined(stampAnnotation.isLocked) && stampAnnotation.isLocked) || (!isNullOrUndefined(isLock) && isLock)) {
-                rubberStampAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            }
-            else if (!isNullOrUndefined(stampAnnotation.isCommentLock) && stampAnnotation.isCommentLock) {
-                rubberStampAnnotation.flags = PdfAnnotationFlag.readOnly;
-            }
-            else {
-                rubberStampAnnotation.flags = PdfAnnotationFlag.print;
-            }
+            this.preserveIsLockProperty(stampAnnotation, rubberStampAnnotation);
             if (!isNullOrUndefined(stampAnnotation.customData)) {
                 rubberStampAnnotation.setValues('CustomData', stampAnnotation.customData);
             }
@@ -1130,7 +1174,7 @@ export class AnnotationRenderer {
             if (isDynamic !== 'true') {
                 isIconExists = this.getIconName(stampAnnotation, icon, rubberStampAnnotation);
             }
-            let graphicsPath: _PdfPath;
+            let graphicsPath: PdfPath;
             if (icon.trim() === 'Accepted' || icon.trim() === 'Rejected') {
                 graphicsPath = this.drawStampAsPath(stampAnnotation.stampAnnotationPath, rubberStampAnnotation, textBrush, stampBrush);
             }
@@ -1149,15 +1193,7 @@ export class AnnotationRenderer {
             }
             rubberStampAnnotation.opacity = opacity;
             rubberStampAnnotation.author = !isNullOrUndefined(stampAnnotation.author) && stampAnnotation.author.toString() !== '' ? stampAnnotation.author.toString() : 'Guest';
-            if (!isNullOrUndefined(stampAnnotation.isLocked) && stampAnnotation.isLocked) {
-                rubberStampAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            }
-            else if (!isNullOrUndefined(stampAnnotation.isCommentLock) && stampAnnotation.isCommentLock) {
-                rubberStampAnnotation.flags = PdfAnnotationFlag.readOnly;
-            }
-            else {
-                rubberStampAnnotation.flags = PdfAnnotationFlag.print;
-            }
+            this.preserveIsLockProperty(stampAnnotation, rubberStampAnnotation);
             if (!isNullOrUndefined(stampAnnotation.customData)) {
                 rubberStampAnnotation.setValues('CustomData', stampAnnotation.customData);
             }
@@ -1270,20 +1306,7 @@ export class AnnotationRenderer {
             const reviewDetails: any = measureShapeAnnotation.review;
             lineAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, lineAnnotation.bounds));
             lineAnnotation._dictionary.update('LLO', measureShapeAnnotation.leaderLineOffset);
-            if (measureShapeAnnotation.isPrint && !isNullOrUndefined(measureShapeAnnotation['isPrint']) && Boolean(measureShapeAnnotation['isPrint'].toString())) {
-                if (measureShapeAnnotation.isCommentLock && !isNullOrUndefined(measureShapeAnnotation['isCommentLock']) && Boolean(measureShapeAnnotation['isCommentLock'].toString())) {
-                    lineAnnotation.flags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
-                } else {
-                    lineAnnotation.flags = PdfAnnotationFlag.print;
-                }
-            }
-            if (measureShapeAnnotation.isLocked && !isNullOrUndefined(measureShapeAnnotation['isLocked']) && Boolean(measureShapeAnnotation['isLocked'].toString())) {
-                lineAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            } else if (measureShapeAnnotation.isCommentLock && !isNullOrUndefined(measureShapeAnnotation['isCommentLock']) && Boolean(measureShapeAnnotation['isCommentLock'].toString())) {
-                lineAnnotation.flags = PdfAnnotationFlag.readOnly;
-            } else {
-                lineAnnotation.flags = PdfAnnotationFlag.print;
-            }
+            this.preserveIsLockProperty(measureShapeAnnotation, lineAnnotation);
             const measureDetail: any = JSON.parse(measureShapeAnnotation.calibrate);
             if (!isNullOrUndefined(measureDetail)) {
                 lineAnnotation._dictionary.set('Measure', this.setMeasureDictionary(measureDetail));
@@ -1369,19 +1392,7 @@ export class AnnotationRenderer {
                     polylineAnnotation._dictionary.update('RD', rd);
                 }
             }
-            if (!isNullOrUndefined(measureShapeAnnotation.isLocked && measureShapeAnnotation.isLocked)) {
-                polylineAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            }
-            else if (!isNullOrUndefined(measureShapeAnnotation.isCommentLock) && measureShapeAnnotation.isCommentLock) {
-                polylineAnnotation.flags = PdfAnnotationFlag.readOnly;
-            }
-            if (measureShapeAnnotation.isPrint && measureShapeAnnotation['isPrint'] !== null && Boolean(measureShapeAnnotation['isPrint'].toString())) {
-                if (measureShapeAnnotation.isCommentLock && measureShapeAnnotation['isCommentLock'] !== null && Boolean(measureShapeAnnotation['isCommentLock'].toString())) {
-                    polylineAnnotation._annotFlags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
-                } else {
-                    polylineAnnotation._annotFlags = PdfAnnotationFlag.print;
-                }
-            }
+            this.preserveIsLockProperty(measureShapeAnnotation, polylineAnnotation);
             const measureDetail: any = JSON.parse(measureShapeAnnotation.calibrate);
             if (!isNullOrUndefined(measureDetail)) {
                 polylineAnnotation._dictionary.set('Measure', this.setMeasureDictionary(measureDetail));
@@ -1470,20 +1481,7 @@ export class AnnotationRenderer {
                     polygonAnnotation._dictionary.update('RD', rd);
                 }
             }
-            if (measureShapeAnnotation.isPrint && !isNullOrUndefined(measureShapeAnnotation['isPrint']) && Boolean(measureShapeAnnotation['isPrint'].toString())) {
-                if (measureShapeAnnotation.isCommentLock && !isNullOrUndefined(measureShapeAnnotation['isCommentLock']) && Boolean(measureShapeAnnotation['isCommentLock'].toString())) {
-                    polygonAnnotation.flags = PdfAnnotationFlag.print | PdfAnnotationFlag.readOnly;
-                } else {
-                    polygonAnnotation.flags = PdfAnnotationFlag.print;
-                }
-            }
-            if (measureShapeAnnotation.isLocked && !isNullOrUndefined(measureShapeAnnotation['isLocked']) && Boolean(measureShapeAnnotation['isLocked'].toString())) {
-                polygonAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            } else if (measureShapeAnnotation.isCommentLock && !isNullOrUndefined(measureShapeAnnotation['isCommentLock']) && Boolean(measureShapeAnnotation['isCommentLock'].toString())) {
-                polygonAnnotation.flags = PdfAnnotationFlag.readOnly;
-            } else {
-                polygonAnnotation.flags = PdfAnnotationFlag.print;
-            }
+            this.preserveIsLockProperty(measureShapeAnnotation, polygonAnnotation);
             const measureDetail: any = JSON.parse(measureShapeAnnotation.calibrate);
             if (!isNullOrUndefined(measureDetail)) {
                 polygonAnnotation._dictionary.set('Measure', this.setMeasureDictionary(measureDetail));
@@ -1555,19 +1553,7 @@ export class AnnotationRenderer {
         annotation.color = color;
         annotation.opacity = popUpAnnotation.opacity;
         annotation.icon = PdfPopupIcon.comment;
-        if (!isNullOrUndefined(popUpAnnotation.annotationSettings)) {
-            const annotationSettings: any = popUpAnnotation.annotationSettings;
-            const isLock: boolean = annotationSettings.isLock;
-            if (isLock) {
-                annotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-            }
-        }
-        else if (!isNullOrUndefined(popUpAnnotation.isCommentLock) && popUpAnnotation.isCommentLock) {
-            annotation.flags = PdfAnnotationFlag.readOnly;
-        }
-        else {
-            annotation.flags = PdfAnnotationFlag.print;
-        }
+        this.preserveIsLockProperty(popUpAnnotation, annotation);
         if (!isNullOrUndefined(popUpAnnotation.customData)) {
             annotation.setValues('CustomData', popUpAnnotation.customData);
         }
@@ -1704,43 +1690,13 @@ export class AnnotationRenderer {
                 annotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)], annotation.bounds));
             }
         }
-        if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'annotationSettings') && !isNullOrUndefined(freeTextAnnotation.annotationSettings)) {
-            const annotationSettings: any = freeTextAnnotation.annotationSettings;
-            if (Object.prototype.hasOwnProperty.call(annotationSettings, 'isLock') && !isNullOrUndefined(annotationSettings.isLock)) {
-                if (annotationSettings.isLock){
-                    annotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-                }
-            }
-        }
-        else if (!isNullOrUndefined(freeTextAnnotation.isCommentLock) && freeTextAnnotation.isCommentLock) {
-            annotation.flags = PdfAnnotationFlag.readOnly;
-        }
-        else {
-            annotation.flags = PdfAnnotationFlag.print;
-        }
+        this.preserveIsLockProperty(freeTextAnnotation, annotation);
         if (!isNullOrUndefined(freeTextAnnotation.customData)) {
             annotation.setValues('CustomData', freeTextAnnotation.customData);
         }
         if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'textAlign') && !isNullOrUndefined(freeTextAnnotation.textAlign))
         {
             annotation.textAlignment = this.getPdfTextAlignment(freeTextAnnotation.textAlign.toString().toLowerCase());
-        }
-        let isReadonly: boolean = false;
-        let isPrint: boolean = false;
-        if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'isReadonly')) {
-            isReadonly = !isNullOrUndefined(freeTextAnnotation.isReadonly) ? freeTextAnnotation.isReadonly : false;
-        }
-        if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'isPrint')) {
-            isPrint = !isNullOrUndefined(freeTextAnnotation.isPrint) ? freeTextAnnotation.isPrint : false;
-        }
-        if (isReadonly && isPrint) {
-            annotation.flags = PdfAnnotationFlag.readOnly | PdfAnnotationFlag.print;
-        }
-        else if (isPrint) {
-            annotation.flags = PdfAnnotationFlag.print;
-        }
-        else if (isReadonly) {
-            annotation.flags = PdfAnnotationFlag.readOnly;
         }
         if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'allowedInteractions') && !isNullOrUndefined(freeTextAnnotation.allowedInteractions))
         {
@@ -1751,21 +1707,21 @@ export class AnnotationRenderer {
 
 
     private renderSignHereStamp(rubberStampAnnotation: PdfRubberStampAnnotation, rectangle: Rect, icon: string, textBrush:
-    PdfBrush, page: PdfPage, pens: PdfPen, graphicsPath: _PdfPath): void {
+    PdfBrush, page: PdfPage, pens: PdfPen, graphicsPath: PdfPath): void {
         const stringFormat: PdfStringFormat = new PdfStringFormat();
         const font: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, 20, PdfFontStyle.bold | PdfFontStyle.italic);
         stringFormat.alignment = PdfTextAlignment.center;
         stringFormat.lineAlignment = PdfVerticalAlignment.middle;
         let point1: number[] = [0, 0];
         let point2: number[] = [0, 0];
-        const drawingPath: _PdfPath = new _PdfPath();
+        const drawingPath: PdfPath = new PdfPath();
         const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
         if (this.defaultHeight > 0 && this.defaultWidth > 0) {
             appearance.graphics.scaleTransform(rectangle.width / (this.defaultWidth + 4), rectangle.height / 28.00);
         }
         point1 = [(this.defaultWidth / 2 + 1), 15, 0, 0];
         point2 = [0, 0];
-        drawingPath._addLine(point1[0], point1[1], point2[0], point2[1]);
+        drawingPath.addLine(point1[0], point1[1], point2[0], point2[1]);
         const pointValues: number[] = [drawingPath._points[0][0], drawingPath._points[0][1], 0, 0];
         if (graphicsPath) {
             let minX: number = Number.MAX_VALUE;
@@ -1773,19 +1729,19 @@ export class AnnotationRenderer {
             let maxX: number = Number.MIN_VALUE;
             let maxY: number = Number.MIN_VALUE;
             for (let i: number = 0; i < graphicsPath._points.length; i++) {
-                let point: number[] = graphicsPath._points[parseInt(i.toString(), 10)];
+                const point: number[] = graphicsPath._points[parseInt(i.toString(), 10)];
                 minX = Math.min(minX, point[0]);
                 minY = Math.min(minY, point[1]);
                 maxX = Math.max(maxX, point[0]);
                 maxY = Math.max(maxY, point[1]);
             }
-            let offsetX: number = (rectangle.width - (maxX - minX)) / 2 - minX;
-            let offsetY: number = (rectangle.height - (maxY - minY)) / 2 - minY;
+            const offsetX: number = (rectangle.width - (maxX - minX)) / 2 - minX;
+            const offsetY: number = (rectangle.height - (maxY - minY)) / 2 - minY;
             for (let i: number = 0; i < graphicsPath._points.length; i++) {
                 graphicsPath._points[parseInt(i.toString(), 10)][0] += offsetX;
                 graphicsPath._points[parseInt(i.toString(), 10)][1] += offsetY;
             }
-            rubberStampAnnotation.appearance.normal.graphics._drawPath(graphicsPath, pens, textBrush);
+            rubberStampAnnotation.appearance.normal.graphics.drawPath(graphicsPath, pens, textBrush);
         } else {
             appearance.graphics.drawString(icon.toUpperCase(), font, pointValues, pens, textBrush, stringFormat);
         }
@@ -1817,15 +1773,19 @@ export class AnnotationRenderer {
         const stringFormat: PdfStringFormat = new PdfStringFormat();
         stringFormat.alignment = PdfTextAlignment.left;
         stringFormat.lineAlignment = PdfVerticalAlignment.middle;
-        const stampFont: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle) - 5, PdfFontStyle.bold | PdfFontStyle.italic);
-        const detailsFont: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, this.pdfViewer.annotationModule.calculateFontSize(text, rectangle) - 5, PdfFontStyle.bold | PdfFontStyle.italic);
+        const stampFont: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica,
+                                                       this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle) - 5,
+                                                       PdfFontStyle.bold | PdfFontStyle.italic);
+        const detailsFont: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica,
+                                                         this.pdfViewer.annotationModule.calculateFontSize(text, rectangle) - 5,
+                                                         PdfFontStyle.bold | PdfFontStyle.italic);
         const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
         let point1: number[] = [0, 0];
         let point2: number[] = [0, 0];
-        const drawingPath: _PdfPath = new _PdfPath();
+        const drawingPath: PdfPath = new PdfPath();
         point1 = [5, (rectangle.height / 3)];
         point2 = [5, (rectangle.height - (detailsFont.size * 2))];
-        drawingPath._addLine(point1[0], point1[1], point2[0], point2[1]);
+        drawingPath.addLine(point1[0], point1[1], point2[0], point2[1]);
         const stampTypeBounds: number[] = [drawingPath._points[0][0], drawingPath._points[0][1], 0, 0];
         const stampTimeStampbounds: number[] = [drawingPath._points[1][0], drawingPath._points[1][1],
             (rectangle.width - drawingPath._points[1][0]), (rectangle.height - drawingPath._points[1][1])];
@@ -1962,15 +1922,15 @@ export class AnnotationRenderer {
     }
 
     private drawStampAsPath(resultObjects: string, rubberStampAnnotation: PdfRubberStampAnnotation, textBrush: PdfBrush,
-                            stampBrush: PdfBrush): _PdfPath {
+                            stampBrush: PdfBrush): PdfPath {
         let currentPoint: PointBase = { x: 0, y: 0 };
-        const graphicsPath: _PdfPath = new _PdfPath();
+        const graphicsPath: PdfPath = new PdfPath();
         const stampObjects: string = resultObjects;
         for (let index: number = 0; index < stampObjects.length; index++) {
             const val: any = stampObjects[parseInt(index.toString(), 10)];
             const path: string = val.command.toString();
             if (path === 'M') {
-                graphicsPath._startFigure();
+                graphicsPath.startFigure();
                 currentPoint = { x: val.x, y: val.y };
             }
             if (path === 'L') {
@@ -1981,7 +1941,9 @@ export class AnnotationRenderer {
                 const array1: PointBase[] = [
                     { x: array[0].x, y: array[0].y }, { x: array[1].x, y: array[1].y }
                 ];
-                graphicsPath._addLine(this.convertPixelToPoint(array1[0].x), this.convertPixelToPoint(array1[0].y), this.convertPixelToPoint(array1[1].x), this.convertPixelToPoint(array1[1].y));
+                graphicsPath.addLine(this.convertPixelToPoint(array1[0].x),
+                                     this.convertPixelToPoint(array1[0].y), this.convertPixelToPoint(array1[1].x),
+                                     this.convertPixelToPoint(array1[1].y));
                 currentPoint = { x: val.x, y: val.y };
             }
             if (path === 'C') {
@@ -1998,11 +1960,15 @@ export class AnnotationRenderer {
                     { x: array2[2].x, y: array2[2].y },
                     { x: array2[3].x, y: array2[3].y }
                 ];
-                graphicsPath._addBezier(this.convertPixelToPoint(array21[0].x), this.convertPixelToPoint(array21[0].y), this.convertPixelToPoint(array21[1].x), this.convertPixelToPoint(array21[1].y), this.convertPixelToPoint(array21[2].x), this.convertPixelToPoint(array21[2].y), this.convertPixelToPoint(array21[3].x), this.convertPixelToPoint(array21[3].y));
+                graphicsPath.addBezier(this.convertPixelToPoint(array21[0].x),
+                                       this.convertPixelToPoint(array21[0].y),
+                                       this.convertPixelToPoint(array21[1].x), this.convertPixelToPoint(array21[1].y),
+                                       this.convertPixelToPoint(array21[2].x), this.convertPixelToPoint(array21[2].y),
+                                       this.convertPixelToPoint(array21[3].x), this.convertPixelToPoint(array21[3].y));
                 currentPoint = { x: val.x, y: val.y };
             }
             if (path === 'Z' || path === 'z') {
-                graphicsPath._closeFigure();
+                graphicsPath.closeFigure();
             }
 
         }
@@ -2153,15 +2119,7 @@ export class AnnotationRenderer {
                 circleAnnotation._dictionary.update('RD', rd);
             }
         }
-        if (!isNullOrUndefined(measureShapeAnnotation.isLocked) && measureShapeAnnotation.isLocked) {
-            circleAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
-        }
-        else if (!isNullOrUndefined(measureShapeAnnotation.isCommentLock) && measureShapeAnnotation.isCommentLock) {
-            circleAnnotation.flags = PdfAnnotationFlag.readOnly;
-        }
-        else {
-            circleAnnotation.flags = PdfAnnotationFlag.print;
-        }
+        this.preserveIsLockProperty(measureShapeAnnotation, circleAnnotation);
         circleAnnotation.measureType = PdfCircleMeasurementType.radius;
         const measureDetail: any = JSON.parse(measureShapeAnnotation.calibrate);
         if (!isNullOrUndefined(measureDetail)) {
@@ -2393,6 +2351,30 @@ export class AnnotationRenderer {
 
     /**
      * @private
+     * @param {string} angleString - height
+     * @returns {number} - angle
+     */
+    public getInkRotateAngle(angleString: string): number {
+        let angle: number = 0;
+        switch (angleString) {
+        case '0':
+            angle = 0;
+            break;
+        case '1':
+            angle = -90;
+            break;
+        case '2':
+            angle = -180;
+            break;
+        case '3':
+            angle = -270;
+            break;
+        }
+        return angle;
+    }
+
+    /**
+     * @private
      * @param {PdfInkAnnotation} inkAnnot - inkAnnot
      * @param {number} height - height
      * @param {number} width - width
@@ -2407,25 +2389,37 @@ export class AnnotationRenderer {
         let outputstring: string = '';
         if (!isNullOrUndefined(inkAnnot.inkPointsCollection)) {
             for (let index: number = 0; index < inkAnnot.inkPointsCollection.length; index++) {
-                const inkList: any = inkAnnot.inkPointsCollection[parseInt(index.toString(), 10)];
+                const inkList: number[] = inkAnnot.inkPointsCollection[parseInt(index.toString(), 10)];
                 for (let j: number = 0; j < inkList.length; j += 2) {
                     let x: number;
                     let y: number;
-                    if (j === 0) {
+                    if (inkAnnot._page.rotation === PdfRotationAngle.angle90) {
+                        x = inkList[j + 1];
+                        y = inkList[parseInt(j.toString(), 10)];
+                    }
+                    else if (inkAnnot._page.rotation === PdfRotationAngle.angle180) {
+                        x = inkAnnot._page.size[0] - inkList[parseInt(j.toString(), 10)];
+                        y = inkList[j + 1];
+                    }
+                    else if (inkAnnot._page.rotation === PdfRotationAngle.angle270) {
+                        x = inkAnnot._page.size[0] - inkList[j + 1];
+                        y = inkAnnot._page.size[1] - inkList[parseInt(j.toString(), 10)];
+                    }
+                    else {
                         x = inkList[parseInt(j.toString(), 10)];
-                        y = height - inkList[j + 1];
+                        y = inkAnnot._page.size[1] - inkList[j + 1];
+                    }
+                    if (j === 0) {
                         outputstring += 'M' + x + ',' + y + ' ';
                     }
                     else {
-                        x  = inkList[parseInt(j.toString(), 10)];
-                        y = height - inkList[j + 1];
                         outputstring += 'L' + x + ',' + y + ' ';
                     }
                 }
             }
         }
         signature.AnnotationType = 'Signature';
-        signature.Bounds = this.getBounds(inkAnnot.bounds, width, height, pageRotation);
+        signature.Bounds = this.getBounds(inkAnnot.bounds, height, width, pageRotation);
         signature.Opacity = inkAnnot.opacity;
         signature.Thickness = inkAnnot.border.width;
         signature.PathData = outputstring;
@@ -2502,18 +2496,7 @@ export class AnnotationRenderer {
             const annot: PopupAnnotationBase = this.loadPopupAnnotation(inkAnnot.comments.at(i), height, width, pageRotation);
             signature.Comments.push(annot);
         }
-        if (inkAnnot.flags === PdfAnnotationFlag.locked) {
-            signature.IsLocked = true;
-        }
-        else {
-            signature.IsLocked = false;
-        }
-        if (inkAnnot.flags === PdfAnnotationFlag.readOnly) {
-            signature.IsCommentLock = true;
-        }
-        else {
-            signature.IsCommentLock = false;
-        }
+        this.updateIsLockProperty(signature, inkAnnot);
         signature.AnnotationType = 'Ink';
         signature.AnnotType = 'Ink';
         signature.Bounds = this.getBounds(inkAnnot.bounds, height, width, pageRotation);
@@ -2603,22 +2586,7 @@ export class AnnotationRenderer {
         else {
             shapeAnnotation.RectangleDifference = new Array<string>();
         }
-
-        if (squareAnnot.flags === PdfAnnotationFlag.locked) {
-            shapeAnnotation.IsLocked = true;
-        }
-        else {
-            shapeAnnotation.IsLocked = false;
-        }
-        if (squareAnnot.flags === PdfAnnotationFlag.readOnly) {
-            shapeAnnotation.IsCommentLock = true;
-        }
-        else {
-            shapeAnnotation.IsCommentLock = false;
-        }
-        if (squareAnnot._annotFlags.toString().includes('Print')) {
-            shapeAnnotation.IsPrint = true;
-        }
+        this.updateIsLockProperty(shapeAnnotation, squareAnnot);
         if (squareAnnot._dictionary.has('AllowedInteractions')) {
             const allowedInteractions: string[] = squareAnnot.getValues('AllowedInteractions');
             const text: any = allowedInteractions[0];
@@ -2723,21 +2691,7 @@ export class AnnotationRenderer {
         } else {
             shapeAnnotation.RectangleDifference = new Array<string>();
         }
-        if (lineAnnot.flags === PdfAnnotationFlag.locked) {
-            shapeAnnotation.IsLocked = true;
-        }
-        else {
-            shapeAnnotation.IsLocked = false;
-        }
-        if (lineAnnot.flags === PdfAnnotationFlag.readOnly) {
-            shapeAnnotation.IsCommentLock = true;
-        }
-        else {
-            shapeAnnotation.IsCommentLock = false;
-        }
-        if (lineAnnot._annotFlags.toString().includes('Print')) {
-            shapeAnnotation.IsPrint = true;
-        }
+        this.updateIsLockProperty(shapeAnnotation, lineAnnot);
         if (lineAnnot._dictionary.has('AllowedInteractions')) {
             const allowedInteractions: string[] = lineAnnot.getValues('AllowedInteractions');
             const text: any = allowedInteractions[0];
@@ -2890,21 +2844,7 @@ export class AnnotationRenderer {
         else {
             shapeAnnotation.RectangleDifference = new Array<string>();
         }
-        if (ellipseAnnot.flags === PdfAnnotationFlag.locked) {
-            shapeAnnotation.IsLocked = true;
-        }
-        else {
-            shapeAnnotation.IsLocked = false;
-        }
-        if (ellipseAnnot.flags === PdfAnnotationFlag.readOnly) {
-            shapeAnnotation.IsCommentLock = true;
-        }
-        else {
-            shapeAnnotation.IsCommentLock = false;
-        }
-        if (ellipseAnnot._annotFlags.toString().includes('Print')) {
-            shapeAnnotation.IsPrint = true;
-        }
+        this.updateIsLockProperty(shapeAnnotation, ellipseAnnot);
         if (ellipseAnnot._dictionary.has('AllowedInteractions')) {
             const allowedInteractions: string[] = ellipseAnnot.getValues('AllowedInteractions');
             const text: any = allowedInteractions[0];
@@ -3062,21 +3002,7 @@ export class AnnotationRenderer {
         else{
             shapeAnnotation.RectangleDifference = new Array<string>();
         }
-        if (polygonAnnot.flags === PdfAnnotationFlag.locked) {
-            shapeAnnotation.IsLocked = true;
-        }
-        else {
-            shapeAnnotation.IsLocked = false;
-        }
-        if (polygonAnnot.flags === PdfAnnotationFlag.readOnly) {
-            shapeAnnotation.IsCommentLock = true;
-        }
-        else {
-            shapeAnnotation.IsCommentLock = false;
-        }
-        if (polygonAnnot.flags === PdfAnnotationFlag.print) {
-            shapeAnnotation.IsPrint = true;
-        }
+        this.updateIsLockProperty(shapeAnnotation, polygonAnnot);
         if (polygonAnnot._dictionary.has('CustomData') && !isNullOrUndefined(polygonAnnot._dictionary.get('CustomData')))
         {
             const customData: any = polygonAnnot._dictionary.get('CustomData');
@@ -3221,21 +3147,7 @@ export class AnnotationRenderer {
         else{
             shapeAnnotation.RectangleDifference = new Array<string>();
         }
-        if (polyLineAnnot.flags === PdfAnnotationFlag.locked) {
-            shapeAnnotation.IsLocked = true;
-        }
-        else {
-            shapeAnnotation.IsLocked = false;
-        }
-        if (polyLineAnnot.flags === PdfAnnotationFlag.readOnly) {
-            shapeAnnotation.IsCommentLock = true;
-        }
-        else {
-            shapeAnnotation.IsCommentLock = false;
-        }
-        if (polyLineAnnot._annotFlags.toString().includes('Print')) {
-            shapeAnnotation.IsPrint = true;
-        }
+        this.updateIsLockProperty(shapeAnnotation, polyLineAnnot);
         if (polyLineAnnot._dictionary.has('CustomData') && !isNullOrUndefined(polyLineAnnot._dictionary.get('CustomData')))
         {
             const customData: any = polyLineAnnot._dictionary.get('CustomData');
@@ -3588,18 +3500,7 @@ export class AnnotationRenderer {
             popupAnnotation.ModifiedDate = this.formatDate(new Date());
         }
         popupAnnotation.Note = popupAnnot.text;
-        if (popupAnnot.flags === PdfAnnotationFlag.locked) {
-            popupAnnotation.IsLock = true;
-        }
-        else {
-            popupAnnotation.IsLock = false;
-        }
-        if (popupAnnot.flags === PdfAnnotationFlag.readOnly) {
-            popupAnnotation.IsCommentLock = true;
-        }
-        else {
-            popupAnnotation.IsCommentLock = false;
-        }
+        this.updateIsLockProperty(popupAnnotation, popupAnnot);
         popupAnnotation.Icon = this.getPopupIconString(popupAnnot.icon);
         popupAnnotation.State = this.getStateString(popupAnnot.state);
         popupAnnotation.StateModel = this.getStateModelString(popupAnnot.stateModel);
@@ -3722,22 +3623,7 @@ export class AnnotationRenderer {
             freeTextAnnotation.Bounds = this.getBounds(cropRect, height, width, pageRotation);
         }
         freeTextAnnotation.PageRotation = pageRotation;
-        if (freeTextAnnot.flags === PdfAnnotationFlag.readOnly) {
-            freeTextAnnotation.IsCommentLock = true;
-            freeTextAnnotation.IsReadonly = true;
-        }
-        else {
-            freeTextAnnotation.IsCommentLock = false;
-        }
-        if (freeTextAnnot.flags === PdfAnnotationFlag.print){
-            freeTextAnnotation.IsPrint = true;
-        }
-        if (freeTextAnnot.flags === PdfAnnotationFlag.locked){
-            freeTextAnnotation.IsLocked = true;
-        }
-        else{
-            freeTextAnnotation.IsLocked = false;
-        }
+        this.updateIsLockProperty(freeTextAnnotation, freeTextAnnot);
         if (freeTextAnnot._dictionary.has('CustomData') && !isNullOrUndefined(freeTextAnnot._dictionary.get('CustomData'))) {
             const customData: any = freeTextAnnot._dictionary.get('CustomData');
             if (customData != null) {
@@ -4000,6 +3886,31 @@ export class AnnotationRenderer {
     }
 
     /**
+     * @private
+     * @param {any} annotation - annotation
+     * @param {any} AnnotFromPDF - AnnotFromPDF
+     * @returns {void}
+     */
+    public updateIsLockProperty(annotation: any, AnnotFromPDF: any): void {
+        const annotFlags: string = _annotationFlagsToString(AnnotFromPDF.flags);
+        if (!isNullOrUndefined(annotFlags) && annotFlags.includes('locked')) {
+            annotation.IsLocked = true;
+        }
+        else {
+            annotation.IsLocked = false;
+        }
+        if (!isNullOrUndefined(annotFlags) && annotFlags.includes('readOnly')) {
+            annotation.IsCommentLock = true;
+        }
+        else {
+            annotation.IsCommentLock = false;
+        }
+        if (!isNullOrUndefined(annotFlags) && annotFlags.includes('print')) {
+            annotation.IsPrint = true;
+        }
+    }
+
+    /**
      * @param {PdfTextMarkupAnnotation} textMarkup - textMarkup
      * @param {number} height - height
      * @param {number} width - width
@@ -4052,15 +3963,7 @@ export class AnnotationRenderer {
             const annot: PopupAnnotationBase = this.loadPopupAnnotation(textMarkup.comments.at(i), height, width, pageRotation);
             markupAnnotation.Comments.push(annot);
         }
-        if (textMarkup.flags === PdfAnnotationFlag.readOnly) {
-            markupAnnotation.IsCommentLock = true;
-        }
-        else {
-            markupAnnotation.IsCommentLock = false;
-        }
-        if (textMarkup.flags === PdfAnnotationFlag.print) {
-            markupAnnotation.IsPrint = true;
-        }
+        this.updateIsLockProperty(markupAnnotation, textMarkup);
         if (textMarkup._dictionary.has('CustomData') && !isNullOrUndefined(textMarkup._dictionary.get('CustomData')))
         {
             const customData: any = textMarkup._dictionary.get('CustomData');
@@ -4576,6 +4479,7 @@ export class TextMarkupAnnotationBase{
     AnnotationSettings: any;
     AllowedInteractions: string[];
     IsPrint: boolean;
+    IsLocked: boolean;
     TextMarkupContent: string;
     AnnotationRotation: number;
     constructor() {
@@ -4693,6 +4597,30 @@ export class FontBase{
         this.Strikeout = pdfFont.isStrikeout;
         this.Style = pdfFont.style;
         this.Underline = pdfFont.isUnderline;
+    }
+}
+
+/**
+ *
+ * @hidden
+ */
+export class Path {
+    points: [number, number][];
+    constructor() {
+        this.points = [];
+    }
+    moveTo(x: number, y: number): void {
+        this.points.push([x, y]);
+    }
+    lineTo(x: number, y: number): void {
+        this.points.push([x, y]);
+    }
+    transform(matrix: [number, number, number][]): void {
+        this.points = this.points.map(([x, y]: [number, number]): [number, number] => {
+            const newX: number = matrix[0][0] * x + matrix[0][1] * y + matrix[0][2];
+            const newY: number = matrix[1][0] * x + matrix[1][1] * y + matrix[1][2];
+            return [newX, newY];
+        });
     }
 }
 

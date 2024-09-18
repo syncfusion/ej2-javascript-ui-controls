@@ -2238,13 +2238,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.contextMenuModule = new PivotContextMenu(this);
         this.globalize = new Internationalization(this.locale);
         if (this.showFieldList || this.showGroupingBar || this.allowNumberFormatting || this.allowCalculatedField ||
-            this.toolbar || this.allowGrouping || this.gridSettings.contextMenuItems) {
+            (this.toolbar && this.showToolbar) || this.allowGrouping || this.gridSettings.contextMenuItems || this.allowDrillThrough) {
             this.commonModule = new Common(this);
         }
         if (this.allowPdfExport && (this.displayOption.view === 'Both' || this.displayOption.view === 'Chart')) {
             this.chartExportModule = new ChartExport(this);
         }
         this.defaultLocale = {
+            applyToGrandTotal: 'Apply to Grand Total',
             grandTotal: 'Grand Total',
             total: 'Total',
             value: 'Value',
@@ -2891,6 +2892,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.initialLoad();
                 if (this.displayOption.view !== 'Chart') {
                     this.renderEmptyGrid();
+                } else {
+                    this.refreshData();
                 }
                 this.showWaitingPopup();
             } else {
@@ -3666,18 +3669,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         // }
                         this.notify(events.initSubComponent, this);
                     }
-                    if (!this.grid && newProp.displayOption.view !== 'Chart') {
-                        this.renderEmptyGrid();
-                        if (newProp.displayOption.view === 'Table') {
-                            if (this.pivotChartModule) {
-                                this.destroyEngine = true;
-                                this.pivotChartModule.destroy();
-                                this.destroyEngine = false;
-                                this.chart = undefined;
-                                this.pivotChartModule = undefined;
-                            }
+                    switch (newProp.displayOption.view) {
+                    case 'Both':
+                        if (!this.pivotChartModule) {
+                            this.pivotChartModule = new PivotChart();
                         }
-                    } else if (this.displayOption.view !== 'Table') {
+                        if (!this.grid) {
+                            this.renderEmptyGrid();
+                        }
+                        break;
+                    case 'Chart':
                         if (this.grid) {
                             this.grid.destroy();
                             this.grid = undefined;
@@ -3685,6 +3686,19 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         if (!this.pivotChartModule) {
                             this.pivotChartModule = new PivotChart();
                         }
+                        break;
+                    case 'Table':
+                        if (!this.grid) {
+                            this.renderEmptyGrid();
+                        }
+                        if (this.pivotChartModule) {
+                            this.destroyEngine = true;
+                            this.pivotChartModule.destroy();
+                            this.destroyEngine = false;
+                            this.chart = undefined;
+                            this.pivotChartModule = undefined;
+                        }
+                        break;
                     }
                 } else if (this.showToolbar && !isNullOrUndefined(newProp.displayOption) && newProp.displayOption.view) {
                     this.currentView = (newProp.displayOption.view === 'Both' ?
@@ -3780,8 +3794,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             case 'showTooltip':
                 this.renderToolTip();
                 break;
+            case 'showToolbar':
             case 'toolbar':
-                if (this.toolbarModule) {
+                if (this.toolbarModule && this.showToolbar) {
                     this.toolbarModule.refreshToolbar();
                 }
                 break;
@@ -3809,12 +3824,17 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             case 'pageSettings':
                 if (!this.enableVirtualization) {
                     this.engineModule.pageSettings = this.pageSettings;
-                    this.refreshPageData();
+                    if (this.engineModule.fieldList) {
+                        this.refreshPageData();
+                    } else {
+                        this.initialLoad();
+                    }
                 }
                 break;
             case 'pagerSettings':
             case 'enablePaging':
                 this.notify(events.initPivotPager, this);
+                this.initialLoad();
                 break;
             case 'cellTemplate':
                 this.cellTemplateFn = this.templateParser(this.cellTemplate);
@@ -3823,6 +3843,19 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             case 'tooltipTemplate':
                 this.tooltipTemplateFn = this.templateParser(this.tooltipTemplate);
                 isRequireRefresh = true;
+                break;
+            case 'allowCalculatedField':
+                if (this.pivotFieldListModule) {
+                    this.pivotFieldListModule.allowCalculatedField = this.allowCalculatedField;
+                }
+                break;
+            case 'allowDeferLayoutUpdate':
+                if (this.pivotFieldListModule) {
+                    this.pivotFieldListModule.allowDeferLayoutUpdate = this.allowDeferLayoutUpdate;
+                }
+                break;
+            case 'allowGrouping':
+                this.refresh();
                 break;
             }
         }
@@ -3922,7 +3955,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.toolbar || this.allowGrouping || this.gridSettings.contextMenuItems) {
             this.notify(events.uiUpdate, this);
             if (this.pivotFieldListModule && this.allowDeferLayoutUpdate) {
-                this.pivotFieldListModule.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
+                this.pivotFieldListModule.clonedDataSource = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
             }
         }
         if (this.allowConditionalFormatting) {
@@ -4850,9 +4883,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
                 if (this.grid.element.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV)) {
-                    if (mCnt.parentElement.scrollHeight !== mCnt.scrollHeight) {
-                        mCnt.style.overflowY = 'hidden';
-                    } else {
+                    if (mCnt.parentElement.scrollHeight === mCnt.scrollHeight) {
                         mCnt.style.overflowY = '';
                     }
                 }
@@ -6055,9 +6086,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
                     pivot.allowServerDataBinding = true;
                 }
-                pivot.pivotCommon.engineModule = pivot.dataType === 'olap' ? pivot.olapEngineModule : pivot.engineModule;
-                pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings as IDataOptions;
-
+                if (pivot.pivotCommon) {
+                    pivot.pivotCommon.engineModule = pivot.dataType === 'olap' ? pivot.olapEngineModule : pivot.engineModule;
+                    pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings as IDataOptions;
+                }
                 pivot.renderPivotGrid();
             });
         }
@@ -6202,8 +6234,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         const format: IConditionalFormatSettings[] = this.dataSourceSettings.conditionalFormatSettings;
                         for (let k: number = 0; k < format.length; k++) {
                             if ((format[k as number].applyGrandTotals === true || isNullOrUndefined(format[k as number].applyGrandTotals))
-                                ? true : (pivotValues[i as number][j as number] as IAxisSet).rowHeaders !== '' &&
-                                (pivotValues[i as number][j as number] as IAxisSet).columnHeaders !== '') {
+                                ? true : !(pivotValues[i as number][j as number] as IAxisSet).isGrandSum) {
                                 if (this.checkCondition(
                                     (pivotValues[i as number][j as number] as IAxisSet).value,
                                     format[k as number].conditions, format[k as number].value1, format[k as number].value2)) {

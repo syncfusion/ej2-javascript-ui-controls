@@ -1,3 +1,5 @@
+import { Ajax, loadCldr } from '@syncfusion/ej2-base';
+
 /**
  * Represents the class which contains Helper functions to test component.
  */
@@ -46,5 +48,17 @@ export class TestHelper {
 
     public eventHandler(eventName: string, callback: any): void {
         this.getInstance()[eventName] =  callback;
+    }
+
+    public loadCultureFiles(locales: string[]): void {
+        const files: string[] = ['ca-gregorian', 'numbers', 'timeZoneNames', 'currencies'];
+        locales.forEach((locale: string) => {
+            for (let prop of files) {
+                const url: string = `base/spec/common/cldr-data/main/${locale}/${prop}.json`;
+                const ajax: Ajax = new Ajax(url, 'GET', false);
+                ajax.onSuccess = (value: string) => loadCldr(JSON.parse(value));
+                ajax.send();
+            }
+        });
     }
 }

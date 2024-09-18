@@ -1,5 +1,5 @@
 import { Chart } from '../chart';
-import { EventHandler, Browser, createElement } from '@syncfusion/ej2-base';
+import { EventHandler, Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getRectLocation, minMax, getElement, ChartLocation, RectOption } from '../../common/utils/helper';
 import { Rect, measureText, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Axis } from '../axis/axis';
@@ -12,9 +12,10 @@ import { CartesianAxisLayoutPanel } from '../axis/cartesian-panel';
 import { IZoomCompleteEventArgs, ITouches, IZoomAxisRange, IAxisData, IZoomingEventArgs } from '../../chart/model/chart-interface';
 import { zoomComplete, onZooming } from '../../common/model/constants';
 import { withInBounds } from '../../common/utils/helper';
+import { Indexes } from '../../common/model/base';
 
 /**
- * `Zooming` module handles the zooming for chart.
+ * The `Zooming` module handles zooming functionality for charts.
  */
 export class Zoom {
     private chart: Chart;
@@ -54,6 +55,8 @@ export class Zoom {
     private wheelEvent: string;
     private cancelEvent: string;
     private zoomCompleteEvtCollection: IZoomCompleteEventArgs[] = [];
+    /** @private */
+    public startPanning: boolean = false;
 
     /**
      * Constructor for Zooming module.
@@ -94,6 +97,7 @@ export class Zoom {
      * @param {Chart} chart - The chart instance.
      * @param {boolean} isTouch - Indicates whether the event is a touch event.
      * @returns {void}
+     * @private
      */
     public renderZooming(e: PointerEvent | TouchEvent, chart: Chart, isTouch: boolean): void {
         this.calculateZoomAxesRange(chart);
@@ -127,6 +131,17 @@ export class Zoom {
                 rect.width = areaBounds.width;
                 rect.x = areaBounds.x;
             }
+            if (chart.tooltipModule) {
+                chart.tooltipModule.removeTooltip(0);
+                for (const series of chart.visibleSeries) {
+                    if (!isNullOrUndefined(series) && (series.marker.visible || chart.tooltip.shared)) {
+                        chart.markerRender.removeHighlightedMarker(series, null, true);
+                    }
+                }
+            }
+            if (chart.crosshairModule) {
+                chart.crosshairModule.removeCrosshair(0);
+            }
             const svg: Element = chart.enableCanvas ? document.getElementById(this.elementId + '_tooltip_svg') : chart.svgObject;
             svg.appendChild(chart.svgRenderer.drawRectangle(new RectOption(
                 this.elementId + '_ZoomArea', chart.themeStyle.selectionRectFill,
@@ -143,6 +158,7 @@ export class Zoom {
         let currentScale: number;
         let offset: number;
         this.isZoomed = true;
+        this.startPanning = true;
         this.offset = !chart.delayRedraw ? chart.chartAxisLayoutPanel.seriesClipRect : this.offset;
         chart.delayRedraw = true;
         this.zoomCompleteEvtCollection = [];
@@ -246,11 +262,51 @@ export class Zoom {
                     chart.createChartSvg();
                 }
                 else {
-                    chart.removeSvg();
+                    const zoomArea: Element = getElement(chart.element.id + '_ZoomArea');
+                    if (zoomArea) {
+                        zoomArea.remove();
+                    }
+                    const zoomToolBar: Element = getElement(chart.element.id + '_Zooming_KitCollection');
+                    if (zoomToolBar) {
+                        zoomToolBar.remove();
+                    }
+                    if (chart.tooltipModule) {
+                        if (getElement(chart.element.id + '_tooltip')) {
+                            getElement(chart.element.id + '_tooltip').remove();
+                        }
+                        for (const series of chart.visibleSeries) {
+                            if (!isNullOrUndefined(series) && (series.marker.visible || chart.tooltip.shared || series.type === 'Scatter' || series.type === 'Bubble')) {
+                                chart.markerRender.removeHighlightedMarker(series, null, true);
+                            }
+                        }
+                    }
+                }
+                const chartDuration: number = chart.duration;
+                if (!(this.isPanning && (chart.isChartDrag || this.startPanning)) && !chart.enableCanvas) {
+                    chart.duration = 600;
+                    chart.redraw = this.zooming.enableAnimation;
+                    chart.zoomRedraw = this.zooming.enableAnimation;
+                }
+                let highlightDataIndexes: Indexes[] = [];
+                if (chart.highlightModule && (chart.legendSettings.enableHighlight || chart.highlightMode !== 'None') && chart.highlightModule.highlightDataIndexes) {
+                    highlightDataIndexes = chart.highlightModule.highlightDataIndexes;
                 }
                 // chart.enableCanvas ? chart.createChartSvg() : chart.removeSvg();
                 chart.refreshAxis();
                 chart.refreshBound();
+                if (chart.highlightModule && (chart.legendSettings.enableHighlight || chart.highlightMode !== 'None') && highlightDataIndexes) {
+                    chart.highlightModule.highlightDataIndexes = highlightDataIndexes;
+                }
+                if (!this.isZoomed) {
+                    chart.zoomRedraw = this.zooming.enableAnimation;
+                }
+                this.startPanning = false;
+                chart.redraw = false;
+                chart.duration = chartDuration;
+                if (this.toolkit.isZoomed) {
+                    chart.zoomRedraw = false;
+                    this.toolkit.isZoomed = false;
+                }
             }
         }
     }
@@ -304,6 +360,7 @@ export class Zoom {
             if (!argsData.cancel) {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
+                chart.zoomRedraw = this.zooming.enableAnimation;
                 this.zoomCompleteEvtCollection.push(argsData);
             }
             zoomedAxisCollections.push({
@@ -377,6 +434,7 @@ export class Zoom {
      * @param {Chart} chart - The chart instance.
      * @param {AxisModel[]} axes - The axes in the chart.
      * @returns {void}
+     * @private
      */
     public performMouseWheelZooming(e: WheelEvent, mouseX: number, mouseY: number, chart: Chart, axes: AxisModel[]): void {
         const direction: number = (this.browserName === 'mozilla' && !this.isPointer) ?
@@ -424,6 +482,7 @@ export class Zoom {
                 if (!argsData.cancel) {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
+                    chart.zoomRedraw = this.zooming.enableAnimation;
                     this.zoomCompleteEvtCollection.push(argsData);
                 }
             }
@@ -460,6 +519,7 @@ export class Zoom {
      * @param {TouchEvent} e - The touch event.
      * @param {Chart} chart - The chart instance.
      * @returns {boolean} - Indicates whether pinch zooming is performed.
+     * @private
      */
     public performPinchZooming(e: TouchEvent, chart: Chart): boolean {
         if ((this.zoomingRect.width > 0 && this.zoomingRect.height > 0) || (chart.startMove && chart.crosshair.enable)) {
@@ -557,6 +617,7 @@ export class Zoom {
                 if (!argsData.cancel) {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
+                    chart.zoomRedraw = this.zooming.enableAnimation;
                     this.zoomCompleteEvtCollection.push(argsData);
                 }
                 zoomedAxisCollection.push({
@@ -650,9 +711,9 @@ export class Zoom {
         const areaBounds: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
         const spacing: number = 10;
         const render: SvgRenderer | CanvasRenderer = chart.svgRenderer;
-        const length: number = this.isDevice ? 1 : toolboxItems.length;
+        const length: number = this.isDevice ? (toolboxItems.length === 0 ? 0 : 1) : toolboxItems.length;
         const iconSize: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}).width : 16;
-        const height: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}).height : chart.theme.indexOf('Fluent2') > -1 ? 18 : 22;
+        const height: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}).height : chart.theme.indexOf('Fluent2') > -1 || chart.theme.indexOf('Bootstrap5') > -1 ? 18 : 22;
         const width: number = (length * iconSize) + ((length + 1) * spacing) + ((length - 1) * spacing);
         const transX: number = areaBounds.x + areaBounds.width - width - spacing;
         const transY: number = (areaBounds.y + spacing);
@@ -673,10 +734,10 @@ export class Zoom {
         });
         this.toolkitElements.appendChild(defElement);
         const zoomFillColor: string = this.chart.theme === 'Tailwind' ? '#F3F4F6' : this.chart.theme === 'Fluent' ? '#F3F2F1' :
-            (this.chart.theme === 'Material3' ? '#FFFFFF' : this.chart.theme === 'Material3Dark' ? '#1C1B1F' : this.chart.theme === 'Fluent2' ? '#F5F5F5' : this.chart.theme === 'Fluent2Dark' ? '#141414' : '#fafafa');
+            (this.chart.theme === 'Material3' ? '#FFFFFF' : this.chart.theme === 'Material3Dark' ? '#1C1B1F' : this.chart.theme === 'Fluent2' ? '#F5F5F5' : this.chart.theme === 'Fluent2Dark' ? '#141414' : chart.theme === 'Fluent2HighContrast' ?  '#000000' : chart.theme === 'Bootstrap5' ? '#E9ECEF' : chart.theme === 'Bootstrap5Dark' ? '#343A40' : '#fafafa');
         this.toolkitElements.appendChild(render.drawRectangle(new RectOption(
             this.elementId + '_Zooming_Rect', zoomFillColor, { color: 'transparent', width: 1 },
-            1, new Rect(0, 0, width, (height + (spacing * 2))), 4, 4
+            1, new Rect(0, 0, width, (height + (spacing * 2))), this.chart.theme.indexOf('Bootstrap5') > -1 ? 1 : 4, this.chart.theme.indexOf('Bootstrap5') > -1 ? 1 : 4
         )) as HTMLElement);
         const outerElement: Element = render.drawRectangle(new RectOption(
             this.elementId + '_Zooming_Rect', zoomFillColor, { color: 'transparent', width: 1 },
@@ -685,11 +746,11 @@ export class Zoom {
         if (this.chart.theme === 'Tailwind' || this.chart.theme === 'TailwindDark') {
             outerElement.setAttribute('box-shadow', '0px 1px 2px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1)');
         }
-        else if (this.chart.theme === 'Material3' || this.chart.theme === 'Material3Dark' || this.chart.theme === 'Fluent2' || this.chart.theme === 'Fluent2Dark') {
+        else if (this.chart.theme === 'Material3' || this.chart.theme === 'Material3Dark' || this.chart.theme === 'Fluent2' || this.chart.theme === 'Fluent2Dark' || this.chart.theme.indexOf('Bootstrap5') > -1) {
             outerElement.setAttribute('filter', 'drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.15)) drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3))');
-            outerElement.setAttribute('fill', this.chart.theme === 'Material3' ? '#FFFFFF' : this.chart.theme === 'Fluent2' ? '#F5F5F5' : '#1C1B1F');
-            outerElement.setAttribute('rx', '4px');
-            outerElement.setAttribute('ry', '4px');
+            outerElement.setAttribute('fill', this.chart.theme === 'Material3' ? '#FFFFFF' : this.chart.theme === 'Fluent2' ? '#F5F5F5' : this.chart.theme === 'Bootstrap5' ? '#E9ECEF' : this.chart.theme === 'Bootstrap5Dark' ? '#343A40' : '#1C1B1F');
+            outerElement.setAttribute('rx', this.chart.theme.indexOf('Bootstrap5') > -1 ? '1px' : '4px');
+            outerElement.setAttribute('ry', this.chart.theme.indexOf('Bootstrap5') > -1 ? '1px' : '4px');
             outerElement.setAttribute('opacity', '1');
         }
         else {
@@ -701,7 +762,7 @@ export class Zoom {
         for (let i: number = 1; i <= length; i++) {
             currentItem = toolboxItems[i - 1];
             element = render.createGroup({
-                transform: 'translate(' + xPosition + ',' + (this.isDevice ? spacing : chart.theme.indexOf('Fluent2') > -1 ? (spacing + 1) : (spacing + 3)) + ')'
+                transform: 'translate(' + xPosition + ',' + (this.isDevice ? spacing : chart.theme.indexOf('Fluent2') > -1 || chart.theme.indexOf('Bootstrap5') > -1 ? (spacing + 1) : (spacing + 3)) + ')'
             });
             // for desktop toolkit hight is 32 and top padding is 8 icon size 16
             switch (currentItem) {
@@ -748,6 +809,7 @@ export class Zoom {
      * @param {Chart} chart - The chart instance.
      * @param {AxisModel[]} axes - The axis models.
      * @returns {void}
+     * @private
      */
     public applyZoomToolkit(chart: Chart, axes: AxisModel[]): void {
         const showToolkit: boolean = this.isAxisZoomed(axes);
@@ -774,6 +836,7 @@ export class Zoom {
      * @param {AxisModel[]} axes - The axis models.
      * @param {IZoomCompleteEventArgs[]} zoomCompleteEventCollection - The collection of zoom complete events.
      * @returns {void}
+     * @private
      */
     public zoomCancel(axes: AxisModel[], zoomCompleteEventCollection: IZoomCompleteEventArgs[]): void {
         for (const zoomCompleteEvent of (zoomCompleteEventCollection as IZoomCompleteEventArgs[])) {
@@ -793,6 +856,7 @@ export class Zoom {
      *
      * @param {AxisModel[]} axes - The axis models.
      * @returns {boolean} - True if any axis is zoomed; otherwise, false.
+     * @private
      */
     public isAxisZoomed(axes: AxisModel[]): boolean {
         let showToolkit: boolean = false;
@@ -819,8 +883,9 @@ export class Zoom {
      * Adds event listeners for the chart.
      *
      * @returns {void}
+     * @private
      */
-    public addEventListener(): void {
+    private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
         EventHandler.add(this.chart.element, this.wheelEvent, this.chartMouseWheel, this);
         this.chart.on(Browser.touchMoveEvent, this.mouseMoveHandler, this);
@@ -832,6 +897,7 @@ export class Zoom {
      * Remove event listeners for the chart.
      *
      * @returns {void}
+     * @private
      */
     public removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -847,6 +913,7 @@ export class Zoom {
      *
      * @param {WheelEvent} e - The wheel event.
      * @returns {boolean} - Returns false.
+     * @private
      */
     public chartMouseWheel(e: WheelEvent): boolean {
         const chart: Chart = this.chart;
@@ -963,6 +1030,7 @@ export class Zoom {
      * @param {PointerEvent} e - The pointer event.
      * @param {TouchList} touches - The touch list.
      * @returns {ITouches[]} - The updated touch list.
+     * @private
      */
     public addTouchPointer(touchList: ITouches[], e: PointerEvent, touches: TouchList): ITouches[] {
         if (touches) {

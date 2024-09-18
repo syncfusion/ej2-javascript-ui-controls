@@ -7,6 +7,7 @@ import { DataPoint } from '../utils/helper';
 import { FontModel } from '../../common/model/base-model';
 import { ChartTheme } from '../../common/utils/enum';
 import { Rect, Size } from '@syncfusion/ej2-svg-base';
+import { ItemModel } from '@syncfusion/ej2-navigations';
 
 /**
  * interface for load event
@@ -92,9 +93,9 @@ export interface IRangeStyle {
  */
 
 export interface IRangeEventArgs {
-    /** Defines the name of the event */
+    /** Defines the name of the event. */
     name: string;
-    /** Defined the whether event has to trigger */
+    /** Defines the event's cancellation status. */
     cancel: boolean;
 }
 
@@ -124,4 +125,13 @@ export interface IResizeRangeNavigatorEventArgs  {
     currentSize: Size;
     /** Defines the range navigator instance. */
     rangeNavigator: RangeNavigator;
+}
+
+export interface IRangeSelectorRenderEventArgs extends IRangeEventArgs {
+    /** Defines selector collections. */
+    selector: ItemModel[];
+    /** Enable custom format for calendar. */
+    enableCustomFormat: boolean;
+    /** Content for calendar format. */
+    content: string;
 }

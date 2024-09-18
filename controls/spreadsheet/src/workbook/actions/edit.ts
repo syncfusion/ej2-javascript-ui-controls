@@ -155,6 +155,9 @@ export class WorkbookEdit {
             }
         } else {
             cell.value = value;
+            if (cell.formattedText) {
+                delete cell.formattedText;
+            }
         }
         this.parent.setUsedRange(range[0], range[1], sheet);
         if (this.parent.chartColl.length && !this.parent.isEdit && !isRandomFormula) {

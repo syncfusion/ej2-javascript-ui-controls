@@ -56,7 +56,7 @@
           padding: $breadcrumb-padding;
         }
 
-        @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
+        @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' or $breadcrumb-skin == 'tailwind' {
           &:focus {
             padding: $breadcrumb-item-focus-padding;
           }
@@ -69,7 +69,7 @@
         }
       }
 
-      @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
+      @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' or $breadcrumb-skin == 'tailwind' {
         &.e-icon-item .e-breadcrumb-text:focus {
           padding: $breadcrumb-icon-only-item-focus-padding;
         }
@@ -100,7 +100,7 @@
           border: 1px solid transparent;
         }
 
-        @if $breadcrumb-skin == 'bootstrap5' {
+        @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' {
           text-decoration: underline;
         }
 
@@ -113,7 +113,8 @@
             text-decoration: underline;
           }
 
-          & .e-breadcrumb-icon.e-home {
+          & .e-breadcrumb-icon.e-home,
+          & .e-breadcrumb-icon {
             @if $skin-name == 'fluent2' {
               color: $toolbar-icon-color;
             }
@@ -151,6 +152,9 @@
           @else {
             text-decoration: underline;
           }
+          @if $skin-name == 'bootstrap5.3' {
+            box-shadow: none !important; /* stylelint-disable-line declaration-no-important */
+          }
 
           & .e-breadcrumb-icon.e-home {
             @if $skin-name == 'fluent2' {
@@ -171,6 +175,7 @@
           @if $skin-name == 'fluent2' {
             box-shadow: $secondary-shadow-focus;
             color: $breadcrumb-item-color !important; /* stylelint-disable-line declaration-no-important */
+            background-color: transparent;
 
             & .e-breadcrumb-icon,
             &.e-breadcrumb-url .e-breadcrumb-icon {
@@ -201,7 +206,7 @@
           text-decoration: none;
         }
 
-        @if $breadcrumb-skin == 'bootstrap5' {
+        @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' {
           &::before {
             vertical-align: middle;
           }
@@ -223,7 +228,7 @@
         padding: $breadcrumb-icon-item-padding;
       }
 
-      @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' or $breadcrumb-skin == 'bootstrap' {
+      @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' or $breadcrumb-skin == 'tailwind' or $breadcrumb-skin == 'bootstrap' {
         &.e-icon-item {
           .e-breadcrumb-text {
             padding: $breadcrumb-icon-only-item-padding;
@@ -237,7 +242,12 @@
       }
 
       &.e-disabled {
-        opacity: 1;
+        @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' {
+          opacity: $breadcrumb-disabled-item-opacity;
+        }
+        @else{
+          opacity: 1;
+        }
         pointer-events: none;
       }
     }
@@ -263,7 +273,7 @@
       padding-right: $breadcrumb-sibling-separator-padding;
     }
 
-    @if $breadcrumb-skin == 'bootstrap5' {
+    @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' {
       .e-icon-item + .e-breadcrumb-separator {
         padding-left: $breadcrumb-icon-only-item-next-separator-padding-left;
       }
@@ -282,8 +292,11 @@
         }
       }
 
-      @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'FluentUI' {
+      @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' or $breadcrumb-skin == 'FluentUI' {
         margin-top: 2px;
+      }
+      @if $breadcrumb-skin == 'bootstrap5.3' {
+        border-radius: 4px;
       }
     }
 
@@ -406,166 +419,9 @@
     }
   }
 
-  .e-bigger.e-breadcrumb-popup,
-  .e-bigger .e-breadcrumb-popup {
-    .e-breadcrumb-text {
-      font-size: $breadcrumb-bigger-font-size;
-      height: $breadcrumb-popup-item-bigger-height;
-      line-height: $breadcrumb-popup-item-bigger-height;
-      @if $skin-name == 'fluent2' {
-        padding: 8px 8px 10px !important; /* stylelint-disable-line declaration-no-important */
-      }
-
-      .e-breadcrumb-icon {
-        font-size: $breadcrumb-icon-bigger-font-size;
-        padding-right: $breadcrumb-icon-bigger-right-padding;
-      }
-    }
-
-    .e-icon-item .e-breadcrumb-text .e-breadcrumb-icon {
-      padding: 0;
-    }
-
-    &.e-icon-right,
-    .e-icon-right,
-    &.e-rtl {
-      .e-breadcrumb-icon {
-        padding-left: $breadcrumb-icon-bigger-right-padding;
-        padding-right: 0;
-      }
-    }
-
-    &.e-rtl.e-icon-right .e-breadcrumb-icon,
-    &.e-rtl .e-icon-right .e-breadcrumb-icon {
-      padding-left: 0;
-      padding-right: $breadcrumb-icon-bigger-right-padding;
-    }
-  }
-
-  .e-bigger.e-breadcrumb,
-  .e-bigger .e-breadcrumb {
-    .e-breadcrumb-item {
-      .e-breadcrumb-text {
-        @if $skin-name == 'FluentUI' {
-          padding: 8px;
-        }
-        @else {
-          padding: $breadcrumb-bigger-padding;
-        }
-
-        @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
-          &:focus {
-            padding: $breadcrumb-item-focus-bigger-padding;
-          }
-        }
-      }
-
-      @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
-        &.e-icon-item .e-breadcrumb-text:focus {
-          padding: $breadcrumb-icon-only-item-focus-bigger-padding;
-        }
-      }
-
-      @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' or $breadcrumb-skin == 'bootstrap' {
-        &.e-icon-item .e-breadcrumb-text {
-          padding: $breadcrumb-icon-only-item-bigger-padding;
-        }
-      }
-
-      .e-breadcrumb-text {
-        font-size: $breadcrumb-bigger-font-size;
-
-        .e-breadcrumb-icon {
-          font-size: $breadcrumb-icon-bigger-font-size;
-          padding-right: $breadcrumb-icon-bigger-right-padding;
-
-          @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
-            padding-left: $breadcrumb-icon-bigger-right-padding;
-          }
-        }
-
-        .e-breadcrumb-icon.e-icons.e-home {
-          @if $breadcrumb-skin == 'bootstrap' {
-            font-size: 13px;
-          }
-        }
-      }
-
-      &.e-icon-item .e-breadcrumb-text .e-breadcrumb-icon {
-        padding: $breadcrumb-icon-item-padding;
-      }
-    }
-
-    .e-breadcrumb-separator {
-      font-size: $breadcrumb-bigger-font-size;
-      padding: $breadcrumb-separator-bigger-padding;
-
-      + .e-breadcrumb-separator {
-        padding-left: $breadcrumb-sibling-separator-padding;
-      }
-    }
-
-    &.e-rtl .e-breadcrumb-separator + .e-breadcrumb-separator {
-      padding-left: nth($breadcrumb-separator-bigger-padding, 2);
-    }
-
-    .e-breadcrumb-collapsed,
-    .e-breadcrumb-menu {
-      font-size: $breadcrumb-collapsed-icon-bigger-font-size;
-      padding: $breadcrumb-collapsed-icon-bigger-padding;
-      @if $breadcrumb-skin == 'fluent2' {
-        line-height: 16px;
-      }
-
-      @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
-        &:focus {
-          padding: $breadcrumb-collapsed-icon-focus-bigger-padding;
-        }
-      }
-    }
-
-    &.e-icon-right,
-    .e-icon-right,
-    &.e-rtl {
-      .e-breadcrumb-text .e-breadcrumb-icon {
-        padding-left: $breadcrumb-icon-bigger-right-padding;
-        padding-right: 0;
-
-        @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
-          padding-right: $breadcrumb-icon-bigger-right-padding;
-        }
-      }
-    }
-
-    &.e-rtl .e-icon-right .e-breadcrumb-text .e-breadcrumb-icon {
-      padding-left: 0;
-      padding-right: $breadcrumb-icon-bigger-right-padding;
-
-      @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
-        padding-left: $breadcrumb-icon-bigger-right-padding;
-      }
-    }
-  }
-
   @if $breadcrumb-skin == 'fluent2' {
     .e-breadcrumb .e-breadcrumb-item a.e-breadcrumb-text {
       border-radius: 4px;
-    }
-  
-    .e-bigger .e-breadcrumb .e-breadcrumb-item .e-breadcrumb-text .e-anchor-wrap {
-      line-height: 22px !important; /* stylelint-disable-line declaration-no-important */
-    }
-  
-    .e-bigger .e-breadcrumb .e-breadcrumb-separator {
-      line-height: 16px !important; /* stylelint-disable-line declaration-no-important */
-    }
-  
-    .e-bigger .e-breadcrumb .e-breadcrumb-item.e-icon-item .e-breadcrumb-text {
-      padding: 12px !important; /* stylelint-disable-line declaration-no-important */
-    }
-  
-    .e-bigger .e-breadcrumb-popup .e-breadcrumb-item {
-      margin: 6px !important; /* stylelint-disable-line declaration-no-important */
     }
 
     .e-breadcrumb .e-breadcrumb-item.e-icon-item a.e-breadcrumb-text:active .e-breadcrumb-icon {

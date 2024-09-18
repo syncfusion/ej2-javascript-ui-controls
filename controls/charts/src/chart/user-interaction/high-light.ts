@@ -9,7 +9,7 @@ import { Series } from '../series/chart-series';
 import { Selection } from './selection';
 
 /**
- * `Highlight` module handles the selection for chart.
+ * The `Highlight` module manages the highlighting of chart elements.
  *
  * @private
  */

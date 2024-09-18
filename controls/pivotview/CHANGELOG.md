@@ -2,101 +2,17 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 27.1.48 (2024-09-18)
 
-### PivotTable
+### Pivot Table
 
-#### Bug fixes
+#### Features
 
-- The width of pivot table column headers will now be updated properly when the pivot table width is specified in 'px'.
-
-## 26.2.12 (2024-09-03)
-
-### PivotTable
+- `#I517509` - The conditional formatting UI now includes an option that allows the user to apply conditional formatting to the grand total values dynamically. Check out the [demo](https://ej2.syncfusion.com/demos/#/fluent2/pivot-table/conditional-formatting.html) here.
 
 #### Bug fixes
 
-- Pivot table column widths will now be updated properly when resizing the browser.
-
-## 26.2.11 (2024-08-27)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#I622512` - Member sorting will now be performed correctly for negative numbers when using number grouping in the pivot table.
-- `#I620602` - The report settings will now be maintained correctly when switching between reports with grouping applied in the pivot table.
-
-## 26.2.10 (2024-08-20)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#I612547` - The column width applied using the `columnRender` event will now be properly persisted when resizing the pivot table.
-
-## 26.2.9 (2024-08-13)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#I616730` - Value sorting will no longer be performed unintentionally when resizing the column in the pivot table.
-- `#I617149` - The `allowRepeatHeader` option will now work properly when exporting the pivot table as a PDF document.
-
-## 26.2.8 (2024-08-06)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#I610461` - "Autofit" will now be applied properly even after the column header text has been customized.
-
-## 26.2.4 (2024-07-24)
-
-### PivotTable
-
-#### New features
-
-- `#F188060` - Implemented support for rendering all pivot table features within the "Ant Design" modal.
-
-## 26.1.42 (2024-07-16)
-
-### PivotTable
-
-#### Bug fixes
-
-- When using value sorting with autofit in the pivot table with the Grouping Bar UI, the column header text will now be visible.
-
-## 26.1.41 (2024-07-09)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#F187996` - When dynamically updating the data source with the static field list, grouping will now work properly in the pivot table.
-- `#I591197` - Column header text will now be visible when using value sorting with autofit in the pivot table.
-
-## 26.1.40 (2024-07-02)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#I594323` - In the pivot field list UI, date group fields are now properly displayed under their parent field name.
-
-## 26.1.39 (2024-06-25)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#I596628` - The pivot table will now be properly rendered when the data source contains a special character.
-- `#I595763` - The pivot table will now be properly exported as an Excel document, with the calculated field using the "Standard" format string.
-- `#I592737` - When exporting a pivot table to an Excel document, it will now be properly formatted.
-- `#I597092` - When you double-click on the row headers, the pivot table will now be rendered properly.
-- `#I598656` - When exporting a pivot table as an excel document, the localization text is now properly applied to the column grand total.
-- `#I593440` - When using number grouping in the pivot table, grouped headers will now be properly sorted.
+- `#I625045` - The pivot table will now be rendered properly while dynamically updating the `dataSource` and `pageSettings`.
 
 ## 26.1.35 (2024-06-11)
 

@@ -1,0 +1,96 @@
+@include export-module('progress-button-bigger') {
+  #{if(&, '&', '*')}.e-bigger .e-progress-btn,
+  #{if(&, '&', '*')}.e-bigger.e-progress-btn {
+    &.e-progress-active:not(.e-hide-spinner) {
+      &.e-spin-left:not(.e-round) {
+        .e-spinner {
+          padding-right: $progress-btn-spinner-padding-bigger;
+        }
+
+        &.e-rtl {
+          .e-spinner {
+            padding-left: $progress-btn-spinner-padding-bigger;
+            padding-right: 0;
+          }
+        }
+      }
+
+      &.e-spin-right:not(.e-round) {
+        .e-spinner {
+          padding-left: $progress-btn-spinner-padding-bigger;
+        }
+
+        &.e-rtl {
+          .e-spinner {
+            padding-left: 0;
+            padding-right: $progress-btn-spinner-padding-bigger;
+          }
+        }
+      }
+
+      &.e-spin-top {
+        padding-bottom: $progress-btn-bigger-spin-btn-padding;
+        padding-top: $progress-btn-bigger-spin-btn-padding;
+
+        .e-spinner {
+          padding-bottom: $progress-btn-spinner-padding-bigger;
+        }
+      }
+
+      &.e-spin-bottom {
+        padding-bottom: $progress-btn-bigger-spin-btn-padding;
+        padding-top: $progress-btn-bigger-spin-btn-padding;
+
+        .e-spinner {
+          padding-top: $progress-btn-spinner-padding-bigger;
+        }
+      }
+
+      &.e-small {
+        &.e-spin-left:not(.e-round) {
+          .e-spinner {
+            padding-right: $progress-btn-spinner-padding-bigger-small;
+          }
+
+          &.e-rtl {
+            .e-spinner {
+              padding-left: $progress-btn-spinner-padding-bigger-small;
+              padding-right: 0;
+            }
+          }
+        }
+
+        &.e-spin-right:not(.e-round) {
+          .e-spinner {
+            padding-left: $progress-btn-spinner-padding-bigger-small;
+          }
+
+          &.e-rtl {
+            .e-spinner {
+              padding-left: 0;
+              padding-right: $progress-btn-spinner-padding-bigger-small;
+            }
+          }
+        }
+
+        &.e-spin-top {
+          padding-bottom: $progress-btn-bigger-small-spin-btn-padding;
+          padding-top: $progress-btn-bigger-small-spin-btn-padding;
+
+          .e-spinner {
+            padding-bottom: $progress-btn-spinner-padding-bigger-small;
+          }
+        }
+
+        &.e-spin-bottom {
+          padding-bottom: $progress-btn-bigger-small-spin-btn-padding;
+          padding-top: $progress-btn-bigger-small-spin-btn-padding;
+
+          .e-spinner {
+            padding-top: $progress-btn-spinner-padding-bigger-small;
+          }
+        }
+      }
+    }
+  }
+}

@@ -1375,19 +1375,22 @@ export class PivotChart {
 
     public updateView(): void {
         if (this.parent.grid && this.parent.chart && this.parent.showToolbar) {
+            const groupingTable: HTMLElement = this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement;
+            const groupingChartTable: HTMLElement = this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement;
             if (this.parent.currentView === 'Table') {
                 this.parent.grid.element.style.display = '';
                 this.parent.chart.element.style.display = 'none';
-                if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
-                    this.parent.element.querySelector('.e-pivot-grouping-bar') &&
-                    this.parent.element.querySelector('.e-chart-grouping-bar')) {
-                    const groupingTable: HTMLElement = this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement;
-                    groupingTable.style.display = '';
-                    if (groupingTable && groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.parent.groupingBarModule.gridPanel != null &&
-                        !this.parent.groupingBarModule.gridPanel.isDestroyed) {
-                        this.parent.groupingBarModule.gridPanel.refreshOverflow();
+                if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
+                    if (groupingTable) {
+                        groupingTable.style.display = '';
+                        if (groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) &&
+                            this.parent.groupingBarModule.gridPanel != null && !this.parent.groupingBarModule.gridPanel.isDestroyed) {
+                            this.parent.groupingBarModule.gridPanel.refreshOverflow();
+                        }
                     }
-                    (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = 'none';
+                    if (groupingChartTable) {
+                        groupingChartTable.style.display = 'none';
+                    }
                 }
                 if (this.parent.chartSettings.enableMultipleAxis && this.parent.chartSettings.enableScrollOnMultiAxis) {
                     (this.parent.element.querySelector('.e-pivotchart') as HTMLElement).style.display = 'none';
@@ -1395,15 +1398,16 @@ export class PivotChart {
             } else {
                 this.parent.grid.element.style.display = 'none';
                 this.parent.chart.element.style.display = '';
-                if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
-                    this.parent.element.querySelector('.e-pivot-grouping-bar') &&
-                    this.parent.element.querySelector('.e-chart-grouping-bar')) {
-                    (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = 'none';
-                    const groupingChartTable: HTMLElement = this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement;
-                    groupingChartTable.style.display = '';
-                    if (groupingChartTable && groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) &&
-                        this.parent.groupingBarModule.chartPanel != null && !this.parent.groupingBarModule.chartPanel.isDestroyed) {
-                        this.parent.groupingBarModule.chartPanel.refreshOverflow();
+                if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
+                    if (groupingTable) {
+                        groupingTable.style.display = 'none';
+                    }
+                    if (groupingChartTable) {
+                        groupingChartTable.style.display = '';
+                        if (groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) &&
+                            this.parent.groupingBarModule.chartPanel != null && !this.parent.groupingBarModule.chartPanel.isDestroyed) {
+                            this.parent.groupingBarModule.chartPanel.refreshOverflow();
+                        }
                     }
                 }
                 if (this.parent.chartSettings.enableMultipleAxis && this.parent.chartSettings.enableScrollOnMultiAxis) {

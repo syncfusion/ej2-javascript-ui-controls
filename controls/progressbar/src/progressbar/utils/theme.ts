@@ -250,9 +250,9 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
         break;
     case 'Bootstrap5':
         style = {
-            linearTrackColor: '#E9ECEF',
+            linearTrackColor: '#DEE2E6',
             linearProgressColor: '#0D6EFD',
-            circularTrackColor: '#E9ECEF',
+            circularTrackColor: '#DEE2E6',
             circularProgressColor: '#0D6EFD',
             backgroundColor: 'transparent',
             progressOpacity: 1,
@@ -260,32 +260,32 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             bufferOpacity: 0.44,
             linearGapWidth: 4,
             circularGapWidth: 4,
-            linearTrackThickness: 16,
-            linearProgressThickness: 16,
-            circularTrackThickness: 4,
-            circularProgressThickness: 4,
-            tooltipFill: '#ffffff',
-            tooltipLightLabel: '#000000',
+            linearTrackThickness: 2,
+            linearProgressThickness: 2,
+            circularTrackThickness: 2,
+            circularProgressThickness: 2,
+            tooltipFill: '#000000E5',
+            tooltipLightLabel: '#FFFFFF',
             success: '#198754',
             danger: '#DC3545',
             warning: '#FFC107',
             info: '#0DCAF0',
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica Neue'
+                color: '#F9FAFB', fontFamily: 'Segoe UI'
             },
             linearLabelFont: {
-                size: '10', fontWeight: '400', color: '#0D6EFD', fontStyle: 'Normal', fontFamily: 'Helvetica Neue'
+                size: '10', fontWeight: '400', color: '#FFFFFF', fontStyle: 'Normal', fontFamily: 'Segoe UI'
             },
             circularLabelFont: {
-                size: '12', fontWeight: '500', color: '#0D6EFD', fontStyle: 'Normal', fontFamily: 'Helvetica Neue'
+                size: '12', fontWeight: '400', color: '#0D6EFD', fontStyle: 'Normal', fontFamily: 'Segoe UI'
             }
         };
         break;
     case 'Bootstrap5Dark':
         style = {
-            linearTrackColor: '#3B4248',
+            linearTrackColor: '#495057',
             linearProgressColor: '#0D6EFD',
-            circularTrackColor: '#3B4248',
+            circularTrackColor: '#495057',
             circularProgressColor: '#0D6EFD',
             backgroundColor: 'transparent',
             progressOpacity: 1,
@@ -293,24 +293,24 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             bufferOpacity: 0.4,
             linearGapWidth: 4,
             circularGapWidth: 4,
-            linearTrackThickness: 16,
-            linearProgressThickness: 16,
-            circularTrackThickness: 4,
-            circularProgressThickness: 4,
-            tooltipFill: '#ffffff',
-            tooltipLightLabel: '#000000',
-            success: '#21B26F',
-            danger: '#E4606D',
+            linearTrackThickness: 2,
+            linearProgressThickness: 2,
+            circularTrackThickness: 2,
+            circularProgressThickness: 2,
+            tooltipFill: '#FFFFFFE5',
+            tooltipLightLabel: '#212529',
+            success: '#198754',
+            danger: '#DC3545',
             warning: '#FFC107',
             info: '#0DCAF0',
             tooltipLabelFont: {
-                color: '#212529', fontFamily: 'Helvetica Neue'
+                color: '#212529', fontFamily: 'Segoe UI'
             },
             linearLabelFont: {
-                size: '10', fontWeight: '400', color: '#0D6EFD', fontStyle: 'Normal', fontFamily: 'Helvetica Neue'
+                size: '10', fontWeight: '400', color: '#FFFFFF', fontStyle: 'Normal', fontFamily: 'Segoe UI'
             },
             circularLabelFont: {
-                size: '12', fontWeight: '500', color: '#0D6EFD', fontStyle: 'Normal', fontFamily: 'Helvetica Neue'
+                size: '12', fontWeight: '400', color: '#0D6EFD', fontStyle: 'Normal', fontFamily: 'Segoe UI'
             }
         };
         break;
@@ -443,6 +443,39 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             },
             circularLabelFont: {
                 size: '12', fontWeight: '500', color: '#FFFFFF', fontStyle: 'Normal', fontFamily: 'Segoe UI'
+            }
+        };
+        break;
+    case 'Fluent2HighContrast':
+        style = {
+            linearTrackColor: '#000000',
+            linearProgressColor: '#1AEBFF',
+            circularTrackColor: '#000000',
+            circularProgressColor: '#1AEBFF',
+            backgroundColor: 'transparent',
+            progressOpacity: 1,
+            trackOpacity: 1,
+            bufferOpacity: 0.35,
+            linearGapWidth: 4,
+            circularGapWidth: 4,
+            linearTrackThickness: Browser.isDevice ? 4 : 2,
+            linearProgressThickness: Browser.isDevice ? 4 : 2,
+            circularTrackThickness: Browser.isDevice ? 2 : 2,
+            circularProgressThickness: Browser.isDevice ? 2 : 2,
+            tooltipFill: '#000000',
+            tooltipLightLabel: '#FFFFFF',
+            success: '#107C10',
+            danger: '#C50F1F',
+            warning: '#F7630C',
+            info: '#0099BC',
+            tooltipLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI'
+            },
+            linearLabelFont: {
+                size: '12', fontWeight: '400', color: '#FFFFFF', fontStyle: 'Normal', fontFamily: 'Segoe UI'
+            },
+            circularLabelFont: {
+                size: '12', fontWeight: '400', color: '#FFFFFF', fontStyle: 'Normal', fontFamily: 'Segoe UI'
             }
         };
         break;

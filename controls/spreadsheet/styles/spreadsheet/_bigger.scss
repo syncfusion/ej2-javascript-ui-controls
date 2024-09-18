@@ -1,0 +1,1164 @@
+@mixin bigger-tab-header-layout {
+  & .e-tab .e-tab-header {
+    height: $bigger-spread-ribbon-tab-text-wrap-height;
+    min-height: $bigger-spread-ribbon-tab-text-wrap-height;
+    @if $skin-name == 'Material3' {
+      height: 47px;
+      min-height: 47px;
+    }
+
+    & .e-toolbar-item:not(.e-separator) {
+      height: $bigger-spread-ribbon-tab-text-wrap-height;
+      min-height: $bigger-spread-ribbon-tab-text-wrap-height;
+      @if $skin-name == 'Material3' {
+        height: 48px;
+        min-height: 48px;
+      }
+
+      & .e-tab-wrap {
+        height: $bigger-spread-ribbon-tab-text-wrap-height;
+        @if $skin-name == 'Material3' {
+          height: 48px;
+        }
+      }
+      @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+        &.e-active .e-text-wrap,
+        & .e-text-wrap {
+          height: 39px;
+        }
+      }
+      @else {
+        & .e-text-wrap {
+          height: $bigger-spread-ribbon-tab-text-wrap-height;
+          @if $skin-name == 'Material3' {
+            height: 48px;
+          }
+        }
+      }
+    }
+
+    & .e-toolbar-items {
+      height: $bigger-spread-ribbon-tab-text-wrap-height;
+      min-height: $bigger-spread-ribbon-tab-text-wrap-height;
+      @if $skin-name == 'Material3' {
+        height: 48px;
+        min-height: 48px;
+      }
+
+      & .e-scroll-nav {
+        height: $bigger-spread-ribbon-tab-text-wrap-height;
+        min-height: $bigger-spread-ribbon-tab-text-wrap-height;
+        @if $skin-name == 'Material3' {
+          height: 48px;
+          min-height: 48px;
+        }
+        @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+          & .e-nav-left-arrow::before,
+          & .e-nav-right-arrow::before {
+            font-size: $bigger-spread-sheet-tab-nav-arrow-font;
+          }
+        }
+      }
+    }
+  }
+}
+
+@include export-module('spreadsheet-bigger') {
+  .e-bigger {
+    & .e-colorpicker-wrapper.e-border-colorpicker {
+      & .e-container {
+        @if $skin-name == 'fluent2' {
+          width: 340px !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-spreadsheet,
+  .e-bigger.e-spreadsheet {
+    & .e-ribbon .e-tab .e-tab-header .e-toolbar-item {
+      & .e-tab-wrap:focus .e-text-wrap,
+      &:not(.e-separator) .e-text-wrap {
+        @if $skin-name == 'bootstrap5.3' {
+          height: $bigger-spread-ribbon-tab-text-wrap-height;
+        }
+      }
+      &:not(.e-separator) .e-tab-wrap {
+        @if $skin-name == 'bootstrap5.3' {
+          height: $bigger-spread-ribbon-tab-text-wrap-height;
+        }
+      }
+    }
+
+    & .e-sheet-tab-panel {
+      @if $skin-name == 'bootstrap5.3' {
+        height: $bigger-spread-ribbon-tab-text-wrap-height;
+      }
+    }
+
+    &:not(.e-mobile-view) .e-aggregate-list {
+      @if $skin-name == 'bootstrap5.3' {
+        font-size: $bigger-spread-sheet-aggregate-font-size;
+        line-height: $bigger-spread-sheet-aggregate-line-height;
+      }
+    }
+    @if $skin-name == 'FluentUI' {
+      & .e-protect-dlg.e-dialog {
+        height: 790px !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      & .e-delete-sheet-dlg.e-dialog {
+        height: 240px !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      & .e-merge-alert-dlg.e-dialog {
+        height: 215px;
+
+        .e-dlg-content {
+          padding-bottom: 0;
+        }
+      }
+
+      .e-validation-error-dlg .e-dlg-content {
+        padding-bottom: 0;
+      }
+
+      .e-spreadsheet-function-dlg.e-dialog {
+        height: 515px !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
+      & .e-validation-list .e-ddl-icon {
+        min-height: 0;
+        min-width: 0;
+        padding: 0;
+      }
+
+      & .e-findtool-dlg .e-find-toolbar .e-input {
+        width: calc(100% - 70px);
+      }
+    }
+
+    & .e-findtool-dlg.e-device .e-toolbar-items {
+      width: 100%;
+    }
+
+    .e-spreadsheet-function-dlg.e-dialog {
+      & .e-dlg-content {
+        & .e-description-content {
+          @if $sheet-skin == 'Material3' {
+            padding-top: 16px;
+          }
+        }
+      }
+    }
+
+    & .e-ribbon {
+      & .e-toolbar .e-btn:not(.e-tbar-btn) {
+        &:not(.e-split-colorpicker) {
+          @if $skin-name != 'fluent2' {
+            line-height: $bigger-spreadsheet-ribbon-btn-height;
+          }
+          @if $sheet-skin == 'Material3' {
+            font-size: $function-dlg-header-content-font-size;
+          }
+        }
+
+        & .e-btn-icon.e-icons.e-caret {
+          @if $skin-name == 'fluent2' {
+            font-size: $bigger-toolbar-dropdown-font-size;
+          }
+        }
+
+        &.e-chart-ddb {
+          @if $sheet-skin == 'Material3' {
+            padding-left: 26px;
+          }
+        }
+
+        &.e-split-colorpicker {
+          line-height: $bigger-cpicker-btn-line-height;
+          padding-bottom: $bigger-cpicker-btn-padding-bottom;
+          width: $bigger-cpicker-btn-width;
+          @if $skin-name == 'fluent2' {
+            padding-top: 0;
+          }
+        }
+
+        &:not(.e-dropdown-btn):not(.e-split-btn) {
+          padding-left: $bigger-spreadsheet-ribbon-btn-padding;
+          padding-right: $bigger-spreadsheet-ribbon-btn-padding;
+        }
+
+        &:not(.e-split-colorpicker) .e-btn-icon {
+          @if $skin-name != 'fluent2' {
+            line-height: $bigger-spreadsheet-ribbon-btn-line-height;
+            min-height: $bigger-spreadsheet-ribbon-btn-line-height;
+          }
+
+          &:not(.e-caret) {
+            font-size: $bigger-spreadsheet-tbar-btn-icon-font-size;
+          }
+          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'fabric-dark' {
+            &.e-wrap-icon {
+              font-size: $bigger-toolbar-wrap-icon-font-size;
+            }
+          }
+        }
+      }
+
+      & .e-toolbar .e-toolbar-items .e-toolbar-item {
+        & .e-dropdown-btn.e-datavalidation-ddb,
+        & .e-dropdown-btn.e-addchart-ddb,
+        & .e-dropdown-btn.e-charttheme-ddb,
+        & .e-dropdown-btn.e-chart-type-ddb,
+        & .e-dropdown-btn.e-chart-ddb,
+        & .e-dropdown-btn.e-numformat-ddb,
+        & .e-dropdown-btn.e-font-family {
+          @if $skin-name == 'fluent2' {
+            font-size: $bigger-data-validation-toolbar-font-size;
+          }
+        }
+        & .e-btn.e-dropdown-btn.e-chart-ddb,
+        & .e-btn.e-dropdown-btn.e-chart-type-ddb {
+          @if $skin-name == 'fluent2' {
+            height: 40px;
+          }
+        }
+
+        & .e-btn .e-chart-icon,
+        & .e-btn .e-chart-type-icon {
+          @if $skin-name == 'fluent2' {
+            font-size: $bigger-spreadsheet-chart-icon-size !important; /* stylelint-disable-line declaration-no-important */
+            margin-right: 18px;
+            padding: 0 10px;
+          }
+        }
+      }
+
+      & .e-toolbar .e-toolbar-item .e-btn {
+        &.e-tbar-btn .e-icons.e-btn-icon:not(.e-caret) {
+          font-size: $bigger-spreadsheet-tbar-btn-icon-font-size;
+        }
+      }
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+        & .e-toolbar .e-toolbar-item .e-btn {
+
+          & .e-chart-icon,
+          & .e-chart-type-icon {
+            @if $skin-name == 'Material3' {
+              font-size: $bigger-spreadsheet-chart-icon-size !important; /* stylelint-disable-line declaration-no-important */
+              margin-right: 0;
+              padding: 0;
+              width: 36px;
+            }
+          }
+
+          &.e-split-colorpicker {
+            & .e-icons.e-btn-icon:not(.e-caret) {
+              &.e-font-color {
+                font-size: $bigger-spreadsheet-cpicker-font-color-font-size;
+              }
+
+              &.e-fill-color {
+                font-size: $bigger-spreadsheet-tbar-btn-icon-font-size;
+              }
+            }
+          }
+        }
+      }
+
+      & .e-dropdown-btn.e-font-size-ddb {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+          width: $bigger-fontsize-btn-width;
+        }
+      }
+
+      & .e-colorpicker-wrapper .e-split-btn-wrapper .e-split-colorpicker.e-split-btn .e-selected-color {
+        height: auto;
+        width: auto;
+      }
+
+      & .e-content .e-hscroll-bar {
+        height: auto;
+        overflow: hidden;
+      }
+    }
+
+    & .e-formula-bar-panel {
+      & .e-input-group.e-control-wrapper.e-ddl.e-name-box .e-input-group-icon {
+        font-size: $bigger-name-box-ddl-icon-font-size;
+        @if $skin-name != 'Material3' and $skin-name != 'bootstrap5.3' {
+          margin: 0;
+        }
+        @if $skin-name == 'Material3' {
+          margin: 10px;
+        }
+        @if $skin-name == 'bootstrap5.3' {
+          line-height: 30px;
+        }
+      }
+
+      // Need to remove the below properties & its variable once touch support provided by UX team
+      & .e-css.e-btn.e-icon-btn {
+        padding-left: $normal-btn-padding;
+        padding-right: $normal-btn-padding;
+      }
+    }
+
+    & .e-add-sheet-tab.e-btn.e-icon-btn.e-css,
+    & .e-sheets-list.e-dropdown-btn {
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+        height: $bigger-spreadsheet-sheet-tab-icon-height;
+        padding: 0;
+        width: $bigger-spreadsheet-sheet-tab-icon-height;
+      }
+      @else {
+        height: 39px;
+        width: 39px;
+      }
+
+      & .e-btn-icon {
+        @if $skin-name == 'Material3' {
+          line-height: $bigger-spreadsheet-sheet-tab-icon-height;
+        }
+        @else if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+          font-size: $bigger-spreadsheet-sheet-tab-icon-font;
+          line-height: $bigger-spreadsheet-sheet-tab-sheetlist-icon-height;
+        }
+        @else {
+          line-height: 39px;
+        }
+      }
+    }
+
+    @if $skin-name == 'Material3' {
+      & .e-add-sheet-tab,
+      & .e-sheets-list {
+        margin-left: 9px;
+      }
+    }
+
+    & .e-sheet-tab-panel {
+      @include bigger-tab-header-layout;
+    }
+
+    & .e-sheet-tab .e-tab-header .e-toolbar-item {
+      & .e-tab-wrap {
+        padding: 0 16px;
+      }
+    }
+    @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap4' {
+      & .e-drop-icon {
+        font-size: $spreadsheet-drop-icon-font-size;
+        margin-right: 5px;
+      }
+    }
+
+    &:not(.e-mobile-view) .e-formula-bar-panel {
+      & .e-btn.e-css.e-insert-function {
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+          height: $bigger-insert-function-icon-height;
+        }
+        @else {
+          height: 29px;
+        }
+
+        & .e-btn-icon {
+          font-size: $bigger-insert-function-btn-icon-font-size;
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+            line-height: $bigger-insert-function-icon-height;
+          }
+          @else if $skin-name == 'bootstrap5.3' {
+            line-height: $bigger-insert-function-icon-line-height;
+          }
+          @else {
+            line-height: 30px;
+          }
+        }
+      }
+
+      & .e-input-group.e-control-wrapper.e-ddl.e-name-box input.e-input {
+        height: $bigger-name-box-ddl-input-height;
+        @if $skin-name == 'Material3' {
+          padding: 5px 0 5px 8px;
+          font-size: $bigger-name-box-ddl-icon-font-size;
+        }
+      }
+
+      & .e-drop-icon {
+        line-height: $bigger-formula-bar-drop-icon-line-height;
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'fluent2' {
+          font-size: $bigger-formula-bar-drop-icon-font-size;
+        }
+      }
+
+      & .e-separator {
+        height: 18px;
+      }
+
+      & .e-formula-bar {
+        font-size: $bigger-formula-bar-font-size;
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+          height: $bigger-formula-bar-height;
+          line-height: $bigger-formula-bar-line-height;
+        }
+        @else {
+          height: 29px;
+          line-height: 29px;
+        }
+      }
+
+      &.e-expanded {
+        & .e-formula-bar {
+          height: 89px;
+        }
+        & .e-btn.e-css.e-insert-function {
+          height: $bigger-insert-function-height;
+          line-height: $bigger-insert-function-height;
+        }
+
+        & .e-formula-bar {
+          @if $skin-name == 'Material3' {
+            line-height: 34px;
+          }
+        }
+
+        & .e-separator {
+          height: 78px;
+        }
+      }
+    }
+
+    & .e-dlg-content {
+      @if $skin-name == 'Material3' {
+        margin-top: 0;
+      }
+      .e-custom-dialog {
+        & .e-input.e-dialog-input {
+          float: left;
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+            margin-right: 16px;
+            width: 74%;
+          }
+          @if $skin-name == 'Material3' {
+            margin-right: 16px;
+            width: 83%;
+          }
+          @else {
+            margin-right: 2.8%;
+            width: 77%;
+          }
+          @if $skin-name == 'FluentUI' {
+            height: 40px;
+          }
+        }
+        & .e-custom-sample {
+          @if $skin-name == 'Material3' {
+            margin-top: 8px;
+          }
+        }
+      }
+    }
+
+    & .e-customsort-dlg.e-dialog {
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
+        width: 630px !important; /* stylelint-disable-line declaration-no-important */
+      }
+      @else if $sheet-skin == 'Material3' or $skin-name == 'fluent2' {
+        width: 625px !important; /* stylelint-disable-line declaration-no-important */
+      }
+      @else {
+        width: 590px !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+
+    .e-sort-dialog .e-sort-template .e-list-item {
+      height: auto;
+      @if $skin-name != 'fluent2' {
+        line-height: 1;
+      }
+    }
+
+    & .e-filter-icon {
+      margin-bottom: $filter-icon-bigger-margin-bottom;
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+        font-size: $bigger-filter-icon-font-size;
+        margin-top: -3px;
+      }
+      @if $sheet-skin == 'Material3' or $skin-name == 'bootstrap5.3' {
+        font-size: $bigger-filter-icon-font-size;
+      }
+    }
+
+    & .e-find-dlg .e-footer-content .e-btn {
+      @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
+        font-size: $bigger-find-dlg-btn-font-size;
+        margin-top: 6px;
+      }
+      @if $skin-name == 'bootstrap5.3' {
+        margin-bottom: 4px;
+        margin-top: 4px;
+      }
+    }
+
+    & .e-find-dlg .e-dlg-content {
+      @if $skin-name == 'bootstrap5.3' {
+        padding-top: 0;
+      }
+    }
+
+    & .e-findtool-dlg {
+      @if $sheet-skin != 'Material3'{
+        height: $bigger-find-tool-dlg-height;
+        width: $bigger-find-tool-dlg-width;
+      }
+    }
+
+    & .e-goto-dlg.e-dialog {
+      height: auto;
+
+      & .e-btn {
+        font-size: $goto-dlg-btn-font-size;
+      }
+    }
+
+    & .e-protectworkbook-dlg.e-dialog .e-dlg-content {
+      & .e-pwd-alert-span {
+        color: $dlg-error-color;
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+          padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
+        }
+        @else {
+          font-size: $protectworkbook-dlg-pwd-alert-span-font-size;
+          padding-top: 16px;
+        }
+      }
+
+      & .e-password-content {
+        @if $sheet-skin != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3'{
+          padding-top: 16px;
+          margin-bottom: 8px;
+        }
+
+        & .e-header {
+          @if $skin-name != 'Material3' {
+            font-size: $protectworkbook-dlg-pwd-content-font-size;
+            line-height: $bigger-protectworkbook-dlg-pwd-content-line-height;
+            margin-bottom: $bigger-protectworkbook-dlg-pwd-content-margin-bottom;
+          }
+        }
+      }
+    }
+
+    & .e-validation-dlg {
+      & .e-cellrange {
+        @if $skin-name == 'Material3' {
+          margin-bottom: 8px;
+        }
+      }
+
+      & .e-allowdata {
+        & .e-allow {
+          @if $skin-name == 'Material3' {
+            margin-bottom: 12px;
+          }
+        }
+      }
+
+      & .e-values {
+        @if $skin-name == 'Material3' {
+          margin-bottom: 8px;
+        }
+      }
+    }
+
+    & .e-excelfilter {
+      & .e-dlg-content {
+        @if $skin-name == 'fluent2' {
+          padding-right: 7px;
+        }
+      }
+
+      & .e-spreadsheet-ftrchk {
+        @if $skin-name != 'bootstrap5.3' {
+          padding-left: $filter-selectall-bigger-padding;
+        }
+      }
+
+      &.e-rtl .e-spreadsheet-ftrchk {
+        @if $skin-name != 'bootstrap5.3' {
+          padding-left: 0;
+          padding-right: $filter-selectall-bigger-padding;
+        }
+      }
+    }
+
+    & .e-checkboxtree {
+      ul {
+        @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
+          padding-left: 0;
+        }
+      }
+
+      &.e-rtl ul {
+        @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
+          padding-right: 0;
+        }
+      }
+    }
+
+    & .e-validation-list {
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        width: $bigger-validation-list-width;
+      }
+
+      & .e-ddl-icon.e-search-icon {
+        @if $skin-name == 'material' or $skin-name == 'material-dark' {
+          bottom: $bigger-validation-list-icon-bottom;
+        }
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' {
+          min-height: $bigger-validation-list-icon-height-width;
+          min-width: $bigger-validation-list-icon-height-width;
+        }
+      }
+    }
+    & .e-hyperlink-dlg.e-dialog {
+      & .e-dlg-content .e-link-dialog .e-content {
+        @if $skin-name == 'Material3' {
+          padding-top: 24px;
+        }
+        @if $skin-name == 'FluentUI' {
+          & .e-cont {
+            margin: 0 0 16px 24px;
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger.e-dropdown-popup,
+  .e-bigger .e-dropdown-popup {
+    &.e-font-size-ddb ul {
+      min-width: 70px;
+    }
+    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
+      &.e-dragfill-ddb ul,
+      &.e-numformat-ddb ul {
+        max-width: initial;
+      }
+    }
+  }
+
+  @if $skin-name == 'bootstrap5.3' {
+    .e-bigger .e-menu-wrapper {
+      &.e-databars ul.e-ul,
+      &.e-colorscales ul.e-ul {
+        padding: 12px 0;
+        & .e-menu-item {
+          line-height: 40px;
+          height: 40px;
+        }
+      }
+      &.e-cf-menu ul.e-ul {
+        max-width: 220px;
+      }
+    }
+  }
+
+  .e-bigger .e-spreadsheet,
+  .e-bigger.e-spreadsheet {
+    @if $skin-name =='fluent2' {
+      & .e-customsort-dlg.e-dialog {
+        & .e-dlg-content {
+          & .e-sort-listsection {
+            padding-top: $bigger-spreadsheet-sort-dlg-list-padding;
+          }
+        }
+        & .e-sort-dialog {
+          & .e-sort-row {
+            padding: $bigger-spreadsheet-sort-row-padding;
+          }
+        }
+      }
+
+      & .e-findtool-dlg {
+        & .e-find-toolbar {
+          & .e-toolbar-item:not(.e-separator):not(.e-spacer) {
+            min-width: 40px;
+            padding: 0 4px;
+          }
+        }
+      }
+
+      & .e-goto-dlg.e-dialog {
+        & .e-dlg-content .e-header {
+          @if $skin-name == 'fluent2' {
+            margin: 0;
+            padding: 4px 0;
+          }
+        }
+
+        & .e-dlg-content .e-goto-alert-span {
+          color: $dlg-error-color;
+          display: block;
+          font-size: 14px;
+          padding-top: 6px;
+        }
+      }
+    }
+
+    @if $skin-name =='Material3' or $skin-name =='fluent2' or $skin-name =='bootstrap5.3' {
+      & .e-sheet-tab {
+        & .e-tab-header {
+          & .e-toolbar-item {
+            & input.e-input.e-sheet-rename {
+              height: 48px;
+              line-height: 48px;
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
+
+      & .e-validation-list {
+        .e-input-group {
+          &.e-input-focus .e-input,
+          & .e-input {
+            @if $skin-name == 'fluent2' {
+              padding-left: 0;
+            }
+          }
+        }
+
+        & .e-ddl-icon {
+          bottom: 0;
+          font-size: $spreadsheet-drop-icon-font-size;
+          height: 20px;
+          min-height: 20px;
+          @if $skin-name =='Material3'{
+            min-width: 20px;
+          }
+          @else {
+            min-width: 16px;
+          }
+          width: 20px;
+          @if $skin-name =='fluent2'{
+            padding: 0;
+          }
+        }
+      }
+
+      & .e-open-dlg.e-dialog {
+        & .e-open-dialog {
+          & .e-open-head .e-header {
+            font-size: $bigger-spreadsheet-dlg-label-font-size;
+            @if $skin-name == 'bootstrap5.3' {
+              line-height: $bigger-spread-dlg-header-content-line-height;
+              padding-bottom: 8px;
+            }
+          }
+        }
+
+        & .e-dlg-content {
+          & .e-file-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+            padding-top: $bigger-spreadsheet-dlg-error-padding-top;
+          }
+        }
+      }
+
+      & .e-dlg-content .e-custom-dialog .e-custom-sample {
+        font-size: $bigger-spreadsheet-dlg-label-font-size;
+        margin: $bigger-spreadsheet-custom-sample-margin;
+      }
+
+      & .e-conditionalformatting-dlg {
+        & .e-top-header {
+          @if $skin-name == 'bootstrap5.3' {
+            font-weight: $bigger-spreadsheet-cf-header-font-weight;
+          }
+        }
+        & .e-cfmain {
+          & .e-header {
+            font-size: $bigger-spreadsheet-dlg-label-font-size;
+            @if $skin-name == 'bootstrap5.3' {
+              line-height: $bigger-spread-dlg-header-content-line-height;
+            }
+          }
+          margin: $bigger-spreadsheet-cf-main-margin;
+        }
+
+        & .e-cfsub {
+          & .e-header {
+            font-size: $bigger-spreadsheet-dlg-label-font-size;
+            @if $skin-name == 'bootstrap5.3' {
+              line-height: $bigger-spread-dlg-header-content-line-height;
+            }
+          }
+          margin-bottom: $bigger-spreadsheet-cf-sub-margin;
+        }
+
+        & .e-header {
+          @if $skin-name == 'bootstrap5.3' {
+            margin-bottom: $bigger-spreadsheet-dlg-header-margin-bottom;
+          }
+        }
+
+        & .e-header-2 {
+          margin-top: $bigger-spreadsheet-cf-header2-margin;
+        }
+      }
+
+      & .e-customsort-dlg.e-dialog {
+        & .e-dlg-content {
+          & .e-sort-listsection {
+            @if $skin-name == 'bootstrap5.3' {
+              padding-top: $bigger-spreadsheet-sort-dlg-list-padding;
+            }
+          }
+        }
+      }
+
+      & .e-sort-dialog {
+        & .e-sort-listwrapper .text {
+          font-size: $bigger-spreadsheet-dlg-label-font-size;
+          @if $skin-name == 'bootstrap5.3' {
+            line-height: $bigger-spread-dlg-header-content-line-height;
+          }
+        }
+
+        & .e-sort-listwrapper .e-sort-row {
+          @if $skin-name == 'bootstrap5.3' {
+            padding: $bigger-spreadsheet-sort-dlg-row-padding;
+          }
+        }
+
+        & .e-sort-error {
+          font-size: $bigger-spreadsheet-dlg-error-font-size;
+        }
+      }
+
+      & .e-find-dlg.e-dialog {
+        & .e-dlg-header-content {
+          @if $skin-name == 'Material3' {
+            padding-bottom: 8px;
+          }
+        }
+        & .e-dlg-content {
+          & .e-find-alert-span,
+          & .e-replace-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+            padding-top: 7px;
+          }
+
+          & .e-findnreplace-casecheckbox {
+            padding-bottom: $bigger-find-replace-casecheck-padding-bottom;
+            padding-top: $bigger-find-replace-casecheck-padding-top;
+          }
+
+          & .e-findnreplace-exactmatchcheckbox {
+            padding: $bigger-find-replace-exactmatch-padding;
+          }
+        }
+
+        & p.e-header {
+          font-size: $bigger-spreadsheet-dlg-label-font-size;
+          padding-bottom: $bigger-spreadsheet-dlg-label-padding-bottom;
+          @if $skin-name == 'bootstrap5.3' {
+            line-height: $bigger-spread-dlg-header-content-line-height;
+            padding-top: $bigger-spread-dlg-header-label-top;
+          }
+          @if $skin-name != 'bootstrap5.3' {
+            padding-top: 16px;
+          }
+        }
+      }
+
+      & .e-hyperlink-dlg.e-dialog,
+      .e-edithyperlink-dlg.e-dialog {
+        & .e-dlg-content {
+          & .e-link-dialog {
+            & .e-content {
+              padding-top: $bigger-hyperlink-dlg-content-padding;
+
+              & .e-cont {
+                margin: $bigger-hyperlink-dlg-content-margin;
+
+                & .e-header {
+                  font-size: $bigger-spreadsheet-dlg-label-font-size;
+                  line-height: $bigger-hyperlink-dlg-header-line-height;
+                }
+
+                & .e-text {
+                  @if $skin-name == 'bootstrap5.3' {
+                    margin-top: $bigger-spreadsheet-dlg-label-padding-bottom;
+                  }
+                }
+
+                & .e-refcont {
+                  @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
+                    border: 0;
+                    margin: 0 16px 0 0;
+                  }
+                  @if $skin-name == 'bootstrap5.3' {
+                    margin: $bigger-spreadsheet-dlg-label-padding-bottom 0 0 0;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      & .e-spreadsheet-function-dlg.e-dialog {
+        & .e-dlg-content {
+          & .e-category-content {
+            font-size: $bigger-spreadsheet-dlg-label-font-size;
+            padding: 4px 0 0;
+            @if $skin-name == 'bootstrap5.3' {
+              line-height: $bigger-spread-dlg-header-content-line-height;
+              margin: 0 0 $bigger-spread-dlg-header-label-bottom;
+            }
+          }
+
+          & .e-formula-list {
+            @if $skin-name == 'bootstrap5.3' {
+              margin-top: $bigger-spread-dlg-header-label-bottom;
+            }
+          }
+
+          & .e-formula-description {
+            @if $skin-name != 'bootstrap5.3' {
+              padding: 4px 0;
+            }
+            @else {
+              padding: 12px 0 0;
+            }
+          }
+
+          & .e-description-content {
+            font-size: $bigger-spreadsheet-dlg-label-font-size;
+            padding-top: $bigger-function-dlg-description-padding-top;
+          }
+        }
+      }
+      & .e-protect-dlg.e-dialog {
+        & .e-protect-checkbox {
+          @if $skin-name == 'bootstrap5.3' {
+            margin-top: $bigger-protect-dlg-protect-check-margin-top;
+          }
+        }
+        & .e-sheet-password-content {
+          font-size: $bigger-spreadsheet-dlg-label-font-size;
+          @if $skin-name != 'bootstrap5.3' {
+            padding: $bigger-protect-sheet-password-content-padding;
+          }
+
+          & .e-header {
+            line-height: $bigger-protect-sheet-password-header-line;
+            @if $skin-name == 'bootstrap5.3' {
+              margin-bottom: $bigger-spreadsheet-dlg-header-margin-bottom;
+            }
+          }
+        }
+
+        & .e-protect-content {
+          font-size: $bigger-spreadsheet-dlg-label-font-size;
+          line-height: $bigger-protect-sheet-password-header-line;
+          padding: $bigger-protect-content-padding;
+        }
+
+        & .e-protect-option-list {
+          @if $skin-name == 'bootstrap5.3' {
+            margin-top: $bigger-protect-option-list-margin-top;
+          }
+        }
+      }
+
+      & .e-reenterpwd-dlg.e-dialog {
+        & .e-dlg-content {
+          & .e-reenterpwd-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+            padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
+          }
+
+          & .e-reenterpwd-content {
+            & .e-header {
+              font-size: $bigger-spreadsheet-dlg-label-font-size;
+              line-height: $bigger-protect-sheet-password-header-line;
+            }
+            & .e-input {
+              @if $skin-name == 'bootstrap5.3' {
+                margin-top: $bigger-spread-dlg-header-label-bottom;
+              }
+            }
+          }
+        }
+      }
+
+      & .e-unprotectworksheet-dlg.e-dialog {
+        & .e-dlg-content {
+          & .e-unprotectsheetpwd-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+            padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
+          }
+
+          & .e-unprotectsheetpwd-content {
+            & .e-header {
+              font-size: $bigger-spreadsheet-dlg-label-font-size;
+              line-height: $bigger-protect-sheet-password-header-line;
+            }
+          }
+        }
+      }
+
+      & .e-protectworkbook-dlg.e-dialog {
+        & .e-dlg-content {
+          @if $skin-name != 'bootstrap5.3' {
+            padding-bottom: 8px;
+          }
+          & .e-pwd-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+          }
+
+          & .e-password-content + .e-password-content {
+            padding: $bigger-protect-password-content-padding2;
+          }
+
+          & .e-password-content {
+            padding: $bigger-protect-password-content-padding;
+
+            & .e-header {
+              font-size: $bigger-spreadsheet-dlg-label-font-size;
+              line-height: $bigger-protect-sheet-password-header-line;
+            }
+          }
+        }
+      }
+    
+      & .e-unprotectworkbook-dlg.e-dialog {
+        & .e-dlg-content {
+          & .e-unprotectpwd-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+            padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
+          }
+
+          & .e-unprotectpwd-content {
+            & .e-header {
+              font-size: $bigger-spreadsheet-dlg-label-font-size;
+              line-height: $bigger-protect-sheet-password-header-line;
+            }
+
+            & .e-input {
+              @if $skin-name == 'bootstrap5.3' {
+                margin-top: $bigger-reenterpwd-dlg-content-input-margin-top;
+              }
+            }
+          }
+        }
+      }
+
+      & .e-datavalidation-dlg {
+        & .e-validation-dlg {
+          & .e-header {
+            font-size: $bigger-spreadsheet-dlg-label-font-size;
+            line-height: $bigger-protect-sheet-password-header-line;
+          }
+
+          & .e-cellrange {
+            @if $skin-name != 'bootstrap5.3' {
+              padding-top: 4px;
+            }
+
+            & .e-header {
+              font-size: $bigger-spreadsheet-dlg-label-font-size;
+              line-height: $bigger-protect-sheet-password-header-line;
+            }
+            @if $skin-name == 'bootstrap5.3' {
+              & .e-input {
+                margin-top: $bigger-reenterpwd-dlg-content-input-margin-top;
+              }
+            }
+          }
+
+          & .e-allowdata {
+            padding-top: $bigger-data-validation-content-padding-top;
+
+            & .e-allow {
+              & .e-header {
+                font-size: $bigger-spreadsheet-dlg-label-font-size;
+                line-height: $bigger-protect-sheet-password-header-line;
+              }
+              @if $skin-name == 'bootstrap5.3' {
+                & .e-valid-input {
+                  margin-top: $bigger-reenterpwd-dlg-content-input-margin-top;
+                }
+              }
+            }
+
+            & .e-data {
+              & .e-header {
+                font-size: $bigger-spreadsheet-dlg-label-font-size;
+                line-height: $bigger-protect-sheet-password-header-line;
+              }
+              @if $skin-name == 'bootstrap5.3' {
+                & .e-valid-input {
+                  margin-top: $bigger-reenterpwd-dlg-content-input-margin-top;
+                }
+              }
+            }
+          }
+
+          & .e-values {
+            padding-top: $bigger-data-validation-content-padding-top;
+
+            @if $skin-name == 'bootstrap5.3' {
+              & .e-input {
+                margin-top: $bigger-reenterpwd-dlg-content-input-margin-top;
+              }
+            }
+
+            & .e-minimum {
+              & .e-header {
+                font-size: $bigger-spreadsheet-dlg-label-font-size;
+                line-height: $bigger-protect-sheet-password-header-line;
+              }
+              @if $skin-name == 'bootstrap5.3' {
+                & .e-input {
+                  margin-top: $bigger-reenterpwd-dlg-content-input-margin-top;
+                }
+              }
+            }
+
+            & .e-maximum {
+              & .e-header {
+                font-size: $bigger-spreadsheet-dlg-label-font-size;
+                line-height: $bigger-protect-sheet-password-header-line;
+              }
+              @if $skin-name == 'bootstrap5.3' {
+                & .e-input {
+                  margin-top: $bigger-reenterpwd-dlg-content-input-margin-top;
+                }
+              }
+            }
+
+            & .e-dlg-error {
+              font-size: $bigger-spreadsheet-dlg-error-font-size;
+              padding-top: $bigger-spreadsheet-protect-dlg-error-padding-top;
+            }
+
+            & .e-header {
+              font-size: $bigger-spreadsheet-dlg-label-font-size;
+              line-height: $bigger-protect-sheet-password-header-line;
+            }
+          }
+
+          & .e-ignoreblank {
+            margin-bottom: 8px;
+            padding-top: $bigger-data-validation-content-padding-top;
+          }
+        }
+      }
+    }
+  }
+}

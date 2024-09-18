@@ -2,15 +2,13 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 27.1.48 (2024-09-18)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `#I901740` - Issue with value after comma in Numeric textbox QueryBuilder being deleted has been fixed.
-
-## 26.2.8 (2024-08-06)
 
 ### QueryBuilder
 
@@ -22,24 +20,7 @@
 
 #### Bug Fixes
 
-- `#I898205` - Issue with While setting rule value as an empty string the rule was not created in QueryBuilder has been fixed.
 - `#I896995` - Issue with Operator is not set properly when using the `addRules` method has been fixed.
-
-## 26.1.42 (2024-07-16)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#I503891` - Provide parent item filtering support for QueryBuilder dropdowntree field mode.
-
-## 26.1.40 (2024-07-02)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#599199` - Issue with `setRulesFromSql` and `getSqlFromRules` methods is not working properly when using complex query with `NOT` operator in Query Builder has been fixed.
 
 ### QueryBuilder
 
@@ -47,9 +28,7 @@
 
 - `#I600597` - Issue with QueryBuilder validation message is not shown for date type column has been fixed.
 - `#I600637` - Issue with QueryBuilder numeric text box validation message not shown while using template has been fixed.
-- `#I604645` - Issue with Script error thrown in numeric textbox QueryBuilder while type special character like comma and dot has been fixed.
-
-## 26.1.38 (2024-06-19)
+- `#599199` - Issue with `setRulesFromSql` and `getSqlFromRules` methods is not working properly when using complex query with `NOT` operator in Query Builder has been fixed.
 
 ### QueryBuilder
 

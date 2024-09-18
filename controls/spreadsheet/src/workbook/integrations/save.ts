@@ -175,7 +175,6 @@ export class WorkbookSave extends SaveWorker {
                         this, this.processSheet, this.updateSheet,
                         [this.getStringifyObject(this.parent.sheets[idx as number], skipProps, idx, false, true), idx], null, this.parent);
                 };
-                const context: { scrollSettings?: { isFinite: boolean } } = <{ scrollSettings?: { isFinite: boolean } }>this.parent;
                 this.parent.notify(
                     updateSheetFromDataSource, { sheet: sheet, sheetIndex: sheetIdx, loadComplete: loadCompleteHandler.bind(this, sheetIdx),
                         loadFromStartCell: true, autoDetectFormat: autoDetectFormat });

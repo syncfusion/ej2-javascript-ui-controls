@@ -83,7 +83,7 @@ export class DateProcessor {
             }
         }
         let tStartDate: Date;
-        if (this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand &&
+        if (this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand &&
             this.parent.taskFields.hasChildMapping)) {
             do {
                 tStartDate = new Date(cloneStartDate.getTime());
@@ -175,7 +175,7 @@ export class DateProcessor {
             }
         }
         let tempCheckDate: Date;
-        if (this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand &&
+        if (this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand &&
             this.parent.taskFields.hasChildMapping)) {
             do {
                 tempCheckDate = new Date(cloneEndDate.getTime());
@@ -416,11 +416,11 @@ export class DateProcessor {
     private getNonworkingTime(sDate: Date, eDate: Date, isAutoSchedule: boolean, isCheckTimeZone: boolean): number {
         isCheckTimeZone = isNullOrUndefined(isCheckTimeZone) ? true : isCheckTimeZone;
         const weekendCount: number = (!this.parent.includeWeekend && this.parent.autoCalculateDateScheduling && !(this.parent.isLoad &&
-            !this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)) && isAutoSchedule ?
+            this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)) && isAutoSchedule ?
             this.getWeekendCount(sDate, eDate) : 0;
         const totalHours: number = this.getNumberOfSeconds(sDate, eDate, isCheckTimeZone);
-        const holidaysCount: number = (isAutoSchedule && this.parent.autoCalculateDateScheduling && 
-            !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)
+        const holidaysCount: number = (isAutoSchedule && this.parent.autoCalculateDateScheduling &&
+            !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)
         ) ? this.getHolidaysCount(sDate, eDate) : 0;
         const totWorkDays: number = (totalHours - (weekendCount * 86400) - (holidaysCount * 86400)) / 86400; // working days between two dates
         const nonWorkHours: number = this.getNonWorkingSecondsOnDate(sDate, eDate, isAutoSchedule);
@@ -1166,7 +1166,7 @@ export class DateProcessor {
     /*Check given date is on holidays*/
     public isOnHolidayOrWeekEnd(date: Date, checkWeekEnd: boolean): boolean {
         checkWeekEnd = !isNullOrUndefined(checkWeekEnd) ? checkWeekEnd : this.parent.includeWeekend;
-        if (!this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand &&
+        if (!this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand &&
             this.parent.taskFields.hasChildMapping)) {
             checkWeekEnd = true;
         }
@@ -1199,14 +1199,12 @@ export class DateProcessor {
         let startRangeIndex: number = -1;
         let endRangeIndex: number = -1;
         let totNonWrkSecs: number = 0;
-        const startOnHoliday: boolean = (isAutoSchedule && this.parent.autoCalculateDateScheduling && 
-            !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)
-        ) ?
-            this.isOnHolidayOrWeekEnd(startDate, null) : false;
+        const startOnHoliday: boolean = (isAutoSchedule && this.parent.autoCalculateDateScheduling &&
+            !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)
+        ) ? this.isOnHolidayOrWeekEnd(startDate, null) : false;
         const endOnHoliday: boolean = (isAutoSchedule && this.parent.autoCalculateDateScheduling &&
-            !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)
-        ) ?
-            this.isOnHolidayOrWeekEnd(endDate, null) : false;
+            !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)
+        ) ? this.isOnHolidayOrWeekEnd(endDate, null) : false;
         let startnonWorkingTimeRange: IWorkingTimeRange[];
         let endnonWorkingTimeRange: IWorkingTimeRange[];
         if (this.parent.weekWorkingTime.length > 0) {
@@ -1242,7 +1240,7 @@ export class DateProcessor {
             startDate.getFullYear() !== endDate.getFullYear()) {
             if (!startOnHoliday) {
                 for (let i: number = startRangeIndex; i < startnonWorkingTimeRange.length; i++) {
-                    if (!startnonWorkingTimeRange[i as number].isWorking) {
+                    if (!isNullOrUndefined(startnonWorkingTimeRange[i as number]) && !startnonWorkingTimeRange[i as number].isWorking) {
                         if (i === startRangeIndex) {
                             totNonWrkSecs += (startnonWorkingTimeRange[i as number].to - sHour);
                         } else {
@@ -1270,7 +1268,7 @@ export class DateProcessor {
             if (startRangeIndex !== endRangeIndex) {
                 if (!endOnHoliday) {
                     for (let i: number = startRangeIndex; i <= endRangeIndex; i++) {
-                        if (!startnonWorkingTimeRange[i as number].isWorking) {
+                        if (!isNullOrUndefined(startnonWorkingTimeRange[i as number]) && !startnonWorkingTimeRange[i as number].isWorking) {
                             if (i === startRangeIndex) {
                                 totNonWrkSecs += (startnonWorkingTimeRange[i as number].to - sHour);
                             } else if (i === endRangeIndex) {

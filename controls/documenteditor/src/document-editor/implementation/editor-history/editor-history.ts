@@ -417,12 +417,14 @@ export class EditorHistory {
             }
             if (this.currentHistoryInfo.action === 'InsertHyperlink') {
                 const startPosition: TextPosition = new TextPosition(selection.owner);
-                this.owner.editorModule.setPositionForCurrentIndex(startPosition, this.currentHistoryInfo.insertPosition);
-                const endPosition: TextPosition = new TextPosition(selection.owner);
-                this.owner.editorModule.setPositionForCurrentIndex(endPosition, this.currentHistoryInfo.endPosition);
-                this.documentHelper.layout.reLayoutParagraph(startPosition.paragraph, 0, 0);
-                if (endPosition.paragraph !== startPosition.paragraph) {
-                    this.documentHelper.layout.reLayoutParagraph(endPosition.paragraph, 0, 0);
+                if (!isNullOrUndefined(this.currentHistoryInfo.insertPosition)) {
+                    this.owner.editorModule.setPositionForCurrentIndex(startPosition, this.currentHistoryInfo.insertPosition);
+                    const endPosition: TextPosition = new TextPosition(selection.owner);
+                    this.owner.editorModule.setPositionForCurrentIndex(endPosition, this.currentHistoryInfo.endPosition);
+                    this.documentHelper.layout.reLayoutParagraph(startPosition.paragraph, 0, 0);
+                    if (endPosition.paragraph !== startPosition.paragraph) {
+                        this.documentHelper.layout.reLayoutParagraph(endPosition.paragraph, 0, 0);
+                    }
                 }
             }
             if (this.currentHistoryInfo.action === 'ReplaceAll') {

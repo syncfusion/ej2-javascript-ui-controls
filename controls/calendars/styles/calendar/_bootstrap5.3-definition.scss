@@ -27,6 +27,8 @@ $calendar-title-margin-left-style: 2px !default;
 $calendar-title-font-weight-style: $font-weight-bold !default;
 $calendar-title-decoration-style: none !default;
 $calendar-header-title-padding: 3px 5px !default;
+$calendar-bigger-header-line-height: 20px !default;
+$calendar-bigger-header-title-padding: 9px 5px !default;
 
 // common size properties
 $calendar-wrapper-border-radius: 4px !default;
@@ -84,7 +86,7 @@ $calendar-title-margin-small-left-style: 0 !default;
 //font icons
 $calendar-prev-icon: '\e910' !default;
 $calendar-next-icon: '\e916' !default;
-$calendar-next-prev-icon-size: 14px !default;
+$calendar-next-prev-icon-size: 12px !default;
 $calendar-icon-line-height: 1 !default;
 $calendar-bigger-icon-size: 24px !default;
 $calendar-normal-icon-size: 24px !default;
@@ -92,7 +94,7 @@ $calendar-spanicon-font-weight-style: $font-weight-normal !default;
 
 //pending
 $calendar-icon-font-size-style: $font-icon-14 !default;
-$calendar-bigger-icon-font-size: $font-icon-16 !default;
+$calendar-bigger-icon-font-size: $font-icon-18 !default;
 $calendar-footer-container-padding: 8px !default;
 $calendar-bigger-footer-container-padding: 16px !default;
 $calendar-week-number-font-weight: $font-weight-medium !default;
@@ -213,8 +215,9 @@ $calendar-focus-box-shadow: none !default;
 $calendar-focus-border-color: none !default;
 $calendar-hover-border-color: none !default;
 $calendar-disable-font-color: $content-text-color-disabled !default;
-$calendar-focused-date-bg-style: $calendar-hover-color !default;
+$calendar-focused-date-bg-style: $primary !default;
 $calendar-small-title-font-color: $content-text-color-alt1 !default;
+$calendar-yeardecade-selected-hover-bg: $primary-bg-color-hover !default;
 
 // end td styles
 //today date
@@ -254,3 +257,4 @@ $today-button-text-hover-color: $primary-text-hover !default;
 $today-button-active-bg: $primary-bg-color-pressed !default;
 $today-button-bg-border-active-color: $primary-border-color-pressed !default;
 $today-button-text-active-color: $primary-text-pressed !default;
+$calendar-active-hover-bg-color: $primary-bg-color-hover !default;

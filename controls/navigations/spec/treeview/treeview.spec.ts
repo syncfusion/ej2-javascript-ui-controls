@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, enableRipple } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable } from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, dynamicChangeCheckbox } from '../../spec/treeview/datasource.spec';
 import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6} from '../../spec/treeview/datasource.spec';
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
 import { localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
@@ -691,6 +691,122 @@ describe('TreeView control', () => {
                     expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
                     done();
                 }, 100);
+            });
+
+            it('checkDisabledChildren - ensure auto check on disabled Nodes without load on demand', (done: Function) => {
+                treeObj = new TreeView({
+                    fields: {
+                        dataSource: hierarchicalData10, id: "id",
+                        text: "function",
+                        child: "childs"
+                    },
+                    showCheckBox: true, checkDisabledChildren: false
+                }, '#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[2].classList.contains('e-disable')).toBe(true);
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                let checkedEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkedEle.length).toBe(4);
+                expect(treeObj.checkedNodes.length).toBe(4);
+                expect(treeObj.getAllCheckedNodes().length).toBe(4);
+                checkEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                checkedEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkedEle.length).toBe(0);
+                expect(treeObj.checkedNodes.length).toBe(0);
+                expect(treeObj.getAllCheckedNodes().length).toBe(0);
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                checkedEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkedEle.length).toBe(1);
+                expect(treeObj.checkedNodes.length).toBe(4);
+                expect(treeObj.getAllCheckedNodes().length).toBe(4);
+                let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                mouseEventArgs.target = newli[5].querySelector('.e-icons');
+                expect((newli[5].querySelector('.e-icons') as Element).classList.contains('e-icon-expandable')).toBe(true);
+                expect((newli[5].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(false);
+                treeObj.touchClickObj.tap(tapEvent);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let newCheckedEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                    expect(newCheckedEle.length).toBe(4);
+                    expect(treeObj.checkedNodes.length).toBe(4);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(4);
+                    done();
+                }, 450);
+            });
+
+            it('checkDisabledChildren - ensure auto check on disabled Nodes with load on demand', (done: Function) => {
+                treeObj = new TreeView({
+                    fields: {
+                        dataSource: hierarchicalData10, id: "id",
+                        text: "function",
+                        child: "childs"
+                    },
+                    showCheckBox: true, checkDisabledChildren: false, loadOnDemand: false
+                }, '#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[2].classList.contains('e-disable')).toBe(true);
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                let checkedEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkedEle.length).toBe(4);
+                expect(treeObj.checkedNodes.length).toBe(4);
+                expect(treeObj.getAllCheckedNodes().length).toBe(4);
+                checkEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                checkedEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkedEle.length).toBe(0);
+                expect(treeObj.checkedNodes.length).toBe(0);
+                expect(treeObj.getAllCheckedNodes().length).toBe(0);
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                checkedEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkedEle.length).toBe(4);
+                expect(treeObj.checkedNodes.length).toBe(4);
+                expect(treeObj.getAllCheckedNodes().length).toBe(4);
+                let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                mouseEventArgs.target = newli[5].querySelector('.e-icons');
+                expect((newli[5].querySelector('.e-icons') as Element).classList.contains('e-icon-expandable')).toBe(true);
+                expect((newli[5].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(false);
+                treeObj.touchClickObj.tap(tapEvent);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let newCheckedEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                    expect(newCheckedEle.length).toBe(4);
+                    expect(treeObj.checkedNodes.length).toBe(4);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(4);
+                    done();
+                }, 450);
             });
 
             it('drawNode event with selectable field testing', () => {
@@ -2201,7 +2317,7 @@ describe('TreeView control', () => {
                 treeObj.allowDragAndDrop = true;
                 treeObj.dragArea = '#tree1';
                 treeObj.dataBind();
-            })
+            });
         });
         describe('mouse events testing', () => {
             let mouseEventArgs: any;
@@ -3272,6 +3388,37 @@ describe('TreeView control', () => {
                 (li[0].querySelector('.e-input') as HTMLInputElement).blur();
                 expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
                 expect((li[0].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Music');
+            });
+            it('ensure nodeEditing input object destroyed after node edited', () => {
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child:"nodeChild" },
+                    allowEditing: true,
+                    fullRowSelect: false, showCheckBox: true,
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                treeObj.touchEditObj.tap(tapEvent);
+                tapEvent.tapCount = 2;
+                expect(treeObj.inputObj).toBe(undefined);
+                expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
+                expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
+                expect(li[0].childElementCount).toBe(1);
+                expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                treeObj.touchEditObj.tap(tapEvent);
+                expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
+                expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
+                expect(li[0].childElementCount).toBe(1);
+                expect(li[0].querySelector('.e-list-text').childElementCount).toBe(1);
+                expect(li[0].querySelector('.e-input').nodeName).toBe('INPUT');
+                expect((li[0].querySelector('.e-input') as HTMLInputElement).value).toBe('Music');
+                (li[0].querySelector('.e-input') as HTMLInputElement).value = 'Music node';
+                expect(treeObj.inputObj).not.toBe(null);
+                (li[0].querySelector('.e-input') as HTMLInputElement).blur();
+                expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                expect((li[0].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Music node');
+                expect(treeObj.inputObj).toBe(null);
+               
             });
             it('nodeEdited event is triggered', () => {
                 treeObj = new TreeView({
@@ -5615,6 +5762,122 @@ describe('TreeView control', () => {
                         done();
                     }, 450);
                 }, 100);
+            });
+            it('checkDisabledChildren - ensure auto check on disabled Nodes without load on demand', (done: Function) => {
+                treeObj = new TreeView({
+                    fields: { dataSource: localData8, id: 'id', text: 'name', parentID: 'pid', hasChildren: 'hasChild' },
+                    showCheckBox: true, checkDisabledChildren: false
+                }, '#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[2].classList.contains('e-disable')).toBe(false);
+                expect(li[2].getAttribute('aria-disabled')).toBe(null);
+                treeObj.disableNodes(['3', '9']);
+                expect(treeObj.getDisabledNodes().length).toEqual(2);
+                expect(li[2].classList.contains('e-disable')).toBe(true);
+                expect(li[2].getAttribute('aria-disabled')).toBe('true');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                let checkedEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkedEle.length).toBe(4);
+                expect(treeObj.checkedNodes.length).toBe(4);
+                expect(treeObj.getAllCheckedNodes().length).toBe(4);
+                checkEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                checkedEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkedEle.length).toBe(0);
+                expect(treeObj.checkedNodes.length).toBe(0);
+                expect(treeObj.getAllCheckedNodes().length).toBe(0);
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                checkedEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkedEle.length).toBe(1);
+                expect(treeObj.checkedNodes.length).toBe(3);
+                expect(treeObj.getAllCheckedNodes().length).toBe(3);
+                let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                mouseEventArgs.target = newli[5].querySelector('.e-icons');
+                expect((newli[5].querySelector('.e-icons') as Element).classList.contains('e-icon-expandable')).toBe(true);
+                expect((newli[5].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(false);
+                treeObj.touchClickObj.tap(tapEvent);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let newCheckedEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                    expect(newCheckedEle.length).toBe(2);
+                    expect(treeObj.checkedNodes.length).toBe(2);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(2);
+                    done();
+                }, 450);
+            });
+            it('checkDisabledChildren - ensure auto check on disabled Nodes with load on demand', (done: Function) => {
+                treeObj = new TreeView({
+                    fields: { dataSource: localData8, id: 'id', text: 'name', parentID: 'pid', hasChildren: 'hasChild' },
+                    showCheckBox: true, checkDisabledChildren: false, loadOnDemand: false
+                }, '#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[2].classList.contains('e-disable')).toBe(false);
+                expect(li[2].getAttribute('aria-disabled')).toBe(null);
+                treeObj.disableNodes(['3', '9']);
+                expect(treeObj.getDisabledNodes().length).toEqual(2);
+                expect(li[2].classList.contains('e-disable')).toBe(true);
+                expect(li[2].getAttribute('aria-disabled')).toBe('true');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                let checkedEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkedEle.length).toBe(4);
+                expect(treeObj.checkedNodes.length).toBe(4);
+                expect(treeObj.getAllCheckedNodes().length).toBe(4);
+                checkEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                checkedEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkedEle.length).toBe(0);
+                expect(treeObj.checkedNodes.length).toBe(0);
+                expect(treeObj.getAllCheckedNodes().length).toBe(0);
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                checkedEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkedEle.length).toBe(3);
+                expect(treeObj.checkedNodes.length).toBe(3);
+                expect(treeObj.getAllCheckedNodes().length).toBe(3);
+                let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                mouseEventArgs.target = newli[5].querySelector('.e-icons');
+                expect((newli[5].querySelector('.e-icons') as Element).classList.contains('e-icon-expandable')).toBe(true);
+                expect((newli[5].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(false);
+                treeObj.touchClickObj.tap(tapEvent);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let newCheckedEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                    expect(newCheckedEle.length).toBe(3);
+                    expect(treeObj.checkedNodes.length).toBe(3);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(3);
+                    done();
+                }, 450);
             });
             it('allowEditing property testing', (done: Function) => {
                 treeObj = new TreeView({ 
@@ -12297,6 +12560,30 @@ describe('TreeView control', () => {
                     done();
                 }, 450);
             }, 450);
+        });
+        it('checkedNodes and DataSource property testing', () => {
+            treeObj = new TreeView({
+                fields: { dataSource: [], id: 'id', parentID: 'pid', text: 'name', hasChildren: 'hasChild' },
+                showCheckBox: true,
+            }, '#tree1');
+            treeObj.fields.dataSource = dynamicChangeCheckbox;
+            treeObj.dataBind();
+            treeObj.checkedNodes = ["26"];
+            treeObj.dataBind();
+            expect(treeObj.element.querySelectorAll(".e-check").length).toBe(1);
+            expect(treeObj.checkedNodes.length).toBe(2);
+            expect(treeObj.element.querySelectorAll(".e-stop").length).toBe(1);
+            expect(treeObj.element.querySelectorAll("li").length).toBe(5);
+            const newLocalData = dynamicChangeCheckbox.filter(
+                (row: any) => row.id === 1 || row.id === 4 || row.pid === 4
+            );
+            treeObj.fields.dataSource = newLocalData;
+            treeObj.dataBind();
+            treeObj.checkedNodes = ["26"];
+            treeObj.dataBind();
+            expect(treeObj.element.querySelectorAll(".e-check").length).toBe(2);
+            expect(treeObj.element.querySelectorAll("li").length).toBe(2);
+            expect(treeObj.checkedNodes.length).toBe(3);
         });
         it('with bigger class', (done: Function) => {
             document.body.classList.add('e-bigger');

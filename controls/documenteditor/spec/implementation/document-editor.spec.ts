@@ -295,6 +295,32 @@ describe('Null or Undefined values check for Document Editor properties', () => 
         expect(editor.enableOptionsPane).toBe(false);
         editor.destroy();
     });
+    it('isXmlPaneTool', () => {
+        console.log('isXmlPaneTool');
+        editor = new DocumentEditor();
+        editor.appendTo("#container");
+        editor.isXmlPaneTool = null;
+        expect(editor.isXmlPaneTool).toBe(null);
+        editor.destroy();
+        editor = new DocumentEditor();
+        editor.isXmlPaneTool = false;
+        editor.appendTo("#container");
+        expect(editor.isXmlPaneTool).toBe(false);
+        editor.destroy();
+    });
+    it('isXmlMapCC', () => {
+        console.log('isXmlMapCC');
+        editor = new DocumentEditor();
+        editor.isXmlMapCC = null;
+        editor.appendTo("#container");
+        expect(editor.isXmlMapCC).toBe(null);
+        editor.destroy();
+        editor = new DocumentEditor();
+        editor.isXmlMapCC = false;
+        editor.appendTo("#container");
+        expect(editor.isXmlMapCC).toBe(false);
+        editor.destroy();
+    });
     it('enableContextMenu', () => {
         console.log('enableContextMenu');
         editor = new DocumentEditor({enableContextMenu:null});

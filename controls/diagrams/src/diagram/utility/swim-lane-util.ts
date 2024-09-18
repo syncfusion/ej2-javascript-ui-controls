@@ -199,11 +199,6 @@ export function phaseDefine(
         phaseObject.constraints &= ~NodeConstraints.Select;
     }
     shape.phases[parseInt(phaseIndex.toString(), 10)].header.id = phaseObject.id;
-    //894556-Swimlane wrapper updated wrongly when phase offset set for vertical swimlane
-    if (!diagram.diagramActions && !orientation && (object.wrapper as any).height) {
-        const phaseOffset: number = shape.phases[parseInt(phaseIndex.toString(), 10)].offset;
-        object.wrapper.height = object.wrapper.height >= phaseOffset ? object.wrapper.height : phaseOffset + (object.shape as any).header.height;
-    }
     const wrapper: Container = addObjectToGrid(
         diagram, grid, object, phaseObject, false, true, false, shape.phases[parseInt(phaseIndex.toString(), 10)].id);
     grid.addObject(wrapper, rowValue, colValue);
@@ -274,10 +269,6 @@ export function laneCollection(
         grid.addObject(parentWrapper, rowValue, colValue);
         if (!orientation) { rowValue++; }
         colValue = orientation ? l : laneIndex + 1;
-        //894556-Swimlane wrapper updated wrongly when phase offset set for vertical swimlane
-        if (!diagram.diagramActions && orientation && (object.wrapper as any).height) {
-            object.wrapper.height += parentWrapper.height;
-        }
     }
 }
 
@@ -1235,7 +1226,7 @@ export function addPhase(diagram: Diagram, parent: NodeModel, newPhase: PhaseMod
                     addLastPhase(phaseIndex, parent, entry, grid, orientation, newPhase);
                 }
             }
-            // Exception throws while perform addPhase with offset higher than existing phases offset
+            //897967: Exception throws while perform addPhase with offset higher than existing phases offset
             if (phaseIndex >= 0) {
                 const phaseObj: PhaseModel = new Phase((parent.shape) as Shape, 'phases', newPhase, true);
                 if (!(diagram.diagramActions & DiagramAction.UndoRedo)) { phaseObj.id += randomId(); }

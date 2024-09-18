@@ -469,6 +469,18 @@ describe('Circular 3D Chart Control', () => {
             pie.backgroundImage = 'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
             pie.refresh();
         });
+        it('checking after resize', (done: Function) => {
+            pie.loaded = (args: CircularChart3DLoadedEventArgs) => {
+                expect((pie.series[0] as CircularChart3DSeries).points.length).toBe(7);
+                done();
+            };
+            Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 500 });
+            Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 500 });
+            window.dispatchEvent(new Event('resize'));
+            setTimeout(function () {
+                pie.refresh();
+            }, 500);
+        });
     });
 
     it('memory leak', () => {

@@ -2852,7 +2852,7 @@ export class PivotEngine {
                 return this.sortHeaders(fieldName as string, childrens, headers, sortOrder, childrens.type);
             }
         } else {
-            return this.sortHeaders(fieldName as string, childrens, headers, sortOrder, childrens.type);
+            return this.sortHeaders(fieldName as string, childrens, headers, sortOrder, 'date');
         }
     }
     private sortHeaders(

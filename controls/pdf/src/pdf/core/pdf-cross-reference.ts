@@ -935,7 +935,7 @@ export class _PdfCrossReference {
             for (let i: number = 0; i < value.length; i++) {
                 byteArray.push(value.charCodeAt(i));
             }
-            if (stream._isCompress) {
+            if (stream._isCompress && !stream._isImage) {
                 const dataArray: Uint8Array = new Uint8Array(byteArray);
                 const sw: CompressedStreamWriter = new CompressedStreamWriter();
                 sw.write(dataArray, 0, dataArray.length);

@@ -6,7 +6,7 @@ import { AnimationModel } from '../../common/model/base-model';
 import { Axis } from '../../chart/axis/axis';
 
 /**
- * `LineSeries` module used to render the line series.
+ * The `LineSeries` module is used to render the line series.
  */
 export class LineSeries extends LineBase {
     /**
@@ -85,11 +85,8 @@ export class LineSeries extends LineBase {
             }
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -99,6 +96,7 @@ export class LineSeries extends LineBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         const option: AnimationModel = series.animation;

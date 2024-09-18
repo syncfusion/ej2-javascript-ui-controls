@@ -45,51 +45,6 @@
     }
   }
 
-  .e-bigger.e-rtl,
-  .e-bigger .e-rtl,
-  .e-rtl .e-bigger {
-    #{if(&, '&', '*')} .e-dropdownbase {
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
-        @if $skin-name == 'tailwind' {
-          padding-right: $ddl-list-header-bigger-padding-left;
-        }
-      }
-
-      #{if(&, '&', '*')}.e-dd-group .e-list-item {
-        @if $skin-name == 'tailwind' {
-          padding-right: $ddl-group-list-bigger-padding-left;
-        }
-      }
-    }
-  }
-
-  .e-small.e-bigger.e-rtl,
-  .e-small.e-bigger .e-rtl,
-  .e-rtl .e-small.e-bigger,
-  .e-small .e-rtl.e-bigger,
-  .e-bigger .e-rtl.e-small {
-    #{if(&, '&', '*')} .e-dropdownbase {
-      #{if(&, '&', '*')} .e-list-item {
-        padding-left: $ddl-list-rtl-padding-left;
-        padding-right: $ddl-list-rtl-padding-right;
-      }
-
-      #{if(&, '&', '*')}.e-dd-group .e-list-item {
-        @if $skin-name == 'tailwind' {
-          padding-right: $ddl-group-list-bigger-small-padding-left;
-        }
-      }
-
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
-        @if $skin-name == 'tailwind' {
-          padding-right: $ddl-list-header-bigger-small-padding-left;
-        }
-      }
-    }
-  }
-
   .e-dropdownbase {
     border-color: $ddl-list-border-color;
     @if $skin-name == 'Material3' {
@@ -113,6 +68,9 @@
         }
         @if $skin-name != 'Material3' {
           background-color: $ddl-list-bg-color;
+        }
+        @if $skin-name == 'fluent2' {
+          margin-bottom: 2px;
         }
       }
 
@@ -174,25 +132,19 @@
         @if $skin-name == 'Material3' {
           background: $ddl-list-focus-bg-color;
         }
-        @if $skin-name != 'Material3' {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
           background-color: $ddl-list-hover-bg-color;
+        }
+        @if $skin-name == 'fluent2' {
+          color: $ddl-list-hover-font-color;
+          background: $ddl-list-focus-bg-color;
         }
       }
 
       #{if(&, '&', '*')} .e-list-item.e-active:last-child {
-        @if ($skin-name == 'bootstrap5') {
+        @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
           border-radius: 2px;
         }
-      }
-    }
-  }
-
-  .e-bigger .e-dropdownbase {
-    @at-root {
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
-        font-size: $ddl-bigger-list-header-font-size;
-        padding-left: $ddl-list-header-bigger-padding-left;
       }
     }
   }
@@ -283,39 +235,6 @@
     }
   }
 
-  .e-bigger.e-small .e-dropdownbase,
-  .e-dropdownbase.e-small.e-bigger {
-    @at-root {
-      #{if(&, '&', '*')} .e-list-item {
-        color: $ddl-bigger-small-list-font-color;
-        line-height: $ddl-bigger-small-line-height;
-        min-height: $ddl-bigger-small-line-height;
-        text-indent: $ddl-bigger-small-list-text-indent;
-      }
-
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
-        line-height: $ddl-bigger-small-line-height;
-        min-height: $ddl-bigger-small-line-height;
-        padding-left: $ddl-list-header-bigger-small-padding-left;
-      }
-
-      #{if(&, '&', '*')} .e-list-item .e-list-icon {
-        font-size: $ddl-bigger-small-icon-font-size;
-      }
-    }
-  }
-
-  .e-bigger.e-small .e-dropdownbase,
-  .e-dropdownbase.e-bigger.e-small  {
-    @at-root {
-      #{if(&, '&', '*')} .e-list-group-item,
-      #{if(&, '&', '*')} .e-fixed-head {
-        font-size: $ddl-bigger-small-list-header-font-size;
-      }
-    }
-  }
-
   .e-ddl.e-popup.e-multiselect-group .e-list-group-item {
     @if $skin-name == 'Material3' {
       background: $ddl-list-bg-color;
@@ -328,7 +247,7 @@
     color: $ddl-list-default-font-color;
     font-family: $ddl-list-font-family;
     text-indent: $ddl-list-text-indent;
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' or $skin-name == 'FluentUI') {
       color: $ddl-list-header-font-color;
     }
     @if $skin-name != 'tailwind' and $skin-name != 'FluentUI' {

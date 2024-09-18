@@ -343,6 +343,8 @@ export class Lists {
                 this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
             }
             let blockNodes: Element[];
+            const startOffset: number = range.startOffset;
+            const endOffset: number = range.endOffset;
             const startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
             const endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
             if ((startNode === endNode && (startNode.nodeName === 'BR' || startNode.nodeName === '#text') &&

@@ -590,6 +590,39 @@ describe('Schedule header bar', () => {
         }); 
     });
 
+    describe('Custom toolbar with click function', () => {
+        let schObj: Schedule;
+        let wasClicked: boolean;
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = {
+                width: 800, height: 600, selectedDate: new Date(2017, 9, 4),
+                toolbarItems: [{ name: 'Today', text: 'Today', align: 'Right'}, 
+                { name: 'Previous', text: 'previous', align: 'Right' }, { name: 'Next', text: 'Next', align:'Right' }, { name: 'DateRangeText', align: 'Right' },
+                { prefixIcon: 'e-icons e-cut', tooltipText: 'Cut', click: function() { wasClicked = true; }, align:'Right'  }
+
+                ],
+                views: ['Day', 'Week', 'WorkWeek', 'Month'],
+            };
+            schObj = util.createSchedule(model, [], done);
+            let sportsData: string[] = ['Badminton', 'Cricket', 'Football', 'Golf', 'Tennis'];
+            let dropDownListObject: DropDownList = new DropDownList({
+                dataSource: sportsData
+            });
+            dropDownListObject.appendTo('#dropdown');
+        });
+        afterAll((): void => {
+            util.destroy(schObj);
+        });
+        it('checking toolbar item click action', () => {
+            expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(5);
+            expect(schObj.element.querySelectorAll('.e-cut').length).toEqual(1);
+            expect(schObj.toolbarItems[4].tooltipText).toEqual('Cut');
+            (schObj.toolbarItems[4]).click();
+            expect(wasClicked).toBe(true);
+
+        }); 
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

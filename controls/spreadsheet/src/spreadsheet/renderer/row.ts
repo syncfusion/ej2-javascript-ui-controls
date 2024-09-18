@@ -1,8 +1,8 @@
 import { Spreadsheet } from '../base/index';
-import { IRowRenderer, ICellRenderer, CellRenderArgs, isImported, deInitProperties } from '../common/index';
+import { IRowRenderer, ICellRenderer, CellRenderArgs, deInitProperties } from '../common/index';
 import { getRowHeight, SheetModel, getCell, isHiddenRow, isHiddenCol } from '../../workbook/base/index';
 import { attributes } from '@syncfusion/ej2-base';
-import { getCellAddress, getCellIndexes, skipHiddenIdx } from '../../workbook/common/index';
+import { getCellAddress, getCellIndexes, skipHiddenIdx, isImported } from '../../workbook/common/index';
 
 /**
  * RowRenderer module is used for creating row element

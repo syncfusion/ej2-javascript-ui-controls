@@ -6,7 +6,7 @@ The [JavaScript Query Builder](https://www.syncfusion.com/javascript-ui-controls
 
 <p align="center">
     <a href="https://ej2.syncfusion.com/documentation/query-builder/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm">Getting started</a> . 
-    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm#/material/query-builder/default.html">Online demos</a> . 
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm#/fluent2/query-builder/default.html">Online demos</a> . 
     <a href="https://www.syncfusion.com/javascript-ui-controls/js-query-builder?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm">Learn more</a>
 </p>
 
@@ -69,4 +69,4 @@ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-contr
 
 See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm) for more info.
 
-&copy; Copyright 2022 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+&copy; Copyright 2024 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

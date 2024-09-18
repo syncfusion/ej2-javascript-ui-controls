@@ -1,17 +1,6 @@
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { RangeNavigator, RangeSlider, PeriodsModel } from '../../range-navigator';
 
-export interface ISelectorRenderArgs {
-    /** Defines the thumb size of the slider. */
-    thumbSize: number;
-    /** Defines the selector appending element. */
-    element: HTMLElement;
-    /** Defines the selector width. */
-    width: number;
-    /** Defines the selector height. */
-    height: number;
-}
-
 /** @private */
 export interface IFontMapping {
     size?: string;
@@ -119,6 +108,21 @@ export interface IPDFArgs {
 }
 
 /**
+ * Interface representing the arguments passed to an event that occurs after exporting data.
+ *
+ * @interface
+ * @private
+ */
+export interface IAfterExportEventArgs {
+    /** Specifies the name of the event. */
+    name: string;
+    /** Defines the event's cancellation status. */
+    cancel: boolean;
+    /** Provides the data URL generated after exporting. */
+    dataUrl: string;
+}
+
+/**
  * Axis visible range.
  *
  * @public
@@ -132,18 +136,4 @@ export interface VisibleRangeModel {
     interval?: number;
     /** Axis delta value. */
     delta?: number;
-}
-
-/**
- * Interface representing the arguments passed to an event that occurs after exporting data.
- *
- * @interface
- */
-export interface IAfterExportEventArgs {
-    /** Defines the name of the event. */
-    name: string;
-    /** Defines the event cancel status. */
-    cancel: boolean;
-    /** The data URL generated after exporting. */
-    dataUrl: string;
 }

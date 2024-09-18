@@ -166,6 +166,81 @@ describe('Gantt spec for  scroll', () => {
         it('column type', () => {
             expect(ganttObj.treeGridModule.treeGridColumns[3].type).toBe('number')
         });
+        it('column type', () => {
+            let args = [];
+            args[0] = "sample";
+            ganttObj['portals'] = [];
+            ganttObj.treeGridModule['renderReactTemplate'](args);
+            expect(ganttObj.treeGridModule.treeGridColumns[3].type).toBe('number')
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Coverage issue changeDelocale', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: filterdata,
+                dateFormat: 'MM/dd/yyyy',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date' },
+                    { field: 'Duration', headerText: 'Duration', editType: 'numericedit', type: "number" },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                treeColumnIndex: 0,
+                toolbar: ['Search'],
+                allowFiltering: true,
+                includeWeekend: true,
+                height: '450px',
+                timelineSettings: {
+                    timelineUnitSize: 60,
+                    topTier: {
+                        format: 'MMM dd, yyyy',
+                        unit: 'Day',
+                    },
+                    bottomTier: {
+                        unit: 'Hour',
+                        format: 'h.mm a',
+                    },
+                },
+                splitterSettings: {
+                    columnIndex: 3,
+                },
+                durationUnit: 'Day',
+                dayWorkingTime: [{ from: 1, to: 24 }],
+                labelSettings: {
+                    rightLabel: 'TaskName',
+                },
+                projectStartDate: new Date('07/15/1969 01:00:00 AM'),
+                projectEndDate: new Date('07/25/1969'),
+
+            }, done);
+        });
+        it('changeDelocale ', () => {
+            const dependencyString = 'Finish to FinishFF,Task 1,Finish to StartFS,Task 2,Start to StartSS,Start to FinishSF,Task 3';
+            ganttObj.treeGridModule.changeDelocale(dependencyString);
+            expect(ganttObj.flatData.length).toBe(1)
+        });
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);

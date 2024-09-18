@@ -4,7 +4,6 @@ import { Spreadsheet, dialog as dlg, DialogBeforeOpenEventArgs, BeforeSelectEven
 import { SheetModel } from '../../../src/index';
 import { ListView, SelectedCollection } from '@syncfusion/ej2-lists';
 import { Dialog, Overlay } from '../../../src/spreadsheet/services/index';
-import { DefaultEditCell } from '@syncfusion/ej2-grids';
 
 describe('Protect sheet ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -76,7 +75,7 @@ describe('Protect sheet ->', () => {
             helper.triggerKeyNativeEvent(46);
             setTimeout(() => {
                 expect(helper.getElement('.e-editAlert-dlg.e-dialog')).toBeNull();
-                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[1])).toBe('{"format":"mm-dd-yyyy","isLocked":false}');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[1])).toBe('{"format":"m/d/yyyy","isLocked":false}');
                 done();
             });
         });
@@ -172,7 +171,7 @@ describe('Protect sheet ->', () => {
             (document.getElementsByClassName('e-frame e-icons')[4] as HTMLElement).click();
             (document.getElementsByClassName('e-frame e-icons')[5] as HTMLElement).click();
             (document.getElementsByClassName('e-frame e-icons')[6] as HTMLElement).click();
-            (document.getElementsByClassName('e-flat')[8] as HTMLElement).click();
+            (document.querySelector('.e-footer-content .e-btn:not(.e-primary)') as HTMLButtonElement).click();
             expect(helper.getInstance().sheets[0].isProtected).toBeFalsy();
             done();
         });
@@ -259,11 +258,11 @@ describe('Protect sheet ->', () => {
                 helper.click('.e-protect-dlg .e-primary');
                 setTimeout(() => {
                     helper.setAnimationToNone('.e-reenterpwd-dlg.e-dialog');
-                    (document.getElementsByClassName('e-flat')[9] as HTMLElement).click();
+                    (document.querySelector('.e-reenterpwd-dlg .e-footer-content .e-btn:not(.e-primary)') as HTMLButtonElement).click();
+                    expect(document.querySelector('.e-reenterpwd-dlg')).toBeNull();
                     helper.click('.e-protect-dlg .e-primary');
                     setTimeout(() => {
-                        let dialogElem: number= document.getElementsByClassName(".e-reenterpwd-dlg").length
-                        expect(dialogElem).toBe(0);
+                        expect(document.querySelector('.e-reenterpwd-dlg')).not.toBeNull();
                         done();
                     });
                 });
@@ -1180,20 +1179,97 @@ describe('Protect sheet ->', () => {
             });
         });
         describe('CR-895594', () => {
-            beforeEach((done: Function) => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: 'spreadsheet' }] }], isProtected: true }, { rows: [{ cells: [{ value: 'spreadsheet' }] }], isProtected: true }, { rows: [{ cells: [{ value: 'spreadsheet' }] }], isProtected: true }], activeSheetIndex: 1 }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('When unprotecting a non-active sheet using the unprotectSheet() method, activeSheet gets unprotected', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 expect(spreadsheet.sheets[0].isProtected).toBe(true);
                 spreadsheet.unprotectSheet(0);
-                expect(spreadsheet.sheets[1].isProtected).toBe(true);
-                expect(spreadsheet.sheets[0].isProtected).toBe(false);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[1].isProtected).toBe(true);
+                    expect(spreadsheet.sheets[0].isProtected).toBe(false);
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('Checking updateAction method for the protect workbook and lock cells ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {}], activeSheetIndex: 1 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Protect Workbook through updateAction method', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const args = { action: 'protectWorkbook', eventArgs: { isProtected: true, password: 'Spreadsheet' } };
+            helper.getInstance().updateAction(args);
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(1);
                 done();
             });
+        });
+        it('Unprotect Workbook through updateAction method', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const args = { action: 'protectWorkbook', eventArgs: { isProtected: false } };
+            helper.getInstance().updateAction(args);
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                done();
+            });
+        });
+        it('Unprotect Sheet through updateAction method', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            let args = {
+                action: 'protectSheet', eventArgs: {
+                    isProtected: true, password: 'Spreadsheet', protectSettings: {
+                        selectCells: true,
+                        formatCells: false,
+                        formatRows: false,
+                        formatColumns: false,
+                        insertLink: false
+                    }
+                }
+            };
+            helper.getInstance().updateAction(args);
+            args = {
+                action: 'protectSheet', eventArgs: {
+                    isProtected: false, password: '', protectSettings: {
+                        selectCells: false,
+                        formatCells: false,
+                        formatRows: false,
+                        formatColumns: false,
+                        insertLink: false
+                    }
+                }
+            };
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                done();
+            });
+        });
+        it('Lock cells using updateAction method', function (done) {
+            let args = { action: 'lockCells', eventArgs: { range: 'Sheet1!C1:C10' } };
+            helper.getInstance().updateAction(args);
+            expect(helper.getInstance().activeSheetIndex).toEqual(1);
+            done();
+        });
+        it('Chart Design using updateAction method', function (done) {
+            let args = { action: 'chartDesign', eventArgs: {} };
+            helper.getInstance().updateAction(args);
+            expect(helper.getInstance().activeSheetIndex).toEqual(1);
+            done();
+        });
+        it('Add note using updateAction method', function (done) {
+            let args = { action: 'addNote', eventArgs: { address: 'Sheet1!C1' } };
+            helper.getInstance().updateAction(args);
+            expect(helper.getInstance().activeSheetIndex).toEqual(1);
+            done();
         });
     });
 });

@@ -403,11 +403,11 @@ export class Edit {
             }
             const ganttData: IGanttData = this.parent.viewType === 'ResourceView' ?
                 this.parent.flatData[this.parent.getTaskIds().indexOf('T' + data[tasks.id])] : this.parent.getRecordByID(data[tasks.id]);
-                if (!isNullOrUndefined(ganttData[tasks.milestone])) {
-                    if (ganttData[tasks.milestone] === true) {
-                        ganttData[tasks.milestone] = false;
-                    }
+            if (!isNullOrUndefined(ganttData[tasks.milestone])) {
+                if (ganttData[tasks.milestone] === true) {
+                    ganttData[tasks.milestone] = false;
                 }
+            }
             if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent['isUndoRedoItemPresent']('Edit') && ganttData) {
                 this.parent.undoRedoModule['createUndoCollection']();
                 const details: Object = {};
@@ -422,6 +422,15 @@ export class Edit {
                     if (this.parent.viewType === 'ProjectView' && data['ganttProperties'].predecessor) {
                         for (let i: number = 0; i < data['ganttProperties'].predecessor.length; i++) {
                             const isValid: IPredecessor[] = ganttData.ganttProperties.predecessor.filter((pred: IPredecessor) => {
+                                if ((pred.from === data['ganttProperties'].predecessor[i as number].from &&
+                                     pred.to === data['ganttProperties'].predecessor[i as number].to
+                                     && data['ganttProperties'].predecessor[i as number].offset !== pred.offset)) {
+                                    const record: IGanttData = this.parent.flatData[this.parent.ids.indexOf(pred.to)];
+                                    const changeValue: IPredecessor[] = record.ganttProperties.predecessor.filter((pred: IPredecessor) => {
+                                        return (pred.from === data['ganttProperties'].predecessor[i as number].from && pred.to === data['ganttProperties'].predecessor[i as number].to);
+                                    });
+                                    changeValue[0].offset = data['ganttProperties'].predecessor[i as number].offset;
+                                }
                                 return pred.from !== data['ganttProperties'].predecessor[i as number].from && pred.from !== data['ganttProperties'].predecessor[i as number].to;
                             });
                             if (isValid.length > 0) {
@@ -709,73 +718,73 @@ export class Edit {
             this.parent.editModule.dialogModule['currentResources']) ? this.parent.editModule.dialogModule['currentResources']
             : currentData.ganttProperties.resourceInfo;
         if (!isNullOrUndefined(resources)) {
-                switch (taskType) {
-                case 'FixedUnit':
-                    if (resources.length === 0) {
-                        return;
+            switch (taskType) {
+            case 'FixedUnit':
+                if (resources.length === 0) {
+                    return;
+                }
+                else if (isAutoSchedule && resources.length) {
+                    if ((column === 'resource')) {
+                        this.parent.dataOperation.updateWorkWithDuration(currentData);
                     }
-                    else if (isAutoSchedule && resources.length) {
-                        if ((column === 'resource')) {
-                            this.parent.dataOperation.updateWorkWithDuration(currentData);
+                    else if (column === 'work') {
+                        this.parent.dataOperation.updateDurationWithWork(currentData);
+                    }
+                    else if (column === 'duration') {
+                        this.parent.dataOperation.updateWorkWithDuration(currentData);
+                        if (ganttProp.duration === 0) {
+                            this.parent.setRecordValue('isMilestone', true, ganttProp, true);
                         }
-                        else if (column === 'work') {
-                            this.parent.dataOperation.updateDurationWithWork(currentData);
-                        }
-                        else if (column === 'duration') {
-                            this.parent.dataOperation.updateWorkWithDuration(currentData);
-                            if (ganttProp.duration === 0) {
-                                this.parent.setRecordValue('isMilestone', true, ganttProp, true);
+                    }
+                } else if (!isAutoSchedule && column === 'work') {
+                    this.parent.dataOperation.updateUnitWithWork(currentData);
+                } else {
+                    this.parent.dataOperation.updateWorkWithDuration(currentData);
+                }
+                break;
+            case 'FixedWork':
+                if (resources.length === 0) {
+                    return;
+                } else if (isAutoSchedule) {
+                    if (column === 'duration' || column === 'endDate') {
+                        this.parent.dataOperation.updateUnitWithWork(currentData);
+                        this.parent.dataOperation.updateDurationWithWork(currentData);
+                        if (ganttProp.duration === 0) {
+                            this.parent.setRecordValue('isMilestone', true, ganttProp, true);
+                            this.parent.setRecordValue('work', 0, ganttProp, true);
+                            if (!isNullOrUndefined(this.parent.taskFields.work)) {
+                                this.parent.dataOperation.updateMappingData(currentData, 'work');
                             }
                         }
-                    } else if (!isAutoSchedule && column === 'work') {
+                    } else {
+                        this.parent.dataOperation.updateDurationWithWork(currentData);
+                    }
+                } else {
+                    if (column === 'work') {
                         this.parent.dataOperation.updateUnitWithWork(currentData);
                     } else {
                         this.parent.dataOperation.updateWorkWithDuration(currentData);
                     }
-                    break;
-                case 'FixedWork':
-                    if (resources.length === 0) {
-                        return;
-                    } else if (isAutoSchedule) {
-                        if (column === 'duration' || column === 'endDate') {
-                            this.parent.dataOperation.updateUnitWithWork(currentData);
-                            this.parent.dataOperation.updateDurationWithWork(currentData);
-                            if (ganttProp.duration === 0) {
-                                this.parent.setRecordValue('isMilestone', true, ganttProp, true);
-                                this.parent.setRecordValue('work', 0, ganttProp, true);
-                                if (!isNullOrUndefined(this.parent.taskFields.work)) {
-                                    this.parent.dataOperation.updateMappingData(currentData, 'work');
-                                }
-                            }
-                        } else {
-                            this.parent.dataOperation.updateDurationWithWork(currentData);
-                        }
-                    } else {
-                        if (column === 'work') {
-                            this.parent.dataOperation.updateUnitWithWork(currentData);
-                        } else {
-                            this.parent.dataOperation.updateWorkWithDuration(currentData);
-                        }
-                    }
-                    break;
-                case 'FixedDuration':
-                    if (resources.length === 0) {
-                        return;
-                    }
-                    if (resources.length && (column === 'work' || (isAutoSchedule &&
-                            isEffectDriven && (column === 'resource')))) {
-                        if (column === 'work') {
-                            this.parent.dataOperation.updateUnitWithWork(currentData);
-                        }
-                        else {
-                            this.parent.dataOperation.updateWorkWithDuration(currentData);
-                            this.parent.dataOperation.updateUnitWithWork(currentData);
-                        }
-                    } else {
-                        this.parent.dataOperation.updateWorkWithDuration(currentData);
-                    }
-                    break;
                 }
+                break;
+            case 'FixedDuration':
+                if (resources.length === 0) {
+                    return;
+                }
+                if (resources.length && (column === 'work' || (isAutoSchedule &&
+                    isEffectDriven && (column === 'resource')))) {
+                    if (column === 'work') {
+                        this.parent.dataOperation.updateUnitWithWork(currentData);
+                    }
+                    else {
+                        this.parent.dataOperation.updateWorkWithDuration(currentData);
+                        this.parent.dataOperation.updateUnitWithWork(currentData);
+                    }
+                } else {
+                    this.parent.dataOperation.updateWorkWithDuration(currentData);
+                }
+                break;
+            }
         }
     }
 
@@ -938,7 +947,7 @@ export class Edit {
         }
         let validateObject: object = {};
         if (isValidatePredecessor && this.parent.autoCalculateDateScheduling && !(this.parent.isLoad &&
-            !this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)) {
+            this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)) {
             if (!isNullOrUndefined(parentData)) {
                 validateObject = this.parent.connectorLineEditModule.validateTypes(parentData, args.data);
             } else if (!isNullOrUndefined(childRecordIndex)) {
@@ -1006,7 +1015,7 @@ export class Edit {
     public updateEditedTask(args: ITaskbarEditedEventArgs): void {
         const ganttRecord: IGanttData = args.data;
         this.editedRecord = ganttRecord;
-        if (this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand &&
+        if (this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand &&
             this.parent.taskFields.hasChildMapping)) {
             this.updateParentChildRecord(ganttRecord);
         }
@@ -1014,7 +1023,7 @@ export class Edit {
             this.parent.predecessorModule.isValidatedParentTaskID = '';
         }
         if ((this.parent.isConnectorLineUpdate || (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'])) && this.parent.autoCalculateDateScheduling &&
-            !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)) {
+            !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)) {
             /* validating predecessor for updated child items */
             for (let i: number = 0; i < this.parent.predecessorModule.validatedChildItems.length; i++) {
                 const child: IGanttData = this.parent.predecessorModule.validatedChildItems[i as number];
@@ -1058,7 +1067,7 @@ export class Edit {
         }
         /** Update parent up-to zeroth level */
         if (ganttRecord.parentItem) {
-            if (this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand &&
+            if (this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand &&
                 this.parent.taskFields.hasChildMapping)) {
                 this.parent.dataOperation.updateParentItems(ganttRecord, true);
             }
@@ -1085,11 +1094,14 @@ export class Edit {
             this.parent.dataOperation.updateParentItems(childRecord[i as number]);
         }
         if (this.parent.editModule['updateParentRecords'] && this.parent.editModule['updateParentRecords'].length > 0) {
-            this.parent.editModule['updateParentRecords'].forEach((record) => {
+            this.parent.editModule['updateParentRecords'].forEach((record: IGanttData) => {
                 if (record.ganttProperties.predecessor && record.ganttProperties.predecessor.length > 0) {
-                    this.parent.predecessorModule.validatePredecessor(record, [], '')
+                    this.parent.predecessorModule.validatePredecessor(record, [], '');
                 }
-            })
+            });
+        }
+        for (let i: number = 0; i < childRecord.length; i++) {
+            this.parent.dataOperation.updateParentItems(childRecord[i as number]);
         }
         setValue('parentRecord', [], this.parent.predecessorModule);
         setValue('parentIds', [], this.parent.predecessorModule);
@@ -1302,7 +1314,8 @@ export class Edit {
         const currentBaselineStart: Date = { ...eventArgs.data.ganttProperties.baselineStartDate };
         const currentBaselineEnd: Date = { ...eventArgs.data.ganttProperties.baselineEndDate };
         const currentProgress: number = eventArgs.data.ganttProperties.progress;
-        const unModifiedData = JSON.parse(JSON.stringify(eventArgs.data.ganttProperties));
+        /* eslint-disable-next-line */
+        const unModifiedData: any = JSON.parse(JSON.stringify(eventArgs.data.ganttProperties));
         this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
             if (currentBaselineStart !== eventArg.data['ganttProperties'].baselineStartDate
             || currentBaselineEnd !== eventArg.data['ganttProperties'].baselineEndDate) {
@@ -1315,9 +1328,9 @@ export class Edit {
                         eventArg.data['ganttProperties']),
                     eventArg.data['ganttProperties'], true);
             }
-
-            if (unModifiedData !== eventArg.data['ganttProperties'] && !isNullOrUndefined(eventArg.data['parentItem']) ) {
-                this.updateParentItemOnEditing()
+            if (this.parent.autoCalculateDateScheduling && unModifiedData !== eventArg.data['ganttProperties'] &&
+                !isNullOrUndefined(eventArg.data['parentItem'])) {
+                this.updateParentItemOnEditing();
                 this.parent.dataOperation.updateParentItems(eventArg.data as IGanttData, true);
             }
             const ganttProps: ITaskData = eventArg.data['ganttProperties'];
@@ -1337,7 +1350,6 @@ export class Edit {
                 }
             }
             this.parent.dataOperation.updateWidthLeft(eventArg.data as IGanttData);
-
             if (!isNullOrUndefined(this.parent.taskFields.progress) && currentProgress !== eventArg.data['ganttProperties'].progress) {
                 const width: number = eventArg.data['ganttProperties'].isAutoSchedule ? eventArg.data['ganttProperties'].width :
                     eventArg.data['ganttProperties'].autoWidth;
@@ -1348,7 +1360,7 @@ export class Edit {
                     true
                 );
             }
-            this.parent.chartRowsModule.updateSegment(eventArg.data['ganttProperties'].segments, eventArg.data['ganttProperties'].taskId)
+            this.parent.chartRowsModule.updateSegment(eventArg.data['ganttProperties'].segments, eventArg.data['ganttProperties'].taskId);
             if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
                 this.parent.showMaskRow();
             } else {
@@ -1420,7 +1432,7 @@ export class Edit {
     }
 
     private updateEditedRecordFields(rec: ITaskData, editedRecord: IGanttData): void {
-        const fields = this.parent.taskFields;
+        const fields: TaskFieldsModel = this.parent.taskFields;
         if (fields.id !== null) {
             editedRecord.ganttProperties['taskId'] = rec[fields.id];
         }
@@ -1457,7 +1469,7 @@ export class Edit {
         if (fields.resourceInfo !== null) {
             editedRecord.ganttProperties['resources'] = rec[fields.resourceInfo];
         }
-    }    
+    }
 
     private dmFailure(e: { result: Object[] }, args: ITaskbarEditedEventArgs): void {// eslint-disable-line
         if (this.deletedTaskDetails.length) {
@@ -1523,7 +1535,7 @@ export class Edit {
             if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
                 if (!this.parent.treeGrid.grid.element.querySelector('form').ej2_instances[0].validate()) {
                     setValue('isEdit', false, this.parent.treeGrid.grid);
-                    this.parent.editModule.cellEditModule.isCellEdit = false
+                    this.parent.editModule.cellEditModule.isCellEdit = false;
                 }
                 this.parent.treeGrid.endEdit();
             }
@@ -1918,7 +1930,7 @@ export class Edit {
         this.taskbarMoved = false;
         this.predecessorUpdated = false;
         if (!isNullOrUndefined(this.dialogModule) && (isNullOrUndefined(args) ||
-        (!isNullOrUndefined(args) && args['requestType'] === 'beforeSave' && args['cancel']))) {
+        (!isNullOrUndefined(args) && args['requestType'] === 'beforeSave' && !args['cancel']))) {
             if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
                 this.dialogModule.dialogObj.hide();
             }
@@ -2197,13 +2209,13 @@ export class Edit {
                 for (let j: number = 0; j < deleteItems.length; j++) {
                     const parentTask: IGanttData = this.parent.getParentTask(deleteItems[j as number].parentItem);
                     if (deleteItems[j as number].parentItem) {
-                        let childRecord: IGanttData[]; 
+                        let childRecord: IGanttData[];
                         if (!isNullOrUndefined(parentTask)) {
                             childRecord = parentTask.childRecords;
                             const filteredRecord: IGanttData[] = childRecord.length === 1 ?
-                            childRecord : childRecord.filter((data: IGanttData): boolean => {
-                                return !data.isDelete;
-                            });
+                                childRecord : childRecord.filter((data: IGanttData): boolean => {
+                                    return !data.isDelete;
+                                });
                             if (filteredRecord.length > 0) {
                                 this.parent.dataOperation.updateParentItems(deleteItems[j as number].parentItem);
                             }
@@ -2994,34 +3006,6 @@ export class Edit {
     }
 
     /**
-     * @param {IPredecessor[]} predecessorCollection .
-     * @param {IGanttData} record .
-     * @returns {string} .
-     * @private
-     */
-    private predecessorToString(predecessorCollection: IPredecessor[], record: IGanttData): string {
-        const predecessorString: string[] = [];
-        let count: number = 0;
-        const length: number = predecessorCollection.length;
-        for (count; count < length; count++) {
-            if (record.ganttProperties.rowUniqueID.toString() !== predecessorCollection[count as number].from) {
-                let tem: string = predecessorCollection[count as number].from + predecessorCollection[count as number].type;
-                predecessorCollection[count as number].offset =
-                    isNaN(predecessorCollection[count as number].offset) ? 0 : predecessorCollection[count as number].offset;
-                if (predecessorCollection[count as number].offset !== 0) {
-                    if (predecessorCollection[count as number].offset < 0) {
-                        tem += predecessorCollection[count as number].offset.toString() + 'd';
-                    } else if (predecessorCollection[count as number].offset > 0) {
-                        tem += '+' + predecessorCollection[count as number].offset.toString() + 'd';
-                    }
-                }
-                predecessorString.push(tem);
-            }
-        }
-        return predecessorString.join(',');
-    }
-
-    /**
      * @param {IGanttData} record .
      * @param {RowPosition} rowPosition .
      * @param {IGanttData} parentItem .
@@ -3208,9 +3192,6 @@ export class Edit {
         this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
         this.parent.treeGrid.parentData = [];
         this.parent.addDeleteRecord = true;
-        if (!this.parent.selectionSettings.persistSelection) {
-            this.parent.selectedRowIndex = 0;
-        }
         this.parent.treeGrid['isAddedFromGantt'] = true;
         this.isAdded = true;
         this.parent.treeGrid.refresh();
@@ -3412,6 +3393,7 @@ export class Edit {
         const tempTaskID: string = this.parent.taskFields.id;
         if (this.parent.editModule && this.parent.editSettings.allowAdding) {
             this.parent.isDynamicData = true;
+            this.parent.treeGrid['isAddedFromGantt'] = true;
             this.parent.isOnAdded = true;
             const cAddedRecord: IGanttData[] = [];
             if (isNullOrUndefined(data)) {
@@ -3552,10 +3534,9 @@ export class Edit {
                                     addedRecords = e[0];
                                 }
                                 else {
-                                    /* eslint-disable-next-line */
                                     addedRecords = updatedData['addedRecords'][0];
                                 }
-                                cAddedRecord.forEach(record => {
+                                cAddedRecord.forEach((record: IGanttData) => {
                                     if (!isNullOrUndefined(record)) {
                                         this.updateEditedRecordFields(addedRecords, record);
                                         this.parent.dataOperation.updateTaskData(record);
@@ -3780,7 +3761,7 @@ export class Edit {
     }
 
     private updateNewRecord(cAddedRecord: IGanttData[], args: ITaskAddedEventArgs): void {
-        cAddedRecord.forEach(record => {
+        cAddedRecord.forEach((record: IGanttData) => {
             if (record.level === 0) {
                 this.parent.treeGrid.parentData.splice(0, 0, record);
                 const tempData: ITaskData[] = getValue('dataOperation.dataArray', this.parent);
@@ -3788,6 +3769,7 @@ export class Edit {
             }
             this.updateTreeGridUniqueID(record, 'add');
         });
+        this.updateTreeGridUniqueID(cAddedRecord as IGanttData, 'add');
         this.refreshNewlyAddedRecord(args, cAddedRecord);
         this._resetProperties();
     }
@@ -4039,6 +4021,8 @@ export class Edit {
     }
     private reArrangeRows(args: RowDropEventArgs, isByMethod?: boolean): void {
         this.dropPosition = args.dropPosition;
+        this.parent['oldRecords'] = [];
+        this.parent['oldRecords'] = extend([], [], args.data, true) as IGanttData[];
         if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
             const obj: Gantt = this.parent; let draggedRec: IGanttData;
             this.droppedRecord = obj.updatedRecords[args.dropIndex];

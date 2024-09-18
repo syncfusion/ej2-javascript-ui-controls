@@ -14619,7 +14619,7 @@ describe('Barcode Control', () => {
         beforeAll((): void => {
             ele = createElement('div', { id: 'QrCode_Customer_issue1' });
             document.body.appendChild(ele);
-            let barcode: QRCodeGenerator = new QRCodeGenerator({
+            barcode = new QRCodeGenerator({
                 width: '200px', height: '150px',
                 value: "ELEM-004:TITRE-TEST",
                 xDimension: 3,
@@ -14637,7 +14637,7 @@ describe('Barcode Control', () => {
         it('Rendering', (done: Function) => {
             output1(barcode);
             element = barcode.element.childNodes[0].childNodes; length = element.length;
-            expect(length == 229 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "38.019230769230774" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "104.36538461538464" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.634615384615385" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.634615384615385").toBe(true);
+            expect( length ==226&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="59.673076923076934"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="63.76923076923079"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.480769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.480769230769231").toBe(true);
             done();
         });
     });
@@ -14648,7 +14648,7 @@ describe('Barcode Control', () => {
         beforeAll((): void => {
             ele = createElement('div', { id: 'QrCode_Customer_issue1' });
             document.body.appendChild(ele);
-            let barcode: QRCodeGenerator = new QRCodeGenerator({
+            barcode = new QRCodeGenerator({
                 width: '300px',
                 height: '200px',
                 displayText: { visibility: true, size: 9,  text: "service--01|fragment--0001|Login|11/12/2020|test"},
@@ -14673,6 +14673,70 @@ describe('Barcode Control', () => {
         });
     });
 
+});
+describe('QRCode Logo', () => {
+    describe('Rendering', ()=> {
+        beforeAll(() : void => {
+            ele = createElement('div', {id: 'QRCodeLogo'});
+            document.body.appendChild(ele);
+            barcode = new QRCodeGenerator({
+                width: '200px', height: '150px',
+                value: 'Syncfusion',
+                displayText: {text: 'Syncfusion'},
+                logo: {imageSource: 'https://www.syncfusion.com/web-stories/wp-content/uploads/sites/2/2022/02/cropped-Syncfusion-logo.png'}
+            });
+            barcode.appendTo('#QRCodeLogo');
+        });
+        afterAll(() : void => {
+            barcode.destroy();
+            ele.remove();
+        });
+        it('QRCode Logo', (done: Function) =>{
+            var image = barcode.element.children[0].lastElementChild;
+            expect(image !== null && image.tagName.toLowerCase() === 'image' && image.getAttribute("x") === "83.64519230769231" && image.getAttribute("y") === "51.89519230769231" && image.getAttribute("width") === "28.228846153846153" && image.getAttribute("height") === "28.228846153846153").toBe(true);
+            done();
+        });
+    });
+    describe('property change', ()=> {
+        beforeAll(() : void => {
+            ele = createElement('div', {id: 'QRCodeLogo'});
+            document.body.appendChild(ele);
+            barcode = new QRCodeGenerator({
+                width: '200px', height: '150px',
+                value: 'Syncfusion',
+                displayText: {text: 'Syncfusion'},
+                logo: {imageSource: 'https://www.syncfusion.com/web-stories/wp-content/uploads/sites/2/2022/02/cropped-Syncfusion-logo.png'},
+            });
+            barcode.appendTo('#QRCodeLogo');
+        });
+        afterAll(() : void => {
+            barcode.destroy();
+            ele.remove();
+        });
+        it('remove logo at runtime', (done: Function) =>{
+            barcode.logo.imageSource = '';
+            barcode.dataBind();
+            var lastElementChild = barcode.element.children[0].lastElementChild;
+            expect(lastElementChild !== null && lastElementChild.tagName.toLowerCase() !== 'image').toBe(true);
+            done();
+        });
+        it('add logo at runtime', (done: Function) =>{
+            barcode.logo.imageSource = 'https://www.syncfusion.com/web-stories/wp-content/uploads/sites/2/2022/02/cropped-Syncfusion-logo.png';   
+            barcode.dataBind();
+            var image = barcode.element.children[0].lastElementChild;
+            expect(image !== null && image.tagName.toLowerCase() === 'image' && image.getAttribute("x") === "83.64519230769231" && image.getAttribute("y") === "51.89519230769231" && image.getAttribute("width") === "28.228846153846153" && image.getAttribute("height") === "28.228846153846153").toBe(true);
+            done();
+        });
+        it('mode change at runtime', (done: Function) =>{
+            barcode.mode = 'Canvas';
+            barcode.dataBind();
+            barcode.mode = 'SVG';
+            barcode.dataBind();
+            var image = barcode.element.children[0].lastElementChild;
+            expect(image !== null && image.tagName.toLowerCase() === 'image' && image.getAttribute("x") === "83.64519230769231" && image.getAttribute("y") === "51.89519230769231" && image.getAttribute("width") === "28.228846153846153" && image.getAttribute("height") === "28.228846153846153").toBe(true);
+            done();
+        });
+    });
 });
 
 describe('QRCode export', () => {

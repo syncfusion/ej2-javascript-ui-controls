@@ -8,7 +8,7 @@ import { PathOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { animationMode } from '@syncfusion/ej2-base';
 
 /**
- * `ErrorBar` module is used to render the error bar for series.
+ * The `ErrorBar` module is used to render the error bar for series.
  */
 export class ErrorBar {
     private chart: Chart;
@@ -31,6 +31,7 @@ export class ErrorBar {
      * Render the error bar for series.
      *
      * @returns {void}
+     * @private
      */
 
     public render(series: Series): void {
@@ -77,15 +78,19 @@ export class ErrorBar {
                 );
                 let element: Element = getElement(shapeOption.id);
                 let previousDirection: string = element ? element.getAttribute('d') : null;
-                series.errorBarElement.appendChild(this.chart.renderer.drawPath(shapeOption));
-                pathAnimation(element, errorDirection[0], redraw, previousDirection);
+                if (series.errorBarElement) {
+                    series.errorBarElement.appendChild(this.chart.renderer.drawPath(shapeOption));
+                }
+                pathAnimation(element, errorDirection[0], redraw, previousDirection, this.chart.duration);
                 const capOption: PathOption = new PathOption(
                     capId, '', errorBarCap.width, (errorbar.errorBarCap.color ? errorBarCap.color : (errorbar.errorBarColorMapping ? point.errorBarColor : errorbar.color || this.chart.themeStyle.errorBar)), null, '', errorDirection[1]
                 );
                 element = getElement(capOption.id);
                 previousDirection = element ? element.getAttribute('d') : null;
-                appendChildElement(this.chart.enableCanvas, series.errorBarElement, this.chart.renderer.drawPath(capOption), redraw);
-                pathAnimation(element, errorDirection[1], redraw, previousDirection);
+                if (series.errorBarElement) {
+                    appendChildElement(this.chart.enableCanvas, series.errorBarElement, this.chart.renderer.drawPath(capOption), redraw);
+                }
+                pathAnimation(element, errorDirection[1], redraw, previousDirection, this.chart.duration);
             }
         }
     }
@@ -324,9 +329,11 @@ export class ErrorBar {
                 'transform': transform,
                 'clip-path': 'url(#' + chart.element.id + '_ChartErrorBarClipRect_' + series.index + ')'
             });
-            series.errorBarElement.appendChild(
-                appendClipElement(chart.redraw, options, chart.renderer as SvgRenderer)
-            );
+            if (series.errorBarElement){
+                series.errorBarElement.appendChild(
+                    appendClipElement(chart.redraw, options, chart.renderer as SvgRenderer)
+                );
+            }
         }
     }
 
@@ -335,6 +342,7 @@ export class ErrorBar {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
 
     public doErrorBarAnimation(series: Series): void {

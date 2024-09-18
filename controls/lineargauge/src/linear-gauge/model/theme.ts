@@ -139,54 +139,52 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
         break;
     case 'bootstrap5':
         style = {
-            backgroundColor: 'rgba(255,255,255, 0.0)',
-            titleFontColor: '#343A40',
-            titleFontSize: '15px',
-            tooltipFillColor: '#212529',
-            tooltipFontColor: '#F9FAFB',
-            tooltipFontSize: '13px',
-            labelColor: '#495057',
-            lineColor: '#E5E7EB',
-            majorTickColor: '#9CA3AF',
-            minorTickColor: '#9CA3AF',
-            pointerColor: '#1F2937',
-            fontFamily: 'Helvetica Neue',
+            backgroundColor: 'transparent',
+            titleFontColor: '#212529',
+            titleFontSize: '14px',
+            tooltipFillColor: '#000000',
+            tooltipFontColor: '#FFFFFF',
+            tooltipFontSize: '12px',
+            labelColor: '#212529',
+            lineColor: '#E9ECEF',
+            majorTickColor: '#CED4DA',
+            minorTickColor: '#CED4DA',
+            pointerColor: '#343A40',
             fontSize: '14px',
-            labelFontFamily: 'Helvetica Neue',
-            tooltipFillOpacity: 1,
-            tooltipTextOpacity: 1,
-            containerBackground: 'rgba(255,255,255, 0.0)',
             titleFontStyle: 'normal',
-            titleFontWeight: '500',
+            titleFontWeight: '400',
             labelStyle: 'normal',
             labelWeight: '400',
-            containerBorderColor: '#E5E7EB'
+            fontFamily: 'Segoe UI',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 0.9,
+            containerBackground: '#E9ECEF',
+            containerBorderColor: '#E9ECEF'
         };
         break;
     case 'bootstrap5dark':
         style = {
-            backgroundColor: 'rgba(255,255,255, 0.0)',
-            titleFontColor: '#E9ECEF',
-            titleFontSize: '15px',
-            tooltipFillColor: '#E9ECEF',
+            backgroundColor: 'transparent',
+            titleFontColor: '#DEE2E6',
+            titleFontSize: '14px',
+            titleFontStyle: 'normal',
+            titleFontWeight: '400',
+            tooltipFillColor: '#FFFFFF',
             tooltipFontColor: '#212529',
-            tooltipFontSize: '13px',
-            labelColor: '#CED4DA',
+            tooltipFontSize: '12px',
+            labelColor: '#DEE2E6',
+            labelStyle: 'normal',
+            labelWeight: '400',
+            labelFontFamily: 'Segoe UI',
             lineColor: '#343A40',
             majorTickColor: '#6C757D',
             minorTickColor: '#6C757D',
             pointerColor: '#ADB5BD',
-            fontFamily: 'Helvetica Neue',
             fontSize: '14px',
-            labelFontFamily: 'Helvetica Neue',
-            tooltipFillOpacity: 1,
-            tooltipTextOpacity: 1,
-            containerBackground: 'rgba(255,255,255, 0.0)',
-            titleFontStyle: 'normal',
-            titleFontWeight: '500',
-            labelStyle: 'normal',
-            labelWeight: '400',
-            containerBorderColor: '#4b5563'
+            fontFamily: 'Segoe UI',
+            tooltipFillOpacity: 0.9,
+            containerBackground: '#343A40',
+            containerBorderColor: '#343A40'
         };
         break;
     case 'fluent':
@@ -316,7 +314,7 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             containerBorderColor: '#EDEBE9',
             containerBackground: '#EDEBE9',
             fontFamily: 'Segoe UI',
-            labelFontFamily: 'Segoe UI',
+            labelFontFamily: 'Segoe UI'
         };
         break;
     case 'fluent2dark':

@@ -214,6 +214,31 @@ describe('Clear Format commands', () => {
     });
 });
 
+describe('905773 - Error When Selecting Table and Clicking Clear Format Toolbar Item in Rich Text Editor', () => {
+    let innervalue: string = '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 14.2857%;">egrege</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="">ergerg</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="">ergeg</td><td style="width: 14.2857%; background-color: rgb(0, 0, 128);" class=""><br></td></tr><tr><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%; background-color: rgb(255, 255, 0);" class="">erg</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="">ergeg</td><td style="width: 14.2857%; background-color: rgb(255, 0, 0);" class="">ergege</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;"><br></td></tr><tr><td style="width: 14.2857%; background-color: rgb(255, 51, 51);" class="">ergeg</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%; background-color: rgb(0, 255, 0);" class="">ergre</td><td style="width: 14.2857%;" class=""><br></td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="">erge</td></tr></tbody></table><p><br></p>'
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+
+    it('Error When Selecting Table and Clicking Clear Format Toolbar Item in Rich Text Editor', () => {
+        new ClearFormat();
+        let node1: Node = document.getElementsByClassName('e-rte-table')[0];
+        let node2: HTMLElement = document.getElementsByTagName('p')[0];
+        domSelection.setSelectionText(document, node1, node2, 0, 1);
+        ClearFormat.clear(document, divElement, 'P');
+        expect(document.querySelectorAll('table').length === 1).toBe(true);
+    });
+});
+
 describe('Clear Format commands', () => {
     let innervalue: string = '<div><b>Content</b></div>'
     let domSelection: NodeSelection = new NodeSelection();

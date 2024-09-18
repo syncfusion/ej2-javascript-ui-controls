@@ -83,7 +83,7 @@ describe('column menu module', () => {
             expect((gridObj.columnMenuModule as any).columnMenu.locale).toBe(gridObj.locale);
             expect((gridObj.columnMenuModule as any).columnMenu.enablePersistence).toBe(gridObj.enablePersistence);
             expect((gridObj.columnMenuModule as any).columnMenu.target).toBe('');
-            expect((gridObj.columnMenuModule as any).columnMenu.cssClass).toBe('e-grid-menu');
+            expect((gridObj.columnMenuModule as any).columnMenu.cssClass).toBe('e-grid-menu e-grid-column-menu');
             expect((gridObj.columnMenuModule as any).columnMenu.items.length).toBe(8);
             expect((gridObj.columnMenuModule as any).getModuleName()).toBe('columnMenu');
             expect(gridObj.columnMenuModule.getColumnMenu()).toBe((gridObj.columnMenuModule as any).element);
@@ -775,9 +775,16 @@ describe('column menu module', () => {
         });
 
         it('column menu open', () => {
-            let checkBoxFilter: any = gridObj.element.querySelector('.e-checkboxfilter');
+            let checkBoxFilter: any = document.querySelector('.e-grid-popup').querySelector('.e-checkboxfilter');
             checkBoxFilter.click();
+        });
 
+        it('column menu open', () => {
+           gridObj.columnMenuModule.serviceLocator = null;
+           (gridObj as any).columnMenuModule.setFullScreenDialog();
+           (gridObj as any).columnMenuModule.keyPressHandler({ action: 'downArrow' });
+           gridObj.focusModule.currentInfo = {};
+           (gridObj as any).columnMenuModule.keyPressHandler({ action: 'altDownArrow' });
         });
         afterAll(() => {
             destroy(gridObj);

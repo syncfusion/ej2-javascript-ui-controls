@@ -263,7 +263,7 @@ export class AxisLayoutPanel {
         const maximumValue: number = Math.max(range.min, range.max);
         for (let i: number = 0; i < axis.pointers.length; i++) {
             pointer = <Pointer>axis.pointers[i as number];
-            if ((<string>pointer.offset).length > 0) {
+            if (!isNullOrUndefined((<string>pointer.offset)) && (<string>pointer.offset).length > 0) {
                 pointer.currentOffset = stringToNumber(<string>pointer.offset, (this.gauge.orientation === 'Horizontal' ?
                     this.gauge.availableSize.height / 2 : this.gauge.availableSize.width / 2));
             } else {
@@ -416,7 +416,7 @@ export class AxisLayoutPanel {
             if (this.gauge.gradientModule) {
                 gradientRangeColor = this.gauge.gradientModule.getGradientColorString(range);
             }
-            if ((<string>range.offset).length > 0) {
+            if (!isNullOrUndefined((<string>range.offset)) && (<string>range.offset).length > 0) {
                 range.currentOffset = stringToNumber(<string>range.offset, (this.gauge.orientation === 'Horizontal' ?
                     this.gauge.availableSize.height / 2 : this.gauge.availableSize.width / 2));
             } else {

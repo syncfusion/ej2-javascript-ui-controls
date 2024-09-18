@@ -111,13 +111,14 @@ export class EditTooltip {
      */
     public updateTooltip(segmentIndex: number): void {
         const ganttProp: ITaskData = this.taskbarEdit.taskBarEditRecord.ganttProperties;
-        const taskWidth: number = segmentIndex === -1 ? ganttProp.width :
+        const taskWidth: number = (isNullOrUndefined(segmentIndex) || segmentIndex === -1) ? ganttProp.width :
             ganttProp.segments[segmentIndex as number].width;
 
-        const progressWidth: number = segmentIndex === -1 ? ganttProp.progressWidth :
+        const progressWidth: number = (isNullOrUndefined(segmentIndex) || segmentIndex === -1) ? ganttProp.progressWidth :
             ganttProp.segments[segmentIndex as number].progressWidth;
 
-        const left: number = segmentIndex === -1 ? ganttProp.left : ganttProp.left + ganttProp.segments[segmentIndex as number].left;
+        const left: number = (isNullOrUndefined(segmentIndex) || segmentIndex === -1) ? ganttProp.left : ganttProp.left +
+            ganttProp.segments[segmentIndex as number].left;
 
         if (!isNullOrUndefined(this.toolTipObj)) {
             if (this.taskbarEdit.taskBarEditAction === 'ConnectorPointLeftDrag' ||
@@ -126,9 +127,12 @@ export class EditTooltip {
                 this.toolTipObj.offsetY = -3;
             } else {
                 this.toolTipObj.content = this.getTooltipText(segmentIndex);
-                this.toolTipObj.refresh(this.taskbarEdit.taskBarEditElement);
-                if (this.parent.enableRtl && this.toolTipObj['tooltipEle']) {
-                    this.toolTipObj['tooltipEle'].style.left = this.parent.editModule.taskbarEditModule['tooltipValue']  + 10 + 'px';
+                if (ganttProp.segments && ganttProp.segments.length > 0 && this.taskbarEdit['mainElement'] && this.taskbarEdit.taskBarEditAction === 'ProgressResizing') {
+                    const segments: NodeListOf<Element> = this.taskbarEdit['mainElement'].querySelectorAll('.e-segmented-taskbar');
+                    this.toolTipObj.refresh(segments[segmentIndex as number] as HTMLElement);
+                }
+                else {
+                    this.toolTipObj.refresh(this.taskbarEdit.taskBarEditElement);
                 }
                 if (this.taskbarEdit.taskBarEditAction === 'LeftResizing') {
                     if (this.parent.enableRtl) {

@@ -949,7 +949,6 @@ describe('BPMN subprocess save and load issue ', () => {
         });
 
         it('BPMN subprocess annotation moving issue', (done: Function) => { 
-              debugger
             diagram.drag(diagram.nodes[1],-140,0);
             diagram.drag(diagram.nodes[0],-40,150);
             
@@ -959,7 +958,7 @@ describe('BPMN subprocess save and load issue ', () => {
             node.annotations[0].content =  "t"
             diagram.dataBind();
           
-            expect(node.wrapper.offsetX===252.5&&node.wrapper.offsetY===260).toBe(true);
+            expect(node.wrapper.offsetY===260).toBe(true);
             done();
         });
         

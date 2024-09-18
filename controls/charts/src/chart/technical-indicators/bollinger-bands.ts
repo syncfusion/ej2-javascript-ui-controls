@@ -4,7 +4,7 @@ import { TechnicalAnalysis } from './indicator-base';
 import { Chart } from '../chart';
 
 /**
- * `BollingerBands` module is used to render bollinger band indicator.
+ * The `BollingerBands` module is used to render the Bollinger Band indicator.
  */
 export class BollingerBands extends TechnicalAnalysis {
 
@@ -14,6 +14,7 @@ export class BollingerBands extends TechnicalAnalysis {
      * @param {TechnicalIndicator} indicator - The technical indicator for which the series collection is initialized.
      * @param {Chart} chart - The chart associated with the technical indicator.
      * @returns {void}
+     * @private
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         indicator.targetSeries = [];

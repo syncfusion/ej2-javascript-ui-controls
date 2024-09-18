@@ -56,7 +56,7 @@ describe('OnDemand load Child', () => {
                 dataSource: dataManager, dataBound: dataBound,
                 hasChildMapping: 'isParent',
                 idMapping: 'TaskID',
-                loadChildOnDemand: true,
+                loadChildOnDemand: false,
                 parentIdMapping: 'parentID',
                 treeColumnIndex: 1,
                 columns: [

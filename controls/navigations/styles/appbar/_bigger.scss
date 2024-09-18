@@ -1,0 +1,15 @@
+@include export-module('appbar-bigger') {
+  .e-bigger .e-appbar,
+  .e-appbar.e-bigger {
+    height: 56px;
+    font-size: $appbar-bigger-font-size;
+
+    &.e-dense {
+      height: 48px;
+    }
+
+    &.e-prominent {
+      height: 112px;
+    }
+  }
+}

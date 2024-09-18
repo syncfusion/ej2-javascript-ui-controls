@@ -103,7 +103,7 @@ export class Toolbar {
                 };
             }
         }
-        if (this.parent.enableAdaptiveUI && this.parent.toolbar && this.parent.toolbar.some(item =>
+        if (this.parent.enableAdaptiveUI && this.parent.toolbar && this.parent.toolbar.some((item: string | ItemModel | ToolbarItem ) =>
             (typeof item === 'object' && item.text === 'Search') || item === 'Search')) {
             (this.predefinedItems as { responsiveBack: ItemModel }).responsiveBack = {
                 id: this.gridID + '_' + 'responsiveback', cssClass: 'e-gridresponsiveicons e-icons',
@@ -288,7 +288,7 @@ export class Toolbar {
             this.refreshResponsiveToolbarItems(ResponsiveToolbarAction.isSearch);
             this.searchElement = (<HTMLInputElement>select('#' + this.gridID + '_searchbar', this.element));
             const right: HTMLElement = parentsUntil(this.searchElement, 'e-toolbar-right') as HTMLElement;
-            if(right){
+            if (right) {
                 right.classList.add('e-responsive-right');
             }
             if (this.parent.searchSettings) {
@@ -309,7 +309,7 @@ export class Toolbar {
             const excludingItems: string[] = [id + '_responsiveback', id + '_update', id + '_cancel'];
             for (const item of this.toolbar.items) {
                 const toolbarEle: Element = (item.template as string) && (item.template as string).length ?
-                parentsUntil(this.toolbar.element.querySelector('#' + item.id), 'e-template').children[0] : this.toolbar.element.querySelector('#' + item.id);
+                    parentsUntil(this.toolbar.element.querySelector('#' + item.id), 'e-template').children[0] : this.toolbar.element.querySelector('#' + item.id);
                 if (toolbarEle) {
                     if (items.indexOf(item.id) > -1) {
                         if (selectedRecords.length) {
@@ -328,7 +328,7 @@ export class Toolbar {
             }
             if (this.searchElement) {
                 const right: HTMLElement = parentsUntil(this.searchElement, 'e-toolbar-right') as HTMLElement;
-                if(right){
+                if (right) {
                     right.classList.remove('e-responsive-right');
                 }
                 this.toolbarCreated(false);

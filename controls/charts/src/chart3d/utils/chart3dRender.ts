@@ -688,25 +688,22 @@ export class Graphics3D {
      * @returns {void}
      */
     public prepareView(perspectiveAngle: number, depth: number, rotation: number, tilt: number, size: Size, chart: Chart3D): void {
-        if (arguments.length === 0) {
-            bspTreeObj.build();
-        } else {
-            if (chart3DRender.transform == null) {
-                chart3DRender.transform = chart.transform3D.transform3D(size);
-            }
-            else {
-                chart3DRender.transform.viewingArea = size;
-            }
-            if (!chart3DRender.tree) {
-                chart3DRender.tree = [];
-            }
-            chart3DRender.transform.rotation = rotation;
-            chart3DRender.transform.tilt = tilt;
-            chart3DRender.transform.depth = depth;
-            chart3DRender.transform.perspectiveAngle = perspectiveAngle;
-            chart.transform3D.transform(chart3DRender.transform);
-            chart3DRender.tree[chart.chart3D.id] = bspTreeObj.build();
+
+        if (chart3DRender.transform == null) {
+            chart3DRender.transform = chart.transform3D.transform3D(size);
         }
+        else {
+            chart3DRender.transform.viewingArea = size;
+        }
+        if (!chart3DRender.tree) {
+            chart3DRender.tree = [];
+        }
+        chart3DRender.transform.rotation = rotation;
+        chart3DRender.transform.tilt = tilt;
+        chart3DRender.transform.depth = depth;
+        chart3DRender.transform.perspectiveAngle = perspectiveAngle;
+        chart.transform3D.transform(chart3DRender.transform);
+        chart3DRender.tree[chart.chart3D.id] = bspTreeObj.build();
     }
 
     /**
@@ -950,8 +947,9 @@ export class BinaryTreeBuilder {
      * @param {Chart3DPolygon} splitPolygon - The polygon to split.
      * @param {Chart3DPolygon} refPolygon - The reference polygon for splitting.
      * @returns {Chart3DPolyCollections} - The resulting back and front parts.
+     * @private
      */
-    private splitPolygon(splitPolygon: Chart3DPolygon, refPolygon: Chart3DPolygon): Chart3DPolyCollections {
+    public splitPolygon(splitPolygon: Chart3DPolygon, refPolygon: Chart3DPolygon): Chart3DPolyCollections {
         const backPoint: Chart3DPolygon[] = [];
         const frontPoint: Chart3DPolygon[] = [];
 
@@ -1643,8 +1641,6 @@ export class Polygon3D {
                 }
                 i++;
             }
-            break;
-        default:
             break;
         }
 

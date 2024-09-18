@@ -1293,6 +1293,7 @@ xdescribe('DropDown Tree control Remote datasource', () => {
                         tooltip: 'nodeTooltip', selected: 'nodeSelected'
                     },
                     itemTemplate: '${if(hasChild == undefined)}<b>${nodeText}</b>${else}<i>${nodeText}</i>${/if}',
+                    valueTemplate: '${if(hasChild == undefined)}<b>${nodeText}</b>${else}<i>${nodeText}</i>${/if}',
                 });
                 ddtreeObj.appendTo(ele);
                 setTimeout(function () { done(); });
@@ -1432,6 +1433,7 @@ xdescribe('DropDown Tree control Remote datasource', () => {
                         child: { dataSource: dataManager1, value: "nodeId", parentValue: 'nodePid', text: "nodeText", }
                     },
                     itemTemplate: '#template',
+                    valueTemplate: '#template'
                 });
                 ddtreeObj.appendTo(ele);
                 setTimeout(function () { done(); });

@@ -52,7 +52,7 @@ describe('FileManager control single selection LargeIcons view', () => {
             setTimeout(function () {
                 (document.getElementById('file_wrap4') as any).style = "display: block";
                 expect((<any>document.getElementById("file4").getElementsByClassName('e-layout')[0]).style.height).toBe('0px');
-                expect((<any>document.getElementById("file4").getElementsByClassName('e-large-icons')[0]).style.height).toBe('0px');
+                expect((<any>document.getElementById("file4").getElementsByClassName('e-large-icons')[0]).offsetHeight).toBe(0);
                 feObj.refreshLayout();
                 expect((<any>document.getElementById("file4").getElementsByClassName('e-layout')[0]).style.height).not.toBe('0px');
                 expect((<any>document.getElementById("file4").getElementsByClassName('e-large-icons')[0]).style.height).not.toBe('0px');

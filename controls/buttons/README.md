@@ -12,7 +12,7 @@ The [JavaScript Button](https://www.syncfusion.com/javascript-ui-controls/js-but
 
 <p align="center">
     <a href="https://ej2.syncfusion.com/documentation/button/getting-started/#getting-started?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Getting Started</a>.
-    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm#/material/button/default.html">Online demos</a>.
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm#/fluent2/button/default.html">Online demos</a>.
     <a href="https://www.syncfusion.com/javascript-ui-controls/js-button?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Learn more</a>.
 </p>
 
@@ -33,7 +33,7 @@ The [JavaScript CheckBox](https://www.syncfusion.com/javascript-ui-controls/js-c
 
 <p align="center">
     <a href="https://ej2.syncfusion.com/documentation/check-box/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Getting Started</a> .
-    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm#/material/button/checkbox.html">Online demos</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm#/fluent2/button/checkbox.html">Online demos</a> .
     <a href="https://www.syncfusion.com/javascript-ui-controls/js-checkbox?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Learn more</a>
 </p>
 
@@ -53,7 +53,7 @@ The [JavaScript RadioButton](https://www.syncfusion.com/javascript-ui-controls/j
 
 <p align="center">
     <a href="https://ej2.syncfusion.com/documentation/radio-button/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Getting Started</a> .
-    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm#/material/button/radio-button.html">Online demos</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm#/fluent2/button/radio-button.html">Online demos</a> .
     <a href="https://www.syncfusion.com/javascript-ui-controls/js-radio-button?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Learn more</a>
 </p>
 
@@ -73,7 +73,7 @@ The [JavaScript Switch](https://www.syncfusion.com/javascript-ui-controls/js-tog
 
 <p align="center">
     <a href="https://ej2.syncfusion.com/documentation/switch/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Getting Started</a> .
-    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm#/material/button/switch.html">Online demos</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm#/fluent2/button/switch.html">Online demos</a> .
     <a href="https://www.syncfusion.com/javascript-ui-controls/js-toggle-switch-button?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Learn more</a>
 </p>
 
@@ -92,7 +92,7 @@ The [JavaScript Floating Action Button](https://www.syncfusion.com/javascript-ui
 
 <p align="center">
     <a href="https://ej2.syncfusion.com/documentation/floating-action-button/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm">Getting Started</a> .
-    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm#/material/floating-action-button/overview.html">Online demos</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm#/fluent2/floating-action-button/overview.html">Online demos</a> .
     <a href="https://www.syncfusion.com/javascript-ui-controls/js-fab?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm">Learn more</a>
 </p>
 
@@ -112,7 +112,7 @@ The [JavaScript Speed Dial](https://www.syncfusion.com/javascript-ui-controls/js
 
 <p align="center">
     <a href="https://ej2.syncfusion.com/documentation/speed-dial/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm">Getting Started</a> .
-    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm#/material/speed-dial/default.html">Online demos</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm#/fluent2/speed-dial/default.html">Online demos</a> .
     <a href="https://www.syncfusion.com/javascript-ui-controls/js-speed-dial?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm">Learn more</a>
 </p>
 

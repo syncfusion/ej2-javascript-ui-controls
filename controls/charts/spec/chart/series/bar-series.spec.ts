@@ -1520,6 +1520,79 @@ describe('Chart Control', () => {
         });
     });
 
+    describe('Bar Series - Cheking animation on data changes.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let series1: object[] = [
+            { x: "Jan", y: 54.481, text: "54.48%" },
+            { x: "Feb", y: 50.56382, text: "50.56%" },
+            { x: "Mar", y: 53.68715, text: "53.69%" },
+            { x: "Apr", y: 49.143363, text: "49.14%" },
+            { x: "May", y: 57.423575, text: "57.42%" },
+            { x: "Jun", y: 55.959774, text: "55.96%" },
+            { x: "Jul", y: 52.360737, text: "52.36%" },
+            { x: "Aug", y: 56.654956, text: "56.65%" },
+            { x: "Sep", y: 51.387971, text: "51.39%" },
+            { x: "Oct", y: 53.137774, text: "53.14%" },
+            { x: "Nov", y: 54.889794, text: "54.89%" },
+            { x: "Dec", y: 56.760399, text: "56.76%" }];
+        let chartContainerDiv: Element;
+        chartContainerDiv = createElement('div', { id: 'BarContainer', styles: 'height:250px;width:590px;float: left;' });
+        beforeAll(() => {
+            document.body.appendChild(chartContainerDiv);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category' },
+                    series: [
+                        {
+                            dataSource: series1, xName: 'x', yName: 'y', type: 'Bar', fill: 'red',
+                            columnWidthInPixel: 10,
+                            animation: { enable: false }, name: 'series1', legendShape: 'Circle',
+                            marker: {
+                                visible: true,
+                                dataLabel: {
+                                    visible: true,
+                                    position: 'Outer',
+                                    font: { color: 'red', size: '12px' }
+                                }
+                            }
+                        }
+                    ],
+
+                });
+            chartObj.appendTo('#BarContainer');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            chartContainerDiv.remove();
+        });
+
+        it('Checking Bar series updated direction', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let element: Element = document.getElementById('BarContainer_Series_0_Point_0');
+                expect(element.getAttribute('d')).toBe('M 0 159.11458333333334 Q 0 159.11458333333334 0 159.11458333333334 L 418.33625 159.11458333333334 Q 418.33625 159.11458333333334 418.33625 159.11458333333334 L 418.33625 169.11458333333334 Q 418.33625 169.11458333333334 418.33625 169.11458333333334 L 0 169.11458333333334 Q 0 169.11458333333334 0 169.11458333333334 L 0 159.11458333333334 Z');
+                done();
+            };
+            let dataSource: object[] = [
+                { x: "Jan", y: 54.481, text: "52.48%" },
+                { x: "Feb", y: 50.56382, text: "50.56%" },
+                { x: "Mar", y: 51.68715, text: "53.69%" },
+                { x: "Apr", y: 49.143363, text: "49.14%" },
+                { x: "May", y: 57.423575, text: "57.42%" },
+                { x: "Jun", y: 55.959774, text: "55.96%" },
+                { x: "Jul", y: 52.360737, text: "52.36%" },
+                { x: "Aug", y: 56.654956, text: "56.65%" },
+                { x: "Sep", y: 51.387971, text: "51.39%" },
+                { x: "Oct", y: 53.137774, text: "53.14%" },
+                { x: "Nov", y: 52.889794, text: "54.89%" },
+                { x: "Dec", y: 56.760399, text: "56.76%" }
+            ];
+            chartObj.series[0].setData(dataSource);
+            chartObj.refresh();
+        });
+    });
 
     it('memory leak', () => {
         profile.sample();

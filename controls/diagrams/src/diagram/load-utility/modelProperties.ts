@@ -116,20 +116,19 @@ export class Ej1Serialization {
     //Update the layers from the EJ1 JSON
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public setLayers(convertedData: Object | any, data: Diagram) : void {
-        const layers: any[] = [];
+        convertedData.layers = [];
         if (data.layers.length > 0) {
             for (let i : number = 0; i < data.layers.length; i++) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const newLayer: any = {};
                 const layer : any = data.layers[parseInt(i.toString(), 10)];
-                newLayer.id = layer.id;
+                newLayer.id = layer.name;
                 newLayer.visible = layer.visible;
                 newLayer.lock = layer.lock;
                 newLayer.objects = layer.objects;
-                convertedData.layers[parseInt(i.toString(), 10)] = newLayer;
+                convertedData.layers.push(newLayer);
             }
         }
-        convertedData.layers = layers;
     }
 
     //(EJ2-272287) Provide support to convert the EJ1 diagram to EJ2 diagram
@@ -334,15 +333,19 @@ export class Ej1Serialization {
             margin: { left: data.layout.margin.left, right: data.layout.margin.right, top: data.layout.margin.top, bottom: data.layout.margin.bottom },
             horizontalAlignment: (data.layout.horizontalAlignment).charAt(0).toUpperCase() + (data.layout.horizontalAlignment).slice(1),
             verticalAlignment: (data.layout.verticalAlignment).charAt(0).toUpperCase() + (data.layout.verticalAlignment).slice(1),
-            orientation: data.layout.orientation === 'rightorbottom' ? 'RightOrBottom' : 'LeftOrTop',
+            orientation: data.layout.orientation === 'toptobottom' ? 'TopToBottom' : data.layout.orientation === 'bottomtotop' ? 'BottomToTop' : data.layout.orientation === 'righttoleft' ? 'RightToLeft' : 'LeftToRight',
             connectorSegments: data.layout.getConnectorSegments,
             type: (data.layout.type).charAt(0).toUpperCase() + (data.layout.type).slice(1),
             getLayoutInfo: data.layout.getLayoutInfo,
             bounds: data.layout.bounds,
             root: data.layout.root
         };
-        if (data.layout && data.layout.type === 'hierarchicaltree') {
-            convertedData.layout.type = 'None';
+        if (convertedData.layout && convertedData.layout.type === 'Hierarchicaltree') {
+            convertedData.layout.type = 'HierarchicalTree';
+        }else if (convertedData.layout && convertedData.layout.type === 'Organizationalchart'){
+            convertedData.layout.type = 'OrganizationalChart';
+        }else if (convertedData.layout && convertedData.layout.type === 'Radialtree'){
+            convertedData.layout.type = 'RadialTree';
         }
     }
 
@@ -353,17 +356,6 @@ export class Ej1Serialization {
         convertedData.selectedItems = {};
         const nodes : NodeModel[] = [];
         const connectors : ConnectorModel[] = [];
-        if (data.children && data.children.length > 0) {
-            for (let i : number = 0; i < data.children.length; i++) {
-                const selectedElement: object = data.children[parseInt(i.toString(), 10)];
-                if ((selectedElement as ConnectorModel).segments) {
-                    connectors.push(selectedElement);
-                }
-                else {
-                    nodes.push(selectedElement);
-                }
-            }
-        }
         convertedData.selectedItems.nodes = nodes;
         convertedData.selectedItems.connectors = connectors;
         convertedData.selectedItems.offsetX = data.selectedItems.offsetX;
@@ -377,7 +369,7 @@ export class Ej1Serialization {
 
     //(EJ2-272287) Provide support to convert the EJ1 diagram to EJ2 diagram
     //Update the selector constraints from EJ1 to EJ2
-    public setSelectorConstraints(constraints: number) : void {
+    public setSelectorConstraints(constraints: number): number {
         let selectorConstraints : number = SelectorConstraints.None;
         if (constraints & SelectorConstraints.ConnectorSourceThumb) {
             selectorConstraints = selectorConstraints | SelectorConstraints.Rotate;
@@ -394,6 +386,7 @@ export class Ej1Serialization {
         if (constraints & SelectorConstraints.All) {
             selectorConstraints = selectorConstraints | SelectorConstraints.All;
         }
+        return selectorConstraints;
     }
 
 

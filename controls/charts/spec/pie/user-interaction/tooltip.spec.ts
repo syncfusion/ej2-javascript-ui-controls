@@ -20,6 +20,7 @@ import { IAccLoadedEventArgs, } from '../../../src/accumulation-chart/model/pie-
 import { ITooltipRenderEventArgs, IPointEventArgs } from '../../../src/chart/model/chart-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
+import { loaded } from '../../../src';
 AccumulationChart.Inject(PieSeries, PyramidSeries, AccumulationSelection, FunnelSeries,  AccumulationLegend, AccumulationDataLabel, AccumulationTooltip);
 
 describe('Accumulation Chart Control', () => {
@@ -319,8 +320,26 @@ describe('Tooltip checking for the pie series', () => {
         accumulation.series[0].dataLabel.visible = true;
         accumulation.refresh();
     });
+    it('Pie tooltip checking with fixed location', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            segement = getElement(sliceid + 0);
+            trigger.mousemoveEvent(segement, 0, 0, 200, 200);
+            let tooltip: HTMLElement = document.getElementById('ej2container_tooltip');
+            expect(tooltip != null).toBe(true);
+            trigger.mousemoveEvent(ele, 0, 0, 100, 100);
+            done();
+        };
+        accumulation.tooltip.enable = true;
+        accumulation.pointClick = null;
+        accumulation.pointMove = null;
+        accumulation.series[0].enableTooltip = true;
+        accumulation.series[0].type = 'Pie';
+        accumulation.tooltip = { enable: true, enableMarker: false, location: { x: 200, y: 200 } };
+        accumulation.refresh();
+    });
 });
 describe('Checking tooltip text with useGroupSeparator is true', () => {
+    let loaded: EmitType<IAccLoadedEventArgs>;
     let ele: HTMLElement;
     let id: string = 'container';
     let sliceid: string = id + '_Series_0' + '_Point_';
@@ -383,6 +402,33 @@ describe('Checking tooltip text with useGroupSeparator is true', () => {
             done();
         };
         accumulation.selectionMode = 'Point';
+        accumulation.refresh();
+    });
+    it('Accumulation chart tooltip format checking with keyboard navigation', (done: Function) => {
+        accumulation.loaded = function (args: IAccLoadedEventArgs) {
+            let element:HTMLElement = document.getElementById('container_Series_0_Point_2');
+            trigger.keyboardEvent('keydown', element, 'Space', 'Space');
+            trigger.keyboardEvent('keyup', element, 'ArrowUp', 'ArrowUp');
+            trigger.keyboardEvent('keydown', element, 'Escape', 'Escape');
+            trigger.keyboardEvent('keyup', element, 'ArrowDown', 'ArrowDown');
+            trigger.keyboardEvent('keyup', element, 'ArrowLeft', 'ArrowLeft');
+            trigger.keyboardEvent('keyup', element, 'ArrowRight', 'ArrowRight');
+            trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+            expect(element).not.toBe(null);
+            done();
+        };
+        accumulation.selectionMode = 'Point';
+        accumulation.refresh();
+    });
+    it('Accumulation chart tooltip format checking with keyboard navigation with highlight', (done: Function) => {
+        accumulation.loaded = function (args: IAccLoadedEventArgs) {
+            let element:HTMLElement = document.getElementById('container_Series_0_Point_2');
+            trigger.keyboardEvent('keyup', element, 'ArrowUp', 'ArrowUp');
+            expect(element).not.toBe(null);
+            done();
+        };
+        accumulation.selectionMode = 'Point';
+        accumulation.highlightMode = 'Point';
         accumulation.refresh();
     });
 });

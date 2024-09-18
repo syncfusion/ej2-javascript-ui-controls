@@ -4,6 +4,9 @@
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { KeyboardEvents } from './../../../src/rich-text-editor/actions/keyboard';
 import { htmlKeyConfig } from './../../../src/common/config';
+import { RichTextEditor } from "../../../src/rich-text-editor";
+import { INSRT_IMG_EVENT_INIT } from "../../constant.spec";
+import { renderRTE } from "../render.spec";
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -37,5 +40,48 @@ describe('KeyBoard', () => {
     });
     it('KeyBoard - onPropertyChanged method call', () => {
         (keyObj as any).onPropertyChanged ({}, {});
+    });
+});
+
+
+describe('RTE Keyboard shortcut testing', () => {
+    let rteObj: RichTextEditor;
+    describe('Insert Image Shortcut testing', () => {
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({});
+            done();
+        });
+        afterAll((done: Function) => {
+            rteObj.destroy();
+            done();
+        });
+        it('Check the dialog is open or not', () => {
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', INSRT_IMG_EVENT_INIT));
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', INSRT_IMG_EVENT_INIT));
+            expect(rteObj.element.querySelector('.e-rte-img-dialog')).not.toBe(null);
+        });
+    });
+});
+
+describe('Markdown Keyboard shortcut testing', () => {
+    let rteObj: RichTextEditor;
+    describe('Insert Image Shortcut testing', () => {
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                editorMode: 'Markdown'
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            rteObj.destroy();
+            done();
+        });
+        it('Check the dialog is open or not', () => {
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', INSRT_IMG_EVENT_INIT));
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', INSRT_IMG_EVENT_INIT));
+            expect(rteObj.element.querySelector('.e-rte-img-dialog')).not.toBe(null);
+        });
     });
 });

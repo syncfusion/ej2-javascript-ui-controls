@@ -5,7 +5,7 @@
  */
 import { EmitType, createElement } from '@syncfusion/ej2-base';
 import { Chart3D } from '../../../src/chart3d/chart3D';
-import { Chart3DLoadedEventArgs, Chart3DPointRenderEventArgs } from '../../../src/chart3d/model/chart3d-Interface';
+import { Chart3DLoadedEventArgs, Chart3DPointRenderEventArgs, Chart3DTextRenderEventArgs } from '../../../src/chart3d/model/chart3d-Interface';
 import { ColumnSeries3D } from '../../../src/chart3d/series/column-series';
 import { BarSeries3D } from '../../../src/chart3d/series/bar-series';
 import { Category3D } from '../../../src/chart3d/axis/category-axis';
@@ -14,6 +14,7 @@ import { DateTimeCategory3D } from '../../../src/chart3d/axis/date-time-category
 import { DataLabel3D } from '../../../src/chart3d/series/data-label';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { Logarithmic3D } from '../../../src/chart3d/axis/logarithmic-axis';
+import { Rect } from '@syncfusion/ej2-svg-base';
 Chart3D.Inject(ColumnSeries3D, BarSeries3D, Category3D, DateTime3D, DataLabel3D, DateTimeCategory3D, Logarithmic3D);
 
 describe('Bar Series', () => {
@@ -90,7 +91,7 @@ describe('Bar Series', () => {
             chartObj.series[0].dataSource = null;
             chartObj.loaded = (args: Object) => {
                 const svg1: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-0');
-                expect(svg1.getAttribute('d') === 'M 87.02803738317756 99.42242990654218 L 87.02803738317756 99.42242990654218 L 692.5607476635514 99.42242990654218 L 692.5607476635514 338.91401869158864 L 87.02803738317756 338.91401869158864 ').toBe(true);
+                expect(svg1.getAttribute('d') === 'M 85.08411214953271 98.98504672897207 L 85.08411214953271 98.98504672897207 L 692.3177570093458 98.98504672897207 L 692.3177570093458 336.43551401869144 L 85.08411214953271 336.43551401869144 ').toBe(true);
                 done();
             };
             chartObj.dataSource = [{
@@ -297,9 +298,9 @@ describe('Bar Series', () => {
         it('Bar Series with negative', (done: Function) => {
             loaded = (args: Object): void => {
                 const seriesElements: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-1');
-                expect(seriesElements.getAttribute('d') === 'M 194.26791277258562 294.37907638676836 L 194.26791277258562 294.37907638676836 L 369.7071651090343 294.37907638676836 L 369.7071651090343 330.6483725657582 L 194.26791277258562 330.6483725657582 ').toBe(true);
+                expect(seriesElements.getAttribute('d') === 'M 193.45794392523365 292.28013088124175 L 193.45794392523365 292.28013088124175 L 369.14018691588785 292.28013088124175 L 369.14018691588785 328.2403137405243 L 193.45794392523365 328.2403137405243 ').toBe(true);
                 const seriesElement1: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-3');
-                expect(seriesElement1.getAttribute('d') === 'M 194.26791277258562 173.29103245061305 L 194.26791277258562 173.29103245061305 L 574.386292834891 173.29103245061305 L 574.386292834891 209.56032862960296 L 194.26791277258562 209.56032862960296 ').toBe(true);
+                expect(seriesElement1.getAttribute('d') === 'M 193.45794392523365 172.22408731954238 L 193.45794392523365 172.22408731954238 L 574.1028037383177 172.22408731954238 L 574.1028037383177 208.184270178825 L 193.45794392523365 208.184270178825 ').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -319,7 +320,7 @@ describe('Bar Series', () => {
         it('Bar Series with Rotation', (done: Function) => {
             loaded = (args: Object): void => {
                 const seriesElements: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-3');
-                expect(seriesElements.getAttribute('d') === 'M 199.05220566261275 181.1140685836096 L 199.05220566261275 181.1140685836096 L 492.2138672578948 169.40791622032947 L 492.2138672578948 208.40087715861063 L 199.05220566261275 211.8961924601242 ').toBe(true);
+                expect(seriesElements.getAttribute('d') === 'M 198.55928824400945 180.22862996521485 L 198.55928824400945 180.22862996521485 L 491.93696537368186 168.27213323055636 L 491.93696537368186 206.9250784595185 L 198.55928824400945 210.73471828356315 ').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -335,7 +336,7 @@ describe('Bar Series', () => {
         it('Bar Series with Depth', (done: Function) => {
             loaded = (args: Object): void => {
                 const seriesElements: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-3');
-                expect(seriesElements.getAttribute('d') === 'M 76.43273753527751 173.1507121464592 L 76.43273753527751 173.1507121464592 L 533.8126058325493 173.1507121464592 L 533.8126058325493 209.51843068645297 L 76.43273753527751 209.51843068645297 ').toBe(true);
+                expect(seriesElements.getAttribute('d') === 'M 75.45813734713076 172.08087169427878 L 75.45813734713076 172.08087169427878 L 533.471495766698 172.08087169427878 L 533.471495766698 208.13863808762488 L 75.45813734713076 208.13863808762488 ').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -347,7 +348,7 @@ describe('Bar Series', () => {
         it('Bar Series with perspectiveAngle', (done: Function) => {
             loaded = (args: Object): void => {
                 const seriesElements: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-3');
-                expect(seriesElements.getAttribute('d') === 'M 210.28571428571428 194.59967292426154 L 210.28571428571428 194.59967292426154 L 478.45714285714286 194.59967292426154 L 478.45714285714286 215.92283056795338 L 210.28571428571428 215.92283056795338 ').toBe(true);
+                expect(seriesElements.getAttribute('d') === 'M 209.71428571428572 193.97240298456612 L 209.71428571428572 193.97240298456612 L 478.25714285714287 193.97240298456612 L 478.25714285714287 215.1138291710674 L 209.71428571428572 215.1138291710674 ').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -359,7 +360,7 @@ describe('Bar Series', () => {
         it('Bar Series with Tilt', (done: Function) => {
             loaded = (args: Object): void => {
                 const seriesElements: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-3');
-                expect(seriesElements.getAttribute('d') === 'M 78.64145380065976 205.69833846821345 L 78.64145380065976 205.69833846821345 L 532.8991819071366 205.69833846821345 L 530.4315787267344 231.12282255034086 L 84.60827285305237 231.12282255034086 ').toBe(true);
+                expect(seriesElements.getAttribute('d') === 'M 77.4940192473562 204.93584446497638 L 77.4940192473562 204.93584446497638 L 532.6342164086323 204.93584446497638 L 530.190800482979 230.17545960687355 L 83.43529345869275 230.17545960687355 ').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -371,9 +372,9 @@ describe('Bar Series', () => {
         it('Checking with multiple Bar series', (done: Function) => {
             loaded = (args: Object): void => {
                 const seriesElements: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-3');
-                expect(seriesElements.getAttribute('d') === 'M 83.0909090909091 174.21763545302775 L 83.0909090909091 174.21763545302775 L 490.3347107438016 174.21763545302775 L 490.3347107438016 209.83700106237671 L 83.0909090909091 209.83700106237671 ').toBe(true);
+                expect(seriesElements.getAttribute('d') === 'M 82.13636363636364 173.1698095310366 L 82.13636363636364 173.1698095310366 L 489.9442148760331 173.1698095310366 L 489.9442148760331 208.48560100166947 L 82.13636363636364 208.48560100166947 ').toBe(true);
                 const seriesElements1: HTMLElement = document.getElementById('container-svg-0-region-series-1-point-3');
-                expect(seriesElements1.getAttribute('d') === 'M 92.41176470588236 175.71123441029167 L 92.41176470588236 175.71123441029167 L 518.0828877005348 175.71123441029167 L 518.0828877005348 210.2829716193656 L 92.41176470588236 210.2829716193656 ').toBe(true);
+                expect(seriesElements1.getAttribute('d') === 'M 91.48529411764706 174.69422689777082 L 91.48529411764706 174.69422689777082 L 517.7459893048127 174.69422689777082 L 517.7459893048127 208.9713186192674 L 91.48529411764706 208.9713186192674 ').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -394,9 +395,9 @@ describe('Bar Series', () => {
         it('Checking with enableSideBySidePlacement', (done: Function) => {
             loaded = (args: Object): void => {
                 const seriesElements: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-3');
-                expect(seriesElements.getAttribute('d')).toBe('M 85.47368421052633 193.15902192877854 L 85.47368421052633 193.15902192877854 L 489.65550239234454 193.15902192877854 L 489.65550239234454 209.06721980242762 L 85.47368421052633 209.06721980242762 ');
+                expect(seriesElements.getAttribute('d')).toBe('M 84.5263157894737 191.96089629332099 L 84.5263157894737 191.96089629332099 L 489.2679425837321 191.96089629332099 L 489.2679425837321 207.7335129350923 L 84.5263157894737 207.7335129350923 ');
                 const seriesElements1: HTMLElement = document.getElementById('container-svg-0-region-series-1-point-3');
-                expect(seriesElements1.getAttribute('d')).toBe('M 85.47368421052633 175.48324651361295 L 85.47368421052633 175.48324651361295 L 520.7464114832537 175.48324651361295 L 520.7464114832537 191.391444387262 L 85.47368421052633 191.391444387262 ');
+                expect(seriesElements1.getAttribute('d')).toBe('M 84.5263157894737 174.43576669135277 L 84.5263157894737 174.43576669135277 L 520.4019138755981 174.43576669135277 L 520.4019138755981 190.2083833331241 L 84.5263157894737 190.2083833331241 ');
                 done();
             };
             chartObj.loaded = loaded;
@@ -468,7 +469,7 @@ describe('Bar Series', () => {
         it('Bar Series Type with ColumnFacet property as Cylinder', (done: Function) => {
             loaded = (args: Object): void => {
                 const region1: string = document.getElementById('container-svg-21-region-series-0-point-1').getAttribute('d');
-                expect(region1).toBe('M 56.61735259302697 318.24392179930635 L 56.61735259302697 318.24392179930635 L 431.8938458947493 318.24392179930635 L 431.8697333233325 320.5461971516881 L 56.876958745142666 320.5461971516881 ');
+                expect(region1).toBe('M 55.66313810520663 316.5482791627418 L 55.66313810520663 316.5482791627418 L 431.4268009165953 316.5482791627418 L 431.4031913755856 318.8373000426884 L 55.92182289096158 318.8373000426884 ');
                 done();
             };
             chartObj.loaded = loaded;
@@ -478,15 +479,15 @@ describe('Bar Series', () => {
         it('Checking Cylindrical chart with negative points', (done: Function) => {
             loaded = (args: Object): void => {
                 const region5: string = document.getElementById('container-svg-5-region-series-0-point-0').getAttribute('d');
-                expect(region5).toBe('M 164.14176197076404 211.9303744113318 L 164.14176197076404 211.9303744113318 L 377.6770191156753 211.9303744113318 L 377.7096053827063 209.4763323200991 L 164.486059157852 209.4763323200991 ');
+                expect(region5).toBe('M 163.32325267167215 210.97367523057503 L 163.32325267167215 210.97367523057503 L 377.1455195708105 210.97367523057503 L 377.1788817013422 208.52102969364364 L 163.66874468855121 208.52102969364364 ');
                 const region10: string = document.getElementById('container-svg-10-region-series-0-point-0').getAttribute('d');
-                expect(region10).toBe('M 164.486059157852 197.53504948940608 L 164.486059157852 197.53504948940608 L 377.7096053827063 197.53504948940608 L 377.6770191156753 195.0181624546136 L 164.14176197076404 195.0181624546136 ');
+                expect(region10).toBe('M 163.66874468855121 196.57974686295063 L 163.66874468855121 196.57974686295063 L 377.1788817013422 196.57974686295063 L 377.1455195708105 194.06146327385682 L 163.32325267167215 194.06146327385682 ');
                 const region15: string = document.getElementById('container-svg-15-region-series-0-point-0').getAttribute('d');
-                expect(region15).toBe('M 162.02723564539505 191.62646963484633 L 162.02723564539505 191.62646963484633 L 377.47688817628125 191.62646963484633 L 377.42635658914725 192.75969279144402 L 161.4933333333333 192.75969279144402 ');
+                expect(region15).toBe('M 161.2013882118587 190.6611934138298 L 161.2013882118587 190.6611934138298 L 376.9406236090499 190.6611934138298 L 376.88888888888886 191.7922509309789 L 160.66563307493539 191.7922509309789 ');
                 const region20: string = document.getElementById('container-svg-20-region-series-0-point-0').getAttribute('d');
-                expect(region20).toBe('M 160.3788161993769 203.1308411214953 L 160.3788161993769 203.1308411214953 L 377.3208722741432 203.1308411214953 L 377.3280921482227 206.28133253981267 L 160.4550993260791 206.28133253981267 ');
+                expect(region20).toBe('M 159.54724818276216 202.15887850467288 L 159.54724818276216 202.15887850467288 L 376.78089304257526 202.15887850467288 L 376.7882848184185 205.30967934616507 L 159.62379603818061 205.30967934616507 ');
                 const region25: string = document.getElementById('container-svg-25-region-series-0-point-0').getAttribute('d');
-                expect(region25).toBe('M 162.02723564539505 214.9361004194105 L 162.02723564539505 214.9361004194105 L 377.47688817628125 214.9361004194105 L 377.5308641975308 215.37037037037035 L 162.5975308641975 215.37037037037035 ');
+                expect(region25).toBe('M 161.2013882118587 213.97082419839398 L 161.2013882118587 213.97082419839398 L 376.9406236090499 213.97082419839398 L 376.9958847736625 214.4074074074074 L 161.7736625514403 214.4074074074074 ');
                 done();
             };
             chartObj.loaded = loaded;
@@ -542,7 +543,7 @@ describe('Bar Series', () => {
             loaded = (args: Object): void => {
                 const element: HTMLElement = document.getElementById('container-svg-series-0-point-3-data-label');
                 expect(element.textContent === '65').toBe(true);
-                expect(element.getAttribute('fill')).toBe('#FFFFFF');
+                expect(element.getAttribute('fill')).toBe('#212529');
                 done();
             };
             chartObj.loaded = loaded;
@@ -571,14 +572,14 @@ describe('Bar Series', () => {
                 const point5: number = +document.getElementById('container-svg-series-0-point-5-data-label').getAttribute('x');
                 const point6: number = +document.getElementById('container-svg-series-1-point-5-data-label').getAttribute('y');
                 const point7: number = +document.getElementById('container-svg-series-1-point-5-data-label').getAttribute('x');
-                expect(point0 === 209.5844654308137).toBe(true);
-                expect(point1 === 305.14252336448595).toBe(true);
-                expect(point2 === 190.36792072234317).toBe(true);
-                expect(point3 === 192.303738317757).toBe(true);
-                expect(point4 === 85.16328281893944).toBe(true);
-                expect(point5 === 395.4135514018691).toBe(true);
-                expect(point6 === 65.94673811046893).toBe(true);
-                expect(point7 === 102.03271028037385).toBe(true);
+                expect(point0 === 209.15153872386327).toBe(true);
+                expect(point1 === 303.2289719626168).toBe(true);
+                expect(point2 === 189.98651290201067).toBe(true);
+                expect(point3 === 189.93457943925233).toBe(true);
+                expect(point4 === 85.06392496617637).toBe(true);
+                expect(point5 === 393.86448598130835).toBe(true);
+                expect(point6 === 65.89889914432374).toBe(true);
+                expect(point7 === 99.29906542056075).toBe(true);
                 done();
             };
             chartObj.series = [chartObj.series[0], {
@@ -618,7 +619,7 @@ describe('Bar Series', () => {
         it('Checking font color saturation - dataLabel fill black', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: HTMLElement = document.getElementById('container-svg-series-0-point-3-data-label');
-                expect(textElement.getAttribute('fill')).toBe('#FFFFFF');
+                expect(textElement.getAttribute('fill')).toBe('#212529');
                 done();
             };
             chartObj.loaded = loaded;
@@ -629,7 +630,7 @@ describe('Bar Series', () => {
         it('Checking font color saturation - dataLabel fill white', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: HTMLElement = document.getElementById('container-svg-series-0-point-3-data-label');
-                expect(textElement.getAttribute('fill')).toBe('#000000');
+                expect(textElement.getAttribute('fill')).toBe('#212529');
                 done();
             };
             chartObj.loaded = loaded;
@@ -640,11 +641,11 @@ describe('Bar Series', () => {
         it('Checking dataLabel positions Top', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: Element = document.getElementById('container-svg-series-0-point-3-data-label');
-                expect(textElement.getAttribute('y')).toBe('209.5844654308137');
-                expect(textElement.getAttribute('x')).toBe('553.3878504672897');
+                expect(textElement.getAttribute('y')).toBe('209.15153872386327');
+                expect(textElement.getAttribute('x')).toBe('552.4766355140187');
                 const textElement1: Element = document.getElementById('container-svg-series-1-point-3-data-label');
-                expect(textElement1.getAttribute('y')).toBe('190.36792072234317');
-                expect(textElement1.getAttribute('x')).toBe('327.7102803738318');
+                expect(textElement1.getAttribute('y')).toBe('189.98651290201067');
+                expect(textElement1.getAttribute('x')).toBe('325.8878504672897');
                 done();
             };
             chartObj.loaded = loaded;
@@ -656,11 +657,11 @@ describe('Bar Series', () => {
         it('Checking dataLabel positions Middle', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: Element = document.getElementById('container-svg-series-0-point-3-data-label');
-                expect(textElement.getAttribute('y')).toBe('209.5844654308137');
-                expect(textElement.getAttribute('x')).toBe('305.14252336448595');
+                expect(textElement.getAttribute('y')).toBe('209.15153872386327');
+                expect(textElement.getAttribute('x')).toBe('303.2289719626168');
                 const textElement1: Element = document.getElementById('container-svg-series-1-point-3-data-label');
-                expect(textElement1.getAttribute('y')).toBe('190.36792072234317');
-                expect(textElement1.getAttribute('x')).toBe('192.303738317757');
+                expect(textElement1.getAttribute('y')).toBe('189.98651290201067');
+                expect(textElement1.getAttribute('x')).toBe('189.93457943925233');
                 done();
             };
             chartObj.loaded = loaded;
@@ -672,11 +673,11 @@ describe('Bar Series', () => {
         it('Checking data label position as top', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: Element = document.getElementById('container-svg-series-0-point-3-data-label');
-                expect(textElement.getAttribute('y')).toBe('209.5844654308137' );
-                expect(textElement.getAttribute('x')).toBe('553.3878504672897');
+                expect(textElement.getAttribute('y')).toBe('209.15153872386327' );
+                expect(textElement.getAttribute('x')).toBe('552.4766355140187');
                 const textElement1: Element = document.getElementById('container-svg-series-1-point-3-data-label');
-                expect(textElement1.getAttribute('y')).toBe('190.36792072234317');
-                expect(textElement1.getAttribute('x')).toBe('327.7102803738318');
+                expect(textElement1.getAttribute('y')).toBe('189.98651290201067');
+                expect(textElement1.getAttribute('x')).toBe('325.8878504672897');
                 done();
             };
             chartObj.loaded = loaded;
@@ -688,11 +689,13 @@ describe('Bar Series', () => {
         it('Checking dataLabel positions Bottom', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: Element = document.getElementById('container-svg-series-0-point-3-data-label');
-                expect(textElement.getAttribute('y') === '209.69176613547162').toBe(true);
-                expect(textElement.getAttribute('x') === '57.4925290023202').toBe(true);
+
+                expect(textElement.getAttribute('y') === '209.26185283947447').toBe(true);
+                expect(textElement.getAttribute('x') === '54.58969837587008').toBe(true);
                 const textElement1: Element = document.getElementById('container-svg-series-1-point-3-data-label');
-                expect(textElement1.getAttribute('y') === '190.6089792788002').toBe(true);
-                expect(textElement1.getAttribute('x') === '57.4925290023202').toBe(true);
+
+                expect(textElement1.getAttribute('y') === '190.2302262692821').toBe(true);
+                expect(textElement1.getAttribute('x') === '54.58969837587008').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -731,9 +734,9 @@ describe('Bar Series', () => {
                 const text: HTMLElement = document.getElementById('container-svg-series-0-point-3-data-label');
                 const textX: number = + text.getAttribute('x');
                 const textY: number = + text.getAttribute('y');
-                expect(shape.getAttribute('d')).toBe('M 519.8878504672897 175.82446543081372 L 576.8878504672897 175.82446543081372 L 576.8878504672897 219.82446543081372 L 519.8878504672897 219.82446543081372 L 519.8878504672897 175.82446543081372 z');
-                expect(textY).toBe(209.5844654308137);
-                expect(textX).toBe(553.3878504672897);
+                expect(shape.getAttribute('d')).toBe('M 522.4766355140187 177.01153872386328 L 572.4766355140187 177.01153872386328 L 572.4766355140187 218.01153872386328 L 522.4766355140187 218.01153872386328 L 522.4766355140187 177.01153872386328 z');
+                expect(textY).toBe(209.15153872386327);
+                expect(textX).toBe(552.4766355140187);
                 done();
             };
             chartObj.loaded = loaded;
@@ -759,10 +762,39 @@ describe('Bar Series', () => {
         it('Checking Data label template', (done: Function) => {
             loaded = (args: Object): void => {
                 const textElement: Element = document.getElementById('container-svg-series-0-point-3-data-label');
-                expect(document.getElementById('container-series-0-data-label-5').style.left).toBe('727.93px');
+                expect(document.getElementById('container-series-0-data-label-5').style.left).toBe('728.748px');
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.series[0].dataLabel.template = '<div>${point.y}</div>';
+            chartObj.refresh();
+        });
+        it('Checking Data label event with cancel as true', (done: Function) => {
+            loaded = (args: Object): void => {
+                const textElement: Element = document.getElementById('container-svg-series-0-point-3-data-label');
+                expect(textElement === null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.textRender = (args: Chart3DTextRenderEventArgs): void => {
+                args.cancel = true;
+            }
+            chartObj.series[0].dataLabel.template = '<div>${point.y}</div>';
+            chartObj.refresh();
+        });
+        it('Checking Data label event with cancel as false', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs): void => {
+                chartObj.loaded = null;
+                args.chart.dataLabel3DModule.calculateTemplateLabelSize(document.getElementById('container-series-0-data-label-collections'),
+                    (document.getElementById('container-series-0-data-label-0') as any), args.chart.visibleSeries[0].points[0], args.chart.visibleSeries[0], args.chart.series[0].dataLabel, new Rect(0,0,0,0), false, { x: 0, y: 0 }, true);
+                const textElement: Element = document.getElementById('container');
+                expect(textElement !==null ).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.textRender = (args: Chart3DTextRenderEventArgs): void => {
+                args.cancel = false;
+            }
             chartObj.series[0].dataLabel.template = '<div>${point.y}</div>';
             chartObj.refresh();
         });
@@ -824,15 +856,15 @@ describe('Bar Series', () => {
                 let point: Element = document.getElementById('container-svg-0-region-series-0-point-0');
                 let path: string[] = point.getAttribute('d').split(' ');
                 let x: number = parseInt(path[1], 10);
-                expect(x).toBe(65);
+                expect(x).toBe(61);
                 point = document.getElementById('container-svg-0-region-series-1-point-0');
                 path = point.getAttribute('d').split(' ');
                 x = parseInt(path[1], 10);
-                expect(x).toBe(68);
+                expect(x).toBe(65);
                 point = document.getElementById('container-svg-0-region-series-2-point-0');
                 path = point.getAttribute('d').split(' ');
                 x = parseInt(path[1], 10);
-                expect(x).toBe(72);
+                expect(x).toBe(68);
                 done();
             };
             chartObj.loaded = loaded;
@@ -844,15 +876,15 @@ describe('Bar Series', () => {
                 let point: Element = document.getElementById('container-svg-0-region-series-0-point-0');
                 let path: string[] = point.getAttribute('d').split(' ');
                 let x: number = parseInt(path[1], 10);
-                expect(x).toBe(66);
+                expect(x).toBe(63);
                 point = document.getElementById('container-svg-0-region-series-1-point-0');
                 path = point.getAttribute('d').split(' ');
                 x = parseInt(path[1], 10);
-                expect(x).toBe(66);
+                expect(x).toBe(63);
                 point = document.getElementById('container-svg-0-region-series-2-point-0');
                 path = point.getAttribute('d').split(' ');
                 x = parseInt(path[1], 10);
-                expect(x).toBe(66);
+                expect(x).toBe(63);
                 done();
             };
             chartObj.loaded = loaded;
@@ -865,15 +897,15 @@ describe('Bar Series', () => {
                 let point: Element = document.getElementById('container-svg-0-region-series-0-point-0');
                 let path: string[] = point.getAttribute('d').split(' ');
                 let x: number = parseInt(path[1], 10);
-                expect(x).toBe(66);
+                expect(x).toBe(63);
                 point = document.getElementById('container-svg-0-region-series-1-point-0');
                 path = point.getAttribute('d').split(' ');
                 x = parseInt(path[1], 10);
-                expect(x).toBe(66);
+                expect(x).toBe(63);
                 point = document.getElementById('container-svg-0-region-series-2-point-0');
                 path = point.getAttribute('d').split(' ');
                 x = parseInt(path[1], 10);
-                expect(x).toBe(66);
+                expect(x).toBe(63);
                 done();
             };
             chartObj.loaded = loaded;
@@ -954,11 +986,11 @@ describe('Bar Series', () => {
         it('Bar series group support', (done: Function) => {
             loaded = (): void => {
                 const direction: string = document.getElementById('container-svg-0-region-series-0-point-1').getAttribute('d');
-                expect(direction === 'M 71.25660160734787 248.01974741676233 L 71.25660160734787 248.01974741676233 L 579.0022962112514 248.01974741676233 L 579.0022962112514 277.74144661308844 L 71.25660160734787 277.74144661308844 ').toBe(true);
+                expect(direction === 'M 68.34270952927669 248.01974741676233 L 68.34270952927669 248.01974741676233 L 578.2738231917336 248.01974741676233 L 578.2738231917336 277.74144661308844 L 68.34270952927669 277.74144661308844 ').toBe(true);
                 const direction1: string = document.getElementById('container-svg-1-region-series-1-point-1-front').getAttribute('d');
-                expect(direction1 === 'M 242.54244482173178 247.69405772495756 L 242.54244482173178 247.69405772495756 L 75.68845500848897 247.69405772495756 L 75.68845500848897 236.29915110356538 L 242.54244482173178 236.29915110356538 ').toBe(true);
+                expect(direction1 === 'M 240.3879456706282 247.69405772495756 L 240.3879456706282 247.69405772495756 L 72.81578947368422 247.69405772495756 L 72.81578947368422 236.29915110356538 L 240.3879456706282 236.29915110356538 ').toBe(true);
                 const direction2: string = document.getElementById('container-svg-0-region-series-0-point-2').getAttribute('d');
-                expect(direction2 === 'M 71.25660160734787 137.93938002296207 L 71.25660160734787 137.93938002296207 L 691.8346727898966 137.93938002296207 L 691.8346727898966 167.66107921928815 L 71.25660160734787 167.66107921928815 ').toBe(true);
+                expect(direction2 === 'M 68.34270952927669 137.93938002296207 L 68.34270952927669 137.93938002296207 L 691.5918484500573 137.93938002296207 L 691.5918484500573 167.66107921928815 L 68.34270952927669 167.66107921928815 ').toBe(true);
                 chartObj.loaded = null;
                 done();
             };
@@ -1007,7 +1039,7 @@ describe('Bar Series', () => {
         it('Empty points Zero mode', (done: Function) => {
             loaded = (args: Object): void => {
                 const region1: string = document.getElementById('container-svg-1-region-series-0-point-1').getAttribute('d');
-                expect(region1).toBe('M 60.682027649769594 304.8930875576036 L 60.682027649769594 304.8930875576036 L 431.5163133640553 304.8930875576036 L 431.5163133640553 324.35115207373275 L 60.682027649769594 324.35115207373275 ');
+                expect(region1).toBe('M 59.72350230414747 303.2984499371596 L 59.72350230414747 303.2984499371596 L 431.0562211981567 303.2984499371596 L 431.0562211981567 322.6345203183913 L 59.72350230414747 322.6345203183913 ');
                 done();
             };
             chartObj.series[0].emptyPointSettings.mode = 'Zero';
@@ -1017,7 +1049,7 @@ describe('Bar Series', () => {
         it('Empty points Average mode', (done: Function) => {
             loaded = (args: Object): void => {
                 const region1: string = document.getElementById('container-svg-1-region-series-0-point-1').getAttribute('d');
-                expect(region1).toBe('M 60.682027649769594 304.8930875576036 L 60.682027649769594 304.8930875576036 L 431.5163133640553 304.8930875576036 L 431.5163133640553 324.35115207373275 L 60.682027649769594 324.35115207373275 ');
+                expect(region1).toBe('M 59.72350230414747 303.2984499371596 L 59.72350230414747 303.2984499371596 L 431.0562211981567 303.2984499371596 L 431.0562211981567 322.6345203183913 L 59.72350230414747 322.6345203183913 ');
                 done();
             };
             chartObj.series[0].emptyPointSettings.mode = 'Average';
@@ -1035,6 +1067,22 @@ describe('Bar Series', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
+        it('Checking with logarithmic axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                const region1: Element = document.getElementById('container-svg-0-region-series-0-point-1');
+                expect(region1 === null).toBe(true);
+                done();
+            };
+            chartObj.series[0].dataSource = [  { y: 18, x: 1 }, { y: 29, x: 2 } ];
+            chartObj.series[0].columnFacet = 'Cylinder';
+            chartObj.primaryXAxis = {  title: 'Year',valueType: 'Logarithmic'};
+            chartObj.enableSideBySidePlacement = true;
+            chartObj.series[0].xName = 'x';
+            chartObj.series[0].yName = 'y';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        
     });
     it('memory leak', () => {
         profile.sample();

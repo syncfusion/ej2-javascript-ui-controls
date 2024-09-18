@@ -2,9 +2,13 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { INode, IConnector, Layout, Bounds } from './layout-base';
 import { PointModel } from '../primitives/point-model';
-import { Connector } from '../objects/connector';
-import { LineDistribution, MatrixCellGroupObject } from '../interaction/line-distribution';
-import { LayoutOrientation } from '../enum/enum';
+import { Connector, OrthogonalSegment } from '../objects/connector';
+import { Direction, LayoutOrientation } from '../enum/enum';
+import { Rect as RectModel } from '../primitives/rect';
+import { Point } from '../primitives/point';
+import { findDistance, getConnectorDirection, intersect2 } from '../utility/diagram-util';
+import { ConnectorModel } from '../objects/connector-model';
+import { Diagram } from '../diagram';
 
 /**
  * Connects diagram objects with layout algorithm
@@ -56,11 +60,11 @@ export class ComplexHierarchicalTree {
      * @param {{}} nameTable - provide the nameTable value.
      * @param {Layout} layout - provide the layout value.
      * @param {PointModel} viewPort - provide the viewPort value.
-     * @param {LineDistribution} lineDistribution - provide the lineDistribution value.
+     * @param {Diagram} diagram - provide the diagram model.
      * @private
      */
-    public doLayout(nodes: INode[], nameTable: {}, layout: Layout, viewPort: PointModel, lineDistribution: LineDistribution): void {
-        new HierarchicalLayoutUtil().doLayout(nodes, nameTable, layout, viewPort, lineDistribution);
+    public doLayout(nodes: INode[], nameTable: {}, layout: Layout, viewPort: PointModel, diagram: Diagram): void {
+        new HierarchicalLayoutUtil().doLayout(nodes, nameTable, layout, viewPort, diagram);
     }
 
     public getLayoutNodesCollection(nodes: INode[]): INode[] {
@@ -71,7 +75,7 @@ export class ComplexHierarchicalTree {
             node = nodes[parseInt(i.toString(), 10)];
             //885697:Position of root node without the child node in complex hierarchical layout is not proper
             if (((node.inEdges.length + node.outEdges.length > 0) || (node.offsetX === 0 && node.offsetY === 0)) &&
-                !node["" + parentId] && !node["" + processId]) {
+                !node['' + parentId] && !node['' + processId]) {
                 nodesCollection.push(node);
             }
         }
@@ -323,10 +327,10 @@ class HierarchicalLayoutUtil {
      * @param {{}} nameTable - provide the nameTable value.
      * @param {Layout} layoutProp - provide the layoutProp value.
      * @param {PointModel} viewPort - provide the viewPort value.
-     * @param {LineDistribution} lineDistribution - provide the lineDistribution value.
+     * @param {Diagram} diagram - provide the diagram model.
      * @private
      */
-    public doLayout(nodes: INode[], nameTable: {}, layoutProp: Layout, viewPort: PointModel, lineDistribution: LineDistribution): void {
+    public doLayout(nodes: INode[], nameTable: {}, layoutProp: Layout, viewPort: PointModel, diagram: Diagram): void {
         this.nameTable = nameTable;
         const canEnableRouting: boolean = layoutProp.enableRouting;
         const layout: LayoutProp = {
@@ -335,9 +339,10 @@ class HierarchicalLayoutUtil {
             enableLayoutRouting: canEnableRouting
         };
         let model: MultiParentModel;
-        if (lineDistribution) {
-            lineDistribution.edgeMapper = [];
-        }
+        const matrixModel: MatrixModel = new MatrixModel();
+        matrixModel.edgeMapper = [];
+        matrixModel.diagram = diagram;
+
         const nodeWithMultiEdges: INode[] = [];
         this.vertices = [];
         const filledVertexSet: {} = {};
@@ -351,14 +356,13 @@ class HierarchicalLayoutUtil {
                 nodeWithMultiEdges.push((nodes[parseInt(i.toString(), 10)] as INode));
             }
             filledVertexSet[node.name] = node;
-            if (lineDistribution) {
+            if (matrixModel) {
                 const outEdges: string[] = nodes[parseInt(i.toString(), 10)].outEdges.slice();
                 for (let j: number = 0; j < outEdges.length; j++) {
                     const outEdge: Connector = nameTable[outEdges[parseInt(j.toString(), 10)]];
-                    lineDistribution.setEdgeMapper({ key: outEdge, value: [] });
+                    matrixModel.setEdgeMapper({ key: outEdge, value: [] });
                 }
             }
-
         }
         const hierarchyVertices: {}[] = [];
         //let candidateRoots: Vertex[];
@@ -371,7 +375,8 @@ class HierarchicalLayoutUtil {
         let limit: Margin = { marginX: 0, marginY: 0 };
         let tmp: Vertex[] = [];
         let checkLinear: boolean = false;
-        let matrixModel: MatrixModelObject;
+        let matrixModelObject: MatrixModelObject;
+
         for (let i: number = 0; i < hierarchyVertices.length; i++) {
             const vertexSet: {} = hierarchyVertices[parseInt(i.toString(), 10)];
             // eslint-disable-next-line
@@ -385,19 +390,17 @@ class HierarchicalLayoutUtil {
             this.cycleStage(model);
             this.layeringStage(model);
             //897503: Child Nodes position in ComplexHierarchicalTree updated wrongly results in connector overlap
-            if (lineDistribution) {
-                if (layoutProp.arrangement === 'Nonlinear' && layoutProp.connectionPointOrigin === 'SamePoint') {
+            if ((matrixModel && layoutProp.connectionPointOrigin === 'DifferentPoint') || checkLinear) {
+                matrixModelObject = { model: model, matrix: [], rowOffset: [], roots: [] };
+                matrixModel.arrangeElements(matrixModelObject, layoutProp);
+                (layoutProp as any).ranks = matrixModelObject.model.ranks;
+            } else {
+                if (layoutProp.arrangement === 'Nonlinear') {
                     this.crossingStage(model);
+                    limit = this.placementStage(model, limit.marginX, limit.marginY);
+                    tmp = [];
                 }
-                matrixModel = this.matrixModel({ model: model, matrix: [], rowOffset: [] });
-                lineDistribution.arrangeElements(matrixModel, layoutProp);
-                (layoutProp as any).ranks = matrixModel.model.ranks;
             }
-            //897503 - commented the old behavior of  complex hierarchical layout with SamePoint
-            // else {
-            //     limit = this.placementStage(model, limit.marginX, limit.marginY);
-            //     tmp = [];
-            // }   
         }
         const modelBounds: Rect = this.getModelBounds(this.vertices);
         this.updateMargin(layoutProp, layout, modelBounds, viewPort);
@@ -429,18 +432,18 @@ class HierarchicalLayoutUtil {
                 this.isNodeOverLap(this.nameTable[this.vertices[parseInt(i.toString(), 10)].name], layoutProp);
             }
         }
-        if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint') || canEnableRouting) {
-            lineDistribution.updateLayout(viewPort, modelBounds, layoutProp, layout, nodeWithMultiEdges, nameTable);
+        if ((matrixModel && layoutProp.connectionPointOrigin === 'DifferentPoint') || canEnableRouting) {
+            matrixModel.updateLayout(viewPort, modelBounds, layoutProp, layout, nodeWithMultiEdges, nameTable);
         }
         if (canEnableRouting) {
             const vertices: object = {};
             let matrixrow1: MatrixCellGroupObject[];
-            for (let p: number = 0; p < matrixModel.matrix.length; p++) {
-                matrixrow1 = matrixModel.matrix[parseInt(p.toString(), 10)].value;
+            for (let p: number = 0; p < matrixModelObject.matrix.length; p++) {
+                matrixrow1 = matrixModelObject.matrix[parseInt(p.toString(), 10)].value;
                 for (let q: number = 0; q < matrixrow1.length; q++) {
                     const matrixCell: MatrixCellGroupObject = matrixrow1[parseInt(q.toString(), 10)];
                     for (let r: number = 0; r < (matrixCell.cells as MatrixCellGroupObject[]).length; r++) {
-                        const cell: IVertex = matrixCell.cells[parseInt(r.toString(), 10)];
+                        const cell: IVertex = matrixCell.cells[parseInt(r.toString(), 10)] as IVertex;
                         const type: string = this.getType(cell.type);
                         if (type === 'internalVertex') {
                             const internalVertex: IVertex = cell;
@@ -946,8 +949,7 @@ class HierarchicalLayoutUtil {
             const connector2: Connector = this.nameTable[clnode.outEdges[clnode.outEdges.length - (i + 1)]];
             const geometry: string = 'geometry';
             //900930: To exclude self-loop in layouts
-            if (connector1.sourceID !== connector2.targetID && connector1.targetID !== connector2.sourceID )
-            {
+            if (connector1.sourceID !== connector2.targetID && connector1.targetID !== connector2.sourceID) {
                 connector2[`${geometry}`].points[0].y = connector1[`${geometry}`].points[0].y;
             }
         }
@@ -1065,13 +1067,6 @@ class HierarchicalLayoutUtil {
             this.rankBottomY[cell.minRank] = Math.max(this.rankBottomY[cell.minRank], positionY + cellGeomtry.height);
         }
     }
-    private matrixModel(options: MatrixModelObject): MatrixModelObject {
-        // eslint-disable-next-line
-        options.model = options.model;
-        options.matrix = options.matrix || [];
-        options.rowOffset = options.rowOffset || [];
-        return options;
-    }
 
     private calculateRectValue(dnode: INode): Rect {
         const rect: Rect = { x: 0, y: 0, right: 0, bottom: 0, height: 0, width: 0 };
@@ -1105,7 +1100,7 @@ class HierarchicalLayoutUtil {
 
     private isIntersect(rect: Rect, nodeRect: Rect, layoutProp: Layout): boolean {
         if (!(Math.floor(rect.right + layoutProp.horizontalSpacing) <= Math.floor(nodeRect.x) ||
-        Math.floor(rect.x - layoutProp.horizontalSpacing) >= Math.floor(nodeRect.right)
+            Math.floor(rect.x - layoutProp.horizontalSpacing) >= Math.floor(nodeRect.right)
             || Math.floor(rect.y - layoutProp.verticalSpacing) >= Math.floor(nodeRect.bottom)
             || Math.floor(rect.bottom + layoutProp.verticalSpacing) <= Math.floor(nodeRect.y))) {
             return true;
@@ -1126,166 +1121,164 @@ class HierarchicalLayoutUtil {
         const layoutBounds: Rect = layoutProp.bounds ? layoutProp.bounds : viewPortBounds;
         if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
             switch (layoutProp.horizontalAlignment) {
-            case 'Auto':
-            case 'Left':
-                layout.marginX = (layoutBounds.x - bounds.x) + layoutProp.margin.left;
-                break;
-            case 'Right':
-                layout.marginX = layoutBounds.x + layoutBounds.width - layoutProp.margin.right - bounds.right;
-                break;
-            case 'Center':
-                layout.marginX = layoutBounds.x + layoutBounds.width / 2 - (bounds.x + bounds.right) / 2;
-                break;
+                case 'Auto':
+                case 'Left':
+                    layout.marginX = (layoutBounds.x - bounds.x) + layoutProp.margin.left;
+                    break;
+                case 'Right':
+                    layout.marginX = layoutBounds.x + layoutBounds.width - layoutProp.margin.right - bounds.right;
+                    break;
+                case 'Center':
+                    layout.marginX = layoutBounds.x + layoutBounds.width / 2 - (bounds.x + bounds.right) / 2;
+                    break;
             }
             switch (layoutProp.verticalAlignment) {
-            case 'Top':
-                //const top: number;
-                const top: number = layoutBounds.y + layoutProp.margin.top;
-                layout.marginY = layout.orientation === 'TopToBottom' ? top : - top;
-                break;
-            case 'Bottom':
-                //const bottom: number;
-                const bottom: number = layoutBounds.y + layoutBounds.height - layoutProp.margin.bottom;
-                layout.marginY = layout.orientation === 'TopToBottom' ? bottom - bounds.bottom : -(bottom - bounds.bottom);
-                break;
-            case 'Auto':
-            case 'Center':
-                //const center: number;
-                const center: number = layoutBounds.y + layoutBounds.height / 2;
-                layout.marginY = layout.orientation === 'TopToBottom' ?
-                    center - (bounds.y + bounds.bottom) / 2 : -center + (bounds.y + bounds.bottom) / 2;
-                break;
+                case 'Top':
+                    //const top: number;
+                    const top: number = layoutBounds.y + layoutProp.margin.top;
+                    layout.marginY = layout.orientation === 'TopToBottom' ? top : - top;
+                    break;
+                case 'Bottom':
+                    //const bottom: number;
+                    const bottom: number = layoutBounds.y + layoutBounds.height - layoutProp.margin.bottom;
+                    layout.marginY = layout.orientation === 'TopToBottom' ? bottom - bounds.bottom : -(bottom - bounds.bottom);
+                    break;
+                case 'Auto':
+                case 'Center':
+                    //const center: number;
+                    const center: number = layoutBounds.y + layoutBounds.height / 2;
+                    layout.marginY = layout.orientation === 'TopToBottom' ?
+                        center - (bounds.y + bounds.bottom) / 2 : -center + (bounds.y + bounds.bottom) / 2;
+                    break;
             }
         } else {
             switch (layoutProp.horizontalAlignment) {
-            case 'Auto':
-            case 'Left':
-                //let left: number;
-                const left: number = layoutBounds.x + layoutProp.margin.left;
-                layout.marginX = layout.orientation === 'LeftToRight' ? left : - left;
-                break;
-            case 'Right':
-                let right: number;
-                right = layoutBounds.x + layoutBounds.width - layoutProp.margin.right;
-                layout.marginX = layout.orientation === 'LeftToRight' ? right - bounds.right : bounds.right - right;
-                break;
-            case 'Center':
-                let center: number;
-                center = layoutBounds.width / 2 + layoutBounds.x;
-                layout.marginX = layout.orientation === 'LeftToRight' ?
-                    center - (bounds.y + bounds.bottom) / 2 : -center + (bounds.x + bounds.right) / 2;
-                break;
+                case 'Auto':
+                case 'Left':
+                    //let left: number;
+                    const left: number = layoutBounds.x + layoutProp.margin.left;
+                    layout.marginX = layout.orientation === 'LeftToRight' ? left : - left;
+                    break;
+                case 'Right':
+                    let right: number;
+                    right = layoutBounds.x + layoutBounds.width - layoutProp.margin.right;
+                    layout.marginX = layout.orientation === 'LeftToRight' ? right - bounds.right : bounds.right - right;
+                    break;
+                case 'Center':
+                    let center: number;
+                    center = layoutBounds.width / 2 + layoutBounds.x;
+                    layout.marginX = layout.orientation === 'LeftToRight' ?
+                        center - (bounds.y + bounds.bottom) / 2 : -center + (bounds.x + bounds.right) / 2;
+                    break;
             }
             switch (layoutProp.verticalAlignment) {
-            case 'Top':
-                layout.marginY = layoutBounds.y + layoutProp.margin.top - bounds.y;
-                break;
-            case 'Auto':
-            case 'Center':
-                layout.marginY = layoutBounds.y + layoutBounds.height / 2 - (bounds.y + bounds.bottom) / 2;
-                break;
-            case 'Bottom':
-                layout.marginY = layoutBounds.y + layoutBounds.height - layoutProp.margin.bottom - bounds.bottom;
-                break;
+                case 'Top':
+                    layout.marginY = layoutBounds.y + layoutProp.margin.top - bounds.y;
+                    break;
+                case 'Auto':
+                case 'Center':
+                    layout.marginY = layoutBounds.y + layoutBounds.height / 2 - (bounds.y + bounds.bottom) / 2;
+                    break;
+                case 'Bottom':
+                    layout.marginY = layoutBounds.y + layoutBounds.height - layoutProp.margin.bottom - bounds.bottom;
+                    break;
             }
         }
     }
     /* eslint-enable */
     //Handles positioning the nodes
-    // 897503 - commented the old behavior of  complex hierarchical layout with SamePoint
-    // private placementStage(model: MultiParentModel, marginX: number, marginY: number): Margin {
-    //     const placementStage: PlacementStage = this.coordinateAssignment(marginX, marginY, parent, model);
-    //     placementStage.model = model;
-    //     placementStage.widestRankValue = null;
-    //     this.placementStageExecute(placementStage);
-    //     return {
-    //         marginX: placementStage.marginX + model.layout.horizontalSpacing,
-    //         marginY: placementStage.marginY + model.layout.verticalSpacing
-    //     };
-    // }
+    private placementStage(model: MultiParentModel, marginX: number, marginY: number): Margin {
+        const placementStage: PlacementStage = this.coordinateAssignment(marginX, marginY, parent, model);
+        placementStage.model = model;
+        placementStage.widestRankValue = null;
+        this.placementStageExecute(placementStage);
+        return {
+            marginX: placementStage.marginX + model.layout.horizontalSpacing,
+            marginY: placementStage.marginY + model.layout.verticalSpacing
+        };
+    }
 
     //Initializes the layout properties for positioning
-    // 897503 - commented the old behavior of  complex hierarchical layout with SamePoint
-    // private coordinateAssignment(marginX: number, marginY: number, parent: {}, model: MultiParentModel): PlacementStage {
-    //     const plalementChange: PlacementStage = {};
-    //     if (model.layout.orientation === 'TopToBottom' || model.layout.orientation === 'BottomToTop') {
-    //         plalementChange.horizontalSpacing = model.layout.horizontalSpacing;
-    //         plalementChange.verticalSpacing = model.layout.verticalSpacing;
-    //     } else {
-    //         plalementChange.horizontalSpacing = model.layout.verticalSpacing;
-    //         plalementChange.verticalSpacing = model.layout.horizontalSpacing;
-    //     }
-    //     plalementChange.orientation = 'north';
-    //     //Removed the conditions here. So check here in case of any issue
-    //     plalementChange.marginX = plalementChange.marginX = marginX;
-    //     plalementChange.marginY = plalementChange.marginY = marginY;
-    //     return plalementChange;
-    // }
+    private coordinateAssignment(marginX: number, marginY: number, parent: {}, model: MultiParentModel): PlacementStage {
+        const plalementChange: PlacementStage = {};
+        if (model.layout.orientation === 'TopToBottom' || model.layout.orientation === 'BottomToTop') {
+            plalementChange.horizontalSpacing = model.layout.horizontalSpacing;
+            plalementChange.verticalSpacing = model.layout.verticalSpacing;
+        } else {
+            plalementChange.horizontalSpacing = model.layout.verticalSpacing;
+            plalementChange.verticalSpacing = model.layout.horizontalSpacing;
+        }
+        plalementChange.orientation = 'north';
+        //Removed the conditions here. So check here in case of any issue
+        plalementChange.marginX = plalementChange.marginX = marginX;
+        plalementChange.marginY = plalementChange.marginY = marginY;
+        return plalementChange;
+    }
 
     //Calculate the largest size of the node either height or width depends upon the layoutorientation
-    // private calculateWidestRank(plalementChange: PlacementStage, graph: {}, model: MultiParentModel): void {
-    //     let isHorizontal: boolean = false;
-    //     if (plalementChange.model.layout.orientation === 'LeftToRight' || plalementChange.model.layout.orientation === 'RightToLeft') {
-    //         isHorizontal = true;
-    //     }
-    //     let offset: number = -plalementChange.verticalSpacing;
-    //     let lastRankMaxCellSize: number = 0.0;
-    //     plalementChange.rankSizes = [];
-    //     plalementChange.rankOffset = [];
-    //     for (let rankValue: number = model.maxRank; rankValue >= 0; rankValue--) {
-    //         let maxCellSize: number = 0.0;
-    //         const rank: (IVertex | IEdge)[] = model.ranks[parseInt(rankValue.toString(), 10)];
-    //         let localOffset: number = isHorizontal ? plalementChange.marginY : plalementChange.marginX;
-    //         for (let i: number = 0; i < rank.length; i++) {
-    //             const node: IVertex | IEdge = rank[parseInt(i.toString(), 10)];
-    //             if (this.crossReduction.isVertex(node)) {
-    //                 const vertex: IVertex = node as IVertex;
-    //                 if (vertex.cell && (vertex.cell.inEdges || vertex.cell.outEdges)) {
-    //                     const obj: INode = this.nameTable[vertex.cell.name];
-    //                     vertex.width = obj.actualSize.width;
-    //                     vertex.height = obj.actualSize.height;
-    //                     maxCellSize = Math.max(maxCellSize, (isHorizontal ? vertex.width : vertex.height));
-    //                 }
-    //             } else {
-    //                 if (node as IEdge) {
-    //                     const edge: IEdge = node as IEdge;
-    //                     let numEdges: number = 1;
-    //                     if (edge.edges != null) {
-    //                         numEdges = edge.edges.length;
-    //                     }
-    //                     node.width = (numEdges - 1) * 10;
-    //                 }
-    //             }
-    //             if (isHorizontal) {
-    //                 if (!node.height) {
-    //                     node.height = 0;
-    //                 }
-    //             }
-    //             // Set the initial x-value as being the best result so far
-    //             localOffset += (isHorizontal ? node.height : node.width) / 2.0;
-    //             this.setXY(node, rankValue, localOffset, isHorizontal ? true : false);
-    //             this.setTempVariable(node, rankValue, localOffset);
-    //             localOffset += ((isHorizontal ? node.height : node.width) / 2.0) + plalementChange.horizontalSpacing;
-    //             if (localOffset > plalementChange.widestRankValue) {
-    //                 plalementChange.widestRankValue = localOffset;
-    //                 plalementChange.widestRank = rankValue;
-    //             }
-    //             plalementChange.rankSizes[parseInt(rankValue.toString(), 10)] = localOffset;
-    //         }
-    //         plalementChange.rankOffset[parseInt(rankValue.toString(), 10)] = offset;
-    //         const distanceToNextRank: number = maxCellSize / 2.0 + lastRankMaxCellSize / 2.0 + plalementChange.verticalSpacing;
-    //         lastRankMaxCellSize = maxCellSize;
-    //         if (plalementChange.orientation === 'north' || plalementChange.orientation === 'west') {
-    //             offset += distanceToNextRank;
-    //         } else {
-    //             offset -= distanceToNextRank;
-    //         }
-    //         for (let i: number = 0; i < rank.length; i++) {
-    //             const cell: IVertex = rank[parseInt(i.toString(), 10)];
-    //             this.setXY(cell, rankValue, offset, isHorizontal ? false : true);
-    //         }
-    //     }
-    // }
+    private calculateWidestRank(plalementChange: PlacementStage, graph: {}, model: MultiParentModel): void {
+        let isHorizontal: boolean = false;
+        if (plalementChange.model.layout.orientation === 'LeftToRight' || plalementChange.model.layout.orientation === 'RightToLeft') {
+            isHorizontal = true;
+        }
+        let offset: number = -plalementChange.verticalSpacing;
+        let lastRankMaxCellSize: number = 0.0;
+        plalementChange.rankSizes = [];
+        plalementChange.rankOffset = [];
+        for (let rankValue: number = model.maxRank; rankValue >= 0; rankValue--) {
+            let maxCellSize: number = 0.0;
+            const rank: (IVertex | IEdge)[] = model.ranks[parseInt(rankValue.toString(), 10)];
+            let localOffset: number = isHorizontal ? plalementChange.marginY : plalementChange.marginX;
+            for (let i: number = 0; i < rank.length; i++) {
+                const node: IVertex | IEdge = rank[parseInt(i.toString(), 10)];
+                if (this.crossReduction.isVertex(node)) {
+                    const vertex: IVertex = node as IVertex;
+                    if (vertex.cell && (vertex.cell.inEdges || vertex.cell.outEdges)) {
+                        const obj: INode = this.nameTable[vertex.cell.name];
+                        vertex.width = obj.actualSize.width;
+                        vertex.height = obj.actualSize.height;
+                        maxCellSize = Math.max(maxCellSize, (isHorizontal ? vertex.width : vertex.height));
+                    }
+                } else {
+                    if (node as IEdge) {
+                        const edge: IEdge = node as IEdge;
+                        let numEdges: number = 1;
+                        if (edge.edges != null) {
+                            numEdges = edge.edges.length;
+                        }
+                        node.width = (numEdges - 1) * 10;
+                    }
+                }
+                if (isHorizontal) {
+                    if (!node.height) {
+                        node.height = 0;
+                    }
+                }
+                // Set the initial x-value as being the best result so far
+                localOffset += (isHorizontal ? node.height : node.width) / 2.0;
+                this.setXY(node, rankValue, localOffset, isHorizontal ? true : false);
+                this.setTempVariable(node, rankValue, localOffset);
+                localOffset += ((isHorizontal ? node.height : node.width) / 2.0) + plalementChange.horizontalSpacing;
+                if (localOffset > plalementChange.widestRankValue) {
+                    plalementChange.widestRankValue = localOffset;
+                    plalementChange.widestRank = rankValue;
+                }
+                plalementChange.rankSizes[parseInt(rankValue.toString(), 10)] = localOffset;
+            }
+            plalementChange.rankOffset[parseInt(rankValue.toString(), 10)] = offset;
+            const distanceToNextRank: number = maxCellSize / 2.0 + lastRankMaxCellSize / 2.0 + plalementChange.verticalSpacing;
+            lastRankMaxCellSize = maxCellSize;
+            if (plalementChange.orientation === 'north' || plalementChange.orientation === 'west') {
+                offset += distanceToNextRank;
+            } else {
+                offset -= distanceToNextRank;
+            }
+            for (let i: number = 0; i < rank.length; i++) {
+                const cell: IVertex = rank[parseInt(i.toString(), 10)];
+                this.setXY(cell, rankValue, offset, isHorizontal ? false : true);
+            }
+        }
+    }
 
 
     /**
@@ -1322,7 +1315,7 @@ class HierarchicalLayoutUtil {
      */
     public setXY(node: IVertex, layer: number, value: number, isY: boolean, ranks?: IVertex[][], spacing?: number): void {
         if (node && node.cell) {
-            if (node.cell.inEdges || node.cell.outEdges) {
+            if (node.cell.inEdges.length > 0 || node.cell.outEdges.length > 0) {
                 if (isY) {
                     node.y[0] = value;
                 } else {
@@ -1342,58 +1335,57 @@ class HierarchicalLayoutUtil {
     }
 
     //Sets geometry position of the layout node on the layout model
-    // private rankCoordinates(stage: PlacementStage, rankValue: number, graph: {}, model: MultiParentModel): void {
-    //     let isHorizontal: boolean = false;
-    //     if (stage.model.layout.orientation === 'LeftToRight' || stage.model.layout.orientation === 'RightToLeft') {
-    //         isHorizontal = true;
-    //     }
-    //     const rank: (IVertex | IEdge)[] = model.ranks[parseInt(rankValue.toString(), 10)];
-    //     let maxOffset: number = 0.0;
-    //     let localOffset: number = (isHorizontal ? stage.marginY : stage.marginX)
-    //         + (stage.widestRankValue - stage.rankSizes[parseInt(rankValue.toString(), 10)]) / 2;
-    //     for (let i: number = 0; i < rank.length; i++) {
-    //         const node: IVertex = rank[parseInt(i.toString(), 10)];
-    //         if (this.crossReduction.isVertex(node)) {
-    //             const obj: INode = this.nameTable[node.cell.name];
-    //             node.width = obj.actualSize.width;
-    //             node.height = obj.actualSize.height;
-    //             maxOffset = Math.max(maxOffset, node.height);
-    //         } else {
-    //             const edge: IEdge = node as IEdge;
-    //             let numEdges: number = 1;
-    //             if (edge.edges != null) {
-    //                 numEdges = edge.edges.length;
-    //             }
-    //             if (isHorizontal) {
-    //                 node.height = (numEdges - 1) * 10;
-    //             } else {
-    //                 node.width = (numEdges - 1) * 10;
-    //             }
-    //         }
-    //         const size: number = (isHorizontal ? node.height : node.width) / 2.0;
-    //         localOffset += size;
-    //         this.setXY(node, rankValue, localOffset, isHorizontal ? true : false);
-    //         this.setTempVariable(node, rankValue, localOffset);
-    //         localOffset += (size + stage.horizontalSpacing);
-    //     }
-    // }
+    private rankCoordinates(stage: PlacementStage, rankValue: number, graph: {}, model: MultiParentModel): void {
+        let isHorizontal: boolean = false;
+        if (stage.model.layout.orientation === 'LeftToRight' || stage.model.layout.orientation === 'RightToLeft') {
+            isHorizontal = true;
+        }
+        const rank: (IVertex | IEdge)[] = model.ranks[parseInt(rankValue.toString(), 10)];
+        let maxOffset: number = 0.0;
+        let localOffset: number = (isHorizontal ? stage.marginY : stage.marginX)
+            + (stage.widestRankValue - stage.rankSizes[parseInt(rankValue.toString(), 10)]) / 2;
+        for (let i: number = 0; i < rank.length; i++) {
+            const node: IVertex = rank[parseInt(i.toString(), 10)];
+            if (this.crossReduction.isVertex(node)) {
+                const obj: INode = this.nameTable[node.cell.name];
+                node.width = obj.actualSize.width;
+                node.height = obj.actualSize.height;
+                maxOffset = Math.max(maxOffset, node.height);
+            } else {
+                const edge: IEdge = node as IEdge;
+                let numEdges: number = 1;
+                if (edge.edges != null) {
+                    numEdges = edge.edges.length;
+                }
+                if (isHorizontal) {
+                    node.height = (numEdges - 1) * 10;
+                } else {
+                    node.width = (numEdges - 1) * 10;
+                }
+            }
+            const size: number = (isHorizontal ? node.height : node.width) / 2.0;
+            localOffset += size;
+            this.setXY(node, rankValue, localOffset, isHorizontal ? true : false);
+            this.setTempVariable(node, rankValue, localOffset);
+            localOffset += (size + stage.horizontalSpacing);
+        }
+    }
 
     //sets the layout in an initial positioning.it will arange all the ranks as much as possible
-    // 897503 - commented the old behavior of  complex hierarchical layout with SamePoint
-    // private initialCoords(plalementChange: PlacementStage, facade: {}, model: MultiParentModel): void {
-    //     this.calculateWidestRank(plalementChange, facade, model);
-    //     // Reverse sweep direction each time from widest rank
-    //     for (let i: number = plalementChange.widestRank; i >= 0; i--) {
-    //         if (i < model.maxRank) {
-    //             this.rankCoordinates(plalementChange, i, facade, model);
-    //         }
-    //     }
-    //     for (let i: number = plalementChange.widestRank + 1; i <= model.maxRank; i++) {
-    //         if (i > 0) {
-    //             this.rankCoordinates(plalementChange, i, facade, model);
-    //         }
-    //     }
-    // }
+    private initialCoords(plalementChange: PlacementStage, facade: {}, model: MultiParentModel): void {
+        this.calculateWidestRank(plalementChange, facade, model);
+        // Reverse sweep direction each time from widest rank
+        for (let i: number = plalementChange.widestRank; i >= 0; i--) {
+            if (i < model.maxRank) {
+                this.rankCoordinates(plalementChange, i, facade, model);
+            }
+        }
+        for (let i: number = plalementChange.widestRank + 1; i <= model.maxRank; i++) {
+            if (i > 0) {
+                this.rankCoordinates(plalementChange, i, facade, model);
+            }
+        }
+    }
 
 
     /**
@@ -1435,216 +1427,215 @@ class HierarchicalLayoutUtil {
     }
 
     //Performs one node positioning in both directions
-    // 897503 - commented the old behavior of  complex hierarchical layout with SamePoint
-    // private minNode(plalementChange: PlacementStage, model: MultiParentModel): void {
-    //     const nodeList: WeightedCellSorter[] = [];
-    //     const map: VertexMapper = { map: {} };
-    //     const rank: IVertex[][] = [];
-    //     for (let i: number = 0; i <= model.maxRank; i++) {
-    //         rank[parseInt(i.toString(), 10)] = model.ranks[parseInt(i.toString(), 10)];
-    //         for (let j: number = 0; j < rank[parseInt(i.toString(), 10)].length; j++) {
-    //             const node: IVertex = rank[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)];
-    //             const nodeWrapper: WeightedCellSorter = this.weightedCellSorter(node, i);
-    //             nodeWrapper.rankIndex = j;
-    //             nodeWrapper.visited = true;
-    //             nodeList.push(nodeWrapper);
-    //             model.setDictionaryForSorter(map, node, nodeWrapper, true);
-    //         }
-    //     }
-    //     const maxTries: number = nodeList.length * 10;
-    //     let count: number = 0;
-    //     const tolerance: number = 1;
-    //     while (nodeList.length > 0 && count <= maxTries) {
-    //         const cellWrapper: WeightedCellSorter = nodeList.shift();
-    //         const cell: IVertex = cellWrapper.cell;
-    //         const rankValue: number = cellWrapper.weightedValue;
-    //         const rankIndex: number = cellWrapper.rankIndex;
-    //         const nextLayerConnectedCells: IVertex[] = this.crossReduction.getConnectedCellsOnLayer(cell, rankValue);
-    //         const previousLayerConnectedCells: IVertex[] = this.crossReduction.getConnectedCellsOnLayer(cell, rankValue, true);
-    //         const nextConnectedCount: number = nextLayerConnectedCells.length;
-    //         const prevConnectedCount: number = previousLayerConnectedCells.length;
-    //         const medianNextLevel: number = this.medianXValue(plalementChange, nextLayerConnectedCells, rankValue + 1);
-    //         const medianPreviousLevel: number = this.medianXValue(plalementChange, previousLayerConnectedCells, rankValue - 1);
-    //         const numConnectedNeighbours: number = nextConnectedCount + prevConnectedCount;
-    //         const currentPosition: number = this.crossReduction.getTempVariable(cell, rankValue);
-    //         let cellMedian: number = currentPosition;
-    //         if (numConnectedNeighbours > 0) {
-    //             cellMedian = (medianNextLevel * nextConnectedCount + medianPreviousLevel * prevConnectedCount) / numConnectedNeighbours;
-    //         }
-    //         if (nextConnectedCount === 1 && prevConnectedCount === 1) {
-    //             cellMedian = (medianPreviousLevel * prevConnectedCount) / prevConnectedCount;
-    //         } else if (nextConnectedCount === 1) {
-    //             cellMedian = (medianNextLevel * nextConnectedCount) / nextConnectedCount;
-    //         }
-    //         let positionChanged: boolean = false;
-    //         let tempValue: number = undefined;
-    //         if (cellMedian < currentPosition - tolerance) {
-    //             if (rankIndex === 0) {
-    //                 tempValue = cellMedian;
-    //                 positionChanged = true;
-    //             } else {
-    //                 const leftCell: IVertex = rank[parseInt(rankValue.toString(), 10)][rankIndex - 1];
-    //                 let leftLimit: number = this.crossReduction.getTempVariable(leftCell, rankValue);
-    //                 leftLimit = leftLimit + leftCell.width / 2 + plalementChange.intraCellSpacing + cell.width / 2;
-    //                 if (leftLimit < cellMedian) {
-    //                     tempValue = cellMedian;
-    //                     positionChanged = true;
-    //                 } else if (leftLimit < this.crossReduction.getTempVariable(cell, rankValue) - tolerance) {
-    //                     tempValue = leftLimit;
-    //                     positionChanged = true;
-    //                 }
-    //             }
-    //         } else if (cellMedian > currentPosition + tolerance) {
-    //             const rankSize: number = rank[parseInt(rankValue.toString(), 10)].length;
-    //             if (rankIndex === rankSize - 1) {
-    //                 tempValue = cellMedian;
-    //                 positionChanged = true;
-    //             } else {
-    //                 const rightCell: IVertex = rank[parseInt(rankValue.toString(), 10)][rankIndex + 1];
-    //                 let rightLimit: number = this.crossReduction.getTempVariable(rightCell, rankValue);
-    //                 rightLimit = rightLimit - rightCell.width / 2 - plalementChange.intraCellSpacing - cell.width / 2;
-    //                 if (rightLimit > cellMedian) {
-    //                     tempValue = cellMedian;
-    //                     positionChanged = true;
-    //                 } else if (rightLimit > this.crossReduction.getTempVariable(cell, rankValue) + tolerance) {
-    //                     tempValue = rightLimit;
-    //                     positionChanged = true;
-    //                 }
-    //             }
-    //         }
-    //         if (positionChanged) {
-    //             this.setTempVariable(cell, rankValue, tempValue);
-    //             // Add connected nodes to map and list
-    //             this.updateNodeList(nodeList, map, nextLayerConnectedCells, model);
-    //             this.updateNodeList(nodeList, map, previousLayerConnectedCells, model);
-    //         }
-    //         if (this.crossReduction.isVertex(cellWrapper.cell)) {
-    //             cellWrapper.visited = false;
-    //         }
-    //         count++;
-    //     }
-    // }
+    private minNode(plalementChange: PlacementStage, model: MultiParentModel): void {
+        const nodeList: WeightedCellSorter[] = [];
+        const map: VertexMapper = { map: {} };
+        const rank: IVertex[][] = [];
+        for (let i: number = 0; i <= model.maxRank; i++) {
+            rank[parseInt(i.toString(), 10)] = model.ranks[parseInt(i.toString(), 10)];
+            for (let j: number = 0; j < rank[parseInt(i.toString(), 10)].length; j++) {
+                const node: IVertex = rank[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)];
+                const nodeWrapper: WeightedCellSorter = this.weightedCellSorter(node, i);
+                nodeWrapper.rankIndex = j;
+                nodeWrapper.visited = true;
+                nodeList.push(nodeWrapper);
+                model.setDictionaryForSorter(map, node, nodeWrapper, true);
+            }
+        }
+        const maxTries: number = nodeList.length * 10;
+        let count: number = 0;
+        const tolerance: number = 1;
+        while (nodeList.length > 0 && count <= maxTries) {
+            const cellWrapper: WeightedCellSorter = nodeList.shift();
+            const cell: IVertex = cellWrapper.cell;
+            const rankValue: number = cellWrapper.weightedValue;
+            const rankIndex: number = cellWrapper.rankIndex;
+            const nextLayerConnectedCells: IVertex[] = this.crossReduction.getConnectedCellsOnLayer(cell, rankValue);
+            const previousLayerConnectedCells: IVertex[] = this.crossReduction.getConnectedCellsOnLayer(cell, rankValue, true);
+            const nextConnectedCount: number = nextLayerConnectedCells ? nextLayerConnectedCells.length : 0;
+            const prevConnectedCount: number = previousLayerConnectedCells ? previousLayerConnectedCells.length : 0;
+            const medianNextLevel: number = this.medianXValue(plalementChange, nextLayerConnectedCells, rankValue + 1);
+            const medianPreviousLevel: number = this.medianXValue(plalementChange, previousLayerConnectedCells, rankValue - 1);
+            const numConnectedNeighbours: number = nextConnectedCount + prevConnectedCount;
+            const currentPosition: number = this.crossReduction.getTempVariable(cell, rankValue);
+            let cellMedian: number = currentPosition;
+            if (numConnectedNeighbours > 0) {
+                cellMedian = (medianNextLevel * nextConnectedCount + medianPreviousLevel * prevConnectedCount) / numConnectedNeighbours;
+            }
+            if (nextConnectedCount === 1 && prevConnectedCount === 1) {
+                cellMedian = (medianPreviousLevel * prevConnectedCount) / prevConnectedCount;
+            } else if (nextConnectedCount === 1) {
+                cellMedian = (medianNextLevel * nextConnectedCount) / nextConnectedCount;
+            }
+            let positionChanged: boolean = false;
+            let tempValue: number = undefined;
+            if (cellMedian < currentPosition - tolerance) {
+                if (rankIndex === 0) {
+                    tempValue = cellMedian;
+                    positionChanged = true;
+                } else {
+                    const leftCell: IVertex = rank[parseInt(rankValue.toString(), 10)][rankIndex - 1];
+                    let leftLimit: number = this.crossReduction.getTempVariable(leftCell, rankValue);
+                    leftLimit = leftLimit + leftCell.width / 2 + plalementChange.intraCellSpacing + cell.width / 2;
+                    if (leftLimit < cellMedian) {
+                        tempValue = cellMedian;
+                        positionChanged = true;
+                    } else if (leftLimit < this.crossReduction.getTempVariable(cell, rankValue) - tolerance) {
+                        tempValue = leftLimit;
+                        positionChanged = true;
+                    }
+                }
+            } else if (cellMedian > currentPosition + tolerance) {
+                const rankSize: number = rank[parseInt(rankValue.toString(), 10)].length;
+                if (rankIndex === rankSize - 1) {
+                    tempValue = cellMedian;
+                    positionChanged = true;
+                } else {
+                    const rightCell: IVertex = rank[parseInt(rankValue.toString(), 10)][rankIndex + 1];
+                    let rightLimit: number = this.crossReduction.getTempVariable(rightCell, rankValue);
+                    rightLimit = rightLimit - rightCell.width / 2 - plalementChange.intraCellSpacing - cell.width / 2;
+                    if (rightLimit > cellMedian) {
+                        tempValue = cellMedian;
+                        positionChanged = true;
+                    } else if (rightLimit > this.crossReduction.getTempVariable(cell, rankValue) + tolerance) {
+                        tempValue = rightLimit;
+                        positionChanged = true;
+                    }
+                }
+            }
+            if (positionChanged) {
+                this.setTempVariable(cell, rankValue, tempValue);
+                // Add connected nodes to map and list
+                this.updateNodeList(nodeList, map, nextLayerConnectedCells, model);
+                this.updateNodeList(nodeList, map, previousLayerConnectedCells, model);
+            }
+            if (this.crossReduction.isVertex(cellWrapper.cell)) {
+                cellWrapper.visited = false;
+            }
+            count++;
+        }
+    }
 
     //Updates the ndoes collection
-    // private updateNodeList(nodeList: WeightedCellSorter[], map: VertexMapper, collection: IVertex[], model: MultiParentModel): void {
-    //     for (let i: number = 0; i < collection.length; i++) {
-    //         const connectedCell: IVertex = collection[parseInt(i.toString(), 10)];
-    //         const connectedCellWrapper: WeightedCellSorter = model.getDictionaryForSorter(map, connectedCell);
-    //         if (connectedCellWrapper != null) {
-    //             if (connectedCellWrapper.visited === false) {
-    //                 connectedCellWrapper.visited = true;
-    //                 nodeList.push(connectedCellWrapper);
-    //             }
-    //         }
-    //     }
-    // }
+    private updateNodeList(nodeList: WeightedCellSorter[], map: VertexMapper, collection: IVertex[], model: MultiParentModel): void {
+        for (let i: number = 0; i < collection.length; i++) {
+            const connectedCell: IVertex = collection[parseInt(i.toString(), 10)];
+            const connectedCellWrapper: WeightedCellSorter = model.getDictionaryForSorter(map, connectedCell);
+            if (connectedCellWrapper != null) {
+                if (connectedCellWrapper.visited === false) {
+                    connectedCellWrapper.visited = true;
+                    nodeList.push(connectedCellWrapper);
+                }
+            }
+        }
+    }
 
     //Calculates the node position of the connected cell on the specified rank
-    // private medianXValue(plalementChange: PlacementStage, connectedCells: IVertex[], rankValue: number): number {
-    //     if (connectedCells.length === 0) {
-    //         return 0;
-    //     }
-    //     const medianValues: number[] = [];
-    //     for (let i: number = 0; i < connectedCells.length; i++) {
-    //         medianValues[parseInt(i.toString(), 10)]
-    //             = this.crossReduction.getTempVariable(connectedCells[parseInt(i.toString(), 10)], rankValue);
-    //     }
-    //     medianValues.sort((a: number, b: number) => {
-    //         return a - b;
-    //     });
+    private medianXValue(plalementChange: PlacementStage, connectedCells: IVertex[], rankValue: number): number {
+        if (!connectedCells || connectedCells.length === 0) {
+            return 0;
+        }
+        const medianValues: number[] = [];
+        for (let i: number = 0; i < connectedCells.length; i++) {
+            medianValues[parseInt(i.toString(), 10)]
+                = this.crossReduction.getTempVariable(connectedCells[parseInt(i.toString(), 10)], rankValue);
+        }
+        medianValues.sort((a: number, b: number) => {
+            return a - b;
+        });
 
-    //     if (connectedCells.length % 2 === 1) {
-    //         return medianValues[Math.floor(connectedCells.length / 2)];
-    //     } else {
-    //         const medianPoint: number = connectedCells.length / 2;
-    //         const leftMedian: number = medianValues[medianPoint - 1];
-    //         const rightMedian: number = medianValues[parseInt(medianPoint.toString(), 10)];
-    //         return ((leftMedian + rightMedian) / 2);
-    //     }
-    // }
+        if (connectedCells.length % 2 === 1) {
+            return medianValues[Math.floor(connectedCells.length / 2)];
+        } else {
+            const medianPoint: number = connectedCells.length / 2;
+            const leftMedian: number = medianValues[medianPoint - 1];
+            const rightMedian: number = medianValues[parseInt(medianPoint.toString(), 10)];
+            return ((leftMedian + rightMedian) / 2);
+        }
+    }
 
 
     //Updates the geometry of the vertices
-    // private placementStageExecute(plalementChange: PlacementStage): void {
-    //     let isHorizontal: boolean = false;
-    //     if (plalementChange.model.layout.orientation === 'LeftToRight' || plalementChange.model.layout.orientation === 'RightToLeft') {
-    //         isHorizontal = true;
-    //     }
-    //     plalementChange.jettyPositions = {};
-    //     const model: MultiParentModel = plalementChange.model;
-    //     // eslint-disable-next-line
-    //     isHorizontal ? plalementChange.currentYDelta = 0.0 : plalementChange.currentXDelta = 0.0;
-    //     this.initialCoords(plalementChange, { model: model }, model);
-    //     this.minNode(plalementChange, model);
-    //     let bestOffsetDelta: number = 100000000.0;
-    //     if (!plalementChange.maxIterations) {
-    //         plalementChange.maxIterations = 8;
-    //     }
-    //     for (let i: number = 0; i < plalementChange.maxIterations; i++) {
-    //         // if the total offset is less for the current positioning,
-    //         //there are less heavily angled edges and so the current positioning is used
-    //         if ((isHorizontal ? plalementChange.currentYDelta : plalementChange.currentXDelta) < bestOffsetDelta) {
-    //             for (let j: number = 0; j < model.ranks.length; j++) {
-    //                 const rank: IVertex[] = model.ranks[parseInt(j.toString(), 10)];
-    //                 for (let k: number = 0; k < rank.length; k++) {
-    //                     const cell: IVertex = rank[parseInt(k.toString(), 10)];
-    //                     this.setXY(cell, j, this.crossReduction.getTempVariable(cell, j), isHorizontal ? true : false);
-    //                 }
-    //             }
-    //             bestOffsetDelta = isHorizontal ? plalementChange.currentYDelta : plalementChange.currentXDelta;
-    //         }
-    //         // eslint-disable-next-line
-    //         isHorizontal ? plalementChange.currentYDelta = 0 : plalementChange.currentXDelta = 0;
-    //     }
-    //     this.setCellLocations(plalementChange, model);
-    // }
+    private placementStageExecute(plalementChange: PlacementStage): void {
+        let isHorizontal: boolean = false;
+        if (plalementChange.model.layout.orientation === 'LeftToRight' || plalementChange.model.layout.orientation === 'RightToLeft') {
+            isHorizontal = true;
+        }
+        plalementChange.jettyPositions = {};
+        const model: MultiParentModel = plalementChange.model;
+        // eslint-disable-next-line
+        isHorizontal ? plalementChange.currentYDelta = 0.0 : plalementChange.currentXDelta = 0.0;
+        this.initialCoords(plalementChange, { model: model }, model);
+        this.minNode(plalementChange, model);
+        let bestOffsetDelta: number = 100000000.0;
+        if (!plalementChange.maxIterations) {
+            plalementChange.maxIterations = 8;
+        }
+        for (let i: number = 0; i < plalementChange.maxIterations; i++) {
+            // if the total offset is less for the current positioning,
+            //there are less heavily angled edges and so the current positioning is used
+            if ((isHorizontal ? plalementChange.currentYDelta : plalementChange.currentXDelta) < bestOffsetDelta) {
+                for (let j: number = 0; j < model.ranks.length; j++) {
+                    const rank: IVertex[] = model.ranks[parseInt(j.toString(), 10)];
+                    for (let k: number = 0; k < rank.length; k++) {
+                        const cell: IVertex = rank[parseInt(k.toString(), 10)];
+                        this.setXY(cell, j, this.crossReduction.getTempVariable(cell, j), isHorizontal ? true : false);
+                    }
+                }
+                bestOffsetDelta = isHorizontal ? plalementChange.currentYDelta : plalementChange.currentXDelta;
+            }
+            // eslint-disable-next-line
+            isHorizontal ? plalementChange.currentYDelta = 0 : plalementChange.currentXDelta = 0;
+        }
+        this.setCellLocations(plalementChange, model);
+    }
 
     //sets the cell position in the after the layout operation
-    // private setCellLocations(plalementChange: PlacementStage, model: MultiParentModel): void {
-    //     const vertices: IVertex[] = this.getValues(model.vertexMapper);
-    //     for (let i: number = 0; i < vertices.length; i++) {
-    //         this.setVertexLocation(plalementChange, vertices[parseInt(i.toString(), 10)]);
-    //     }
-    // }
+    private setCellLocations(plalementChange: PlacementStage, model: MultiParentModel): void {
+        const vertices: IVertex[] = this.getValues(model.vertexMapper);
+        for (let i: number = 0; i < vertices.length; i++) {
+            this.setVertexLocation(plalementChange, vertices[parseInt(i.toString(), 10)]);
+        }
+    }
 
 
     //used to specify the geometrical position of the layout model cell
-    // private garphModelsetVertexLocation(plalementChange: PlacementStage, cell: Vertex, x: number, y: number): Rect {
-    //     //let model: MultiParentModel = plalementChange.model;
-    //     const geometry: Rect = cell.geometry;
-    //     let result: Rect = null;
-    //     if (geometry != null) {
-    //         result = { x: x, y: y, width: geometry.width, height: geometry.height };
-    //         if (geometry.x !== x || geometry.y !== y) {
-    //             cell.geometry = result;
-    //         }
-    //     }
-    //     return result;
-    // }
+    private garphModelsetVertexLocation(plalementChange: PlacementStage, cell: Vertex, x: number, y: number): Rect {
+        //let model: MultiParentModel = plalementChange.model;
+        const geometry: Rect = cell.geometry;
+        let result: Rect = null;
+        if (geometry != null) {
+            result = { x: x, y: y, width: geometry.width, height: geometry.height };
+            if (geometry.x !== x || geometry.y !== y) {
+                cell.geometry = result;
+            }
+        }
+        return result;
+    }
 
 
     //set the position of the specified node
-    // private setVertexLocation(plalementChange: PlacementStage, cell: IVertex): void {
-    //     let isHorizontal: boolean = false;
-    //     if (plalementChange.model.layout.orientation === 'LeftToRight' || plalementChange.model.layout.orientation === 'RightToLeft') {
-    //         isHorizontal = true;
-    //     }
-    //     const realCell: Vertex = cell.cell;
-    //     const positionX: number = cell.x[0] - cell.width / 2;
-    //     const positionY: number = cell.y[0] - cell.height / 2;
-    //     this.garphModelsetVertexLocation(plalementChange, realCell, positionX, positionY);
-    //     if (isHorizontal) {
-    //         if (!plalementChange.marginY) {
-    //             plalementChange.marginY = 0;
-    //         }
-    //         plalementChange.marginY = Math.max(plalementChange.marginY, positionY + cell.height);
-    //     } else {
-    //         if (!plalementChange.marginX) {
-    //             plalementChange.marginX = 0;
-    //         }
-    //         plalementChange.marginX = Math.max(plalementChange.marginX, positionX + cell.width);
-    //     }
-    // }
+    private setVertexLocation(plalementChange: PlacementStage, cell: IVertex): void {
+        let isHorizontal: boolean = false;
+        if (plalementChange.model.layout.orientation === 'LeftToRight' || plalementChange.model.layout.orientation === 'RightToLeft') {
+            isHorizontal = true;
+        }
+        const realCell: Vertex = cell.cell;
+        const positionX: number = cell.x[0] - cell.width / 2;
+        const positionY: number = cell.y[0] - cell.height / 2;
+        this.garphModelsetVertexLocation(plalementChange, realCell, positionX, positionY);
+        if (isHorizontal) {
+            if (!plalementChange.marginY) {
+                plalementChange.marginY = 0;
+            }
+            plalementChange.marginY = Math.max(plalementChange.marginY, positionY + cell.height);
+        } else {
+            if (!plalementChange.marginX) {
+                plalementChange.marginX = 0;
+            }
+            plalementChange.marginX = Math.max(plalementChange.marginX, positionX + cell.width);
+        }
+    }
 
 
     /**
@@ -1872,7 +1863,7 @@ class MultiParentModel {
         const internalVertices: IVertex[] = [];
         this.layout = dlayout;
         this.maxRank = 100000000;
-        this.edgeMapper = {map: {}};
+        this.edgeMapper = { map: {} };
         this.hierarchicalLayout = layout;
         this.createInternalCells(layout, vertices, internalVertices, dlayout);
         for (let i: number = 0; i < vertices.length; i++) {
@@ -2033,25 +2024,25 @@ class MultiParentModel {
     }
 
 
-    // /**
-    //  * used to store the value of th given key on the objectt \
-    //  *
-    //  * @returns {  IVertex }   used to store the value of th given key on the object .\
-    //  * @param {VertexMapper} dic - provide the angle value.
-    //  * @param {IVertex} key - provide the angle value.
-    //  * @param {WeightedCellSorter} value - provide the angle value.
-    //  * @param {boolean} flag - provide the angle value.
-    //  * @private
-    //  */
-    // public setDictionaryForSorter(dic: VertexMapper, key: IVertex, value: WeightedCellSorter, flag: boolean): IVertex {
-    //     const id: string = key.id;
-    //     if (!id) {
-    //         //id = this._getDictionaryForSorter(dic, key);
-    //     }
-    //     const previous: IVertex = dic.map[`${id}`];
-    //     dic.map[`${id}`] = value;
-    //     return previous;
-    // }
+    /**
+     * used to store the value of th given key on the objectt \
+     *
+     * @returns {  IVertex }   used to store the value of th given key on the object .\
+     * @param {VertexMapper} dic - provide the angle value.
+     * @param {IVertex} key - provide the angle value.
+     * @param {WeightedCellSorter} value - provide the angle value.
+     * @param {boolean} flag - provide the angle value.
+     * @private
+     */
+    public setDictionaryForSorter(dic: VertexMapper, key: IVertex, value: WeightedCellSorter, flag: boolean): IVertex {
+        const id: string = key.id;
+        if (!id) {
+            //id = this._getDictionaryForSorter(dic, key);
+        }
+        const previous: IVertex = dic.map[`${id}`];
+        dic.map[`${id}`] = value;
+        return previous;
+    }
 
 
     /**
@@ -2077,27 +2068,27 @@ class MultiParentModel {
     }
 
 
-    // /**
-    //  * used to get the value of the given key \
-    //  *
-    //  * @returns {  IVertex }  used to get the value of the given key .\
-    //  * @param {VertexMapper} dic - provide the angle value.
-    //  * @param {IVertex} key - provide the angle value.
-    //  * @private
-    //  */
-    // public getDictionaryForSorter(dic: VertexMapper, key: IVertex): WeightedCellSorter {
-    //     if (!this.multiObjectIdentityCounter && this.multiObjectIdentityCounter !== 0) {
-    //         this.multiObjectIdentityCounter = 0;
-    //     }
-    //     const id: string = key.id;
-    //     if (!id) {
-    //         if (!key.layoutObjectId) {///####
-    //             key.layoutObjectId = 'graphHierarchyNode#' + this.multiObjectIdentityCounter++;
-    //             return key.layoutObjectId as WeightedCellSorter;
-    //         } else { return dic.map[key.layoutObjectId]; }
-    //     }
-    //     return dic.map[`${id}`];
-    // }
+    /**
+     * used to get the value of the given key \
+     *
+     * @returns {  IVertex }  used to get the value of the given key .\
+     * @param {VertexMapper} dic - provide the angle value.
+     * @param {IVertex} key - provide the angle value.
+     * @private
+     */
+    public getDictionaryForSorter(dic: VertexMapper, key: IVertex): WeightedCellSorter {
+        if (!this.multiObjectIdentityCounter && this.multiObjectIdentityCounter !== 0) {
+            this.multiObjectIdentityCounter = 0;
+        }
+        const id: string = key.id;
+        if (!id) {
+            if (!key.layoutObjectId) {///####
+                key.layoutObjectId = 'graphHierarchyNode#' + this.multiObjectIdentityCounter++;
+                return key.layoutObjectId as WeightedCellSorter;
+            } else { return dic.map[key.layoutObjectId]; }
+        }
+        return dic.map[`${id}`];
+    }
 
 
     /**
@@ -2193,7 +2184,7 @@ class MultiParentModel {
         const root: IVertex = traversedList.root;
         const edge: IEdge = traversedList.edge;
         if (visitor === 'removeParentConnection' || visitor === 'removeNodeConnection') {
-            const remove: boolean = visitor === 'removeNodeConnection' ? true : false;
+            const remove: boolean = visitor === 'removeNodeConnection';
             this.removeConnectionEdge(parent, root, edge, layer, traversedList, remove);
         }
         if (visitor === 'updateMinMaxRank') {
@@ -2463,7 +2454,7 @@ class CrossReduction {
      * @private
      */
     public isVertex(node: IVertex): boolean {
-        if (node && node.cell && (node.cell.inEdges || node.cell.outEdges)) {
+        if (node && node.cell && ((node.cell.inEdges && node.cell.inEdges.length) || (node.cell.outEdges && node.cell.outEdges.length))) {
             return true;
         }
         return false;
@@ -2673,6 +2664,7 @@ export interface MatrixModelObject {
     model: MultiParentModel;
     matrix: MatrixObject[];
     rowOffset: number[];
+    roots: MatrixCellGroupObject[];
 }
 
 /** @private */
@@ -2807,8 +2799,6 @@ export interface LayoutProp {
     enableLayoutRouting: boolean;
 }
 
-
-
 interface Rect {
     x: number;
     y: number;
@@ -2831,4 +2821,984 @@ interface Geometry {
     height: number;
     relative: boolean;
     points?: PointModel[];
+}
+
+class MatrixModel {
+
+    /** @private */
+    public edgeMapper: EdgeMapperObject[];
+
+    /** @private */
+    public diagram: Diagram;
+
+    constructor() {
+        this.edgeMapper = [];
+    }
+
+    /* tslint:disable */
+    /** @private */
+
+    /**
+     * Arrange the elements
+     *
+     * @returns { void }  arrange the elements.\
+     * @param {MatrixModelObject} matrixModel - provide the Matrix Model Object.
+     * @param {Layout} layout - provide the layout value.
+     *
+     * @private
+     */
+    public arrangeElements(matrixModel: MatrixModelObject, layout: Layout): void {
+        const layoutSettings: LayoutProp = matrixModel.model.layout;
+
+        let isHorizontal: boolean;
+        if (layout.orientation === 'LeftToRight' || layout.orientation === 'RightToLeft') {
+            isHorizontal = true;
+        } else {
+            isHorizontal = false;
+        }
+
+        const spacing: number = isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
+        //let spacingInverse: number = !isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
+        // Need to group element before
+        this.groupLayoutCells(matrixModel);
+        this.createMatrixCells(matrixModel);
+
+        for (let j: number = 0; j < matrixModel.matrix.length; j++) {
+            const matrixKey: number = matrixModel.matrix[parseInt(j.toString(), 10)].key;
+            const matrixrow: MatrixCellGroupObject[] = matrixModel.matrix[parseInt(matrixKey.toString(), 10)].value;
+            for (let i: number = 1; i < matrixrow.length; i++) {
+                const cell: MatrixCellGroupObject = matrixrow[parseInt(i.toString(), 10)];
+                const prevCell: MatrixCellGroupObject = matrixrow[i - 1];
+                cell.offset += prevCell.offset + (prevCell.size / 2) + spacing + (cell.size / 2);
+            }
+        }
+
+        // Sort roots based on their indices
+        matrixModel.roots.sort(function (a, b) {
+            if (a.cells[0] && b.cells[0]) {
+                const indexA = matrixModel.model.roots.indexOf(a.cells[0].cell);
+                const indexB = matrixModel.model.roots.indexOf(b.cells[0].cell);
+                return indexA - indexB;
+            }
+            return 0;
+        });
+
+        for (let j: number = 0; j < matrixModel.roots.length; j++) {
+            const root: MatrixCellGroupObject = matrixModel.roots[parseInt(j.toString(), 10)];
+            this.arrangeMatrix(root, null, matrixModel);
+        }
+
+        for (let k: number = 0; k < matrixModel.matrix.length; k++) {
+            const row: MatrixCellGroupObject[] = matrixModel.matrix[parseInt(k.toString(), 10)].value;
+            for (let i: number = 0; i < row.length; i++) {
+                const cell: MatrixCellGroupObject = row[parseInt(i.toString(), 10)];
+                if (cell.visitedParents.length > 1) {
+                    let firstParent: MatrixCellGroupObject = cell.visitedParents[0];
+                    let lastParent: MatrixCellGroupObject = cell.visitedParents[cell.visitedParents.length - 1];
+                    const firstVertexParent: MatrixCellGroupObject = this.findParentVertexCellGroup(firstParent);
+                    const lastVertexParent: MatrixCellGroupObject = this.findParentVertexCellGroup(lastParent);
+
+                    if (firstParent !== firstVertexParent && firstVertexParent.offset < firstParent.offset) {
+                        firstParent = firstVertexParent;
+                    }
+
+                    if (lastParent !== lastVertexParent && lastVertexParent.offset > lastParent.offset) {
+                        lastParent = firstVertexParent;
+                    }
+
+                    const newoffset: number = (lastParent.offset + lastParent.size * 0.5 + firstParent.offset - firstParent.size * 0.5) / 2;
+                    const availOffsetMin: number = cell.initialOffset;
+                    const availOffsetMax: number = cell.offset;
+                    if (!(availOffsetMax === availOffsetMin)) {
+                        if (newoffset >= availOffsetMin && newoffset <= availOffsetMax) {
+                            this.translateMatrixCells(newoffset - cell.offset, cell);
+                        } else if (newoffset < availOffsetMin) {
+                            this.translateMatrixCells(availOffsetMin - cell.offset, cell);
+                        }
+                    }
+                }
+            }
+        }
+
+        this.setXYforMatrixCell(matrixModel);
+    }
+    /* tslint:enable */
+
+    private groupLayoutCells(matrixModel: MatrixModelObject): void {
+        const ranks: IVertex[][] = matrixModel.model.ranks;
+        for (let j: number = ranks.length - 1; j >= 0; j--) {
+            const vertices: IVertex[] = [];
+            for (let v: number = 0; v < ranks[parseInt(j.toString(), 10)].length; v++) {
+                const rank: IVertex = ranks[parseInt(j.toString(), 10)][parseInt(v.toString(), 10)];
+                const type: string = this.getType(rank.type);
+                if (type === 'internalVertex') {
+                    vertices.push(ranks[parseInt(j.toString(), 10)][parseInt(v.toString(), 10)]);
+                }
+            }
+
+            const edges: IVertex[] = [];
+            for (let e: number = 0; e < ranks[parseInt(j.toString(), 10)].length; e++) {
+                const rank: IVertex = ranks[parseInt(j.toString(), 10)][parseInt(e.toString(), 10)];
+                const type: string = this.getType(rank.type);
+                if (type === 'internalEdge') {
+                    edges.push(rank);
+                }
+            }
+
+            while (vertices.length > 1) {
+                const vertex1: IVertex = vertices[0];
+                const parentset1: string[] = this.selectIds(vertex1.connectsAsTarget, true);
+                const childset1: string[] = this.selectIds(vertex1.connectsAsSource, false);
+                while (vertices.length > 1) {
+                    const vertex2: IVertex = vertices[1];
+                    const parentset2: string[] = this.selectIds(vertex2.connectsAsTarget, true);
+                    const childset2: string[] = this.selectIds(vertex2.connectsAsSource, false);
+                    const parentequals: boolean = this.compareLists(parentset1, parentset2);
+                    const childequals: boolean = this.compareLists(childset1, childset2);
+                    if (parentequals && childequals) {
+                        this.updateMutualSharing(vertices[0], vertex2.id);
+                        this.updateMutualSharing(vertices[1], vertex1.id);
+                        vertices.splice(1, 1);
+                        continue;
+                    }
+                    break;
+                }
+                vertices.splice(0, 1);
+            }
+
+
+            while (edges.length > 1) {
+                const internalEdge: IVertex = edges[0];
+                const parentset: IVertex = internalEdge.source;
+                const childset: IVertex = internalEdge.target;
+                if (parentset.identicalSibiling != null) {
+
+                    const groupedges: IVertex[] = [];
+
+                    for (let i: number = 0; i < edges.length; i++) {
+                        const edge: IVertex = edges[parseInt(i.toString(), 10)];
+                        if (edge.target === childset) {
+                            groupedges.push(edge);
+                        }
+                    }
+
+                    for (let i: number = 0; i < groupedges.length; i++) {
+                        const internalEdgese: IVertex = groupedges[parseInt(i.toString(), 10)];
+                        if (this.containsValue(parentset.identicalSibiling, internalEdgese.source.id)) {
+                            internalEdgese.source.identicalSibiling = null;
+                        }
+                    }
+                    internalEdge.source.identicalSibiling = null;
+                }
+                edges.splice(0, 1);
+            }
+        }
+    }
+
+    /* tslint:disable */
+    private createMatrixCells(matrixModel: MatrixModelObject) {
+        const layoutSettings: LayoutProp = matrixModel.model.layout;
+        const isHorizontal: boolean = layoutSettings.orientation === 'LeftToRight'
+            || layoutSettings.orientation === 'RightToLeft';
+        const spacing: number = isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
+        const spacingInverse = !isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
+
+        const ranks = matrixModel.model.ranks;
+        const matrixCellMapper: MatrixCellMapperObject[] = [];
+        let rowoffset = -spacingInverse;
+        for (let j: number = ranks.length - 1; j >= 0; j--) {
+            let maxDimension = 0.0;
+            const index: number = (ranks.length - 1) - j;
+            const rank: IVertex[] = ranks[parseInt(j.toString(), 10)].slice();//.ToList();
+
+            // Creating new row and adding it to matrix
+            const matrixRow: MatrixCellGroupObject[] = [];
+            matrixModel.matrix.push({ key: index, value: matrixRow });
+
+            // Creating new row mapper
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const tempMatrixRow: any = [];
+            matrixCellMapper.push({ index: index, value: tempMatrixRow });
+
+            while (rank.length > 0) //.Any())
+            {
+                const layoutCell: IVertex | CellObject = rank[0];
+                // eslint-disable-next-line max-len
+                const matrixCell: MatrixCellGroupObject = { level: index, parents: [], children: [], visitedParents: [], visitedChildren: [], ignoredChildren: [], cells: [], size: 0, offset: 0, initialOffset: 0 };
+                matrixRow.push(matrixCell);
+                const type: string = this.getType(layoutCell.type);
+                if (type === 'internalVertex') {
+                    (matrixCell.cells as IVertex[]).push(layoutCell as IVertex);
+                    if (layoutCell.identicalSibiling != null) {
+                        for (let i: number = 0; i < rank.length; i++) {
+                            const internalVertex = rank[parseInt(i.toString(), 10)];
+                            const type: string = this.getType(internalVertex.type);
+
+                            if (type === 'internalVertex' && this.containsValue(layoutCell.identicalSibiling, internalVertex.id)) {
+                                (matrixCell.cells as IVertex[]).push(internalVertex);
+                                if ((matrixCell.cells as CellObject[]).length > layoutCell.identicalSibiling.length) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    for (let i: number = 0; i < (matrixCell.cells as CellObject[]).length; i++) {
+                        const internalVertex: CellObject = matrixCell.cells[parseInt(i.toString(), 10)] as CellObject;
+                        const type: string = this.getType(internalVertex.type);
+                        if (type === 'internalVertex') {
+                            const geometry = internalVertex.cell.geometry;
+                            matrixCell.size += isHorizontal ? geometry.height : geometry.width;
+                            maxDimension = Math.max(maxDimension, !isHorizontal ? geometry.height : geometry.width);
+                            tempMatrixRow.push({ key: internalVertex.id, value: matrixCell });
+                            if (internalVertex.connectsAsTarget.length > 0) {
+                                for (let k: number = 0; k < internalVertex.connectsAsTarget.length; k++) {
+                                    const internalEdgese: CellObject = internalVertex.connectsAsTarget[parseInt(k.toString(), 10)];
+                                    let key = null;
+                                    if (this.containsValue(matrixCellMapper[index - 1].value, internalEdgese.ids)) {
+                                        key = internalEdgese.ids;
+                                    }
+                                    else if (this.containsValue(matrixCellMapper[index - 1].value, internalEdgese.source.id)) {
+                                        key = internalEdgese.source.id;
+                                    }
+
+                                    if (key != null) {
+                                        const parentcellValue = matrixCellMapper[index - 1].value;
+                                        let parentMartixCell;
+                                        for (let v: number = 0; v < parentcellValue.length; v++) {
+                                            if (parentcellValue[parseInt(v.toString(), 10)].key === key) {
+                                                parentMartixCell = parentcellValue[parseInt(v.toString(), 10)].value;
+                                                break;
+                                            }
+                                        }
+                                        if (!this.containsValue(matrixCell.parents, parentMartixCell)) {
+                                            matrixCell.parents.push(parentMartixCell);
+                                        }
+
+                                        if (!this.containsValue(parentMartixCell.children, matrixCell)) {
+                                            parentMartixCell.children.push(matrixCell);
+                                        }
+                                    }
+                                }
+                            }
+                            rank.reverse();
+                            rank.pop();
+                            rank.reverse();
+                        }
+                    }
+                    matrixCell.size += ((matrixCell.cells as CellObject[]).length - 1) * spacing;
+                }
+                else if (type === 'internalEdge') {
+                    (matrixCell.cells as IVertex[]).push(layoutCell);
+
+                    for (let i: number = 0; i < (matrixCell.cells as CellObject[]).length; i++) {
+                        const internalEdge: CellObject = matrixCell.cells[parseInt(i.toString(), 10)] as CellObject;
+                        const type1: string = this.getType(internalEdge.type);
+
+                        if (type1 === 'internalEdge' && internalEdge.edges != null) {
+                            // need to spacing based on its source and target Node
+                            const edgeSpacing: number = 5;
+                            let cellSize: number = -edgeSpacing;
+                            for (let k: number = 0; k < internalEdge.edges.length; k++) {
+                                //const internalConnector = internalEdge.edges[k];
+                                // need to summ up the line width
+                                cellSize += 1 + edgeSpacing;
+                            }
+
+                            matrixCell.size += cellSize;
+                        }
+
+                        tempMatrixRow.push({ key: internalEdge.ids, value: matrixCell });
+
+                        let key = null;
+                        if (this.containsValue(matrixCellMapper[index - 1].value, internalEdge.ids)) {
+                            key = internalEdge.ids;
+                        }
+                        else if (this.containsValue(matrixCellMapper[index - 1].value, internalEdge.source.id)) {
+                            key = internalEdge.source.id;
+                        }
+
+                        if (key != null) {
+                            const parentcell = matrixCellMapper[index - 1].value;
+                            let parentMartixCell;
+                            for (let v: number = 0; v < parentcell.length; v++) {
+                                if (parentcell[parseInt(v.toString(), 10)].key === key) {
+                                    parentMartixCell = parentcell[parseInt(v.toString(), 10)].value;
+                                    break;
+                                }
+                            }
+                            if (!this.containsValue(matrixCell.parents, parentMartixCell)) {
+                                matrixCell.parents.push(parentMartixCell);
+                            }
+
+                            if (!this.containsValue(parentMartixCell.children, matrixCell)) {
+                                parentMartixCell.children.push(matrixCell);
+                            }
+                        }
+
+                        rank.reverse();
+                        rank.pop();
+                        rank.reverse();
+                    }
+
+                    matrixCell.size += ((matrixCell.cells as CellObject[]).length - 1) * spacing;
+                }
+
+                if (matrixCell.cells.length) {
+                    const internalVertices = (matrixCell.cells as IVertex[]).filter((e: any) => e.type === 'internalVertex');
+                    if (internalVertices.length > 0) {
+                        for (const cell of internalVertices) {
+                            const vertex = (cell as IVertex).cell;
+                            if (matrixModel.model.roots.some((root: Vertex) => root === vertex)) {
+                                matrixModel.roots.push(matrixCell);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            matrixModel.rowOffset.push(rowoffset + (maxDimension / 2) + spacingInverse);
+            rowoffset += maxDimension + spacingInverse;
+        }
+    }
+
+    private arrangeMatrix(cell: MatrixCellGroupObject, parent: MatrixCellGroupObject, matrixModel: MatrixModelObject): void {
+        const layoutSettings: LayoutProp = matrixModel.model.layout;
+        const isHorizontal: boolean = layoutSettings.orientation === 'LeftToRight'
+            || layoutSettings.orientation === 'RightToLeft';
+        const spacing: number = isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
+
+        const matrix: MatrixObject[] = matrixModel.matrix;
+        const matrixRow: MatrixCellGroupObject[] = matrix[cell.level].value;
+        const matrixIndex: number = matrixRow.indexOf(cell);
+
+        if (cell.visitedParents.length > 0) {
+            if (cell.visitedParents.length === 1) {
+                cell.initialOffset = cell.offset;
+            }
+
+            if (matrixIndex + 1 < matrixRow.length) {
+                const nextCell: MatrixCellGroupObject = matrixRow[matrixIndex + 1];
+                if (nextCell.visitedParents.length > 0) {
+                    if (!this.containsValue(cell.visitedParents, parent)) {
+                        cell.visitedParents.push(parent);
+                        parent.ignoredChildren.push(cell);
+                        return;
+                    }
+                }
+            }
+        }
+
+        if (!(cell.children.length > 0)) {
+            let validOffset: number = cell.offset;
+            if (matrixIndex > 0) {
+                const prevCell: MatrixCellGroupObject = matrixRow[matrixIndex - 1];
+                validOffset = prevCell.offset + (prevCell.size / 2) + spacing + (cell.size / 2);
+            }
+
+            this.shiftMatrixCells(validOffset - cell.offset, cell, false, null, matrixModel);
+        } else {
+            for (let i: number = 0; i < cell.children.length; i++) {
+                const matrixCellChild: MatrixCellGroupObject = cell.children[parseInt(i.toString(), 10)];
+                if (!this.containsValue(cell.visitedChildren, matrixCellChild)) {
+                    this.arrangeMatrix(matrixCellChild, cell, matrixModel);
+                    cell.visitedChildren.push(matrixCellChild);
+                }
+            }
+
+            if (cell.visitedChildren.length > 0) {
+                const children: MatrixCellGroupObject[] = cell.visitedChildren.slice();
+                for (let i: number = 0; i < cell.ignoredChildren.length; i++) {
+                    //let cellIgnoredChild: MatrixCellGroupObject = cell.ignoredChildren[i];
+                    children.splice(0, 1);
+                    cell.visitedChildren.splice(0, 1);
+                }
+
+                if (children.length > 0) {
+                    const firstChild: MatrixCellGroupObject = cell.visitedChildren[0];
+                    const lastChild: MatrixCellGroupObject = cell.visitedChildren[cell.visitedChildren.length - 1];
+                    const x1: number = firstChild.offset - (firstChild.size / 2);
+                    const x2: number = lastChild.offset + (lastChild.size / 2);
+                    const newoffset: number = (x1 + x2) / 2;
+                    if (newoffset < cell.offset) {
+                        this.shiftMatrixCells(cell.offset - newoffset, firstChild, true, cell, matrixModel);
+                    } else if (newoffset > cell.offset) {
+                        this.shiftMatrixCells(newoffset - cell.offset, cell, false, null, matrixModel);
+                    }
+                }
+            }
+        }
+
+        if (!this.containsValue(cell.visitedParents, parent)) {
+            cell.visitedParents.push(parent);
+        }
+    }
+
+    private findParentVertexCellGroup(cell: MatrixCellGroupObject): MatrixCellGroupObject {
+        if (cell.cells[0]) {
+            return cell;
+        }
+
+        if (cell.parents.length > 0) {
+            return this.findParentVertexCellGroup(cell.parents[0]);
+        }
+
+        return cell;
+    }
+
+    private translateMatrixCells(value: number, cell: MatrixCellGroupObject): void {
+        if (!(value === 0)) {
+            cell.offset += value;
+            if (cell.visitedChildren.length > 0) {
+                for (let i: number = 0; i < cell.visitedChildren.length; i++) {
+                    const cellVisitedChild: MatrixCellGroupObject = cell.visitedChildren[parseInt(i.toString(), 10)];
+                    this.translateMatrixCells(value, cellVisitedChild);
+                }
+            }
+        }
+    }
+
+    private setXYforMatrixCell(matrixModel: MatrixModelObject): void {
+        const layoutSettings: LayoutProp = matrixModel.model.layout;
+        const isHorizontal: boolean = layoutSettings.orientation === 'LeftToRight'
+            || layoutSettings.orientation === 'RightToLeft';
+        const spacing: number = isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
+
+        for (let i: number = 0; i < matrixModel.matrix.length; i++) {
+            const matrixrow1: MatrixCellGroupObject[] = matrixModel.matrix[parseInt(i.toString(), 10)].value;
+            for (let j: number = 0; j < matrixrow1.length; j++) {
+                const matrixCell: MatrixCellGroupObject = matrixrow1[parseInt(j.toString(), 10)];
+                let start: number = matrixCell.offset - (matrixCell.size / 2);
+                for (let k: number = 0; k < (matrixCell.cells as CellObject[]).length; k++) {
+                    const cell: CellObject = matrixCell.cells[parseInt(k.toString(), 10)] as CellObject;
+                    const type: string = this.getType(cell.type);
+                    if (type === 'internalVertex') {
+                        const internalVertex: CellObject = cell;
+                        const width: number = internalVertex.cell.geometry.width;
+                        const height: number = internalVertex.cell.geometry.height;
+                        if (isHorizontal) {
+                            internalVertex.cell.geometry = new RectModel(
+                                matrixModel.rowOffset[matrixCell.level] - (width / 2),
+                                start,
+                                width,
+                                height) as RectModel;
+                        } else {
+                            internalVertex.cell.geometry = new RectModel(
+                                start,
+                                matrixModel.rowOffset[matrixCell.level] - (height / 2),
+                                width,
+                                height) as RectModel;
+                        }
+
+                        start += (isHorizontal ? height : width) + spacing;
+                    } else if (type === 'internalEdge') {
+                        const internalEdges: CellObject = cell;
+                        const parent: MatrixCellGroupObject = matrixCell.visitedParents[0];
+                        let isContainSibilingVertex: boolean = false;
+                        if (parent) {
+                            for (let l: number = 0; l < parent.visitedChildren.length; l++) {
+                                const children: MatrixCellGroupObject = parent.visitedChildren[parseInt(l.toString(), 10)];
+                                const cells: CellObject[] = [];
+                                for (let m: number = 0; m < (children.cells as CellObject[]).length; m++) {
+                                    const cell: CellObject = children.cells[parseInt(m.toString(), 10)] as CellObject;
+                                    const type: string = this.getType(cell.type);
+                                    if (type === 'internalVertex') {
+                                        cells.push(cell);
+                                    }
+                                }
+                                if (cells.length > 0) {
+                                    isContainSibilingVertex = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Need to updated line width
+                        const lineWidth: number = 1;
+                        const edgeSpacing: number = 5;
+                        for (let m: number = 0; m < internalEdges.edges.length; m++) {
+                            const internalConnector: Connector = internalEdges.edges[parseInt(m.toString(), 10)];
+                            let pt: Point = this.getPointvalue(start + (lineWidth / 2.0), matrixModel.rowOffset[matrixCell.level]) as Point;
+                            if (isHorizontal) {
+                                pt = this.getPointvalue(matrixModel.rowOffset[matrixCell.level], start + (lineWidth / 2.0)) as Point;
+                            }
+
+                            if (this.containsValue((this.getEdgeMapper() as EdgeMapperObject[]), internalConnector)) {
+                                let key: number;
+                                for (let l: number = 0; l < this.getEdgeMapper().length; l++) {
+                                    if ((this.getEdgeMapper())[parseInt(l.toString(), 10)].key === internalConnector) {
+                                        key = l;
+                                        break;
+                                    }
+                                }
+                                (this.getEdgeMapper())[parseInt(key.toString(), 10)].value.push(pt as Point);
+                            }
+
+                            start += lineWidth + edgeSpacing;
+                        }
+
+                        start += spacing;
+                    }
+                }
+            }
+        }
+
+    }
+
+    private getType(type: string): string {
+        if (type === 'internalVertex') {
+            return 'internalVertex';
+        } else {
+            return 'internalEdge';
+        }
+    }
+
+    private selectIds(node: IEdge[], source: boolean): string[] {
+        const returnIds: string[] = [];
+        for (let i: number = 0; i < node.length; i++) {
+            const connector: IEdge = node[parseInt(i.toString(), 10)];
+            if (source) {
+
+                {
+                    returnIds.push(connector.source.id);
+                }
+            } else {
+                returnIds.push(connector.target.id);
+            }
+        }
+        return returnIds;
+    }
+
+    private compareLists(list1: string[], list2: string[]): boolean {
+        const newList1: string[] = list1.slice();
+        const newList2: string[] = list2.slice();
+        if (newList1.length === newList2.length) {
+            if (newList1.length === 0) {
+                return true;
+            } else {
+                let isSame: boolean = true;
+                for (let i: number = 0; i < newList2.length; i++) {
+                    const o: string = newList2[parseInt(i.toString(), 10)];
+                    // EJ2-63944 - Nodes overlapping in Complex hierarchical tree layout in linear arrangement.
+                    if (newList1.indexOf(o) === -1) {
+                        isSame = false;
+                        break;
+                    }
+                }
+
+                return isSame;
+            }
+        }
+
+        return false;
+    }
+
+    private updateMutualSharing(cell: IVertex, id: string): void {
+        if (cell.identicalSibiling != null) {
+            cell.identicalSibiling.push(id);
+        } else {
+            cell.identicalSibiling = [];
+            cell.identicalSibiling.push(id);
+        }
+    }
+
+    private containsValue(
+        list: string[] | MatrixCellGroupObject[] | EdgeMapperObject[] | Connector[],
+        keyValue: string | number | MatrixCellGroupObject | Connector | string[]):
+        boolean {
+        for (let i: number = 0; i < list.length; i++) {
+            if ((list[parseInt(i.toString(), 10)] as MatrixCellGroupObject).key === keyValue
+                || list[parseInt(i.toString(), 10)] === keyValue) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private shiftMatrixCells(
+        value: number, startingCell: MatrixCellGroupObject, shiftChildren: boolean,
+        parentCell: MatrixCellGroupObject, matrixModel: MatrixModelObject):
+        void {
+        if (!(value === 0)) {
+            const matrix: MatrixObject[] = matrixModel.matrix;
+            const matrixRow: MatrixCellGroupObject[] = matrix[startingCell.level].value;
+            const index: number = matrixRow.indexOf(startingCell);
+
+            for (let i: number = index; i < matrixRow.length; i++) {
+                matrixRow[parseInt(i.toString(), 10)].offset += value;
+            }
+
+            if (shiftChildren) {
+                if (startingCell.visitedChildren.length > 0) {
+                    this.shiftMatrixCells(
+                        value,
+                        startingCell.visitedChildren[0],
+                        true,
+                        startingCell,
+                        matrixModel);
+                } else {
+                    let i: number = 1;
+                    let nextSibilingwithChild: MatrixCellGroupObject = null;
+                    while (index + i < matrixRow.length) {
+                        const nextCell: MatrixCellGroupObject = matrixRow[index + i];
+                        if (parentCell != null && this.containsValue(nextCell.visitedParents, parentCell)) {
+                            if (nextCell.visitedChildren.length > 0) {
+                                nextSibilingwithChild = nextCell;
+                            } else {
+                                i++;
+                                continue;
+                            }
+                        }
+
+                        break;
+                    }
+
+                    if (nextSibilingwithChild != null) {
+                        this.shiftMatrixCells(
+                            value,
+                            nextSibilingwithChild.visitedChildren[0],
+                            true,
+                            nextSibilingwithChild,
+                            matrixModel);
+                    }
+                }
+            }
+        }
+    }
+
+    private getPointvalue(x: number, y: number): object {
+        return { 'x': Number(x) || 0, 'y': Number(y) || 0 };
+    }
+
+    private getEdgeMapper(): EdgeMapperObject[] {
+        return this.edgeMapper;
+    }
+
+    public setEdgeMapper(value: EdgeMapperObject): void {
+        this.edgeMapper.push(value);
+    }
+
+    public updateLayout(viewPort: PointModel, modelBounds: any, layoutProp: Layout, layout: LayoutProp, nodeWithMultiEdges: INode[],
+                        nameTable: object): void {
+        let trnsX: number = ((viewPort.x - modelBounds.width) / 2) - modelBounds.x;
+        let trnsY: number = ((viewPort.y - modelBounds.height) / 2) - modelBounds.y;
+
+        trnsX = Math.round(trnsX);
+        trnsY = Math.round(trnsY);
+        const modifiedConnectors: Connector[] = [];
+        const transModelBounds: object = new RectModel(modelBounds.x + trnsX,
+                                                       modelBounds.y + trnsY,
+                                                       modelBounds.width,
+                                                       modelBounds.height);
+        const margin = layoutProp.margin;
+        const isHorizontal: boolean = layout.orientation === 'RightToLeft' || layout.orientation === 'LeftToRight';
+        const inversespacing: number = !isHorizontal ? layout.verticalSpacing : layout.horizontalSpacing;
+        for (let i: number = 0; i < nodeWithMultiEdges.length; i++) {
+
+
+            const node: INode = nodeWithMultiEdges[parseInt(i.toString(), 10)];
+            if (node.outEdges != null && node.outEdges.length > 0) {
+                const count: number = node.outEdges.length;
+                for (let j: number = 0; j < count; j++) {
+                    const internalConnector: Connector = nameTable[node.outEdges[parseInt(j.toString(), 10)]];
+                    internalConnector['pointCollection'] = [];
+                    if (count > 1) {
+                        const segmentsize: number = inversespacing / 2.0;
+                        let intermediatePoint: object = null;
+                        let key: number;
+                        const edgeMapper: EdgeMapperObject[] = this.getEdgeMapper();
+                        for (let k: number = 0; k < edgeMapper.length; k++) {
+                            if (edgeMapper[parseInt(k.toString(), 10)].key === internalConnector) {
+                                key = k;
+                                break;
+                            }
+                        }
+                        if ((edgeMapper[parseInt(key.toString(), 10)] as EdgeMapperObject).value.length > 0) {
+                            const edgePoint: Point = edgeMapper[parseInt(key.toString(), 10)].value[0];
+                            const dxValue1: number = edgePoint.x + margin.left;
+                            const dyValue1: number = edgePoint.y + margin.top;
+                            let x1: number = dxValue1; let y1: number = dyValue1;
+                            if (layout.orientation === 'BottomToTop') {
+                                y1 = modelBounds.height - dyValue1;
+                            }
+                            else if (layout.orientation === 'RightToLeft') {
+                                x1 = modelBounds.width - dxValue1;
+                            }
+
+                            x1 += trnsX;
+                            y1 += trnsY;
+
+                            intermediatePoint = this.getPointvalue(x1, y1);
+                        }
+
+                        let pts: PointModel[] = [];
+                        for (let i: number = 0; i < internalConnector.segments.length; i++) {
+                            const pt: PointModel[] = (internalConnector.segments[parseInt(i.toString(), 10)] as OrthogonalSegment).points;
+                            // eslint-disable-next-line guard-for-in
+                            for (const temp in pt) {
+                                pts.push(pt[parseInt(temp.toString(), 10)]);
+                            }
+                        }
+
+                        // eslint-disable-next-line max-len
+                        pts = this.updateConnectorPoints(pts as Point[], segmentsize, intermediatePoint as Point, (transModelBounds as RectModel), layout.orientation);
+
+                        for (let p: number = 0; p < pts.length; p++) {
+                            const pt: PointModel = pts[parseInt(p.toString(), 10)];
+                            internalConnector['pointCollection'].push(this.getPointvalue(pt.x, pt.y));
+                        }
+                        this.resetConnectorPoints(internalConnector);
+                    }
+                    modifiedConnectors.push(internalConnector);
+                }
+            }
+
+            if (node.inEdges != null && node.inEdges.length > 1) {
+                const count: number = node.inEdges.length;
+                const edgeMapper: EdgeMapperObject[] = this.getEdgeMapper();
+                for (let j: number = 0; j < count; j++) {
+                    const internalConnector: Connector = nameTable[node.inEdges[parseInt(j.toString(), 10)]];
+                    if (!this.containsValue((modifiedConnectors as Connector[]), internalConnector)) {
+                        internalConnector['pointCollection'] = [];
+                    }
+
+                    if (count > 1) {
+                        const segmentsize: number = inversespacing / 2.0;
+                        let intermediatePoint: object = null;
+                        let key: number;
+                        let k: number;
+                        for (k = 0; k < edgeMapper.length; k++) {
+                            if (edgeMapper[parseInt(k.toString(), 10)].key === internalConnector) {
+                                key = k;
+                                break;
+                            }
+                        }
+                        if (edgeMapper[parseInt(key.toString(), 10)].value.length > 0
+                            && !this.containsValue(modifiedConnectors, internalConnector)) {
+                            const edgePt: Point = edgeMapper[parseInt(k.toString(), 10)].value[0];
+                            const dx1: number = edgePt.x + margin.left;
+                            const dy1: number = edgePt.y + margin.top;
+                            // eslint-disable-next-line one-var
+                            let x1: number = dx1, y1 = dy1;
+                            if (layout.orientation === 'BottomToTop') {
+                                y1 = modelBounds.height - dy1;
+                            }
+                            else if (layout.orientation === 'RightToLeft') {
+                                x1 = modelBounds.width - dx1;
+                            }
+
+                            x1 += trnsX;
+                            y1 += trnsY;
+                            intermediatePoint = this.getPointvalue(x1, y1);
+                        }
+
+                        let pts: PointModel[] = [];
+                        for (let p: number = 0; p < internalConnector.segments.length; p++) {
+                            const pt: PointModel[] = (internalConnector.segments[parseInt(p.toString(), 10)] as OrthogonalSegment).points;
+                            // eslint-disable-next-line guard-for-in
+                            for (const temp in pt) {
+                                pts.push(pt[parseInt(temp.toString(), 10)]);
+                            }
+                        }
+                        pts.reverse();
+                        // eslint-disable-next-line
+                        pts = this.updateConnectorPoints(pts as Point[], segmentsize, (intermediatePoint as Point), transModelBounds as RectModel, layoutProp.orientation);
+                        pts.reverse();
+                        internalConnector['pointCollection'] = [];
+                        for (let p: number = 0; p < pts.length; p++) {
+                            const pt: PointModel = pts[parseInt(p.toString(), 10)];
+                            internalConnector['pointCollection'].push(this.getPointvalue(pt.x, pt.y));
+                        }
+                        this.resetConnectorPoints(internalConnector);
+                    }
+                }
+            }
+        }
+    }
+
+    private inflate(rect: RectModel, x: number, y: number): RectModel {
+        rect.x -= x;
+        rect.y -= y;
+        rect.width += 2 * x;
+        rect.height += 2 * y;
+        return rect;
+    }
+
+    private updateConnectorPoints(
+        connectorPoints: Point[], startSegmentSize: number, intermediatePoint: Point, bounds: object, orientation: string):
+        Point[] {
+        const layoutBounds: RectModel = bounds as RectModel;
+        const isHorizontal: boolean = orientation === 'LeftToRight' || orientation === 'RightToLeft';
+        const pts: Point[] = connectorPoints;
+        if (pts.length > 2) {
+            const newPt: Point = Point.transform(pts[0], Point.findAngle(pts[0], pts[1]), startSegmentSize) as Point;
+            const nextPt: Point = Point.transform(newPt, Point.findAngle(pts[1], pts[2]), Point.findLength(pts[1], pts[2])) as Point;
+            pts.splice(1, 2, newPt, nextPt);
+            if (intermediatePoint != null) {
+                const index: number = 2;
+                const ptsCount: number = pts.length;
+                const newPt1: Point = Point.transform(
+                    pts[ptsCount - 1],
+                    Point.findAngle(pts[ptsCount - 1], pts[ptsCount - 2]),
+                    startSegmentSize) as Point;
+                pts.splice(ptsCount - 1, 0, newPt1);
+                while (index < (pts.length - 2)) {
+                    pts.splice(index, 1);
+                }
+
+                const edgePt: Point = intermediatePoint;
+                this.inflate((layoutBounds as RectModel), (layoutBounds as RectModel).width, layoutBounds.height);
+
+                const line1: Point[] = [];
+                line1[0] = this.getPointvalue(edgePt.x, layoutBounds.y) as Point;
+                line1[1] = this.getPointvalue(edgePt.x, layoutBounds.y + layoutBounds.height) as Point;
+
+                const line2: Point[] = [];
+                line2[0] = this.getPointvalue(layoutBounds.x, pts[1].y) as Point;
+                line2[1] = this.getPointvalue(layoutBounds.x + layoutBounds.width, pts[1].y) as Point;
+
+                const line3: Point[] = [];
+                line3[0] = this.getPointvalue(layoutBounds.x, newPt1.y) as Point;
+                line3[1] = this.getPointvalue(layoutBounds.x + layoutBounds.width, newPt1.y) as Point;
+
+
+                if (isHorizontal) {
+                    line1[0] = this.getPointvalue(layoutBounds.x, edgePt.y) as Point;
+                    line1[1] = this.getPointvalue(layoutBounds.x + layoutBounds.width, edgePt.y) as Point;
+
+                    line2[0] = this.getPointvalue(pts[1].x, layoutBounds.y) as Point;
+                    line2[1] = this.getPointvalue(pts[1].x, layoutBounds.y + layoutBounds.height) as Point;
+
+                    line3[0] = this.getPointvalue(newPt1.x, layoutBounds.y) as Point;
+                    line2[1] = this.getPointvalue(newPt1.x, layoutBounds.y + layoutBounds.height) as Point;
+                }
+
+                const intercepts1: Point[] = [intersect2(
+                    line1[0] as Point,
+                    line1[1] as Point, line2[0] as Point, line2[1] as Point)] as Point[];
+                const intercepts2: Point[] = [intersect2(
+                    line1[0] as Point, line1[1] as Point,
+                    line3[0] as Point, line3[1] as Point)] as Point[];
+
+                if (intercepts2.length > 0) {
+                    pts.splice(2, 0, intercepts2[0]);
+                }
+
+                if (intercepts1.length > 0) {
+                    pts.splice(2, 0, intercepts1[0]);
+                }
+            }
+        }
+
+        let i: number = 1;
+        while (i < pts.length - 1) {
+            if (Point.equals(pts[i - 1], pts[parseInt(i.toString(), 10)])) {
+                pts.splice(i, 1);
+            } else if (Point.findAngle(pts[i - 1], pts[parseInt(i.toString(), 10)])
+                === Point.findAngle(pts[parseInt(i.toString(), 10)], pts[i + 1])) {
+                pts.splice(i, 1);
+            } else {
+                i++;
+            }
+        }
+
+        return pts;
+    }
+
+    private resetConnectorPoints(edge: ConnectorModel): void {
+        const obstacleCollection: string = 'obstaclePointCollection';
+        if ((edge.segments[0] as OrthogonalSegment).points
+            && (edge.segments[0] as OrthogonalSegment).points.length > 0 && edge[`${obstacleCollection}`]) {
+            const connector: ConnectorModel = edge;
+            connector.sourcePoint = (edge as Connector)[`${obstacleCollection}`][0];
+            connector.targetPoint = (edge as Connector)[`${obstacleCollection}`][(edge as Connector)[`${obstacleCollection}`].length - 1];
+            const segments: OrthogonalSegment[] = [];
+            for (let i: number = 0; i < (edge as Connector)[`${obstacleCollection}`].length - 1; i++) {
+                const point1: Point = (edge as Connector)[`${obstacleCollection}`][parseInt(i.toString(), 10)];
+                const point2: Point = (edge as Connector)[`${obstacleCollection}`][i + 1];
+                let length: number = findDistance(point1, point2);
+                const direction: string = getConnectorDirection(point1, point2);
+                if (i === (edge as Connector)[`${obstacleCollection}`].length - 2) {
+                    if ((this.diagram.layout.orientation === 'RightToLeft' && direction === 'Left')
+                        || (this.diagram.layout.orientation === 'LeftToRight' && direction === 'Right')
+                        || (this.diagram.layout.orientation === 'TopToBottom' && direction === 'Bottom')
+                        || (this.diagram.layout.orientation === 'BottomToTop' && direction === 'Top')) {
+                        length = length / 2;
+                    }
+
+                }
+                /* tslint:enable */
+                const tempSegment: OrthogonalSegment = new OrthogonalSegment(edge, 'segments', { type: 'Orthogonal' }, true);
+                tempSegment.length = length;
+                tempSegment.direction = (direction as Direction);
+                segments.push(tempSegment);
+            }
+            connector.segments = segments;
+
+            connector.type = 'Orthogonal';
+            this.diagram.connectorPropertyChange(connector as Connector, {} as Connector, {
+                type: 'Orthogonal',
+                segments: connector.segments
+            } as Connector);
+        }
+    }
+}
+
+/** @private */
+interface EdgeMapperObject {
+    value: Point[];
+    key: Connector | Node;
+}
+
+/** @private */
+interface MatrixCellGroupObject {
+    level: number;
+    parents: MatrixCellGroupObject[];
+    children: MatrixCellGroupObject[];
+    visitedParents: MatrixCellGroupObject[];
+    ignoredChildren: MatrixCellGroupObject[];
+    cells: CellObject[] | IVertex[];
+    visitedChildren: MatrixCellGroupObject[];
+    size: number;
+    offset: number;
+    initialOffset: number;
+    key?: string[] | string;
+    value?: MatrixCellGroupObject;
+}
+
+/** @private */
+interface CellObject {
+    x: number[];
+    y: number[];
+    type: string;
+    temp: number[];
+    minRank: number;
+    maxRank: number;
+    identicalSibilings: string[];
+    connectsAsTarget: CellObject[];
+    source: ConnectsAsSourceObject;
+    target: ConnectsAsSourceObject;
+    connectsAsSource: ConnectsAsSourceObject;
+    cell: Vertex;
+    edges?: Connector[];
+    hashCode?: number;
+    id?: string;
+    ids?: string;
+}
+
+/** @private */
+interface MatrixCellMapperObject {
+    index: number;
+    value: MatrixCellGroupObject[];
+}
+
+/** @private */
+interface ConnectsAsSourceObject {
+    id: string[];
+    source: ConnectsAsSourceObject;
+    target: ConnectsAsSourceObject;
+    temp: number[];
+    x: number[];
+    y: number[];
 }

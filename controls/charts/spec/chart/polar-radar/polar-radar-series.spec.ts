@@ -1795,6 +1795,80 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('Radar series - Checking stacking area series', () => {
+        let chartObj: Chart;
+        let data1: Object[] = [{ x: "North", y: 42 }, { x: "NorthEast", y: 28 },
+        { x: "East", y: 40 }, { x: "SouthEast", y: 45 },
+        { x: "South", y: 20 }, { x: "SouthWest", y: 40 },
+        { x: "West", y: 25 }, { x: "NorthWest", y: 40 }];
+
+        let data2: Object[] = [{ x: "North", y: 63 }, { x: "NorthEast", y: 73 },
+        { x: "East", y: 58 }, { x: "SouthEast", y: 65 },
+        { x: "South", y: 47 }, { x: "SouthWest", y: 70 },
+        { x: "West", y: 45 }, { x: "NorthWest", y: 70 }];
+
+        let data3: Object[] = [{ x: "North", y: 80 }, { x: "NorthEast", y: 88 },
+        { x: "East", y: 79 }, { x: "SouthEast", y: 83 },
+        { x: "South", y: 78 }, { x: "SouthWest", y: 90 },
+        { x: "West", y: 78 }, { x: "NorthWest", y: 85 }];
+        beforeAll((): void => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chartObj = new Chart({
+                //Initializing Primary X Axis
+                primaryXAxis: {
+                    valueType: 'Category',
+                    isInversed: true,
+                },
+                primaryYAxis: {
+                    isInversed: true,
+                },
+                axes: [
+                    {
+                        name: 'yAxis1', opposedPosition: true,
+                    },
+                    {
+                        name: 'yAxis2', opposedPosition: true, valueType: 'Category',
+                    }
+                ],
+                series: [
+                    {
+                        dataSource: data1,
+                        border: { width: 1, color: 'white' }, drawType : 'StackingArea',
+                        name: 'Series1', type: 'Radar', xName: 'x', yName: 'y', animation: { enable: false },
+                        fill: '#3d5ee0'
+                    },
+                    {
+                        dataSource: data2,
+                        border: { width: 1, color: 'white' }, drawType : 'StackingArea',
+                        name: 'Series2', type: 'Radar', xName: 'x', yName: 'y', animation: { enable: false },
+                        fill: '#4de03d'
+                    },
+                    {
+                        dataSource: data3,
+                        border: { width: 1, color: 'white' }, drawType : 'StackingArea', xAxisName: 'yAxis2', yAxisName: 'yAxis1',
+                        name: 'Series3', type: 'Radar', xName: 'x', yName: 'y', animation: { enable: false },
+                        fill: '#e03d9f'
+                    },
+                ],
+                tooltip: {
+                    enable: true
+                },
+            }, '#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            elem.remove();
+        });
+        it('Radar Chart: Checking staking area series path', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let datalabel: Element = document.getElementById('container_Series_0');
+                expect(datalabel !== null).toBe(true);
+                done();
+            };
+            chartObj.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

@@ -9691,6 +9691,425 @@ describe('DateRangePicker', () => {
            expect(+daterangepicker.endDate).toBe(+endWeekDay);
         });
     });
+    describe('Null or undefined value testing', () => {
+        debugger;
+        let daterangepickerObj : any;
+        beforeEach(()=>{
+            let ele : HTMLElement = createElement('div', { id : 'daterangepicker'});
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            document.body.innerHTML = '';
+        });
+        it('allowEdit', () => {
+            daterangepickerObj = new DateRangePicker({
+                allowEdit: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.allowEdit).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                allowEdit: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.allowEdit).toBe(true);
+            daterangepickerObj.destroy();
+        });
+        it('cssClass', () => {
+            daterangepickerObj = new DateRangePicker({
+                cssClass: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.cssClass).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                cssClass: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.cssClass).toBe('');
+            daterangepickerObj.destroy();
+        });
+        it('dayHeaderFormat', () => {
+            daterangepickerObj = new DateRangePicker({
+                dayHeaderFormat: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.dayHeaderFormat).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                dayHeaderFormat: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.dayHeaderFormat).toBe('Short');
+            daterangepickerObj.destroy();
+        });
+        it('depth', () => {
+            daterangepickerObj = new DateRangePicker({
+                depth: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.depth).toBe('Month');
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                depth: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.depth).toBe('Month');
+            daterangepickerObj.destroy();
+        });
+        it('enablePersistence', () => {
+            daterangepickerObj = new DateRangePicker({
+                enablePersistence: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.enablePersistence).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                enablePersistence: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.enablePersistence).toBe(false);
+            daterangepickerObj.destroy();
+        });
+        it('enableRtl', () => {
+            daterangepickerObj = new DateRangePicker({
+                enableRtl: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.enableRtl).toBe(false);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                enableRtl: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.enableRtl).toBe(false);
+            daterangepickerObj.destroy();
+        });
+        it('enabled', () => {
+            daterangepickerObj = new DateRangePicker({
+                enabled: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.enabled).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                enabled: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.enabled).toBe(true);
+            daterangepickerObj.destroy();
+        });
+        it('endDate', () => {
+            daterangepickerObj = new DateRangePicker({
+                endDate: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.endDate).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                endDate: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.endDate).toBe(null);
+            daterangepickerObj.destroy();
+        });
+        it('firstDayOfWeek', () => {
+            daterangepickerObj = new DateRangePicker({
+                firstDayOfWeek: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.firstDayOfWeek).toBe(0);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                firstDayOfWeek: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.firstDayOfWeek).toBe(0);
+            daterangepickerObj.destroy();
+        });
+        it('floatLabelType', () => {
+            daterangepickerObj = new DateRangePicker({
+                floatLabelType: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.floatLabelType).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                floatLabelType: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.floatLabelType).toBe('Never');
+            daterangepickerObj.destroy();
+        });
+        it('format', () => {
+            daterangepickerObj = new DateRangePicker({
+                format: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.format).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                format: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.format).toBe(null);
+            daterangepickerObj.destroy();
+        });
+        it('fullScreenMode', () => {
+            daterangepickerObj = new DateRangePicker({
+                fullScreenMode: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.fullScreenMode).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                fullScreenMode: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.fullScreenMode).toBe(false);
+            daterangepickerObj.destroy();
+        });
+        it('htmlAttributes', () => {
+            daterangepickerObj = new DateRangePicker({
+                htmlAttributes: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.htmlAttributes).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                htmlAttributes: undefined
+            },'#daterangepicker');
+            expect(JSON.stringify(daterangepickerObj.htmlAttributes)).toBe('{}');
+            daterangepickerObj.destroy();
+        });
+        it('keyConfigs', () => {
+            daterangepickerObj = new DateRangePicker({
+                keyConfigs: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.keyConfigs).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                keyConfigs: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.keyConfigs).toBe(null);
+            daterangepickerObj.destroy();
+        });
+        it('locale', () => {
+            daterangepickerObj = new DateRangePicker({
+                locale: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.locale).toBe('en-US');
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                locale: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.locale).toBe('en-US');
+            daterangepickerObj.destroy();
+        });
+        it('max', () => {
+            daterangepickerObj = new DateRangePicker({
+                max: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.max.valueOf()).toBe(new Date(2099, 11, 31).valueOf());
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                max: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.max.valueOf()).toBe(new Date(2099, 11, 31).valueOf());
+            daterangepickerObj.destroy();
+        });
+        it('maxDays', () => {
+            daterangepickerObj = new DateRangePicker({
+                maxDays: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.maxDays).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                maxDays: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.maxDays).toBe(null);
+            daterangepickerObj.destroy();
+        });
+        it('min', () => {
+            daterangepickerObj = new DateRangePicker({
+                min: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.min.valueOf()).toBe(new Date(1900, 0, 1).valueOf());
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                min: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.min.valueOf()).toBe(new Date(1900, 0, 1).valueOf());
+            daterangepickerObj.destroy();
+        });
+        it('minDays', () => {
+            daterangepickerObj = new DateRangePicker({
+                minDays: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.minDays).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                minDays: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.minDays).toBe(null);
+            daterangepickerObj.destroy();
+        });
+        it('openOnFocus', () => {
+            daterangepickerObj = new DateRangePicker({
+                openOnFocus: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.openOnFocus).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                openOnFocus: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.openOnFocus).toBe(false);
+            daterangepickerObj.destroy();
+        });
+        it('placeholder', () => {
+            daterangepickerObj = new DateRangePicker({
+                placeholder: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.placeholder).toBe('Select a range');
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                placeholder: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.placeholder).toBe('Select a range');
+            daterangepickerObj.destroy();
+        });
+        it('presets', () => {
+            daterangepickerObj = new DateRangePicker({
+                presets: null
+            },'#daterangepicker');
+            expect(JSON.stringify(daterangepickerObj.presets)).toBe('[]');
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                presets: undefined
+            },'#daterangepicker');
+            expect(JSON.stringify(daterangepickerObj.presets)).toBe('[]');
+            daterangepickerObj.destroy();
+        });
+        it('readonly', () => {
+            daterangepickerObj = new DateRangePicker({
+                readonly: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.readonly).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                readonly: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.readonly).toBe(false);
+            daterangepickerObj.destroy();
+        });
+        it('separator', () => {
+            daterangepickerObj = new DateRangePicker({
+                separator: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.separator).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                separator: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.separator).toBe('-');
+            daterangepickerObj.destroy();
+        });
+        it('serverTimezoneOffset', () => {
+            daterangepickerObj = new DateRangePicker({
+                serverTimezoneOffset: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.serverTimezoneOffset).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                serverTimezoneOffset: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.serverTimezoneOffset).toBe(null);
+            daterangepickerObj.destroy();
+        });
+        it('showClearButton', () => {
+            daterangepickerObj = new DateRangePicker({
+                showClearButton: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.showClearButton).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                showClearButton: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.showClearButton).toBe(true);
+            daterangepickerObj.destroy();
+        });
+        it('start', () => {
+            daterangepickerObj = new DateRangePicker({
+                start: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.start).toBe('Month');
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                start: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.start).toBe('Month');
+            daterangepickerObj.destroy();
+        });
+        it('startDate', () => {
+            daterangepickerObj = new DateRangePicker({
+                startDate: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.startDate).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                startDate: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.startDate).toBe(null);
+            daterangepickerObj.destroy();
+        });
+        it('strictMode', () => {
+            daterangepickerObj = new DateRangePicker({
+                strictMode: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.strictMode).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                strictMode: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.strictMode).toBe(false);
+            daterangepickerObj.destroy();
+        });
+        it('value', () => {
+            daterangepickerObj = new DateRangePicker({
+                value: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.value).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                value: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.value).toBe(null);
+            daterangepickerObj.destroy();
+        });
+        it('weekNumber', () => {
+            daterangepickerObj = new DateRangePicker({
+                weekNumber: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.weekNumber).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                weekNumber: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.weekNumber).toBe(false);
+            daterangepickerObj.destroy();
+        });
+        it('weekRule', () => {
+            daterangepickerObj = new DateRangePicker({
+                weekRule: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.weekRule).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                weekRule: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.weekRule).toBe('FirstDay');
+            daterangepickerObj.destroy();
+        });
+        it('width', () => {
+            daterangepickerObj = new DateRangePicker({
+                width: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.width).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                width: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.width).toBe('');
+            daterangepickerObj.destroy();
+        });
+        it('zIndex', () => {
+            daterangepickerObj = new DateRangePicker({
+                zIndex: null
+            },'#daterangepicker');
+            expect(daterangepickerObj.zIndex).toBe(null);
+            daterangepickerObj.destroy();
+            daterangepickerObj = new DateRangePicker({
+                zIndex: undefined
+            },'#daterangepicker');
+            expect(daterangepickerObj.zIndex).toBe(1000);
+            daterangepickerObj.destroy();
+        });
+    });
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

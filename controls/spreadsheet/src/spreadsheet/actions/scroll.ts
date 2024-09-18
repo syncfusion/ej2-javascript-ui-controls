@@ -1,7 +1,7 @@
 import { Browser, EventHandler, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Spreadsheet, FormulaBarEdit, ScrollEventArgs, isFormulaBarEdit, colWidthChanged, mouseDown, getUpdateUsingRaf } from '../index';
 import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs, updateNoteContainer } from '../common/index';
-import { IOffset, onContentScroll, deInitProperties, setScrollEvent, updateScroll, selectionStatus } from '../common/index';
+import { IOffset, onContentScroll, deInitProperties, updateScroll, selectionStatus } from '../common/index';
 import { virtualContentLoaded, updateScrollValue } from '../common/index';
 import { SheetModel, getRowHeight, getColumnWidth, getCellAddress, skipHiddenIdx } from '../../workbook/index';
 
@@ -283,22 +283,13 @@ export class Scroll {
         }
     }
 
-    private setScrollEvent(args: { set: boolean } = { set: true }): void {
-        if (args.set) {
-            EventHandler.add(this.parent.sheetModule.contentPanel, 'scroll', this.onContentScroll, this);
-            EventHandler.add(this.parent.getColumnHeaderContent(), 'wheel', this.onHeaderWheel, this);
-            EventHandler.add(this.parent.getSelectAllContent(), 'wheel', this.onHeaderWheel, this);
-            EventHandler.add(this.parent.getMainContent(), 'wheel', this.onContentWheel, this);
-            EventHandler.add(this.parent.getRowHeaderContent(), 'wheel', this.onContentWheel, this);
-            EventHandler.add(this.parent.getScrollElement(), 'scroll', this.scrollHandler, this);
-        } else {
-            EventHandler.remove(this.parent.sheetModule.contentPanel, 'scroll', this.onContentScroll);
-            EventHandler.remove(this.parent.getColumnHeaderContent(), 'wheel', this.onHeaderWheel);
-            EventHandler.remove(this.parent.getSelectAllContent(), 'wheel', this.onHeaderWheel);
-            EventHandler.remove(this.parent.getMainContent(), 'wheel', this.onContentWheel);
-            EventHandler.remove(this.parent.getRowHeaderContent(), 'wheel', this.onContentWheel);
-            EventHandler.remove(this.parent.getScrollElement(), 'scroll', this.scrollHandler);
-        }
+    private setScrollEvent(): void {
+        EventHandler.add(this.parent.sheetModule.contentPanel, 'scroll', this.onContentScroll, this);
+        EventHandler.add(this.parent.getColumnHeaderContent(), 'wheel', this.onHeaderWheel, this);
+        EventHandler.add(this.parent.getSelectAllContent(), 'wheel', this.onHeaderWheel, this);
+        EventHandler.add(this.parent.getMainContent(), 'wheel', this.onContentWheel, this);
+        EventHandler.add(this.parent.getRowHeaderContent(), 'wheel', this.onContentWheel, this);
+        EventHandler.add(this.parent.getScrollElement(), 'scroll', this.scrollHandler, this);
     }
 
     private initProps(): void {
@@ -374,7 +365,6 @@ export class Scroll {
         this.parent.on(updateScroll, this.updateScroll, this);
         this.parent.on(deInitProperties, this.initProps, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
-        this.parent.on(setScrollEvent, this.setScrollEvent, this);
         this.parent.on(mouseDown, this.setClientX, this);
         this.parent.on(updateScrollValue, this.updateScrollValue, this);
         if (!this.parent.scrollSettings.enableVirtualization) {
@@ -401,7 +391,6 @@ export class Scroll {
         this.parent.off(updateScroll, this.updateScroll);
         this.parent.off(deInitProperties, this.initProps);
         this.parent.off(spreadsheetDestroyed, this.destroy);
-        this.parent.off(setScrollEvent, this.setScrollEvent);
         this.parent.off(mouseDown, this.setClientX);
         this.parent.off(updateScrollValue, this.updateScrollValue);
         if (!this.parent.scrollSettings.enableVirtualization) {

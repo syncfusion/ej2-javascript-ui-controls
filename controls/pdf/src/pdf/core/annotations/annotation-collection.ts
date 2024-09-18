@@ -176,7 +176,7 @@ export class PdfAnnotationCollection {
      */
     remove(annotation: PdfAnnotation): void {
         if (annotation._ref) {
-            const index: number = this._annotations.indexOf(annotation._ref);
+            const index: number = this._annotations.lastIndexOf(annotation._ref);
             if (index > -1) {
                 this.removeAt(index);
             }

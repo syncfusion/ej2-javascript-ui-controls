@@ -14,7 +14,6 @@ import { HeaderFooterType } from '../../document-editor/base';
  * @private
  */
 export class HeaderFooterProperties {
-    public element: HTMLElement;
     private container: DocumentEditorContainer;
     private firstPage: CheckBox;
     private oddOrEven: CheckBox;
@@ -26,6 +25,36 @@ export class HeaderFooterProperties {
     private isHeaderTopApply: boolean = false;
     private isFooterTopApply: boolean = false;
     private isRtl: boolean;
+    private localObj : L10n;
+    private elementId : string;
+
+    //HTML Elements
+    public element: HTMLElement;
+    private headerDiv: HTMLElement;
+    private headerLabel: HTMLElement;
+    private closeIcon: HTMLElement;
+    private optionsLabelDiv: HTMLElement;
+    private optionsLabel: HTMLElement;
+    private optionsDiv: HTMLElement;
+    private firstPageDiv: HTMLElement;
+    private oddOrEvenDiv: HTMLElement;
+    private linkToPreviousDiv: HTMLElement;
+    private positionLabelDiv: HTMLElement;
+    private positionLabel: HTMLElement;
+    private positionDiv: HTMLElement;
+    private headerTopDiv: HTMLElement;
+    private headerTopLabel: HTMLElement;
+    private footerBottomDiv: HTMLElement;
+    private footerBottomLabel: HTMLElement;
+    private divElement: HTMLElement;
+
+    //Events Hook Constants
+    private HeaderTopApplyClickHook: EventListenerOrEventListenerObject = this.headerTopApply.bind(this);
+    private FooterTopApplyClickHook: EventListenerOrEventListenerObject = this.footerTopapply.bind(this);
+    private OnHeaderValueKeyDownHook: EventListenerOrEventListenerObject = this.onHeaderValue.bind(this);
+    private OnFooterValueKeyDownHook: EventListenerOrEventListenerObject = this.onFooterValue.bind(this);
+    private ChangeHeaderBlurHook: EventListenerOrEventListenerObject = this.changeHeaderBlur.bind(this);
+    private ChangeFooterBlurHook: EventListenerOrEventListenerObject = this.changeFooterBlur.bind(this);
 
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
@@ -71,13 +100,13 @@ export class HeaderFooterProperties {
     }
 
     private initializeHeaderFooter(): void {
-        const localObj: L10n = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
-        const elementId: string = 'header_footer_properties';
-        this.element = createElement('div', { id: this.documentEditor.element.id + elementId, className: 'e-de-prop-pane' });
-        const headerDiv: HTMLElement = this.createDivTemplate('_header_footer', this.element, 'padding-bottom:0');
-        classList(headerDiv, ['e-de-cntr-pane-padding'], []);
-        const headerLabel: HTMLElement = createElement('label', { className: 'e-de-prop-header-label' });
-        headerLabel.innerHTML = localObj.getConstant('Header And Footer');
+        this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
+        this.elementId = 'header_footer_properties';
+        this.element = createElement('div', { id: this.documentEditor.element.id + this.elementId, className: 'e-de-prop-pane' });
+        this.headerDiv = this.createDivTemplate('_header_footer', this.element, 'padding-bottom:0');
+        classList(this.headerDiv, ['e-de-cntr-pane-padding'], []);
+        this.headerLabel = createElement('label', { className: 'e-de-prop-header-label' });
+        this.headerLabel.innerHTML = this.localObj.getConstant('Header And Footer');
         let closeButtonFloat: string;
         //let optionsLabelDivPadding: string;
         //let positionLabelDivPadding: string;
@@ -90,42 +119,42 @@ export class HeaderFooterProperties {
             //optionsLabelDivPadding = 'padding-right: 14px';
             //positionLabelDivPadding = 'padding-right: 14px;';
         }
-        const closeIcon: HTMLElement = createElement('span', {
+        this.closeIcon = createElement('span', {
             id: '_header_footer_close',
             className: 'e-de-ctnr-close e-de-close-icon e-icons',
             styles: 'display:inline-block;cursor:pointer;' + closeButtonFloat
         });
-        closeIcon.addEventListener('click', (): void => {
+        this.closeIcon.addEventListener('click', (): void => {
             this.onClose();
         });
-        headerDiv.appendChild(headerLabel);
-        headerDiv.appendChild(closeIcon);
-        const optionsLabelDiv: HTMLElement = this.createDivTemplate(elementId + '_options', this.element);
-        classList(optionsLabelDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
-        const optionsLabel: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'height:20px;' });
-        optionsLabel.innerHTML = localObj.getConstant('Options');
-        optionsLabelDiv.appendChild(optionsLabel);
-        const optionsDiv: HTMLElement = this.createDivTemplate(elementId + '_optionsDiv', optionsLabelDiv);
-        const firstPageDiv: HTMLElement = this.createDivTemplate(elementId + '_firstPageDiv', optionsDiv);
-        classList(firstPageDiv, ['e-de-hdr-ftr-frst-div'], []);
+        this.headerDiv.appendChild(this.headerLabel);
+        this.headerDiv.appendChild(this.closeIcon);
+        this.optionsLabelDiv = this.createDivTemplate(this.elementId + '_options', this.element);
+        classList(this.optionsLabelDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
+        this.optionsLabel = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'height:20px;' });
+        this.optionsLabel.innerHTML = this.localObj.getConstant('Options');
+        this.optionsLabelDiv.appendChild(this.optionsLabel);
+        this.optionsDiv = this.createDivTemplate(this.elementId + '_optionsDiv', this.optionsLabelDiv);
+        this.firstPageDiv = this.createDivTemplate(this.elementId + '_firstPageDiv', this.optionsDiv);
+        classList(this.firstPageDiv, ['e-de-hdr-ftr-frst-div'], []);
         const firstPage: HTMLInputElement = createElement('input', { id: 'firstPage', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
-        firstPageDiv.appendChild(firstPage);
-        this.firstPage = new CheckBox({ label: localObj.getConstant('Different First Page'), change: this.changeFirstPageOptions.bind(this), cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
+        this.firstPageDiv.appendChild(firstPage);
+        this.firstPage = new CheckBox({ label: this.localObj.getConstant('Different First Page'), change: this.changeFirstPageOptions.bind(this), cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
         this.firstPage.appendTo(firstPage);
-        firstPageDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for first page'));
-        const oddOrEvenDiv: HTMLElement = this.createDivTemplate(elementId + '_oddOrEvenDiv', optionsDiv);
-        classList(oddOrEvenDiv, ['e-de-hdr-ftr-frst-div'], []);
+        this.firstPageDiv.children[0].setAttribute('title', this.localObj.getConstant('Different header and footer for first page'));
+        this.oddOrEvenDiv = this.createDivTemplate(this.elementId + '_oddOrEvenDiv', this.optionsDiv);
+        classList(this.oddOrEvenDiv, ['e-de-hdr-ftr-frst-div'], []);
         const oddOrEven: HTMLInputElement = createElement('input', { id: 'oddOrEven', className: 'e-de-sub-prop-label' }) as HTMLInputElement;
-        oddOrEvenDiv.appendChild(oddOrEven);
-        this.oddOrEven = new CheckBox({ label: localObj.getConstant('Different Odd And Even Pages'), change: this.changeoddOrEvenOptions.bind(this), cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
+        this.oddOrEvenDiv.appendChild(oddOrEven);
+        this.oddOrEven = new CheckBox({ label: this.localObj.getConstant('Different Odd And Even Pages'), change: this.changeoddOrEvenOptions.bind(this), cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
         this.oddOrEven.appendTo(oddOrEven);
-        oddOrEvenDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for odd and even pages'));
-        const linkToPreviousDiv: HTMLElement = this.createDivTemplate(elementId + '_linkToPreviousDiv', optionsDiv);
+        this.oddOrEvenDiv.children[0].setAttribute('title', this.localObj.getConstant('Different header and footer for odd and even pages'));
+        this.linkToPreviousDiv = this.createDivTemplate(this.elementId + '_linkToPreviousDiv', this.optionsDiv);
         const linkToPrevious: HTMLInputElement = createElement('input', { id: 'linkToPrevious', className: 'e-de-sub-prop-label' }) as HTMLInputElement;
-        linkToPreviousDiv.appendChild(linkToPrevious);
-        this.linkToPrevious = new CheckBox({ label: localObj.getConstant('Link to Previous'), change: this.changeLinkToPreviousOptions.bind(this) , cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl, checked: true });
+        this.linkToPreviousDiv.appendChild(linkToPrevious);
+        this.linkToPrevious = new CheckBox({ label: this.localObj.getConstant('Link to Previous'), change: this.changeLinkToPreviousOptions.bind(this), cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl, checked: true });
         this.linkToPrevious.appendTo(linkToPrevious);
-        linkToPreviousDiv.children[0].setAttribute('title', localObj.getConstant('Link to the previous Title'));
+        this.linkToPreviousDiv.children[0].setAttribute('title', this.localObj.getConstant('Link to the previous Title'));
         // let autoFieldLabelDiv: HTMLElement = this.createDivTemplate(element + '_autoFieldLabelDiv', div, 'padding-top:10px;padding-left: 10px;');
         // let autoFieldLabel: HTMLElement = createElement('label', { className: 'e-de-header-prop-label', styles: 'height:20px;' });
         // autoFieldLabel.innerHTML = 'Insert Autofield';
@@ -145,12 +174,12 @@ export class HeaderFooterProperties {
         // let autoFieldLine: HTMLElement = createElement('div', { className: 'e-de-prop-separator-line', styles: 'margin-top:7px;' });
         // autoFieldLabelDiv.appendChild(autoFieldLine);
 
-        const positionLabelDiv: HTMLElement = this.createDivTemplate(elementId + '_positionLabelDiv', this.element);
-        classList(positionLabelDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
-        const positionLabel: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'height:20px;' });
-        positionLabel.innerHTML = localObj.getConstant('Position');
-        positionLabelDiv.appendChild(positionLabel);
-        const positionDiv: HTMLElement = this.createDivTemplate(elementId + '_positionDiv', positionLabelDiv);
+        this.positionLabelDiv = this.createDivTemplate(this.elementId + '_positionLabelDiv', this.element);
+        classList(this.positionLabelDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
+        this.positionLabel = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'height:20px;' });
+        this.positionLabel.innerHTML = this.localObj.getConstant('Position');
+        this.positionLabelDiv.appendChild(this.positionLabel);
+        this.positionDiv = this.createDivTemplate(this.elementId + '_positionDiv', this.positionLabelDiv);
         //let width: string;
         //let headerFooterDivMargin: string;
         //if (!this.isRtl) {
@@ -160,60 +189,64 @@ export class HeaderFooterProperties {
         //width = 'width: 150px;';
         //headerFooterDivMargin = 'margin-left:8px;';
         //}
-        const headerTopDiv: HTMLElement = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv);
-        classList(headerTopDiv, ['e-de-hdr-ftr-top-div'], []);
-        const headerTopLabel: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
-        headerTopLabel.innerHTML = localObj.getConstant('Header from Top');
-        headerTopDiv.appendChild(headerTopLabel);
+        this.headerTopDiv = this.createDivTemplate(this.elementId + '_headerTopDiv', this.positionDiv);
+        classList(this.headerTopDiv, ['e-de-hdr-ftr-top-div'], []);
+        this.headerTopLabel = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
+        this.headerTopLabel.innerHTML = this.localObj.getConstant('Header from Top');
+        this.headerTopDiv.appendChild(this.headerTopLabel);
         const headerFromTop: HTMLInputElement = createElement('input', { id: this.documentEditor.element.id + '_headerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
-        headerFromTop.setAttribute('aria-label', localObj.getConstant('Header from Top'));
-        headerTopDiv.appendChild(headerFromTop);
+        headerFromTop.setAttribute('aria-label', this.localObj.getConstant('Header from Top'));
+        this.headerTopDiv.appendChild(headerFromTop);
         this.headerFromTop = new NumericTextBox({
             value: 36, cssClass: 'e-de-prop-header-numeric',
             showSpinButton: false, format: 'n0', decimals: 2, max: 1584, min: 0, enableRtl: this.isRtl
         });
         this.headerFromTop.appendTo(headerFromTop);
-        this.headerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from top of the page to top of the header'));
-        const footerBottomDiv: HTMLElement = this.createDivTemplate(elementId + '_footerBottomDiv', positionDiv);
-        const footerBottomLabel: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
-        footerBottomLabel.innerHTML = localObj.getConstant('Footer from Bottom');
-        footerBottomDiv.appendChild(footerBottomLabel);
+        this.headerFromTop.element.parentElement.setAttribute('title', this.localObj.getConstant('Distance from top of the page to top of the header'));
+        this.footerBottomDiv = this.createDivTemplate(this.elementId + '_footerBottomDiv', this.positionDiv);
+        this.footerBottomLabel = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
+        this.footerBottomLabel.innerHTML = this.localObj.getConstant('Footer from Bottom');
+        this.footerBottomDiv.appendChild(this.footerBottomLabel);
         const footerFromTop: HTMLInputElement = createElement('input', { id: this.documentEditor.element.id + '_footerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
-        footerFromTop.setAttribute('aria-label', localObj.getConstant('Footer from Bottom'));
-        footerBottomDiv.appendChild(footerFromTop);
+        footerFromTop.setAttribute('aria-label', this.localObj.getConstant('Footer from Bottom'));
+        this.footerBottomDiv.appendChild(footerFromTop);
         this.footerFromTop = new NumericTextBox({
             value: 36, cssClass: 'e-de-prop-header-numeric',
             showSpinButton: false, format: 'n0', decimals: 2, max: 1584, min: 0, enableRtl: this.isRtl
         });
         this.footerFromTop.appendTo(footerFromTop);
-        this.footerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from bottom of the page to bottom of the footer'));
+        this.footerFromTop.element.parentElement.setAttribute('title', this.localObj.getConstant('Distance from bottom of the page to bottom of the footer'));
     }
     private createDivTemplate(id: string, parentDiv: HTMLElement, style?: string): HTMLElement {
-        let divElement: HTMLElement;
         if (style) {
-            divElement = createElement('div', { id: id, styles: style });
+            this.divElement = createElement('div', { id: id, styles: style });
         } else {
-            divElement = createElement('div', { id: id });
+            this.divElement = createElement('div', { id: id });
         }
-        parentDiv.appendChild(divElement);
-        return divElement;
+        parentDiv.appendChild(this.divElement);
+        return this.divElement;
     }
     private wireEvents(): void {
-        this.headerFromTop.element.addEventListener('click', (): void => {
-            this.isHeaderTopApply = true;
-        });
-        this.footerFromTop.element.addEventListener('click', (): void => {
-            this.isFooterTopApply = true;
-        });
-        this.headerFromTop.element.addEventListener('keydown', this.onHeaderValue.bind(this));
-        this.footerFromTop.element.addEventListener('keydown', this.onFooterValue.bind(this));
-        this.headerFromTop.element.addEventListener('blur', (): void => {
-            this.changeHeaderValue(); this.isHeaderTopApply = false;
-        });
-        this.footerFromTop.element.addEventListener('blur', (): void => {
-            this.changeFooterValue(); this.isFooterTopApply = false;
-        });
+        this.headerFromTop.element.addEventListener('click', this.HeaderTopApplyClickHook);
+        this.footerFromTop.element.addEventListener('click', this.FooterTopApplyClickHook);
+        this.headerFromTop.element.addEventListener('keydown', this.OnHeaderValueKeyDownHook);
+        this.footerFromTop.element.addEventListener('keydown', this.OnFooterValueKeyDownHook);
+        this.headerFromTop.element.addEventListener('blur', this.ChangeHeaderBlurHook);
+        this.footerFromTop.element.addEventListener('blur', this.ChangeFooterBlurHook);
     }
+    private headerTopApply() : void{
+        this.isHeaderTopApply = true;
+    }
+    private footerTopapply() : void{
+        this.isFooterTopApply = true;
+    }
+    private changeHeaderBlur() : void{
+        this.changeHeaderValue(); this.isHeaderTopApply = false;
+    }
+    private changeFooterBlur() : void{
+        this.changeFooterValue(); this.isFooterTopApply = false;
+    }
+
     private onClose(): void {
         this.container.showHeaderProperties = true;
         this.container.documentEditor.selectionModule.closeHeaderFooter();
@@ -345,6 +378,9 @@ export class HeaderFooterProperties {
         }
     }
     public destroy(): void {
+
+        this.unWireEvents();
+        this.removeHTMLDOM();
         if (this.element) {
             this.element.innerHTML = '';
             if (this.element.parentElement) {
@@ -373,5 +409,43 @@ export class HeaderFooterProperties {
             this.footerFromTop = undefined;
         }
         this.container = undefined;
+        this.localObj = undefined;
+        this.elementId = undefined;
+    }
+
+    private unWireEvents(): void {
+        this.headerFromTop.element.removeEventListener('click', this.HeaderTopApplyClickHook);
+        this.footerFromTop.element.removeEventListener('click', this.FooterTopApplyClickHook);
+        this.headerFromTop.element.removeEventListener('keydown', this.OnHeaderValueKeyDownHook);
+        this.footerFromTop.element.removeEventListener('keydown', this.OnFooterValueKeyDownHook);
+        this.headerFromTop.element.removeEventListener('blur', this.ChangeHeaderBlurHook);
+        this.footerFromTop.element.removeEventListener('blur', this.ChangeFooterBlurHook);
+
+        this.HeaderTopApplyClickHook = undefined;
+        this.FooterTopApplyClickHook = undefined;
+        this.OnHeaderValueKeyDownHook = undefined;
+        this.OnFooterValueKeyDownHook = undefined;
+        this.ChangeHeaderBlurHook = undefined;
+        this.ChangeFooterBlurHook = undefined;
+    }
+
+    private removeHTMLDOM(): void {
+        this.headerDiv.remove();
+        this.headerLabel.remove();
+        this.closeIcon.remove();
+        this.optionsLabelDiv.remove();
+        this.optionsLabel.remove();
+        this.optionsDiv.remove();
+        this.firstPageDiv.remove();
+        this.oddOrEvenDiv.remove();
+        this.linkToPreviousDiv.remove();
+        this.positionLabelDiv.remove();
+        this.positionLabel.remove();
+        this.positionDiv.remove();
+        this.headerTopDiv.remove();
+        this.headerTopLabel.remove();
+        this.footerBottomDiv.remove();
+        this.footerBottomLabel.remove();
+        this.divElement.remove();
     }
 }

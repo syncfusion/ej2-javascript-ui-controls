@@ -135,7 +135,7 @@ export class PdfTreeGridCell {
         let height = 0;
         let width: number = this.calculateWidth();
         width -= this.row.treegrid.style.cellPadding.right + this.row.treegrid.style.cellPadding.left;
-        width -= this.style.borders.left.width + this.style.borders.right.width;
+        width -= this.style.borders ? this.style.borders.left.width + this.style.borders.right.width : 0;
         const layouter: PdfStringLayouter = new PdfStringLayouter();
         if (typeof this.value === 'string' || typeof this.remainingString === 'string') {
             let currentValue: string = this.value as string;
@@ -159,7 +159,7 @@ export class PdfTreeGridCell {
             }
             else {
                 height += value + (slr.size.height / 2);
-            }         
+            }        
             height += (this.style.borders.top.width + this.style.borders.bottom.width) * 2;
         }
         height += this.row.treegrid.style.cellPadding.top + this.row.treegrid.style.cellPadding.bottom;
@@ -173,9 +173,9 @@ export class PdfTreeGridCell {
         const columnSpan: number = this.columnSpan;
         let width: number = 0;
         for (let i: number = 0; i < columnSpan; i++) {
-            width += this.row.treegrid.columns.getColumn(cellIndex + i).width;
+            width += this.row.treegrid.columns.getColumn(cellIndex + i) ? this.row.treegrid.columns.getColumn(cellIndex + i).width : 0;
         }
-        if (this.row.treegrid.columns.getColumn(cellIndex).isTreeColumn) {
+        if (this.row.treegrid.columns.getColumn(cellIndex) && this.row.treegrid.columns.getColumn(cellIndex).isTreeColumn) {
             width -= (this.row.level * 10);
         }
         return width;
@@ -192,26 +192,26 @@ export class PdfTreeGridCell {
      */
     public draw(graphics: PdfGraphics, bounds: RectangleF, cancelSubsequentSpans: boolean, leftAdjustment: number): PdfStringLayoutResult {
         let result: PdfStringLayoutResult = null; const padding: number = 10;
-        if (cancelSubsequentSpans) {
-            // Cancel all subsequent cell spans, if no space exists.
-            const currentCellIndex: number = this.row.cells.indexOf(this);
-            for (let i: number = currentCellIndex + 1; i <= currentCellIndex + this.columnSpan; i++) {
-                this.row.cells.getCell(i).isCellMergeContinue = false;
-                this.row.cells.getCell(i).isRowMergeContinue = false;
-            }
-            this.columnSpan = 1;
-        }
+        // if (cancelSubsequentSpans) {
+        //     // Cancel all subsequent cell spans, if no space exists.
+        //     const currentCellIndex: number = this.row.cells.indexOf(this);
+        //     for (let i: number = currentCellIndex + 1; i <= currentCellIndex + this.columnSpan; i++) {
+        //         this.row.cells.getCell(i).isCellMergeContinue = false;
+        //         this.row.cells.getCell(i).isRowMergeContinue = false;
+        //     }
+        //     this.columnSpan = 1;
+        // }
         // Skip cells which were already covered by span map.
-        if (this.isCellMergeContinue || this.isRowMergeContinue) {
-            if (this.isCellMergeContinue && this.row.treegrid.style.allowHorizontalOverflow) {
-                if ((this.row.rowOverflowIndex > 0 && (this.row.cells.indexOf(this) !== this.row.rowOverflowIndex + 1)) ||
-                    (this.row.rowOverflowIndex === 0 && this.isCellMergeContinue)) {
-                    return result;
-                } else {
-                    return result;
-                }
-            }
-        }
+        // if (this.isCellMergeContinue || this.isRowMergeContinue) {
+        //     if (this.isCellMergeContinue && this.row.treegrid.style.allowHorizontalOverflow) {
+        //         if ((this.row.rowOverflowIndex > 0 && (this.row.cells.indexOf(this) !== this.row.rowOverflowIndex + 1)) ||
+        //             (this.row.rowOverflowIndex === 0 && this.isCellMergeContinue)) {
+        //             return result;
+        //         } else {
+        //             return result;
+        //         }
+        //     }
+        // }
         //bounds = this.adjustContentLayoutArea(bounds);
         this.drawCellBackground(graphics, bounds);
         const textPen: PdfPen = null;
@@ -251,20 +251,24 @@ export class PdfTreeGridCell {
             else {
                 imageBounds = innerLayoutArea;
             }
-            graphics.drawImage(this.image, imageBounds.x, imageBounds.y - 10, imageBounds.width, imageBounds.height);
+            graphics.drawImage(this.image, imageBounds.x, imageBounds.y - 5, imageBounds.width, imageBounds.height);
             let temp: string = null;
             // font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
             let customisedFont: PdfFont;
+            let fontStyles: PdfGanttCellStyle = this.fontStyle;
+            if (!fontStyles) {
+                fontStyles = this.style;
+            }
             const newFont: PdfStandardFont = new PdfStandardFont(
-                this.fontStyle.fontFamily, this.fontStyle.fontSize, this.fontStyle.fontStyle);
-            if (this.fontStyle.fontFamily) {
+                fontStyles.fontFamily, fontStyles.fontSize, fontStyles.fontStyle);
+            if (fontStyles.fontFamily) {
                 customisedFont = newFont;
             }
             else {
                 customisedFont = font;
             }
             let customisedBrush: PdfBrush;
-            if (this.fontStyle.fontBrush) {
+            if (fontStyles.fontBrush) {
                 customisedBrush = new PdfSolidBrush(this.fontStyle.fontBrush);
             }
             else {
@@ -273,7 +277,7 @@ export class PdfTreeGridCell {
             if (this.finishedDrawingCell) {
                 temp = (this.remainingString === '') ? this.remainingString : this.value as string;
                 /* eslint-disable-next-line */
-                graphics.drawString(temp, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment) + this.image.width, this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
+                graphics.drawString(temp, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
             } else {
                 /* eslint-disable-next-line */
                 graphics.drawString(this.remainingString, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, this.style.format);
@@ -399,9 +403,7 @@ export class PdfTreeGridCell {
             let p1: PointF = new PointF(bounds.x, bounds.y + bounds.height);
             let p2: PointF = new PointF(bounds.x, bounds.y);
             let pen: PdfPen = this.style.borders.left;
-            if (this.style.borders.left.dashStyle === PdfDashStyle.Solid) {
-                pen.lineCap = PdfLineCap.Square;
-            }
+            pen.lineCap = (this.style.borders.left.dashStyle === PdfDashStyle.Solid) ? PdfLineCap.Square : pen.lineCap;
             graphics.drawLine(pen, p1, p2);
             graphics.restore();
             p1 = new PointF(bounds.x + bounds.width, bounds.y);
@@ -411,17 +413,13 @@ export class PdfTreeGridCell {
                 p1 = new PointF(graphics.clientSize.width - (pen.width / 2), bounds.y);
                 p2 = new PointF(graphics.clientSize.width - (pen.width / 2), bounds.y + bounds.height);
             }
-            if (this.style.borders.right.dashStyle === PdfDashStyle.Solid) {
-                pen.lineCap = PdfLineCap.Square;
-            }
+            pen.lineCap = (this.style.borders.right.dashStyle === PdfDashStyle.Solid) ? PdfLineCap.Square : pen.lineCap;
             graphics.drawLine(pen, p1, p2);
             graphics.restore();
             p1 = new PointF(bounds.x, bounds.y);
             p2 = new PointF(bounds.x + bounds.width, bounds.y);
             pen = this.style.borders.top;
-            if (this.style.borders.top.dashStyle === PdfDashStyle.Solid) {
-                pen.lineCap = PdfLineCap.Square;
-            }
+            pen.lineCap = (this.style.borders.top.dashStyle === PdfDashStyle.Solid) ? PdfLineCap.Square : pen.lineCap;
             graphics.drawLine(pen, p1, p2);
             graphics.restore();
             p1 = new PointF(bounds.x + bounds.width, bounds.y + bounds.height);
@@ -431,9 +429,7 @@ export class PdfTreeGridCell {
                 p1 = new PointF(bounds.x + bounds.width, graphics.clientSize.height - pen.width / 2);
                 p2 = new PointF(bounds.x, graphics.clientSize.height - pen.width / 2);
             }
-            if (this.style.borders.bottom.dashStyle === PdfDashStyle.Solid) {
-                pen.lineCap = PdfLineCap.Square;
-            }
+            pen.lineCap = (this.style.borders.bottom.dashStyle === PdfDashStyle.Solid) ? PdfLineCap.Square : pen.lineCap;
             graphics.drawLine(pen, p1, p2);
             graphics.restore();
         }

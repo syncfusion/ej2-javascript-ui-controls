@@ -431,6 +431,28 @@ describe('Progress Button', () => {
             button.destroy();
         });
 
+        it('ProgressButton with iconPosition', () => {
+            const ele: any = createElement('button', { id: 'progressbtn25' });
+            document.body.appendChild(ele);
+            let button: any = new ProgressButton({ iconPosition: null }, '#progressbtn25');
+            expect(button.iconPosition).toEqual(null);
+            button.destroy();
+            button = new ProgressButton({ iconPosition: undefined }, '#progressbtn25');
+            expect(button.iconPosition).toEqual('Left');
+            button.destroy();
+        });
+
+        it('ProgressButton with spinSettings', () => {
+            const ele: any = createElement('button', { id: 'progressbtn25' });
+            document.body.appendChild(ele);
+            let button: any = new ProgressButton({ spinSettings: { position: null } }, '#progressbtn25');
+            expect(button.spinSettings.position).toEqual(null);
+            button.destroy();
+            button = new ProgressButton({ spinSettings: { position: undefined } }, '#progressbtn25');
+            expect(button.spinSettings.position).toEqual('Left');
+            button.destroy();
+        });
+
     });
 
 });

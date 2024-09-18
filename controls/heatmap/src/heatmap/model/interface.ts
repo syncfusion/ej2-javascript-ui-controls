@@ -23,7 +23,7 @@ export interface IThemeStyle {
     legendLabel: string;
     background: string;
     cellBorder: string;
-    cellTextColor: string;
+    cellTextColor?: string;
     toggledColor: string;
     emptyCellColor: string;
     palette: PaletteCollectionModel[];

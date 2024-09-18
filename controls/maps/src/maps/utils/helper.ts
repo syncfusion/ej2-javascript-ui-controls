@@ -155,7 +155,7 @@ export function convertGeoToPoint(latitude: number, longitude: number, factor: n
     const latitudeMinMax: MinMax = mapModel.baseMapBounds.latitude;
     let latRadian: number = degreesToRadians(latitude);
     const lngRadian: number = degreesToRadians(longitude);
-    const type: ProjectionType = mapModel.projectionType;
+    const type: ProjectionType = !isNullOrUndefined(mapModel.projectionType) ? mapModel.projectionType : 'Mercator';
     const size: number = (mapModel.isTileMap) ? Math.pow(2, 1) * 256 : (isNullOrUndefined(factor)) ?
         Math.min(mapSize.width, mapSize.height) : (Math.min(mapSize.width, mapSize.height) * factor);
     if (layer.geometryType === 'Normal') {
@@ -1025,25 +1025,52 @@ export function markerColorChoose(eventArgs: IMarkerRenderingEventArgs, data: ob
  */
 export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: object): IMarkerRenderingEventArgs {
     if (!isNullOrUndefined(eventArgs.shapeValuePath) && !isNullOrUndefined(data[eventArgs.shapeValuePath])) {
-        const shape: MarkerType = ((eventArgs.shapeValuePath.indexOf('.') > -1) ?
-            (getValueFromObject(data, eventArgs.shapeValuePath).toString()) as MarkerType :
-            data[eventArgs.shapeValuePath]);
-        eventArgs.shape = (shape.toString() !== '') ? shape : eventArgs.shape;
+        updateShape(eventArgs, data);
         if (data[eventArgs.shapeValuePath] === 'Image') {
-            eventArgs.imageUrl = (!isNullOrUndefined(eventArgs.imageUrlValuePath)) ?
-                ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? getValueFromObject(data, eventArgs.imageUrlValuePath).toString() : (!isNullOrUndefined(data[eventArgs.imageUrlValuePath]) ?
-                    data[eventArgs.imageUrlValuePath] : eventArgs.imageUrl)) : eventArgs.imageUrl;
+            updateImageUrl(eventArgs, data);
         }
-    }
-    else {
-        const shapes: MarkerType = (!isNullOrUndefined(eventArgs.shapeValuePath)) ? ((eventArgs.shapeValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.shapeValuePath).toString() as MarkerType) : eventArgs.shape) : eventArgs.shape;
-        eventArgs.shape = (shapes.toString() !== '') ? shapes : eventArgs.shape;
-        const shapeImage: string = (!isNullOrUndefined(eventArgs.imageUrlValuePath)) ?
-            ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? getValueFromObject(data, eventArgs.imageUrlValuePath).toString() as MarkerType : (!isNullOrUndefined(data[eventArgs.imageUrlValuePath]) ?
-                data[eventArgs.imageUrlValuePath] : eventArgs.imageUrl)) : eventArgs.imageUrl;
-        eventArgs.imageUrl = shapeImage;
+    } else {
+        updateShape(eventArgs, data);
+        updateImageUrl(eventArgs, data);
     }
     return eventArgs;
+}
+/**
+ *
+ * @param {any} path - contains a dot, it implies that the desired property is nested within the object.
+ * @param {any} data - The data object from which the value is to be retrieved. This can be any object that contains the properties specified in the path.
+ * @returns {any} - Returns the value of the property specified in the path.
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getValue(path: string, data: any): any {
+    return (path.indexOf('.') > -1) ? getValueFromObject(data, path).toString() : data[path as string];
+}
+/**
+ *
+ * @param {any} eventArgs - Specifies the event arguments
+ * @param {any} data - Specifies the data
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function updateShape(eventArgs: any, data: any): void {
+    if (!isNullOrUndefined(eventArgs.shapeValuePath)) {
+        const shape: MarkerType = getValue(eventArgs.shapeValuePath, data);
+        eventArgs.shape = (!isNullOrUndefined(shape) && shape.toString() !== '') ? shape : eventArgs.shape;
+    }
+}
+/**
+ *
+ * @param {any} eventArgs - Specifies the event arguments
+ * @param {any} data - Specifies the data
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function updateImageUrl(eventArgs: any, data: any): void {
+    if (!isNullOrUndefined(eventArgs.imageUrlValuePath)) {
+        const imageUrl: string = getValue(eventArgs.imageUrlValuePath, data);
+        eventArgs.imageUrl = (!isNullOrUndefined(imageUrl)) ? imageUrl : eventArgs.imageUrl;
+    }
 }
 
 /**
@@ -1143,7 +1170,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                         const longitude: number = (!isNullOrUndefined(markerSetting.longitudeValuePath)) ?
                             Number(getValueFromObject(markerData, markerSetting.longitudeValuePath)) :
                             !isNullOrUndefined(markerData['longitude']) ? parseFloat(markerData['longitude']) :
-                                !isNullOrUndefined(markerData['Latitude']) ? parseFloat(markerData['Latitude']) : 0;
+                                !isNullOrUndefined(markerData['Longitude']) ? parseFloat(markerData['Longitude']) : 0;
                         const latitude: number = (!isNullOrUndefined(markerSetting.latitudeValuePath)) ?
                             Number(getValueFromObject(markerData, markerSetting.latitudeValuePath)) :
                             !isNullOrUndefined(markerData['latitude']) ? parseFloat(markerData['latitude']) :
@@ -1856,9 +1883,9 @@ export function drawVerticalLine(maps: Maps, options: PathOption, size: Size, lo
  */
 export function drawStar(maps: Maps, options: PathOption, size: Size, location: MapLocation, element?: Element): Element {
     options.d = 'M ' + (location.x + size.width / 3) + ' ' + (location.y + size.height / 2) + ' L ' + (location.x - size.width / 2)
-        + ' ' + (location.y - size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y - size.height / 6) + ' L '
-        + (location.x - size.width / 3) + ' ' + (location.y + size.height / 2) + ' L ' + location.x + ' ' + (location.y - size.height / 2)
-        + ' L ' + (location.x + size.width / 3) + ' ' + (location.y + size.height / 2) + ' Z';
+        + ' ' + (location.y - size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y - size.height / 6)
+        + ' L ' + (location.x - size.width / 3) + ' ' + (location.y + size.height / 2) + ' L ' + location.x + ' ' +
+        (location.y - size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y + size.height / 2) + ' Z';
     return appendShape(maps.renderer.drawPath(options), element);
 }
 /**
@@ -2291,7 +2318,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
     const zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
     if (isNullOrUndefined(mapObject.currentShapeDataLength)) {
         mapObject.currentShapeDataLength = !isNullOrUndefined(layer.shapeData['features'])
-            ? layer.shapeData['features'].length : layer.shapeData['geometries'].length;
+            ? layer.shapeData['features'].length : !isNullOrUndefined(layer.shapeData['geometries']) ? layer.shapeData['geometries'].length : 0;
     }
     const size: Rect = (mapObject.totalRect && mapObject.legendSettings.visible) ? mapObject.totalRect : mapObject.mapAreaRect;
     const availSize: Size = mapObject.availableSize;
@@ -2362,7 +2389,8 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
                         scaleFactor = scale;
                         x = size.x + ((-(min['x']))
                             + ((size.width / 2) - (mapWidth / 2)));
-                    } else if (mapObject.availableSize.height !== mapObject.heightBeforeRefresh || mapObject.widthBeforeRefresh !== mapObject.availableSize.width) {
+                    } else if ((mapObject.availableSize.height !== mapObject.heightBeforeRefresh || mapObject.widthBeforeRefresh !== mapObject.availableSize.width)
+                               && !isNullOrUndefined(mapObject.translatePoint) && !isNullOrUndefined(mapObject.previousTranslate)) {
                         const cscaleFactor: number = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
                         let cmapWidth: number = mapWidth; cmapWidth *= cscaleFactor;
                         let cmapHeight: number = mapHeight; cmapHeight *= cscaleFactor;

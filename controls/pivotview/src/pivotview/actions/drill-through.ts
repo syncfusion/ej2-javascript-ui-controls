@@ -1,7 +1,7 @@
 import { PivotView } from '../base/pivotview';
 import { contentReady } from '../../common/base/constant';
 import * as events from '../../common/base/constant';
-import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo, INumberIndex } from '../../base';
+import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo } from '../../base';
 import { DrillThroughEventArgs } from '../../common/base/interface';
 import { DrillThroughDialog } from '../../common/popups/drillthrough-dialog';
 import { closest, EventHandler, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
@@ -136,28 +136,6 @@ export class DrillThrough {
                 this.triggerDialog(valueCaption, aggType, rawData, pivotValue, element);
             }
         }
-    }
-
-    private getCalcualtedFieldValue(indexArray: string[], rawData: IDataSet[]): IDataSet[] {
-        for (let k: number = 0; k < indexArray.length; k++) {
-            const colIndex: { [key: string]: Object } = {};
-            colIndex[indexArray[k as number]] = indexArray[k as number];
-            for (let i: number = 0; i < this.parent.dataSourceSettings.calculatedFieldSettings.length; i++) {
-                let indexValue: number;
-                for (let j: number = this.parent.engineModule.fields.length - 1; j >= 0; j--) {
-                    if (this.parent.engineModule.fields[j as number] ===
-                            this.parent.dataSourceSettings.calculatedFieldSettings[i as number].name) {
-                        indexValue = j;
-                        break;
-                    }
-                }
-                if (!isNullOrUndefined(rawData[k as number])) {
-                    const calculatedFeildValue: number = this.parent.engineModule.getAggregateValue([Number(indexArray[k as number])], colIndex as INumberIndex, indexValue, 'calculatedfield', false);
-                    rawData[k as number][this.parent.dataSourceSettings.calculatedFieldSettings[i as number].name] = (isNaN(calculatedFeildValue) && isNullOrUndefined(calculatedFeildValue)) ? '#DIV/0!' : calculatedFeildValue;
-                }
-            }
-        }
-        return rawData;
     }
 
     private frameData(eventArgs: DrillThroughEventArgs): DrillThroughEventArgs {

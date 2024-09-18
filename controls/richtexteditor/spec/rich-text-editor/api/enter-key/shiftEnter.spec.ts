@@ -43,6 +43,49 @@ describe('Shift Enter key support - When `BR` is configured', () => {
     });
 });
 
+describe('905285 - List Creation Misplacement When Pressing 1. + Space in Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = true;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px'
+        });
+        done();
+    });
+
+    it('List Creation Misplacement When Pressing 1. + Space in Rich Text Editor', function (): void {
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        new NodeSelection().setSelectionText(document, nodetext, nodetext, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<p><br><br></p>');
+        rteObj.inputElement.innerHTML = '<p>Abc<br>1.</p>';
+        let node: any = document.getElementsByTagName('p')[0];
+        let targetTextNode: any = node.childNodes[2];
+        new NodeSelection().setSelectionText(document, targetTextNode, targetTextNode, targetTextNode.length, targetTextNode.length);
+        let keyboardEventArgsSpace = { ...keyboardEventArgs };
+        keyboardEventArgsSpace.shiftKey = false;
+        keyboardEventArgsSpace.keyCode = 32;
+        keyboardEventArgsSpace.which = 32;
+        keyboardEventArgsSpace.code = 'Space';
+        keyboardEventArgsSpace.action = 'space';
+        (<any>rteObj).keyDown(keyboardEventArgsSpace);
+        expect(rteObj.inputElement.innerHTML).toBe('<p>Abc<br>1.</p>');
+    });
+
+    it('console error raised while keydown enter key br and shift enter key p', function (): void {
+        (<any>rteObj).enterKey = 'BR';
+        (<any>rteObj).shiftEnterKey = 'P';
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        new NodeSelection().setSelectionText(document, nodetext, nodetext, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<p>Abc<br>1.</p><p><br></p>');
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('Shift Enter key support - When `P` is configured', () => {
     let rteObj: RichTextEditor;
     keyboardEventArgs.shiftKey = true;
@@ -230,7 +273,7 @@ describe('Shift Enter and Backspace behavior', () => {
             expect(rteObj.inputElement.innerHTML).toBe('<p>Hello worl<br> d This is appended text.</p>');
             done(); 
         }, 100);
-       
+
     });
     afterAll(() => {
         destroy(rteObj);

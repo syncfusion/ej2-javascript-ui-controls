@@ -450,7 +450,7 @@ export class Edit {
                 } else if (isRemoteData(this.parent) ||
                        (this.parent.dataSource instanceof DataManager && this.parent.dataSource.adaptor instanceof RemoteSaveAdaptor )) {
                     const query: Query = this.parent.grid.query;
-                    if (this.parent['isGantt'] && !this.parent.loadChildOnDemand) {
+                    if (this.parent['isGantt'] && this.parent.loadChildOnDemand) {
                         this.updateCell(args, rowIndex);
                         setValue('isEdit', false, this.parent.grid);
                         this.afterCellSave(args, row);
@@ -798,14 +798,16 @@ export class Edit {
                     this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
                 }
             }
+            const selectedRecords: any = this.parent.getSelectedRecords()[0];
             if ((this.isAddedRowByMethod || (this.isAddedRowByContextMenu && this.parent.grid.selectedRowIndex !== -1)) &&
                 (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
                 this.addRowRecord = this.parent.flatData[this.parent.grid.selectedRowIndex];
                 if (this.parent.enableVirtualization && this.isAddedRowByContextMenu) {
                     this.addRowRecord = this.parent.getCurrentViewRecords()[this.addRowIndex];
                 }
-            } else {
-                this.addRowRecord = this.parent.getSelectedRecords()[0];
+            }
+            else if (!isNullOrUndefined(selectedRecords)) {
+                this.addRowRecord = selectedRecords;
             }
         }
         if (this.isAddedRowByMethod && args.index !== 0) {

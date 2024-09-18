@@ -1,5 +1,5 @@
 import { Smithchart, ISmithchartLoadedEventArgs, TooltipRender } from '../../../src/smithchart/index';
-import { createElement, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, remove, isNullOrUndefined, EmitType } from '@syncfusion/ej2-base';
 import { Tooltip} from '@syncfusion/ej2-svg-base';
 import { MouseEvents } from '../base/events.spec';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
@@ -24,6 +24,7 @@ Smithchart.Inject(TooltipRender);
         let smithchart: Smithchart;
         let ele: HTMLDivElement;
         let trigger: MouseEvents = new MouseEvents();
+        let loaded: EmitType<ISmithchartLoadedEventArgs>;
         let spec: Element;
         beforeAll(() => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
@@ -188,6 +189,73 @@ Smithchart.Inject(TooltipRender);
             smithchart.legendSettings.toggleVisibility = true;
             smithchart.refresh();
         });
+        it('chart tooltip format checking with keyboard navigation', (done: Function) => {
+            smithchart.loaded = (args: Object): void => {
+                 const element = document.getElementById('container_Series0_Points0_Marker0');
+                 trigger.keyboardEvent(element,'keydown','Space', 'Space');
+                 trigger.keyboardEvent(element,'keyup',  'ArrowUp', 'ArrowUp');
+                 trigger.keyboardEvent( element,'keydown', 'Escape', 'Escape');
+                 trigger.keyboardEvent( element,'keyup', 'ArrowDown', 'ArrowDown');
+                 trigger.keyboardEvent( element,'keyup', 'ArrowLeft', 'ArrowLeft');
+                 trigger.keyboardEvent( element, 'keyup','ArrowRight', 'ArrowRight');
+                 trigger.keyboardEvent( element,'keyup', 'Tab', 'Tab');
+                 expect(element !== null).toBe(true);
+                 done();
+             };
+
+             smithchart.refresh();
+         });
+         it('chart tooltip format checking with keyboard navigation', (done: Function) => {
+            smithchart.loaded = (args: Object): void => {
+                 const element = document.getElementById('container_svg');
+                 expect(element.getAttribute('width') == '400').toBe(true);
+                 done();
+             };
+             smithchart.width = '400px';
+             smithchart.refresh();
+         });
+         it('chart tooltip format checking with legend keyboard navigation', (done: Function) => {
+            smithchart.loaded = (args: Object): void => {
+                 const element = document.getElementById('container_Series0_Points0_Marker0');
+                 trigger.keyboardEvent(element,'keydown','Space', 'Space');
+                 trigger.keyboardEvent( element,'keyup', 'Tab', 'Tab');
+                 trigger.keyboardEvent( element,'keyup', 'Tab', 'Tab');
+                 trigger.keyboardEvent( element,'keyup', 'Tab', 'Tab');
+                 expect(element !== null).toBe(true);
+                 done();
+             };
+             smithchart.refresh();
+         });
+        it('chart tooltip format checking with 2nd legend keyboard navigation', (done: Function) => {
+            smithchart.loaded = (args: Object): void => {
+                 const element = document.getElementById('container_svg_Legend0');
+                 trigger.keyboardEvent(element, 'keydown', 'Space', 'Space');
+                 trigger.keyboardEvent(element, 'keyup', 'ArrowLeft', 'ArrowLeft');
+                 expect(element !== null).toBe(true);
+                 done();
+             };
+             smithchart.refresh();
+         });
+         it('chart tooltip format checking with keyboard marker navigation', (done: Function) => {
+            smithchart.loaded = (args: Object): void => {
+                 const element = document.getElementById('container_Series0_Points0_Marker0');
+                 trigger.keyboardEvent(element,'keydown','Space', 'Space');
+                 trigger.keyboardEvent( element,'keyup', 'Tab', 'Tab');
+                 trigger.keyboardEvent( element,'keyup', 'Tab', 'Tab');
+                 trigger.keyboardEvent( element,'keyup', 'ArrowDown', 'ArrowDown');
+                 trigger.keyboardEvent( element,'keyup', 'Tab', 'Tab');
+                 expect(element !== null).toBe(true);
+                 done();
+             };
+             smithchart.series[0].marker = {
+                 shape: 'Circle',
+                 visible: true,
+                 border: {
+                     width: 2,
+                 }
+             };
+             smithchart.refresh();
+         });
     });
     it('memory leak', () => {
         profile.sample();

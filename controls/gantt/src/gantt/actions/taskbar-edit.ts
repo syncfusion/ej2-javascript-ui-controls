@@ -47,6 +47,9 @@ export class TaskbarEdit extends DateProcessor {
     private editTooltip: EditTooltip;
     private isDragged: boolean = false;
     private canDrag: boolean;
+    private mainElement: Element;
+    private currentSegmentIndex: number;
+    private progressValue: number;
     /** @private */
     public tapPointOnFocus: boolean;
     private editElement: Element = null;
@@ -300,7 +303,17 @@ export class TaskbarEdit extends DateProcessor {
                 !target.classList.contains('e-connectorpoint-right')) {
                 const currentRecord: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
                 if (!isNullOrUndefined(currentRecord.ganttProperties.segments) && currentRecord.ganttProperties.segments.length > 0) {
-                    element = parentsUntil(target, cls.childTaskBarInnerDiv);
+                    if (target.classList.contains('e-progressbar-handler-after')) {
+                        for (let i: number = 0; i < currentRecord.ganttProperties.segments.length; i++) {
+                            if (currentRecord.ganttProperties.segments[i as number].showProgress) {
+                                element = element.querySelectorAll('.e-segmented-taskbar')[i as number];
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        element = parentsUntil(target, cls.childTaskBarInnerDiv);
+                    }
                 }
             }
         }
@@ -331,7 +344,7 @@ export class TaskbarEdit extends DateProcessor {
                     (resizeElement as HTMLElement).style.setProperty('left', ((!isNullOrUndefined(ganttprop.segments) ? parentleft + 'px' : (ganttprop.left) + 'px')));
                 }
                 else {
-                    (resizeElement as HTMLElement).style.setProperty('left', (((!isNullOrUndefined(ganttprop.segments) && ganttprop.segments.length !== 0) ? parentleft + ganttprop.segments[Number(currentindex)].left + 'px' : (ganttprop.left) + 'px')));
+                    (resizeElement as HTMLElement).style.setProperty('left', (((!isNullOrUndefined(ganttprop.segments) && ganttprop.segments.length > 1) ? parentleft + ganttprop.segments[Number(currentindex)].left + 'px' : (ganttprop.left) + 'px')));
                 }
                 const resizeTable: HTMLElement = this.parent.createElement('table');
                 const resizetableBody: HTMLElement = this.parent.createElement('tbody');
@@ -356,10 +369,14 @@ export class TaskbarEdit extends DateProcessor {
                     (cloneTaskBar as HTMLElement).style.setProperty('position', 'absolute');
                     if (currentRecord.hasChildRecords && !currentRecord.ganttProperties.isAutoSchedule) {
                         const containerPosition: { top: number, left: number } =
-                                   this.parent.getOffsetRect(this.parent.ganttChartModule.chartBodyContainer);
+                            this.parent.getOffsetRect(this.parent.ganttChartModule.chartBodyContainer);
                         const taskbarPosition: { top: number, left: number } = this.parent.getOffsetRect(this.editElement as HTMLElement);
-                        (cloneTaskBar as HTMLElement).style.setProperty(this.parent.enableRtl ?
-                            'right' : 'left', Math.abs(taskbarPosition.left - containerPosition.left + Math.abs(this.parent.ganttChartModule.scrollElement.scrollLeft)) + 'px');
+                        if (this.editElement.classList.contains('e-manualparent-main-container')) {
+                            (cloneTaskBar as HTMLElement).style.setProperty('left', (currentRecord.ganttProperties.left - currentRecord.ganttProperties.autoLeft) + 'px');
+                        } else {
+                            (cloneTaskBar as HTMLElement).style.setProperty(this.parent.enableRtl ?
+                                'right' : 'left', Math.abs(taskbarPosition.left - containerPosition.left + Math.abs(this.parent.ganttChartModule.scrollElement.scrollLeft)) + 'px');
+                        }
                     }
                     (cloneTaskBar as HTMLElement).style.setProperty('top', 0 + 'px');
                     createTable = this.parent.createElement('table');
@@ -430,8 +447,9 @@ export class TaskbarEdit extends DateProcessor {
         if (this.parent.readOnly) {
             return;
         }
+        const record: IGanttData = element ? this.parent.ganttChartModule.getRecordByTaskBar(element) :
+            secondElement ? this.parent.ganttChartModule.getRecordByTaskBar(secondElement) : null;
         if (this.parent.enableMultiTaskbar && element) {
-            const record: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
             const parentRecord: IGanttData = this.parent.getParentTask(record.parentItem);
             if (!isNullOrUndefined(parentRecord)) {
                 if (!parentRecord.expanded) {
@@ -445,7 +463,12 @@ export class TaskbarEdit extends DateProcessor {
                 addClass([element.querySelector('.' + cls.taskBarLeftResizer)], [cls.leftResizeGripper]);
                 addClass([element.querySelector('.' + cls.taskBarRightResizer)], [cls.rightResizeGripper]);
                 if (isShowProgressResizer) {
-                    const progressElement: HTMLElement = element.querySelector('.' + cls.childProgressResizer) as HTMLElement;
+                    const progressElement: HTMLElement = (record && record.ganttProperties.segments &&
+                                                        record.ganttProperties.segments.length > 0) ?
+                        this.parent.getRowByIndex(this.parent.enableVirtualization ? this.parent.currentViewData.indexOf(record)
+                            : this.parent.flatData.indexOf(record)).
+                            querySelectorAll('.' + cls.childProgressResizer)[0] as HTMLElement :
+                        element.querySelector('.' + cls.childProgressResizer) as HTMLElement;
                     if (!isNullOrUndefined(progressElement)) {
                         addClass([progressElement], [cls.progressResizeGripper]);
                         progressElement.style.top = '3px';
@@ -481,8 +504,11 @@ export class TaskbarEdit extends DateProcessor {
             if (secondElement.querySelector('.' + cls.taskBarLeftResizer)) {
                 removeClass([secondElement.querySelector('.' + cls.taskBarLeftResizer)], [cls.leftResizeGripper]);
                 removeClass([secondElement.querySelector('.' + cls.taskBarRightResizer)], [cls.rightResizeGripper]);
-                if (secondElement.querySelector('.' + cls.childProgressResizer)) {
-                    removeClass([secondElement.querySelector('.' + cls.childProgressResizer)], [cls.progressResizeGripper]);
+                const progressElement: Element = (record && record.ganttProperties.segments && record.ganttProperties.segments.length > 0) ?
+                    this.parent.getRowByIndex(this.parent.enableVirtualization ? this.parent.currentViewData.indexOf(record) :
+                        this.parent.flatData.indexOf(record)) : secondElement;
+                if (progressElement.querySelector('.' + cls.childProgressResizer)) {
+                    removeClass([progressElement.querySelector('.' + cls.childProgressResizer)], [cls.progressResizeGripper]);
                 }
             }
             if (!isNullOrUndefined(this.parent.taskFields.dependency)
@@ -538,7 +564,7 @@ export class TaskbarEdit extends DateProcessor {
         ) {
             action = 'ManualParentDrag';
         } else if (data) {
-            action = data.hasChildRecords ? 'ParentDrag'
+            action = data.hasChildRecords ? data[this.parent.taskFields.manual] ? '' : 'ParentDrag'
                 : data.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
         }
         return action;
@@ -976,7 +1002,7 @@ export class TaskbarEdit extends DateProcessor {
                 if (args.taskBarEditAction === 'ConnectorPointRightDrag' || args.taskBarEditAction === 'ConnectorPointLeftDrag'
                     || args.taskBarEditAction === 'LeftResizing' || args.taskBarEditAction === 'RightResizing'
                     || args.taskBarEditAction === 'ProgressResizing' || args.taskBarEditAction === 'ChildDrag' || args.taskBarEditAction === 'ParentDrag' ||
-                    args.taskBarEditAction === 'MilestoneDrag' || args.taskBarEditAction === 'ManualParentDrag') {
+                    args.taskBarEditAction === 'MilestoneDrag' || args.taskBarEditAction === 'ManualParentDrag' || args.taskBarEditAction === 'ParentResizing') {
                     this.parent.showIndicator = false;
                     if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent']('Edit')) {
                         if (this.parent.undoRedoModule['redoEnabled']) {
@@ -1045,8 +1071,26 @@ export class TaskbarEdit extends DateProcessor {
             if (!this.oldData) {
                 this.oldData = extend([], [], [this.taskBarEditRecord], true)[0];
             }
+            let segmentIndex: number = this.segmentIndex !== -1 ? this.segmentIndex : null;
             if (this.taskBarEditAction === 'ProgressResizing') {
-                this.performProgressResize(e);
+                this.mainElement = parentsUntil(this.taskBarEditElement, cls.taskBarMainContainer);
+                if (this.taskBarEditRecord.ganttProperties.segments && this.taskBarEditRecord.ganttProperties.segments.length > 0) {
+                    segmentIndex = -1;
+                    for (let i: number = 0; i < this.taskBarEditRecord.ganttProperties.segments.length; i++) {
+                        const resizeGripper: HTMLCollectionOf<Element> = document.getElementsByClassName('e-child-progress-resizer e-progress-resize-gripper')[0]['style'];
+                        const currentWidth: number = (this.parent.enableRtl ? parseInt(resizeGripper['right'], 10) - 8 : parseInt(resizeGripper['left'], 10) + 8);
+                        if (currentWidth < this.taskBarEditRecord.ganttProperties.segments[i as number].width && i === 0) {
+                            segmentIndex = i;
+                        }
+                        if (this.taskBarEditRecord.ganttProperties.segments[i + 1] &&
+                            currentWidth < this.taskBarEditRecord.ganttProperties.segments[i + 1].width +
+                            this.taskBarEditRecord.ganttProperties.segments[i + 1].left && currentWidth >
+                            this.taskBarEditRecord.ganttProperties.segments[i + 1].left) {
+                            segmentIndex = i + 1;
+                        }
+                    }
+                }
+                this.performProgressResize(e, segmentIndex);
             } else if (this.taskBarEditAction === 'LeftResizing') {
                 this.enableLeftResizing(e);
             } else if (this.taskBarEditAction === 'RightResizing' || this.taskBarEditAction === 'ParentResizing') {
@@ -1117,10 +1161,13 @@ export class TaskbarEdit extends DateProcessor {
             else {
                 this.leftValue = this.taskBarEditRecord.ganttProperties.left;
             }
+            this.currentSegmentIndex = segmentIndex;
             this.setItemPosition();
             this.updateEditedItem();
             this.tooltipValue = (e.type === 'touchmove' || e.type === 'touchstart' || e.type === 'touchend') ? e['changedTouches'][0].pageX : e.pageX;
-            this.editTooltip.updateTooltip(this.segmentIndex);
+            if (!this.taskBarEditRecord.ganttProperties.segments || segmentIndex !== -1) {
+                this.editTooltip.updateTooltip(segmentIndex);
+            }
             if (isMouseClick) {
                 this.taskBarEditedAction(e);
             }
@@ -1320,17 +1367,38 @@ export class TaskbarEdit extends DateProcessor {
         }
     }
 
+    // eslint-disable-next-line
+    private validateProgressWidth(item: ITaskData, progressWidth: number, totalTaskWidth: number): { progressWidth: number; totalTaskWidth: number;} {
+        let reduceWidth: number = 0;
+        if (this.currentSegmentIndex !== -1  && item.segments) {
+            const startIndex: number  = this.currentSegmentIndex >= this.segmentIndex ? 0 : this.currentSegmentIndex !== 0 ?
+                this.currentSegmentIndex : -1;
+            const endIndex: number = this.currentSegmentIndex >= this.segmentIndex ? this.currentSegmentIndex : this.segmentIndex;
+            if (startIndex !== -1) {
+                for (let i: number = startIndex; i < endIndex; i++) {
+                    reduceWidth = (item.segments[i + 1].left) - (item.segments[i as number].left + item.segments[i as number].width);
+                    progressWidth = progressWidth - reduceWidth;
+                }
+            }
+        }
+        if (item.segments && item.segments.length > 0) {
+            totalTaskWidth = this.splitTasksDuration(item.segments) * this.parent.perDayWidth;
+        }
+        return {progressWidth, totalTaskWidth};
+    }
+
     /**
      * To update left and width while perform progress resize operation.
      *
      * @param {PointerEvent} e .
+     * @param {number} segmentIndex .
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
-    private performProgressResize(e: PointerEvent): void {
+    private performProgressResize(e: PointerEvent, segmentIndex?: number): void {
         const item: ITaskData = this.taskBarEditRecord.ganttProperties;
         let diffrenceWidth: number = 0;
+        const prevProgress: number = item.progressWidth;
         if (this.mouseDownX > this.mouseMoveX) {
             if (this.mouseMoveX > item.left &&
                 (this.mouseMoveX < (item.left + item.width)) && item.left > 0) {
@@ -1359,7 +1427,13 @@ export class TaskbarEdit extends DateProcessor {
         let widthValue: number = item.progressWidth > item.width ?
             item.width : item.progressWidth;
         widthValue = item.progressWidth < 0 ? 0 : item.progressWidth;
-        this.parent.setRecordValue('progressWidth', widthValue, item, true);
+        if (segmentIndex !== -1 || !segmentIndex) {
+            this.parent.setRecordValue('progressWidth', widthValue, item, true);
+        }
+        else {
+            this.parent.setRecordValue('progressWidth', prevProgress, item, true);
+        }
+        this.progressValue = widthValue;
         const diff: number = item.width - item.progressWidth;
         if (diff <= 4) {
             this.progressBorderRadius = 4 - diff;
@@ -1378,7 +1452,7 @@ export class TaskbarEdit extends DateProcessor {
     private enableLeftResizing(e: PointerEvent): void {
         const item: ITaskData = this.taskBarEditRecord.ganttProperties;
         let differenceWidth: number = 0;
-        if (this.taskBarEditElement.classList.contains('e-segmented-taskbar')) {
+        if (this.taskBarEditElement.classList.contains('e-segmented-taskbar') && item.segments.length > 1) {
             this.enableSplitTaskLeftResize(item);
         } else {
             if (this.mouseDownX > this.mouseMoveX) {
@@ -1408,6 +1482,9 @@ export class TaskbarEdit extends DateProcessor {
                     this.parent.setRecordValue('left', this.previousItem.left + differenceWidth, item, true);
                     this.parent.setRecordValue('width', 3, item, true);
                 }
+            }
+            if (item.segments && item.segments.length === 1) {
+                item.segments[0].width = item.width;
             }
             this.updateEditPosition(e, item);
             this.parent.setRecordValue(
@@ -1551,7 +1628,7 @@ export class TaskbarEdit extends DateProcessor {
     private enableRightResizing(e: PointerEvent): void {
         const item: ITaskData = this.taskBarEditRecord.ganttProperties;
         let differenceWidth: number = 0;
-        if (this.taskBarEditElement.classList.contains('e-segmented-taskbar')) {
+        if (this.taskBarEditElement.classList.contains('e-segmented-taskbar') && item.segments.length > 1) {
             const segments: ITaskSegment[] = this.taskBarEditRecord.ganttProperties.segments.map((e: ITaskSegment) => ({ ...e }));
             const segment: ITaskSegment = segments[this.segmentIndex];
             if (this.mouseDownX > this.mouseMoveX) {
@@ -1613,6 +1690,9 @@ export class TaskbarEdit extends DateProcessor {
                     this.parent.setRecordValue('width', this.previousItem.width + differenceWidth, item, true);
                 }
             }
+            if (item.segments && item.segments.length === 1) {
+                item.segments[0].width = item.width;
+            }
             this.updateEditPosition(e, item);
         }
     }
@@ -1631,12 +1711,18 @@ export class TaskbarEdit extends DateProcessor {
         let startDate: Date;
         switch (this.taskBarEditAction) {
         case 'ProgressResizing':
+        {
+            const progressWidth: number = item.progressWidth;
+            const totalTaskWidth: number = item.width;
+            const updatedValues: {progressWidth: number, totalTaskWidth: number} = this.validateProgressWidth(item, progressWidth,
+                                                                                                              totalTaskWidth);
             this.parent.setRecordValue(
                 'progress',
-                this.getProgressPercent(item.width, item.progressWidth),
+                this.getProgressPercent(updatedValues.totalTaskWidth, updatedValues.progressWidth),
                 item,
                 true);
             break;
+        }
         case 'LeftResizing':
             if (this.segmentIndex === -1) {
                 left = this.getRoundOffStartLeft(item, this.roundOffDuration);
@@ -1691,9 +1777,9 @@ export class TaskbarEdit extends DateProcessor {
             }
             break;
         }
-        if(!isNullOrUndefined(this.taskBarEditRecord.ganttProperties.segments)){
-            this.parent.chartRowsModule.updateSegment(this.taskBarEditRecord.ganttProperties.segments,this.taskBarEditRecord.ganttProperties.taskId);
-
+        if (!isNullOrUndefined(this.taskBarEditRecord.ganttProperties.segments)) {
+            this.parent.chartRowsModule.updateSegment(this.taskBarEditRecord.ganttProperties.segments,
+                                                      this.taskBarEditRecord.ganttProperties.taskId);
         }
     }
     private updateChildDrag(item: ITaskData): void {
@@ -1864,7 +1950,7 @@ export class TaskbarEdit extends DateProcessor {
         const tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
         let totalLeft: number = ganttRecord.width + ganttRecord.left;
-        if (this.segmentIndex !== -1) {
+        if (this.segmentIndex !== -1 && ganttRecord.segments.length > 1) {
             const segment: ITaskSegment = ganttRecord.segments[this.segmentIndex];
             totalLeft = totalLeft - ganttRecord.width + segment.width + segment.left;
         }
@@ -2043,7 +2129,7 @@ export class TaskbarEdit extends DateProcessor {
         const traceChildTaskBar: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.traceChildTaskBar);
         const childProgressResizer: HTMLElement =
-            this.taskBarEditElement.querySelector('.' + cls.childProgressResizer);
+        segmentedTaskBarContainer ? parentsUntil(this.taskBarEditElement, cls.taskBarMainContainer).querySelector('.' + cls.childProgressResizer) : this.taskBarEditElement.querySelector('.' + cls.childProgressResizer);
         const taskBarRightResizer: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.taskBarRightResizer);
         const traceParentTaskBar: HTMLElement =
@@ -2110,15 +2196,21 @@ export class TaskbarEdit extends DateProcessor {
                         const segment: ITaskSegment = item.segments[i as number];
                         const segmentElement: HTMLElement = segmentedTasks[i as number] as HTMLElement;
                         (segmentElement as HTMLElement).style.width = (segment.width) + 'px';
-                        if (i === 0){
+                        if (item.segments.length === 1) {
                             resizeLine.style.width = (segment.width) + 'px';
-                            resizeLine.style.setProperty(position, (segment.left + item.left) + 'px');
-                        }
-                        if (this.parent.enableRtl) {
-                            (segmentElement as HTMLElement).style.right = (segment.left) + 'px';
+                            resizeLine.style.setProperty(position, (item.left) + 'px');
                         }
                         else {
-                            (segmentElement as HTMLElement).style.left = (segment.left) + 'px';
+                            if (i === 0) {
+                                resizeLine.style.width = (segment.width) + 'px';
+                                resizeLine.style.setProperty(position, (segment.left + item.left) + 'px');
+                            }
+                            if (this.parent.enableRtl) {
+                                (segmentElement as HTMLElement).style.right = (segment.left) + 'px';
+                            }
+                            else {
+                                (segmentElement as HTMLElement).style.left = (segment.left) + 'px';
+                            }
                         }
                     }
                 }
@@ -2143,7 +2235,7 @@ export class TaskbarEdit extends DateProcessor {
                 childProgressResizer.style.display = 'none';
                 traceChildProgressBar.style.display = 'none';
             }
-            if(traceConnectorPointRight && this.taskBarEditAction === 'ProgressResizing'){
+            if (traceConnectorPointRight && this.taskBarEditAction === 'ProgressResizing') {
                 traceConnectorPointRight.style.display = 'none';
             }
             if (this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone) {
@@ -2163,11 +2255,17 @@ export class TaskbarEdit extends DateProcessor {
                 }
                 else {
                     this.updateSegmentProgress(this.taskBarEditRecord.ganttProperties);
+                    const progressElements: NodeListOf<Element> = taskBarMainContainer.querySelectorAll('.e-gantt-child-progressbar');
+                    for (let count: number = 0; count < progressElements.length; count++) {
+                        if (item.segments[count as number] && item.segments[count as number].progressWidth && this.segmentIndex !== count) {
+                            progressElements[count as number]['style'].display = 'block';
+                            (progressElements[count as number] as HTMLElement).style.width = item.segments[count as number].progressWidth + 'px';
+                        }
+                    }
                     traceChildProgressBar.style.width = item.segments[this.segmentIndex as number].progressWidth + 'px';
                     traceChildProgressBar.style.borderBottomRightRadius = this.progressBorderRadius + 'px';
                     traceChildProgressBar.style.borderTopRightRadius = this.progressBorderRadius + 'px';
-                    const width: number = this.parent.enableRtl ? item.segments[this.segmentIndex as number].progressWidth + 8 :
-                        item.segments[this.segmentIndex as number].progressWidth - 8;
+                    const width: number = this.parent.enableRtl ? this.progressValue + 8 : this.progressValue - 8;
                     childProgressResizer.style.setProperty(position, width + 'px');
                 }
             } else if (this.taskBarEditAction === 'RightResizing' && !isNullOrUndefined(traceChildTaskBar)) {
@@ -2194,8 +2292,9 @@ export class TaskbarEdit extends DateProcessor {
             } else if (this.taskBarEditAction === 'ParentResizing') {
                 resizeLine.style.width = (item.width) + 'px';
                 resizeLine.style.setProperty(position, item.left + 'px');
-                manualParentTaskbar.style.width = manualTaskbar.style.width = (item.width) + 'px';
-                manualParentRight.style.setProperty(position, item.width - manualParentLeft.offsetLeft + 'px');
+                manualParentTaskbar.style.setProperty('width', (item.width) + 'px');
+                manualTaskbar.style.setProperty('width', (item.width) + 'px');
+                this.editElement.parentElement.style.setProperty('width', (item.width) + 'px');
             } else if (this.taskBarEditAction === 'ManualParentDrag') {
                 resizeLine.style.width = (item.width) + 'px';
                 resizeLine.style.setProperty(position, item.left + 'px');
@@ -2389,15 +2488,27 @@ export class TaskbarEdit extends DateProcessor {
         const segments: ITaskSegment[] = taskData.segments;
         let fixedWidth: boolean = true;
         const totalTaskWidth: number = this.splitTasksDuration(segments) * this.parent.perDayWidth;
-        let totalProgressWidth: number = this.parent.dataOperation.getProgressWidth(totalTaskWidth, taskData.progress);
+        const progress: number = Math.ceil((taskData.progressWidth / totalTaskWidth) * 100);
+        let totalProgressWidth: number = (totalTaskWidth * progress) / 100;
+        const tempWidth: number = totalProgressWidth;
         for (let i: number = 0; i < segments.length; i++) {
             const segment: ITaskSegment = segments[i as number];
+            if (i !== 0) {
+                if (segment.left <= tempWidth){
+                    const newWidth: number = (tempWidth - segment.left);
+                    totalProgressWidth = newWidth;
+                }
+                else{
+                    totalProgressWidth = 0;
+                }
+            }
             delete segment.progressWidth;
             if (totalProgressWidth > 0 && totalProgressWidth > segment.width) {
                 totalProgressWidth = totalProgressWidth - segment.width;
                 segment.progressWidth = segment.width;
                 segment.showProgress = false;
-            } else if (fixedWidth) {
+            }
+            else if (fixedWidth) {
                 segment.progressWidth = totalProgressWidth;
                 segment.showProgress = true;
                 totalProgressWidth = totalProgressWidth - segment.width;
@@ -2432,7 +2543,10 @@ export class TaskbarEdit extends DateProcessor {
                 let droppedRecord: IGanttData;
                 this.updatePosition = false;
                 this.draggedRecordMarginTop = this.taskBarEditElement.style.marginTop;
-                const row: Element = closest(this.droppedTarget, 'tr.' + cls.chartRow);
+                let row: Element;
+                if (!isNullOrUndefined(this.droppedTarget)) {
+                    row = closest(this.droppedTarget, 'tr.' + cls.chartRow);
+                }
                 if (row) {
                     const recordIndex: number = parseInt(row.getAttribute('data-rowindex'), 10);
                     droppedRecord = this.parent.flatData[recordIndex as number];
@@ -2479,9 +2593,13 @@ export class TaskbarEdit extends DateProcessor {
         }
         if (args.taskBarEditAction === 'ProgressResizing') {
             if (args.previousData.progress !== taskData.progress) {
+                const progressWidth: number = args.data.ganttProperties.progressWidth;
+                const totalTaskWidth: number = args.data.ganttProperties.width;
+                /* eslint-disable-next-line */
+                const updatedValues: {progressWidth: number, totalTaskWidth: number} = this.validateProgressWidth(args.data.ganttProperties, progressWidth, totalTaskWidth);
                 this.parent.setRecordValue(
                     'progress',
-                    this.getProgressPercent(taskData.width, taskData.progressWidth),
+                    this.getProgressPercent(updatedValues.totalTaskWidth, updatedValues.progressWidth),
                     taskData,
                     true);
                 if (ganttRecord.parentItem) {

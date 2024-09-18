@@ -3,7 +3,7 @@ import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs, ExtendedPr
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, updateSortCollection } from '../index';
 import { SortOptions, SortDescriptor, LocaleNumericSettings, FilterPredicateOptions, applyPredicates } from '../../workbook/index';
 import { checkIsNumberAndGetNumber } from '../../workbook/common/internalization';
-import { filterRangeAlert, setFilteredCollection, beforeDelete, sheetsDestroyed, initiateFilter, duplicateSheetFilterHandler } from '../../workbook/common/event';
+import { filterRangeAlert, setFilteredCollection, beforeDelete, sheetsDestroyed, initiateFilter, duplicateSheetFilterHandler, moveSheetHandler } from '../../workbook/common/event';
 import { FilterCollectionModel, getRangeIndexes, ColumnModel, beforeInsert, parseLocaleNumber, ChartModel } from '../../workbook/index';
 import { getIndexesFromAddress, getSwapRange, getColumnHeaderText, CellModel, getDataRange, isCustomDateTime } from '../../workbook/index';
 import { getData, Workbook, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet, inRange } from '../../workbook/index';
@@ -11,9 +11,10 @@ import { SheetModel, sortImport, clear, getColIndex, SortCollectionModel, setRow
 import { beginAction, FilterOptions, BeforeFilterEventArgs, FilterEventArgs, ClearOptions, getValueFromFormat } from '../../workbook/index';
 import { isFilterHidden, isNumber, DateFormatCheckArgs, checkDateFormat, isDateTime, dateToInt, getFormatFromType } from '../../workbook/index';
 import { getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
-import { L10n, detach, classList, getNumericObject, getNumberDependable, defaultCurrencyCode } from '@syncfusion/ej2-base';
+import { L10n, detach, classList, getNumericObject } from '@syncfusion/ej2-base';
 import { Internationalization } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
+import { refreshFilterCellsOnResize, ICellRenderer } from '../common/index';
 import { IFilterArgs, PredicateModel, ExcelFilterBase, beforeFltrcMenuOpen, CheckBoxFilterBase, getUid } from '@syncfusion/ej2-grids';
 import { filterCmenuSelect, filterCboxValue, filterDialogCreated, filterDialogClose, createCboxWithWrap } from '@syncfusion/ej2-grids';
 import { parentsUntil, toogleCheckbox, fltrPrevent, beforeCustomFilterOpen } from '@syncfusion/ej2-grids';
@@ -71,6 +72,12 @@ export class Filter {
         if (this.treeViewObj) { this.treeViewObj.destroy(); } this.treeViewObj = null;
         if (this.treeViewEle) { this.treeViewEle.remove(); } this.treeViewEle = null;
         if (this.cBox) { this.cBox.remove(); this.cBox = null; }
+        const filterPopupElement: NodeListOf<Element> = document.querySelectorAll('.e-filter-popup');
+        if (filterPopupElement) {
+            filterPopupElement.forEach(function (element: Element): void {
+                element.remove();
+            });
+        }
         this.parent = null;
     }
 
@@ -102,6 +109,8 @@ export class Filter {
         this.parent.on(duplicateSheetFilterHandler, this.duplicateSheetFilterHandler, this);
         this.parent.on(fltrPrevent, this.beforeFilteringHandler, this);
         this.parent.on(beforeCustomFilterOpen, this.customFilterOpen, this);
+        this.parent.on(moveSheetHandler, this.moveSheetHandler, this);
+        this.parent.on(refreshFilterCellsOnResize, this.refreshFilterCellsOnResize, this);
     }
 
     private removeEventListener(): void {
@@ -133,6 +142,8 @@ export class Filter {
             this.parent.off(duplicateSheetFilterHandler, this.duplicateSheetFilterHandler);
             this.parent.off(fltrPrevent, this.beforeFilteringHandler);
             this.parent.off(beforeCustomFilterOpen, this.customFilterOpen);
+            this.parent.off(moveSheetHandler, this.moveSheetHandler);
+            this.parent.off(refreshFilterCellsOnResize, this.refreshFilterCellsOnResize);
         }
     }
 
@@ -802,18 +813,18 @@ export class Filter {
         return null;
     }
 
-    private initCboxList(args: FilterCheckboxArgs, excelFilter: ExcelFilterBase): void {
+    private initCboxList(args: FilterCheckboxArgs, excelFilter: ExcelFilterBase, filterData: { [key: string]: Object }[]): void {
         const field: string = args.column.field;
         const sortedData: { [key: string]: string }[] = new DataManager(
             args.dataSource).executeLocal(new Query().sortBy(field + '_value', 'ascending')) as { [key: string]: string }[];
         const listData: string[] = [];
         const sheet: SheetModel = this.parent.getActiveSheet();
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const cBoxFrag: DocumentFragment = document.createDocumentFragment();
+        let cBoxFrag: DocumentFragment = document.createDocumentFragment();
         const selectAll: Element = this.createSelectAll(args, excelFilter);
         cBoxFrag.appendChild(selectAll);
-        const idCol: { [key: string]: boolean } = {}; let hidden: boolean;
-        const initSelectedList: string[] = [];
+        let idCol: { [key: string]: boolean } = {}; let hidden: boolean;
+        let initSelectedList: string[] = [];
         let selectedList: string[] = []; let dataVal: string;
         sortedData.forEach((data: { [key: string]: string }): void => {
             if (data[field as string] === '') {
@@ -867,29 +878,88 @@ export class Filter {
                 this.cboxListSelected(args, selectedList, listData.length, e);
             }
         });
+        let sortedFullData: { [key: string]: Object }[];
+        let searchValue: string;
+        const updateSearchedList: (val: string) => void = (val: string): void => {
+            if (val.toLowerCase().includes(searchValue)) {
+                const obj: { [key: string]: string } = {};
+                obj[args.column.field] = val;
+                cBoxFrag.appendChild(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    createCboxWithWrap(getUid('cbox'), (excelFilter as any).createCheckbox(val, true, obj), 'e-ftrchk'));
+                searchedList.push(val);
+                searchedSelectedList.push(val);
+            }
+        };
+        let performSearchOnData: () => void;
+        const filterDataCount: number = args.dataSource.length > 1000 ? args.dataSource.length : 1000;
+        let fullListData: string[] = listData;
+        if (filterData.length <= filterDataCount) {
+            performSearchOnData = (): void => {
+                listData.forEach((val: string): void => {
+                    updateSearchedList(val);
+                });
+            };
+        } else {
+            performSearchOnData = (): void => {
+                if (!sortedFullData) {
+                    fullListData = []; initSelectedList = []; selectedList = [];
+                    sortedFullData = new DataManager(
+                        filterData).executeLocal(new Query().sortBy(field + '_value', 'ascending')) as { [key: string]: string }[];
+                    idCol = {};
+                    sortedFullData.forEach((data: { [key: string]: string }): void => {
+                        if (data[field as string] === '') {
+                            if (!idCol['isBlank']) {
+                                idCol['isBlank'] = true;
+                                dataVal = l10n.getConstant('Blanks');
+                                fullListData.splice(0, 0, dataVal);
+                                if (!isFilterHidden(sheet, Number(data['__rowIndex']) - 1)) {
+                                    initSelectedList.push(dataVal);
+                                    selectedList.push(dataVal);
+                                }
+                            }
+                        } else if (!idCol[data[field as string]]) {
+                            dataVal = data[field as string];
+                            idCol[dataVal as string] = true;
+                            fullListData.push(data[field as string]);
+                            if (!isFilterHidden(sheet, Number(data['__rowIndex']) - 1)) {
+                                selectedList.push(dataVal);
+                                initSelectedList.push(dataVal);
+                            }
+                        }
+                    });
+                }
+                for (let filterIdx: number = 0, len: number = fullListData.length; filterIdx < len; filterIdx++) {
+                    if (searchedList.length < filterDataCount) {
+                        updateSearchedList(fullListData[filterIdx as number]);
+                    } else {
+                        break;
+                    }
+                }
+            };
+        }
         const refreshCheckbox: Function = (e: { event: KeyboardEvent }): void => {
-            let searchValue: string;
             if (e.event.type === 'keyup') {
                 searchValue = (e.event.target as HTMLInputElement).value.toLowerCase();
             } else if ((e.event.target as Element).classList.contains('e-search-icon')) {
                 return;
             }
-            const cBoxFrag: DocumentFragment = document.createDocumentFragment();
+            cBoxFrag = document.createDocumentFragment();
             cBoxFrag.appendChild(selectAll);
             if (searchValue) {
                 searchedList = []; searchedSelectedList = [];
-                listData.forEach((data: string): void => {
-                    if (data.toLowerCase().includes(searchValue)) {
-                        const obj: { [key: string]: string } = {};
-                        obj[args.column.field] = data;
-                        cBoxFrag.appendChild(
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            createCboxWithWrap(getUid('cbox'), (excelFilter as any).createCheckbox(data, true, obj), 'e-ftrchk'));
-                        searchedList.push(data);
-                        searchedSelectedList.push(data);
-                    }
-                });
-                if (!searchedSelectedList.length) {
+                performSearchOnData();
+                if (searchedSelectedList.length) {
+                    this.updateState(args, cBoxFrame, cBox, false, 0);
+                    selectAll.classList.remove('e-hide');
+                    const obj: { [key: string]: string } = {};
+                    obj[field as string] = l10n.getConstant('AddCurrentSelection');
+                    const addCurrentCbox: Element = createCboxWithWrap(
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        getUid('cbox'), (excelFilter as any).createCheckbox(obj[field as string], false, obj), 'e-ftrchk');
+                    cBoxFrag.insertBefore(addCurrentCbox, cBoxFrag.children[1]);
+                    addCurrentCbox.querySelector('.e-frame').classList.add('e-add-current');
+                } else {
                     selectAll.classList.add('e-hide');
                     const noRecordEle: Element = this.parent.createElement('div', { className: 'e-checkfltrnmdiv' });
                     const noRecordText: HTMLElement = this.parent.createElement('span');
@@ -897,16 +967,6 @@ export class Filter {
                     noRecordEle.appendChild(noRecordText);
                     cBoxFrag.appendChild(noRecordEle);
                     (args.btnObj.element as HTMLButtonElement).disabled = true;
-                } else {
-                    this.updateState(args, cBoxFrame, cBox, false, 0);
-                    selectAll.classList.remove('e-hide');
-                    const obj: { [key: string]: string } = {};
-                    obj[args.column.field] = l10n.getConstant('AddCurrentSelection');
-                    const addCurrentCbox: Element = createCboxWithWrap(
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        getUid('cbox'), (excelFilter as any).createCheckbox(obj[args.column.field], false, obj), 'e-ftrchk');
-                    cBoxFrag.insertBefore(addCurrentCbox, cBoxFrag.children[1]);
-                    addCurrentCbox.querySelector('.e-frame').classList.add('e-add-current');
                 }
             } else if (mainCboxList) {
                 searchedSelectedList = null; searchedList = null;
@@ -942,30 +1002,28 @@ export class Filter {
                 }
             }
             const checkedLength: number = selectedList.length;
-            if (checkedLength === listData.length) {
+            if (checkedLength === listData.length && (!searchedSelectedList || filterData.length <= filterDataCount)) {
                 this.filterSuccessHandler(new DataManager(args.dataSource), { action: 'clear-filter', field: args.column.field });
             } else {
                 const predicates: PredicateModel[] = [];
                 const model: ExtendedPredicateModel = { field: field, ignoreAccent: false, matchCase: false, isFilterByMenu: true };
-                const curSymbol: string = getNumberDependable(locale, defaultCurrencyCode);
-                const localeObj: { decimal: string, group: string } = getNumericObject(
-                    this.parent.locale) as { decimal: string, group: string };
+                const localeObj: LocaleNumericSettings = getNumericObject(this.parent.locale) as LocaleNumericSettings;
                 const updatePredicate: Function = (val: string): void => {
                     let type: string = args.type;
                     if (type === 'number') {
                         if (val === l10n.getConstant('Blanks')) {
                             val = ''; type = 'string';
-                        } else if (!isNumber(parseLocaleNumber([val], this.parent.locale, curSymbol, localeObj)[0])) {
+                        } else if (!isNumber(parseLocaleNumber([val], this.parent, localeObj)[0])) {
                             type = 'string';
                         }
                     }
                     predicates.push(Object.assign({ value: val, type: type }, model));
                 };
-                if (checkedLength > listData.length / 2) {
+                if (checkedLength > fullListData.length / 2) {
                     model.operator = 'notequal'; model.predicate = 'and';
-                    for (let idx: number = 0, len: number = listData.length; idx < len; idx++) {
-                        if (selectedList.indexOf(listData[idx as number]) === -1) {
-                            updatePredicate(listData[idx as number]);
+                    for (let idx: number = 0, len: number = fullListData.length; idx < len; idx++) {
+                        if (selectedList.indexOf(fullListData[idx as number]) === -1) {
+                            updatePredicate(fullListData[idx as number]);
                         }
                     }
                 } else {
@@ -1411,7 +1469,8 @@ export class Filter {
         };
         if (searchValue) {
             filteredList = new DataManager(groupedData).executeLocal(new Query().where(
-                new Predicate(treeViewObj.fields.text, 'contains', searchValue, true)));
+                new Predicate(treeViewObj.fields.text, 'contains', searchValue, true))
+            );
             const filterId: { [key: string]: boolean } = {}; const predicates: Predicate[] = []; let key: string; let initList: Object[];
             const strFilter: boolean = isNaN(Number(searchValue));
             let expandId: string[]; let level: number;
@@ -1547,7 +1606,7 @@ export class Filter {
                     if (isDateCol) {
                         this.initTreeView(args, excelFilter);
                     } else {
-                        this.initCboxList(args, excelFilter);
+                        this.initCboxList(args, excelFilter, jsonData);
                     }
                 };
                 this.parent.on(beforeCheckboxRender, beforeCboxRender, this);
@@ -2093,7 +2152,7 @@ export class Filter {
      * @returns {void} - Gets the filter information of the sheet.
      */
     private getFilterRangeHandler(args: FilterInfoArgs): void {
-        const sheetIdx: number = args.sheetIdx;
+        const sheetIdx: number = args.sheetIdx || this.parent.activeSheetIndex;
         const filterOption: { range: number[], allowHeaderFilter?: boolean } = this.filterRange && this.filterRange.get(sheetIdx);
         if (filterOption) {
             args.hasFilter = true;
@@ -2326,7 +2385,7 @@ export class Filter {
             if (this.parent.sortCollection) {
                 this.parent.notify(sortImport, null);
             }
-            this.parent.filterCollection = null;
+            this.parent.setProperties({ filterCollection: null }, true);
         }
     }
 
@@ -2545,6 +2604,16 @@ export class Filter {
     }
 
     private duplicateSheetFilterHandler(args: duplicateSheetOption): void {
+        for (const key of Array.from(this.filterRange.keys()).sort().reverse()) {
+            if (args.newSheetIndex <= key) {
+                this.filterRange.set(key + 1, this.filterRange.get(key));
+                this.filterRange.delete(key);
+                this.filterCollection.set(key + 1, this.filterCollection.get(key));
+                this.filterCollection.delete(key);
+            } else {
+                break;
+            }
+        }
         if (this.filterCollection.has(args.sheetIndex)) {
             this.filterCollection.set(args.newSheetIndex, this.filterCollection.get(args.sheetIndex));
         }
@@ -2579,6 +2648,54 @@ export class Filter {
                     sortRange: getRangeAddress(range), columnIndex: getIndexesFromAddress(sheet.activeCell)[1],
                     order: sortDescriptors.order, sheetIndex: sheetIdx
                 });
+            }
+        }
+    }
+
+    private moveSheetHandler(args: { prevIndex: number, currentIndex: number }): void {
+        let prevSheetFilterRange: { useFilterRange: boolean, range: number[], allowHeaderFilter?: boolean } | undefined;
+        let currentSheetFilterRange: { useFilterRange: boolean, range: number[], allowHeaderFilter?: boolean } | undefined;
+        let prevSheetFilterCollection: PredicateModel[] | undefined;
+        let currentSheetFilterCollection: PredicateModel[] | undefined;
+        if (this.filterRange.has(args.prevIndex)) {
+            prevSheetFilterRange = this.filterRange.get(args.prevIndex);
+            prevSheetFilterCollection = this.filterCollection.get(args.prevIndex);
+        }
+        if (this.filterRange.has(args.currentIndex)) {
+            currentSheetFilterRange = this.filterRange.get(args.currentIndex);
+            currentSheetFilterCollection = this.filterCollection.get(args.currentIndex);
+        }
+        if (prevSheetFilterRange && currentSheetFilterRange) {
+            this.filterRange.set(args.currentIndex, prevSheetFilterRange);
+            this.filterRange.set(args.prevIndex, currentSheetFilterRange);
+            this.filterCollection.set(args.currentIndex, prevSheetFilterCollection);
+            this.filterCollection.set(args.prevIndex, currentSheetFilterCollection);
+        } else if (prevSheetFilterRange) {
+            this.filterRange.set(args.currentIndex, prevSheetFilterRange);
+            this.filterRange.delete(args.prevIndex);
+            this.filterCollection.set(args.currentIndex, prevSheetFilterCollection);
+            this.filterCollection.delete(args.prevIndex);
+        } else if (currentSheetFilterRange) {
+            this.filterRange.set(args.prevIndex, currentSheetFilterRange);
+            this.filterRange.delete(args.currentIndex);
+            this.filterCollection.set(args.prevIndex, currentSheetFilterCollection);
+            this.filterCollection.delete(args.currentIndex);
+        }
+    }
+
+    private refreshFilterCellsOnResize(args: { rowIndex: number }): void {
+        const range: number[] = this.filterRange.has(this.parent.activeSheetIndex) &&
+            this.filterRange.get(this.parent.activeSheetIndex).range;
+        if (range && range[0] === args.rowIndex) {
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            for (let colIdx: number = range[1]; colIdx <= range[3]; colIdx++) {
+                if (getCell(args.rowIndex, colIdx, sheet, false, true).notes) {
+                    const cellEle: HTMLElement = this.parent.getCell(args.rowIndex, colIdx);
+                    if (cellEle) {
+                        this.parent.serviceLocator.getService<ICellRenderer>('cell').refresh(
+                            args.rowIndex, colIdx, false, cellEle, false, false, true);
+                    }
+                }
             }
         }
     }

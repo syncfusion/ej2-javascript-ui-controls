@@ -2,10 +2,10 @@
  * Gantt virtual scroll spec
  */
 
-import { Gantt, Edit, Toolbar, Selection, Filter, VirtualScroll, Sort, CriticalPath } from '../../src/index';
+import { Gantt, Edit, Toolbar, Selection, Filter, VirtualScroll, Sort, CriticalPath, DayMarkers } from '../../src/index';
 import { virtualData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
-Gantt.Inject(Edit, Toolbar, Selection, Filter, VirtualScroll, Sort, CriticalPath);
+Gantt.Inject(Edit, Toolbar, Selection, Filter, VirtualScroll, Sort, CriticalPath, DayMarkers);
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
@@ -350,6 +350,7 @@ describe('Gantt virtual scroll', () => {
                     },
                     allowSelection: true,
                     allowSorting: true,
+                    enableTimelineVirtualization: true,
                     allowFiltering: true,
                     toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search']
                 }, done);
@@ -378,5 +379,301 @@ describe('Gantt virtual scroll', () => {
             };
             ganttObj.ganttChartModule.scrollObject.setScrollLeft(2000);
         });
+        it('Horizontal scroll shimmer effect', () => {
+            ganttObj.ganttChartModule.virtualRender.appendChildElements(ganttObj.treeGrid.element);
+       });
+    });
+});
+describe('Top value with Scale', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: virtualData,
+                enableVirtualization: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks'
+                },
+                height: '550px',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: false
+                },
+                allowSelection: true,
+                allowSorting: true,
+                allowFiltering: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search']
+            }, done);
+    });
+    it('Checking Top Value', (done:Function) => {
+        let virtualTable: HTMLElement = ganttObj.ganttChartModule.scrollElement.querySelector('.e-virtualtable') as HTMLElement;
+        virtualTable.style.transform = 'scale(1.5)'
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === "scroll") {
+                expect(args.scrollTop).toBe(20);
+                done()
+            }
+        };
+        ganttObj.ganttChartModule.scrollObject.setScrollTop(20);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+// describe('Update Top Position with spinner', () => {
+//     let ganttObj: Gantt;
+//     beforeAll((done: Function) => {
+//         ganttObj = createGantt(
+//             {
+//                 dataSource: virtualData,
+//                 enableVirtualization: true,
+//                 taskFields: {
+//                     id: 'TaskID',
+//                     name: 'TaskName',
+//                     startDate: 'StartDate',
+//                     endDate: 'EndDate',
+//                     duration: 'Duration',
+//                     progress: 'Progress',
+//                     child: 'subtasks'
+//                 },
+//                 height: '550px',
+//                 holidays: [
+//                     {
+//                         from: new Date('04/04/2024'),
+//                         to: new Date('04/04/2024'),
+//                         label: 'Local Holiday'
+//                     }
+//                 ],
+//                 highlightWeekends:true,
+//                 eventMarkers: [
+//                     {
+//                         day: new Date('04/02/2024'),
+//                     }
+//                 ],
+//                 loadingIndicator: { indicatorType: 'Spinner' },
+//                 enableVirtualMaskRow:false,
+//                 editSettings: {
+//                     allowAdding: true,
+//                     allowEditing: true,
+//                     allowDeleting: true,
+//                     allowTaskbarEditing: true,
+//                     showDeleteConfirmDialog: false
+//                 },
+//                 allowSelection: true,
+//                 allowSorting: true,
+//                 allowFiltering: true,
+//                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search']
+//             }, done);
+//     });
+//     it('Checking Top Value', (done:Function) => {
+//         ganttObj.actionComplete = (args: any): void => {
+//             if (args.requestType === "scroll") {
+//                 expect(args.scrollTop).toBe(500);
+//                 done();
+//             }
+//         };
+//         ganttObj.treeGrid.element.querySelector('.e-content').scrollTop = 500
+//     });
+//     afterAll(() => {
+//         if (ganttObj) {
+//             destroyGantt(ganttObj);
+//         }
+//     });
+// });
+describe('Update Left Position', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: virtualData,
+                enableVirtualization: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks'
+                },
+                height: '550px',
+                holidays: [
+                    {
+                        from: new Date('04/04/2024'),
+                        to: new Date('04/04/2024'),
+                        label: 'Local Holiday'
+                    }
+                ],
+                highlightWeekends:true,
+                eventMarkers: [
+                    {
+                        day: new Date('04/02/2024'),
+                    }
+                ],
+                loadingIndicator: { indicatorType: 'Spinner' },
+                enableVirtualMaskRow:true,
+                enableTimelineVirtualization:true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: false
+                },
+                allowSelection: true,
+                allowSorting: true,
+                allowFiltering: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search']
+            }, done);
+    });
+    it('Checking Top Value', (done:Function) => {
+        ganttObj.showIndicator = null
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === "scroll") {
+                expect(args.scrollLeft).toBe(34658);
+                done()
+            }
+        };
+        ganttObj.chartPane.querySelector('.e-content').scrollLeft = 34658
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Update Left Position with enable virtualiazation false', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: virtualData,
+                enableVirtualization: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks'
+                },
+                height: '550px',
+                holidays: [
+                    {
+                        from: new Date('04/04/2024'),
+                        to: new Date('04/04/2024'),
+                        label: 'Local Holiday'
+                    }
+                ],
+                highlightWeekends:true,
+                eventMarkers: [
+                    {
+                        day: new Date('04/02/2024'),
+                    }
+                ],
+                loadingIndicator: { indicatorType: 'Spinner' },
+                enableVirtualMaskRow:false,
+                enableTimelineVirtualization:true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: false
+                },
+                allowSelection: true,
+                allowSorting: true,
+                allowFiltering: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search']
+            }, done);
+    });
+    it('Checking Top Value', (done:Function) => {
+        ganttObj.showIndicator = null
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === "scroll") {
+                expect(args.scrollLeft).toBe(34658);
+                done()
+            }
+        };
+        ganttObj.chartPane.querySelector('.e-content').scrollLeft = 34658
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Top value with Scale', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: virtualData,
+                enableVirtualization: true,
+                enableVirtualMaskRow: false,
+                loadingIndicator: { indicatorType: 'Shimmer' },
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks'
+                },
+                height: '550px',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: false
+                },
+                allowSelection: true,
+                allowSorting: true,
+                allowFiltering: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search']
+            }, done);
+    });
+    it('Virtualization with shimmer', (done:Function) => {
+        let virtualTable: HTMLElement = ganttObj.ganttChartModule.scrollElement.querySelector('.e-virtualtable') as HTMLElement;
+        virtualTable.style.transform = 'scale(1.5)'
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === "scroll") {
+                expect(args.scrollTop).toBe(20);
+                done()
+            }
+        };
+        ganttObj.ganttChartModule.scrollObject.setScrollTop(20);
+    });
+    it('updatecontent', () => {
+        ganttObj.updateContentHeight();
+    });
+    it('Virtualization with shimmer', () => {
+        ganttObj.isVirtualScroll = true;
+        ganttObj.treeGrid.dataBound();
+    });
+    it('Virtualization with shimmer', () => {
+        ganttObj.enableVirtualization = false;
+        ganttObj.isVirtualScroll = true;
+        ganttObj.treeGrid.dataBound();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });

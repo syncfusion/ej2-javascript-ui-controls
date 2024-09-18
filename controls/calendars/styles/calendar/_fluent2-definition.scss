@@ -173,7 +173,7 @@ $calendar-header-icon-color: $icon-color !default;
 $calendar-title-font-color: $content-text-color !default;
 $calendar-icon-font-color: $content-text-color-alt1 !default;
 $calendar-active-icon-color: $primary !default;
-$calendar-title-hover-color: $primary !default;
+$calendar-title-hover-color: $calendar-icon-color !default;
 $calendar-icon-hover-color: $primary !default;
 $calendar-icon-hover-bg-color: $primary-lighter !default;
 $calendar-default-border-color: none !default;
@@ -213,7 +213,7 @@ $calendar-active-bg-border-color: none !default;
 $calendar-active-hover-bg-color: $primary-light !default;
 $calendar-hover-color: $primary-lighter !default;
 $calendar-text-color: $content-text-color-alt1 !default;
-$calendar-hover-text: $calendar-text-color !default;
+$calendar-hover-text: $content-text-color-hover !default;
 $calendar-focus-bg-color: $content-bg-color-hover !default;
 $calendar-focused-today-bg-style: $primary !default;
 $calendar-focused-today-box-shadow: none !default;
@@ -231,7 +231,7 @@ $calendar-title-active-background: $primary-light !default;
 $calendar-icon-focus-box-shadow: $keyboard-focus !default;
 $calendar-title-hover-bg-color: $primary-lighter !default;
 $calendar-focused-cell-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
-$calendar-title-active-color: $primary-dark;
+$calendar-title-active-color: $calendar-header-text-color-pressed !default;
 
 // end td styles
 
@@ -243,12 +243,13 @@ $calendar-today-border-color: none !default;
 $calendar-selected-border-color: none !default;
 $calendar-today-hover-color: $primary !default;
 $calendar-today-focus-bg-color: $primary !default;
+$calendar-selected-month-font-color: $content-text-color-selected !default;
 
 //pending
 $calendar-today-color: $primary-text-color !default;
 $calendar-today-focused-font-color: $primary-text-color !default;
 $calendar-today-focus-color: $primary-text-color !default;
-$calendar-active-font-colour: $content-text-color !default;
+$calendar-active-font-colour: $content-text-color-selected !default;
 
 //week header
 $calendar-week-header-font-color: $content-text-color !default;
@@ -264,8 +265,11 @@ $calendar-footer-background: $content-bg-color-alt1 !default;
 $calendar-today-disabled-background-style: $content-bg-color-alt1 !default;
 $calendar-today-disabled-border-style: $content-text-color-disabled !default;
 $calendar-today-disabled-box-shadow: none !default;
-$calendar-today-disabled-color: $content-text-color-disabled !default;
+$calendar-today-disabled-color: $secondary-text-color-disabled !default;
 $calendar-week-number-font-weight: $font-weight-medium !default;
+$today-button-font-color: $secondary-text-color !default;
+$today-button-hover-font-color: $primary-bg-color !default;
+$today-button-active-font-color: $primary-bg-color-pressed !default;
 
 // Today primary button custom styling
 $calendar-today-btn-primary-bgcolor: $primary-bg-color !default;

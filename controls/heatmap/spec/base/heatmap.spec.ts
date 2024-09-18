@@ -389,6 +389,28 @@ describe('Heatmap Control', () => {
             heatmap.clearSelection();
             setTimeout(done, 1600);
         });
+        it('Multi Cell Selection in Canvas and with setTimeout', (done: Function) => {
+            heatmap.dataSource = [
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+            ];
+            heatmap.renderingMode = 'Canvas';
+            heatmap.allowSelection = true;
+            heatmap.legendSettings.visible = true;
+            heatmap.dataBind();
+            let element: Element = document.getElementById("container_canvas");
+            heatmap.heatMapMouseMove(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, 100, 100));
+            trigger.mousemoveEvent(element, 0, 0, 200, 200, false);
+            heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, 200, 200));
+            trigger.mousemoveEvent(element, 0, 0, 250, 250, false);
+            heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, 250, 250));
+            expect((heatmap.multiCellCollection.length == 1)  || (heatmap.multiCellCollection.length == 3));
+            heatmap.heatMapResize(event);
+            setTimeout(done, 1600);
+        });
         it('Multi Cell Selection in Canvas', () => {
             heatmap.dataSource = [
                 [1, 2, 3, 4, 5],

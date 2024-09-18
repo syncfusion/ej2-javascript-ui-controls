@@ -204,6 +204,13 @@ describe('Internationalization', () => {
             expect(result).toBe('0');
         });
     });
+    describe('Brazilian currency symbol ignore option', () => {
+        let numIntl: Internationalization = new Internationalization('ja');
+        it('ignore currency symbol for Brazilian', () => {
+            let result: string = numIntl.formatNumber(1160099.5, { format:'R$ #,##0.00' , useGrouping: true, ignoreCurrency: true});
+            expect(result).toBe('R$ 1,160,099.50');
+        });
+    });
     describe('Date Parser', () => {
         let dParseIntl: Internationalization = new Internationalization();
         let parseDate: Date = new Date();

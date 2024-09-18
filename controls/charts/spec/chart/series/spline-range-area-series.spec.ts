@@ -1221,6 +1221,92 @@ describe('Chart', () => {
             chartObj.refresh();
         });
     });
+
+    describe('SplineRangeAreaSeries- checking animation on data changes.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let animate: EmitType<IAnimationCompleteEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let element2: Element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element2);
+            chartObj = new Chart({
+                primaryXAxis: {
+                    title: 'Month',
+                },
+                primaryYAxis: {
+                    title: 'Temperature(Celsius)'
+                },
+                series: [{
+                    dataSource: doubleData,
+                    border:{width:2, color: 'red'},
+                    xName: 'x', low: 'low', high: 'high',
+                    animation: { enable: false },
+                    name: 'India',
+                    type: 'SplineRangeArea', marker: { visible: true, dataLabel: { visible: true } },
+                }],
+                width: '800',
+                title: 'Chart TS Title', legendSettings: { visible: true }
+            });
+            chartObj.appendTo('#container');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+        it('Spline range area series - checking setData method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0');
+                expect(svg.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            let dataSource = [
+                { x: 1, low: -12, high: 0 }, { x: 2, low: 10, high: 22 },
+                { x: 3, low: 13, high: 50 }, { x: 4, low: 20, high: 202 },
+                { x: 5, low: 0, high: 20 }, { x: 6, low: -22, high: 34 },
+                { x: 7, low: -12, high: 23 }, { x: 8, low: 12, high: 40 }];
+            chartObj.series[0].setData(dataSource);
+            chartObj.refresh();unbindResizeEvents(chartObj);
+        });
+        it('Spline range area series - checking addPoint method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0');
+                expect(svg.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].addPoint({ x: 8, low: 12, high: 40 });
+            chartObj.refresh();unbindResizeEvents(chartObj);
+        });
+        it('Spline range area series - checking removePoint method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0');
+                expect(svg.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].removePoint(8);
+            chartObj.refresh();unbindResizeEvents(chartObj);
+        });
+        it('Spline range area series - Checking remove point method', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0');
+                expect(svg.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].removePoint(0);
+            chartObj.series[0].removePoint(1);  chartObj.series[0].removePoint(2);
+            chartObj.series[0].removePoint(3);  chartObj.series[0].removePoint(4);
+            chartObj.series[0].removePoint(5);  chartObj.series[0].removePoint(6);
+            chartObj.series[0].removePoint(7); chartObj.series[0].removePoint(8);
+            chartObj.refresh();unbindResizeEvents(chartObj);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

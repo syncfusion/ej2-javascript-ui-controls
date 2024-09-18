@@ -1,4 +1,4 @@
-import { IRichTextEditor } from '../base/interface';
+import { IRichTextEditor, MetaTag } from '../base/interface';
 import { ContentRender } from '../renderer/content-renderer';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getEditValue } from '../base/util';
@@ -68,6 +68,7 @@ const IFRAMEHEADER: string = `
                 body{box-sizing: border-box;min-height: 100px;outline: 0 solid transparent;
                     overflow-x: auto;padding: 16px;position: relative;text-align: inherit;z-index: 2;}
                 p{margin: 0 0 10px;margin-bottom: 10px;}
+                code{ background: #9d9d9d26; color: #ed484c;}
                 li{margin-bottom: 10px;}
                 table{margin-bottom: 10px;}
                 h1{ font-size: 2.857em; font-weight: 600; line-height: 1.2; margin: 10px 0; }
@@ -154,6 +155,15 @@ export class IframeContentRender extends ContentRender {
             });
         iframe.setAttribute('role', 'none');
         this.setPanel(iframe);
+        if (!isNullOrUndefined(this.parent.iframeSettings.sandbox)) {
+            let sandboxValues: string = this.parent.iframeSettings.sandbox
+                .map((element: string) => element.toLocaleLowerCase().trim())
+                .join(' ');
+            if (!sandboxValues.includes('allow-same-origin')) {
+                sandboxValues += ' allow-same-origin';
+            }
+            iframe.setAttribute('sandbox', sandboxValues.trim());
+        }
         rteObj.rootContainer.appendChild(iframe);
         iframe.contentDocument.body.id = this.parent.getID() + '_rte-edit-view';
         iframe.contentDocument.body.setAttribute('aria-owns', this.parent.getID());
@@ -163,6 +173,19 @@ export class IframeContentRender extends ContentRender {
         iframe.contentDocument.close();
         if (rteObj.enableRtl) {
             (this.contentPanel as HTMLIFrameElement).contentDocument.body.setAttribute('class', 'e-rtl');
+        }
+        if (!isNullOrUndefined(iframe.contentDocument.head) && this.parent.iframeSettings.metaTags.length > 0) {
+            const head: HTMLHeadElement = iframe.contentDocument.head;
+            const metaData: Array<MetaTag> = this.parent.iframeSettings.metaTags;
+            metaData.forEach((tag: MetaTag) => {
+                const meta: HTMLElement = document.createElement('meta');
+                for (const key in tag) {
+                    if (!isNullOrUndefined(tag[key as keyof MetaTag])) {
+                        meta.setAttribute((key === 'httpEquiv') ? 'http-equiv' : key, tag[key as keyof MetaTag] as string);
+                    }
+                }
+                head.appendChild(meta);
+            });
         }
     }
     private setThemeColor(content: string, styles: { [key: string]: string }): string {

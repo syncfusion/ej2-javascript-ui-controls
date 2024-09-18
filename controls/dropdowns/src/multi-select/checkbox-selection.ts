@@ -217,7 +217,8 @@ export class CheckBoxSelection {
     }
     private clickHandler(e: MouseEvent): void {
         let target: EventTarget;
-        if ((e.currentTarget as HTMLElement).classList.contains(this.checkAllParent.className) || ((e.currentTarget as HTMLElement).classList.value === this.checkAllParent.className)) {
+        if ((e.currentTarget as HTMLElement).classList.contains(this.checkAllParent.className) ||
+           ((e.currentTarget as HTMLElement).classList.value === this.checkAllParent.className)) {
             target = (e.currentTarget as HTMLElement).firstElementChild.lastElementChild;
         } else {
             target = <Element>e.currentTarget;
@@ -270,7 +271,7 @@ export class CheckBoxSelection {
             });
             this.parent.element.parentNode.insertBefore(this.filterInput, this.parent.element);
             let backIcon: boolean = false;
-            if (Browser.isDevice) {
+            if (Browser.isDevice && this.parent.isDeviceFullScreen) {
                 backIcon = true;
                 this.parent.mobFilter = false;
             }
@@ -539,14 +540,14 @@ export class CheckBoxSelection {
                 className: 'e-list-parent e-ul e-reorder'
             });
             if (activeLiCount > 0) {
-                const activeListItems = this.parent.ulElement.querySelectorAll('li.e-active');
-                    activeListItems.forEach(item => {
-                        ulEle.appendChild(item);
-                    });
+                const activeListItems: NodeListOf<Element> = this.parent.ulElement.querySelectorAll('li.e-active');
+                activeListItems.forEach((item: Element) => { // Add type definition for 'item' parameter
+                    ulEle.appendChild(item);
+                });
                 remLi = this.parent.ulElement.querySelectorAll('li.e-active');
                 addClass(remLi, 'e-reorder-hide');
-                if(this.parent.enableVirtualization) {
-                    var virtualUlElement = this.parent.list.querySelector('.e-virtual-ddl-content');
+                if (this.parent.enableVirtualization) {
+                    const virtualUlElement: Element  = this.parent.list.querySelector('.e-virtual-ddl-content');
                     prepend([ulEle], virtualUlElement);
                 }
                 else{

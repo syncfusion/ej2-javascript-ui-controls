@@ -43,7 +43,7 @@ import { ShapeModel, BasicShapeModel, FlowShapeModel, ImageModel, PathModel, Bpm
 import { TextModel, NativeModel, HtmlModel, DiagramShapeModel } from './node-model';
 import { LayoutModel } from '../layout/layout-base-model';
 import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes } from './../utility/diagram-util';
-import { updatePortEdges, initfixedUserHandlesSymbol } from './../utility/diagram-util';
+import { updatePortEdges, initFixedUserHandlesSymbol } from './../utility/diagram-util';
 import { setSwimLaneDefaults, setPortsEdges } from './../utility/diagram-util';
 import { randomId, getFunction, cloneObject } from './../utility/base-util';
 import { NodeBase } from './node-base';
@@ -79,7 +79,7 @@ import { IReactDiagram } from '../rendering/canvas-interface';
 
 const getShapeType: Function = (obj: Shape): Object => {
     if (obj) {
-        //Removed isBlazor code 
+        //Removed isBlazor code
         switch (obj.type) {
         case 'Basic':
             return BasicShape;
@@ -2784,7 +2784,8 @@ export class Node extends NodeBase implements IElement {
         canvas.visible = this.visible;
         canvas.horizontalAlignment = this.horizontalAlignment;
         canvas.verticalAlignment = this.verticalAlignment;
-        if (this.container) {
+        //903772 - Swimlane Save and Load Issue
+        if (this.container && this.shape.type !== 'SwimLane') {
             canvas.width = this.width;
             canvas.height = this.height;
             if (this.container.type === 'Stack') {
@@ -2884,16 +2885,31 @@ export class Node extends NodeBase implements IElement {
         }
     }
 
+    // 882378 - Added below code to provide template support for fixedUserHandles in nodes
     /** @private */
-    public initfixedUserHandles(fixedUserHandle: NodeFixedUserHandleModel): DiagramElement {
-        const canvas: Container = this.wrapper;
-        //let fixedUserHandleContainer: Canvas;
-        const fixedUserHandleContainer: Canvas = new Canvas();
+    public initFixedUserHandles(fixedUserHandle: NodeFixedUserHandleModel | NodeFixedUserHandle, fixedUserHandleTemplate: string | Function, diagramId: string): DiagramElement {
+        let fixedUserHandleContainer: Canvas | DiagramHtmlElement;
+        if (fixedUserHandle.pathData === '' && fixedUserHandleTemplate)
+        {
+            fixedUserHandleContainer = new DiagramHtmlElement(this.id, diagramId, undefined, (fixedUserHandleTemplate as string));
+            fixedUserHandleContainer.isTemplate = true;
+            fixedUserHandleContainer.template =  getContent(fixedUserHandleContainer, true, (fixedUserHandle as NodeFixedUserHandle)  ) as HTMLElement;
+            fixedUserHandle.id = fixedUserHandle.id || randomId();
+            fixedUserHandleContainer.id = this.id + '_' + fixedUserHandle.id;
+        }
+        else
+        {
+            const canvas: Container = this.wrapper;
+            fixedUserHandleContainer = new Canvas();
+            const children: DiagramElement[] = [];
+            fixedUserHandleContainer.children = children;
+            fixedUserHandle.id = fixedUserHandle.id || randomId();
+            fixedUserHandleContainer.id = this.id + '_' + fixedUserHandle.id;
+            const symbolIcon: DiagramElement = initFixedUserHandlesSymbol(fixedUserHandle, fixedUserHandleContainer);
+            fixedUserHandleContainer.children.push(symbolIcon);
+            fixedUserHandleContainer.inversedAlignment = canvas.inversedAlignment;
+        }
         fixedUserHandleContainer.float = true;
-        const children: DiagramElement[] = [];
-        fixedUserHandle.id = fixedUserHandle.id || randomId();
-        fixedUserHandleContainer.id = this.id + '_' + fixedUserHandle.id;
-        fixedUserHandleContainer.children = children;
         fixedUserHandleContainer.height = fixedUserHandle.height;
         fixedUserHandleContainer.width = fixedUserHandle.width;
         fixedUserHandleContainer.style.strokeColor = fixedUserHandle.handleStrokeColor;
@@ -2907,10 +2923,7 @@ export class Node extends NodeBase implements IElement {
         const offset: PointModel = this.getfixedUserHandleOffet(fixedUserHandle as NodeFixedUserHandle);
         fixedUserHandleContainer.setOffsetWithRespectToBounds(offset.x, offset.y, 'Fraction');
         fixedUserHandleContainer.relativeMode = 'Point';
-        const symbolIcon: DiagramElement = initfixedUserHandlesSymbol(fixedUserHandle, fixedUserHandleContainer);
-        fixedUserHandleContainer.children.push(symbolIcon);
         fixedUserHandleContainer.description = fixedUserHandleContainer.id;
-        fixedUserHandleContainer.inversedAlignment = canvas.inversedAlignment;
         return fixedUserHandleContainer;
     }
     private getfixedUserHandleOffet(fixedUserHandle: NodeFixedUserHandle): PointModel {

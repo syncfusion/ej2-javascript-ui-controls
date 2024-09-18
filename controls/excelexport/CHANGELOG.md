@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 26.2.14 (2024-09-10)
+## 26.2.11 (2024-08-27)
 
 ### Excel Export
 
 #### Bug Fixes
 
-- Fixed the currency format being rendered improperly in CSV export.
+- The "$" symbol issue in number format is fixed when exporting Excel data as CSV document.
 
 ## 25.1.35 (2024-03-15)
 

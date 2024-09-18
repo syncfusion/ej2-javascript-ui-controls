@@ -94,7 +94,7 @@ export class Audio {
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.touchStart);
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.audioClick);
-            (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.docClick, true);
+            (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.docClick);
             this.docClick = null;
         }
     }
@@ -103,7 +103,7 @@ export class Audio {
         this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
         EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.touchStart, this);
         EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.audioClick, this);
-        (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick, true);
+        (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick);
     }
 
     private checkAudioBack(range: Range): void {
@@ -117,7 +117,7 @@ export class Audio {
     }
     private checkAudioDel(range: Range): void {
         if (range.startContainer.nodeName === '#text' && range.startOffset === range.startContainer.textContent.length &&
-            !isNOU(range.startContainer.nextSibling) && range.startContainer.nextSibling.nodeName === 'IMG') {
+            !isNOU(range.startContainer.nextSibling) && range.startContainer.nextSibling.nodeName === 'AUDIO') {
             this.deletedAudio.push(range.startContainer.nextSibling);
         } else if (range.startContainer.nodeName !== '#text' && !isNOU(range.startContainer.childNodes[range.startOffset]) &&
             this.isAudioElem(range.startContainer.childNodes[range.startOffset] as HTMLElement)) {
@@ -126,7 +126,7 @@ export class Audio {
     }
 
     private undoStack(args?: { [key: string]: string }): void {
-        if (args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') {
+        if ((args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') && this.parent.editorMode === 'HTML') {
             for (let i: number = 0; i < this.parent.formatter.getUndoRedoStack().length; i++) {
                 const temp: Element = this.parent.createElement('div');
                 const contentElem: DocumentFragment = this.parent.formatter.getUndoRedoStack()[i as number].text as DocumentFragment;
@@ -161,7 +161,7 @@ export class Audio {
     // eslint-disable-next-line
     private onKeyUp(event: NotifyArgs): void {
         if (!isNOU(this.deletedAudio) && this.deletedAudio.length > 0) {
-            for (let i: number = 0; i < this.deletedAudio.length - 1; i++) {
+            for (let i: number = 0; i < this.deletedAudio.length; i++) {
                 const args: AfterMediaDeleteEventArgs = {
                     element: (this.deletedAudio[i as number] as HTMLElement).querySelector('audio'),
                     src: (this.deletedAudio[i as number] as HTMLElement).querySelector('source').getAttribute('src')

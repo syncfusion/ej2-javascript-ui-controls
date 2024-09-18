@@ -6,7 +6,7 @@ import { AnimationModel } from '../../common/model/base-model';
 import { Axis } from '../../chart/axis/axis';
 
 /**
- * `StepAreaSeries` Module used to render the step area series.
+ * The `StepAreaSeries` module is used to render the step area series.
  */
 
 export class StepAreaSeries extends LineBase {
@@ -35,7 +35,7 @@ export class StepAreaSeries extends LineBase {
         let xValue: number;
         let lineLength: number;
         let prevPoint: Points = null;
-        let emptyPointDirection:  string = '';
+        let borderDirection: string = '';
         if (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') {
             lineLength = 0.5;
         } else {
@@ -53,15 +53,18 @@ export class StepAreaSeries extends LineBase {
                     direction += ('M' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
                     currentPoint = getPoint(xValue - lineLength, point.yValue, xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
+                    borderDirection += ('M' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
                 }
                 // First Point to draw the Steparea path
                 if (prevPoint != null) {
                     currentPoint = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted);
                     secondPoint = getPoint(prevPoint.xValue, prevPoint.yValue, xAxis, yAxis, isInverted);
-                    direction = direction.concat(this.GetStepLineDirection(currentPoint, secondPoint, series.step));
+                    direction = direction.concat(this.GetStepLineDirection(currentPoint, secondPoint, series.step, 'L', series));
+                    borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, 'L', series, true));
                 } else if (series.emptyPointSettings.mode === 'Gap') {
                     currentPoint = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted);
                     direction += 'L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ';
+                    borderDirection += 'L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ';
                 }
                 this.storePointLocation(point, series, isInverted, getPoint);
                 prevPoint = point;
@@ -79,6 +82,7 @@ export class StepAreaSeries extends LineBase {
             start = { 'x': visiblePoints[pointsLength - 1].xValue + lineLength, 'y': visiblePoints[pointsLength - 1].yValue };
             secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
             direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+            borderDirection += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
             start = { 'x': visiblePoints[pointsLength - 1].xValue + lineLength, 'y': origin };
             secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
             direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
@@ -95,10 +99,9 @@ export class StepAreaSeries extends LineBase {
          * To draw border for the path directions of area
          */
         if (series.border.width !== 0) {
-            emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(direction));
             const options: PathOption = new PathOption(
                 series.chart.element.id + '_Series_border_' + series.index, 'transparent',
-                series.border.width, series.border.color ? series.border.color : series.interior, 1, series.dashArray, emptyPointDirection
+                series.border.width, series.border.color ? series.border.color : series.interior, 1, series.dashArray, borderDirection
             );
             this[pointAnimate ? 'addAreaPath' : 'appendLinePath'](options, series, '');
         }
@@ -122,11 +125,8 @@ export class StepAreaSeries extends LineBase {
             }
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -135,6 +135,7 @@ export class StepAreaSeries extends LineBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         const option: AnimationModel = series.animation;

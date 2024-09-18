@@ -108,6 +108,9 @@ export class Filter {
         case 'reset':
             this.reset();
             break;
+        case 'apply-filter':
+            this.applyFilter(args.value['context'] as CanvasRenderingContext2D);
+            break;
         }
     }
 
@@ -594,13 +597,15 @@ export class Filter {
         parent.notify('transform', {prop: 'getPreviousZoomValue', value: {obj: zoomObj }});
         const straightenObj: Object = {zoomFactor: null };
         parent.notify('draw', {prop: 'getStraightenInitZoom', value: {obj: straightenObj }});
+        const bgObj: Object = { color: null };
+        parent.notify('draw', { prop: 'getImageBackgroundColor', value: {obj: bgObj }});
         const obj: CurrentObject = {cropZoom: 0, defaultZoom: 0, totalPannedPoint: {x: 0, y: 0}, totalPannedClientPoint: {x: 0, y: 0},
             totalPannedInternalPoint: {x: 0, y: 0}, tempFlipPanPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint,
             rotateFlipColl: [], degree: 0, currFlipState: '', zoomFactor: 0, previousZoomValue : 0, straighten: 0,
             destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, frame: 'none',
             srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter : '', isBrightAdjust: this.isBrightnessAdjusted,
             aspectWidth: null, aspectHeight: null, straightenZoom: 0, adjustmentLevel: extend({}, this.tempAdjVal, {}, true) as Adjustment,
-            currentFilter: this.tempFilVal };
+            currentFilter: this.tempFilVal, imageSource: '', bgColor: '' };
         obj.cropZoom = parent.transform.cropZoomFactor; obj.defaultZoom = parent.transform.defaultZoomFactor;
         obj.zoomFactor = parent.zoomSettings.zoomFactor; obj.previousZoomValue = zoomObj['previousZoomValue'];
         obj.straightenZoom = straightenObj['zoomFactor'];
@@ -619,7 +624,264 @@ export class Filter {
         obj.filter = this.lowerContext.filter; obj.aspectWidth = parent.aspectWidth; obj.aspectHeight = parent.aspectHeight;
         obj.frame = parent.frameObj.type;
         obj.frameObj = extend({}, parent.frameObj) as FrameValue;
+        obj.imageSource = parent.baseImg.src;
+        obj.bgColor = bgObj['color'];
         if (dummyObj) {dummyObj['currObj'] = obj; }
         return obj;
+    }
+
+    /* Filter safari related codes */
+    private getValFromPercentage(percentage: string): number {
+        let val: number = parseFloat(percentage);
+        // check for percentages and divide by a hundred
+        if (/%\s*?$/i.test(percentage)) {
+            val /= 100;
+        }
+        return val;
+    }
+
+    private getValFromLength(length: string): number {
+        return parseFloat(length);
+    }
+
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    private parseFilterString(filterString: string): any[] {
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        let filterArray: any[] = [];
+        if (filterString !== 'none') {
+            filterArray = filterString.split(' ').map((filter: string) => {
+                const [name, value] = filter.match(/([a-z-]+)\(([^)]+)\)/).slice(1, 3);
+                return { filter: name, value: value };
+            });
+        }
+        return filterArray;
+    }
+
+    private applyFilter(context: CanvasRenderingContext2D): void {
+        const { height, width } = context.canvas;
+        let imageData: ImageData = context.getImageData(0, 0, width, height);
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const filterArray: any[] = this.parseFilterString(context.filter);
+        for (let i: number = 0, len: number = filterArray.length; i < len; i++) {
+            switch (filterArray[i as number].filter) {
+            case 'blur':
+                imageData = this.blur(context, imageData, filterArray[i as number].value);
+                break;
+            case 'brightness':
+                imageData = this.brightness(imageData, filterArray[i as number].value);
+                break;
+            case 'contrast':
+                imageData = this.contrast(imageData, filterArray[i as number].value);
+                break;
+            case 'grayscale':
+                imageData = this.grayscale(imageData, filterArray[i as number].value);
+                break;
+            case 'hue-rotate':
+                imageData = this.hueRotate(imageData, filterArray[i as number].value);
+                break;
+            case 'invert':
+                imageData = this.invert(imageData, filterArray[i as number].value);
+                break;
+            case 'opacity':
+                imageData = this.opacity(imageData, filterArray[i as number].value);
+                break;
+            case 'saturate':
+                imageData = this.saturate(context, imageData, filterArray[i as number].value);
+                break;
+            case 'sepia':
+                imageData = this.sepia(imageData, filterArray[i as number].value);
+                break;
+            }
+        }
+        context.putImageData(imageData, 0, 0);
+    }
+
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    private blur(context: CanvasRenderingContext2D, imageData: ImageData, radius: any = '0'): ImageData {
+        let blurRadius: number = this.getValFromLength(radius); blurRadius = Math.floor(blurRadius);
+        if (blurRadius <= 0) {
+            return imageData;
+        }
+        const { height, width } = context.canvas;
+        const { data } = imageData;
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const blurredData: any = new Uint8ClampedArray(data.length);
+        for (let y: number = 0; y < height; y++) {
+            for (let x: number = 0; x < width; x++) {
+                let r: number = 0; let g: number = 0;  let b: number = 0; let a: number = 0; let count: number = 0;
+                for (let dy: number = -blurRadius; dy <= blurRadius; dy++) {
+                    for (let dx: number = -blurRadius; dx <= blurRadius; dx++) {
+                        const nx: number = x + dx;
+                        const ny: number = y + dy;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const offset: number = (ny * width + nx) * 4;
+                            r += data[offset as number];
+                            g += data[offset + 1];
+                            b += data[offset + 2];
+                            a += data[offset + 3];
+                            count++;
+                        }
+                    }
+                }
+                const i: number = (y * width + x) * 4;
+                blurredData[i as number] = r / count;
+                blurredData[i + 1] = g / count;
+                blurredData[i + 2] = b / count;
+                blurredData[i + 3] = a / count;
+            }
+        }
+        for (let i: number = 0; i < data.length; i++) {
+            data[i as number] = blurredData[i as number];
+        }
+        return imageData;
+    }
+
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    private brightness(imageData: ImageData, percentage: any = '1'): ImageData {
+        const factor: number = this.getValFromPercentage(percentage);
+        if (factor !== 1) {
+            const { data } = imageData;
+            const { length } = data;
+            for (let i: number = 0; i < length; i += 4) {
+                data[i + 0] *= factor; data[i + 1] *= factor; data[i + 2] *= factor;
+            }
+        }
+        return imageData;
+    }
+
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    private contrast(imageData: ImageData, percentage: any = '1'): ImageData {
+        const factor: number = this.getValFromPercentage(percentage);
+        if (factor !== 1) {
+            const { data } = imageData;
+            const { length } = data;
+            for (let i: number = 0; i < length; i += 4) {
+                data[i + 0] = ((data[i + 0] / 255 - 0.5) * factor + 0.5) * 255;
+                data[i + 1] = ((data[i + 1] / 255 - 0.5) * factor + 0.5) * 255;
+                data[i + 2] = ((data[i + 2] / 255 - 0.5) * factor + 0.5) * 255;
+            }
+        }
+        return imageData;
+    }
+
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    private grayscale(imageData: ImageData, percentage: any = '0'): ImageData {
+        const factor: number = this.getValFromPercentage(percentage);
+        if (factor > 0) {
+            const { data } = imageData;
+            const { length } = data;
+            for (let i: number = 0; i < length; i += 4) {
+                const r: number = data[i as number]; const g: number = data[i + 1]; const b: number = data[i + 2];
+                // Calculate the grayscale value using the luminosity method
+                const gray: number = 0.299 * r + 0.587 * g + 0.114 * b;
+                // Blend the original color with the grayscale value based on the percentage
+                data[i  as number] = r * (1 - factor) + gray * factor;
+                data[i + 1] = g * (1 - factor) + gray * factor;
+                data[i + 2] = b * (1 - factor) + gray * factor;
+            }
+        }
+        return imageData;
+    }
+
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    private hueRotate(imageData: ImageData, rotation: any = '0deg'): ImageData {
+        const { data } = imageData;
+        const angle: number = parseFloat(rotation) * (Math.PI / 180);
+        if (angle > 0) {
+            const cosA: number = Math.cos(angle);
+            const sinA: number = Math.sin(angle);
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            const matrix: any = [
+                0.213 + cosA * 0.787 - sinA * 0.213, 0.715 - cosA * 0.715 - sinA * 0.715, 0.072 - cosA * 0.072 + sinA * 0.928,
+                0.213 - cosA * 0.213 + sinA * 0.143, 0.715 + cosA * 0.285 + sinA * 0.140, 0.072 - cosA * 0.072 - sinA * 0.283,
+                0.213 - cosA * 0.213 - sinA * 0.787, 0.715 - cosA * 0.715 + sinA * 0.715, 0.072 + cosA * 0.928 + sinA * 0.072
+            ];
+            for (let i: number = 0; i < data.length; i += 4) {
+                const r: number = data[i as number];
+                const g: number = data[i + 1];
+                const b: number = data[i + 2];
+
+                // Apply the hue rotation matrix
+                data[i as number] = matrix[0] * r + matrix[1] * g + matrix[2] * b;
+                data[i + 1] = matrix[3] * r + matrix[4] * g + matrix[5] * b;
+                data[i + 2] = matrix[6] * r + matrix[7] * g + matrix[8] * b;
+            }
+        }
+        return imageData;
+    }
+
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    private invert(imageData: ImageData, percentage: any = '0'): ImageData {
+        const factor: number = this.getValFromPercentage(percentage);
+        if (factor > 0) {
+            const { data } = imageData;
+            const { length } = data;
+            for (let i: number = 0; i < length; i += 4) {
+                data[i + 0] = Math.abs(data[i + 0] - 255 * factor);
+                data[i + 1] = Math.abs(data[i + 1] - 255 * factor);
+                data[i + 2] = Math.abs(data[i + 2] - 255 * factor);
+            }
+        }
+        return imageData;
+    }
+
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    private opacity(imageData: ImageData, percentage: any = '0'): ImageData {
+        const factor: number = this.getValFromPercentage(percentage);
+        if (factor >= 0) {
+            const { data } = imageData;
+            const { length } = data;
+            for (let i: number = 3; i < length; i += 4) {
+                data[i as number] *= factor;
+            }
+        }
+        return imageData;
+    }
+
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    private saturate(context: CanvasRenderingContext2D, imageData: ImageData, percentage: any = '0'): ImageData {
+        const factor: number = this.getValFromPercentage(percentage);
+        if (factor !== 1) {
+            const {width, height} = context.canvas;
+            const { data } = imageData;
+            const lumR: number = (1 - factor) * 0.3086; const lumG: number = (1 - factor) * 0.6094;
+            const lumB: number = (1 - factor) * 0.082;
+            // tslint:disable-next-line no-bitwise
+            const shiftW: number = width << 2;
+            for (let j: number = 0; j < height; j++) {
+                const offset: number = j * shiftW;
+                for (let i: number = 0; i < width; i++) {
+                // tslint:disable-next-line no-bitwise
+                    const pos: number = offset + (i << 2);
+                    const r: number = data[pos + 0]; const g: number = data[pos + 1]; const b: number = data[pos + 2];
+                    data[pos + 0] = (lumR + factor) * r + lumG * g + lumB * b;
+                    data[pos + 1] = lumR * r + (lumG + factor) * g + lumB * b;
+                    data[pos + 2] = lumR * r + lumG * g + (lumB + factor) * b;
+                }
+            }
+        }
+        return imageData;
+    }
+
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    private sepia(imageData: ImageData, percentage: any = '0'): ImageData {
+        let factor: number = this.getValFromPercentage(percentage);
+        if (factor > 1) {
+            factor = 1;
+        }
+        if (factor > 0) {
+            const { data } = imageData;
+            const { length } = data;
+            for (let i: number = 0; i < length; i += 4) {
+                const r: number = data[i + 0]; const g: number = data[i + 1]; const b: number = data[i + 2];
+                data[i + 0] =
+                  (0.393 * r + 0.769 * g + 0.189 * b) * factor + r * (1 - factor);
+                data[i + 1] =
+                  (0.349 * r + 0.686 * g + 0.168 * b) * factor + g * (1 - factor);
+                data[i + 2] =
+                  (0.272 * r + 0.534 * g + 0.131 * b) * factor + b * (1 - factor);
+            }
+        }
+        return imageData;
     }
 }

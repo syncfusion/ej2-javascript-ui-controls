@@ -116,7 +116,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             expect(instance.getCell(0, 0).style.fontWeight).toEqual('bold'); // dom checking
             // for undo checking
             helper.click('_undo');
-            expect(getCell(0, 0, instance.getActiveSheet()).style).toBeNull();
+            expect(getCell(0, 0, instance.getActiveSheet()).style).toBeUndefined();
             expect(instance.getCell(0, 0).style.fontWeight).toEqual('');
             // for redo checking
             helper.click('_redo');
@@ -222,7 +222,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
                 helper.click('_undo');
                 cell = getCell(0, 10, instance.getActiveSheet());
                 expect(cell.value).toEqual('');
-                expect(cell.style).toBeNull();
+                expect(cell.style).toBeUndefined();
                 done();
             });
         });
@@ -261,7 +261,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
                 helper.invoke('undo', null);
                 cell = getCell(1, 10, instance.getActiveSheet());
                 expect(cell.value).toEqual('');
-                expect(cell.style).toBeNull();
+                expect(cell.style).toBeUndefined();
                 done();
             });
         });
@@ -299,7 +299,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             expect(getCell(4, 10, instance.getActiveSheet()).style.color).toEqual('#ed7d31');
             // undo checking
             helper.click('_undo');
-            expect(getCell(4, 10, instance.getActiveSheet()).style).toBeNull();
+            expect(getCell(4, 10, instance.getActiveSheet()).style).toBeUndefined();
             // redo checking
             helper.click('_redo');
             expect(getCell(4, 10, instance.getActiveSheet()).style.color).toEqual('#ed7d31');
@@ -713,8 +713,8 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
         // it('Apply Freeze Row->', (done: Function) => {
         //     helper.click('#' + helper.id + '_freezerows');
         //     setTimeout(() => {
-        //         expect(helper.getInstance().sheets[0].frozenRows).toBe(4);
-        //         expect(helper.getInstance().sheets[0].frozenColumns).toBe(0);
+        //         // expect(helper.getInstance().sheets[0].frozenRows).toBe(4);
+        //         // expect(helper.getInstance().sheets[0].frozenColumns).toBe(0);
         //         done();
         //     }, 50);
         // });

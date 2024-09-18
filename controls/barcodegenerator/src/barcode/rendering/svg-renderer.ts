@@ -68,7 +68,7 @@ export class BarcodeSVGRenderering implements IBarcodeRenderer {
     }
 
     /**
-     * Draw the image for the barcode.\
+     * Draw the image for the barcode.
      *
      * @returns {HTMLElement} Draw the barcode SVG .
      *  @param {Object} svg - Provide the canvas element .
@@ -76,7 +76,7 @@ export class BarcodeSVGRenderering implements IBarcodeRenderer {
      * @private
      */
     public renderImage(svg: HTMLElement, attribute: BaseAttributes): HTMLElement {
-        const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        const image: SVGImageElement = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         image.setAttribute('x', attribute.x.toString());
         image.setAttribute('y', attribute.y.toString());
         image.setAttribute('width', attribute.width.toString());

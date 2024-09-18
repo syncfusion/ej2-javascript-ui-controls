@@ -98,6 +98,18 @@
         }
       }
 
+      & .e-calculation {
+        &::before {
+          content: '\e907';
+        }
+      }
+
+      & .e-calculate-sheet {
+        &::before {
+          content: '\e909';
+        }
+      }
+
       & .e-hyperlink-icon {
         &::before {
           content: '\e757';
@@ -120,6 +132,18 @@
     & .e-insert-function .e-btn-icon {
       &::before {
         content: '\e7fa';
+      }
+    }
+
+    & .e-calculation .e-btn-icon {
+      &::before {
+        content: '\e907';
+      }
+    }
+
+    & .e-calculate-sheet .e-btn-icon {
+      &::before {
+        content: '\e909';
       }
     }
 
@@ -329,6 +353,14 @@
     & .e-ul .e-menu-item.e-focused {
       background-color: transparent;
       color: $chart-text-content-color;
+      & .e-menu-icon.e-icons {
+        color: $icon-color;
+      }
+      & .e-menu-icon.e-icons {
+        &:hover {
+          color: $icon-color-hover;
+        }
+      }
     }
   }
 

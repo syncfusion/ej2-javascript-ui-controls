@@ -5,7 +5,7 @@ import { Points, Series } from './chart-series';
 import { ColumnBase } from './column-base';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 /**
- * `RangeColumnSeries` module is used to render the range column series.
+ * The `RangeColumnSeries` module is used to render the range column series.
  */
 export class RangeColumnSeries extends ColumnBase {
     public sideBySideInfo: DoubleRange[] = [];
@@ -14,6 +14,7 @@ export class RangeColumnSeries extends ColumnBase {
      *
      * @param {Series} series - The series to render.
      * @returns {void}
+     * @private
      */
     public render(series: Series): void {
         this.sideBySideInfo[series.index] = this.getSideBySideInfo(series);
@@ -54,11 +55,8 @@ export class RangeColumnSeries extends ColumnBase {
             }
             if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                 series.chart.dataLabelModule.commonId = series.chart.element.id + '_Series_' + series.index + '_Point_';
-                const dataLabelElement: Element[] = series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
-                                                                                                 null, series.marker.dataLabel);
-                for (let j: number = 0; j < dataLabelElement.length; j++) {
-                    series.chart.dataLabelModule.doDataLabelAnimation(series, dataLabelElement[j as number]);
-                }
+                series.chart.dataLabelModule.renderDataLabel(series, series.points[point[i as number]],
+                                                             null, series.marker.dataLabel);
             }
         }
     }
@@ -80,6 +78,7 @@ export class RangeColumnSeries extends ColumnBase {
      *
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
+     * @private
      */
     public doAnimation(series: Series): void {
         this.animate(series);

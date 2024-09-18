@@ -28,6 +28,34 @@
 
 @include export-module('grid-theme') {
 
+  #{&}.e-grid,
+  #{&}.e-grid-popup {
+    .e-icons:not(.e-btn-icon, .e-check) {
+      color: $grid-icon-color;
+    }
+
+    .e-ftrchk.e-chkfocus,
+    .e-menu-item.e-menufocus,
+    li.e-cclist.e-colfocus {
+      background-color: $grid-hover-bg-color;
+    }
+
+    .e-ccdlg {
+      .e-footer-content {
+        border-color: $grid-columnchooser-footer-border-color;
+        opacity: $grid-columnchooser-footer-border-opacity;
+      }
+    
+      .e-cc-searchdiv {
+        border-color: $grid-columnchooser-search-border-color;
+      }
+    
+      .e-cc-searchdiv.e-input-focus {
+        border-color: $grid-columnchooser-search-border-fcolor;
+      }
+    }
+  }
+
   /*! Grid theme */
   #{&}.e-grid {
     border-color: $grid-header-border-color;
@@ -37,8 +65,7 @@
     }
 
     .e-gridpopup span:hover,
-    .e-gridpopup .e-spanclicked,
-    .e-icons:not(.e-btn-icon) {
+    .e-gridpopup .e-spanclicked {
       color: $grid-icon-color;
     }
 
@@ -74,6 +101,12 @@
       color: $grid-icon-default-color;
     }
 
+    .e-gridheader .e-columnselection .e-icons:not(.e-icon-hide):not(.e-check):not(.e-stop):not(.e-icon-reorderuparrow):not(.e-icon-reorderdownarrow) {
+      @if $grid-skin == 'fluent2' or $grid-skin == 'highcontrast' {
+        color: $grid-row-selection-color;
+      }
+    }
+
     .e-gridheader .e-headercontent {
       .e-icon-reorderuparrow,
       .e-icon-reorderdownarrow {
@@ -85,6 +118,12 @@
       color: $grid-header-icon-color;
       @if $grid-skin == 'material3' or $grid-skin == 'fluent2' {
         border-radius: 4px;
+      }
+    }
+
+    .e-groupdroparea .e-groupheadercell:hover .e-icons {
+      @if $grid-skin == 'fluent2' {
+        color: $grid-hover-icon-color;
       }
     }
 
@@ -216,8 +255,8 @@
       }
     }
 
-    th.e-headercell[aria-sort = 'ascending'] .e-headertext,
-    th.e-headercell[aria-sort = 'descending'] .e-headertext,
+    th.e-headercell[aria-sort = 'ascending']:not(.e-columnselection) .e-headertext,
+    th.e-headercell[aria-sort = 'descending']:not(.e-columnselection) .e-headertext,
     th.e-headercell[aria-sort = 'ascending'] .e-sortfilterdiv,
     th.e-headercell[aria-sort = 'descending'] .e-sortfilterdiv {
       color: $grid-sorted-header-color;
@@ -369,7 +408,13 @@
     &.e-gridhover .e-row.e-addedrow:not(.e-disable-gridhover):not(.e-detailrow):hover .e-dragindentcell,
     &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowexpand {
       &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-        @include bgcolor-color-styles($grid-hover-bg-color, $grid-hover-content-font-color);
+        @if $grid-skin == 'bootstrap5.3' {
+          background: $grid-hover-bg-color;
+          color: $grid-hover-content-font-color;
+        }
+        @else {
+          @include bgcolor-color-styles($grid-hover-bg-color, $grid-hover-content-font-color);
+        }
       }
     }
 
@@ -430,66 +475,6 @@
       }
     }
 
-    .e-bigger &,
-    &.e-bigger {
-      &.e-gridhover .e-dragclone .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
-      &.e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
-      &.e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse,
-      &.e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop,
-      &.e-rtl .e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop,
-      &.e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowexpand {
-        &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-          @if $grid-skin == 'material3' {
-            background: $content-bg-color-alt3;
-          }
-        }
-      }
-
-      &.e-gridhover .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover,
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover {
-        .e-rowcell.e-leftfreeze,
-        .e-rowcell.e-rightfreeze,
-        .e-rowcell.e-unfreeze,
-        .e-rowcell.e-fixedfreeze {
-          &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-            @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
-          }
-        }
-      }
-
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover {
-        .e-detailrowcollapse.e-leftfreeze,
-        .e-detailrowcollapse.e-rightfreeze,
-        .e-detailrowcollapse.e-unfreeze,
-        .e-detailrowcollapse.e-fixedfreeze,
-        .e-rowdragdrop.e-leftfreeze,
-        .e-rowdragdrop.e-rightfreeze,
-        .e-rowdragdrop.e-unfreeze,
-        .e-rowdragdrop.e-fixedfreeze {
-          &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-            @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
-          }
-        }
-      }
-
-      &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover {
-        .e-rowdragdrop.e-leftfreeze,
-        .e-rowdragdrop.e-rightfreeze,
-        .e-rowdragdrop.e-unfreeze,
-        .e-rowdragdrop.e-fixedfreeze {
-          &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-            @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
-          }
-        }
-      }
-
-      &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowexpand {
-        &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-          @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
-        }
-      }
-    }
-
     & .e-row:hover .e-rowdragdrop {
       cursor: move;
     }
@@ -521,7 +506,7 @@
         color: $grid-row-selection-color;
       }
     }
-
+    
     td.e-active {
       background: $grid-row-selection-bg-color;
     }
@@ -543,12 +528,22 @@
     }
 
     .e-columnselection {
-      background-color: $grid-row-selection-bg-color;
+      background: $grid-row-selection-bg-color;
+      @if $grid-skin == 'fluent2' or $grid-skin == 'highcontrast' {
+        color: $grid-content-selection-color;
+      }
     }
 
     td.e-cellselectionbackground {
       background: $grid-cell-selection-bg-color;
       color: $grid-cell-selection-color;
+    }
+
+    td.e-rowcell:not(.e-editedbatchcell):not(.e-updatedtd).e-cellselectionbackground,
+    td.e-rowcell:not(.e-editedbatchcell):not(.e-updatedtd).e-columnselection {
+      @if $grid-skin == 'fluent2' or $grid-skin == 'highcontrast' {
+        color: $grid-content-selection-color;
+      }
     }
 
     td.e-cellselectionbackground.e-leftfreeze:not(.e-updatedtd),
@@ -568,10 +563,6 @@
 
     .e-filtered::before {
       color: $grid-filtered-color;
-    }
-
-    .e-focused .e-filtered::before {
-      color: $grid-hover-icon-color;
     }
 
     .e-gridpopup {
@@ -704,7 +695,7 @@
       border-radius: $group-header-border-radius;
       color: $group-header-color;
       @if $grid-skin == 'fluent2' {
-        border-color: $tooltip-border;
+        border: 1px solid $chip-border-color;
       }
     }
 
@@ -712,6 +703,10 @@
       @include bgcolor-bordercolor-styles($group-header-hover-bg-color, $grid-group-hover-broder-color);
       @if $grid-skin == 'material3' {
         border-style: solid;
+      }
+      @if $grid-skin == 'fluent2' {
+        color: $grid-hover-content-font-color;
+        border: 1px solid $group-header-hover-bg-color;
       }
     }
 
@@ -775,21 +770,6 @@
       border-bottom: 0;
     }
 
-    .e-ccdlg {
-      .e-footer-content {
-        border-color: $grid-columnchooser-footer-border-color;
-        opacity: $grid-columnchooser-footer-border-opacity;
-      }
-
-      .e-cc-searchdiv {
-        border-color: $grid-columnchooser-search-border-color;
-      }
-
-      .e-cc-searchdiv.e-input-focus {
-        border-color: $grid-columnchooser-search-border-fcolor;
-      }
-    }
-
     .e-cloneproperties.e-draganddrop .e-rowcell {
       color: $grid-content-font-color;
       @if $grid-skin == 'material3' {
@@ -842,9 +822,6 @@
       }
     }
 
-    .e-ftrchk.e-chkfocus,
-    .e-menu-item.e-menufocus,
-    li.e-cclist.e-colfocus,
     &.sf-grid .e-ccheck.e-colfocus {
       background-color: $grid-hover-bg-color;
     }
@@ -893,6 +870,12 @@
 
   .e-filterbaroperator.e-dropdownlist {
     position: absolute;
+  }
+
+  @if $grid-skin == 'fluent2' {
+    .e-grid-menu .e-menu-item.e-focused .e-css.e-checkbox-wrapper .e-label {
+      color: $flyout-text-color-hover;
+    }
   }
 
   .e-filterbardropdown:not(.e-rtl) {

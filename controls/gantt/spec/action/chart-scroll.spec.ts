@@ -1,6 +1,7 @@
 /**
  * Gantt chart-scroll spec
  */
+import { doesImplementInterface } from '@syncfusion/ej2-grids';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport } from '../../src/index';
 import { projectData1, virtualData, exportData1, projectNewData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerScrollEvent } from '../base/gantt-util.spec';
@@ -8,6 +9,76 @@ Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, Colu
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
+describe('Next time span in timeline virtualization', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: exportData1,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                eventMarkers: [
+                    {
+                        day: '04/10/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                holidays: [{
+                    from: "04/04/2019",
+                    to: "04/05/2019",
+                    label: " Public holidays",
+                    cssClass: "e-custom-holiday"
+
+                },
+                {
+                    from: "04/12/2019",
+                    to: "04/12/2019",
+                    label: " Public holiday",
+                    cssClass: "e-custom-holiday"
+
+                }],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                gridLines: 'Vertical',
+                highlightWeekends: true,
+                enableTimelineVirtualization:true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2024'),
+                rowHeight: 40,
+                taskbarHeight: 30
+            }, done);
+    });
+    beforeEach((done) => {
+        setTimeout(done, 100);
+    });
+    it('Moving next time span', () => {
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.requestType === "nextTimeSpan") {
+                let chartLeft = ganttObj.chartPane.querySelector('.e-content').scrollLeft
+                let currentCount: number = Math.round(chartLeft / ganttObj.element.offsetWidth);
+                ganttObj.ganttChartModule.scrollObject.previousCount = currentCount
+            }
+            if (args.requestType === "scroll") {
+                expect(ganttObj.chartPane.querySelector('.e-content').scrollLeft > 0).toBe(true)
+            }
+        };
+        ganttObj.nextTimeSpan()
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
 describe('Gantt chart-scroll support', () => {
     describe('Gantt chart-scroll action', () => {
         let ganttObj: Gantt;
@@ -178,12 +249,6 @@ describe('Gantt chart-scroll action in resource view', () => {
                 projectEndDate: new Date('05/18/2019')
             }, done);
     });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
-
     it('Set scrollTop using public method in resource view', () => {
         ganttObj.ganttChartModule.scrollObject.setScrollTop(300);
     });
@@ -191,4 +256,131 @@ describe('Gantt chart-scroll action in resource view', () => {
         let chartscroll: HTMLElement = ganttObj.element.querySelector('.e-chart-scroll-container') as HTMLElement;
         triggerScrollEvent(chartscroll, 500, 700);
     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
 });
+describe('Gantt get timeline left', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019')
+                    }],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                eventMarkers: [
+                    {
+                        day: '04/10/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                holidays: [{
+                    from: "04/04/2019",
+                    to: "04/05/2019",
+                    label: " Public holidays",
+                    cssClass: "e-custom-holiday"
+
+                },
+                {
+                    from: "04/12/2019",
+                    to: "04/12/2019",
+                    label: " Public holiday",
+                    cssClass: "e-custom-holiday"
+
+                }],
+                gridLines: 'Vertical',
+                highlightWeekends: true,
+                rowHeight: 40,
+                taskbarHeight: 30
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+
+    it('Set scrollTop using public method with getTimelineLeft', () => {
+        ganttObj.ganttChartModule.scrollObject.getTimelineLeft();
+    });
+});
+    describe('Gantt chart-scroll action', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: exportData1,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    eventMarkers: [
+                        {
+                            day: '04/10/2019',
+                            cssClass: 'e-custom-event-marker',
+                            label: 'Project approval and kick-off'
+                        }
+                    ],
+                    holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+
+                    }],
+                    gridLines: 'Vertical',
+                    highlightWeekends: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    rowHeight: 40,
+                    enableRtl: true,
+                    taskbarHeight: 30
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach(function (done) {
+            setTimeout(done, 500);
+        });
+        it('timelineleft method', () => {
+            expect(ganttObj.ganttChartModule.scrollObject.getTimelineLeft()).toBe(0);
+            ganttObj.timelineModule.wholeTimelineWidth = 10000;
+            expect(ganttObj.ganttChartModule.scrollObject.getTimelineLeft()).toBe(0);
+        });
+    });

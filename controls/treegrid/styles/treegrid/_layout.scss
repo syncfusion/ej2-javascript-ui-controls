@@ -30,57 +30,6 @@
   box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
 }
 @include export-module('tree-layout') {
-  .e-bigger {
-    .e-treegrid {
-      .e-treegridexpand,
-      .e-treegridcollapse {
-        font-size: $treegrid-bigger-icon-font-size;
-        height: $treegrid-bigger-icon-size;
-        width: $treegrid-bigger-icon-size;
-        vertical-align: bottom;
-      }
-      .e-treegridexpand{
-        @if $skin-name == 'highcontrast'{
-          vertical-align: middle;
-        }
-      }
-
-      .e-hierarchycheckbox {
-        padding-left: 2px;
-      }
-
-      .e-hierarchycheckbox .e-frame {
-        @if $skin-name == 'bootstrap' or $skin-name == 'boostrap-dark' or $skin-name == 'fabric-dark' or $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
-          font-size: 12px;
-          line-height: 12px;
-          padding: 2px 0;
-        }
-        height: $treegrid-frame-bigger-icon-height;
-        width: $treegrid-frame-bigger-icon-width;
-      }
-
-      .e-treecell {
-        line-height: $treegrid-bigger-icon-size;
-      }
-
-      .e-treecolumn-container span {
-        vertical-align: middle;
-      }
-
-      .e-row[aria-expanded = 'true'] .e-treecell {
-        @if $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
-          font-size: 16px;
-          font-weight: bold;
-        }
-      }
-
-      .e-gridcontent .e-rowcell{
-        @if $skin-name == 'fluent2' or $skin-name == 'fluent2-dark'{
-          line-height: 19px;
-        }
-      }
-    }
-  }
 
   .e-treegrid {
     .e-icons.e-none::before {
@@ -110,7 +59,7 @@
     span.e-icons.e-treegridcollapse{
       @if $skin-name == 'highcontrast'{
         text-align: center;
-        vertical-align: baseline;
+        vertical-align: middle;
       }
     }
 
@@ -133,6 +82,19 @@
     .e-treegridexpand:hover::before,
     .e-treegridcollapse:hover::before {
       color: $treegrid-right-arrow-hover-color;
+    }
+
+    @if $skin-name == 'fluent2' {
+      .e-selectionbackground.e-active .e-treegridexpand::before,
+      .e-selectionbackground.e-active .e-treegridcollapse::before,
+      .e-gridhover .e-gridcontent td.e-rowcell:hover .e-treegridexpand::before,
+      .e-gridhover .e-gridcontent td.e-rowcell:hover .e-treegridcollapse::before,
+      .e-selectionbackground.e-active .e-treegridexpand:hover::before,
+      .e-selectionbackground.e-active .e-treegridcollapse:hover::before,
+      .e-gridhover .e-gridcontent td.e-rowcell:hover .e-treegridexpand:hover::before,
+      .e-gridhover .e-gridcontent td.e-rowcell:hover .e-treegridcollapse:hover::before {
+        color: $icon-color-pressed;
+      }
     }
 
     .e-rowcell.e-treerowcell.e-treegridcheckbox {
@@ -253,6 +215,11 @@
 
       &.e-wrap .e-rowcell .e-treecheckbox-container .e-treecheckbox {
         @include grid-wrap;
+      }
+      &.e-wrap .e-treecolumn-container {
+        span {
+          vertical-align: middle;
+        }
       }
     }
 

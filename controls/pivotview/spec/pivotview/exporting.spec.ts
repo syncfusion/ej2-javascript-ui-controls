@@ -1,5 +1,5 @@
 import { IDataSet } from '../../src/base/engine';
-import { pivot_dataset } from '../base/datasource.spec';
+import { pivot_dataset, pivot_smalldata } from '../base/datasource.spec';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
@@ -9,9 +9,9 @@ import { PDFExport } from '../../src/pivotview/actions/pdf-export';
 import { ExcelExport } from '../../src/pivotview/actions/excel-export';
 import { Toolbar } from '../../src/common/popups/toolbar';
 import { FieldList } from '../../src/common/actions/field-list';
-import { BeforeExportEventArgs, PdfCellRenderArgs, PivotActionBeginEventArgs } from '../../src/common/base/interface';
-import { PdfExportProperties } from '@syncfusion/ej2-grids';
-import { PdfFontFamily, PdfFontStyle, PdfStandardFont, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
+import { BeforeExportEventArgs, ExportCompleteEventArgs, PdfCellRenderArgs, PivotActionBeginEventArgs } from '../../src/common/base/interface';
+import { ExcelExportProperties, PdfExportProperties } from '@syncfusion/ej2-grids';
+import { PdfFontFamily, PdfFontStyle, PdfPageSize, PdfStandardFont, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
 
 let image: string = '/9j/4AAQSkZJRgABAQAAAQABAAD/9k=';
 
@@ -1620,6 +1620,12 @@ describe('PDF Export', () => {
         beforeEach((done: Function) => {
             setTimeout(() => { done(); }, 100);
         });
+        it('- Table render', (done: Function) => {
+            setTimeout(() => {
+                expect((pivotGridObj.engineModule.pivotValues[0][1] as IDataSet).formattedText).toBe("female");
+                done();
+            }, 1000);
+        });
         it('- Exporting', (done: Function) => {
             setTimeout(() => {
                 let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
@@ -1627,7 +1633,7 @@ describe('PDF Export', () => {
                 util.triggerEvent(li, 'mouseover');
                 (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 500);
         });
         it('memory leak', () => {
             profile.sample();
@@ -1728,6 +1734,416 @@ describe('PDF Export', () => {
             }, 1000);
         });
 
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+    describe('- PDf Export Properties in Chart', () => {
+        let pivotGridObj: PivotView;
+        let pdfExportProperties: PdfExportProperties = {
+            pageSize:'A4',
+            pageOrientation:'Landscape',
+            header: {
+                fromTop: 0,
+                height: 130,
+                contents: [
+                    {
+                        type: 'Text',
+                        value: "Northwind Traders",
+                        position: { x: 0, y: 50 },
+                        style: { textBrushColor: '#000000', fontSize: 13 }
+                    },
+
+                ]
+            },
+            footer: {
+                fromBottom: 160,
+                height: 150,
+                contents: [
+                    {
+                        type: 'PageNumber',
+                        pageNumberType: 'Arabic',
+                        format: 'Page {$current} of {$total}',
+                        position: { x: 0, y: 25 },
+                        style: { textBrushColor: '#02007a', fontSize: 15 }
+                    }
+                ]
+            }
+        }
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                },
+                actionBegin: function (args: PivotActionBeginEventArgs) {
+                    if (args.actionName === 'PDF export') {
+                        args.cancel = true;
+                        pivotGridObj.pdfExport(pdfExportProperties, false, null, false, true);
+                    }
+                },
+                width: '100%',
+                height: 300,
+                allowCalculatedField: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                showFieldList: true,
+                showTooltip:true,
+                enableVirtualization: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                allowConditionalFormatting: true,
+                displayOption: { view: 'Both', primary: 'Chart' },
+
+                chartSettings: {
+                    value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: true, showPointColorByMembers: true, enableScrollOnMultiAxis: true,
+                },
+                exportComplete: (args: ExportCompleteEventArgs) => {
+                    if (args.promise) {
+                        args.promise.then((e: { blobData: Blob }) => {
+                            console.log(e.blobData);
+                        });
+                    }
+                },
+                beforeExport: (args: BeforeExportEventArgs) => {
+                    if (args.currentExportView === 'Chart') {
+                        args.width = 200;
+                        args.height = pivotGridObj.element.offsetHeight;
+                        args.fileName = "ChartExport";
+                        args.pdfMargins.top = 10;
+                        args.pdfMargins.bottom = 15;
+                        args.pdfMargins.left = 12;
+                        args.pdfMargins.right = 4;
+                        args.pdfExportProperties = pdfExportProperties;
+            
+                    } else if (args.currentExportView === 'Table') {
+                        args.width = pivotGridObj.element.offsetWidth;
+                        args.height = pivotGridObj.element.offsetHeight;
+                    }
+                }
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('For sample render-Chart', (done: Function) => {
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 500);
+        });
+        it('Pdf Export in Chart', (done: Function) => {
+            setTimeout(() => {
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+    describe('-Empty Data in Chart', () => {
+        let pivotGridObj: PivotView;
+        let pdfExportProperties: PdfExportProperties = {
+            header: {
+                fromTop: 0,
+                height: 130,
+                contents: [
+                    {
+                        type: 'Text',
+                        value: "Northwind Traders",
+                        position: { x: 0, y: 50 },
+                        style: { textBrushColor: '#000000', fontSize: 13 }
+                    },
+
+                ]
+            },
+            footer: {
+                fromBottom: 160,
+                height: 150,
+                contents: [
+                    {
+                        type: 'PageNumber',
+                        pageNumberType: 'Arabic',
+                        format: 'Page {$current} of {$total}',
+                        position: { x: 0, y: 25 },
+                        style: { textBrushColor: '#02007a', fontSize: 15 }
+                    }
+                ]
+            }
+        }
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                },
+                width: '100%',
+                height: 300,
+                allowCalculatedField: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                showFieldList: true,
+                enableVirtualization: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                allowConditionalFormatting: true,
+                displayOption: { view: 'Both', primary: 'Chart' },
+
+                chartSettings: {
+                    value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: true, showPointColorByMembers: true, enableScrollOnMultiAxis: true,
+                },
+              
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('For sample render-Empty Data', (done: Function) => {
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 500);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+    describe('- Excel Export With Header', () => {
+        let pivotGridObj: PivotView;
+        let excelExportProperties: ExcelExportProperties = {
+            header: {
+                headerRows: 2,
+                rows: [
+                    { cells: [{ colSpan: 4, value: "Pivot Table", style: { fontColor: '#C67878', fontSize: 20, hAlign: 'Center', bold: true, underline: true } }] }
+                ]
+            },
+            footer: {
+                footerRows: 4,
+                rows: [
+                    { cells: [{ colSpan: 4, value: "Thank you for your business!", style: { hAlign: 'Center', bold: true } }] },
+                    { cells: [{ colSpan: 4, value: "!Visit Again!", style: { hAlign: 'Center', bold: true } }] }
+                ]
+            }
+        };
+       
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport,ExcelExport, FieldList, VirtualScroll);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_smalldata as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    columns: [{ name: 'Date' }, { name: 'Product' }],
+                    rows: [{ name: 'Country' }, { name: 'State' }],
+                    formatSettings: [{ name: 'Amount', format: 'C' }],
+                    values: [{ name: 'Amount' }, { name: 'Quantity' }], filters: [],
+                    allowValueFilter: false,
+                    allowLabelFilter: true
+                },
+                actionBegin: function (args: PivotActionBeginEventArgs) {
+                    if (args.actionName === 'Excel export') {
+                       pivotGridObj.excelExport(excelExportProperties)
+                        
+                    }
+                },
+                width: '100%',
+                height: 300,
+                allowCalculatedField: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                showFieldList: true,
+                showTooltip:true,
+                enableVirtualization: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                allowConditionalFormatting: true,
+                displayOption: { view: 'Both', primary: 'Table' },
+
+                chartSettings: {
+                    value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: true, showPointColorByMembers: true, enableScrollOnMultiAxis: true,
+                },
+                
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('For sample render-Chart', (done: Function) => {
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 500);
+        });
+        it('Excel  Export in header', (done: Function) => {
+            setTimeout(() => {
+                debugger;
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+                done();
+            }, 2000);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+    describe('Export', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: [
+                        { row: 'row1', column1: 'column1', column2: 'column1', value: 1 },
+                        { row: 'row2', column1: 'column2', column2: 'column2', value: 2 },
+                        { row: 'row3', column1: 'column3', column2: 'column3', value: 3 },
+                        { row: 'row4', column1: 'column4', column2: 'column4', value: 4 },
+                    ],
+                    columns: [{ name: 'column1' }, { name: 'column2' }],
+                    rows: [],
+                    values: [{ name: 'value' }],
+                    valueAxis: 'row'
+                },
+                allowPdfExport: true,
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('Export ensuring for row axis.', (done: Function) => {
+            pivotGridObj.pdfExport();
+            setTimeout(() => {
+                pivotGridObj.dataSourceSettings = {
+                    dataSource: [
+                        { row: 'row1', column1: 'column1', column2: 'column1', value: 1 },
+                        { row: 'row2', column1: 'column2', column2: 'column2', value: 2 },
+                        { row: 'row3', column1: 'column3', column2: 'column3', value: 3 },
+                        { row: 'row4', column1: 'column4', column2: 'column4', value: 4 },
+                    ],
+                    columns: [],
+                    rows: [{ name: 'row' }],
+                    values: [{ name: 'value' }],
+                    valueAxis: 'column'
+                }
+                expect(1).toBe(1);
+                done();
+            }, 1000);
+        });
+        it('Export ensuring for column axis.', (done: Function) => {
+            pivotGridObj.pdfExport();
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 1000);
+        });
         it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange);

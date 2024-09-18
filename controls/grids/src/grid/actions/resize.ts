@@ -74,18 +74,16 @@ export class Resize implements IAction {
      */
     public autoFitColumns(fName?: string | string[], startRowIndex?: number, endRowIndex?: number): void {
         const columnName: string[] = (fName === undefined || fName === null || fName.length <= 0) ?
-            this.parent.getColumns().map((x: Column) => {x.autoFit=true; return x.field}) : (typeof fName === 'string') ? [fName] : fName;
+            this.parent.getColumns().map((x: Column) => {x.autoFit = true; return x.field; }) : (typeof fName === 'string') ? [fName] : fName;
         this.parent.isAutoFitColumns = true;
-        if(!isNullOrUndefined(fName) && typeof fName=='object' && fName.length !== 0 )
+        if (!isNullOrUndefined(fName) && typeof fName === 'object' && fName.length !== 0 )
         {
-            fName.forEach((field)=>{
-                if (this.parent.getColumnByField(field)) {
+            fName.forEach((field: string) => {
+                if (this.parent.getColumnByField(field)){
                     this.parent.getColumnByField(field).autoFit = true;
                 }
-            })
-        }
-        else if(typeof fName === 'string' && fName.trim() !== '')
-        {
+            });
+        } else if (typeof fName === 'string' && fName.trim() !== '') {
             this.parent.getColumnByField(fName).autoFit = true;
         }
         if (this.parent.enableAdaptiveUI) {
@@ -98,9 +96,9 @@ export class Resize implements IAction {
         const cols: Column[] = this.parent.getColumns();
         let isMaxWidthCount: number = 0;
         const newarray: string[] = cols.filter((c: Column) => {
-            if (!isNullOrUndefined(c.maxWidth)) { 
+            if (!isNullOrUndefined(c.maxWidth)) {
                 isMaxWidthCount++;
-            } 
+            }
             return c.autoFit === true;
         }).map((c: Column) => c.field || c.headerText);
         if (newarray.length > 0) {
@@ -191,8 +189,8 @@ export class Resize implements IAction {
             columnbyindex.width = colMaxWidth;
         }
         this.widthService.setColumnWidth(gObj.getColumns()[parseInt(columnIndexByField.toString(), 10)] as Column);
-        const result: boolean = gObj.getColumns().some((x: Column) => (x.visible || gObj.groupSettings.columns.length) && (x.width === null
-            || x.width === undefined || (x.width as string).length <= 0));
+        const result: boolean = gObj.getColumns().some((x: Column) => (x.visible || gObj.groupSettings.columns.length) &&
+            (x.width === null || x.width === undefined || (x.width as string).length <= 0));
         if (result === false) {
             const element: Column[] = gObj.getColumns() as Column[];
             for (let i: number = 0; i < element.length; i++) {
@@ -232,7 +230,7 @@ export class Resize implements IAction {
         } else {
             removeClass([headerTable, contentTable], ['e-tableborder']);
             if (gObj.getVisibleFrozenRightCount()) {
-                addClass([gObj.element], ['e-right-shadow']);
+                addClass([gObj.element], 'e-right-shadow');
             }
         }
         if (!isNullOrUndefined(footerTable)) {
@@ -983,7 +981,7 @@ export class Resize implements IAction {
         } else {
             removeClass([headerTable, contentTable], ['e-tableborder']);
             if (gObj.getVisibleFrozenRightCount()) {
-                addClass([gObj.element], ['e-right-shadow']);
+                addClass([gObj.element], 'e-right-shadow');
             }
         }
         if (!isNullOrUndefined(footerTable)) {

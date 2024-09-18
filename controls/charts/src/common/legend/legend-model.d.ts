@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Chart, ILegendRegions } from '../../chart';import { Font, Border, Margin, ContainerPadding, Location } from '../model/base';import { MarginModel, FontModel, BorderModel, ContainerPaddingModel, LocationModel } from '../model/base-model';import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim, getTextAnchor } from '../utils/helper';import { RectOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { ChartSeriesType, ChartShape, LegendMode } from '../../chart/utils/enum';import { Series } from '../../chart/series/chart-series';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { BulletChart } from '../../bullet-chart/bullet-chart';import { Alignment, LegendTitlePosition, TextWrap, LabelOverflow, LegendShape, LegendPosition} from '../utils/enum';import { StockChart } from '../../stock-chart';import { Chart3D } from '../../chart3d';import { CircularChart3D } from '../../circularchart3d';
+import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Chart, ILegendRegions } from '../../chart';import { Font, Border, Margin, Location, ContainerPadding } from '../model/base';import { MarginModel, FontModel, BorderModel, LocationModel, ContainerPaddingModel } from '../model/base-model';import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim, getTextAnchor } from '../utils/helper';import { RectOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { ChartSeriesType, ChartShape, LegendMode } from '../../chart/utils/enum';import { Series } from '../../chart/series/chart-series';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { BulletChart } from '../../bullet-chart/bullet-chart';import { Alignment, LegendTitlePosition, TextWrap, LabelOverflow, LegendShape, LegendPosition} from '../utils/enum';import { StockChart } from '../../stock-chart';import { Chart3D } from '../../chart3d';import { CircularChart3D } from '../../circularchart3d';
 
 /**
  * Interface for a class LegendSettings
@@ -14,7 +14,7 @@ export interface LegendSettingsModel {
     visible?: boolean;
 
     /**
-     * The height of the legend in pixels.
+     * Specifies the height of the legend in pixels.
      *
      * @default null
      */
@@ -22,7 +22,7 @@ export interface LegendSettingsModel {
     height?: string;
 
     /**
-     * The width of the legend in pixels.
+     * Specifies the width of the legend in pixels.
      *
      * @default null
      */
@@ -30,8 +30,9 @@ export interface LegendSettingsModel {
     width?: string;
 
     /**
-     * Specifies the location of the legend, relative to the chart.
-     * If x is 20, legend moves by 20 pixels to the right of the chart. It requires the `position` to be `Custom`.
+     * Specifies the location of the legend relative to the chart.
+     * If x is 20, the legend moves 20 pixels to the right of the chart.
+     > Note that the `position` must be set to `Custom` for this feature to work.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -39,10 +40,10 @@ export interface LegendSettingsModel {
      * let chart: Chart = new Chart({
      * ...
      *   legendSettings: {
-     *     visible: true,
-     *     position: 'Custom',
-     *     location: { x: 100, y: 150 },
-     *   },
+     *           visible: true,
+     *           position: 'Custom',
+     *           location: { x: 100, y: 150 }
+     *   }
      * ...
      * });
      * chart.appendTo('#Chart');
@@ -52,13 +53,14 @@ export interface LegendSettingsModel {
     location?: LocationModel;
 
     /**
-     * Position of the legend in the chart. Available options include:
-     * * Auto: Places the legend based on the area type.
-     * * Top: Displays the legend at the top of the chart.
-     * * Left: Displays the legend at the left of the chart.
-     * * Bottom: Displays the legend at the bottom of the chart.
-     * * Right: Displays the legend at the right of the chart.
-     * * Custom: Displays the legend based on the given x and y values.
+     * Sets the position of the legend in the chart.
+     * Available options include:
+     * * Auto - Places the legend according to the area type.
+     * * Top - Displays the legend at the top of the chart.
+     * * Left - Displays the legend on the left side of the chart.
+     * * Bottom - Displays the legend at the bottom of the chart.
+     * * Right - Displays the legend to the right of the chart.
+     * * Custom - Displays the legend according to the given x and y position values.
      *
      * @default 'Auto'
      */
@@ -66,12 +68,12 @@ export interface LegendSettingsModel {
     position?: LegendPosition;
 
     /**
-     * Mode of legend items.
-     * * Series: Legend items generated based on series count.
-     * * Point: Legend items generated based on unique data points.
-     * * Range: Legend items generated based on range color mapping property.
-     * * Gradient: Single linear bar generated based on range color mapping property.
-     * This property is applicable for chart component only.
+     * Defines the mode for displaying legend items.
+     * * Series - Legend items are generated based on the count of series.
+     * * Point - Legend items are created according to each unique data point.
+     * * Range - Legend items are generated based on the range color mapping property.
+     * * Gradient - Displays a single linear bar that represents the range color mapping property.
+     > Note that this property is applicable only for the chart component.
      */
     mode?: LegendMode;
 
@@ -92,10 +94,11 @@ export interface LegendSettingsModel {
     itemPadding?: number;
 
     /**
-     * Legend in chart can be aligned as follows:
-     * * Near: Aligns the legend to the left of the chart.
-     * * Center: Aligns the legend to the center of the chart.
-     * * Far: Aligns the legend to the right of the chart.
+     * Defines the alignment of the legend in the chart.
+     * The options are:
+     * * Near - Aligns the legend to the left of the chart.
+     * * Center - Aligns the legend to the center of the chart.
+     * * Far - Aligns the legend to the right of the chart.
      *
      * @default 'Center'
      */
@@ -103,13 +106,13 @@ export interface LegendSettingsModel {
     alignment?: Alignment;
 
     /**
-     * Options to customize the legend text.
+     * The `textStyle` property provides options to customize the appearance of the text in the legend, including the font family, size, style, weight, and color.
      */
 
     textStyle?: FontModel;
 
     /**
-     * Shape height of the legend in pixels.
+     * Specify the height of the legend in pixels.
      *
      * @default 10
      */
@@ -117,7 +120,7 @@ export interface LegendSettingsModel {
     shapeHeight?: number;
 
     /**
-     * Shape width of the legend in pixels.
+     * Specify the width of the legend in pixels.
      *
      * @default 10
      */
@@ -125,19 +128,19 @@ export interface LegendSettingsModel {
     shapeWidth?: number;
 
     /**
-     * Options to customize the border of the legend.
+     * Options for customizing the border of the legend.
      */
 
     border?: BorderModel;
 
     /**
-     *  Options to customize left, right, top and bottom margins of the chart.
+     * Options for customizing the left, right, top, and bottom margins of the chart.
      */
 
     margin?: MarginModel;
 
     /**
-     *  Options to customize left, right, top and bottom padding for legend container of the chart.
+     * Options to customize the left, right, top, and bottom padding for the chart legend container.
      */
 
     containerPadding?: ContainerPaddingModel;
@@ -151,7 +154,7 @@ export interface LegendSettingsModel {
     shapePadding?: number;
 
     /**
-     * The background color of the legend that accepts value in hex and rgba as a valid CSS color string.
+     * The background color of the legend, which accepts values in hex and rgba as valid CSS color strings.
      *
      * @default 'transparent'
      */
@@ -159,7 +162,7 @@ export interface LegendSettingsModel {
     background?: string;
 
     /**
-     * Opacity of the legend.
+     * Customizes the opacity of the legend.
      *
      * @default 1
      */
@@ -167,7 +170,7 @@ export interface LegendSettingsModel {
     opacity?: number;
 
     /**
-     * If set to true, series visibility collapses based on the legend visibility.
+     * If set to true, the series visibility will collapse based on the legend's visibility.
      *
      * @default true
      */
@@ -175,7 +178,7 @@ export interface LegendSettingsModel {
     toggleVisibility?: boolean;
 
     /**
-     * If set to true, the series get highlighted, while hovering the legend.
+     * If set to true, the series will be highlighted when hovering over the legend.
      *
      * @default false
      */
@@ -183,7 +186,7 @@ export interface LegendSettingsModel {
     enableHighlight?: boolean;
 
     /**
-     * Description for legends.
+     * A description of the legend that provides additional information for screen readers.
      *
      * @default null
      */
@@ -191,7 +194,7 @@ export interface LegendSettingsModel {
     description?: string;
 
     /**
-     * TabIndex value for the legend.
+     * The `tabIndex` property determines the order in which the legend receives focus when navigating through elements with the keyboard.
      *
      * @default 3
      */
@@ -199,7 +202,7 @@ export interface LegendSettingsModel {
     tabIndex?: number;
 
     /**
-     * Title for legends.
+     * Specifies the title of the legend.
      *
      * @default null
      */
@@ -207,13 +210,17 @@ export interface LegendSettingsModel {
     title?: string;
 
     /**
-     * Options to customize the legend title.
+     * The `titleStyle` property configures the font settings for the legend title, including font family, size, style, weight, and color.
      */
 
     titleStyle?: FontModel;
 
     /**
-     * Legend title position.
+     * The `titlePosition` property specifies the position of the legend title.
+     * Available options are:
+     * * Top - Aligns the title to the top of the legend.
+     * * Left - Aligns the title to the left of the legend.
+     * * Right - Aligns the title to the right of the legend.
      *
      * @default 'Top'
      */
@@ -221,10 +228,11 @@ export interface LegendSettingsModel {
     titlePosition?: LegendTitlePosition;
 
     /**
-     * Defines the text wrap behavior to employ when the individual legend text overflows.
-     * * `Normal` -  Specifies to break words only at allowed break points.
-     * * `Wrap` - Specifies to break a word once it is too long to fit on a line by itself.
-     * * `AnyWhere` - Specifies to break a word at any point if there are no otherwise-acceptable break points in the line.
+     * Defines the text wrap behavior for the legend text when it overflows.
+     * Available options are:
+     * * `Normal` - Specifies that words should only break at allowed break points.
+     * * `Wrap` - Specifies that a word should break if it is too long to fit on a line by itself.
+     * * `AnyWhere` - Specifies to break a word at any point if there are no acceptable break points in the line.
      *
      * @default 'Normal'
      */
@@ -232,9 +240,9 @@ export interface LegendSettingsModel {
     textWrap?: TextWrap;
 
     /**
-     * Defines the text overflow behavior to employ when the individual legend text overflows.
-     * * `Clip` -  Specifies the text is clipped and not accessible.
-     * * `Ellipsis` -  Specifies an ellipsis (“...”) to the clipped text.
+     * Defines the behavior for handling the overflow of legend text.
+     * * `Clip` - Specifies that the text is clipped and not accessible.
+     * * `Ellipsis` - Specifies an ellipsis (“...”) for the clipped text.
      *
      * @default 'Ellipsis'
      */
@@ -242,7 +250,7 @@ export interface LegendSettingsModel {
     textOverflow?: LabelOverflow;
 
     /**
-     * Maximum width for the legend title.
+     * Specifies the maximum width of the legend title.
      *
      * @default 100
      */
@@ -250,7 +258,7 @@ export interface LegendSettingsModel {
     maximumTitleWidth?: number;
 
     /**
-     * Maximum label width for the legend text.
+     * Specifies the maximum width of the legend text labels.
      *
      * @default null
      */
@@ -258,7 +266,7 @@ export interface LegendSettingsModel {
     maximumLabelWidth?: number;
 
     /**
-     * If set to true, legend will be visible using pages.
+     * If set to true, the legend will be displayed using pages.
      *
      * @default true
      */
@@ -266,7 +274,7 @@ export interface LegendSettingsModel {
     enablePages?: boolean;
 
     /**
-     * If `isInversed` set to true, then it inverses legend item content (image and text).
+     * If `isInversed` is set to true, it inverses the legend item content (image and text).
      *
      * @default false.
      */
@@ -274,7 +282,7 @@ export interface LegendSettingsModel {
     isInversed?: boolean;
 
     /**
-     * If `reverse` is set to true, it reverses the order of legend items.
+     * If `reverse` is set to true, it reverses the order of the legend items.
      *
      * @default false
      */

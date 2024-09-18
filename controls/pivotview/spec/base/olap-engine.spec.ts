@@ -1,12 +1,19 @@
 import { PivotView } from '../../src/pivotview/base/pivotview';
-import { getInstance, closest, createElement, remove, EmitType } from '@syncfusion/ej2-base';
+import { getInstance, closest, createElement, remove, EmitType, EventHandler } from '@syncfusion/ej2-base';
 import { FieldList } from '../../src/common/actions/field-list';
-import { TextBox } from '@syncfusion/ej2-inputs';
 import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 import { ExcelExport, PDFExport, VirtualScroll } from '../../src/pivotview/actions';
 import { Toolbar } from '../../src/common/popups/toolbar';
 import * as util from '../utils.spec';
 import { getMemoryProfile, inMB, profile } from '../common.spec';
+import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
+import { MaskedTextBox, TextArea, TextBox } from '@syncfusion/ej2-inputs';
+import { TreeView } from '@syncfusion/ej2-navigations';
+import { NumberFormatting } from '../../src/common/popups/formatting-dialog';
+import { ConditionalFormatting } from '../../src/common/conditionalformatting/conditional-formatting';
+import { DrillThrough } from '../../src/pivotview/actions';
+import { Grouping } from '../../src/common/popups/grouping';
+import { HeadersSortEventArgs } from '../../src/common/base/interface';
 
 describe('Pivot Olap Engine', () => {
     /**
@@ -496,233 +503,167 @@ describe('Pivot Olap Engine', () => {
         });
     });
 
-    describe('Olap specified export', () => {
-        let pivotGridObj: PivotView;
+    describe('Calculated field', () => {
         let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-        if (document.getElementById(elem.id)) {
-            remove(document.getElementById(elem.id));
-        }
-        document.body.appendChild(elem);
+        let pivotGridObj: PivotView;
         afterAll(() => {
             if (pivotGridObj) {
                 pivotGridObj.destroy();
             }
             remove(elem);
         });
-        beforeAll(() => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                pending(); //Skips test (in Chai)
-                return;
-            }
-            if (document.getElementById(elem.id)) {
-                remove(document.getElementById(elem.id));
-            }
+        beforeAll((done: Function) => {
             document.body.appendChild(elem);
-            PivotView.Inject(Toolbar, PDFExport, ExcelExport, FieldList, VirtualScroll);
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(FieldList, CalculatedField);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    catalog: 'Adventure Works DW 2008R2',
-                    cube: 'Adventure Works',
+                    catalog: 'Adventure Works DW 2008 SE',
+                    cube: 'Finance',
                     providerType: 'SSAS',
-                    url: 'https://demos.telerik.com/olap/msmdpump.dll',
+                    url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
                     localeIdentifier: 1033,
-                    allowLabelFilter: true,
-                    allowValueFilter: true,
-                    formatSettings: [{ name: '[Measures].[Customer Count]', format: 'N2' }],
-                    rows: [
-                        { name: '[Date].[Date]', caption: 'Date Fiscal' },
-                    ],
-                    columns: [
-                        { name: '[Customer].[Customer Geography]', caption: 'Customer Geography' },
-                        { name: '[Measures]', caption: 'Measures' },
-                    ],
+                    enableSorting: true,
+                    columns: [{ name: '[Account].[Accounts]', caption: 'Accounts' },
+                    { name: '[Measures]', caption: 'Measures' }],
+                    rows: [{ name: '[Scenario].[Scenario]', caption: 'Customer Geography' }],
                     values: [
-                        { name: '[Measures].[Customer Count]', caption: 'Customer Count' },
-                        { name: '[Measures].[Internet Sales Amount]', caption: 'Internet Sales Amount' },
+                        { name: '[Measures].[Amount]', caption: 'Amount' },
+                        { name: 'Calculated field 1', caption: 'Calculated field', isCalculatedField: true }
                     ],
-                    valueAxis: 'column'
+                    calculatedFieldSettings: [
+                        {
+                            formula: '[Measures].[Amount]*[Measures].[Average Rate]',
+                            name: 'Calculated field 1',
+                            formatString: 'Standard'
+                        }
+                    ]
                 },
-                enableVirtualization: true,
-                exportAllPages: true,
-                beforeExport: function (args) {
-                    pivotGridObj.exportSpecifiedPages = { rowSize: 10, columnSize: 5 }
-                },
-                displayOption: { view: 'Both' },
-                chartSettings: {
-                    value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: false,
-                },
-                toolbar: ['Export', 'FieldList'],
-                allowExcelExport: true,
-                allowConditionalFormatting: true,
-                allowPdfExport: true,
-                showToolbar: true,
-                allowCalculatedField: true,
                 showFieldList: true,
-                showGroupingBar: true,
-                height: '500px',
-                virtualScrollSettings: { allowSinglePage: false }
+                allowCalculatedField: true,
+                dataBound: dataBound
             });
             pivotGridObj.appendTo('#PivotGrid');
         });
-        it('For olap specified export sample render', (done: Function) => {
+        it('Initial rendering', (done: Function) => {
             setTimeout(() => {
-                expect(1).toBe(1);
+                expect(pivotGridObj.pivotValues[1][2].actualText).toBe('Calculated field 1');
+                (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
                 done();
-            }, 4000);
+            }, 3000);
         });
-        it('Export', (done: Function) => {
+        it('Open calculated Filed popup ', (done: Function) => {
             setTimeout(() => {
-                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                util.triggerEvent(li, 'mouseover');
+                expect(document.querySelectorAll('.e-pivotfieldlist').length).toBe(1);
+                (document.querySelectorAll('.e-calculated-field')[0] as HTMLElement).click();
                 done();
-            }, 4000);
+            }, 1000);
         });
-        it('PDF Export', (done: Function) => {
+        it('Open calculated popup - To check the clearFormula coverage', function (done) {
+            setTimeout(function () {
+                (document.querySelectorAll('.e-calc-clear-btn')[0] as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('Initial rendering', (done: Function) => {
             setTimeout(() => {
-                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
-                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                util.triggerEvent(li, 'mouseover');
+                expect(pivotGridObj.pivotValues[1][2].actualText).toBe('Calculated field 1');
+                (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
                 done();
-            }, 4000);
+            }, 3000);
         });
-        it('Excel Export', (done: Function) => {
+        it('Open calculated popup - 1', (done: Function) => {
             setTimeout(() => {
-                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
-                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                util.triggerEvent(li, 'mouseover');
+                expect(document.querySelectorAll('.e-pivotfieldlist').length).toBe(1);
+                (document.querySelectorAll('.e-calculated-field')[0] as HTMLElement).click();
                 done();
-            }, 4000);
+            }, 1000);
         });
-        it('CSV Export', (done: Function) => {
+        it('Creating calculated field 2 - 1', (done: Function) => {
             setTimeout(() => {
-                (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
-                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                expect(document.querySelectorAll('.e-olap-calc-outer-div').length).toBe(1);
+                (getInstance(document.querySelectorAll('.e-olap-calc-outer-div .e-pivot-calc-input')[0] as HTMLElement,
+                    MaskedTextBox) as MaskedTextBox).value = 'Calculated field 2';
+                (document.querySelectorAll('.e-olap-calc-outer-div .e-pivot-formula')[0] as HTMLInputElement
+                ).value = '[Measures].[Amount]+[Measures].[Average Rate]';
                 done();
-            }, 4000);
+            }, 1000);
         });
-
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange);
-            //Check average change in memory samples to not be over 10MB
-            let memory: any = inMB(getMemoryProfile());
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        });
-    });
-
-    describe('Olap export', () => {
-        let pivotGridObj: PivotView;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-        if (document.getElementById(elem.id)) {
-            remove(document.getElementById(elem.id));
-        }
-        document.body.appendChild(elem);
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-        beforeAll(() => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                pending(); //Skips test (in Chai)
-                return;
-            }
-            if (document.getElementById(elem.id)) {
-                remove(document.getElementById(elem.id));
-            }
-            document.body.appendChild(elem);
-            PivotView.Inject(Toolbar, PDFExport, ExcelExport, FieldList, VirtualScroll);
-            pivotGridObj = new PivotView({
-                dataSourceSettings: {
-                    catalog: 'Adventure Works DW 2008R2',
-                    cube: 'Adventure Works',
-                    providerType: 'SSAS',
-                    url: 'https://demos.telerik.com/olap/msmdpump.dll',
-                    localeIdentifier: 1033,
-                    allowLabelFilter: true,
-                    allowValueFilter: true,
-                    formatSettings: [{ name: '[Measures].[Customer Count]', format: 'N2' }],
-                    rows: [
-                        { name: '[Date].[Date]', caption: 'Date Fiscal' },
-                    ],
-                    columns: [
-                        { name: '[Customer].[Customer Geography]', caption: 'Customer Geography' },
-                        { name: '[Measures]', caption: 'Measures' },
-                    ],
-                    values: [
-                        { name: '[Measures].[Customer Count]', caption: 'Customer Count' },
-                        { name: '[Measures].[Internet Sales Amount]', caption: 'Internet Sales Amount' },
-                    ],
-                    valueAxis: 'column'
-                },
-                enableVirtualization: true,
-                exportAllPages: true,
-                displayOption: { view: 'Both' },
-                chartSettings: {
-                    value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: false,
-                },
-                toolbar: ['Export', 'FieldList'],
-                allowExcelExport: true,
-                allowConditionalFormatting: true,
-                allowPdfExport: true,
-                showToolbar: true,
-                allowCalculatedField: true,
-                showFieldList: true,
-                showGroupingBar: true,
-                height: '500px',
-                virtualScrollSettings: { allowSinglePage: false }
-            });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        it('For olap sample render', (done: Function) => {
+        it('Creating calculated field 2 - 2', (done: Function) => {
             setTimeout(() => {
-                expect(1).toBe(1);
+                expect(document.querySelectorAll('.e-olap-calc-outer-div').length).toBe(1);
+                (document.querySelectorAll('.e-olap-calc-dialog-div .e-primary')[0] as HTMLElement).click();
                 done();
-            }, 4000);
+            }, 1000);
         });
-        it('Export', (done: Function) => {
+        it('Olap calculated field', (done: Function) => {
             setTimeout(() => {
-                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                util.triggerEvent(li, 'mouseover');
+                expect(document.querySelectorAll('.e-pivotfieldlist').length).toBe(1);
+                (document.querySelectorAll('.e-calculated-field')[0] as HTMLElement).click();
                 done();
-            }, 4000);
+            }, 1000);
         });
-        it('PDF Export', (done: Function) => {
+        it('Creating calculated field 3 - 1', (done: Function) => {
             setTimeout(() => {
-                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
-                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                util.triggerEvent(li, 'mouseover');
+                expect(document.querySelectorAll('.e-olap-calc-outer-div').length).toBe(1);
+                (getInstance(document.querySelectorAll('.e-olap-calc-outer-div .e-pivot-calc-input')[0] as HTMLElement,
+                    MaskedTextBox) as MaskedTextBox).value = 'Calculated field 3';
+                (document.querySelectorAll('.e-olap-calc-outer-div .e-pivot-formula')[0] as HTMLInputElement
+                ).value = '[Measures].[Amount]-[Measures].[Average Rate]';
                 done();
-            }, 4000);
+            }, 1000);
         });
-        it('Excel Export', (done: Function) => {
+        it('Creating calculated field 2 - 4', (done: Function) => {
             setTimeout(() => {
-                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
-                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                util.triggerEvent(li, 'mouseover');
+                expect(document.querySelectorAll('.e-olap-calc-outer-div').length).toBe(1);
+                (document.querySelectorAll('.e-olap-calc-dialog-div .e-primary')[0] as HTMLElement).click();
                 done();
-            }, 4000);
+            }, 1000);
         });
-        it('CSV Export', (done: Function) => {
+        it('Open calculated popup - 2', (done: Function) => {
             setTimeout(() => {
-                (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
-                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                expect(document.querySelectorAll('.e-pivotfieldlist').length).toBe(1);
+                (document.querySelectorAll('.e-calculated-field')[0] as HTMLElement).click();
                 done();
-            }, 4000);
+            }, 1000);
+        });
+        it('Removing calculated field - 1', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-olap-calc-outer-div').length).toBe(1);
+                let treeObj: TreeView = getInstance(document.querySelectorAll('.e-pivot-treeview')[0] as HTMLElement, TreeView) as TreeView;
+                let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
+                let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[0].querySelector('.e-icon-expandable'));
+                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+                let mouseup: any = util.getEventObject('MouseEvents', 'mouseup', treeObj.element, li[0].querySelector('.e-icon-expandable'));
+                EventHandler.trigger(treeObj.element, 'mouseup', mouseup);
+                done();
+            }, 1000);
+        });
+        it('Removing calculated field - 2', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-olap-calc-outer-div').length).toBe(1);
+                let treeObj: TreeView = getInstance(document.querySelectorAll('.e-pivot-treeview')[0] as HTMLElement, TreeView) as TreeView;
+                let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li .e-remove-report');
+                let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[2]);
+                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+                let mouseup: any = util.getEventObject('MouseEvents', 'mouseup', treeObj.element, li[2]);
+                EventHandler.trigger(treeObj.element, 'mouseup', mouseup);
+                done();
+            }, 1000);
+        });
+        it('Removing calculated field - 3', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-olap-calc-outer-div').length).toBe(1);
+                (document.querySelectorAll('.e-pivot-error-dialog .e-primary')[0] as HTMLButtonElement).click();
+                done();
+            }, 1000);
+        });
+        it('Olap calculated field ensuring - 2', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-olap-calc-outer-div').length).toBe(1);
+                (document.querySelectorAll('.e-olap-calc-dialog-div .e-btn')[3] as HTMLElement).click();
+                done();
+            }, 1000);
         });
 
         it('memory leak', () => {

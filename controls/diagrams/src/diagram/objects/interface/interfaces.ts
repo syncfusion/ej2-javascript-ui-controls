@@ -1,5 +1,5 @@
 import { MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { ZoomTypes, PageOrientation, DiagramRegions, FitModes, RenderingMode, SegmentEditing } from '../../enum/enum';
+import { ZoomTypes, PageOrientation, DiagramRegions, FitModes, RenderingMode, SegmentEditing, BranchTypes, DecoratorShapes } from '../../enum/enum';
 import { PointModel } from '../../primitives/point-model';
 import { Rect } from '../../primitives/rect';
 import { MarginModel } from '../../core/appearance-model';
@@ -7,7 +7,7 @@ import { Stretch, FileFormats, ExportModes } from '../../enum/enum';
 import { DiagramRenderer } from '../../rendering/renderer';
 import { BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ConnectorModel } from '../connector-model';
-import { NodeModel } from '../node-model';
+import { BasicShapeModel, FlowShapeModel, NodeModel, PathModel } from '../node-model';
 
 
 /**
@@ -278,4 +278,44 @@ export interface IFields {
     crudAction: {
         customFields: string[]
     };
+}
+
+/**
+ * Represents the data structure for a hierarchy node in the diagram.
+ */
+export interface HierarchyData {
+    text: string;
+    branch: BranchTypes;
+    children: HierarchyData[];
+    currentLevel: number;
+}
+
+export interface SpaceLevel {
+    space: string;
+    level: number;
+}
+
+export interface NodeData {
+    nodeId: string;
+    annotationContent: string;
+    nodeShapeData: BasicShapeModel | FlowShapeModel | PathModel;
+}
+
+export interface IGraph {
+    nodes: NodeModel[];
+    edges: ConnectorModel[];
+}
+
+export interface ConnectorStyle {
+    targetDecorator: DecoratorShapes;
+    strokeWidth: number;
+    strokeDashArray: string;
+    opacity: number;
+}
+
+export interface MermaidStyle {
+    id: string,
+    fill: string,
+    stroke: string,
+    strokeWidth: number,
 }

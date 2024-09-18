@@ -11,6 +11,12 @@
       color: $grid-filtered-color;
     }
 
+    .e-menu-item.e-focused .e-menu-icon.e-filtered::before {
+      @if $grid-xlfl-skin == 'fluent2' {
+        color: $icon-color-hover;
+      }
+    }
+
     .e-dlg-content {
       padding-bottom: $grid-excel-filter-bottom-padding;
       @if $grid-xlfl-skin == 'material3' {

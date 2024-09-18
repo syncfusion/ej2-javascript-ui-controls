@@ -2,6 +2,7 @@
 import { Smithchart, SmithchartLegend, ISmithchartLoadedEventArgs } from '../../../src/smithchart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import { MouseEvents } from './events.spec';
 
 Smithchart.Inject(SmithchartLegend);
 
@@ -22,6 +23,7 @@ describe('Smithchart legend properties tesing', () => {
         let smithchart: Smithchart;
         let ele: HTMLDivElement;
         let spec: Element;
+        const trigger: MouseEvents = new MouseEvents();
         beforeAll(() => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
@@ -390,6 +392,20 @@ describe('Smithchart legend properties tesing', () => {
                 expect(color).toEqual('#00bdae');
             };
             smithchart.legendSettings.visible = false;
+            smithchart.refresh();
+        });
+        it('checking with keyboard navigation', (done: Function) => {
+            let enterKeyUpTriggered: boolean = false;
+            smithchart.loaded = () => {
+                if (!enterKeyUpTriggered) {
+                    enterKeyUpTriggered = true;
+                    let element: Element = document.getElementById('legend_svg_Legend0');
+                    trigger.keyboardEvent(element, 'keyup', 'Enter', 'Enter');
+                    expect(element !== null).toBe(true);
+                }
+                done();
+            };
+            smithchart.legendSettings.visible = true;
             smithchart.refresh();
         });
     });

@@ -1,6 +1,5 @@
 @include export-module('calendar-theme') {
-  #{&}.e-calendar,
-  .e-bigger.e-small #{&}.e-calendar {
+  #{&}.e-calendar {
     @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
       background: $calendar-bg-color;
       border-radius: 8px;
@@ -277,7 +276,7 @@
         #{if(&, '&', '*')} td.e-selected:hover span.e-day,
         #{if(&, '&', '*')} td.e-selected.e-focused-date span.e-day {
           @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
-            background-color: $calendar-active-hover-bg-color;
+            background: $calendar-active-hover-bg-color;
           }
           @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
             background: $calendar-active-hover-bg-color;
@@ -422,7 +421,7 @@
             background-color: $calendar-active-bg-color;
             border: $calendar-selected-border-color;
             border-radius: $calendar-border-radius;
-            color: $calendar-active-font-color;
+            color: $calendar-active-font-colour;
           }
         }
         #{if(&, '&', '*')} td.e-selected.e-focused-date span.e-day {
@@ -430,7 +429,7 @@
             background-color: $calendar-active-bg-color;
             border: $calendar-selected-border-color;
             border-radius: $calendar-focused-state-border-radius;
-            color: $calendar-active-font-color;
+            color: $calendar-active-font-colour;
           }
         }
         #{if(&, '&', '*')}.e-month td.e-today span.e-day {
@@ -449,7 +448,7 @@
         #{if(&, '&', '*')}.e-decade td.e-selected:hover > span.e-day {
           @if ($skin-name == 'FluentUI' or $skin-name == 'fluent2') {
             background-color: $calendar-selected-month-bg-color;
-            color: $calendar-week-header-font-color;
+            color: $calendar-selected-month-font-color;
           }
         }
         #{if(&, '&', '*')}.e-year td.e-focused-date > span.e-day,
@@ -561,6 +560,11 @@
       border-color: $today-button-bg-border-color;
       color: $today-button-text-color;
     }
+    @if $skin-name == 'fluent2' {
+      color: $today-button-font-color;
+      background: none;
+      border-color: transparent;
+    }
   }
 
   .e-calendar .e-btn.e-today.e-flat.e-primary:hover,
@@ -569,6 +573,11 @@
       background-color: $today-button-hover-bg;
       border-color: $today-button-bg-border-hover-color;
       color: $today-button-text-hover-color;
+    }
+    @if $skin-name == 'fluent2' {
+      color: $today-button-hover-font-color;
+      background: none;
+      border-color: transparent;
     }
   }
 
@@ -585,6 +594,11 @@
       border: $calendar-none-style;
       outline: $calendar-none-style;
     }
+    @if $skin-name == 'fluent2' {
+      color: $today-button-active-font-color;
+      background: none;
+      border-color: transparent;
+    }
   }
 
   .e-calendar .e-btn.e-today.e-flat.e-primary:focus,
@@ -598,17 +612,27 @@
       color: $today-button-text-active-color;
       outline: $calendar-none-style;
     }
+    @if $skin-name == 'fluent2' {
+      background: none;
+      color: $today-button-font-color;
+      box-shadow: $keyboard-focus;
+      border-color: transparent;
+    }
   }
 
   .e-calendar .e-btn.e-today.e-flat.e-primary.e-disabled,
   .e-calendar .e-btn.e-today.e-flat.e-primary.e-disabled,
   .e-calendar .e-css.e-btn.e-today.e-flat.e-primary.e-disabled,
   .e-calendar .e-css.e-btn.e-today.e-flat.e-primary.e-disabled {
-    @if $skin-name == 'bootstrap5' {
+    @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
       background-color: $calendar-today-disabled-background-style;
       border-color: $calendar-today-disabled-border-style;
     }
-    @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+    @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' {
+      color: $calendar-today-disabled-color;
+    }
+    @if $skin-name == 'fluent2' {
+      border-color: transparent;
       color: $calendar-today-disabled-color;
     }
   }

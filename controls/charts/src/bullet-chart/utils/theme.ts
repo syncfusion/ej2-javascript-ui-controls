@@ -358,41 +358,41 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             majorTickLineColor: '#CED4DA',
             minorTickLineColor: '#CED4DA',
             background: 'transparent',
-            labelFontColor: '#495057',
-            categoryFontColor: '#6B7280',
-            labelFontFamily: 'Helvetica',
-            tooltipFill: '#212529',
-            legendLabel: '#343A40',
-            tooltipBoldLabel: '#F9FAFB',
-            featuredMeasureColor: '#1F2937',
-            comparativeMeasureColor: '#1F2937',
-            titleFontColor: '#343A40',
-            dataLabelFontColor: '#495057',
-            titleFontFamily: 'Helvetica',
-            subTitleFontColor: '#343A40',
-            subTitleFontFamily: 'Helvetica',
-            firstRangeColor: '#9CA3AF',
-            secondRangeColor: '#D1D5DB',
-            thirdRangeColor: '#E5E7EB',
+            labelFontColor: '#212529',
+            categoryFontColor: '#212529',
+            labelFontFamily: 'Segoe UI',
+            tooltipFill: '#000000E5',
+            legendLabel: '#212529',
+            tooltipBoldLabel: '#212529',
+            featuredMeasureColor: '#343A40',
+            comparativeMeasureColor: '#343A40',
+            titleFontColor: '#212529',
+            dataLabelFontColor: '#212529',
+            titleFontFamily: 'Segoe UI',
+            subTitleFontColor: '#212529',
+            subTitleFontFamily: 'Segoe UI',
+            firstRangeColor: '#CED4DA',
+            secondRangeColor: '#DEE2E6',
+            thirdRangeColor: '#E9ECEF',
             tabColor: '#0D6EFD',
-            rangeStrokes: [{ color: '#9CA3AF' }, { color: '#D1D5DB' }, { color: '#E5E7EB' }],
+            rangeStrokes: [{ color: '#CED4DA' }, { color: '#DEE2E6' }, { color: '#E9ECEF' }],
             titleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '500'
+                color: '#212529', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             subTitleFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#343A40', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: '#495057', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#F9FAFB', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -401,41 +401,41 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             majorTickLineColor: '#6C757D',
             minorTickLineColor: '#6C757D',
             background: '#212529',
-            labelFontColor: '#CED4DA',
-            categoryFontColor: '#6B7280',
-            labelFontFamily: 'Helvetica',
-            tooltipFill: '#E9ECEF',
-            legendLabel: '#E9ECEF',
+            labelFontColor: '#DEE2E6',
+            categoryFontColor: '#DEE2E6',
+            labelFontFamily: 'Segoe UI',
+            tooltipFill: '#FFFFFFE5',
+            legendLabel: '#DEE2E6',
             tooltipBoldLabel: '#212529',
             featuredMeasureColor: '#ADB5BD',
             comparativeMeasureColor: '#ADB5BD',
-            titleFontColor: '#E9ECEF',
-            dataLabelFontColor: '#CED4DA',
-            titleFontFamily: 'Helvetica',
-            subTitleFontColor: '#E9ECEF',
-            subTitleFontFamily: 'Helvetica',
+            titleFontColor: '#DEE2E6',
+            dataLabelFontColor: '#DEE2E6',
+            titleFontFamily: 'Segoe UI',
+            subTitleFontColor: '#DEE2E6',
+            subTitleFontFamily: 'Segoe UI',
             firstRangeColor: '#6C757D',
             secondRangeColor: '#495057',
             thirdRangeColor: '#343A40',
             tabColor: '#0D6EFD',
             rangeStrokes: [{ color: '#6C757D' }, { color: '#495057' }, { color: '#343A40' }],
             titleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '500'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '14px', fontStyle: 'Normal', fontWeight: '400'
             },
             subTitleFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             legendLabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '14px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             axisLabelFont: {
-                color: '#CED4DA', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
-                color: '#E9ECEF', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#DEE2E6', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             tooltipLabelFont: {
-                color: '#212529', fontFamily: 'Helvetica', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+                color: '#212529', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
             }
         };
         break;
@@ -602,6 +602,49 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             },
             axisLabelFont: {
                 color: '#ADADAD', fontFamily: 'Segoe UI', size: Browser.isDevice ? '14px' : '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            dataLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            tooltipLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            }
+        };
+        break;
+    case 'Fluent2HighContrast':
+        style = {
+            majorTickLineColor: '#484644',
+            minorTickLineColor: '#484644',
+            background: 'transparent',
+            labelFontColor: '#FFFFFF',
+            categoryFontColor: '#FFFFFF',
+            labelFontFamily: 'Segoe UI',
+            tooltipFill: '#000000',
+            legendLabel: '#FFFFFF',
+            tooltipBoldLabel: '#FFFFFF',
+            featuredMeasureColor: '#8A8886',
+            comparativeMeasureColor: '#8A8886',
+            titleFontColor: '#FFFFFF',
+            dataLabelFontColor: '#FFFFFF',
+            titleFontFamily: 'Segoe UI',
+            subTitleFontColor: '#FFFFFF',
+            subTitleFontFamily: 'Segoe UI',
+            firstRangeColor: '#484644',
+            secondRangeColor: '#3B3A39',
+            thirdRangeColor: '#292827',
+            tabColor: '#0078D4',
+            rangeStrokes: [{ color: '#484644' }, { color: '#3B3A39' }, { color: '#292827' }],
+            titleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: Browser.isDevice ? '16px' : '14px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            subTitleFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '600'
+            },
+            legendLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'
+            },
+            axisLabelFont: {
+                color: '#FFFFFF', fontFamily: 'Segoe UI', size: Browser.isDevice ? '14px' : '12px', fontStyle: 'Normal', fontWeight: '400'
             },
             dataLabelFont: {
                 color: '#FFFFFF', fontFamily: 'Segoe UI', size: '12px', fontStyle: 'Normal', fontWeight: '400'

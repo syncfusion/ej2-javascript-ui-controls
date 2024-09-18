@@ -12,20 +12,43 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * @private
  */
 export class ImageProperties {
-    private container: DocumentEditorContainer;
-    private elementId: string;
-    public element: HTMLElement;
-    private widthElement: HTMLElement;
-    private heightElement: HTMLElement;
+
+    //EJ2 Components
     private widthNumericBox: NumericTextBox;
     private heightNumericBox: NumericTextBox;
     private aspectRatioBtn: CheckBox;
+
+    //HTML Elements
+    private imageDiv: HTMLElement;
+    private label: HTMLElement;
+    private alabel: HTMLElement;
+    private outerDiv: HTMLElement;
+    private aspectRatio: HTMLInputElement;
+    private aspectRatioDiv: HTMLElement;
+    private textArea: HTMLElement;
+    public element: HTMLElement;
+    private widthElement: HTMLElement;
+    private heightElement: HTMLElement;
+    private textareaObj: TextBox;
+    private altDiv: HTMLElement;
+
+    //Private Variables
+    private container: DocumentEditorContainer;
+    private elementId: string;
     private isMaintainAspectRatio: boolean;
     private isWidthApply: boolean = false;
     private isHeightApply: boolean = false;
     private isRtl: boolean;
-    private textArea: HTMLElement;
-    private textareaObj: TextBox;
+
+    //Event Hook Constants
+    private onAspectRatioBtnClickHook: EventListenerOrEventListenerObject = this.onAspectRatioBtnClick.bind(this);
+    private widthBlurHook: EventListenerOrEventListenerObject = this.widthBlur.bind(this);
+    private heightBlurHook: EventListenerOrEventListenerObject = this.heightBlur.bind(this);
+    private onImageWidthHook: EventListenerOrEventListenerObject = this.onImageWidth.bind(this);
+    private onImageHeightHook: EventListenerOrEventListenerObject = this.onImageHeight.bind(this);
+    private widthNumericBlurHook: EventListenerOrEventListenerObject = this.widthNumericBlur.bind(this);
+    private heightNumericBlurHook: EventListenerOrEventListenerObject = this.heightNumericBlur.bind(this);
+    private altTextAreaBlurHook: EventListenerOrEventListenerObject = this.altTextAreaBlur.bind(this);
 
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
@@ -61,39 +84,39 @@ export class ImageProperties {
 
     private initImageProp(): void {
         const localObj: L10n = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
-        const imageDiv: HTMLElement = createElement('div', { id: this.elementId + '_imageDiv', className: 'e-de-cntr-pane-padding e-de-prop-separator-line'});
-        this.element.appendChild(imageDiv);
-        const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
-        label.textContent = localObj.getConstant('Image');
-        imageDiv.appendChild(label);
-        const outerDiv: HTMLElement = createElement('div');
-        imageDiv.appendChild(outerDiv);
-        this.widthElement = this.createImagePropertiesDiv('_widthDiv', outerDiv, '_widthInput', localObj.getConstant('W'), localObj.getConstant('Width'));
+        this.imageDiv = createElement('div', { id: this.elementId + '_imageDiv', className: 'e-de-cntr-pane-padding e-de-prop-separator-line'});
+        this.element.appendChild(this.imageDiv);
+        this.label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+        this.label.textContent = localObj.getConstant('Image');
+        this.imageDiv.appendChild(this.label);
+        this.outerDiv = createElement('div');
+        this.imageDiv.appendChild(this.outerDiv);
+        this.widthElement = this.createImagePropertiesDiv('_widthDiv', this.outerDiv, '_widthInput', localObj.getConstant('W'), localObj.getConstant('Width'));
         this.widthNumericBox = new NumericTextBox({ min: 0, max: 23500, cssClass: 'e-de-image-property', showSpinButton: false, format: 'n0', decimals: 2 });
         this.widthNumericBox.appendTo(this.widthElement);
-        this.heightElement = this.createImagePropertiesDiv('_heightDiv', outerDiv, '_heightInput', localObj.getConstant('H'), localObj.getConstant('Height'));
+        this.heightElement = this.createImagePropertiesDiv('_heightDiv', this.outerDiv, '_heightInput', localObj.getConstant('H'), localObj.getConstant('Height'));
         this.heightNumericBox = new NumericTextBox({ min: 0, max: 23500, cssClass: 'e-de-image-property', showSpinButton: false, format: 'n0', decimals: 2 });
         this.heightNumericBox.appendTo(this.heightElement);
-        const aspectRatioDiv: HTMLElement = createElement('div', { id: this.elementId + '_aspectRatioDiv' });
-        aspectRatioDiv.setAttribute('title', localObj.getConstant('Aspect ratio'));
-        outerDiv.appendChild(aspectRatioDiv);
-        const aspectRatio: HTMLInputElement = createElement('input', { id: this.elementId + '_aspectRatio', className: 'e-de-ctnr-prop-label' }) as HTMLInputElement;
-        aspectRatioDiv.appendChild(aspectRatio);
-        this.aspectRatioBtn = new CheckBox({ label: localObj.getConstant('Aspect ratio'), enableRtl: this.isRtl }, aspectRatio);
+        this.aspectRatioDiv = createElement('div', { id: this.elementId + '_aspectRatioDiv' });
+        this.aspectRatioDiv.setAttribute('title', localObj.getConstant('Aspect ratio'));
+        this.outerDiv.appendChild(this.aspectRatioDiv);
+        this.aspectRatio = createElement('input', { id: this.elementId + '_aspectRatio', className: 'e-de-ctnr-prop-label' }) as HTMLInputElement;
+        this.aspectRatioDiv.appendChild(this.aspectRatio);
+        this.aspectRatioBtn = new CheckBox({ label: localObj.getConstant('Aspect ratio'), enableRtl: this.isRtl }, this.aspectRatio);
     }
     private initImageAltProp(): void {
         const localObj: L10n = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
-        const AltDiv: HTMLElement = createElement('div', { id: this.elementId + '_altDiv', className: 'e-de-cntr-pane-padding e-de-prop-separator-line' });
-        this.element.appendChild(AltDiv);
-        const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
-        label.textContent = localObj.getConstant('Alternate Text');
-        AltDiv.appendChild(label);
+        this.altDiv = createElement('div', { id: this.elementId + '_altDiv', className: 'e-de-cntr-pane-padding e-de-prop-separator-line' });
+        this.element.appendChild(this.altDiv);
+        this.alabel = createElement('label', { className: 'e-de-ctnr-prop-label' });
+        this.alabel.textContent = localObj.getConstant('Alternate Text');
+        this.altDiv.appendChild(this.alabel);
         this.textArea = createElement('textarea', { id: this.elementId + '_textarea', className: 'e-de-ctnr-prop-label '});
-        AltDiv.appendChild(this.textArea);
-        const textareaObj: TextBox = new TextBox({
+        this.altDiv.appendChild(this.textArea);
+        this.textareaObj = new TextBox({
             floatLabelType: 'Never'
         });
-        textareaObj.appendTo(this.textArea);
+        this.textareaObj.appendTo(this.textArea);
     }
     /* eslint-disable-next-line max-len */
     private createImagePropertiesDiv(id: string, outerDiv: HTMLElement, inputId: string, spanContent: string, tooltip: string): HTMLElement {
@@ -108,26 +131,31 @@ export class ImageProperties {
         return inputElement;
     }
     public wireEvents(): void {
-        this.aspectRatioBtn.element.addEventListener('change', this.onAspectRatioBtnClick.bind(this));
-        this.widthNumericBox.element.addEventListener('click', (): void => {
-            this.isWidthApply = true;
-        });
-        this.heightNumericBox.element.addEventListener('click', (): void => {
-            this.isHeightApply = true;
-        });
-        this.widthNumericBox.element.addEventListener('keydown', this.onImageWidth.bind(this));
-        this.heightNumericBox.element.addEventListener('keydown', this.onImageHeight.bind(this));
-        this.widthNumericBox.element.addEventListener('blur', (): void => {
-            this.applyImageWidth(); this.isWidthApply = false;
-        });
-        this.heightNumericBox.element.addEventListener('blur', (): void => {
-            this.applyImageHeight(); this.isHeightApply = false;
-        });
-        this.textArea.addEventListener('blur', (): void => {
-            if (this.documentEditor.selectionModule.imageFormat.alternateText !== (this.textArea as HTMLInputElement).value) {
-                this.applyImageAlternativeText();
-            }
-        });
+        this.aspectRatioBtn.element.addEventListener('change', this.onAspectRatioBtnClickHook);
+        this.widthNumericBox.element.addEventListener('click', this.widthBlurHook);
+        this.heightNumericBox.element.addEventListener('click', this.heightBlurHook);
+        this.widthNumericBox.element.addEventListener('keydown', this.onImageWidthHook);
+        this.heightNumericBox.element.addEventListener('keydown', this.onImageHeightHook);
+        this.widthNumericBox.element.addEventListener('blur', this.widthNumericBlurHook);
+        this.heightNumericBox.element.addEventListener('blur', this.heightNumericBlurHook);
+        this.textArea.addEventListener('blur', this.altTextAreaBlurHook);
+    }
+    private altTextAreaBlur(): void {
+        if (this.documentEditor.selectionModule.imageFormat.alternateText !== (this.textArea as HTMLInputElement).value) {
+            this.applyImageAlternativeText();
+        }
+    }
+    private heightNumericBlur(): void {
+        this.applyImageHeight(); this.isHeightApply = false;
+    }
+    private widthNumericBlur(): void {
+        this.applyImageWidth(); this.isWidthApply = false;
+    }
+    private widthBlur(): void {
+        this.isWidthApply = true;
+    }
+    private heightBlur(): void {
+        this.isHeightApply = true;
     }
     private applyImageAlternativeText(): void{
         const altText: string = SanitizeHtmlHelper.sanitize((this.textArea as HTMLInputElement).value);
@@ -223,7 +251,9 @@ export class ImageProperties {
         }
     }
     public destroy(): void {
-        this.container = undefined;
+        this.unWireEvents();
+        this.removeHTMLDom();
+
         if (this.widthNumericBox) {
             this.widthNumericBox.destroy();
         }
@@ -236,5 +266,45 @@ export class ImageProperties {
             this.aspectRatioBtn.destroy();
         }
         this.aspectRatioBtn = undefined;
+        if (this.textareaObj) {
+            this.textareaObj.destroy();
+            this.textArea.remove();
+            this.textArea = undefined;
+        }
+        if (this.element) {
+            this.element.innerHTML = '';
+            this.element = undefined;
+        }
+        this.container = undefined;
+    }
+    private removeHTMLDom(): void {
+        this.outerDiv.remove();
+        this.label.remove();
+        this.imageDiv.remove();
+        this.aspectRatioDiv.remove();
+        this.aspectRatio.remove();
+        this.alabel.remove();
+        this.textArea.remove();
+        this.altDiv.remove();
+        this.element.remove();
+    }
+    private unWireEvents(): void {
+        this.aspectRatioBtn.element.removeEventListener('change', this.onAspectRatioBtnClickHook);
+        this.widthNumericBox.element.removeEventListener('click', this.widthBlurHook);
+        this.heightNumericBox.element.removeEventListener('click', this.heightBlurHook);
+        this.widthNumericBox.element.removeEventListener('keydown', this.onImageWidthHook);
+        this.heightNumericBox.element.removeEventListener('keydown', this.onImageHeightHook);
+        this.widthNumericBox.element.removeEventListener('blur', this.widthNumericBlurHook);
+        this.heightNumericBox.element.removeEventListener('blur', this.heightNumericBlurHook);
+        this.textArea.removeEventListener('blur', this.altTextAreaBlurHook);
+
+        this.onAspectRatioBtnClickHook = undefined;
+        this.widthBlurHook = undefined;
+        this.heightBlurHook = undefined;
+        this.onImageWidthHook = undefined;
+        this.onImageHeightHook = undefined;
+        this.widthNumericBlurHook = undefined;
+        this.heightNumericBlurHook = undefined;
+        this.altTextAreaBlurHook = undefined;
     }
 }

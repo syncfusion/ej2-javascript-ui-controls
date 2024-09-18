@@ -11,7 +11,7 @@ import { AccumulationLabelPosition } from '../model/enum';
 import { AccPoints, getSeriesFromIndex, AccumulationSeries } from '../model/acc-base';
 import { IAccTextRenderEventArgs } from '../model/pie-interface';
 import { AccumulationDataLabelSettingsModel } from '../model/acc-base-model';
-import { MarginModel, FontModel, ConnectorModel, BorderModel } from '../../common/model/base-model';
+import { MarginModel, FontModel, BorderModel, ConnectorModel } from '../../common/model/base-model';
 import { textRender } from '../../common/model/constants';
 import { AccumulationChart } from '../accumulation';
 import { getFontStyle, createTemplate, measureElementRect, templateAnimate } from '../../common/utils/helper';
@@ -19,7 +19,7 @@ import { AccumulationBase } from './accumulation-base';
 import { AccumulationLegend } from './legend';
 
 /**
- * AccumulationDataLabel module used to render `dataLabel`.
+ * The `AccumulationDataLabel` module is used to render data labels for the Accumulation chart.
  */
 export class AccumulationDataLabel extends AccumulationBase {
     /** @private */
@@ -110,6 +110,7 @@ export class AccumulationDataLabel extends AccumulationBase {
      * @param {AccPoints} point - The data point for which to calculate the label collection.
      * @param {AccumulationDataLabelSettingsModel} dataLabel - The data label settings for the series.
      * @returns {void}
+     * @private
      */
     public calculateLabelCollection(point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel): void {
         if (point.argsData.template !== null) {
@@ -156,6 +157,7 @@ export class AccumulationDataLabel extends AccumulationBase {
      * @param {string[]} labelCollection - The collection of label texts.
      * @param {AccumulationDataLabelSettingsModel} dataLabel - The data label settings for the series.
      * @returns {Size} - The size of the label text collection.
+     * @private
      */
     public getTextSize(labelCollection : string[], dataLabel: AccumulationDataLabelSettingsModel): Size {
         let height : number = 0;
@@ -787,6 +789,7 @@ export class AccumulationDataLabel extends AccumulationBase {
      * @param {HTMLElement} templateElement - The template element for the data label.
      * @param {boolean} redraw - Indicates whether the data labels are being redrawn.
      * @returns {void}
+     * @private
      */
     public renderDataLabel(
         point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel, parent: Element,
@@ -841,6 +844,7 @@ export class AccumulationDataLabel extends AccumulationBase {
      * @param {ClientRect} clientRect - The client rectangle.
      * @param {boolean} isReactCallback - Indicates whether a React callback is being used.
      * @returns {void}
+     * @private
      */
     public calculateLabelSize(
         isTemplate: boolean, childElement: HTMLElement, point: AccPoints, points: AccPoints[],
@@ -936,7 +940,7 @@ export class AccumulationDataLabel extends AccumulationBase {
                         );
                         element = null;
                     }
-                    if (this.accumulation.accumulationLegendModule && this.accumulation.legendSettings.visible && (dataLabel.position === 'Outside'
+                    if (this.accumulation.accumulationLegendModule && this.accumulation.legendSettings.visible && !this.accumulation.redraw && (dataLabel.position === 'Outside'
                         || this.accumulation.enableSmartLabels)) {
                         this.accumulation.visibleSeries[0].findMaxBounds(this.accumulation.visibleSeries[0].labelBound, point.labelRegion);
                     }
@@ -954,6 +958,9 @@ export class AccumulationDataLabel extends AccumulationBase {
                                            false, false, null, this.accumulation.duration);
                     }
                     appendChildElement(false, parent, datalabelGroup, redraw);
+                }
+                else if (getElement(datalabelGroup.id)) {
+                    (getElement(datalabelGroup.id)).parentNode.removeChild(getElement(datalabelGroup.id));
                 }
             }
         }
@@ -1121,7 +1128,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         saturatedColor = (saturatedColor === 'transparent') ? ((this.accumulation.theme.indexOf('Dark') > -1 || this.accumulation.theme.indexOf('HighContrast') > -1) ? 'black' : 'white') : saturatedColor;
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(saturatedColor));
         const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
-        return contrast >= 128 ? 'black' : 'white';
+        return this.accumulation.theme === 'Bootstrap5' ? '#212529' : this.accumulation.theme === 'Bootstrap5Dark' ? '#DEE2E6' : contrast >= 128 ? 'black' : 'white';
     }
 
     /**

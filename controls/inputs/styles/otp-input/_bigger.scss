@@ -1,0 +1,65 @@
+@include export-module('otp-input-bigger') {
+  .e-bigger.e-otpinput,
+  .e-bigger .e-otpinput {
+    gap: $otp-bigger-input-gap;
+    &:has(.e-otp-separator):not(:empty) {
+      gap: $otp-bigger-separator-input-gap;
+    }
+    .e-otp-input-field {
+      min-width: $otp-bigger-input-width;
+      min-height: $otp-bigger-input-height;
+      font-size: $otp-bigger-input-font-size;
+      line-height: $otp-bigger-input-line-height;
+      padding: $otp-input-padding;
+      &input[type = 'password'],
+      &[type = 'password'] {
+        font-size: $otp-bigger-input-password-font-size;
+      }
+      &.e-input.e-otp-input-focus:focus {
+        padding-bottom: 0;
+      }
+    }
+    .e-otp-separator {
+      font-size: $otp-bigger-separator-font-size;
+      line-height: $otp-bigger-separator-line-height;
+    }
+    &.e-filled {
+      .e-otp-input-field {
+        padding: 0;
+      }
+    }
+  }
+
+  .e-bigger.e-small.e-otpinput,
+  .e-bigger.e-small .e-otpinput,
+  .e-bigger .e-small.e-otpinput,
+  .e-small .e-bigger.e-otpinput {
+    gap: $otp-bigger-small-input-gap;
+    &:has(.e-otp-separator):not(:empty) {
+      gap: $otp-bigger-small-separator-input-gap;
+    }
+    .e-otp-input-field {
+      min-width: $otp-bigger-small-input-width;
+      min-height: $otp-bigger-small-input-height;
+      font-size: $otp-bigger-small-input-font-size;
+      line-height: $otp-bigger-small-input-line-height;
+      padding: $otp-input-padding;
+      &input[type = 'password'],
+      &[type = 'password'] {
+        font-size: $otp-bigger-small-input-password-font-size;
+      }
+      &.e-input.e-otp-input-focus:focus {
+        padding-bottom: 0;
+      }
+    }
+    .e-otp-separator {
+      font-size: $otp-bigger-small-separator-font-size;
+      line-height: $otp-bigger-small-separator-line-height;
+    }
+    &.e-filled {
+      .e-otp-input-field {
+        padding: 0;
+      }
+    }
+  }
+}

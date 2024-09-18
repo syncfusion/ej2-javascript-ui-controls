@@ -102,7 +102,7 @@ describe('Merge ->', () => {
                     helper.invoke('selectRange', ['B5:C5']);
                     setTimeout(() => {
                         done();
-                    }, 50);
+                    });
                 });
             });
         });
@@ -131,6 +131,67 @@ describe('Merge ->', () => {
                     done();
                 });
             }, 10);
+        });
+    });
+
+    describe('Testing merge feature with different combinations ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Merge and delete row', (done: Function) => {
+            helper.invoke('merge', ['A5:C8']);
+            helper.invoke('delete', [6, 6, 'Row']);
+            expect(helper.getInstance().sheets[0].rows[6].cells[3].value).toBe(20);
+            done();
+        });
+        it('Merge and delete column', (done: Function) => {
+            helper.invoke('merge', ['D5:F7', 'Horizontally']);
+            helper.invoke('delete', [4, 4, 'Column']);
+            expect(helper.getInstance().sheets[0].rows[6].cells[4].value).toBe('');
+            done();
+        });
+        it('Selecting the merge cell by forward reverse order', (done: Function) => {
+            helper.invoke('merge', ['B4:C6']);
+            helper.invoke('merge', ['A7:C9']);
+            helper.invoke('selectRange', ['C6:B9']);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[5].cells[2].rowSpan).toBe(-2);
+                expect(helper.getInstance().sheets[0].rows[5].cells[2].colSpan).toBe(-2);
+                done();
+            });
+        });
+        it('Selecting the merge cells by reverse order', (done: Function) => {
+            helper.invoke('merge', ['B4:C6']);
+            helper.invoke('merge', ['A1:B3']);
+            helper.invoke('selectRange', ['C5:B2']);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[5].cells[2].rowSpan).toBe(-2);
+                expect(helper.getInstance().sheets[0].rows[5].cells[2].colSpan).toBe(-2);
+                done();
+            });
+        });
+        it('Selecting the merge cells by reverse forward order', (done: Function) => {
+            helper.invoke('merge', ['D4:F6']);
+            helper.invoke('merge', ['E1:G3']);
+            helper.invoke('selectRange', ['E5:F2']);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[5].cells[4].rowSpan).toBe(-2);
+                expect(helper.getInstance().sheets[0].rows[5].cells[4].colSpan).toBe(-1);
+                done();
+            }, 20);
+        });
+        it('Inserting row and column', (done: Function) => {
+            helper.invoke('merge', ['A4:C7']);
+            helper.invoke('insertRow', [5, 5]);
+            helper.invoke('insertColumn', [1, 1]);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [5, 4]).textContent).toBe('');
+                expect(helper.invoke('getCell', [0, 1]).textContent).toBe('');
+                done();
+            }, 20);
         });
     });
 
@@ -532,7 +593,7 @@ describe('Merge ->', () => {
                 helper.edit('D4', '12/08/2004');
                 helper.invoke('merge', ['A1:D4']);
                 setTimeout(()=>{
-                    expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBe('m/d/yyyy');
                     expect(spreadsheet.sheets[0].rows[0].cells[0].colSpan).toBe(4);
                     expect(spreadsheet.sheets[0].rows[0].cells[0].rowSpan).toBe(4);     
                     done();
@@ -541,7 +602,7 @@ describe('Merge ->', () => {
                 helper.edit('C1', '');
                 helper.invoke('merge', ['A1:D4']);
                 setTimeout(()=>{
-                    expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBe('m/d/yyyy');
                     expect(spreadsheet.sheets[0].rows[0].cells[0].colSpan).toBe(4);
                     expect(spreadsheet.sheets[0].rows[0].cells[0].rowSpan).toBe(4);     
                     done();
@@ -550,7 +611,7 @@ describe('Merge ->', () => {
                 helper.edit('D1', '');
                 helper.invoke('merge', ['A1:D4']);
                 setTimeout(()=>{
-                    expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBe('m/d/yyyy');
                     expect(spreadsheet.sheets[0].rows[0].cells[0].colSpan).toBe(4);
                     expect(spreadsheet.sheets[0].rows[0].cells[0].rowSpan).toBe(4);     
                     done();
@@ -568,13 +629,13 @@ describe('Merge ->', () => {
                 helper.edit('D8', '12/08/2004');
                 helper.invoke('merge', ['A5:D8', 'Horizontally']);
                 setTimeout(()=>{
-                    expect(spreadsheet.sheets[0].rows[4].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].format).toBe('m/d/yyyy');
                     expect(spreadsheet.sheets[0].rows[4].cells[0].colSpan).toBe(4);
-                    expect(spreadsheet.sheets[0].rows[5].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[5].cells[0].format).toBe('m/d/yyyy');
                     expect(spreadsheet.sheets[0].rows[5].cells[0].colSpan).toBe(4); 
-                    expect(spreadsheet.sheets[0].rows[6].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[6].cells[0].format).toBe('m/d/yyyy');
                     expect(spreadsheet.sheets[0].rows[6].cells[0].colSpan).toBe(4);
-                    expect(spreadsheet.sheets[0].rows[7].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[7].cells[0].format).toBe('m/d/yyyy');
                     expect(spreadsheet.sheets[0].rows[7].cells[0].colSpan).toBe(4);  
                     done();
                 });
@@ -589,7 +650,7 @@ describe('Merge ->', () => {
                 helper.invoke('merge', ['A9:A14', 'Vertically']);
                 setTimeout(function () {
                     expect(spreadsheet.sheets[0].rows[8].cells[0].rowSpan).toBe(6);
-                    expect(spreadsheet.sheets[0].rows[8].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[8].cells[0].format).toBe('m/d/yyyy');
                     done();
                 });
                 helper.click('#spreadsheet_undo');
@@ -597,7 +658,7 @@ describe('Merge ->', () => {
                 helper.invoke('merge', ['A9:A14', 'Vertically']);
                 setTimeout(function () {
                     expect(spreadsheet.sheets[0].rows[8].cells[0].rowSpan).toBe(6);
-                    expect(spreadsheet.sheets[0].rows[8].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[8].cells[0].format).toBe('m/d/yyyy');
                     done();
                 });
                 helper.click('#spreadsheet_undo');

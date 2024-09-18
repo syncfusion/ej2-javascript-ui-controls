@@ -234,19 +234,13 @@ describe('Diagram Control', () => {
                 mode: "Page",
                 region: "Content",
             });
-            expect((diagram.scroller.horizontalOffset == 25 || diagram.scroller.horizontalOffset == 484 ) && (diagram.scroller.verticalOffset == 142.5 || diagram.scroller.verticalOffset == 132.5 || diagram.scroller.verticalOffset == 134.5 || diagram.scroller.verticalOffset == 25)).toBe(true);
-            console.log("Gowtham - ",diagram.scroller.horizontalOffset, "value = 25 or 484 ");
-            console.log("Gowtham - ",diagram.scroller.verticalOffset, "value = 142.5 or 132.5 or 134.5 or 25 ");
-            
+            expect((diagram.scroller.horizontalOffset == 25 || diagram.scroller.horizontalOffset == 484 ) && (diagram.scroller.verticalOffset == 132.5|| diagram.scroller.verticalOffset == 134.5 || diagram.scroller.verticalOffset == 25)).toBe(true);
 
             diagram.fitToPage({
                 mode: "Page",
                 region: "Content",
             });
-            expect((diagram.scroller.horizontalOffset == 25 || diagram.scroller.horizontalOffset == 484 ) && (diagram.scroller.verticalOffset == 142.5 || diagram.scroller.verticalOffset == 132.5 || diagram.scroller.verticalOffset == 134.5 || diagram.scroller.verticalOffset == 25)).toBe(true);
-            console.log("Gowtham - ",diagram.scroller.horizontalOffset, "value = 25 or 484 ");
-            console.log("Gowtham - ",diagram.scroller.verticalOffset, "value = 142.5 or 132.5 or 134.5 or 25 ");
-            
+            expect((diagram.scroller.horizontalOffset == 25 || diagram.scroller.horizontalOffset == 484 ) && (diagram.scroller.verticalOffset == 132.5|| diagram.scroller.verticalOffset == 134.5 || diagram.scroller.verticalOffset == 25)).toBe(true);
             done();
         });
     });
@@ -700,7 +694,7 @@ describe('Diagram Control', () => {
             done();
         });
     });
-
+    
     describe('892441 - Infinite scroll not working in vertical axis of diagram', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

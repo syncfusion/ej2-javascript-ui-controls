@@ -874,11 +874,12 @@ export namespace IntlBase {
      * @param {Object} numericObject ?
      * @param {string} currencyCode ?
      * @param {string} altSymbol ?
+     * @param {string} ignoreCurrency ?
      * @returns {string} ?
      */
-    export function getCurrencySymbol(numericObject: Object, currencyCode: string, altSymbol?: string): string {
+    export function getCurrencySymbol(numericObject: Object, currencyCode: string, altSymbol?: string, ignoreCurrency?: boolean): string {
         const symbol: string = altSymbol ? ('.' + altSymbol) : '.symbol';
-        const getCurrency: string = getValue('currencies.' + currencyCode + symbol, numericObject) ||
+        const getCurrency: string = ignoreCurrency ? '$' : getValue('currencies.' + currencyCode + symbol, numericObject) ||
             getValue('currencies.' + currencyCode + '.symbol-alt-narrow', numericObject) || '$';
         return getCurrency;
     }

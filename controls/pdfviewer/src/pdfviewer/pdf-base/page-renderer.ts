@@ -316,7 +316,7 @@ export class PageRenderer{
                         if (stampAnnotation._dictionary.has('T') && this.checkName(stampAnnotation)) {
                             this.signatureAnnotationList.push(annotRenderer.loadSignatureImage(stampAnnotation, pageNumber));
                         }
-                        else if (stampAnnotation._dictionary.has('M') || (stampAnnotation._dictionary.has("NM") || stampAnnotation._dictionary.has("Name") && !stampAnnotation._dictionary.has("F") || (!stampAnnotation._dictionary.has("NM") && !stampAnnotation._dictionary.has("T")))) {
+                        else if (stampAnnotation._dictionary.has('M') || (stampAnnotation._dictionary.has('NM') || stampAnnotation._dictionary.has('Name') && !stampAnnotation._dictionary.has('F') || (!stampAnnotation._dictionary.has('NM') && !stampAnnotation._dictionary.has('T')))) {
                             const rubberStampAnnotation: StampAnnotationBase = new StampAnnotationBase();
                             rubberStampAnnotation.Author = stampAnnotation.author;
                             rubberStampAnnotation.Subject = stampAnnotation.subject;
@@ -392,22 +392,7 @@ export class PageRenderer{
                             else {
                                 rubberStampAnnotation.Note = '';
                             }
-                            let annotFlags: string = _annotationFlagsToString(stampAnnotation.flags);
-                            if (!isNullOrUndefined(annotFlags) && annotFlags.includes("locked")) {
-                                rubberStampAnnotation.IsLocked = true;
-                            }
-                            else {
-                                rubberStampAnnotation.IsLocked = false;
-                            }
-                            if (!isNullOrUndefined(annotFlags) && annotFlags.includes("readOnly")) {
-                                rubberStampAnnotation.IsCommentLock = true;
-                            }
-                            else {
-                                rubberStampAnnotation.IsCommentLock = false;
-                            }
-                            if (!isNullOrUndefined(annotFlags) && annotFlags.includes('print')) {
-                                rubberStampAnnotation.IsPrint = true;
-                            }
+                            annotRenderer.updateIsLockProperty(rubberStampAnnotation, stampAnnotation);
                             if (!isNullOrUndefined(stampAnnotation.reviewHistory)) {
                                 for (let i: number = 0; i < stampAnnotation.reviewHistory.count; i++) {
                                     rubberStampAnnotation.State =
@@ -586,10 +571,15 @@ export class PageRenderer{
      * @param {any} rubberStampAnnotation - rubberStampAnnotation
      * @param {number} pageRotation - pageRotation
      * @param {number} collectionOrder - Gets the collection order
+     * @param {boolean} isFormField - Optional flag indicating whether the annotation is for a form field.
+     * @param {string} formFieldName - Optional name of the form field, if applicable.
+     * @param {Array<any>} formFieldList - Optional list of form fields, if applicable.
+     * @param {number} PageIndex - Optional page index, if applicable.
      * @returns {void}
      */
     public findStampTemplate(annotation: PdfRubberStampAnnotation, rubberStampAnnotation: any, pageRotation: number,
-                             collectionOrder: number): void {
+                             collectionOrder: number, isFormField?: boolean, formFieldName?: any,
+                             formFieldList?: any, PageIndex?: number): void {
         // Create a template from the appearance of rubber stamp annotation
         const template: PdfTemplate = annotation.createTemplate();
         //Store custom stamp model calss
@@ -604,14 +594,19 @@ export class PageRenderer{
         pageSettings.size = template.size;
         const page: PdfPage = stampDocument.addPage(pageSettings);
         // Draw template into new page graphics
-        page.graphics.drawTemplate(template, {x: 0, y: 0, width: template.size[0], height: template.size[1]});
+        page.graphics.drawTemplate(template, { x: 0, y: 0, width: template.size[0], height: template.size[1] });
         // Remove existing PDF page at index 0
         stampDocument.removePage(0);
         // Save the PDF document which have appearance template
-        let data: string =  'data:application/pdf;base64,' + _encode(stampDocument.save());
+        let data: string = 'data:application/pdf;base64,' + _encode(stampDocument.save());
         data = this.pdfViewerBase.checkDocumentData(data);
         const fileByteArray: any = this.pdfViewerBase.convertBase64(data);
-        this.pdfViewerBase.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null, pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false, AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber, annotationOrder: JSON.stringify(this.annotationOrder), collectionOrder: collectionOrder});
+        if (isFormField) {
+            this.pdfViewerBase.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null, pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false, AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber, annotationOrder: JSON.stringify(this.annotationOrder), collectionOrder: collectionOrder, isFormField: isFormField, formFieldName: formFieldName, formFieldList: JSON.stringify(formFieldList), rubberStampAnnotation: rubberStampAnnotation, PageIndex: PageIndex });
+        }
+        else {
+            this.pdfViewerBase.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null, pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false, AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber, annotationOrder: JSON.stringify(this.annotationOrder), collectionOrder: collectionOrder });
+        }
     }
 
     /**
@@ -630,7 +625,7 @@ export class PageRenderer{
         canvasContext.putImageData(imageData, 0, 0);
         const imageUrl: string = canvas.toDataURL();
         this.pdfViewerBase.releaseCanvas(canvas);
-        let base64string: string = this.pdfViewerBase.checkDocumentData(imageUrl);
+        const base64string: string = this.pdfViewerBase.checkDocumentData(imageUrl);
         const Json: any = { imagedata: imageUrl };
         const id: any = data.annotName;
         let annotOrder: any = [];
@@ -935,7 +930,9 @@ export class PageRenderer{
 
     private getShapeFreeText(shapeName: string, loadedFreetextAnnotations: PdfFreeTextAnnotation[]): PdfFreeTextAnnotation {
         if (!isNullOrUndefined(shapeName) && shapeName !== ''){
-            return loadedFreetextAnnotations.find((annot: PdfFreeTextAnnotation) => annot.name != undefined && annot.name.includes(shapeName));
+            // eslint-disable-next-line
+            return loadedFreetextAnnotations.find((annot: PdfFreeTextAnnotation) => annot.name != undefined &&
+             annot.name.includes(shapeName));
         }
         return null;
     }

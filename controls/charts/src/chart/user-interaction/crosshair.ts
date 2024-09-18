@@ -10,7 +10,7 @@ import { CrosshairSettingsModel } from '../chart-model';
 
 
 /**
- * `Crosshair` module is used to render the crosshair for chart.
+ * The `Crosshair` module is used to render the crosshair for the chart.
  */
 export class Crosshair {
 
@@ -111,6 +111,7 @@ export class Crosshair {
      * Renders the crosshair.
      *
      * @returns {void}
+     * @private
      */
     public crosshair(): void {
         const chart: Chart = this.chart; let horizontalCross: string = ''; let verticalCross: string = '';
@@ -131,7 +132,8 @@ export class Crosshair {
             }
         }
         this.stopAnimation();
-        if (chart.isCrosshair && chart.tooltip.enable && chart.tooltipModule && !withInBounds(chart.tooltipModule.valueX, chart.tooltipModule.valueY, chartRect)) {
+        if (chart.isCrosshair && chart.tooltip.enable && chart.tooltipModule &&
+            !withInBounds(chart.tooltipModule.valueX, chart.tooltipModule.valueY, chartRect)) {
             return null;
         }
 
@@ -166,7 +168,7 @@ export class Crosshair {
             options = new PathOption(
                 this.elementID + '_HorizontalLine', 'none', crosshair.line.width,
                 crosshair.horizontalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine,
-                crosshair.opacity, crosshair.dashArray, horizontalCross
+                crosshair.opacity, (chart.theme.indexOf('Bootstrap5') > -1 || chart.theme === 'Fluent2HighContrast') ? crosshair.dashArray || '2.5' :  crosshair.dashArray, horizontalCross
             );
             this.drawCrosshairLine(options, cross, chartRect.x, this.valueY, chartRect.width, 0, horizontalCross);
             /**
@@ -176,7 +178,7 @@ export class Crosshair {
             options = new PathOption(
                 this.elementID + '_VerticalLine', 'none', crosshair.line.width,
                 crosshair.verticalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine,
-                crosshair.opacity, crosshair.dashArray, verticalCross
+                crosshair.opacity, (chart.theme.indexOf('Bootstrap5') > -1 || chart.theme === 'Fluent2HighContrast') ? crosshair.dashArray || '2.5' :  crosshair.dashArray, verticalCross
             );
             this.drawCrosshairLine(options, cross, this.valueX, chartRect.y, 0, chartRect.height, verticalCross);
             this.renderAxisTooltip(chart, chartRect, <Element>axisTooltipGroup);
@@ -190,13 +192,13 @@ export class Crosshair {
                 options = new PathOption(
                     this.elementID + '_HorizontalLine', 'none', crosshair.line.width,
                     crosshair.horizontalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine,
-                    crosshair.opacity, crosshair.dashArray, horizontalCross
+                    crosshair.opacity, (chart.theme.indexOf('Bootstrap5') > -1 || chart.theme === 'Fluent2HighContrast') ? crosshair.dashArray || '2.5' :  crosshair.dashArray, horizontalCross
                 );
                 this.renderCrosshairLine(options, crossGroup);
                 options = new PathOption(
                     this.elementID + '_VerticalLine', 'none', crosshair.line.width,
                     crosshair.verticalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine,
-                    crosshair.opacity, crosshair.dashArray, verticalCross
+                    crosshair.opacity, (chart.theme.indexOf('Bootstrap5') > -1 || chart.theme === 'Fluent2HighContrast') ? crosshair.dashArray || '2.5' :  crosshair.dashArray, verticalCross
                 );
                 this.renderCrosshairLine(options, crossGroup);
                 crossGroup.appendChild(axisTooltipGroup);
@@ -319,10 +321,10 @@ export class Crosshair {
                             textElem.children[i as number].setAttribute('style', 'text-anchor: middle');
                         }
                     }
-                    if (this.chart.theme === 'Fluent' || this.chart.theme === 'FluentDark' || this.chart.theme === 'Fabric' || this.chart.theme === 'FabricDark') {
+                    if (this.chart.theme === 'Fluent' || this.chart.theme === 'FluentDark' || this.chart.theme === 'Fabric' || this.chart.theme === 'FabricDark' || this.chart.theme === 'Fluent2HighContrast') {
                         const defElement: Element = this.chart.renderer.createDefs();
-                        const bordercolor: string = this.chart.theme === 'Fluent' || this.chart.theme === 'Fabric' ? '#D2D0CE' : null;
-                        const borderwidth: number = this.chart.theme === 'Fluent' || this.chart.theme === 'Fabric' ? 1 : null;
+                        const bordercolor: string = this.chart.theme === 'Fluent' || this.chart.theme === 'Fabric' ? '#D2D0CE' : this.chart.theme === 'Fluent2HighContrast' ? '#FFFFFF' : null;
+                        const borderwidth: number = this.chart.theme === 'Fluent' || this.chart.theme === 'Fabric' || this.chart.theme === 'Fluent2HighContrast' ? 1 : null;
                         defElement.setAttribute('id', this.chart.element.id + 'SVG_tooltip_definition');
                         axisGroup.appendChild(defElement);
                         pathElement.setAttribute('stroke', bordercolor);

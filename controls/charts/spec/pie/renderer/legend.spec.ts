@@ -742,6 +742,7 @@ describe('Legend checking for the pie series', () => {
         let opacity: string; let path: string;
         let xValue: string; let yValue: string;
         let pieObj: AccumulationChart;
+        let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             chartContainer = createElement('div', { id: 'container', styles: 'width: 300px; height: 300px' });
             document.body.appendChild(chartContainer);
@@ -814,8 +815,11 @@ describe('Legend checking for the pie series', () => {
                 expect(path === 'M 251.5 267.71501821018626 L 259.5 271.71501821018626 L 251.5 275.71501821018626 L 251.5 273.71501821018626 L 255.5 271.71501821018626 L251.5 269.71501821018626 Z').toBe;
                 legendGroup = getElement('container_chart_legend_translate_g');
                 expect(legendGroup.childElementCount === 7).toBe(true);
+                trigger.keyboardEvent('keyup', backArrow, 'Arrow', 'Arrow');
+                trigger.keyboardEvent('keyup', legendGroup, 'Arrow', 'Arrow');
                 done();
             };
+            pieObj.highlightMode='Point'
             pieObj.refresh();
         });
         it('02.legend bottom: title top', (done: Function) => {
@@ -1077,6 +1081,7 @@ describe('Checking RTL Behaviour for legend', () => {
     let posX: string;
     let textAnchor: string;
     let loaded: EmitType<IAccLoadedEventArgs>;
+    let trigger: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         ele = createElement('div', { id: id,});
         document.body.appendChild(ele);
@@ -1183,6 +1188,20 @@ describe('Checking RTL Behaviour for legend', () => {
         };
         accumulation.loaded = loaded;
         accumulation.enableRtl = true;
+        accumulation.refresh();
+    });
+    it('checking with keyboard navigation', (done: Function) => {
+        loaded = (args: IAccLoadedEventArgs) => {
+            if (!enterKeyUpTriggered) {
+                enterKeyUpTriggered = true;
+                textEle = getElement(legendTextId);
+                trigger.keyboardEvent('keyup', textEle, 'Space', 'Space');
+                expect(textEle !== null).toBe(true);
+            }
+            done();
+        };
+        let enterKeyUpTriggered: boolean = false;
+        accumulation.loaded = loaded;
         accumulation.refresh();
     });
   });

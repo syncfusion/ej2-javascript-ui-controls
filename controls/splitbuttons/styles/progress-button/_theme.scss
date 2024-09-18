@@ -58,7 +58,7 @@
           }
 
           .e-path-arc {
-            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'Material3' {
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' {
               stroke: $btn-flat-primary-path-arc;
             }
             @else {
@@ -603,7 +603,7 @@
   }
 
   #{if(&, '&', '*')}.e-flat:not(:focus) {
-    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+    @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
       &.e-primary {
         .e-progress {
           @if $skin-name == 'material' or $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
@@ -713,5 +713,9 @@
     &.e-info:focus .e-spinner-pane .e-spinner-inner svg .e-path-arc {
       stroke: $info-bg-color;
     }
+  }
+
+  .e-progress-btn .e-spinner-pane .e-spinner-inner .e-spin-fluent2 .e-path-circle {
+    stroke: $progress-btn-spinner-color !important; /* stylelint-disable-line declaration-no-important */
   }
 }

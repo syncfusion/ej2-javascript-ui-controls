@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { DefineNameModel } from '../../../src';
+import { DefineNameModel, SheetModel } from '../../../src';
 import { getRangeAddress } from "../../../src/index";
 import { getComponent } from '@syncfusion/ej2-base';
 
@@ -261,7 +261,7 @@ describe('Spreadsheet formula bar module ->', () => {
                 helper.triggerKeyNativeEvent(13);
                 // expect(helper.invoke('getCell', [0, 8]).textContent).toBe('300');
                 done();
-            }, 50);
+            },50);
         });
         it('Double Click in Formula Dialog in with Editing->', (done: Function) => {
             helper.invoke('selectRange', ['I2']);
@@ -281,7 +281,7 @@ describe('Spreadsheet formula bar module ->', () => {
                 helper.triggerKeyNativeEvent(13);
                 // expect(helper.invoke('getCell', [1, 8]).textContent).toBe('');
                 done();
-            }, 50);
+            },50);
         });
         it('Selecting Formula Category in Formula Dialog->', (done: Function) => {
             helper.invoke('selectRange', ['J1']);
@@ -345,7 +345,7 @@ describe('Spreadsheet formula bar module ->', () => {
                 helper.invoke('updateCell', [{ value: '19/11/2030' }, 'B2']);
                 expect(helper.getInstance().sheets[0].rows[1].cells[1].format).toBe('dd/MM/yyyy');
                 expect(helper.invoke('getCell', [1, 1]).textContent).toBe('19/11/2030');
-                expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('19/11/2030');
+                expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('11/19/2030');
                 done();
             });
             it('EJ2-55782 - Custom date (DD/MM/YY) formatted value data get interchanged for date and month values->', (done: Function) => {
@@ -363,6 +363,221 @@ describe('Spreadsheet formula bar module ->', () => {
                     },40);
                 },50);
             });
+        });
+    });
+
+    describe('Testing name box selection with defined names ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }, {}]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Selecting defined name from namebox which has multi column range', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addDefinedName({ name: "MultiRange", refersTo: "='Sheet1'!$A:$H", scope: 'Sheet1' });
+            let nameBox: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('#' + helper.id + '_name_box');
+            let nameBoxElem: HTMLElement = helper.getElementFromSpreadsheet('.e-name-box .e-ddl-icon');
+            helper.triggerMouseAction('mousedown', null, nameBoxElem, nameBoxElem);
+            nameBoxElem.click();
+            setTimeout(() => {
+                helper.click('#spreadsheet_name_box_popup li:nth-child(1)');
+                setTimeout(() => {
+                    expect(nameBox.value).toBe('MultiRange');
+                    done();
+                });
+            });
+        });
+        it('Selecting defined name with reference in the non activesheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addDefinedName({ name: "NonActive", refersTo: "='Sheet2'!A1:B6", scope: 'Workbook' });
+            let nameBoxElem: HTMLElement = helper.getElementFromSpreadsheet('.e-name-box .e-ddl-icon');
+            helper.triggerMouseAction('mousedown', null, nameBoxElem, nameBoxElem);
+            nameBoxElem.click();
+            setTimeout(() => {
+                helper.click('#spreadsheet_name_box_popup li:nth-child(2)');
+                setTimeout(() => {
+                    expect(spreadsheet.getActiveSheet().name).toBe('Sheet2');
+                    expect(spreadsheet.getActiveSheet().selectedRange).toBe('A1:B6');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('Testing defined names', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Selecting defined name with reference to the sheet which is not maintained', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addDefinedName({ name: "NoRef", refersTo: "='Sheet2'!A1:B6", scope: 'Workbook' });
+            let nameBoxElem: HTMLElement = helper.getElementFromSpreadsheet('.e-name-box .e-ddl-icon');
+            helper.triggerMouseAction('mousedown', null, nameBoxElem, nameBoxElem);
+            nameBoxElem.click();
+            setTimeout(() => {
+                helper.click('#spreadsheet_name_box_popup li:nth-child(1)');
+                setTimeout(() => {
+                    expect(spreadsheet.getActiveSheet().name).toBe('Sheet1');
+                    expect(spreadsheet.getActiveSheet().selectedRange).toBe('A1:A1');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('Testing namebox open and close actions', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking with name box open action', (done: Function) => {
+            let nameBoxElem: HTMLElement = helper.getElementFromSpreadsheet('.e-name-box .e-ddl-icon');
+            helper.triggerMouseAction('mousedown', null, nameBoxElem, nameBoxElem);
+            nameBoxElem.click();
+            done();
+        });
+    });
+
+    describe('Testing time formats with different formats', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.numberFormat('mm', "E5");
+                }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Updating the cell with (mm) time format', (done: Function) => {
+            helper.invoke('selectRange', ['E5']);
+            helper.invoke('updateCell', [{ value: '06:23:00' }, 'E5']);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[4].cells[4].format).toBe('mm');
+                expect(helper.getElement('#' + helper.id + '_formula_input').value).toBe("1/1/1900 6:23:00 AM");
+                expect(helper.invoke('getCell', [4, 4]).textContent).toBe('01');
+                done();
+            })
+        });
+    });
+
+    describe('Editing the value in formula bar value using Shift key', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Editing value in Formula bar using Shift + Backspace key using keyup event', (done: Function) => {
+            helper.invoke('selectRange', ['F3']);
+            let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-formula-bar-panel .e-formula-bar');
+            let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+            editorElem.dispatchEvent(e);
+            e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+            editorElem.dispatchEvent(e);
+            e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+            editorElem.dispatchEvent(e);
+            helper.triggerKeyEvent('keyup', 8, null, false, true, editorElem);
+            // expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('Item Name');
+            helper.triggerKeyNativeEvent(13);
+            // expect(helper.invoke('getCell', [2, 5]).textContent).toBe('Item Name');
+            done();
+        });
+        it('Editing value in Formula bar using Shift + Backspace key using keydown event', (done: Function) => {
+            helper.invoke('selectRange', ['G3']);
+            let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-formula-bar-panel .e-formula-bar');
+            let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+            editorElem.dispatchEvent(e);
+            e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+            editorElem.dispatchEvent(e);
+            e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+            editorElem.dispatchEvent(e);
+            helper.triggerKeyEvent('keydown', 8, null, false, true, editorElem);
+            // expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('300');
+            helper.triggerKeyNativeEvent(13);
+            // expect(helper.invoke('getCell', [2, 6]).textContent).toBe('300');
+            done();
+        });
+    });
+    describe('Applying logical formula from formula dialog box', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Applying AND formula from the formula dialog box', (done: Function) => {
+            helper.click('.e-formula-bar-panel .e-insert-function');
+            helper.setAnimationToNone('.e-spreadsheet-function-dlg.e-dialog');
+            setTimeout(() => {
+                const ddlObj: any = getComponent(helper.getElement('.e-spreadsheet-function-dlg .e-dlg-content .e-input-group').querySelector('.e-dropdownlist'), 'dropdownlist');
+                ddlObj.showPopup();
+                setTimeout(() => {
+                    helper.click('.e-ddl.e-popup li:nth-child(5)');
+                    expect(helper.getElement('#' + helper.id + '_formula_category').value).toBe('Logical');
+                    setTimeout(() => {
+                        helper.click('.e-spreadsheet-function-dlg .e-dlg-content .e-formula-list.e-listview li:nth-child(1)');
+                        helper.click('.e-spreadsheet-function-dlg .e-footer-content button:nth-child(1)');
+                        expect(helper.getElement('#' + helper.id + '_formula_input').value).toBe("=AND(");
+                        helper.triggerKeyNativeEvent(27);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Applying OR formula from the formula dialog box', (done: Function) => {
+            helper.click('.e-formula-bar-panel .e-insert-function');
+            helper.setAnimationToNone('.e-spreadsheet-function-dlg.e-dialog');
+            setTimeout(() => {
+                const ddlObj: any = getComponent(helper.getElement('.e-spreadsheet-function-dlg .e-dlg-content .e-input-group').querySelector('.e-dropdownlist'), 'dropdownlist');
+                ddlObj.showPopup();
+                setTimeout(() => {
+                    helper.click('.e-ddl.e-popup li:nth-child(5)');
+                    expect(helper.getElement('#' + helper.id + '_formula_category').value).toBe('Logical');
+                    setTimeout(() => {
+                        helper.click('.e-spreadsheet-function-dlg .e-dlg-content .e-formula-list.e-listview li:nth-child(6)');
+                        helper.click('.e-spreadsheet-function-dlg .e-footer-content button:nth-child(1)');
+                        expect(helper.getElement('#' + helper.id + '_formula_input').value).toBe("=OR(");
+                        helper.triggerKeyNativeEvent(27);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
+    describe('Checking createFormulaBar method ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('To check if the formula bar is created after setting showFormulaBar to false', (done: Function) => {
+            const sheet: SheetModel = helper.invoke('getActiveSheet');
+            helper.invoke('setSheetPropertyOnMute', [sheet, 'showFormulaBar', false]);
+            helper.getInstance().formulaBarModule.createFormulaBar();
+            done();
         });
     });
 });

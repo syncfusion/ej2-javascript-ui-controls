@@ -1,6 +1,6 @@
-import { getRangeIndexes, ChartModel, inRange, checkRange, getSwapRange, getRangeAddress } from '../common/index';
+import { getRangeIndexes, ChartModel, getSwapRange, getRangeAddress } from '../common/index';
 import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell, getSheetIndexFromId } from '../base/index';
-import { setChart, initiateChart, refreshChart, updateChart, deleteChartColl, refreshChartSize, focusChartBorder, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit } from '../common/event';
+import { setChart, initiateChart, deleteChartColl, refreshChartSize, focusChartBorder, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit } from '../common/event';
 import { closest, isNullOrUndefined, getComponent, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
 
 /**
@@ -21,7 +21,6 @@ export class WorkbookChart {
 
     private addEventListener(): void {
         this.parent.on(setChart, this.setChartHandler, this);
-        this.parent.on(refreshChart, this.refreshChartData, this);
         this.parent.on(deleteChartColl, this.deleteChartColl, this);
         this.parent.on(refreshChartSize, this.refreshChartSize, this);
         this.parent.on(focusChartBorder, this.focusChartBorder, this);
@@ -30,7 +29,6 @@ export class WorkbookChart {
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(setChart, this.setChartHandler);
-            this.parent.off(refreshChart, this.refreshChartData);
             this.parent.off(deleteChartColl, this.deleteChartColl);
             this.parent.off(refreshChartSize, this.refreshChartSize);
             this.parent.off(focusChartBorder, this.focusChartBorder);
@@ -130,44 +128,6 @@ export class WorkbookChart {
         }
     }
 
-    private refreshChartData(
-        args: { cell: CellModel, rIdx: number, cIdx: number, range?: number[], showHide?: string, viewportIndexes?: number[][] }): void {
-        if (!this.parent.chartColl || !this.parent.chartColl.length) {
-            return;
-        }
-        let chart: ChartModel; let rangeArr: string[]; let range: string; let insideRange: boolean;
-        for (let i: number = 0, len: number = this.parent.chartColl.length; i < len; i++) {
-            chart = this.parent.chartColl[i as number];
-            if (chart.range.includes('!')) {
-                rangeArr = chart.range.split('!');
-                if (this.parent.activeSheetIndex !== getSheetIndex(this.parent, rangeArr[0])) {
-                    continue;
-                }
-                range = rangeArr[1];
-            } else {
-                range = chart.range;
-            }
-            if (args.viewportIndexes) {
-                for (let idx: number = 0; idx < args.viewportIndexes.length; idx++) {
-                    if (checkRange([args.viewportIndexes[idx as number]], range)) {
-                        insideRange = true;
-                        break;
-                    }
-                }
-            } else {
-                insideRange = args.range ? checkRange([args.range], range) : (args.showHide ? this.inRowColumnRange(
-                    getRangeIndexes(range), args.rIdx, args.showHide) : inRange(getRangeIndexes(range), args.rIdx, args.cIdx));
-            }
-            if (insideRange) {
-                this.parent.notify(updateChart, { chart: chart });
-            }
-        }
-    }
-
-    private inRowColumnRange(range: number[], index: number, showHide: string): boolean {
-        return showHide === 'rows' ? index >= range[0] && index <= range[2] : index >= range[1] && index <= range[3];
-    }
-
     private refreshChartSize(args: { height: string, width: string, overlayEle: HTMLElement }): void {
         let chartCnt: number;
         let j: number = 1;
@@ -180,10 +140,7 @@ export class WorkbookChart {
                     const chart: ChartModel = this.parent.chartColl[chartCnt as number];
                     if (!isNullOrUndefined(args.overlayEle.querySelector('#' + chart.id))) {
                         const chartObj: HTMLElement = this.parent.element.querySelector('.' + chart.id);
-                        let excelFilter: { height: string, width: string } = getComponent(chartObj, 'chart');
-                        if (!excelFilter) {
-                            excelFilter = getComponent(chartObj, 'accumulationchart');
-                        }
+                        const excelFilter: { height: string, width: string } = getComponent(chartObj, 'chart') || getComponent(chartObj, 'accumulationchart');
                         if (excelFilter) {
                             excelFilter.height = args.height;
                             excelFilter.width = args.width;

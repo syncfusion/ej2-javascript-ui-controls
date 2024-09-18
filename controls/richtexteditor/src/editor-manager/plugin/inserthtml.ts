@@ -255,8 +255,8 @@ export class InsertHtml {
                 if (isSingleNode) {
                     preNode.parentNode.replaceChild(fragment, preNode);
                 } else {
-                    const startContainerParent: Node = editNode === range.startContainer ? range.startContainer
-                        : range.startContainer.parentNode;
+                    const startContainerParent: Node = editNode === range.startContainer ?
+                        range.startContainer : range.startContainer.parentNode;
                     // Get the index of the start container among its siblings
                     const startIndex: number = Array.prototype.indexOf.call(startContainerParent.childNodes, (Browser.userAgent.indexOf('Firefox') !== -1 && editNode === range.startContainer) ? range.startContainer.firstChild : range.startContainer);
                     range.deleteContents();
@@ -278,8 +278,6 @@ export class InsertHtml {
                     }
                     const rangeElement: Node = closest(nearestAnchor, 'span');
                     rangeElement.appendChild(tempSpan);
-                } else if (nodes[0].nodeName === '#text' && nodes[0].nodeValue.includes('\u200B') && !isNOU(nodes[0].parentElement) && !isNOU(nodes[0].parentElement.previousElementSibling) && nodes[0].parentElement.previousElementSibling.classList.contains('e-mention-chip')) {
-                    range.startContainer.parentElement.insertAdjacentElement('afterend', tempSpan);
                 } else {
                     range.insertNode(tempSpan);
                 }

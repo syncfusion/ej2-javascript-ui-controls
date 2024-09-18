@@ -97,6 +97,142 @@ describe('Parameter SQL Query', () => {
         }]
     };
 
+    let mongoRules: RuleModel = {
+        'condition': 'and',
+        'rules': [{
+            'label': 'Employee ID',
+            'field': 'EmployeeID',
+            'type': 'number',
+            'operator': 'equal',
+            'value': 1001
+        },
+        {
+            'label': 'Employee ID',
+            'field': 'EmployeeID',
+            'type': 'number',
+            'operator': 'notbetween',
+            'value': 1001
+        },
+        {
+            'label': 'Status',
+            'field': 'Status',
+            'type': 'boolean',
+            'operator': 'equal',
+            'value': true
+        },
+        {
+            'condition': 'or',
+            'rules': [{
+                'label': 'Title',
+                'field': 'Title',
+                'type': 'string',
+                'operator': 'notcontains',
+                'value':'Sales Manager'
+            },
+            {
+                'label': 'Title',
+                'field': 'Title',
+                'type': 'string',
+                'operator': 'notbetween',
+                'value':'Sales Manager'
+            },
+            {
+                'label': 'Title',
+                'field': 'Title',
+                'type': 'string',
+                'operator': 'notstartswith',
+                'value':'Sales'
+            },
+            {
+            'condition': 'and',
+                'rules': [{
+                    'label': 'City',
+                    'field': 'City',
+                    'type': 'string',
+                    'operator': 'startswith',
+                    'value': 'Kirkland'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'isempty',
+                    'value': '12/12/2019'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'isnotempty',
+                    'value': '12/12/2019'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'notequal',
+                    'value': '12/12/2019'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'isnotnull',
+                    'value': '12/12/2019'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'isnull',
+                    'value': '12/12/2019'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'lessthanorequal',
+                    'value': '12/12/2019'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'greaterthan',
+                    'value': '12/12/2019'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'greaterthanorequal',
+                    'value': '12/12/2019'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'between',
+                    'value': '12/12/2019'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'lessthan',
+                    'value': '12/12/2019'
+                },
+                {
+                    'label': 'Hire Date',
+                    'field': 'HireDate',
+                    'type': 'date',
+                    'operator': 'notendswith',
+                    'value': '12/12/2019'
+                }]
+            }]
+        }]
+    };
+
     let columnData2: ColumnsModel[] = [
         {
             field: 'TaskID', label: 'Task ID', type: 'number', operators: [{ key: 'equal', value: 'equal' },
@@ -142,13 +278,44 @@ describe('Parameter SQL Query', () => {
         Browser.userAgent = Chromebrowser;
         document.body.appendChild(createElement('div', { id: 'querybuilder' }));
     });
+
     afterEach(() => {
         remove(queryBuilder.element.nextElementSibling);
         remove(queryBuilder.element);
         queryBuilder.destroy();
         (QueryBuilder as any).injectedModules = [];
     });
-	
+
+    it('mongo query - injection', () => {
+        queryBuilder = null;
+        queryBuilder = new QueryBuilder({
+            dataSource: boolData
+        }, '#querybuilder');
+        const sqlString: string = '{"$or":[{"TaskID": null, "Status": true}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        const mongoQuery: string = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+    });
+    it('Parameter SQL - injection', () => {
+        queryBuilder = new QueryBuilder({
+            columns: columnData2,
+            enableNotCondition: true
+        }, '#querybuilder');
+        let params: any = ['a', 'b', 1, 2];
+        const sql: ParameterizedSql = { sql: '(Category IN (?,?) OR TaskID IN (?,?))', params: params };
+        queryBuilder.setParameterizedSql(sql);
+        const actSql: ParameterizedSql = queryBuilder.getParameterizedSql();
+    });
+    it('Named Parameter SQL - injection', () => {
+        queryBuilder = new QueryBuilder({
+            columns: columnData2,
+            enableNotCondition: true
+        }, '#querybuilder');
+        const params: any = {"Category_1": "a", "Category_2": "b", "TaskID_1": 1, "TaskID_2": 2};
+        const sql: ParameterizedNamedSql = { sql: '(Category IN (:Category_1,:Category_2) OR TaskID IN (:TaskID_1,:TaskID_2))', params: params };
+        queryBuilder.setParameterizedNamedSql(sql);
+        const actSql: ParameterizedNamedSql = queryBuilder.getParameterizedNamedSql();
+    });
+
     it('Export Parameter SQL', () => {
         QueryBuilder.Inject(QueryLibrary);
         queryBuilder = new QueryBuilder({
@@ -316,6 +483,7 @@ describe('Parameter SQL Query', () => {
         }, '#querybuilder');
         let sqlString: string = '{"$and":[{"EmployeeID":1001},{ "$or":[{"Title":{"$regex":"Sales Manager"}},{"Title":{"$regex":"Sales"}},{ "$and":[{"City":"Kirkland"},{"HireDate":"12/12/2019"}]}]}]}';
         let mongoQuery: string = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        mongoQuery = queryBuilder.getMongoQuery();
         expect(mongoQuery).toEqual(sqlString);
         sqlString = '{"$and":[{"EmployeeID":1},{"Title":"Sales Manager"},{ "$or":[{"FirstName":{"$regex":"^ewfew"}},{"TitleOfCourtesy":"Mr."},{ "$and":[{"FirstName":{"$regex":"^ewfew"}},{"HireDate":"12/06/2024"}]},{ "$or":[{"FirstName":{"$regex":"^reer"}},{"Title":{"$regex":"^erer"}}]}]},{"Title":{"$regex":"^ewfew"}}]}';
         let actualSql: string = "EmployeeID = 1 AND Title = 'Sales Manager' AND (FirstName LIKE ('ewfew%') OR TitleOfCourtesy = 'Mr.' OR (FirstName LIKE ('ewfew%') AND HireDate = '12/06/2024') OR (FirstName LIKE ('reer%') OR Title LIKE ('erer%'))) AND Title LIKE ('ewfew%')";
@@ -332,6 +500,27 @@ describe('Parameter SQL Query', () => {
         queryBuilder.setRulesFromSql(actualSql);
         mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
         expect(mongoQuery).toEqual(sqlString);
+        actualSql = 'EmployeeID = 1001 AND (Title LIKE (\'%Sales Manager%\') OR (City = \'Kirkland\' AND City IN (\'Kirkland\') AND "HireDate" IN ("12/12/2019") AND EmployeeID IN (1001) AND (FirstName LIKE (\'fewfew%\') OR FirstName LIKE (\'efew%\'))) OR LastName LIKE (\'erer%\')) AND (FirstName LIKE (\'ewfew%\') AND Title LIKE (\'efweew%\'))';
+        queryBuilder.setRulesFromSql(actualSql);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        actualSql = '(EmployeeID = 1 AND LastName LIKE (\'rgerger%\') AND (FirstName LIKE (\'erger%\') OR Title LIKE (\'asawd%\')) AND (Title LIKE (\'reger%\') AND EmployeeID IN (1001, 1002) AND FirstName LIKE (\'aefwaw%\')) AND (Title LIKE (\'ewrew%\') OR LastName LIKE (\'ewfew%\')))';
+        queryBuilder.setRulesFromSql(actualSql);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        actualSql = 'EmployeeID = 1001 AND (Title LIKE (\'%Sales Manager%\') OR (City = \'Kirkland\' AND City NOT IN (\'Kirkland\') AND "HireDate" NOT IN ("12/12/2019") AND EmployeeID NOT IN (1001) AND (FirstName LIKE (\'fewfew%\') OR FirstName LIKE (\'efew%\'))) OR LastName LIKE (\'erer%\')) AND (FirstName LIKE (\'ewfew%\') AND Title LIKE (\'efweew%\'))';
+        queryBuilder.setRulesFromSql(actualSql);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        actualSql = '(EmployeeID = 1 AND LastName LIKE (\'rgerger%\') AND (FirstName LIKE (\'erger%\') OR Title LIKE (\'asawd%\')) AND (Title LIKE (\'reger%\') AND EmployeeID NOT IN (1001, 1002) AND FirstName LIKE (\'aefwaw%\')) AND (Title LIKE (\'ewrew%\') OR LastName LIKE (\'ewfew%\')))';
+        queryBuilder.setRulesFromSql(actualSql);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+    });
+
+    it('Export Mongo', () => {
+        QueryBuilder.Inject(QueryLibrary);
+        queryBuilder = new QueryBuilder({
+            dataSource: employeeData,
+            rule: mongoRules
+        }, '#querybuilder');
+        const mongoQuery: string = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
     });
 
     it('Import Mongo with basic', () => {
@@ -342,8 +531,49 @@ describe('Parameter SQL Query', () => {
         }, '#querybuilder');
         let sqlString: string = '{"$and":[{"EmployeeID":1001},{ "$or":[{"Title":{"$regex":"Sales Manager"}},{"Title":{"$regex":"Sales"}},{ "$and":[{"City":"Kirkland"},{"HireDate":"12/12/2019"}]}]}]}';
         queryBuilder.setMongoQuery(sqlString);
-        const mongoQuery: string = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        let mongoQuery: string = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
         expect(mongoQuery).toEqual(sqlString);
+        sqlString = '{"$and":[{"EmployeeID":1001},{ "$or":[{"Title":{"$regex":"Sales Manager"}},{"Title":{"$regex":"Sales"}},{ "$and":[{"City": {"$nin": ["Kirkland"]}},{"HireDate":"12/12/2019"}]}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        sqlString = '{"$and":[{"EmployeeID":{"$lt": 1001, "$gt": 1010}},{ "$or":[{"Title":{"$regex":"Sales Manager"}},{"Title":{"$regex":"Sales"}},{ "$and":[{"City": {"$nin": ["Kirkland"]}},{"HireDate":"12/12/2019"}]}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        sqlString = '{"$and":[{"EmployeeID": 1001},{ "$or":[{"EmployeeID":{"$lt": 1001}},{"EmployeeID":{"$gt": 1010}}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        sqlString = '{"$and":[{"EmployeeID": {"$nin": [1001, 1002]}},{ "$or":[{"EmployeeID":{"$lt": 1001}},{"EmployeeID":{"$gt": 1010}}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+    });
+
+    it('Import Mongo with between', () => {
+        QueryBuilder.Inject(QueryLibrary);
+        queryBuilder = new QueryBuilder({
+            dataSource: employeeData,
+            rule: importRules,
+            enableNotCondition: true
+        }, '#querybuilder');
+        let sqlString: string = '{"$and":[{"EmployeeID":1001},{ "$or":[{"Title":{"$regex":"Sales Manager"}},{"Title":{"$regex":"Sales"}},{ "$and":[{"City":"Kirkland"},{"HireDate":"12/12/2019"}]}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        let mongoQuery: string = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        expect(mongoQuery).toEqual(sqlString);
+        sqlString = '{"$and":[{"EmployeeID":1001},{ "$or":[{"Title":{"$regex":"Sales Manager"}},{"Title":{"$regex":"Sales"}},{ "$and":[{"City": {"$nin": ["Kirkland"]}},{"HireDate":"12/12/2019"}]}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        sqlString = '{"$and":[{"EmployeeID":{"$lt": 1001, "$gt": 1010}},{ "$or":[{"Title":{"$regex":"Sales Manager"}},{"Title":{"$regex":"Sales"}},{ "$and":[{"City": {"$nin": ["Kirkland"]}},{"HireDate":"12/12/2019"}]}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        sqlString = '{"$and":[{"EmployeeID": 1001},{ "$or":[{"EmployeeID":{"$lt": 1001}},{"EmployeeID":{"$gt": 1010}}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        sqlString = '{"$and":[{"EmployeeID": {"$nin": [1001, 1002]}},{ "$or":[{"EmployeeID":{"$lt": 1001}},{"EmployeeID":{"$gt": 1010}}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        sqlString = '{"$and":[{"EmployeeID": {"$nin": [1001, 1002]}},{ "$or":[{"EmployeeID":{"$gt": 1001}},{"EmployeeID":{"$lt": 1010}}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        sqlString = '{"$and":[{"EmployeeID": null},{ "$or":[{"EmployeeID":{"$gt": 1001}},{"EmployeeID":{"$lt": 1010}}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
     });
 
     it('Import Mongo Testing', () => {
@@ -379,5 +609,20 @@ describe('Parameter SQL Query', () => {
         queryBuilder.setMongoQuery(sqlString);
         const mongoQuery: string = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
         expect(mongoQuery).toEqual(sqlString);
+    });
+    it('import Mongo with boolean', () => {
+        QueryBuilder.Inject(QueryLibrary);
+        queryBuilder = new QueryBuilder({
+            dataSource: boolData
+        }, '#querybuilder');
+        let sqlString: string = '{"$or":[{"TaskID": null, "Status": true}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        let mongoQuery: string = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        sqlString = '{"$and":[{"Status":true},{ "$or":[{"Name":{"$regex":"Sales Manager"}},{"Name":{"$ne":""}},{ "$and":[{"Category":""},{"Date":"12/12/2019"}]}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        sqlString = '{"$and":[{"Status":true},{ "$or":[{"Name":{"$ne":"Sales Manager"}},{"Name":{"$ne": null}},{ "$and":[{"Status": {"$ne": true}},{"Date":"12/12/2019"}]}]}]}';
+        queryBuilder.setMongoQuery(sqlString);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
     });
 });

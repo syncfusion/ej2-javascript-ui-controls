@@ -143,13 +143,15 @@ $e-de-statusbar-separator-color: $border-light;
 $de-panel-header-color: $content-text-color-alt2 !default;
 $de-panel-sub-label-color: $content-text-color-alt1 !default;
 $de-header-line-color: 1px solid $border-light !default;
-$de-toggle-bg-color: $content-bg-color-alt3 !default;
+$de-toggle-bg-color: var(--color-sf-secondary-bg-color-pressed) !default;
 $de-font-color: $content-text-color-alt2 !default;
 $de-prop-btn-border-color: $border-light !default;
 $de-prop-btn-bg-color: $content-bg-color !default;
-$de-toggle-btn-color: $icon-color !default;
+$de-toggle-btn-color: var(--color-sf-secondary-text-color-pressed) !default;
 $de-pageweb-toggle-color: $content-bg-color-alt3 !default;
 $e-de-pagenumber-bg: $content-bg-color;
+$de-toggle-border-hover-color: var(--color-sf-secondary-bg-color-pressed);
+$de-toggle-hover-color: var(--color-sf-secondary-bg-color-hover);
 
 //Blazor
 $e-de-bzr-button-border-color: $white !default;

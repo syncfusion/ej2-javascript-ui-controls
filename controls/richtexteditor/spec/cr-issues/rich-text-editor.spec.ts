@@ -8,8 +8,9 @@ import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor
 import { renderRTE, destroy, setCursorPoint, dispatchEvent as dispatchEve } from './../rich-text-editor/render.spec';
 import { SelectionCommands } from '../../src/editor-manager/plugin/selection-commands';
 import { NodeSelection } from '../../src/selection/selection';
-import { IRenderer, QuickToolbar } from '../../src/index';
+import { ActionBeginEventArgs, IRenderer, QuickToolbar } from '../../src/index';
 import { Dialog } from '@syncfusion/ej2-popups';
+import { INSRT_IMG_EVENT_INIT, NUMPAD_ENTER_EVENT_INIT } from '../constant.spec';
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -548,7 +549,7 @@ describe('RTE CR issues ', () => {
                 fontSize: { default: '14pt' },
                 fontFamily: { default: 'Arial' },
                 format: {
-                    default: 'Code'
+                    default: 'Preformatted'
                 },
                 value: `<p>a</p>`
             });
@@ -559,7 +560,7 @@ describe('RTE CR issues ', () => {
             let format: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_Formats');
             expect(fontSize.querySelector(".e-rte-dropdown-btn-text").textContent === '14 pt').toBe(true);
             expect(fontName.querySelector(".e-rte-dropdown-btn-text").textContent === 'Arial').toBe(true);
-            expect(format.querySelector(".e-rte-dropdown-btn-text").textContent === 'Code').toBe(true);
+            expect(format.querySelector(".e-rte-dropdown-btn-text").textContent === 'Preformatted').toBe(true);
             expect(((rteObj as any).inputElement as HTMLElement).style.fontSize === '14pt').toBe(true);
             expect(((rteObj as any).inputElement as HTMLElement).style.fontFamily === 'Arial').toBe(true);
         });
@@ -575,7 +576,7 @@ describe('RTE CR issues ', () => {
             rteObj.fontSize = { default: '14pt' };
             rteObj.fontFamily = { default: 'Arial' };
             rteObj.format = {
-                default: 'Code'
+                default: 'Preformatted'
             };
             rteObj.dataBind();
             rteEle = rteObj.element;
@@ -585,7 +586,7 @@ describe('RTE CR issues ', () => {
             let format: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_Formats');
             expect(fontSize.querySelector(".e-rte-dropdown-btn-text").textContent === '14 pt').toBe(true);
             expect(fontName.querySelector(".e-rte-dropdown-btn-text").textContent === 'Arial').toBe(true);
-            expect(format.querySelector(".e-rte-dropdown-btn-text").textContent === 'Code').toBe(true);
+            expect(format.querySelector(".e-rte-dropdown-btn-text").textContent === 'Preformatted').toBe(true);
             expect(((rteObj as any).inputElement as HTMLElement).style.fontSize === '14pt').toBe(true);
             expect(((rteObj as any).inputElement as HTMLElement).style.fontFamily === 'Arial').toBe(true);
         });
@@ -598,7 +599,7 @@ describe('RTE CR issues ', () => {
                 fontSize: { default: '14pt' },
                 fontFamily: { default: 'Arial' },
                 format: {
-                    default: 'Code'
+                    default: 'Preformatted'
                 },
                 value: `<p>a</p>`
             });
@@ -2611,6 +2612,67 @@ describe('RTE CR issues ', () => {
         });
     });
 
+    describe('904051: Number Pad Enter Key Does Not Trigger actionBegin Event in the Rich Text Editor.', () => {
+        let editor: RichTextEditor;
+        let isActionBegin: boolean = false;
+        beforeAll(() => {
+            editor = renderRTE({
+                actionBegin: (args: ActionBeginEventArgs) => {
+                    if (args.requestType === 'EnterAction') {
+                        isActionBegin  = true;
+                    }
+                }
+            });
+        });
+        afterAll((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it ('Should trigger the action begin even on NUMPAD enter action', (done: DoneFn) => {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', NUMPAD_ENTER_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', NUMPAD_ENTER_EVENT_INIT));
+            setTimeout(() => {
+                expect(isActionBegin).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+  
+    describe('904558: Image action begin event args does not reflect after image is inserted.', () => {
+        let editor: RichTextEditor;
+        let url: string;
+        beforeAll(() => {
+            editor = renderRTE({
+                actionBegin: function (e) {
+                    if (e.requestType === 'Image') {
+                        e.itemCollection.url = e.itemCollection.url  + 'api/UnauthorizedImage';
+                        url = e.itemCollection.url;
+                    }
+                },
+            });
+        });
+        afterAll((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it ('Should able to update edit the inserted image on action begin event.', (done: DoneFn) => {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', INSRT_IMG_EVENT_INIT));
+            editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', INSRT_IMG_EVENT_INIT));
+            setTimeout(() => {
+                const inputElem: HTMLInputElement = editor.element.querySelector('.e-rte-img-dialog .e-input.e-img-url');
+                inputElem.value = 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png';
+                inputElem.dispatchEvent(new Event('input'));
+                (editor.element.querySelector('.e-insertImage') as HTMLElement).click();
+                setTimeout(() => {
+                    expect((editor.inputElement.querySelector('img').src)).toBe(url);
+                    done();
+                }, 200);
+            }, 100);
+        });
+    });
+
     describe('EJ2-855260 - The font family is not applied properly when pasted from a Word document.', () => {
         let editor: RichTextEditor;
         beforeAll(() => {
@@ -3590,6 +3652,35 @@ describe('RTE CR issues ', () => {
         });
     });
 
+    describe('896562 - Script error throws when using RichTextEditor inside the Grid', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({});
+        });
+        it('Should not call remove method for the input element and then should not set null for the input elemeent.', () => {
+            destroy(editor);
+            expect(editor.inputElement).not.toBe(null);
+            // Setting null will not remove the event listener on the ngOnDestroy angular Base method focus and blur events.
+        });
+    });
+
+    describe('898856 - Change event not triggered when we dynamically change the readOnly mode in the RichTextEditor.', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({readonly: true});
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should re bind the focus event when the readonly is set to false.', () => {
+            editor.readonly = false;
+            editor.dataBind();
+            expect(typeof (editor as any).onFocusHandler).toBe('function');
+            expect(typeof (editor as any).onBlurHandler).toBe('function');
+            expect(typeof (editor as any).onResizeHandler).toBe('function');
+        });
+    });
+
     describe('870298: Numbered list not removed when we delete the entire list using backspace key in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
@@ -4102,36 +4193,6 @@ describe('RTE CR issues ', () => {
             expect(editor.element.classList.contains('e-rte-full-screen')).not.toBe(true);
         });
     });
-
-    describe('896562 - Script error throws when using RichTextEditor inside the Grid', () => {
-        let editor: RichTextEditor;
-        beforeAll(() => {
-            editor = renderRTE({});
-        });
-        it('Should not call remove method for the input element and then should not set null for the input elemeent.', () => {
-            destroy(editor);
-            expect(editor.inputElement).not.toBe(null);
-            // Setting null will not remove the event listener on the ngOnDestroy angular Base method focus and blur events.
-        });
-    });
-
-    describe('898856 - Change event not triggered when we dynamically change the readOnly mode in the RichTextEditor.', () => {
-        let editor: RichTextEditor;
-        beforeAll(() => {
-            editor = renderRTE({readonly: true});
-        });
-        afterAll(() => {
-            destroy(editor);
-        });
-        it('Should re bind the focus event when the readonly is set to false.', () => {
-            editor.readonly = false;
-            editor.dataBind();
-            expect(typeof (editor as any).onFocusHandler).toBe('function');
-            expect(typeof (editor as any).onBlurHandler).toBe('function');
-            expect(typeof (editor as any).onResizeHandler).toBe('function');
-        });
-    });
-
     describe('875856 - Using indents on Numbered or Bulleted list turns into nested list in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let rteEle: Element;
@@ -4174,6 +4235,9 @@ describe('RTE CR issues ', () => {
                     saveUrl: "https://ej2services.syncfusion.com/js/development/",
                     path: "https://ej2services.syncfusion.com/js/development/RichTextEditor"
                 },
+                iframeSettings: {
+                    enable: true
+                }
             });
         });
         afterAll((done: DoneFn) => {
@@ -4549,7 +4613,7 @@ describe('RTE CR issues ', () => {
             destroy(rteObj);
         });
      });
-    describe('888656 - Script error throws when we insert table into the RichTextEditor', () => {
+     describe('888656 - Script error throws when we insert table into the RichTextEditor', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -4743,110 +4807,6 @@ describe('RTE CR issues ', () => {
             }, 400);
         });
     });
-    describe('898140 - Delete action inside the list not working properly.', () => {
-        let rteEle: HTMLElement;
-        let rteObj: RichTextEditor;
-        let keyBoardEventDel: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
-        let innerHTML: string = `<p>hello</p><ul><li>world</li><li id="one">this&nbsp;</li><li id="two">is</li></ul><p>me</p>`;
-        beforeAll(() => {
-            rteObj = renderRTE({
-                toolbarSettings: {
-                    items: ['Bold', 'CreateTable']
-                },
-                value: innerHTML
-
-            });
-            rteEle = rteObj.element;
-        });
-        afterAll((done: DoneFn) => {
-            destroy(rteObj);
-            done();
-        });
-        it('select all last two contents of list and press delete ', (done: DoneFn) => {
-            rteObj.inputElement.innerHTML=innerHTML;
-            rteObj.dataBind();
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
-            keyBoardEventDel.keyCode = 46;
-            keyBoardEventDel.code = 'Delete';
-            keyBoardEventDel.action = 'delete';
-            (rteObj as any).keyDown(keyBoardEventDel);
-            (rteObj as any).keyUp(keyBoardEventDel);
-            setTimeout(() => {
-                expect(rteObj.inputElement.innerHTML==='<p>hello</p><ul><li>world</li></ul><p>me</p>').toBe(true);
-                done();
-            }, 100);
-        });
-        it('select all last two contents of list and press delete  for user case ', (done: DoneFn) => {
-            rteObj.inputElement.innerHTML=`<p>assaassa</p><ol>
-                <li>sssasa</li>
-                <li id='one' >assaasas</li>
-                <li id='two'>assasaas</li>
-              </ol><p>assaassasa</p>`;
-            rteObj.dataBind();
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
-            keyBoardEventDel.keyCode = 46;
-            keyBoardEventDel.code = 'Delete';
-            keyBoardEventDel.action = 'delete';
-            (rteObj as any).keyDown(keyBoardEventDel);
-            (rteObj as any).keyUp(keyBoardEventDel);
-            setTimeout(() => {
-                expect(rteObj.inputElement.innerHTML==='<p>assaassa</p><ol>\n                <li>sssasa</li>\n                \n              </ol><p>assaassasa</p>').toBe(true);
-                done();
-            }, 100);
-        });
-        it('select all entire of list and press delete  for user case for p tag wrapped', (done: DoneFn) => {
-            rteObj.inputElement.innerHTML=`<p><b>Key features:</b></p><ul>
-                    <li>
-                        <p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p>
-                    </li>
-                    <li>
-                        <p>Capable of handling markdown editing.</p>
-                    </li>
-                    <li>
-                        <p id='one'>Contains a modular library to load the necessary functionality on demand.</p>
-                    </li>
-                    <li><p id='two'>Provides a fully customizable toolbar.</p></li>
-                    
-                </ul>`;
-            rteObj.dataBind();
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
-            keyBoardEventDel.keyCode = 46;
-            keyBoardEventDel.code = 'Delete';
-            keyBoardEventDel.action = 'delete';
-            (rteObj as any).keyDown(keyBoardEventDel);
-            (rteObj as any).keyUp(keyBoardEventDel);
-            setTimeout(() => {
-                expect(rteObj.inputElement.innerHTML==='<p><b>Key features:</b></p><ul>\n                    <li>\n                        <p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p>\n                    </li>\n                    <li>\n                        <p>Capable of handling markdown editing.</p>\n                    </li>\n                    \n                    \n                </ul>').toBe(true);
-                done();
-            }, 100);
-        });
-        it('select all entire of list and press delete  for user case for p tag wrapped', (done: DoneFn) => {
-            rteObj.inputElement.innerHTML=`<p><b>Key features:</b></p><ul>
-                    <li>
-                        <p id='one'>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p>
-                    </li>
-                    <li>
-                        <p>Capable of handling markdown editing.</p>
-                    </li>
-                    <li>
-                        <p>Contains a modular library to load the necessary functionality on demand.</p>
-                    </li>
-                    <li><p id='two'>Provides a fully customizable toolbar.</p></li>
-                    
-                </ul>`;
-            rteObj.dataBind();
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
-            keyBoardEventDel.keyCode = 46;
-            keyBoardEventDel.code = 'Delete';
-            keyBoardEventDel.action = 'delete';
-            (rteObj as any).keyDown(keyBoardEventDel);
-            (rteObj as any).keyUp(keyBoardEventDel);
-            setTimeout(() => {
-                expect(rteObj.inputElement.innerHTML==='<p><b>Key features:</b></p>').toBe(true);
-                done();
-            }, 100);
-        });
-    });
     describe('898710 - Not able to do backspace inside the input field in the RichTextEditor', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -4918,6 +4878,153 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
+      describe('902049 - After moving the new line, the cursor is not visible when it reaches the bottom of the Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        const divElement = document.createElement('div');
+        divElement.style.overflowY='scroll';
+        divElement.style.height='60px';
+        var innerHTML = `<p><br></p><p><br></p><p><br></p><p><br></p><p id='one'><br></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: innerHTML
+            });
+            divElement.appendChild(rteObj.element);
+            document.body.appendChild(divElement);
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            divElement.remove();
+            done();
+        });
+        it('press enter 5 times', (done: DoneFn) => {
+            rteObj.dataBind();
+        let keyBoardEvent: any = { 
+            type: 'keydown', 
+            preventDefault: function () { }, 
+            ctrlKey: false, 
+            key: 'enter', 
+            stopPropagation: function () { }, 
+            shiftKey: false, 
+            which: 13,
+            keyCode: 13,
+            action: 'enter'
+        };
+        let para = document.querySelector("#one");
+        setCursorPoint(para, 0);
+        (rteObj as any).keyDown(keyBoardEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.textContent ==='').toBe(true);
+                done();
+            }, 100);
+        });
+    });
+      describe('898140 - Delete action inside the list not working properly.', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEventDel: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+        let innerHTML: string = `<p>hello</p><ul><li>world</li><li id="one">this&nbsp;</li><li id="two">is</li></ul><p>me</p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: innerHTML
+
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('select all last two contents of list and press delete ', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML=innerHTML;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
+            keyBoardEventDel.keyCode = 46;
+            keyBoardEventDel.code = 'Delete';
+            keyBoardEventDel.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEventDel);
+            (rteObj as any).keyUp(keyBoardEventDel);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML==='<p>hello</p><ul><li>world</li></ul><p>me</p>').toBe(true);
+                done();
+            }, 100);
+        });
+        it('select all last two contents of list and press delete  for user case ', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML=`<p>assaassa</p><ol>
+                <li>sssasa</li>
+                <li id='one' >assaasas</li>
+                <li id='two'>assasaas</li>
+              </ol><p>assaassasa</p>`;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
+            keyBoardEventDel.keyCode = 46;
+            keyBoardEventDel.code = 'Delete';
+            keyBoardEventDel.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEventDel);
+            (rteObj as any).keyUp(keyBoardEventDel);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML==='<p>assaassa</p><ol>\n                <li>sssasa</li>\n                \n              </ol><p>assaassasa</p>').toBe(true);
+                done();
+            }, 100);
+        });
+        it('select all last two contnets of list and press delete  for user case for p tag wrapped', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML=`<p><b>Key features:</b></p><ul>
+                    <li>
+                        <p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p>
+                    </li>
+                    <li>
+                        <p>Capable of handling markdown editing.</p>
+                    </li>
+                    <li>
+                        <p id='one'>Contains a modular library to load the necessary functionality on demand.</p>
+                    </li>
+                    <li><p id='two'>Provides a fully customizable toolbar.</p></li>
+
+                </ul>`;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
+            keyBoardEventDel.keyCode = 46;
+            keyBoardEventDel.code = 'Delete';
+            keyBoardEventDel.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEventDel);
+            (rteObj as any).keyUp(keyBoardEventDel);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML==='<p><b>Key features:</b></p><ul>\n                    <li>\n                        <p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p>\n                    </li>\n                    <li>\n                        <p>Capable of handling markdown editing.</p>\n                    </li>\n                    \n\n                </ul>').toBe(true);
+                done();
+            }, 100);
+        });
+        it('select all entire of list and press delete  for user case for p tag wrapped', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML=`<p><b>Key features:</b></p><ul>
+                    <li>
+                        <p id='one'>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p>
+                    </li>
+                    <li>
+                        <p>Capable of handling markdown editing.</p>
+                    </li>
+                    <li>
+                        <p>Contains a modular library to load the necessary functionality on demand.</p>
+                    </li>
+                    <li><p id='two'>Provides a fully customizable toolbar.</p></li>
+
+                </ul>`;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
+            keyBoardEventDel.keyCode = 46;
+            keyBoardEventDel.code = 'Delete';
+            keyBoardEventDel.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEventDel);
+            (rteObj as any).keyUp(keyBoardEventDel);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML==='<p><b>Key features:</b></p>').toBe(true);
+                done();
+            }, 100);
+        });
+    });
     describe('900940 - Rich Text Editor not supported the pasted image.', () => {
         let rteObject: RichTextEditor;
         let innerHTML: string = `<img alt=\"Logo\" src=\"https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png\" class=\"e-rte-image e-imginline\" v:shapes=\"img1\" style=\" border: 0px; vertical-align: bottom; cursor: pointer; display: inline-block; float: none; margin: auto 5px; max-width: 100%; position: relative; padding: 1px; color: rgb(28, 27, 31); font-family: Roboto, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); width: 300px;\">`;
@@ -4966,7 +5073,7 @@ describe('RTE CR issues ', () => {
             }, 400);
         });
     });
-    describe('903810 - Ordered list gets removed when list item is copied and pasted into the same list in the Rich Text Editor', () => {
+      describe('903810 - Ordered list gets removed when list item is copied and pasted into the same list in the Rich Text Editor', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = {

@@ -6,7 +6,7 @@ import { Border } from '../model/base';
 import { LegendPosition, Alignment, GaugeShape } from '../utils/enum';
 import { Axis } from '../axes/axis';
 import { ILegendRenderEventArgs } from '../model/interface';
-import { BorderModel, LegendSettingsModel } from '../model/base-model';
+import { BorderModel, FontModel, LegendSettingsModel } from '../model/base-model';
 import { LegendSettings } from '../model/base';
 import { ILegendRegions } from '../model/interface';
 import { RangeModel } from '../axes/axis-model';
@@ -267,12 +267,20 @@ export class Legend {
         if (paginggroup) {
             (paginggroup as HTMLElement).style.cursor = 'pointer';
         }
+        const textStyle: FontModel = {
+            size: legend.textStyle.size || this.gauge.themeStyle.fontSize,
+            color: legend.textStyle.color || this.gauge.themeStyle.labelColor,
+            fontFamily: legend.textStyle.fontFamily || this.gauge.themeStyle.labelFontFamily,
+            fontWeight: legend.textStyle.fontWeight || this.gauge.themeStyle.fontWeight,
+            fontStyle: legend.textStyle.fontStyle,
+            opacity: legend.textStyle.opacity
+        };
         // Page left arrow drawing calculation started here
         this.clipPathHeight = (this.rowCount - 1) * (this.maxItemHeight + legend.padding);
         this.clipRect.setAttribute('height', this.clipPathHeight.toString());
         let x: number = bounds.x + iconSize / 2;
         const y: number = bounds.y + this.clipPathHeight + ((bounds.height - this.clipPathHeight) / 2);
-        const size: Size = measureText(this.totalPages + '/' + this.totalPages, legend.textStyle);
+        const size: Size = measureText(this.totalPages + '/' + this.totalPages, textStyle);
         appendPath(
             calculateShapes(
                 { x: x, y: y }, 'LeftArrow', new Size(iconSize, iconSize),
@@ -289,7 +297,7 @@ export class Legend {
         textOption.y = y + (size.height / 4);
         textOption.id = this.legendID + '_pagenumber';
         textOption.text = !this.gauge.enableRtl ? '1/' + this.totalPages : this.totalPages + '/1';
-        const pageTextElement: Element = textElement(textOption, legend.textStyle, grayColor, paginggroup);
+        const pageTextElement: Element = textElement(textOption, textStyle, grayColor, paginggroup);
         x = (textOption.x + padding + (iconSize / 2) + size.width);
         symbolOption.id = this.legendID + '_pagedown';
         appendPath(
@@ -349,13 +357,19 @@ export class Legend {
         const hiddenColor: string = '#D3D3D3';
         textOptions.id = this.legendID + '_Axis_' + axisIndex + '_text_' + rangeIndex;
         const fontcolor: string = legendOption.visible ? legend.textStyle.color || this.gauge.themeStyle.labelColor : hiddenColor;
-        legend.textStyle.fontFamily = legend.textStyle.fontFamily || this.gauge.themeStyle.labelFontFamily;
-        legend.textStyle.fontWeight = legend.textStyle.fontWeight || this.gauge.themeStyle.fontWeight;
+        const textStyle: FontModel = {
+            size: legend.textStyle.size || this.gauge.themeStyle.fontSize,
+            color: fontcolor,
+            fontFamily: legend.textStyle.fontFamily || this.gauge.themeStyle.labelFontFamily,
+            fontWeight: legend.textStyle.fontWeight || this.gauge.themeStyle.fontWeight,
+            fontStyle: legend.textStyle.fontStyle,
+            opacity: legend.textStyle.opacity
+        };
         textOptions.text = legendOption.text;
-        textOptions.x = this.gauge.enableRtl ? (legendOption.location.x - (measureText(legendOption.text, legend.textStyle).width +
+        textOptions.x = this.gauge.enableRtl ? (legendOption.location.x - (measureText(legendOption.text, textStyle).width +
             legend.shapeWidth / 2 + legend.shapePadding)) : (legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding);
         textOptions.y = legendOption.location.y + this.maxItemHeight / 4;
-        const legendTextElement: Element = textElement(textOptions, legend.textStyle, fontcolor, group, '');
+        const legendTextElement: Element = textElement(textOptions, textStyle, fontcolor, group, '');
         legendTextElement.setAttribute('aria-label', textOptions.text);
         legendTextElement.setAttribute('role', 'region');
     }
@@ -400,6 +414,14 @@ export class Legend {
         rect: Rect, count: number, firstLegend: number
     ): void {
         const padding: number = this.legend.padding;
+        const textStyle: FontModel = {
+            size: this.legend.textStyle.size || this.gauge.themeStyle.fontSize,
+            color: this.legend.textStyle.color || this.gauge.themeStyle.labelColor,
+            fontFamily: this.legend.textStyle.fontFamily || this.gauge.themeStyle.labelFontFamily,
+            fontWeight: this.legend.textStyle.fontWeight || this.gauge.themeStyle.fontWeight,
+            fontStyle: this.legend.textStyle.fontStyle,
+            opacity: this.legend.textStyle.opacity
+        };
         if (this.isVertical) {
             if (count === firstLegend || (prevLegend.location.y + (this.maxItemHeight * 1.5) + (padding * 2) > rect.y + rect.height)) {
                 legendOption.location.x = prevLegend.location.x + ((count === firstLegend) ? 0 : (!this.gauge.enableRtl) ?
@@ -427,7 +449,7 @@ export class Legend {
             this.totalPages = this.totalRowCount;
         }
         const availablewidth: number = this.getAvailWidth(legendOption.location.x, this.legendBounds.width);
-        legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle);
+        legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, textStyle);
     }
 
     private isWithinBounds(previousBound: number, textWidth: number, legendBounds: Rect, shapeWidth: number): boolean {
@@ -661,13 +683,21 @@ export class Legend {
         }
         legendBounds.width += extraWidth;
         legendBounds.height += extraHeight;
+        const textStyle: FontModel = {
+            size: legend.textStyle.size || this.gauge.themeStyle.fontSize,
+            color: this.legend.textStyle.color || this.gauge.themeStyle.labelColor,
+            fontFamily: legend.textStyle.fontFamily || this.gauge.themeStyle.labelFontFamily,
+            fontWeight: legend.textStyle.fontWeight || this.gauge.themeStyle.fontWeight,
+            fontStyle: legend.textStyle.fontStyle,
+            opacity: legend.textStyle.opacity
+        };
         let maximumWidth: number = 0;
         let rowWidth: number = 0;
         let rowCount: number = 0;
         const columnWidth: number[] = [];
         let columnHeight: number = 0;
         let legendWidth: number = 0;
-        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
+        this.maxItemHeight = Math.max(measureText('MeasureText', textStyle).height, legend.shapeHeight);
         let legendEventArgs: ILegendRenderEventArgs;
         let render: boolean = false;
         for (const legendOption of this.legendCollection) {
@@ -680,7 +710,7 @@ export class Legend {
             legendOption.text = legendEventArgs.text;
             legendOption.fill = legendEventArgs.fill;
             legendOption.shape = legendEventArgs.shape;
-            legendOption.textSize = measureText(legendOption.text, legend.textStyle);
+            legendOption.textSize = measureText(legendOption.text, textStyle);
             if (legendOption.render && legendOption.text !== '') {
                 render = true;
                 legendWidth = legend.shapeWidth + (2 * legend.shapePadding) + legendOption.textSize.width + (2 * padding);

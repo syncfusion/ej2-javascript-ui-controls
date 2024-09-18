@@ -3,12 +3,50 @@ import { PointModel } from '../primitives/point-model';
 import { Rect } from '../primitives/rect';
 import { MarginModel } from '../core/appearance-model';
 import { Margin } from '../core/appearance';
-import { HorizontalAlignment, VerticalAlignment, ConnectionDirection } from '../enum/enum';
+import { HorizontalAlignment, VerticalAlignment, ConnectionDirection, BranchDirection } from '../enum/enum';
 import { LayoutOrientation, ConnectorSegments, LayoutType, SubTreeOrientation, SubTreeAlignments, Segments } from '../enum/enum';
 import { ConnectionPointOrigin, ChildArrangement } from '../enum/enum';
 import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';
 import { OrthogonalSegmentModel, BezierSegmentModel, StraightSegmentModel } from '../objects/connector-model';
+import { FlowchartLayoutSettingsModel } from './layout-base-model';
 
+/**
+ * Defines the configuration settings for flowchart automatic layout
+ */
+export class FlowchartLayoutSettings extends ChildProperty<FlowchartLayoutSettings> {
+
+    /**
+     * Specifies the Yes branch flow direction (when there are two outputs from the flow shape) in the flowchart layout
+     *
+     * @default 'LeftInFlow'
+     */
+    @Property('LeftInFlow')
+    public yesBranchDirection: BranchDirection;
+
+    /**
+     * Specifies the No branch flow direction (when there are two outputs from the flow shape) in the flowchart layout
+     *
+     * @default 'RightInFlow'
+     */
+    @Property('RightInFlow')
+    public noBranchDirection: BranchDirection;
+
+    /**
+     * Specifies the set of connector’s label text which should be considered as Yes branch connector in the flowchart layout
+     *
+     * @default ["Yes", "True"]
+     */
+    @Property(['Yes', 'True'])
+    public yesBranchValues: string[];
+
+    /**
+     * Specifies the set of connector’s label text which should be considered as No branch connector in the flowchart layout
+     *
+     * @default ["No", "False"]
+     */
+    @Property(['No', 'False'])
+    public noBranchValues: string[];
+}
 /**
  * Defines the behavior of the automatic layouts
  */
@@ -304,6 +342,14 @@ export class Layout extends ChildProperty<Layout> {
      */
     @Property('')
     public root: string;
+
+    /**
+     * Defines the flow chart settings of the layout
+     *
+     * @default {}
+     */
+    @Complex<FlowchartLayoutSettingsModel>({}, FlowchartLayoutSettings)
+    public flowchartLayoutSettings: FlowchartLayoutSettingsModel;
 }
 
 /**

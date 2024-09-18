@@ -3,8 +3,8 @@ import { ValidationType, ValidationOperator, MergeArgs, InsertDeleteEventArgs, H
 import { Spreadsheet, RefreshType } from '../index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { CellInfoEventArgs, CFColor, ChartTheme, RowModel, CellStyleModel } from './../../workbook/index';
-import { SortCollectionModel } from './../../workbook/index';
+import { CellInfoEventArgs, CFColor, ChartTheme, RowModel, CellStyleModel, WorkbookOpen } from './../../workbook/index';
+import { SortCollectionModel, ValidationModel } from './../../workbook/index';
 import { PredicateModel } from '@syncfusion/ej2-grids';
 
 
@@ -142,7 +142,7 @@ export interface ICellRenderer {
     render(args: CellRenderArgs): Element;
     refreshRange(
         range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean,
-        skipFormatCheck?: boolean, checkFormulaAdded?: boolean): void;
+        skipFormatCheck?: boolean, checkFormulaAdded?: boolean, isFromAutoFillOption?: boolean): void;
     refresh(
         rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean,
         skipFormatCheck?: boolean): void;
@@ -191,6 +191,7 @@ export interface JsonData {
     eventArgs: OpenArgs;
     isOpenFromJson: boolean;
     guid?: string;
+    context: WorkbookOpen;
 }
 
 /**
@@ -301,6 +302,8 @@ export interface CellRenderArgs {
     rowSpan?: number;
     isRandomFormula?: boolean;
     style?: CellStyleModel;
+    validation?: ValidationModel;
+    isFromAutoFillOption?: boolean;
 }
 /** @hidden */
 export interface IAriaOptions<T> {
@@ -500,7 +503,7 @@ export interface BeforeImageRefreshData {
 
 export interface PreviousCellDetails {
     rowIndex?: number;
-    colIndex: number;
+    colIndex?: number;
     style?: object;
     format?: string;
     value?: string;
@@ -514,7 +517,8 @@ export interface PreviousCellDetails {
     chart?: ChartModel[];
     isLocked?: boolean;
     validation?: CellValidationEventArgs;
-    isReadOnly?: boolean
+    isReadOnly?: boolean,
+    formattedText?: string
 }
 
 export interface BeforePasteEventArgs {

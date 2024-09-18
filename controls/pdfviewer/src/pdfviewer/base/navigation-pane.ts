@@ -570,10 +570,13 @@ export class NavigationPane {
         this.pdfViewerBase.viewerMainContainer.insertBefore(this.toolbarElement, this.pdfViewerBase.viewerContainer);
         let items: ItemModel[];
         if (option === 'search') {
-            const searchTemplate: string = '<div class="e-input-group e-pv-search-input-mobile" id="' + this.pdfViewer.element.id +
+            const searchTemplate: string = '<div class="e-input-group e-pv-text-search-input-mobile" id="' + this.pdfViewer.element.id +
                 '_search_input_container"><input class="e-input" type="text" placeholder="' +
                 this.pdfViewer.localeObj.getConstant('Find in document') + '" id="' +
                 this.pdfViewer.element.id + '_search_input"></input></div>';
+            const searchCountTemplate: string = `
+                <span class="e-pv-search-count" id="${this.pdfViewer.element.id}_search_count"></span>
+            `;
             items = [
                 { prefixIcon: 'e-pv-backward-icon e-pv-icon', tooltipText: this.pdfViewer.localeObj.getConstant('Go Back'), id: this.pdfViewer.element.id + '_backward', click: this.goBackToToolbar.bind(this) },
                 { template: searchTemplate },
@@ -584,19 +587,23 @@ export class NavigationPane {
                         if (iconElement.classList.contains('e-pv-search-close')) {
                             this.enableSearchItems(false);
                         }
-                        this.pdfViewer.textSearchModule.searchButtonClick(iconElement, this.searchInput);
+                        this.pdfViewer.textSearchModule.searchButtonClick(iconElement, this.searchInput, true);
+                        this.setSearchInputWidth();
                     }
                 },
+                { template: searchCountTemplate },
                 {
-                    prefixIcon: 'e-pv-prev-search-icon e-pv-icon', id: this.pdfViewer.element.id + '_prev_occurrence',
+                    prefixIcon: this.pdfViewer.enableRtl ? 'e-pv-next-search-icon e-pv-icon' : 'e-pv-prev-search-icon e-pv-icon', id: this.pdfViewer.element.id + '_prev_occurrence',
                     click: (args: ClickEventArgs) => {
                         this.pdfViewer.textSearchModule.searchPrevious();
+                        this.setSearchInputWidth();
                     }
                 },
                 {
-                    prefixIcon: 'e-pv-next-search-icon e-pv-icon', id: this.pdfViewer.element.id + '_next_occurrence',
+                    prefixIcon: this.pdfViewer.enableRtl ? 'e-pv-prev-search-icon e-pv-icon' : 'e-pv-next-search-icon e-pv-icon', id: this.pdfViewer.element.id + '_next_occurrence',
                     click: (args: ClickEventArgs) => {
                         this.pdfViewer.textSearchModule.searchNext();
+                        this.setSearchInputWidth();
                     }
                 }
             ];
@@ -615,7 +622,7 @@ export class NavigationPane {
         if (option === 'search') {
             const toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
             if (toolbarContainer) {
-                let toolbarHeight: number = toolbarContainer.clientHeight;;
+                let toolbarHeight: number = toolbarContainer.clientHeight;
                 if (toolbarHeight === 0) {
                     toolbarHeight = parseFloat(window.getComputedStyle(toolbarContainer)['height']) + 1;
                 }
@@ -635,10 +642,16 @@ export class NavigationPane {
             const searchString: string = (this.searchInput as HTMLInputElement).value;
             if (event.which === 13) {
                 this.initiateTextSearch();
+                this.setSearchInputWidth();
             } else {
                 this.pdfViewer.textSearchModule.resetVariables();
             }
         });
+        const searchElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_search_count');
+        const parentContainer: HTMLElement = searchElement.parentElement;
+        if (parentContainer) {
+            parentContainer.style.display = 'none';
+        }
         this.pdfViewer.textSearchModule.searchInput = this.searchInput;
         this.setSearchInputWidth();
         this.enableSearchItems(false);
@@ -673,7 +686,7 @@ export class NavigationPane {
 
     private initiateTextSearch(): void {
         const inputString: string = (this.searchInput as HTMLInputElement).value;
-        this.pdfViewer.textSearchModule.initiateSearch(inputString);
+        this.pdfViewer.textSearchModule.initiateSearch(inputString, true);
     }
 
     /**
@@ -716,7 +729,11 @@ export class NavigationPane {
         }
     }
 
-    private setSearchInputWidth(): void {
+    /**
+     * @private
+     * @returns {void}
+     */
+    public setSearchInputWidth(): void {
         const searchInputParent: HTMLElement = this.searchInput.parentElement;
         const padding: string = window.getComputedStyle(searchInputParent.parentElement, null).getPropertyValue('padding-left');
         if (isBlazor() && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
@@ -724,7 +741,7 @@ export class NavigationPane {
         }
         let width: number = this.toolbarElement.clientWidth - this.getParentElementSearchBox('_backward').clientWidth
             - this.getParentElementSearchBox('_search_box-icon').clientWidth - this.getParentElementSearchBox('_prev_occurrence').clientWidth
-            - this.getParentElementSearchBox('_next_occurrence').clientWidth - 6;
+            - this.getParentElementSearchBox('_next_occurrence').clientWidth - this.getParentElementSearchBox('_search_count').clientWidth - 6;
         if (padding !== '') {
             width = width - (parseFloat(padding) * 2);
         }

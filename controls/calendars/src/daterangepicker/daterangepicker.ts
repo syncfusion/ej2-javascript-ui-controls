@@ -1035,7 +1035,7 @@ export class DateRangePicker extends CalendarBase {
     private processPresets(): void {
         this.presetsItem = [];
         let i: number = 0;
-        if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label)) {
+        if (!isNullOrUndefined(this.presets[0]) && !isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label)) {
             for (const range of this.presets) {
                 const id: string = range.label.replace(/\s+/g, '') + '_' + (++i);
                 if (typeof range.end === 'string') {
@@ -1628,13 +1628,12 @@ export class DateRangePicker extends CalendarBase {
             return null;
         }
     }
-
     private clearRange(): void {
         this.previousStartValue = this.previousEndValue = null;
         this.currentDate = null;
     }
     private errorClass(): void {
-        const inputStr: string = this.inputElement.value.trim();
+        const inputStr: string =  !isNullOrUndefined(this.inputElement.value) ? this.inputElement.value.trim() : null;
         if (((isNullOrUndefined(this.endValue) && isNullOrUndefined(this.startValue) && inputStr !== '') ||
             ((!isNullOrUndefined(this.startValue) && +this.startValue < +this.min)
                 || ((!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) && +this.startValue > +this.endValue)

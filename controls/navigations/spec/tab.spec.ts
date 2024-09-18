@@ -11854,6 +11854,69 @@ describe('Tab Control', () => {
             expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
         });
     });
+
+    describe('ES-905303 - Dynamically adding, then removing, and re-adding tabs breaks the control', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('checking dynamically adding, then removing, and re-adding tabs', () => {
+            let ele: HTMLElement = document.getElementById('ej2Tab');
+            ele.innerHTML = '<div class="e-tab-header">' + '<div> item1 </div>' + '<div> item2 </div>' + '</div>' +
+                '<div class="e-content">' + '<div> content1 </div>' + '<div> content2 </div>' +'</div>';
+            tab = new Tab();
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+            tab.addTab([{header: { text: 'item3' }, content: 'Content3' }], 2);
+            tab.addTab([{header: { text: 'item4' }, content: 'Content4' }], 3);
+            tab.selectedItem = 2;
+            tab.removeTab(3);
+            tab.removeTab(2);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+            expect(element.querySelectorAll('.e-content > .e-item').length).toBe(2);
+            tab.addTab([{header: { text: 'item3' }, content: 'Content3' }], 2);
+            tab.addTab([{header: { text: 'item4' }, content: 'Content4' }], 3);
+            expect(element.querySelector('.e-content').querySelectorAll('.e-item')[2].id).toBe('e-content-ej2Tab_2');
+            expect(element.querySelector('.e-content').querySelectorAll('.e-item')[3].id).toBe('e-content-ej2Tab_3');
+            tab.selectedItem = 2;
+            expect(tab.selectedItem).toBe(2);
+            tab.removeTab(3);
+            tab.removeTab(2);
+            tab.removeTab(1);
+            tab.removeTab(0);
+            tab.addTab([{header: { text: 'item1' }, content: 'Content1' }], 0);
+            expect(tab.selectedItem).toBe(0);
+            expect(element.querySelector('.e-content').querySelectorAll('.e-item')[0].id).toBe('e-content-ej2Tab_0');
+        });
+        it('Checking the removal of a tab from the middle index and re-adding tabs at the last index', () => {
+            let ele: HTMLElement = document.getElementById('ej2Tab');
+            ele.innerHTML = "";
+            ele.innerHTML = '<div class="e-tab-header">' +  '<div> item1 </div>' +  '<div> item2 </div>' +  '<div> item3 </div>' +  '<div> item4 </div>' +  '<div> item5 </div>' +
+                '</div>' +  '<div class="e-content">' +  '<div> content1 </div>' +  '<div> content2 </div>' +  '<div> content3 </div>' +  '<div> content4 </div>' + 
+                '<div> content5 </div>' + '</div>';            
+            tab = new Tab();
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(5);
+            tab.removeTab(3);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(4);
+            expect(element.querySelectorAll('.e-content > .e-item').length).toBe(4);
+            expect(element.querySelectorAll('.e-toolbar-item')[3].getAttribute('id')).toEqual('e-item-ej2Tab_4');
+            expect(element.querySelector('.e-content').querySelectorAll('.e-item')[3].id).toBe('e-content-ej2Tab_4');
+            tab.addTab([{header: { text: 'item6' }, content: 'Content4' }], 4);
+            expect(element.querySelectorAll('.e-toolbar-item')[4].getAttribute('id')).toEqual('e-item-ej2Tab_5');
+            expect(element.querySelector('.e-content').querySelectorAll('.e-item')[4].id).toBe('e-content-ej2Tab_5');
+        });
+    });
       
     it('memory leak', () => {
         profile.sample();

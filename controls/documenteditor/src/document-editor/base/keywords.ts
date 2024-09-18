@@ -40,6 +40,7 @@ export const localeIdBidiProperty: string[] = ['localeIdBidi', 'idbi'];
 export const boldProperty: string[] = ['bold', 'b'];
 export const italicProperty: string[] = ['italic', 'i'];
 export const underlineProperty: string[] = ['underline', 'u'];
+export const underlineColorProperty: string[] = ['underlineColor', 'uc'];
 export const baselineAlignmentProperty: string[] = ['baselineAlignment', 'ba'];
 export const strikethroughProperty: string[] = ['strikethrough', 'st'];
 export const highlightColorProperty: string[] = ['highlightColor', 'hc'];
@@ -383,5 +384,5 @@ export const gridProperty: string[] = ['grid', 'grd'];
 export const columnCountProperty: string[] = ['columnCount', 'colc'];
 export const isAfterTableMarkProperty: string[] = ['isAfterTableMark', 'atm'];
 export const incrementalOps: string[] = ['iOps'];
-
+export const editingPointsProperty: string[] = ['editingpoints', 'ep'];
 

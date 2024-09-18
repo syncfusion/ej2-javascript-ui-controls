@@ -16,7 +16,7 @@ export class ThumbnailView {
     private startIndex: number;
     private thumbnailLimit: number = 30;
     private thumbnailThreshold: number = 5;
-    private thumbnailRequestsBatch : number = 5;
+    private thumbnailRequestsBatch: number = 5;
     private thumbnailTopMargin: number = 10;
     private thumbnailTop: number = 8;
     private isRendered: boolean = false;
@@ -65,7 +65,7 @@ export class ThumbnailView {
             const scrollPosition: number = this.pdfViewerBase.navigationPane.sideBarContent.scrollTop;
             const index: number = this.thumbnailPageSize.findIndex((page: any) => page.top >= scrollPosition);
             if (index !== -1) {
-                const number: number = Math.floor((index) / this.thumbnailRequestsBatch ) * this.thumbnailRequestsBatch ;
+                const number: number = Math.floor((index) / this.thumbnailRequestsBatch) * this.thumbnailRequestsBatch;
                 this.updateScrollTopForThumbnail(number);
                 break;
             }
@@ -381,8 +381,8 @@ export class ThumbnailView {
                 }
                 if (this.thumbnailPageSize.length > 0) {
                     this.thumbnailTop = this.thumbnailPageSize[i - 1].top + this.thumbnailPageSize[i - 1].height;
-                    const thumbnailSize: any = {height: height, top:  this.thumbnailTop};
-                    this.thumbnailPageSize[parseInt(i.toString(), 10)] =  thumbnailSize;
+                    const thumbnailSize: any = { height: height, top: this.thumbnailTop };
+                    this.thumbnailPageSize[parseInt(i.toString(), 10)] = thumbnailSize;
                 }
             }
             this.isRendered = true;
@@ -435,7 +435,7 @@ export class ThumbnailView {
      */
     private determineThumbnailsRequest(currentPageNumber: number): number {
         const pageCount: number = this.pdfViewer.pageCount;
-        const batchSize: number = this.thumbnailRequestsBatch; // Assuming thumbnails are requested in batches of 5
+        const batchSize: number = this.thumbnailRequestsBatch; // Assuming thumbnails are requested in batches of 50
         const numberOfBatches: number = Math.ceil(pageCount / batchSize);
         if (this.list.length === numberOfBatches) {
             return pageCount;

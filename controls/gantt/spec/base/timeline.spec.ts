@@ -3,7 +3,7 @@
  */
 import { createElement, remove, extend } from '@syncfusion/ej2-base';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, IQueryTaskbarInfoEventArgs } from '../../src/index';
-import { customZoomingLevels, customZoomingLevels1, defaultGanttData, editingData18, editingResources, editingResources1, manualData, projectNewData23, tempData1, tempData2, tempData3, tempData4, tempData5, tempData6, zoomData, zoomData1, zoomInData, zoomingData1, timelineData } from './data-source.spec';
+import { customZoomingLevels, customZoomingLevels1, defaultGanttData, editingData18, editingResources, editingResources1, manualData, projectNewData23, resourceDataUndo, resourceResourcesUndo, tempData1, tempData2, tempData3, tempData4, tempData5, tempData6, zoomData, zoomData1, zoomInData, zoomingData1, timelineData,projectNewData } from './data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import * as cls from '../../src/gantt/base/css-constants';
 Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
@@ -575,7 +575,7 @@ describe('Gantt-Timeline', () => {
                 expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("MMM dd, yyyy");
                 expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("");
                 expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe("1/28/2018");
-                expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("2/18/2018");
+                expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("2/11/2018");
                 expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(2);
                 done();
             }
@@ -1232,7 +1232,7 @@ describe('Gantt-Timeline', () => {
                         showDeleteConfirmDialog: true,
                     },
                     columns: [
-                        { field: 'taskID', width: 60 },
+                        { field: 'taskID', width: 60, allowEditing: true, editType: 'stringedit' },
                         { field: 'taskName', width: 250 },
                         { field: 'startDate' },
                         { field: 'endDate' },
@@ -1962,5 +1962,1058 @@ describe('Gantt-Timeline', () => {
         it('dependency object', () => {
             expect(ganttObj.timelineModule.wholeTimelineWidth).toBe(1155);
         });
+    });
+    describe('timeline virtualization for shimmer ', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectNewData23,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                },
+                toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExpandAll', 'CollapseAll'],
+                projectStartDate: new Date('03/24/2019'),
+                projectEndDate: new Date('07/06/2019'),
+                labelSettings: {
+                    leftLabel: 'TaskName'
+                },
+                loadingIndicator: {
+                    indicatorType: 'Shimmer'
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', width: 250 },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Predecessor' },
+                    { field: 'Progress' },
+                ],
+                splitterSettings: {
+                    position: "35%"
+                },
+                enableTimelineVirtualization: true,
+            }, done);
+        });
+        it('top and bottom tier shows null when using custom zooming levels ', () => {
+            ganttObj.zoomingLevels = [
+                {
+                    topTier: {
+                        unit: 'Year',
+                        format: 'yyyy',
+                        count: 1,
+                    },
+                    bottomTier: {
+                        unit: 'Month',
+                        count: 3,
+                    },
+                    timelineUnitSize: 99,
+                    level: 0,
+                    timelineViewMode: 'Year',
+                },
+                {
+                    topTier: {
+                        unit: 'Year',
+                        format: 'yyyy',
+                        count: 1,
+                    },
+                    bottomTier: {
+                        unit: 'Month',
+                        format: 'MMM yyyy',
+                        count: 1
+                    }, timelineUnitSize: 99,
+                    level: 1,
+                    timelineViewMode: 'Year',
+                },
+                {
+                    topTier: {
+                        unit: 'Month',
+                        format: 'MMM, yy',
+                        count: 1,
+                    },
+                    bottomTier: {
+                        unit: 'Week',
+                        format: 'dd',
+                        count: 1,
+                    }, timelineUnitSize: 33,
+                    level: 2,
+                    timelineViewMode: 'Month',
+                },
+                {
+                    topTier: {
+                        unit: 'Month',
+                        format: 'MMM, yyyy',
+                        count: 1,
+                    },
+                    bottomTier: {
+                        unit: 'Week',
+                        format: 'dd MMM',
+                        count: 1,
+                    }, timelineUnitSize: 66,
+                    level: 3,
+                    timelineViewMode: 'Month',
+                },
+                {
+                    topTier: {
+                        unit: 'Month',
+                        format: 'MMM, yyyy',
+                        count: 1,
+                    },
+                    bottomTier: {
+                        unit: 'Week',
+                        format: 'dd MMM',
+                        count: 1,
+                    }, timelineUnitSize: 99,
+                    level: 4,
+                    timelineViewMode: 'Month',
+                },
+                {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, yyyy',
+                        count: 1,
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        format: 'd',
+                        count: 1,
+                    }, timelineUnitSize: 33,
+                    level: 5,
+                    timelineViewMode: 'Week',
+                },
+            ];
+            ganttObj.zoomIn();
+            expect(ganttObj.currentZoomingLevel.level).toBe(5);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('select row in different timeline segment', () => {
+        Gantt.Inject(Selection, Sort, Filter, Edit, Toolbar, RowDD);
+        let ganttObj: Gantt;
+        let resource: Object[] = [{
+            TaskID: 10, TaskName: 'Sign contract', StartDate: new Date('04/01/2024'), Duration: 1,
+            Progress: 30, resources: [12], work: 24
+        }];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: resource,
+                    enableTimelineVirtualization: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        work: 'work',
+                        type: 'taskType',
+                    },
+                    taskType: 'FixedWork',
+                    resourceFields: {
+                        id: 'resourceId',
+                        name: 'resourceName',
+                        unit: 'unit'
+                    },
+                    allowSorting: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', visible: false },
+                        { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                        { field: 'resources', headerText: 'Resources', width: '160' },
+                        { field: 'work', width: '110' },
+                        { field: 'Duration', width: '100' },
+                        { field: 'taskType', headerText: 'Task Type', width: '110' }
+                    ],
+                    undoRedoActions: ['ZoomToFit'],
+                    loadingIndicator: {
+                        indicatorType: 'Shimmer'
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'Undo', 'Redo'],
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    filterSettings: {
+                        type: 'Menu'
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    eventMarkers: [
+                        {
+                            day: '04/10/2019',
+                            cssClass: 'e-custom-event-marker',
+                            label: 'Project approval and kick-off'
+                        }
+                    ],
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2024'),
+                }, done);
+        });
+        beforeEach((done) => {
+            setTimeout(done, 500);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('select row in different timeline segment', () => {
+            ganttObj.selectRow(0);
+        });
+    });
+    describe('Timeline coverage for timezone issue height auto', () => {
+        Gantt.Inject(Selection,Sort,Filter, Edit, Toolbar, RowDD);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectNewData,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    enableTimelineVirtualization:true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    ],
+                    sortSettings: {
+                        columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    filterSettings: {
+                        type: 'Menu'
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    eventMarkers: [
+                        {
+                            day: '04/10/2019',
+                            cssClass: 'e-custom-event-marker',
+                            label: 'Project approval and kick-off'
+                        }
+                    ],
+                    holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                    searchSettings: {
+                        fields: ['TaskName', 'Duration']
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskID',
+                        rightLabel: 'Task Name: ${taskData.TaskName}',
+                        taskLabel: '${Progress}%'
+                    },
+                    allowResizing: true,
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    height: 'auto',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2024'),
+                }, done);
+        });
+        it('Check for flat data', () => {
+            expect(ganttObj.flatData.length).toBe(8);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Timeline coverage for timezone issue setting previous minute timeline', () => {
+        Gantt.Inject(Selection,Sort,Filter, Edit, Toolbar, RowDD);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectNewData,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    ],
+                    sortSettings: {
+                        columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    filterSettings: {
+                        type: 'Menu'
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        bottomTier: {
+                            unit: 'Minutes',
+                            count: 1
+                        }
+                    },
+                    eventMarkers: [
+                        {
+                            day: '04/10/2019',
+                            cssClass: 'e-custom-event-marker',
+                            label: 'Project approval and kick-off'
+                        }
+                    ],
+                    holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                    searchSettings: {
+                        fields: ['TaskName', 'Duration']
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskID',
+                        rightLabel: 'Task Name: ${taskData.TaskName}',
+                        taskLabel: '${Progress}%'
+                    },
+                    allowResizing: true,
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('03/26/2019'),
+                }, done);
+        });
+        it('Check for flat data', () => {
+            ganttObj.previousTimeSpan()
+            expect(ganttObj.flatData.length).toBe(8);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Timeline coverage for timezone issue setting next minute timeline', () => {
+        Gantt.Inject(Selection,Sort,Filter, Edit, Toolbar, RowDD);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectNewData,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    ],
+                    sortSettings: {
+                        columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    filterSettings: {
+                        type: 'Menu'
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        bottomTier: {
+                            unit: 'Minutes',
+                            count: 1
+                        }
+                    },
+                    eventMarkers: [
+                        {
+                            day: '04/10/2019',
+                            cssClass: 'e-custom-event-marker',
+                            label: 'Project approval and kick-off'
+                        }
+                    ],
+                    holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                    searchSettings: {
+                        fields: ['TaskName', 'Duration']
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskID',
+                        rightLabel: 'Task Name: ${taskData.TaskName}',
+                        taskLabel: '${Progress}%'
+                    },
+                    allowResizing: true,
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('03/26/2019'),
+                }, done);
+        });
+        it('Check for flat data', () => {
+            ganttObj.nextTimeSpan()
+            expect(ganttObj.flatData.length).toBe(8);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Timeline coverage for timezone issue setting next minute timeline', () => {
+        Gantt.Inject(Selection,Sort,Filter, Edit, Toolbar, RowDD);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectNewData,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    ],
+                    sortSettings: {
+                        columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    filterSettings: {
+                        type: 'Menu'
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        bottomTier: {
+                            unit: 'Year',
+                            count: 1
+                        }
+                    },
+                    eventMarkers: [
+                        {
+                            day: '04/10/2019',
+                            cssClass: 'e-custom-event-marker',
+                            label: 'Project approval and kick-off'
+                        }
+                    ],
+                    holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                    searchSettings: {
+                        fields: ['TaskName', 'Duration']
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskID',
+                        rightLabel: 'Task Name: ${taskData.TaskName}',
+                        taskLabel: '${Progress}%'
+                    },
+                    allowResizing: true,
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('04/26/2019'),
+                }, done);
+        });
+        it('Check for flat data', () => {
+            ganttObj.nextTimeSpan()
+            expect(ganttObj.flatData.length).toBe(8);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Timeline coverage for timezone issue setting next minute timeline', () => {
+        Gantt.Inject(Selection,Sort,Filter, Edit, Toolbar, RowDD);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectNewData,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    ],
+                    sortSettings: {
+                        columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    filterSettings: {
+                        type: 'Menu'
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    eventMarkers: [
+                        {
+                            day: '04/10/2019',
+                            cssClass: 'e-custom-event-marker',
+                            label: 'Project approval and kick-off'
+                        }
+                    ],
+                    holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                    searchSettings: {
+                        fields: ['TaskName', 'Duration']
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskID',
+                        rightLabel: 'Task Name: ${taskData.TaskName}',
+                        taskLabel: '${Progress}%'
+                    },
+                    allowResizing: true,
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    timelineTemplate:"#TimelineTemplates",
+                    rowHeight: 40,
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('04/26/2019'),
+                }, done);
+        });
+        it('Check for flat data', () => {
+            expect(ganttObj.flatData.length).toBe(8);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Timeline coverage for timezone issue setting Hour timeline', () => {
+        Gantt.Inject(Selection,Sort,Filter, Edit, Toolbar, RowDD);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectNewData,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    ],
+                    sortSettings: {
+                        columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    filterSettings: {
+                        type: 'Menu'
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        bottomTier: {
+                            unit: 'Hour',
+                            count: 2
+                        }
+                    },
+                    eventMarkers: [
+                        {
+                            day: '04/10/2019',
+                            cssClass: 'e-custom-event-marker',
+                            label: 'Project approval and kick-off'
+                        }
+                    ],
+                    holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                    dayWorkingTime: [{ from: 0, to: 24 }],
+                    searchSettings: {
+                        fields: ['TaskName', 'Duration']
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskID',
+                        rightLabel: 'Task Name: ${taskData.TaskName}',
+                        taskLabel: '${Progress}%'
+                    },
+                    allowResizing: true,
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    timelineTemplate:"#TimelineTemplates",
+                    rowHeight: 40,
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019 05:00:00'),
+                    projectEndDate: new Date('04/26/2019 05:00:00'),
+                }, done);
+        });
+        it('Check for flat data', () => {
+            expect(ganttObj.flatData.length).toBe(8);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+});
+describe('dependency rendering in RTL', () => {
+    Gantt.Inject(Selection, Sort, Filter, Edit, Toolbar, RowDD);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: timelineData,
+                enableTimelineVirtualization: true,
+                taskFields: {
+                    id: 'id',
+                    name: 'title',
+                    startDate: 'startDate',
+                    endDate: 'finishDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'predecessor',
+                    child: 'subtasks',
+                    resourceInfo: 'resources',
+                },
+                taskType: 'FixedWork',
+                allowSorting: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'Undo', 'Redo'],
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                enableRtl: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                allowUnscheduledTasks: true,
+            }, done);
+    });
+    beforeEach((done) => {
+        setTimeout(done, 500);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('dependency object', () => {
+        expect(ganttObj.timelineModule.wholeTimelineWidth).toBe(1155);
     });
 });

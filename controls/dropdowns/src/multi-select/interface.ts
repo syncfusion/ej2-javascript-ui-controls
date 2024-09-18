@@ -69,4 +69,5 @@ export interface IMulitSelect extends Component<HTMLElement> {
     isDynamicDataChange?: boolean
     search?(e: KeyboardEventArgs): void
     allowFiltering?: boolean
+    isDeviceFullScreen: boolean
 }

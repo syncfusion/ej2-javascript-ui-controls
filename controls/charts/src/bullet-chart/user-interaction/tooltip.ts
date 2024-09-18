@@ -182,8 +182,8 @@ export class BulletTooltip {
                 if (this.control.theme.indexOf('Fluent2') > -1) {
                     const shadowId: string = this.control.element.id + '_shadow';
                     const shadow: string = `<filter id="${shadowId}" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>` +
-                        `<feOffset dx="-1" dy="3.6" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.2"/>` +
-                        `</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+                        '<feOffset dx="-1" dy="3.6" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.2"/>' +
+                        '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
                     const defElement: Element = this.control.renderer.createDefs();
                     defElement.setAttribute('id', this.control.element.id + 'SVG_tooltip_definition');
                     tooltipdiv.appendChild(defElement);

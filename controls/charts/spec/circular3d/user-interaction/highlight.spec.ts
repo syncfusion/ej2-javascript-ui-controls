@@ -378,6 +378,54 @@ describe('Circular3D Chart Control', () => {
             circular3D.legendSettings.enableHighlight = true;
             circular3D.refresh();
         });
+        it('Pie - checking legend enable highlight', (done: Function) => {
+            circular3D.loaded = (args: CircularChart3DLoadedEventArgs) => {
+                // element = document.getElementById('pie_chart_legend_shape_3');
+                // trigger.mousemoveEvent(element, 0, 0, 200, 200);
+                // element = document.getElementById('pie-svg-18-region-series-0-point-0');
+                // trigger.mousemoveEvent(element, 0, 0, 200, 200);
+                // expect(document.getElementsByClassName('pie_ej2_chart_highlight_series_0_point_0').length).toBe(12);
+                // element = document.getElementById(id + '-border');
+                // trigger.mousemoveEvent(element, 0, 0, 200, 200);
+                expect(document.getElementsByClassName('pie') !== null).toBe(true);
+                done();
+            };
+            circular3D.selectionMode = 'Point';
+            circular3D.legendSettings.enableHighlight = true;
+            circular3D.highlightMode = 'Point';
+            circular3D.refresh();
+        });
+        it('Pie - checking legend enable highlight with tooltip.', (done: Function) => {
+            circular3D.loaded = (args: CircularChart3DLoadedEventArgs) => {
+                element = document.getElementById('pie-svg-0-region-series-0-point-1');
+                trigger.mousemoveEvent(element, 0, 0, 200, 200);
+                element = document.getElementById('pie_chart_legend_shape_3');
+                trigger.mousemoveEvent(element, 0, 0, 200, 200);
+                expect(document.getElementsByClassName(highlight + '0' + '_point_3').length !== 0).toBe(true);
+                element = document.getElementById('pie_chart_legend_shape_1');
+                trigger.mousemoveEvent(element, 0, 0, 200, 200);
+                done();
+            };
+            circular3D.tooltip = { enable: true };
+            circular3D.legendSettings.enableHighlight = true;
+            circular3D.highlightMode = 'Point';
+            circular3D.refresh();
+        });
+        it('Pie - checking legend enable highlight with click event.', (done: Function) => {
+            circular3D.loaded = (args: CircularChart3DLoadedEventArgs) => {
+                element = document.getElementById('pie-svg-0-region-series-0-point-1');
+                trigger.clickEvent(element);
+                element = document.getElementById('pie-svg-0-region-series-0-point-1');
+                trigger.mousemoveEvent(element, 0, 0, 200, 200);
+                expect(document.getElementsByClassName(highlight + '0' + '_point_1').length === 0).toBe(true);
+                done();
+            };
+            circular3D.tooltip = { enable: true };
+            circular3D.selectionMode = 'Point';
+            circular3D.legendSettings.enableHighlight = false;
+            circular3D.highlightMode = 'None';
+            circular3D.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

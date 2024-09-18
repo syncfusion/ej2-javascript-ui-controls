@@ -73,6 +73,27 @@ export let tools: { [key: string]: IToolsItems } = {
         'subCommand': 'BackgroundColor',
         'value': '#ffff00ff'
     },
+    'importword': {
+        'id': 'ImportWord',
+        'icon': 'e-rte-import-doc',
+        'tooltip': 'Import from Word',
+        'command': 'Import',
+        'subCommand': 'ImportWord'
+    },
+    'exportword': {
+        'id': 'ExportWord',
+        'icon': 'e-rte-export-doc',
+        'tooltip': 'Export to Word',
+        'command': 'Export',
+        'subCommand': 'ExportWord'
+    },
+    'exportpdf': {
+        'id': 'ExportPdf',
+        'icon': 'e-rte-export-pdf',
+        'tooltip': 'Export to PDF',
+        'command': 'Export',
+        'subCommand': 'ExportPdf'
+    },
     'bold': {
         'id': 'Bold',
         'icon': 'e-bold',
@@ -481,7 +502,7 @@ export let tools: { [key: string]: IToolsItems } = {
     },
     'insertcode': {
         'id': 'InsertCode',
-        'icon': 'e-insert-code',
+        'icon': 'e-preformat-code',
         'tooltip': 'Insert Code',
         'command': 'Formats',
         'subCommand': 'Pre'
@@ -576,6 +597,13 @@ export let tools: { [key: string]: IToolsItems } = {
         'tooltip': 'Emoji Icon',
         'command':'EmojiPicker',
         'subCommand': 'EmojiPicker'
+    },
+    'inlinecode' :{
+        'id':'inlineCode',
+        'icon': 'e-inline-code',
+        'tooltip': 'inlineCode',
+        'command':'Style',
+        'subCommand': 'InlineCode'
     }
 };
 
@@ -708,11 +736,11 @@ export const fontSize: IDropDownItemModel[] = [
 
 export const formatItems: IDropDownItemModel[] = [
     { cssClass: 'e-paragraph', text: 'Paragraph', command: 'Formats', subCommand: 'P', value: 'P'},
-    { cssClass: 'e-code', text: 'Code', command: 'Formats', subCommand: 'Pre', value: 'Pre'},
     { cssClass: 'e-h1', text: 'Heading 1', command: 'Formats', subCommand: 'H1', value: 'H1'},
     { cssClass: 'e-h2', text: 'Heading 2', command: 'Formats', subCommand: 'H2', value: 'H2'},
     { cssClass: 'e-h3', text: 'Heading 3', command: 'Formats', subCommand: 'H3', value: 'H3'},
-    { cssClass: 'e-h4', text: 'Heading 4', command: 'Formats', subCommand: 'H4', value: 'H4'}
+    { cssClass: 'e-h4', text: 'Heading 4', command: 'Formats', subCommand: 'H4', value: 'H4'},
+    { cssClass: 'e-code', text: 'preformatted', command: 'Formats', subCommand: 'Pre', value: 'Pre'},
 ];
 
 export const fontColor: { [key: string]: string[] } = {
@@ -824,7 +852,8 @@ export let windowKeys: { [key: string]: string} = {
     'Justify Full': 'Ctrl+J',
     'Justify Left': 'Ctrl+L',
     'Justify Right': 'Ctrl+R',
-    'Format Painter': 'Alt+Shift+C, Alt+Shift+V'
+    'Format Painter': 'Alt+Shift+C, Alt+Shift+V',
+    'inlineCode': 'ctrl+`'
 };
 
 export const defaultEmojiIcons: EmojiIconsSet[] = [{

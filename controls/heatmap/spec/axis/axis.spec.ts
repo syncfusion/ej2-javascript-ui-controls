@@ -837,7 +837,226 @@ describe('Heatmap Control', () => {
             text = document.getElementById('container_YAxis_Label4');
             expect(text.textContent == '4%').toBe(true);
         });
+        it('Checking x-axis grouping with inversed axis and opposed position and rotation 90', function () {
+            heatmap.xAxis.isInversed = true;
+            heatmap.xAxis.labelRotation = 90;
+            heatmap.xAxis.valueType = 'DateTime',
+            heatmap.xAxis.minimum = new Date(2018,0,1);
+            heatmap.xAxis.opposedPosition = true;
+            heatmap.xAxis.border.width = 1;
+            heatmap.xAxis.multiLevelLabels= [
+                {
+                    overflow:'Trim',
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start:'1/1/2017', end: '1/5/2017',  text: 'Testing 1 Testing 1 Testing 1 Testing 1', maximumTextWidth: 30},
+                        { start: 6, end: 8, text: 'Testing 2', },
+                    ]
+                },
+                {
+                    alignment:'Far',
+                    border: { color: '#b5b5b5', type: 'Brace' },
+                    categories: [
+                        { start: 0, end: 8, text: 'Testing 3', },
+                    ]
+                },
+                {
+                    alignment:'Near',
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start: 0, end: 4, text: 'Testing 4', },
+                    ]
+                }
+            ];
+            heatmap.refresh();
+            text = document.getElementById('container_XAxis_MultiLevel0_Text0');
+            expect(text.textContent == "Te..." || text.textContent == 'T...').toBe(true);
+        });
+        it('Checking x-axis grouping with inversed axis and opposed position and rotation 180', function () {
+            heatmap.xAxis.isInversed = true;
+            heatmap.xAxis.labelRotation = 180;
+            heatmap.xAxis.valueType = 'DateTime',
+            heatmap.xAxis.minimum = new Date(2018,0,1);
+            heatmap.xAxis.opposedPosition = true;
+            heatmap.xAxis.border.width = 1;
+            heatmap.xAxis.multiLevelLabels= [
+                {
+                    overflow:'Trim',
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start:'1/1/2017', end: '1/5/2017',  text: 'Testing 1 Testing 1 Testing 1 Testing 1', maximumTextWidth: 30},
+                        { start: 6, end: 8, text: 'Testing 2', },
+                    ]
+                },
+                {
+                    alignment:'Far',
+                    border: { color: '#b5b5b5', type: 'Brace' },
+                    categories: [
+                        { start: 0, end: 8, text: 'Testing 3', },
+                    ]
+                },
+                {
+                    alignment:'Near',
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start: 0, end: 4, text: 'Testing 4', },
+                    ]
+                }
+            ];
+            heatmap.refresh();
+            text = document.getElementById('container_XAxis_MultiLevel0_Text0');
+            expect(text.textContent == "Te..." || text.textContent == 'T...').toBe(true);
+        });
+        it('Checking x-axis grouping with inversed axis and opposed position and rotation 360', function () {
+            heatmap.xAxis.isInversed = true;
+            heatmap.xAxis.labelRotation = 360;
+            heatmap.xAxis.valueType = 'DateTime',
+            heatmap.xAxis.minimum = new Date(2018,0,1);
+            heatmap.xAxis.opposedPosition = true;
+            heatmap.xAxis.border.width = 1;
+            heatmap.xAxis.multiLevelLabels= [
+                {
+                    overflow:'Trim',
+                    border: { color: '#b5b5b5' },
+                    textStyle: {size: '10px', textAlignment: 'Far'},
+                    categories: [
+                        { start:'1/1/2017', end: '1/5/2017',  text: 'Testing 1 Testing 1 Testing 1 Testing 1', maximumTextWidth: 30},
+                        { start: 6, end: 8, text: 'Testing 2', },
+                    ]
+                },
+                {
+                    textStyle: {size: '10px', textAlignment: 'Near'},
+                    border: { color: '#b5b5b5', type: 'Brace' },
+                    categories: [
+                        { start: 0, end: 8, text: 'Testing 3', },
+                    ]
+                },
+                {
+                    alignment:'Near',
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start: 0, end: 4, text: 'Testing 4', },
+                    ]
+                }
+            ];
+            heatmap.refresh();
+            text = document.getElementById('container_XAxis_MultiLevel0_Text0');
+            expect(text.textContent == "Te..." || text.textContent == 'T...').toBe(true);
+        });
+        it('Checking x-axis grouping with inversed axis and opposed position and rotation 360 and textalignment', function () {
+            heatmap.xAxis.isInversed = true;
+            heatmap.xAxis.labelRotation = 360;
+            heatmap.xAxis.valueType = 'DateTime',
+            heatmap.xAxis.minimum = new Date(2018,0,1);
+            heatmap.xAxis.opposedPosition = true;
+            heatmap.xAxis.border.width = 1;
+            heatmap.xAxis.multiLevelLabels= [
+                {
+                    overflow:'Trim',
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start:'1/1/2017', end: '1/5/2017',  text: 'Testing 1 Testing 1 Testing 1 Testing 1', maximumTextWidth: 30},
+                        { start: 6, end: 8, text: 'Testing 2', },
+                    ]
+                },
+                {
+                    alignment:'Far',
+                    border: { color: '#b5b5b5', type: 'Brace' },
+                    textStyle: {size: '10px', textAlignment: 'Far'},
+                    categories: [
+                        { start: 0, end: 8, text: 'Testing 3', },
+                    ]
+                },
+                {
+                    alignment:'Near',
+                    textStyle: {size: '10px', textAlignment: 'Near'},
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start: 0, end: 4, text: 'Testing 4', },
+                    ]
+                }
+            ];
+            heatmap.refresh();
+            text = document.getElementById('container_XAxis_MultiLevel0_Text0');
+            expect(text.textContent == "Te..." || text.textContent == 'T...').toBe(true);
+        });
+        it('Checking x-axis grouping with inversed axis and opposed position and rotation 170', function () {
+            heatmap.xAxis.isInversed = true;
+            heatmap.xAxis.labelRotation = 170;
+            heatmap.xAxis.valueType = 'DateTime',
+            heatmap.xAxis.minimum = new Date(2018,0,1);
+            heatmap.xAxis.opposedPosition = true;
+            heatmap.xAxis.border.width = 1;
+            heatmap.xAxis.multiLevelLabels= [
+                {
+                    overflow:'Trim',
+                    border: { color: '#b5b5b5' },
+                    textStyle: {size: '0px', textAlignment: 'Far'},
+                    categories: [
+                        { start:'1/1/2017', end: '1/5/2017',  text: 'Testing 1 Testing 1 Testing 1 Testing 1', maximumTextWidth: 30},
+                        { start: 6, end: 8, text: 'Testing 2', },
+                    ]
+                },
+                {
+                    alignment:'Far',
+                    textStyle: {size: '0px', textAlignment: 'Near'},
+                    border: { color: '#b5b5b5', type: 'Brace' },
+                    categories: [
+                        { start: 0, end: 8, text: 'Testing 3', },
+                    ]
+                },
+                {
+                    alignment:'Near',
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start: 0, end: 4, text: 'Testing 4', },
+                    ]
+                }
+            ];
+            heatmap.refresh();
+            text = document.getElementById('container_XAxis_MultiLevel0_Text1');
+            expect(text.textContent).toBe('Testing 2');
+        });
+        it('Checking x-axis grouping with inversed axis and opposed position and rotation 190', function () {
+            heatmap.xAxis.isInversed = true;
+            heatmap.xAxis.labelRotation = 170;
+            heatmap.enableCanvasRendering = true;
+            heatmap.xAxis.valueType = 'DateTime',
+            heatmap.xAxis.minimum = new Date(2018,0,1);
+            heatmap.xAxis.opposedPosition = true;
+            heatmap.xAxis.border.width = 1;
+            heatmap.xAxis.multiLevelLabels= [
+                {
+                    overflow:'Trim',
+                    border: { color: '#b5b5b5' },
+                    textStyle: {size: '0px', textAlignment: 'Far'},
+                    categories: [
+                        { start:'1/1/2017', end: '1/5/2017',  text: 'Testing 1 Testing 1 Testing 1 Testing 1', maximumTextWidth: 30},
+                        { start: 6, end: 8, text: 'Testing 2', },
+                    ]
+                },
+                {
+                    alignment:'Far',
+                    textStyle: {size: '0px', textAlignment: 'Near'},
+                    border: { color: '#b5b5b5', type: 'Brace' },
+                    categories: [
+                        { start: 0, end: 8, text: 'Testing 3', },
+                    ]
+                },
+                {
+                    alignment:'Near',
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start: 0, end: 4, text: 'Testing 4', },
+                    ]
+                }
+            ];
+            heatmap.refresh();
+            text = document.getElementById('container_XAxis_MultiLevel0_Text1');
+            expect(text.textContent).toBe('Testing 2');
+        });
     });
+    
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -847,6 +1066,140 @@ describe('Heatmap Control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+});
+
+describe('Multilevel Y axis properties', () => {
+    let heatmap: HeatMap;
+    let ele: HTMLElement;
+    let text: HTMLElement;
+    let created: EmitType<Object>;
+    let trigger: MouseEvents = new MouseEvents();
+    let data: number[][] = [
+        [73, 39, 26, 39, 94, 0],
+        [93, 58, 53, 38, 26, 68],
+        [99, 28, 22, 4, 66, 90],
+        [14, 26, 97, 69, 69, 3],
+        [7, 46, 47, 47, 88, 6],
+        [41, 55, 73, 23, 3, 79],
+        [56, 69, 21, 86, 3, 33],
+        [45, 7, 53, 81, 95, 79],
+        [60, 77, 74, 68, 88, 51],
+        [25, 25, 10, 12, 78, 14],
+        [25, 56, 55, 58, 12, 82],
+        [74, 33, 88, 23, 86, 59]
+    ]
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        heatmap = new HeatMap({
+            theme: 'Material3',
+        titleSettings: {
+            text: 'Product wise Monthly sales revenue for a e-commerce website',
+                textStyle: {
+                    size: '15px',
+                    fontWeight: '500',
+                    fontStyle: 'Normal',
+                    fontFamily: 'Segoe UI'
+                }
+            },
+            xAxis: {
+                labels: ['Laptop', 'Mobile', 'Gaming', 'Cosmetics', 'Fragnance', 'Watches', 'Handbags', 'Apparels',
+                    'Kitchenware', 'Furniture', 'Home Decor'],
+                    textStyle: { textAlignment: 'Far'},
+                multiLevelLabels: [
+                    {
+                        overflow:'Trim',
+                        alignment: 'Near',
+                         textStyle: {
+                            color: 'black',
+                            fontWeight: 'Bold'
+                        },
+                        border: { type: 'Rectangle', color: '#a19d9d' },
+                        categories: [
+                            { start: 0, end: 2, text: 'Electronics', },
+                            { start: 3, end: 4, text: 'Beauty and personal care'},
+                            { start: 5, end: 7, text: 'Fashion', },
+                            { start: 8, end: 10, text: 'Household', }
+                        ]
+                    },
+                ]
+            },
+            yAxis: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Augest Augest August', 'Sep', 'Oct', 'Nov', 'Dec'],
+                textStyle: { textAlignment: 'Far', textOverflow: 'Wrap'},
+                multiLevelLabels: [
+                    {
+                        border: { type: 'Brace', color: '#a19d9d' },                        
+                        categories: [
+                            { start: 0, end: 2, text: 'Q1' },
+                            { start: 3, end: 5, text: 'Q2' },
+                            { start: 6, end: 8, text: 'Q3' },
+                            { start: 9, end: 11, text: 'Q4' }
+                        ]
+                    },
+                    {
+                        border: { type: 'Brace', color: '#a19d9d' },
+                        categories: [
+                          { start: 0, end: 5, text: 'First Half Yearly' },
+                          {
+                            start: 6,
+                            end: 11,
+                            text: 'Second Half Yearly'
+                          }
+                        ]
+                    },
+                    {
+                        border: { type: 'Brace', color: '#a19d9d' },
+                        categories: [
+                            { start: 0, end: 11, text: 'Yearly' }
+                        ]
+                    }
+                ]
+            },
+            legendSettings: {
+                visible: false
+            },
+            paletteSettings: {
+                palette: [{ color: '#F0C27B' },
+                { color: '#4B1248' }
+                ]
+            },
+            dataSource: [
+                [52, 65, 67, 45, 37, 52,32, 76, 60, 64, 82, 91],
+                [68, 52, 63, 51, 30, 51,51, 81, 70, 60, 88, 80],
+                [60, 50, 42, 53, 66, 70,41, 69, 76, 74, 86, 97],
+                [66, 64, 46, 40, 47, 41, 45, 76, 83, 69, 92,84],
+                [65, 42, 58, 32, 36, 44,49, 79, 83, 69, 83, 93],
+                [54, 46, 61, 46, 40, 39,41, 69, 61, 84, 84, 87],
+                [48, 46, 61, 47, 49, 41,41, 67, 78, 83, 98, 87],
+                [69, 52, 41, 44, 41, 52,46, 71, 63, 84, 83, 91],
+                [50, 59, 44, 43, 27, 42,26, 64, 76, 65, 81, 86],
+                [47, 49, 66, 53, 50, 34,31, 79, 78, 79, 89, 95],
+                [61, 40, 62, 26, 34, 54,56, 74, 83, 78, 95, 98]
+            ]
+
+        });
+    });
+
+    afterAll((): void => {
+        heatmap.destroy();
+    });
+    it('Checking heatmap instance creation', (done: Function) => {
+        created = (args: Object): void => {
+            expect(heatmap != null).toBe(true);
+            done();
+        }
+        heatmap.created = created;
+        heatmap.appendTo('#container');
+    });
+
+    it('Checking y-axis with label rotation and align Near', function () {
+        heatmap.yAxis.textStyle.textAlignment = 'Near';
+        heatmap.refresh();
+        text = document.getElementById('container_YAxis_Label0');
+        expect(text.textContent).toBe('Jan');
+        expect((text.getAttribute('x'))).toBe('241');
+    });
 });
 
 describe('Axis properties', () => {

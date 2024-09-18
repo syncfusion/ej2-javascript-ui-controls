@@ -330,7 +330,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
     }
 
     private onDragStop: Function = (e: { target: HTMLElement, event: MouseEvent & TouchEvent, helper: Element }) => {
-        let dropInst: Sortable = this.getSortableInstance(this.curTarget); let curIdx: number; let prevIdx: number; let handled: boolean;
+        let dropInst: Sortable = this.getSortableInstance(this.curTarget); let prevIdx: number; let curIdx: number; let handled: boolean;
         prevIdx = this.getIndex(this.target);
         const isPlaceHolderPresent: boolean = this.isPlaceHolderPresent(dropInst);
         if (isPlaceHolderPresent) {

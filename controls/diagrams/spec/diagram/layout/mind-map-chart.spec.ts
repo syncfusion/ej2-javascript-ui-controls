@@ -980,6 +980,164 @@ describe('Diagram Control', () => {
         });
     });
 
+    const workingData =  [
+        { id: "1", label: "Business Planning", parentId: "", branch: "Root", fill: "#034d6d", hasChild: true, level: 0, strokeColor: "#034d6d", orientation: "Root" },
+        { id: "2", label: "Expectation", parentId: "1", branch: "Left", fill: "#1b80c6", hasChild: true, level: 1, strokeColor: "#1b80c6", orientation: "Left" },
+        { id: "3", label: "Requirements", parentId: "1", branch: "Right", fill: "#1b80c6", hasChild: true, level: 1, strokeColor: "#1b80c6", orientation: "Right" },
+        { id: "4", label: "Marketing", parentId: "1", branch: "Left", fill: "#1b80c6", hasChild: true, level: 1, strokeColor: "#1b80c6", orientation: "Left" },
+        { id: "5", label: "Budgets", parentId: "1", branch: "Right", fill: "#1b80c6", hasChild: true, level: 1, strokeColor: "#1b80c6", orientation: "Right" },
+        { id: "6", label: "Situation in Market", parentId: "1", branch: "Left", fill: "#1b80c6", hasChild: true, level: 1, strokeColor: "#1b80c6", orientation: "Left" },
+        { id: "7", label: "Product Sales", parentId: "2", branch: "SubLeft", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubLeft" },
+        { id: "8", label: "Strategy", parentId: "2", branch: "SubLeft", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubLeft" },
+        { id: "9", label: "Contacts", parentId: "2", branch: "SubLeft", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubLeft" },
+        { id: "10", label: "Customer Groups", parentId: "4", branch: "SubLeft", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubLeft" },
+        { id: "11", label: "Branding", parentId: "4", branch: "SubLeft", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubLeft" },
+        { id: "12", label: "Advertising", parentId: "4", branch: "SubLeft", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubLeft" },
+        { id: "13", label: "Competitors", parentId: "6", branch: "SubLeft", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubLeft" },
+        { id: "14", label: "Location", parentId: "6", branch: "SubLeft", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubLeft" },
+        { id: "15", label: "Director", parentId: "3", branch: "SubRight", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubRight" },
+        { id: "16", label: "Accounts Department", parentId: "3", branch: "SubRight", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubRight" },
+        { id: "17", label: "Administration", parentId: "3", branch: "SubRight", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubRight" },
+        { id: "18", label: "Development", parentId: "3", branch: "SubRight", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubRight" },
+        { id: "19", label: "Estimation", parentId: "5", branch: "SubRight", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubRight" },
+        { id: "20", label: "Profit", parentId: "5", branch: "SubRight", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubRight" },
+        { id: "21", label: "Funds", parentId: "5", branch: "SubRight", fill: "#3dbfc9", hasChild: false, level: 2, strokeColor: "#3dbfc9", orientation: "SubRight" }
+    ];
+
+    describe('Mindmap import export as mermaid', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'mindmapimportexport' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '100%', height: '900px',
+                layout:{
+                    type:'MindMap',
+                    verticalSpacing: 50,
+                    horizontalSpacing: 50,
+                    orientation: 'Horizontal',
+                },
+                dataSourceSettings: { id: 'id', parentId: 'parentId', dataSource: new DataManager(workingData)},
+                getNodeDefaults: (obj: Node) => {
+                    obj.width = 120;
+                    obj.height = 50;
+                    obj.style = { fill: '#8df9c6', strokeColor: '#8df9c6',strokeWidth: 2 };
+                    obj.annotations = [{ content: obj.data ? (obj.data as any).label: obj.annotations.length ? obj.annotations[0].content:'', style: { color: 'black' } }];
+                    return obj;
+                }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.type = 'Bezier';
+                    connector.targetDecorator = { shape: 'None' };
+                    connector.style = { strokeColor: '#08cd70 ', strokeWidth: 1 };
+                    return connector;
+                }
+            });
+            diagram.appendTo('#mindmapimportexport');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Export mindmap in mermaid format', (done: Function) => {
+            const data = diagram.saveDiagramAsMermaid();
+            expect(data !== '' && data.includes('mindmap')).toBe(true);
+            done();
+        });
+        it('Importing and exporting mindmap layout', (done: Function) => {
+            let mermaidMindmap = `mindmap
+                          root((Mobile Banking Registration))
+                            User(User)
+                            PersonalInfo))Personal Information((
+                                Name)Name(
+                                DOB[Date of Birth]
+                                Address((Address))
+                            ContactInfo{{Contact Information}}
+                                Email((Email))
+                                Phone((Phone Number))
+                            Account((Account))
+                            AccountType((Account Type))
+                                Savings((Savings))
+                                Checking((Checking))
+                            AccountDetails((Account Details))
+                                AccountNumber((Account Number))
+                                SortCode((Sort Code))
+                            Security((Security))
+                            Authentication((Authentication))
+                                Password((Password))
+                                Biometrics((Biometrics))
+                                Fingerprint((Fingerprint))
+                                FaceID((Face ID))
+                            Verification((Verification))
+                                OTP((OTP))
+                                SecurityQuestions((Security Questions))
+                            Terms((Terms & Conditions))
+                            AcceptTerms((Accept Terms))
+                            PrivacyPolicy((Privacy Policy))`;
+    
+            diagram.loadDiagramFromMermaid(mermaidMindmap);
+            expect(diagram.nodes.length === 28).toBe(true);
+            let saveData1 = diagram.saveDiagramAsMermaid();
+            diagram.loadDiagramFromMermaid(saveData1);
+            let saveData2 = diagram.saveDiagramAsMermaid();
+            diagram.loadDiagramFromMermaid(saveData2);
+            let saveData3 = diagram.saveDiagramAsMermaid();
+            diagram.loadDiagramFromMermaid(saveData3);
+            expect(diagram.nodes.length === 28).toBe(true);
+            done();
+        });
+        it('Importing and exporting different type of mermaid code', (done: Function) => {
+            let mermaidMindmap = `mindmap
+                                  Root
+                                    A
+                                        B
+                                      C`;
+    
+            diagram.loadDiagramFromMermaid(mermaidMindmap);
+            expect(diagram.nodes.length === 4).toBe(true);
+            let saveData1 = diagram.saveDiagramAsMermaid();
+            diagram.loadDiagramFromMermaid(saveData1);
+            expect(diagram.nodes.length === 4).toBe(true);
+            done();
+        });
+        it('Importing and exporting different type of mermaid code 2', (done: Function) => {
+            let mermaidMindmap = `mindmap
+                                    id1["\`**Root** with\n
+    a second line\n
+    Unicode works too: 🤓\`"]
+                                      id2["\`The dog in **the** hog... a *very long text* that wraps to a new line\`"]
+                                      id3[Regular labels still works]`;
+            let mermaidMindmap2 = `mindmap
+                                      id1["\`**Root** with a single line Unicode works too: 🤓\`"]
+                                        id2["\`The dog in **the** hog... \n
+    a *very long text* that wraps \n
+    to a new line\`"]
+                                        id3[Regular labels still works]`;
+    
+            diagram.loadDiagramFromMermaid(mermaidMindmap);
+            expect(diagram.nodes.length === 3).toBe(true);
+            let saveData1 = diagram.saveDiagramAsMermaid();
+            diagram.loadDiagramFromMermaid(saveData1);
+            expect(diagram.nodes.length === 3).toBe(true);
+            diagram.loadDiagramFromMermaid(mermaidMindmap2);
+            expect(diagram.nodes.length === 3).toBe(true);
+            let saveData2 = diagram.saveDiagramAsMermaid();
+            diagram.loadDiagramFromMermaid(saveData1);
+            expect(diagram.nodes.length === 3).toBe(true);
+            done();
+        });
+        // it('Load unclear indentation', (done: Function) => {
+        //     let data = `mindmap
+        //                   Root
+        //                     A
+        //                         B
+        //                     C`;
+        //     diagram.loadDiagramFromMermaid(data);
+        //     expect().toBe(true);
+        //     done();
+        // });
+    });
+    
+
 });
 export interface EmployeeInfo {
     branch: string;

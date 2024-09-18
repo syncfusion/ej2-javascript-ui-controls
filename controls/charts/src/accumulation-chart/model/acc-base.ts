@@ -1,31 +1,34 @@
 /**
  * AccumulationChart base file
  */
-import { Property, ChildProperty, Complex, createElement, Browser, animationMode } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex, createElement, Browser, animationMode, extend } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Border, Font, Animation, EmptyPointSettings, Connector } from '../../common/model/base';
-import { Rect, Size, PathOption } from '@syncfusion/ej2-svg-base';
-import { ChartLocation, stringToNumber, appendChildElement } from '../../common/utils/helper';
+import { Rect, Size, PathOption, measureText } from '@syncfusion/ej2-svg-base';
+import { ChartLocation, stringToNumber, appendChildElement, subtractRect } from '../../common/utils/helper';
 import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';
 import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs } from '../model/pie-interface';
-import { LegendShape } from '../../common/utils/enum';
+import { LegendShape, SelectionPattern } from '../../common/utils/enum';
 import { AccumulationDataLabelSettingsModel } from '../model/acc-base-model';
 import { Data } from '../../common/model/data';
 import { seriesRender, pointRender } from '../../common/model/constants';
 import { getSeriesColor } from '../../common/model/theme';
-import { FontModel, BorderModel, AnimationModel, EmptyPointSettingsModel, ConnectorModel } from '../../common/model/base-model';
+import { FontModel, BorderModel, AnimationModel, ConnectorModel, EmptyPointSettingsModel } from '../../common/model/base-model';
 import { AccumulationChart } from '../accumulation';
 import { getElement, firstToLowerCase } from '../../common/utils/helper';
 import { Units, Alignment, Regions, Position, SeriesCategories, LabelOverflow, TextWrap } from '../../common/utils/enum';
 import { GroupModes } from './enum';
+import { BaseSelection } from '../../common/user-interaction/selection';
+import { LegendOptions } from '../../common/legend/legend';
 
 /**
- * Annotation settings for accumulation series.
+ * Configures the annotation settings for an accumulation chart.
+ * Annotations are used to highlight or provide additional information about specific points or regions in the accumulation chart.
  */
 export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAnnotationSettings> {
     /**
-     * Content of the annotation, which accepts the id of the custom element.
+     * The content of the annotation, which can also accept the ID of a custom element.
      *
      * @default null
      */
@@ -33,8 +36,8 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public content: string;
 
     /**
-     * If set coordinateUnit as `Pixel` X specifies the axis value.
-     * Else is specifies pixel or percentage of coordinate.
+     * If `coordinateUnit` is set to `Pixel`, x specifies the pixel value.
+     * If `coordinateUnit` is set to `Point`, x specifies the data value.
      *
      * @default '0'
      */
@@ -42,8 +45,8 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public x: string | Date | number;
 
     /**
-     * If set coordinateUnit as `Pixel` Y specifies the axis value.
-     * Else is specifies pixel or percentage of coordinate.
+     * If `coordinateUnit` is set to `Pixel`, y specifies the pixel value.
+     * If `coordinateUnit` is set to `Point`, y specifies the data value.
      *
      * @default '0'
      */
@@ -51,9 +54,10 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public y: string | number;
 
     /**
-     * Specifies the coordinate units of the annotation. They are:
-     * * Pixel - Annotation renders based on x and y pixel value.
-     * * Point - Annotation renders based on x and y axis value.
+     * Specifies the coordinate units of the annotation.
+     * The options are:
+     * * Pixel - Renders the annotation based on x and y pixel values.
+     * * Point - Renders the annotation based on x and y data values.
      *
      * @default 'Pixel'
      */
@@ -62,9 +66,10 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public coordinateUnits: Units;
 
     /**
-    * Specifies the regions of the annotation. They are:
-     * * Chart - Annotation renders based on chart coordinates.
-     * * Series - Annotation renders based on series coordinates.
+     * Specifies the regions of the annotation.
+     * The options are:
+     * * Chart - Renders the annotation based on chart coordinates.
+     * * Series - Renders the annotation based on series coordinates.
      *
      * @default 'Chart'
      */
@@ -73,10 +78,11 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public region: Regions;
 
     /**
-     * Specifies the position of the annotation. They are:
-     * * Top - Align the annotation element as top side.
-     * * Bottom - Align the annotation element as bottom side.
-     * * Middle - Align the annotation element as mid point.
+     * Specifies the position of the annotation.
+     * The options are
+     * * Top - Aligns the annotation element to the top side.
+     * * Bottom - Aligns the annotation element to the bottom side.
+     * * Middle - Aligns the annotation element to the midpoint.
      *
      * @default 'Middle'
      * @deprecated
@@ -86,10 +92,11 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public verticalAlignment: Position;
 
     /**
-     * Specifies the alignment of the annotation. They are:
-     * * Near - Align the annotation element as top side.
-     * * Far - Align the annotation element as bottom side.
-     * * Center - Align the annotation element as mid point.
+     * Specifies the alignment of the annotation.
+     * The options are:
+     * * Near - Aligns the annotation element to the top side.
+     * * Far - Aligns the annotation element to the bottom side.
+     * * Center - Aligns the annotation element to the midpoint.
      *
      * @default 'Center'
      * @deprecated
@@ -99,7 +106,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public horizontalAlignment: Alignment;
 
     /**
-     * Information about annotation for assistive technology.
+     * A description for the annotation that provides additional information about its content for screen readers.
      *
      * @default null
      */
@@ -109,12 +116,12 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
 }
 
 /**
- * Configures the dataLabel in accumulation chart.
+ * This class provides options to customize the appearance and behavior of data labels within a series.
  */
 export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDataLabelSettings> {
 
     /**
-     * If set true, data label for series gets render.
+     * If set to true, data labels for the series are render. By default, it is set to false.
      *
      * @default false
      */
@@ -123,7 +130,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public visible: boolean;
 
     /**
-     * If set true, data label for zero values in series gets render.
+     * If set to true, the data label for zero values in the series will be rendered.
      *
      * @default true
      */
@@ -132,7 +139,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public showZero: boolean;
 
     /**
-     * The DataSource field which contains the data label value.
+     * Specifies the data source field that contains the data label value.
      *
      * @default null
      */
@@ -141,7 +148,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public name: string;
 
     /**
-     * The background color of the data label, which accepts value in hex, rgba as a valid CSS color string.
+     * The background color of the data label accepts hex and rgba values as valid CSS color strings.
      *
      * @default 'transparent'
      */
@@ -150,9 +157,10 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public fill: string;
 
     /**
-     * Specifies the position of data label. They are:
-     * * Outside - Places label outside the point.
-     * * Inside - Places label inside the point.
+     * Specifies the position of the data label relative to the data point.
+     * The available options are:
+     * * Outside - Places the data label outside the data point, which is typically used to avoid overlap with the data point.
+     * * Inside - Places the data label inside the data point, which is useful for displaying labels within the data point.
      *
      * @default 'Inside'
      */
@@ -161,7 +169,8 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public position: AccumulationLabelPosition;
 
     /**
-     * The roundedCornerX for the data label. It requires `border` values not to be null.
+     * Specifies the X-axis rounded corner radius for the data label.
+     > Note that `border` values must not be null for this feature to work.
      *
      * @default 5
      */
@@ -169,7 +178,8 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public rx: number;
 
     /**
-     * The roundedCornerY for the data label. It requires `border` values not to be null.
+     * Specifies the Y-axis rounded corner radius for the data label.
+     > Note that `border` values must not be null for this feature to work.
      *
      * @default 5
      */
@@ -177,7 +187,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public ry: number;
 
     /**
-     * Specifies angle for data label.
+     * Specifies the rotation angle of the data label.
      *
      * @default 0
      */
@@ -185,7 +195,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public angle: number;
 
     /**
-     * Enables rotation for data label.
+     * If set to true, the data label will be rotated according to the specified angle.
      *
      * @default false
      */
@@ -194,30 +204,29 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public enableRotation: boolean;
 
     /**
-     * Option for customizing the border lines.
+     * Configures the appearance of the border lines with options for width and color properties.
      */
 
     @Complex<BorderModel>({ width: null, color: null }, Border)
     public border: BorderModel;
 
     /**
-     * Option for customizing the data label text.
+     * Customizes the appearance of the data label text with options for font size, color, style, weight, and family.
      */
 
     @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
     public font: FontModel;
 
     /**
-     * Options for customize the connector line in series.
-     * This property is applicable for Pie, Funnel and Pyramid series.
-     * The default connector length for Pie series is '4%'. For other series, it is null.
+     * Options to customize the connector line in the series.
+     * By default, the connector length for the Pie series is set to '4%'. For other series, it is set to `null`.
      */
     @Complex<ConnectorModel>({}, Connector)
     public connectorStyle: ConnectorModel;
 
     /**
-     * Custom template to format the data label content. Use ${point.x} and ${point.y} as a placeholder
-     * text to display the corresponding data point.
+     * Custom template to format the content of the data label.
+     * Use `${point.x}` and `${point.y}` as placeholders to display the corresponding data point values.
      *
      * @default null
      * @aspType string
@@ -227,8 +236,8 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public template: string | Function;
 
     /**
-     * Used to format the data label that accepts any global string format like 'C', 'n1', 'P' etc.
-     * It also accepts placeholder like '{value}°C' in which value represent the data label, e.g, 20°C.
+     * Used to format the data label, accepting global string formats like `C`, `n1`, `P`, etc.
+     * It also supports placeholders, such as `{value}°C`, where `{value}` represent the point data label (e.g., 20°C).
      *
      * @default ''
      */
@@ -236,7 +245,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public format: string;
 
     /**
-     * Specifies the maximum width of the data label.Use this property to limit label width and apply wrap or trimming to the label.
+     * Use this property to limit the label width and apply wrapping or trimming.
      *
      * @default 'null'
      */
@@ -245,10 +254,11 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public maxWidth: number;
 
     /**
-     * Defines the text overflow behavior to employ when the data label text overflow.
-     * * Clip - Truncates data label when it overflows the bounds.
-     * * Ellipsis - Specifies an ellipsis (“...”) to the data label when it overflows the bounds.
-     * You can define maximum width of label by setting maxWidth property.
+     * Defines the text overflow behavior for the data label when the text exceeds the bounds.
+     * Available options are:
+     * * Clip - Truncates the data label when it overflows the bounds.
+     * * Ellipsis - Displays an ellipsis ("...") at the end of the data label when it overflows the bounds.
+     * Set the maximum width of the label using the `maxWidth` property.
      *
      * @default 'Ellipsis'
      */
@@ -257,11 +267,12 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public textOverflow: LabelOverflow;
 
     /**
-     * Defines the text wrap behavior to employ when the data label overflow.
-     * * Normal - Truncates data label when it overflows the bounds.
-     * * Wrap - Specifies to break a data label once it is too long to fit on a line by itself.
-     * * AnyWhere - Specifies to break a data label at any point if there are no otherwise-acceptable break points in the line.
-     * You can define maximum width of label by setting maxWidth property.
+     * Defines the text wrap behavior for the data label when it overflows the bounds.
+     * Available options are:
+     * * Normal - Truncates the data label when it overflows the bounds.
+     * * Wrap - Breaks the data label into multiple lines when it is too long to fit on a single line.
+     * * AnyWhere - Breaks the data label at any point if there are no otherwise acceptable break points.
+     * Set the maximum width of the label using the `maxWidth` property.
      *
      * @default 'Normal'
      */
@@ -271,12 +282,12 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 }
 
 /**
- * Center value of the Pie series.
+ * The `PieCenter` class provides options to set the center position for the Pie series in a chart.
  */
 export class PieCenter extends ChildProperty<PieCenter> {
 
     /**
-     * X value of the center.
+     * Specifies the x-coordinate of the center position for the Pie series in the chart.
      *
      * @default '50%'
      */
@@ -284,7 +295,7 @@ export class PieCenter extends ChildProperty<PieCenter> {
     public x: string;
 
     /**
-     * Y value of the center.
+     * Specifies the y-coordinate of the center position for the Pie series in the chart.
      *
      * @default '50%'
      */
@@ -294,7 +305,7 @@ export class PieCenter extends ChildProperty<PieCenter> {
 }
 
 /**
- * Points model for the series.
+ * The `AccPoints` class is used to define and manage the data points within a series of accumulation charts.
  *
  * @public
  */
@@ -381,27 +392,27 @@ export class AccPoints {
 }
 
 /**
- *  Configures the series in accumulation chart.
+ * Configures the series in the accumulation chart.
  */
 
 export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
-     * Specifies the dataSource for the series. It can be an array of JSON objects or an instance of DataManager.
+     * Specifies the data source for the series. It can be an array of JSON objects, or an instance of DataManager.
      * ```html
      * <div id='Pie'></div>
      * ```
      * ```typescript
      * let dataManager: DataManager = new DataManager({
-     *         url: 'http://mvc.syncfusion.com/Services/Northwnd.svc/Tasks/'
+     *    url: 'https://services.syncfusion.com/js/production/api/orders'
      * });
-     * let query: Query = new Query().take(50).where('Estimate', 'greaterThan', 0, false);
+     * let query: Query = new Query().take(5);
      * let pie: AccumulationChart = new AccumulationChart({
      * ...
      *     series: [{
      *        dataSource: dataManager,
-     *        xName: 'Id',
-     *        yName: 'Estimate',
+     *        xName: 'CustomerID',
+     *        yName: 'Freight',
      *        query: query
      *    }],
      * ...
@@ -416,7 +427,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public dataSource: Object | DataManager;
 
     /**
-     * Specifies Query to select data from dataSource. This property is applicable only when the dataSource is `ej.DataManager`.
+     * Specifies a query to select data from the data source. This property is applicable only when the data source is an `ej.DataManager`.
      *
      * @default null
      */
@@ -424,7 +435,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public query: Query;
 
     /**
-     * The DataSource field which contains the x value.
+     * The data source field that contains the x value.
      *
      * @default ''
      */
@@ -433,7 +444,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public xName: string;
 
     /**
-     * Specifies the series name.
+     * The `name` property allows for setting a name for the series.
      *
      * @default ''
      */
@@ -442,7 +453,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public name: string;
 
     /**
-     * The provided value will be considered as a Tooltip Mapping name.
+     * The data source field that contains the value to be displayed in the tooltip.
      *
      * @default ''
      */
@@ -450,7 +461,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public tooltipMappingName: string;
 
     /**
-     * The DataSource field which contains the y value.
+     * The data source field that contains the y value.
      *
      * @default ''
      */
@@ -459,7 +470,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public yName: string;
 
     /**
-     * Specifies the series visibility.
+     * If set to true, the series will be visible. If set to false, the series will be hidden.
      *
      * @default true
      */
@@ -475,25 +486,31 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public border: BorderModel;
 
     /**
-     * Options for customizing the animation for series.
+     * Options for customizing the animation of the series.
+     * By default, animation is enabled with a duration of 1000 milliseconds (about 1 second). It can be disabled by setting enable to `false`.
+     * The following properties are supported in animation:
+     * * enable: If set to true, the series is animated on initial loading.
+     * * duration: The duration of the animation in milliseconds.
+     * * delay: The delay before the animation starts, in milliseconds.
      */
 
     @Complex<AnimationModel>(null, Animation)
     public animation: AnimationModel;
 
     /**
-     * The shape of the legend. Each series has its own legend shape. They are:
-     * * Circle - Renders a circle.
-     * * Rectangle - Renders a rectangle.
-     * * Triangle - Renders a triangle.
-     * * Diamond - Renders a diamond.
-     * * Cross - Renders a cross.
-     * * HorizontalLine - Renders a horizontalLine.
-     * * VerticalLine - Renders a verticalLine.
-     * * Pentagon - Renders a pentagon.
-     * * InvertedTriangle - Renders a invertedTriangle.
-     * * SeriesType -Render a legend shape based on series type.
-     * * Image -Render a image.   *
+     * Specifies the shape of the legend icon for each data point.
+     * Available shapes for legend:
+     * * Circle - Renders a circular icon.
+     * * Rectangle - Renders a rectangular icon.
+     * * Triangle - Renders a triangular icon.
+     * * Diamond - Renders a diamond-shaped icon.
+     * * Cross - Renders a cross-shaped icon.
+     * * HorizontalLine - Renders a horizontal line icon.
+     * * VerticalLine - Renders a vertical line icon.
+     * * Pentagon - Renders a pentagon-shaped icon.
+     * * InvertedTriangle - Renders an inverted triangle-shaped icon.
+     * * SeriesType - Uses the default icon shape based on the series type.
+     * * Image - Renders a custom image for the legend icon.
      *
      * @default 'SeriesType'
      */
@@ -502,7 +519,8 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public legendShape: LegendShape;
 
     /**
-     * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     * The URL for the image to be displayed as a legend icon.
+     > Note that `legendShape` must be set to `Image`.
      *
      * @default ''
      */
@@ -511,8 +529,8 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public legendImageUrl: string;
 
     /**
-     * The DataSource field that contains the color value of point
-     * It is applicable for series
+     * The data source field that contains the color value of a point.
+     * It is applicable for series.
      *
      * @default ''
      */
@@ -520,9 +538,16 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     @Property('')
     public pointColorMapping: string;
 
+    /**
+     * When set to true, a different pattern is applied to each slice of the pie.
+     *
+     * @default false
+     */
+    @Property(false)
+    public applyPattern: boolean;
 
     /**
-     * Custom style for the selected series or points.
+     * The `selectionStyle` property is used to specify custom CSS styles for the selected series or points.
      *
      * @default null
      */
@@ -530,7 +555,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public selectionStyle: string;
 
     /**
-     * AccumulationSeries y values less than groupTo are combined into single slice named others.
+     * The y-values of the accumulation series that are less than `groupTo` are combined into a single slice named 'others'.
      *
      * @default null
      */
@@ -538,7 +563,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public groupTo: string;
 
     /**
-     * AccumulationSeries y values less than groupMode are combined into single slice named others.
+     * In the accumulation series, y-values less than `groupMode` are combined into a single slice named 'others'.
      *
      * @default Value
      */
@@ -546,13 +571,13 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public groupMode: GroupModes;
 
     /**
-     * The data label for the series.
+     * The data label property can be used to show the data label and customize its position and styling.
      */
     @Complex<AccumulationDataLabelSettingsModel>({}, AccumulationDataLabelSettings)
     public dataLabel: AccumulationDataLabelSettingsModel;
 
     /**
-     * Palette for series points.
+     * The `palettes` array defines a set of colors used for rendering the accumulation chart's points. Each color in the array is applied to each point in order.
      *
      * @default []
      */
@@ -560,7 +585,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public palettes: string[];
 
     /**
-     * Start angle for a series.
+     * Specifies the starting angle for the series, in degrees.
      *
      * @default 0
      */
@@ -568,7 +593,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public startAngle: number;
 
     /**
-     * End angle for a series.
+     * Specifies the ending angle for the series, in degrees.
      *
      * @default null
      */
@@ -576,7 +601,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public endAngle: number;
 
     /**
-     * Radius of the pie series and its values in percentage.
+     * Specifies the radius of the pie series as a percentage of the chart's size.
      *
      * @default null
      */
@@ -584,7 +609,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public radius: string;
 
     /**
-     * When the innerRadius value is greater than 0 percentage, a donut will appear in pie series. It takes values only in percentage.
+     * When the `innerRadius` value is greater than 0%, a donut shape will appear in the pie series. It accepts only percentage values.
      *
      * @default '0'
      */
@@ -592,7 +617,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public innerRadius: string;
 
     /**
-     * Specify the type of the series in accumulation chart.
+     * Specifies the type of series in the accumulation chart.
      *
      * @default 'Pie'
      */
@@ -600,7 +625,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public type: AccumulationType;
 
     /**
-     * To enable or disable tooltip for a series.
+     * Controls whether the tooltip for the accumulation chart series is enabled or disabled. Set to true to display tooltips on hover, or false to hide them.
      *
      * @default true
      */
@@ -608,7 +633,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public enableTooltip: boolean;
 
     /**
-     * If set true, series points will be exploded on mouse click or touch.
+     * If set to true, series points will explode on mouse click or touch.
      *
      * @default false
      */
@@ -616,7 +641,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public explode: boolean;
 
     /**
-     * Distance of the point from the center, which takes values in both pixels and percentage.
+     * Specifies the distance of the point from the center, which can be defined in both pixels and percentage.
      *
      * @default '30%'
      */
@@ -624,7 +649,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public explodeOffset: string;
 
     /**
-     * If set true, all the points in the series will get exploded on load.
+     * If set to true, all the points in the series will explode on load.
      *
      * @default false
      */
@@ -632,7 +657,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public explodeAll: boolean;
 
     /**
-     * Index of the point, to be exploded on load.
+     * Index of the point in the series to be exploded on initial load.
      *
      * @default null
      *
@@ -644,13 +669,14 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public explodeIndex: number;
 
     /**
-     * Options to customize the empty points in series.
+     * Customization options for the appearance of empty points in the series, where `null` or `undefined` values are considered as empty points.
      */
     @Complex<EmptyPointSettingsModel>({ mode: 'Drop' }, EmptyPointSettings)
     public emptyPointSettings: EmptyPointSettingsModel;
 
     /**
-     * Defines the distance between the segments of a funnel/pyramid series. The range will be from 0 to 1
+     * Defines the distance between the segments of a funnel or pyramid series.
+     * The range is from 0 to 1.
      *
      * @default 0
      */
@@ -658,7 +684,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public gapRatio: number;
 
     /**
-     * Defines the width of the funnel/pyramid with respect to the chart area.
+     * Defines the width of the funnel or pyramid series relative to the chart area.
      *
      * @default '80%'
      */
@@ -666,7 +692,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public width: string;
 
     /**
-     * Defines the height of the funnel/pyramid with respect to the chart area.
+     * Defines the height of the funnel or pyramid series relative to the chart area.
      *
      * @default '80%'
      */
@@ -674,7 +700,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public height: string;
 
     /**
-     * Defines the width of the funnel neck with respect to the chart area.
+     * Defines the width of the funnel neck relative to the chart area.
      *
      * @default '20%'
      */
@@ -682,7 +708,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public neckWidth: string;
 
     /**
-     * Defines the height of the funnel neck with respect to the chart area.
+     * Defines the height of the funnel neck relative to the chart area.
      *
      * @default '20%'
      */
@@ -690,14 +716,15 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public neckHeight: string;
 
     /**
-     * Defines how the values have to be reflected, whether through height/surface of the segments.
+     * Defines how the values are represented, either through the height or surface area of the segments.
      *
      * @default 'Linear'
      */
     @Property('Linear')
     public pyramidMode: PyramidModes;
+
     /**
-     * The opacity of the series.
+     * Sets the opacity of the series, with a value between 0 and 1 where 0 is fully transparent and 1 is fully opaque.
      *
      * @default 1.
      */
@@ -705,7 +732,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public opacity: number;
 
     /**
-     * Defines the pattern of dashes and gaps to the series border.
+     * Defines the pattern of dashes and gaps for the series border.
      *
      * @default '0'
      */
@@ -753,18 +780,30 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public accumulationBound: Rect;
 
     /**
-     * Defines the funnel size
+     * The `triangleSize` property specifies the size of the triangle in the funnel series.
      *
      * @private
      */
     public triangleSize: Size;
 
     /**
-     * Defines the size of the funnel neck
+     * The `neckSize` property specifies the dimensions of the neck in the funnel series.
      *
      * @private
      */
     public neckSize: Size;
+
+    /** @private */
+    public accumulation: AccumulationChart;
+
+    /**
+     * Option for customizing the border radius.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public borderRadius: number;
+
     /**
      * To refresh the Datamanager for series.
      *
@@ -774,6 +813,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      * @returns {void}
      */
     public refreshDataManager(accumulation: AccumulationChart, render: boolean): void {
+        this.accumulation = accumulation;
         this.radius = this.radius ? this.radius  : (Browser.isDevice && this.dataLabel.position === 'Outside') ? '40%' : '80%';
         const dateSource: Object | DataManager = this.dataSource || accumulation.dataSource;
         if (!(dateSource instanceof DataManager) && isNullOrUndefined(this.query)) {
@@ -975,10 +1015,12 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             this.renderDataLabel(accumulation, datalabelGroup, redraw);
         }
         if (this.type === 'Pie') {
-            this.findMaxBounds(this.labelBound, this.accumulationBound);
-            accumulation.pieSeriesModule.animateSeries(accumulation, this.animation, this, seriesGroup);
+            if (!accumulation.redraw) {
+                this.findMaxBounds(this.labelBound, this.accumulationBound);
+            }
+            accumulation.pieSeriesModule.animateSeries(accumulation, this.animation, this, seriesGroup, this.borderRadius, this.points);
         }
-        if (accumulation.accumulationLegendModule) {
+        if (!accumulation.redraw && accumulation.accumulationLegendModule) {
             this.labelBound.x -= accumulation.explodeDistance;
             this.labelBound.y -= accumulation.explodeDistance;
             this.labelBound.height += (accumulation.explodeDistance - this.labelBound.y);
@@ -991,25 +1033,36 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      * @param {AccumulationChart} accumulation - The AccumulationChart control.
      * @param {Element} seriesGroup - The group element to contain the point elements.
      * @param {boolean} redraw - Specifies whether to redraw the points.
+     * @param {boolean} previouRadius - Specifies the previous radius of the pie when animating the individual series point.
+     * @param {boolean} previousCenter - Specifies the previous center of the pie when animating the individual series point.
+     * @param {boolean} pointAnimation - Specifies whether the point based animation is enabled.
      * @returns {void}
      */
-    private renderPoints(accumulation: AccumulationChart, seriesGroup: Element, redraw?: boolean): void {
+    private renderPoints(accumulation: AccumulationChart, seriesGroup: Element, redraw?: boolean,
+                         previouRadius?: number, previousCenter?: ChartLocation, pointAnimation?: boolean): void {
         const pointId: string = accumulation.element.id + '_Series_' + this.index + '_Point_';
         let option: PathOption;
+        let patternFill: string;
+        const patterns: SelectionPattern[] = ['Chessboard', 'Dots', 'DiagonalForward', 'Crosshatch', 'Pacman', 'DiagonalBackward', 'Grid', 'Turquoise', 'Star', 'Triangle', 'Circle', 'Tile', 'HorizontalDash', 'VerticalDash', 'Rectangle', 'Box', 'VerticalStripe', 'HorizontalStripe', 'Bubble'];
         for (const point of this.points) {
             const argsData: IAccPointRenderEventArgs = {
                 cancel: false, name: pointRender, series: this, point: point, fill: point.color,
                 border: this.isEmpty(point) ? { width: this.emptyPointSettings.border.width, color: this.emptyPointSettings.border.color } :
-                    { width: this.border.width, color: this.border.color }
+                    { width: this.border.width, color: this.border.color }, pattern: this.applyPattern ? patterns[point.index % patterns.length] : 'None'
             };
             accumulation.trigger(pointRender, argsData);
             point.color = argsData.fill;
+            patternFill = point.color;
+            if (this.applyPattern) {
+                const selection: BaseSelection = new BaseSelection(accumulation);
+                patternFill = selection.pattern(accumulation, point.color, point.index, argsData.pattern, this.opacity);
+            }
             option = new PathOption(
-                pointId + point.index, point.color, argsData.border.width || 1, argsData.border.color || point.color, this.opacity,
+                pointId + point.index, patternFill, argsData.border.width || 1, argsData.border.color || point.color, this.opacity,
                 argsData.series.dashArray, ''
             );
             accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].
-                renderPoint(point, this, accumulation, option, seriesGroup, redraw);
+                renderPoint(point, this, accumulation, option, seriesGroup, redraw, previouRadius, previousCenter, pointAnimation);
         }
         appendChildElement(false, accumulation.getSeriesElement(), seriesGroup, redraw);
     }
@@ -1081,6 +1134,23 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         totalbound.height = (bound.y + bound.height) > totalbound.height ? (bound.y + bound.height) : totalbound.height;
         totalbound.width = (bound.x + bound.width) > totalbound.width ? (bound.x + bound.width) : totalbound.width;
     }
+
+    /**
+     * Finds the maximum width of the labels for legend placement.
+     *
+     * @private
+     * @returns {number} The maximum label width.
+     */
+    private findMaxLabelWidth(): number {
+        let max: number;
+        for (let i: number = 0; i < this.points.length; i++) {
+            max = this.points[0].textSize.width;
+            if (max < this.points[i as number].textSize.width) {
+                max = this.points[i as number].textSize.width;
+            }
+        }
+        return max;
+    }
     /**
      * To set empty point value for null points.
      *
@@ -1113,6 +1183,233 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             break;
         }
     }
+
+    /**
+     * Updates the data source for the series.
+     *
+     * @function setData
+     * @param {Object} data – Updated data source for the series.
+     * @param {number} duration – The duration for the animation.
+     * @returns {void}
+     */
+    public setData(data: Object[], duration?: number): void {
+        if (!data) {
+            return null;
+        }
+        let samePoints: boolean = false;
+        if ((this.dataSource as object[]).length === data.length) {
+            samePoints = true;
+            for (let i: number = 0; i < data.length; i++) {
+                if (this.dataSource[i as number][this.xName] === data[i as number][this.xName]) {
+                    const point: AccPoints = this.points[i as number];
+                    const existingPoint: number | string = this.dataSource[i as number];
+                    if ((existingPoint[this.yName] !== data[i as number][this.yName])) {
+                        point.y = data[i as number][this.yName as string];
+                        this.dataSource[i as number] = data[i as number];
+                    }
+                }
+                else {
+                    samePoints = false;
+                    break;
+                }
+            }
+        }
+        if (!samePoints) {
+            this.dataSource = data;
+        } else {
+            this.sumOfPoints = 0;
+            this.findSumOfPoints(this.dataSource);
+            this.accumulation.redraw = this.borderRadius ? false : this.accumulation.enableAnimation;
+            this.accumulation.animateSeries = false;
+            const chartDuration: number = this.accumulation.duration;
+            this.accumulation.duration = isNullOrUndefined(duration) ? 500 : duration;
+            this.accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].initProperties(this.accumulation, this);
+            this.renderPoints(this.accumulation, getElement(this.accumulation.element.id + '_Series_' + this.index), this.accumulation.redraw);
+            if (this.accumulation.centerLabel.text) {
+                this.accumulation.renderCenterLabel(true, true);
+            }
+            if (this.accumulation.annotationModule) {
+                this.accumulation.annotationModule.renderAnnotations(getElement(this.accumulation.element.id + '_Secondary_Element'));
+            }
+            if (this.accumulation.accumulationDataLabelModule && this.dataLabel.visible) {
+                this.renderDataLabel(this.accumulation, getElement(this.accumulation.element.id + '_datalabel_Series_' + this.index), this.accumulation.redraw);
+            }
+            this.accumulation.redraw = false;
+            this.accumulation.duration = chartDuration;
+        }
+    }
+
+    /**
+     * Adds a data point to the data source for the series.
+     *
+     * @function addPoint
+     * @param {Object} dataPoint - The data point to be added.
+     * @param {number} duration – The duration for the animation.
+     * @returns {void}
+     */
+    public addPoint(dataPoint: Object, duration?: number): void {
+        let maxWidth: number;
+        if (this.accumulation.series[0].dataLabel.visible) {
+            maxWidth = this.findMaxLabelWidth();
+        }
+        (this.dataSource as Object[]).push(dataPoint);
+        this.resultData = this.dataSource;
+        this.sumOfPoints = 0;
+        const visiblepoints: Object[] = [];
+        for (let i: number = 0; i < (this.resultData as object[]).length; i++) {
+            if (this.points[i as number] && this.points[i as number].visible) {
+                visiblepoints.push((this.resultData as object[])[i as number]);
+            }
+            else if (i === (this.resultData as object[]).length - 1) {
+                visiblepoints.push((this.resultData as object[])[i as number]);
+            }
+        }
+        this.findSumOfPoints(visiblepoints);
+        const pointIndex: number = this.points.length === 0 ? 0 : this.points[this.points.length - 1].index + 1;
+        const colors: string[] = this.palettes.length ? this.palettes : getSeriesColor(this.accumulation.theme);
+        const point: AccPoints = this.setPoints(this.dataSource, pointIndex, colors, this.accumulation);
+        this.pushPoints(point, colors);
+        this.accumulation.redraw = this.borderRadius ? false : this.accumulation.enableAnimation;
+        const chartDuration: number = this.accumulation.duration;
+        this.accumulation.duration = isNullOrUndefined(duration) ? 500 : duration;
+        this.updateSeries(getElement(this.accumulation.element.id + '_Series_' + this.index), maxWidth, 'addPoint');
+        this.accumulation.redraw = false;
+        this.accumulation.duration = chartDuration;
+    }
+
+    /**
+     * Removes a data point from the series data source at the specified index.
+     *
+     * @function removePoint
+     * @param {number} index – The index of the data point to be removed from the series.
+     * @param {number} duration – The duration for the animation.
+     * @returns {void}
+     */
+    public removePoint(index: number, duration?: number): void {
+        const dataSource: Object[] = extend([], this.dataSource, null, true) as Object[];
+        const chartDuration: number = this.accumulation.duration;
+        if (dataSource.length > 0 && index >= 0 && index < dataSource.length) {
+            this.sumOfPoints = 0;
+            const removepoints: Object[] = [];
+            for (let i: number = 0; i < (this.dataSource as object[]).length; i++) {
+                if (i !== index && this.points[i as number] && this.points[i as number].visible) {
+                    removepoints.push((this.dataSource as object[])[i as number]);
+                }
+            }
+            dataSource.splice(index, 1);
+            (this.dataSource as object[]).splice(index, 1);
+            this.findSumOfPoints(removepoints);
+            this.accumulation.redraw = this.borderRadius ? false : this.accumulation.enableAnimation;
+            this.accumulation.duration = isNullOrUndefined(duration) ? 500 : duration;
+            this.points.splice(index, 1);
+            for (let i: number = index; i < this.points.length; i++) {
+                const point: AccPoints = this.points[i as number];
+                point.index = i;
+                point.y = this.points[i as number].y;
+            }
+            const element: Element = getElement(this.accumulation.element.id + '_Series_0_Point_' + (this.points.length));
+            if (element) {
+                element.parentNode.removeChild(element);
+            }
+            this.updateSeries(getElement(this.accumulation.element.id + '_Series_' + this.index), undefined, 'removePoint', index);
+            this.accumulation.redraw = false;
+            this.accumulation.duration = chartDuration;
+        }
+
+    }
+
+    /**
+     * Update the series based on addPoint and removePoint function.
+     *
+     * @param {Element} seriesGroup - Series group needs to be update.
+     * @param {number} maxLabelWidth - Specifies the maximum label width.
+     * @param {string} updatePoint - Specifies remove or add point.
+     * @param {number} index - specifies point index to remove.
+     * @returns {void}
+     */
+    private updateSeries(seriesGroup: Element, maxLabelWidth?: number, updatePoint?: string, index?: number): void {
+        const previousRadius: number = this.accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].radius;
+        const previousCenter: ChartLocation = this.accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].center;
+        let previousLegendBounds: Rect;
+        if (this.accumulation.legendSettings.visible) {
+            if (updatePoint === 'addPoint') {
+                this.accumulation.accumulationLegendModule.
+                    legendCollections.push(new LegendOptions(this.points[this.points.length - 1].x.toString(),
+                                                             this.points[this.points.length - 1].color, this.legendShape,
+                                                             this.points[this.points.length - 1].visible, this.type,
+                                                             this.points[this.points.length - 1].legendImageUrl,
+                                                             null, null, this.points[this.points.length - 1].index, this.index));
+            }
+            else {
+                this.accumulation.accumulationLegendModule.legendCollections.splice(index, 1);
+                for (let i: number = index; i < this.accumulation.accumulationLegendModule.legendCollections.length; i++) {
+                    this.accumulation.accumulationLegendModule.legendCollections[i as number].pointIndex = i;
+                }
+            }
+            if (this.accumulation.accumulationLegendModule.legendCollections.length >= 1) {
+                previousLegendBounds = this.accumulation.accumulationLegendModule.legendBounds;
+                this.accumulation.accumulationLegendModule.calculateLegendBounds(this.accumulation.initialClipRect,
+                                                                                 this.accumulation.availableSize, null,
+                                                                                 previousLegendBounds, true);
+
+                if (this.dataLabel && this.dataLabel.position === 'Outside' && (this.accumulation.legendSettings.position === 'Bottom' || (this.accumulation.legendSettings.position === 'Top')) ? (previousLegendBounds.height !== this.accumulation.accumulationLegendModule.legendBounds.height) : (previousLegendBounds.width !== this.accumulation.accumulationLegendModule.legendBounds.width)) {
+                    const titleHeight: number = (this.accumulation.title ? measureText(this.accumulation.title,
+                                                                                       this.accumulation.titleStyle,
+                                                                                       this.accumulation.themeStyle.chartTitleFont).height *
+                        this.accumulation.titleCollection.length : 0);
+
+                    const subTitleHeight: number = (this.accumulation.subTitle ?
+                        (measureText(this.accumulation.subTitle, this.accumulation.subTitleStyle,
+                                     this.accumulation.themeStyle.chartSubTitleFont).height *
+                                     this.accumulation.subTitleCollection.length) : 0);
+
+                    this.accumulation.initialClipRect = new Rect(this.accumulation.margin.left, this.accumulation.margin.top,
+                                                                 this.accumulation.availableSize.width,
+                                                                 this.accumulation.availableSize.height);
+
+                    subtractRect(this.accumulation.initialClipRect, new Rect(0, (subTitleHeight
+                        + titleHeight), this.accumulation.margin.right +
+                    this.accumulation.margin.left, this.accumulation.margin.bottom + this.accumulation.margin.top));
+                    this.accumulation.accumulationLegendModule.calculateLegendBounds(
+                        this.accumulation.initialClipRect, this.accumulation.availableSize, null);
+                }
+            }
+        }
+
+        this.accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].initProperties(this.accumulation, this);
+        this.renderPoints(this.accumulation, seriesGroup, this.accumulation.redraw, previousRadius, previousCenter, true);
+
+        if (previousLegendBounds && ((this.accumulation.legendSettings.position === 'Bottom' || (this.accumulation.legendSettings.position === 'Top')) ? (previousLegendBounds.height !== this.accumulation.accumulationLegendModule.legendBounds.height) : (previousLegendBounds.width !== this.accumulation.accumulationLegendModule.legendBounds.width)) && this.accumulation.centerLabel.text) {
+            this.accumulation.renderCenterLabel(true, true);
+        }
+        if (this.accumulation.annotationModule) {
+            this.accumulation.annotationModule.renderAnnotations(getElement(this.accumulation.element.id + '_Secondary_Element'));
+        }
+        if (this.accumulation.accumulationDataLabelModule && this.dataLabel.visible) {
+            const datalabelGroup: Element = this.accumulation.renderer.createGroup({ id: this.accumulation.element.id + '_datalabel_Series_' + this.index });
+            this.renderDataLabel(this.accumulation, datalabelGroup, this.accumulation.redraw);
+        }
+        if (this.accumulation.legendSettings.visible) {
+            if (this.type === 'Pie') {
+                if (this.dataLabel.visible && this.points[this.points.length - 1] && this.points[this.points.length - 1].textSize.width > maxLabelWidth && this.accumulation.legendSettings.position !== 'Top' && this.accumulation.legendSettings.position !== 'Bottom') {
+                    this.accumulation.visibleSeries[0].findMaxBounds(this.accumulation.visibleSeries[0].labelBound,
+                                                                     this.points[this.points.length - 1].labelRegion);
+                    this.findMaxBounds(this.labelBound, this.accumulationBound);
+                    this.labelBound.x -= this.accumulation.explodeDistance;
+                    this.labelBound.y -=  this.accumulation.explodeDistance;
+                    this.labelBound.height += ( this.accumulation.explodeDistance - this.labelBound.y);
+                    this.labelBound.width += ( this.accumulation.explodeDistance - this.labelBound.x);
+                }
+                this.accumulation.accumulationLegendModule.getSmartLegendLocation(this.accumulation.visibleSeries[0].labelBound,
+                                                                                  this.accumulation.accumulationLegendModule.legendBounds,
+                                                                                  this.accumulation.margin);
+            }
+            this.accumulation.accumulationLegendModule.renderLegend(this.accumulation, this.accumulation.legendSettings,
+                                                                    this.accumulation.accumulationLegendModule.legendBounds,
+                                                                    this.accumulation.redraw, true);
+        }
+    }
+
     /**
      * To find point is empty.
      *

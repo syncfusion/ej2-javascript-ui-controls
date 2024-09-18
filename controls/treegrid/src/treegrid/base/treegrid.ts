@@ -125,6 +125,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private isAddedFromGantt: boolean;
     private isIndentEnabled: boolean;
     private indentOutdentAction: string = 'indentOutdentAction';
+    private isFromChartSide: boolean = false;
     private parentQuery: any;
     // A boolean flag indicating whether the collapsed event has been triggered.
     private isCollapsedEventTriggered: boolean;
@@ -384,11 +385,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     @Property(false)
     public allowPaging: boolean;
     /**
-     * If `loadChildOnDemand` is enabled, parent records are render in expanded state.
+     * When enabled, only parent records would be rendered during the initial render and child records will be loaded only when expanding a parent record.
+     * This property is only applicable for remote data binding.
+     * Loading child records on demand can improve the performance of data-bound controls with a large number of records.
+     * Child records are only loaded when they are requested, rather than loading all child records at once.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public loadChildOnDemand: boolean;
 
     /**
@@ -1553,10 +1557,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public sortByColumn(columnName: string, direction: SortDirection, isMultiSort?: boolean): void {
-        if (isNullOrUndefined(columnName) && isNullOrUndefined(direction)) {
-            const error: string = 'The provided value for the columnName and direction is undefined. Please ensure the columnName and direction contains string.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         if (this.sortModule) {
             this.sortModule.sortColumn(columnName, direction, isMultiSort);
         }
@@ -1624,10 +1624,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public reorderColumns(fromFName: string | string[], toFName: string): void {
-        if (isNullOrUndefined(fromFName) && isNullOrUndefined(toFName)) {
-            const error: string = 'The provided value for the fromFName and toFName is undefined. Please ensure the fromFName and toFName contains string.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         this.grid.reorderColumns(fromFName, toFName);
     }
 
@@ -1704,8 +1700,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                             if (summaryElement !== null) {
                                 const cellIndex: number = (<HTMLTableCellElement>target).cellIndex;
                                 const row: Element = (<HTMLTableRowElement>summaryElement).children[parseInt(cellIndex.toString(), 10)];
-                                addClass([row], 'e-focused');
-                                addClass([row], 'e-focus');
+                                if (!isNullOrUndefined(row) && !this.grid.isEdit) {
+                                    addClass([row], 'e-focused');
+                                    addClass([row], 'e-focus');
+                                }
                             } else {
                                 this.clearSelection();
                             }
@@ -1731,8 +1729,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                                 const cellIndex: number = (<HTMLTableCellElement>target).cellIndex;
                                 if (!isNullOrUndefined(cellIndex)) {
                                     const row: Element = (<HTMLTableRowElement>summaryElement).children[parseInt(cellIndex.toString(), 10)];
-                                    addClass([row], 'e-focused');
-                                    addClass([row], 'e-focus');
+                                    if (!isNullOrUndefined(row) && !this.grid.isEdit) {
+                                        addClass([row], 'e-focused');
+                                        addClass([row], 'e-focus');
+                                    }
                                 }
                             } else {
                                 this.clearSelection();
@@ -1867,7 +1867,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 name: 'Aggregate'
             });
         }
-        if (this.allowResizing) {
+        if (this.resizeCheck()) {
             modules.push({
                 member: 'resize', args: [this],
                 name: 'Resize'
@@ -1916,6 +1916,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.extendRequiredModules(modules);
         return modules;
     }
+
+    private resizeCheck(): boolean {
+        const columnMenu: boolean = this.showColumnMenu && (!this.columnMenuItems || (this.columnMenuItems as ColumnMenuItem[])
+            .filter((c: ColumnMenuItem) => c === 'AutoFit' || c === 'AutoFitAll').length) ? true : false;
+        const contextMenu: boolean = this.contextMenuItems && (this.contextMenuItems as ContextMenuItem[])
+            .filter((c: ContextMenuItem) => c === 'AutoFit' || c === 'AutoFitAll').length ? true : false;
+        return this.allowResizing || columnMenu || contextMenu;
+    }
+
     public extendRequiredModules(modules: ModuleDeclaration[]): void {
         const IsRowDDInjected: Function[] = this.injectedModules.filter((e: Function) => {
             return e.prototype.getModuleName() === 'rowDragAndDrop';
@@ -2117,9 +2126,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (this.enableVirtualization && !isNullOrUndefined(this.detailTemplate)) {
             failureCases.push('Virtual scrolling is not compatible with the detail template');
         }
-        if (this.stackedHeader && !isNullOrUndefined(this.detailTemplate)) {
-            failureCases.push('Virtual scrolling is not compatible with the detail template');
-        }
         if ((this.frozenColumns > 0 || this.columnModel.filter((col: any) => col.isFrozen) || this.frozenRows > 0)
             && (!isNullOrUndefined(this.detailTemplate) || !isNullOrUndefined(this.rowTemplate))) {
             failureCases.push('Frozen rows and columns are not supported with the Detail template and row template.');
@@ -2292,7 +2298,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.trigger(getObject('name', args), args);
     }
     private IsExpandCollapseClicked(args: RowDeselectingEventArgs): void {
-        if (!isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
+        if (!this.isFromChartSide && !isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
             || args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell'))
             && !this.selectionSettings.checkboxOnly) {
             if ((!isNullOrUndefined(args.data) && args.data['hasChildRecords']) || (args.rowIndex !== -1 && isNullOrUndefined(args.data))) {
@@ -2314,8 +2320,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (this.pageSettings.pageSizeMode === 'Root') {
                 this.grid.selectionModule['totalRecordsCount'] = this.grid.currentViewData.length;
             }
-            if (this.enableVirtualization && args.rowIndex === this.selectedRowIndex) {
+            if (this.enableVirtualization && args.rowIndex === this.selectedRowIndex && !this.enablePersistence) {
                 args.cancel = true;
+            }
+            if (!isNullOrUndefined(this.selectionSettings) && !this.selectionSettings.persistSelection &&
+                this.enableVirtualization && args.rowIndex === this.selectedRowIndex && this.isGantt) {
+                args.cancel = false;
             }
             this.trigger(events.rowSelecting, args);
         };
@@ -3400,7 +3410,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (((target.classList.contains('e-flmenu-cancelbtn') || target.classList.contains('e-flmenu-okbtn')
             || target.classList.contains('e-content') || target.classList.contains('e-rowcell'))
-            && !isNullOrUndefined(this.filterModule) && this.isReact)) {
+            && !isNullOrUndefined(this.grid.filterModule) && this.isReact)) {
             if (!isNullOrUndefined(this.grid.filterModule['column'])) {
                 if (this.grid.filterModule['column'].filterTemplate) {
                     const elem: Element = document.getElementById((this.grid.filterModule as any).filterModule['dlgObj'].element.id);
@@ -3590,10 +3600,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public deleteRow(tr: HTMLTableRowElement): void {
-        if (isNullOrUndefined(tr)) {
-            const error: string = 'The provided value for the tr is undefined. Please ensure the tr contains HTMLTableRowElement.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         if (this.grid.editModule) {
             this.grid.editModule.deleteRow(tr);
         }
@@ -3621,10 +3627,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid.setCellValue(key, field, value);
         const rowIndex: number = this.grid.getRowIndexByPrimaryKey(key);
         const record: ITreeData = this.getCurrentViewRecords()[parseInt(rowIndex.toString(), 10)];
-        if (isNullOrUndefined(record)) {
-            const error: string = 'The provided value for the record is undefined. Please ensure the record contains ITreeData.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         editAction({ value: record, action: 'edit' }, this,
                    this.isSelfReference, record.index, this.grid.selectedRowIndex, field);
     }
@@ -3678,10 +3680,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public goToPage(pageNo: number): void {
-        if (isNullOrUndefined(pageNo)) {
-            const error: string = 'The provided value for the pageNo is undefined. Please ensure the pageNo contains number.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         if (this.grid.pagerModule) {
             this.grid.pagerModule.goToPage(pageNo);
         }
@@ -3792,10 +3790,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public hideColumns(keys: string | string[], hideBy?: string): void {
-        if (isNullOrUndefined(keys)) {
-            const error: string = 'The provided value for the keys is undefined. Please ensure the keys contains string.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         this.grid.hideColumns(keys, hideBy);
         this.updateColumnModel();
     }
@@ -3901,6 +3895,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this[`${deepMerge}`] = ['columns']; // Workaround for blazor updateModel
         if (this.grid.columns.length !== this.columnModel.length) {
             this.stackedHeader = true;
+        }
+        if (this.stackedHeader && !isNullOrUndefined(this.detailTemplate)) {
+            const error: string = 'Stacked header is not compatible with the detail template';
+            this.trigger(events.actionFailure, { error: error });
         }
         if (this.stackedHeader && this.allowResizing && !isNullOrUndefined(this.columns)) {
             this.updateColumnsWidth(this.columns);
@@ -4231,10 +4229,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     public expandRow(row: HTMLTableRowElement, record?: Object, key?: Object, level?: number): void {
         this.isCollapseAll = false;
-        if (isNullOrUndefined(row) && isNullOrUndefined(record) && isNullOrUndefined(key) && isNullOrUndefined(level)) {
-            const error: string = 'The provided value for the row is undefined. Please ensure the row contains row element.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         let parentRec: object[] = this.parentData;
         if (!this.enableVirtualization) {
             parentRec = this.flatData.filter((e: ITreeData) => {
@@ -4325,11 +4319,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             record = this.flatData.filter((e: ITreeData) => {
                 return e.hasChildRecords;
             });
-        } else if (isNullOrUndefined(record) && !isNullOrUndefined(row)) {
+        } else if (isNullOrUndefined(record)) {
             if (this.detailTemplate) {
                 record = <ITreeData>this.grid.getCurrentViewRecords()[row.getAttribute('data-rowindex')];
             } else {
-                if (this.enableVirtualization && (this.isCollapseAll || this.isExpandAll)) {
+                if (this.enableVirtualization && (this.isCollapseAll || this.isExpandAll) ) {
                     if (row.rowIndex === -1) {
                         record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('data-rowindex'), 10)];
                     }
@@ -4357,10 +4351,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     public collapseRow(row: HTMLTableRowElement, record?: Object, key?: Object): void {
         this.isExpandAll = false;
-        if (isNullOrUndefined(row) && isNullOrUndefined(record) && isNullOrUndefined(key)) {
-            const error: string = 'The provided value for the row is undefined. Please ensure the row contains row element.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         let parentRec: object[] = this.parentData;
         if (!this.enableVirtualization) {
             parentRec = this.flatData.filter((e: ITreeData) => {
@@ -4445,10 +4435,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public expandAtLevel(level: number): void {
-        if (isNullOrUndefined(level)) {
-            const error: string = 'The provided value for the level is undefined. Please ensure the level contains number.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) && !isRemoteData(this)) {
             const rec: ITreeData[] =  (<ITreeData[]>this.grid.dataSource).filter((e: ITreeData) => {
                 if (e.hasChildRecords && e.level === level) {
@@ -4471,10 +4457,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public expandByKey(key: Object): void {
-        if (isNullOrUndefined(key)) {
-            const error: string = 'The provided value for the key is undefined. Please ensure the key contains number.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         this.expandCollapseActionByKey(key, 'Expand');
     }
 
@@ -4528,10 +4510,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public collapseAtLevel(level: number): void {
-        if (isNullOrUndefined(level)) {
-            const error: string = 'The provided value for the level is undefined. Please ensure the level contains number.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) && !isRemoteData(this)) {
             const record: ITreeData[] = (<ITreeData[]>this.grid.dataSource).filter((e: ITreeData) => {
                 if (e.hasChildRecords && e.level === level) {
@@ -4554,10 +4532,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public collapseByKey(key: Object): void {
-        if (isNullOrUndefined(key)) {
-            const error: string = 'The provided value for the key is undefined. Please ensure the key contains number.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         this.expandCollapseActionByKey(key, 'Collapse');
     }
 
@@ -4677,14 +4651,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
     private expandCollapse(action: string, row: HTMLTableRowElement, record?: ITreeData, isChild?: boolean): void {
         const expandingArgs: DataStateChangeEventArgs = { row: row, data: record, childData: [], requestType: action };
-        let childRecords: ITreeData[];
-        if (!isNullOrUndefined(record)) {
-            childRecords = this.grid.currentViewData.filter((e: ITreeData) => {
-                return e.parentUniqueID === record.uniqueID;
-            });
-        }
+        const childRecords: ITreeData[] = this.grid.currentViewData.filter((e: ITreeData) => {
+            return e.parentUniqueID === record.uniqueID ;
+        });
         let targetEle: Element;
-        if ((!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this) && !childRecords.length) || (action === 'collapse' || (this.isExpandAll && this.loadChildOnDemand) && !isRemoteData(this) && this.isSelfReference && isCountRequired(this))) {
+        if ((!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this) && !childRecords.length) || (action === 'collapse' || (this.isExpandAll && !this.loadChildOnDemand) && !isRemoteData(this) && this.isSelfReference && isCountRequired(this))) {
             this.updateChildOnDemand(expandingArgs);
         }
         let gridRows: HTMLTableRowElement[] = this.getRows();
@@ -4709,7 +4680,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             let displayAction: string;
             if (action === 'expand') {
                 displayAction = 'table-row';
-                if (!isChild && !isNullOrUndefined(record)) {
+                if (!isChild) {
                     record.expanded = true;
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
@@ -4729,7 +4700,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 removeClass([targetEle], 'e-treegridcollapse');
             } else {
                 displayAction = 'none';
-                if ((!isChild || isCountRequired(this)) && !isNullOrUndefined(row)) {
+                if (!isChild || isCountRequired(this)) {
                     record.expanded = false;
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
@@ -4874,7 +4845,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     (data as Object[]).push(expandingArgs.childData[parseInt(j.toString(), 10)]);
                 }
             }
-            if (isCountRequired(this) && this.loadChildOnDemand && expandingArgs.requestType === 'expand') {
+            if (isCountRequired(this) && !this.loadChildOnDemand && expandingArgs.requestType === 'expand') {
                 this.dataResults['expandRecord'] = {};
                 this.dataResults['expandRecord'] = expandingArgs.data;
             }
@@ -5055,7 +5026,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     private collapseRemoteChild(rowDetails: { record: ITreeData, rows: HTMLTableRowElement[] }, isChild?: boolean): void {
-        if (!isNullOrUndefined(isChild) && !isChild && !this.loadChildOnDemand) {
+        if (!isNullOrUndefined(isChild) && !isChild && this.loadChildOnDemand) {
             rowDetails.record.expanded = false;
         }
         const rows: HTMLTableRowElement[] = rowDetails.rows;
@@ -5194,10 +5165,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public filterByColumn(
         fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean | number[] | string[] | Date[] | boolean[],
         predicate?: string, matchCase?: boolean, ignoreAccent?: boolean, actualFilterValue?: string, actualOperator?: string): void {
-        if (isNullOrUndefined(fieldName) && isNullOrUndefined(filterOperator) && isNullOrUndefined(filterValue)) {
-            const error: string = 'The provided value for the fieldName, filterOperator and filterValue are undefined. Please ensure the fieldName, filterOperator and filterValue.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         this.grid.filterByColumn(
             fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent,
             actualFilterValue, actualOperator
@@ -5270,10 +5237,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public paste(data: string, rowIndex: number, colIndex: number): void {
-        if (isNullOrUndefined(data) && isNullOrUndefined(rowIndex) && isNullOrUndefined(colIndex)) {
-            const error: string = 'The provided value for the index is undefined. Please ensure the index contains number.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         this.clipboardModule.paste(data, rowIndex, colIndex);
     }
     /**
@@ -5568,10 +5531,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
-        if (isNullOrUndefined(fromIndexes) && isNullOrUndefined(toIndex) && isNullOrUndefined(position)) {
-            const error: string = 'The provided value for the fromIndexes, toIndex and position is undefined. Please ensure the fromIndexes and toIndex contains number and position contains string.';
-            this.trigger(events.actionFailure, { error: error });
-        }
         this.rowDragAndDropModule.reorderRows(fromIndexes, toIndex, position);
     }
 

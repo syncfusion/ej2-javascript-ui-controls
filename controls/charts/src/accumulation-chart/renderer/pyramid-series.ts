@@ -9,7 +9,7 @@ import { AccumulationChart } from '../accumulation';
 import { TriangularBase } from './triangular-base';
 
 /**
- * PyramidSeries module used to render `Pyramid` Series.
+ * The `PyramidSeries` module is used to render the `Pyramid` series.
  */
 export class PyramidSeries extends TriangularBase {
 
@@ -65,7 +65,7 @@ export class PyramidSeries extends TriangularBase {
 
         this.setLabelLocation(series, point, polygon);
 
-        const direction: string = this.findPath(polygon);
+        const direction: string = this.findPath(polygon, point, series);
 
         return direction;
     }
@@ -96,7 +96,7 @@ export class PyramidSeries extends TriangularBase {
         const y: number[] = [];
         const height: number[] = [];
         const gapRatio: number = Math.min(0, Math.max(series.gapRatio, 1));
-        const gapHeight: number = gapRatio / (count - 1);
+        const gapHeight: number = series.points.length > 1 ? gapRatio / (count - 1) : 0;
         const preSum: number = this.getSurfaceHeight(0, sumOfValues);
         let currY: number = 0;
 
@@ -161,23 +161,31 @@ export class PyramidSeries extends TriangularBase {
      * @param {PathOption} options - The rendering options for the segment.
      * @param {Element} seriesGroup - The group element to contain the segment.
      * @param {boolean} redraw - Specifies whether to redraw the segment.
+     * @param {string} previousRadius - Specifies the previous radius of the pie when animating the individual series point.
+     * @param {Object[]} previousCenter - Specifies the previous center of the pie when animating the individual series point.
+     * @param {boolean} pointAnimation - Specifies whether the point based animation is enabled.
      * @returns {void}
      */
     private renderPoint(
         point: AccPoints, series: AccumulationSeries, chart: AccumulationChart,
-        options: PathOption, seriesGroup: Element, redraw: boolean
+        options: PathOption, seriesGroup: Element, redraw: boolean, previousRadius?: number, previousCenter?: ChartLocation,
+        pointAnimation?: boolean
     ): void {
         if (!point.visible) {
             removeElement(options.id);
             return null;
         }
+        let previousDirection: string;
         options.d = this.getSegmentData(point, series, chart);
+        if (pointAnimation && document.getElementById(options.id)) {
+            previousDirection = document.getElementById(options.id).getAttribute('d');
+        }
         point.midAngle = 0;
         const element: Element = chart.renderer.drawPath(options);
         element.setAttribute('role', 'img');
         element.setAttribute('tabindex', point.index === 0 ? '0' : '-1');
         element.setAttribute('aria-label', (point.x + ': ' + point.y + '%. ' + series.name));
-        appendChildElement(false, seriesGroup, element, redraw);
+        appendChildElement(false, seriesGroup, element, redraw, pointAnimation ? pointAnimation : undefined, pointAnimation ?  'x' : undefined, pointAnimation ? 'y' : undefined, undefined, pointAnimation ? previousDirection : undefined, undefined, undefined, undefined, pointAnimation ? chart.duration : undefined);
         if (point.isExplode) {
             chart.accBaseModule.explodePoints(point.index, chart, true);
         }

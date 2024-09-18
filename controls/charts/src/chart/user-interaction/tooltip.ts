@@ -14,7 +14,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TooltipSettingsModel } from '../../common/model/base-model';
 
 /**
- * `Tooltip` module is used to render the tooltip for chart series.
+ * The `Tooltip` module is used to render tooltips for chart series.
  */
 export class Tooltip extends BaseTooltip {
     /**
@@ -113,6 +113,7 @@ export class Tooltip extends BaseTooltip {
      * Renders the tooltip.
      *
      * @returns {void}
+     * @private
      */
     public tooltip(): void {
         const elementId: string = this.chart.enableCanvas ? this.element.id + '_tooltip_group' : this.element.id + '_tooltip_svg';
@@ -287,7 +288,7 @@ export class Tooltip extends BaseTooltip {
                 location.y - data.point.regions[0].height : location.y;
         } else {
             location.x = (data.point.y < 0) ?
-                location.x + data.point.regions[0].width : location.x;
+                location.x + (this.chart.enableRtl ? -data.point.regions[0].width : data.point.regions[0].width) : location.x;
         }
         return location;
     }
@@ -647,7 +648,7 @@ export class Tooltip extends BaseTooltip {
                 'Maximum : <b>${point.maximum}</b><br/>Q3 : <b>${point.upperQuartile}</b><br/>' +
                     'Median : <b>${point.median}</b><br/>Q1 : <b>${point.lowerQuartile}</b><br/>Minimum : <b>${point.minimum}</b>');
         }
-        default: return '';
+        //default: return '';
         }
     }
 

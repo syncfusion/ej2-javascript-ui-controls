@@ -1,0 +1,37 @@
+@mixin multicolumn-combobox-styles($margin-top-value) {
+  &.e-multicolumn-list {
+    margin-top: $margin-top-value;
+  }
+}
+
+@include export-module('multicolumn-combobox-bigger') {
+  .e-bigger.e-popup,
+  .e-bigger .e-popup {
+    &.e-multicolumn-list .e-popup-footer {
+      font-size: 16px;
+    }
+    &.e-multicolumn-list .e-popup-footer,
+    .e-multicolumn-grid .e-row,
+    .e-multicolumn-grid .e-emptyrow {
+      height: $multicolumn-grid-bigger-height;
+    }
+    @include multicolumn-combobox-styles($multicolumn-margin-top-bigger-value);
+  }
+
+  .e-bigger.e-small.e-popup,
+  .e-bigger.e-small .e-popup,
+  .e-bigger .e-small.e-popup,
+  .e-small .e-bigger.e-popup {
+    .e-multicolumn-grid .e-headercelldiv,
+    .e-multicolumn-grid .e-rowcell,
+    &.e-multicolumn-list .e-popup-footer {
+      font-size: 14px;
+    }
+    &.e-multicolumn-list .e-popup-footer,
+    .e-multicolumn-grid .e-row,
+    .e-multicolumn-grid .e-emptyrow {
+      height: $multicolumn-grid-bigger-small-height;
+    }
+    @include multicolumn-combobox-styles($multicolumn-margin-top-bigger-small-value);
+  }
+}

@@ -10,7 +10,7 @@ export function getLocations(path: string): SliceOption {
     return {
         center: new ChartLocation(+slice[1], +slice[2]),
         start: new ChartLocation(+slice[4], +slice[5]),
-        end: new ChartLocation(+slice[12], +slice[13])
+        end: new ChartLocation(+slice[28], +slice[29])
     };
 }
 export interface SliceOption {
