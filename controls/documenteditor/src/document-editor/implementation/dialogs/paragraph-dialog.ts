@@ -60,6 +60,55 @@ export class ParagraphDialog {
     public widowControlValue: boolean = undefined;
     private tabObj: Tab = undefined;
     private paginationDiv: HTMLElement;
+
+    private ejtab: HTMLDivElement;
+    private div: HTMLDivElement;
+    private generalDiv: HTMLDivElement;
+    private genLabel: HTMLElement;
+    private alignmentWholeDiv: HTMLDivElement;
+    private alignmentDiv: HTMLDivElement;
+    private dirLabel: HTMLElement;
+    private rtlDiv: HTMLElement;
+    private rtlInputELe: HTMLElement;
+    private ltrDiv: HTMLElement;
+    private ltrInputELe: HTMLElement;
+    private indentionWholeDiv: HTMLDivElement;
+    private indentLabel: HTMLLabelElement;
+    private indentionSubDiv1: HTMLDivElement;
+    private indentionSubDiv2: HTMLDivElement;
+    private beforeTextDiv: HTMLDivElement;
+    private afterTextDiv: HTMLDivElement;
+    private specialDiv: HTMLDivElement;
+    private byDiv: HTMLDivElement;
+    private by: HTMLInputElement;
+    private spacingDiv: HTMLDivElement;
+    private leftSpacingDiv: HTMLDivElement;
+    private contextSpacingDiv: HTMLDivElement;
+    private rightSpacingDiv: HTMLDivElement;
+    private contextInputEle: HTMLInputElement;
+    private spaceLabel: HTMLLabelElement;
+    private spacingWholeDiv: HTMLElement;
+    private beforeSpacingWholeDiv: HTMLElement;
+    private afterSpacingWholeDiv: HTMLElement;
+    private lineSpacingDiv: HTMLElement;
+    private lineTypeDiv: HTMLElement;
+    private lineSpacingAt: HTMLInputElement;
+    private lineBreakContainer: HTMLDivElement;
+    private paginationLabel: HTMLElement;
+    private widowContorlContainer: HTMLElement;
+    private keepNextContainer: HTMLElement;
+    private keepLines: HTMLElement;
+    private widowControl: HTMLInputElement;
+    private keepWithNext1: HTMLInputElement;
+    private keepLinesTogether1: HTMLInputElement;
+    private instance: ParagraphDialog;
+    private beforeSpacingSpinDown: Element;
+    private afterSpacingSpinDown: Element;
+    private indentContainer: HTMLElement;
+
+    private clickBeforeSpacingClickHandler: EventListenerOrEventListenerObject = this.onClickBeforeSpacingClick.bind(this);
+    private clickAfterSpacingClickHandler: EventListenerOrEventListenerObject = this.onClickAfterSpacingClick.bind(this);
+    private keyUpParagraphSettingsClickHandler: EventListenerOrEventListenerObject = this.onKeyUpParagraphSettingsClick.bind(this);
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
@@ -85,24 +134,24 @@ export class ParagraphDialog {
      */
     public initParagraphDialog(locale: L10n): void {
         let tabContainer: HTMLElement = <HTMLDivElement>createElement('div');
-        const ejtab: HTMLDivElement = <HTMLDivElement>createElement('div');
-        let instance: ParagraphDialog = this;
+        this.ejtab = <HTMLDivElement>createElement('div');
+        this.instance = this;
         let ownerId: string = this.documentHelper.owner.containerId;
         //let id: string = ownerId + '_paragraph_dialog';
-        let indentContainer: HTMLElement = createElement('div', { className: 'e-de-dlg-tab-first-child e-de-para-dlg-container' });
+        this.indentContainer = createElement('div', { className: 'e-de-dlg-tab-first-child e-de-para-dlg-container' });
         this.target = tabContainer;
-        tabContainer.appendChild(ejtab);
-        let div: HTMLDivElement = createElement('div', { styles: 'width:400px;' }) as HTMLDivElement;
-        let generalDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
+        tabContainer.appendChild(this.ejtab);
+        this.div = createElement('div', { styles: 'width:400px;' }) as HTMLDivElement;
+        this.generalDiv = createElement('div') as HTMLDivElement;
 
-        let genLabel: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('General') });
-        generalDiv.appendChild(genLabel);
+        this.genLabel = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('General') });
+        this.generalDiv.appendChild(this.genLabel);
 
-        let alignmentWholeDiv: HTMLDivElement = createElement('div', { className: 'e-de-container-row' }) as HTMLDivElement;
-        generalDiv.appendChild(alignmentWholeDiv)
+        this.alignmentWholeDiv = createElement('div', { className: 'e-de-container-row' }) as HTMLDivElement;
+        this.generalDiv.appendChild(this.alignmentWholeDiv)
 
-        let alignmentDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
-        alignmentWholeDiv.appendChild(alignmentDiv)
+        this.alignmentDiv = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
+        this.alignmentWholeDiv.appendChild(this.alignmentDiv)
 
         let alignment: HTMLElement = createElement('select', {
             id: ownerId + '_Alignment',
@@ -126,90 +175,90 @@ export class ParagraphDialog {
                 '</option><option value="Level9">' + locale.getConstant('Level9') + '</option>'
         }) as HTMLSelectElement;
 
-        alignmentDiv.appendChild(alignment);
-        alignmentDiv.setAttribute('aria-labelledby',alignment.innerText);
-        alignmentDiv.appendChild(outlineLevel);
-        alignmentDiv.setAttribute('aria-labelledby',outlineLevel.innerText);
-        let dirLabel: HTMLElement = createElement('div', {
+        this.alignmentDiv.appendChild(alignment);
+        this.alignmentDiv.setAttribute('aria-labelledby',alignment.innerText);
+        this.alignmentDiv.appendChild(outlineLevel);
+        this.alignmentDiv.setAttribute('aria-labelledby',outlineLevel.innerText);
+        this.dirLabel = createElement('div', {
             className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Direction')
         });
         this.directionDiv = createElement('div', { className:'e-de-container-row' });
-        let rtlDiv: HTMLElement = createElement('div', { className: 'e-de-rtl-btn-div' });
-        let rtlInputELe: HTMLElement = createElement('input', { id: ownerId + '_rtlEle' });
-        rtlDiv.appendChild(rtlInputELe);
-        this.directionDiv.appendChild(rtlDiv)
+        this.rtlDiv = createElement('div', { className: 'e-de-rtl-btn-div' });
+        this.rtlInputELe = createElement('input', { id: ownerId + '_rtlEle' });
+        this.rtlDiv.appendChild(this.rtlInputELe);
+        this.directionDiv.appendChild(this.rtlDiv)
         let isRtl: boolean = this.documentHelper.owner.enableRtl;
         if (isRtl) {
-            rtlDiv.classList.add('e-de-rtl');
+            this.rtlDiv.classList.add('e-de-rtl');
         }
-        let ltrDiv: HTMLElement = createElement('div', { className: 'e-de-ltr-btn-div' });
-        let ltrInputELe: HTMLElement = createElement('input', { id: ownerId + '_ltrEle' });
-        ltrDiv.appendChild(ltrInputELe);
-        this.directionDiv.appendChild(ltrDiv)
-        generalDiv.appendChild(dirLabel);
-        generalDiv.appendChild(this.directionDiv);
+        this.ltrDiv = createElement('div', { className: 'e-de-ltr-btn-div' });
+        this.ltrInputELe = createElement('input', { id: ownerId + '_ltrEle' });
+        this.ltrDiv.appendChild(this.ltrInputELe);
+        this.directionDiv.appendChild(this.ltrDiv)
+        this.generalDiv.appendChild(this.dirLabel);
+        this.generalDiv.appendChild(this.directionDiv);
         this.rtlButton = new RadioButton({
             label: locale.getConstant('Right-to-left'), enableRtl: isRtl,
             value: 'rtl', cssClass: 'e-small', change: this.changeBidirectional
         });
-        this.rtlButton.appendTo(rtlInputELe);
-        rtlInputELe.setAttribute('aria-label',locale.getConstant('Right-to-left'))
+        this.rtlButton.appendTo(this.rtlInputELe);
+        this.rtlInputELe.setAttribute('aria-label',locale.getConstant('Right-to-left'))
         this.ltrButton = new RadioButton({
             label: locale.getConstant('Left-to-right'), enableRtl: isRtl,
             value: 'ltr', cssClass: 'e-small', change: this.changeBidirectional
         });
-        this.ltrButton.appendTo(ltrInputELe);
-        ltrInputELe.setAttribute('aria-label',locale.getConstant('Left-to-right'))
-        let indentionWholeDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
+        this.ltrButton.appendTo(this.ltrInputELe);
+        this.ltrInputELe.setAttribute('aria-label',locale.getConstant('Left-to-right'))
+        this.indentionWholeDiv = createElement('div') as HTMLDivElement;
         
-        let indentLabel: HTMLLabelElement = createElement('div', { className: 'e-de-para-dlg-heading',
+        this.indentLabel = createElement('div', { className: 'e-de-para-dlg-heading',
             innerHTML: locale.getConstant('Indentation')
         }) as HTMLLabelElement;
-        indentionWholeDiv.appendChild(indentLabel);
-        let indentionSubDiv1: HTMLDivElement = createElement('div', { className:'e-de-container-row' }) as HTMLDivElement;
-        indentionWholeDiv.appendChild(indentionSubDiv1);
+        this.indentionWholeDiv.appendChild(this.indentLabel);
+        this.indentionSubDiv1 = createElement('div', { className:'e-de-container-row' }) as HTMLDivElement;
+        this.indentionWholeDiv.appendChild(this.indentionSubDiv1);
 
-        let indentionSubDiv2: HTMLDivElement = createElement('div', { className: 'e-de-container-row'}) as HTMLDivElement;
-        indentionWholeDiv.appendChild(indentionSubDiv2);
+        this.indentionSubDiv2 = createElement('div', { className: 'e-de-container-row'}) as HTMLDivElement;
+        this.indentionWholeDiv.appendChild(this.indentionSubDiv2);
 
-        let beforeTextDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
-        indentionSubDiv1.appendChild(beforeTextDiv);
+        this.beforeTextDiv = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
+        this.indentionSubDiv1.appendChild(this.beforeTextDiv);
 
-        let afterTextDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLDivElement;
-        indentionSubDiv1.appendChild(afterTextDiv);
+        this.afterTextDiv = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLDivElement;
+        this.indentionSubDiv1.appendChild(this.afterTextDiv);
 
-        let specialDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
-        indentionSubDiv2.appendChild(specialDiv);
-        let byDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-right'}) as HTMLDivElement;
-        indentionSubDiv2.appendChild(byDiv);
+        this.specialDiv = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
+        this.indentionSubDiv2.appendChild(this.specialDiv);
+        this.byDiv = createElement('div', { className: 'e-de-subcontainer-right'}) as HTMLDivElement;
+        this.indentionSubDiv2.appendChild(this.byDiv);
 
-        let spacingDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        let leftSpacingDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        spacingDiv.appendChild(leftSpacingDiv);
+        this.spacingDiv = createElement('div') as HTMLDivElement;
+        this.leftSpacingDiv = createElement('div') as HTMLDivElement;
+        this.spacingDiv.appendChild(this.leftSpacingDiv);
         // let contextSpacingStyles: string = 'float:left';
         // if (isRtl) {
         //     contextSpacingStyles = 'float:right;';
         // }
-        let contextSpacingDiv: HTMLDivElement = createElement('div', { className:'e-de-container-row'}) as HTMLDivElement;
-        spacingDiv.appendChild(contextSpacingDiv);
+        this.contextSpacingDiv = createElement('div', { className:'e-de-container-row'}) as HTMLDivElement;
+        this.spacingDiv.appendChild(this.contextSpacingDiv);
 
-        let rightSpacingDiv: HTMLDivElement = createElement('div', { className:'e-de-container-row'}) as HTMLDivElement;
-        spacingDiv.appendChild(rightSpacingDiv);
+        this.rightSpacingDiv = createElement('div', { className:'e-de-container-row'}) as HTMLDivElement;
+        this.spacingDiv.appendChild(this.rightSpacingDiv);
 
-        let contextInputEle: HTMLInputElement = createElement('input', {
+        this.contextInputEle = createElement('input', {
             attrs: { type: 'checkbox' },
             id: ownerId + '_contextSpacing'
         }) as HTMLInputElement;
-        contextSpacingDiv.appendChild(contextInputEle);
+        this.contextSpacingDiv.appendChild(this.contextInputEle);
 
         let leftIndent: HTMLInputElement = createElement('input', { id: ownerId + '_leftIndent', attrs: { 'type': 'text' } }) as HTMLInputElement;
 
         let rightIndent: HTMLInputElement = createElement('input', { id: ownerId + '_rightIndent', attrs: { 'type': 'text' } }) as HTMLInputElement;
 
-        beforeTextDiv.appendChild(leftIndent);
-        beforeTextDiv.setAttribute('aria-labelledby',locale.getConstant('Indent from left'));
-        afterTextDiv.appendChild(rightIndent);
-        afterTextDiv.setAttribute('aria-labelledby',locale.getConstant('Indent from right'))
+        this.beforeTextDiv.appendChild(leftIndent);
+        this.beforeTextDiv.setAttribute('aria-labelledby',locale.getConstant('Indent from left'));
+        this.afterTextDiv.appendChild(rightIndent);
+        this.afterTextDiv.setAttribute('aria-labelledby',locale.getConstant('Indent from right'))
 
         let special: HTMLElement = createElement('select', {
             id: ownerId + '_special',
@@ -218,31 +267,31 @@ export class ParagraphDialog {
                 '</option><option value="Hanging">' + locale.getConstant('Hanging') + '</option> '
         }) as HTMLSelectElement;
 
-        let by: HTMLInputElement = createElement('input', { id: ownerId + '_By', attrs: { 'type': 'text' } }) as HTMLInputElement;
+        this.by = createElement('input', { id: ownerId + '_By', attrs: { 'type': 'text' } }) as HTMLInputElement;
 
-        specialDiv.setAttribute('aria-labelledby','Special');
-        specialDiv.appendChild(special);
+        this.specialDiv.setAttribute('aria-labelledby','Special');
+        this.specialDiv.appendChild(special);
 
-        byDiv.appendChild(by);
-        byDiv.setAttribute('aria-labelledby','By')
+        this.byDiv.appendChild(this.by);
+        this.byDiv.setAttribute('aria-labelledby','By')
 
-        let spaceLabel: HTMLLabelElement = createElement('div', { className: 'e-de-para-dlg-heading',innerHTML: locale.getConstant('Spacing')}) as HTMLLabelElement;
-        let spacingWholeDiv: HTMLElement = createElement('div', { className: 'e-de-container-row'}) as HTMLElement;
-        let beforeSpacingWholeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left'}) as HTMLElement;
+        this.spaceLabel = createElement('div', { className: 'e-de-para-dlg-heading',innerHTML: locale.getConstant('Spacing')}) as HTMLLabelElement;
+        this.spacingWholeDiv = createElement('div', { className: 'e-de-container-row'}) as HTMLElement;
+        this.beforeSpacingWholeDiv = createElement('div', { className: 'e-de-subcontainer-left'}) as HTMLElement;
 
         let beforeSpacing: HTMLInputElement = createElement('input', { id: ownerId + '_beforeSpacing', attrs: { 'type': 'text' } }) as HTMLInputElement;
-        let afterSpacingWholeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLElement;
+        this.afterSpacingWholeDiv = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLElement;
 
         let afterSpacing: HTMLInputElement = createElement('input', { id: ownerId + '_afterSpacing', attrs: { 'type': 'text' } }) as HTMLInputElement;
-        leftSpacingDiv.appendChild(spaceLabel);
-        leftSpacingDiv.appendChild(spacingWholeDiv);
+        this.leftSpacingDiv.appendChild(this.spaceLabel);
+        this.leftSpacingDiv.appendChild(this.spacingWholeDiv);
         
-        beforeSpacingWholeDiv.appendChild(beforeSpacing);
-        spacingWholeDiv.appendChild(beforeSpacingWholeDiv);
+        this.beforeSpacingWholeDiv.appendChild(beforeSpacing);
+        this.spacingWholeDiv.appendChild(this.beforeSpacingWholeDiv);
         
-        afterSpacingWholeDiv.appendChild(afterSpacing);
-        spacingWholeDiv.appendChild(afterSpacingWholeDiv);
-        let lineSpacingDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLElement;
+        this.afterSpacingWholeDiv.appendChild(afterSpacing);
+        this.spacingWholeDiv.appendChild(this.afterSpacingWholeDiv);
+        this.lineSpacingDiv = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLElement;
 
         let lineSpacing: HTMLElement = createElement('select', {
             id: ownerId + '_lineSpacing',
@@ -251,18 +300,18 @@ export class ParagraphDialog {
                 '</option><option value="Multiple">' + locale.getConstant('Multiple') + '</option>'
         }) as HTMLSelectElement;
 
-        let lineTypeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLElement;
+        this.lineTypeDiv = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLElement;
 
-        let lineSpacingAt: HTMLInputElement = createElement('input', { id: ownerId + '_lineSpacingAt', attrs: { 'type': 'text' } }) as HTMLInputElement;
-        lineSpacingDiv.appendChild(lineSpacing);
-        rightSpacingDiv.appendChild(lineSpacingDiv);
+        this.lineSpacingAt = createElement('input', { id: ownerId + '_lineSpacingAt', attrs: { 'type': 'text' } }) as HTMLInputElement;
+        this.lineSpacingDiv.appendChild(lineSpacing);
+        this.rightSpacingDiv.appendChild(this.lineSpacingDiv);
 
-        lineTypeDiv.appendChild(lineSpacingAt);
-        rightSpacingDiv.appendChild(lineTypeDiv);
-        div.appendChild(generalDiv);
-        div.appendChild(indentionWholeDiv);
-        div.appendChild(spacingDiv);
-        indentContainer.appendChild(div);
+        this.lineTypeDiv.appendChild(this.lineSpacingAt);
+        this.rightSpacingDiv.appendChild(this.lineTypeDiv);
+        this.div.appendChild(this.generalDiv);
+        this.div.appendChild(this.indentionWholeDiv);
+        this.div.appendChild(this.spacingDiv);
+        this.indentContainer.appendChild(this.div);
         this.leftIndentIn = new NumericTextBox({
             format: 'n1', value: 0, min: -1584, max: 1584,enablePersistence: false, floatLabelType:'Always', placeholder:locale.getConstant('Before text'), change: this.changeLeftIndent
         });
@@ -274,7 +323,7 @@ export class ParagraphDialog {
         this.byIn = new NumericTextBox({
             format: 'n1', value: 0, min: 0, max: 1584, enablePersistence: false, floatLabelType:'Always', placeholder:locale.getConstant('By'), change: this.changeFirstLineIndent
         });
-        this.byIn.appendTo(by);
+        this.byIn.appendTo(this.by);
         this.beforeSpacingIn = new NumericTextBox({
             format: 'n1', value: 0, min: -1, max: 1584, step: 6, enablePersistence: false, floatLabelType:'Always', placeholder:locale.getConstant('Before'),
             change: this.changeBeforeSpacing,
@@ -282,8 +331,8 @@ export class ParagraphDialog {
             blur: this.blurBeforeSpacing,
         });
         this.beforeSpacingIn.appendTo(beforeSpacing);
-        let beforeSpacingSpinDown = beforeSpacingWholeDiv.getElementsByClassName("e-input-group-icon e-spin-down")[0];
-        beforeSpacingSpinDown.addEventListener('click', this.clickBeforeSpacing);
+        this.beforeSpacingSpinDown = this.beforeSpacingWholeDiv.getElementsByClassName("e-input-group-icon e-spin-down")[0];
+        this.beforeSpacingSpinDown.addEventListener('click', this.clickBeforeSpacingClickHandler);
         this.afterSpacingIn = new NumericTextBox({
             format: 'n1', value: 0, min: -1, max: 1584, step: 6, enablePersistence: false, floatLabelType:'Always', placeholder:locale.getConstant('After'),
             change: this.changeAfterSpacing,
@@ -291,8 +340,8 @@ export class ParagraphDialog {
             blur: this.blurAfterSpacing
         });
         this.afterSpacingIn.appendTo(afterSpacing);
-        let afterSpacingSpinDown = afterSpacingWholeDiv.getElementsByClassName("e-input-group-icon e-spin-down")[0];
-        afterSpacingSpinDown.addEventListener('click', this.clickAfterSpacing);
+        this.afterSpacingSpinDown = this.afterSpacingWholeDiv.getElementsByClassName("e-input-group-icon e-spin-down")[0];
+        this.afterSpacingSpinDown.addEventListener('click', this.clickAfterSpacingClickHandler);
         this.atIn = new NumericTextBox({
             format: 'n1', value: 0, min: 1, max: 1584, step: 0.5, enablePersistence: false,floatLabelType: 'Always', placeholder: locale.getConstant('At'), change: this.changeLineSpacingValue
         });
@@ -304,49 +353,49 @@ export class ParagraphDialog {
         this.alignment.appendTo(alignment);
         this.outlineLevel= new DropDownList({ change: this.changeByOutlineLevel, enableRtl: isRtl ,floatLabelType: 'Always', placeholder: locale.getConstant('OutlineLevel'),htmlAttributes:{'aria-labelledby':locale.getConstant('OutlineLevel')}});
         this.outlineLevel.appendTo(outlineLevel);
-        this.atIn.appendTo(lineSpacingAt);
+        this.atIn.appendTo(this.lineSpacingAt);
         this.contextSpacing = new CheckBox({
             change: this.changeContextualSpacing,
             label: locale.getConstant("Contextual Spacing"),
             enableRtl: isRtl
         });
-        this.contextSpacing.appendTo(contextInputEle);
-        contextInputEle.setAttribute('aria-labelledby',locale.getConstant("Contextual Spacing"));
-        indentContainer.addEventListener('keyup', instance.keyUpParagraphSettings);
+        this.contextSpacing.appendTo(this.contextInputEle);
+        this.contextInputEle.setAttribute('aria-labelledby',locale.getConstant("Contextual Spacing"));
+        this.indentContainer.addEventListener('keyup', this.instance.keyUpParagraphSettingsClickHandler);
         if (isRtl) {
-            afterSpacingWholeDiv.classList.add('e-de-rtl');
-            lineTypeDiv.classList.add('e-de-rtl');
+            this.afterSpacingWholeDiv.classList.add('e-de-rtl');
+            this.lineTypeDiv.classList.add('e-de-rtl');
         }
-        let lineBreakContainer: HTMLDivElement = createElement('div', {className: 'e-de-dlg-tab-first-child'}) as HTMLDivElement;
+        this.lineBreakContainer = createElement('div', {className: 'e-de-dlg-tab-first-child'}) as HTMLDivElement;
 
         let paginationDiv: HTMLDivElement = createElement('div', { className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
         this.paginationDiv = paginationDiv;
-        let paginationLabel: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('Pagination') });
-        paginationDiv.appendChild(paginationLabel);
+        this.paginationLabel = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('Pagination') });
+        paginationDiv.appendChild(this.paginationLabel);
 
         
-        let widowContorlContainer: HTMLElement = createElement('div', { styles: 'display:block'});
-        paginationDiv.appendChild(widowContorlContainer);
-        let keepNextContainer: HTMLElement = createElement('div', { styles: 'display:block' });
-        paginationDiv.appendChild(keepNextContainer);
-        let keepLines: HTMLElement = createElement('div', { styles: 'display:block' });
-        paginationDiv.appendChild(keepLines);
-        let keepWithNext: HTMLInputElement = createElement('input', {
+        this.widowContorlContainer = createElement('div', { styles: 'display:block'});
+        paginationDiv.appendChild(this.widowContorlContainer);
+        this.keepNextContainer = createElement('div', { styles: 'display:block' });
+        paginationDiv.appendChild(this.keepNextContainer);
+        this.keepLines = createElement('div', { styles: 'display:block' });
+        paginationDiv.appendChild(this.keepLines);
+        this.keepWithNext1 = createElement('input', {
             attrs: { type: 'checkbox' },
         }) as HTMLInputElement;
-        keepNextContainer.appendChild(keepWithNext);
+        this.keepNextContainer.appendChild(this.keepWithNext1);
         this.keepWithNext = new CheckBox({
             change: this.changeKeepWithNext,
             label: locale.getConstant('Keep With Next'),
             enableRtl: isRtl,
             cssClass: 'e-de-para-dlg-cs-check-box'
         });
-        this.keepWithNext.appendTo(keepWithNext);
-        keepWithNext.setAttribute('aria-label',locale.getConstant('Keep With Next'));
-        let keepLinesTogether: HTMLInputElement = createElement('input', {
+        this.keepWithNext.appendTo(this.keepWithNext1);
+        this.keepWithNext1.setAttribute('aria-label',locale.getConstant('Keep With Next'));
+        this.keepLinesTogether1 = createElement('input', {
             attrs: { type: 'checkbox' },
         }) as HTMLInputElement;
-        keepLines.appendChild(keepLinesTogether);
+        this.keepLines.appendChild(this.keepLinesTogether1);
 
         this.keepLinesTogether = new CheckBox({
             change: this.changeKeepLinesTogether,
@@ -354,12 +403,12 @@ export class ParagraphDialog {
             enableRtl: isRtl,
             cssClass: 'e-de-para-dlg-cs-check-box'
         });
-        this.keepLinesTogether.appendTo(keepLinesTogether);
-        keepLinesTogether.setAttribute('aria-label',locale.getConstant('Keep Lines Together'));
-        let widowControl: HTMLInputElement = createElement('input', {
+        this.keepLinesTogether.appendTo(this.keepLinesTogether1);
+        this.keepLinesTogether1.setAttribute('aria-label',locale.getConstant('Keep Lines Together'));
+        this.widowControl = createElement('input', {
             attrs: { type: 'checkbox' },
         }) as HTMLInputElement;
-        widowContorlContainer.appendChild(widowControl);
+        this.widowContorlContainer.appendChild(this.widowControl);
 
         this.widowControlIn = new CheckBox({
             change: this.changeWidowControl,
@@ -367,14 +416,17 @@ export class ParagraphDialog {
             enableRtl: isRtl,
             cssClass: 'e-de-para-dlg-cs-check-box'
         });
-        this.widowControlIn.appendTo(widowControl);
-        widowControl.setAttribute('aria-label',locale.getConstant('WidowControl'));
-        lineBreakContainer.appendChild(paginationDiv);
+        this.widowControlIn.appendTo(this.widowControl);
+        this.widowControl.setAttribute('aria-label',locale.getConstant('WidowControl'));
+        this.lineBreakContainer.appendChild(paginationDiv);
         const items: TabItemModel[] = [
-            { header: { text: locale.getConstant('Indents and Spacing') }, content: indentContainer },
-            { header: { text: locale.getConstant('Line and Page Breaks') }, content: lineBreakContainer }];
-        this.tabObj = new Tab({ items: items, enableRtl: isRtl, animation: { previous: { effect: 'None' }, next: { effect: 'None' } } }, ejtab);
+            { header: { text: locale.getConstant('Indents and Spacing') }, content: this.indentContainer },
+            { header: { text: locale.getConstant('Line and Page Breaks') }, content: this.lineBreakContainer }];
+        this.tabObj = new Tab({ items: items, enableRtl: isRtl, animation: { previous: { effect: 'None' }, next: { effect: 'None' } } }, this.ejtab);
         this.tabObj.isStringTemplate = true;
+    }
+    private onKeyUpParagraphSettingsClick(event: KeyboardEvent): void {
+        this.keyUpParagraphSettings(event);
     }
     /**
      * @private
@@ -433,6 +485,9 @@ export class ParagraphDialog {
             }, 0);
         }
     }
+    private onClickBeforeSpacingClick(): void {
+        this.clickBeforeSpacing();
+    }
     /**
     * @private
     * @param {ClickEventArgs} event - Specifies the event args.
@@ -490,6 +545,9 @@ export class ParagraphDialog {
                 proxy.element.value = local.getConstant('Auto');
             }, 0);
         }
+    }
+    private onClickAfterSpacingClick(): void {
+        this.clickAfterSpacing();
     }
     /**
     * @private
@@ -936,6 +994,9 @@ export class ParagraphDialog {
      */
     public onParagraphFormat(paragraphFormat: WParagraphFormat): void {
         const selection: Selection = this.documentHelper.selection;
+        if (!isNullOrUndefined(selection) && selection.checkContentControlLocked(true)) {
+            return;
+        }
         const isListBidi: boolean = paragraphFormat.bidi && selection.paragraphFormat.listId !== -1;
         if (!isListBidi) {
             this.documentHelper.layout.isBidiReLayout = true;
@@ -1073,6 +1134,8 @@ export class ParagraphDialog {
             this.special.change = undefined;
             this.special.destroy();
         }
+        this.removeEvents();
+        this.removeElements();
         this.special = undefined;
         if (!isNullOrUndefined(this.target)) {
             if (this.target.parentElement) {
@@ -1088,6 +1151,191 @@ export class ParagraphDialog {
                 this.paragraphFormat = undefined;
             }
             this.documentHelper = undefined;
+        }
+    }
+    private removeEvents(): void {
+        if (this.beforeSpacingSpinDown)  {
+            this.beforeSpacingSpinDown.removeEventListener('click', this.clickBeforeSpacingClickHandler);
+        }
+        if (this.afterSpacingSpinDown) {
+            this.afterSpacingSpinDown.removeEventListener('click', this.clickAfterSpacingClickHandler);
+        }
+        if (this.indentContainer) {
+            this.indentContainer.removeEventListener('keyup', this.instance.keyUpParagraphSettingsClickHandler);
+        }
+    }
+    private removeElements(): void {
+        if (this.ejtab) {
+            this.ejtab.remove();
+            this.ejtab = undefined;
+        }
+        if (this.div) {
+            this.div.remove();
+            this.div = undefined;
+        }
+        if (this.generalDiv) {
+            this.generalDiv.remove();
+            this.generalDiv = undefined;
+        }
+        if (this.genLabel) {
+            this.genLabel.remove();
+            this.genLabel = undefined;
+        }
+        if (this.alignmentWholeDiv) {
+            this.alignmentWholeDiv.remove();
+            this.alignmentWholeDiv = undefined;
+        }
+        if (this.alignmentDiv) {
+            this.alignmentDiv.remove();
+            this.alignmentDiv = undefined;
+        }
+        if (this.dirLabel) {
+            this.dirLabel.remove();
+            this.dirLabel = undefined;
+        }
+        if (this.rtlDiv) {
+            this.rtlDiv.remove();
+            this.rtlDiv = undefined;
+        }
+        if (this.rtlInputELe) {
+            this.rtlInputELe.remove();
+            this.rtlInputELe = undefined;
+        }
+        if (this.ltrDiv) {
+            this.ltrDiv.remove();
+            this.ltrDiv = undefined;
+        }
+        if (this.ltrInputELe) {
+            this.ltrInputELe.remove();
+            this.ltrInputELe = undefined;
+        }
+        if (this.indentionWholeDiv) {
+            this.indentionWholeDiv.remove();
+            this.indentionWholeDiv = undefined;
+        }
+        if (this.indentLabel) {
+            this.indentLabel.remove();
+            this.indentLabel = undefined;
+        }
+        if (this.indentionSubDiv1) {
+            this.indentionSubDiv1.remove();
+            this.indentionSubDiv1 = undefined;
+        }
+        if (this.indentionSubDiv2) {
+            this.indentionSubDiv2.remove();
+            this.indentionSubDiv2 = undefined;
+        }
+        if (this.beforeTextDiv) {
+            this.beforeTextDiv.remove();
+            this.beforeTextDiv = undefined;
+        }
+        if (this.afterTextDiv) {
+            this.afterTextDiv.remove();
+            this.afterTextDiv = undefined;
+        }
+        if (this.specialDiv) {
+            this.specialDiv.remove();
+            this.specialDiv = undefined;
+        }
+        if (this.byDiv) {
+            this.byDiv.remove();
+            this.byDiv = undefined;
+        }
+        if (this.by) {
+            this.by.remove();
+            this.by = undefined;
+        }
+        if (this.spacingDiv) {
+            this.spacingDiv.remove();
+            this.spacingDiv = undefined;
+        }
+        if (this.leftSpacingDiv) {
+            this.leftSpacingDiv.remove();
+            this.leftSpacingDiv = undefined;
+        }
+        if (this.contextSpacingDiv) {
+            this.contextSpacingDiv.remove();
+            this.contextSpacingDiv = undefined;
+        }
+        if (this.rightSpacingDiv) {
+            this.rightSpacingDiv.remove();
+            this.rightSpacingDiv = undefined;
+        }
+        if (this.contextInputEle) {
+            this.contextInputEle.remove();
+            this.contextInputEle = undefined;
+        }
+        if (this.spaceLabel) {
+            this.spaceLabel.remove();
+            this.spaceLabel = undefined;
+        }
+        if (this.spacingWholeDiv) {
+            this.spacingWholeDiv.remove();
+            this.spacingWholeDiv = undefined;
+        }
+        if (this.beforeSpacingWholeDiv) {
+            this.beforeSpacingWholeDiv.remove();
+            this.beforeSpacingWholeDiv = undefined;
+        }
+        if (this.afterSpacingWholeDiv) {
+            this.afterSpacingWholeDiv.remove();
+            this.afterSpacingWholeDiv = undefined;
+        }
+        if (this.lineSpacingDiv) {
+            this.lineSpacingDiv.remove();
+            this.lineSpacingDiv = undefined;
+        }
+        if (this.lineTypeDiv) {
+            this.lineTypeDiv.remove();
+            this.lineTypeDiv = undefined;
+        }
+        if (this.lineSpacingAt) {
+            this.lineSpacingAt.remove();
+            this.lineSpacingAt = undefined;
+        }
+        if (this.lineBreakContainer) {
+            this.lineBreakContainer.remove();
+            this.lineBreakContainer = undefined;
+        }
+        if (this.paginationLabel) {
+            this.paginationLabel.remove();
+            this.paginationLabel = undefined;
+        }
+        if (this.widowContorlContainer) {
+            this.widowContorlContainer.remove();
+            this.widowContorlContainer = undefined;
+        }
+        if (this.keepNextContainer) {
+            this.keepNextContainer.remove();
+            this.keepNextContainer = undefined;
+        }
+        if (this.keepLines) {
+            this.keepLines.remove();
+            this.keepLines = undefined;
+        }
+        if (this.widowControl) {
+            this.widowControl.remove();
+            this.widowControl = undefined;
+        }
+        if (this.keepWithNext1) {
+            this.keepWithNext1.remove();
+            this.keepWithNext1 = undefined;
+        }
+        if (this.keepLinesTogether1) {
+            this.keepLinesTogether1.remove();
+            this.keepLinesTogether1 = undefined;
+        }
+        if (this.beforeSpacingSpinDown)  {
+            this.beforeSpacingSpinDown.remove();
+            this.beforeSpacingSpinDown = undefined;
+        }
+        if (this.afterSpacingSpinDown) {
+            this.afterSpacingSpinDown.remove();
+            this.afterSpacingSpinDown = undefined;
+        }
+        if (this.indentContainer) {
+            this.indentContainer.remove();
+            this.indentContainer = undefined;
         }
     }
 }

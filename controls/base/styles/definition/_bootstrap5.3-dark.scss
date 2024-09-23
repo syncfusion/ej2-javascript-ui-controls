@@ -352,7 +352,6 @@
 
   //tab
   --color-sf-tab-border: #343a40;
-  --color-sf-tab-text-color: #8bb9fe;
 
   //stepper
   --color-sf-stepper: #212529;
@@ -727,7 +726,6 @@ $badge-dark-border-color: mapcolorvariable('badge-dark-border-color') !default;
 $badge-dark-text-color: mapcolorvariable('badge-dark-text-color') !default;
 
 $tab-border: mapcolorvariable('tab-border') !default;
-$tab-text-color: mapcolorvariable('tab-text-color') !default;
 $stepper: mapcolorvariable('stepper') !default;
 
 $primary-shadow: mapcolorvariable('primary-shadow') !default;
@@ -811,7 +809,7 @@ $flyout-bg-color: $flyout-bg-color !default;
 $flyout-bg-color-hover: $flyout-bg-color-hover !default;
 $flyout-bg-color-pressed: $flyout-bg-color-pressed !default;
 $flyout-bg-color-focus: $flyout-bg-color-focus !default;
-$overlay-bg-color: rgba($overlay-bg, .5) !default;
+$overlay-bg-color: rgba($black, .4) !default;
 $table-bg-color-hover: $table-bg-color-hover !default;
 $table-bg-color-pressed: $table-bg-color-pressed !default;
 $table-bg-color-selected: $table-bg-color-selected !default;
@@ -1213,7 +1211,7 @@ $font-icon-24: 24px !default;
 $font-icon-26: 26px !default;
 $font-icon-28: 28px !default;
 $font-icon-32: 32px !default;
-$accordion-text-active-color: ($primary, 10%) !default;
+$accordion-text-active-color: $primary-darker !default;
 
 //badge
 $badge-light-bg-color: $badge-light-bg-color;
@@ -1224,5 +1222,4 @@ $badge-dark-border-color: $badge-dark-border-color;
 $badge-dark-text-color: $badge-dark-text-color;
 
 $tab-border: $tab-border;
-$tab-text-color: $tab-text-color;
 $stepper:$stepper;

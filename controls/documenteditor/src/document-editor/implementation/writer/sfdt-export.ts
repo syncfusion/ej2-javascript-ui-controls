@@ -169,7 +169,9 @@ export class SfdtExport {
                 for (let z: number = 0; z < editRangeStart.length; z++) {
                     index++;
                     editRangeStart[z].editRangeId = index;
-                    editRangeStart[z].editRangeEnd.editRangeId = index;
+                    if (!isNullOrUndefined(editRangeStart[z].editRangeEnd)) {
+                        editRangeStart[z].editRangeEnd.editRangeId = index;
+                    }
                 }
             }
         }

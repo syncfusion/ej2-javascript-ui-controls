@@ -38,6 +38,64 @@ export class TabDialog {
     private displayDiv: HTMLElement;
     private localeValue: L10n;
 
+    private commonDiv: HTMLElement;
+    private tabStopLabelDiv: HTMLElement;
+    private tabStopDiv: HTMLElement;
+    private tabListDiv: HTMLElement;
+    private textBoxDiv: HTMLElement;
+    private listviewDiv: HTMLElement;
+    private defaultTablabelDiv: HTMLElement;
+    private defaultTabDiv: HTMLElement;
+    private defaultTabStopDiv: HTMLElement;
+    private defaultTabWarningDiv: HTMLElement;
+    private defaultTabStop: HTMLInputElement;
+    private alignmentDiv: HTMLElement;
+    private alignmentLabelDiv: HTMLElement;
+    private alignmentPropertyDiv: HTMLElement;
+    private alignmentPropertyDiv1: HTMLElement;
+    private leftDiv: HTMLDivElement;
+    private leftRadioBtn: HTMLInputElement;
+    private decimalDiv: HTMLDivElement;
+    private decimalRadioBtn: HTMLInputElement;
+    private alignmentPropertyDiv2: HTMLElement;
+    private centerDiv: HTMLDivElement;
+    private centerRadioBtn: HTMLInputElement;
+    private barDiv: HTMLDivElement;
+    private barRadioBtn: HTMLInputElement;
+    private alignmentPropertyDiv3: HTMLElement;
+    private rightDiv: HTMLDivElement;
+    private rightRadioBtn: HTMLInputElement;
+    private tabLeaderDiv: HTMLElement;
+    private tabLeaderLabelDiv: HTMLElement;
+    private tabLeaderPropertyDiv: HTMLElement;
+    private tabLeaderPropertyDiv1: HTMLElement;
+    private noneDiv: HTMLDivElement;
+    private noneRadioBtn: HTMLInputElement;
+    private underscoreDiv: HTMLDivElement;
+    private underscoreRadioBtn: HTMLInputElement;
+    private tabLeaderPropertyDiv2: HTMLElement;
+    private dottedDiv: HTMLDivElement;
+    private dottedRadioBtn: HTMLInputElement;
+    private singleDiv: HTMLDivElement;
+    private singleRadioBtn: HTMLInputElement;
+    private tabLeaderPropertyDiv3: HTMLElement;
+    private HyphenDiv: HTMLDivElement;
+    private HyphenRadioBtn: HTMLInputElement;
+    private buttonDiv: HTMLElement ;
+    private tableElement: HTMLTableElement;
+    private setbuttonDiv: HTMLElement;
+    private setButtonElement: HTMLElement;
+    private clearbuttonDiv: HTMLElement;
+    private clearButtonElement: HTMLElement;
+    private clearAllbuttonDiv: HTMLElement;
+    private clearAllButtonElement: HTMLElement;
+
+    private textBoxInputChangeClickHandler: EventListenerOrEventListenerObject = this.onTextBoxInputChangeClick.bind(this);
+    private selectHandlerClickHandler: EventListener = this.onSelectHandlerClick.bind(this);
+    private setButtonClickHandler: EventListenerOrEventListenerObject = this.onSetButtonClick.bind(this);
+    private clearButtonClickHandler: EventListenerOrEventListenerObject = this.onClearButtonClick.bind(this);
+    private clearAllButtonClickHandler: EventListenerOrEventListenerObject = this.onClearAllButtonClick.bind(this);
+
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
@@ -83,6 +141,9 @@ export class TabDialog {
         this.documentHelper.owner.editorModule.onApplyParagraphFormat('tabStop', values, false, false);
         this.closeTabDialog();
     }
+    private onTextBoxInputChangeClick(args: any): void {
+        this.textBoxInputChange(args);
+    }
     private textBoxInputChange = (args: any) => {
         const value: number = HelperMethods.getNumberFromString(this.textBoxInput.value);
         for (let i: number = 0; i < this.tabStopList.length; i++) {
@@ -102,6 +163,9 @@ export class TabDialog {
         this.isAddUnits = true;
     }
 
+    private onSetButtonClick(args: any): void {
+        this.setButtonClick(args);
+    }
     private setButtonClick = (args: any): void => {
         if (!isNullOrUndefined(this.selectedTabStop)) {
             const value: WTabStop = this.selectedTabStop.value as WTabStop;
@@ -130,7 +194,9 @@ export class TabDialog {
             this.listviewInstance.selectItem(this.selectedTabStop as any);
         }
     }
-
+    private onClearAllButtonClick(args: any): void {
+        this.clearAllButtonClick(args);
+    }
     private clearAllButtonClick = (args: any) => {
         for (let i: number = 0; i < this.tabStopList.length; i++) {
             this.removedItems.push(this.tabStopList[parseInt(i.toString(), 10)] as TabStopListInfo);
@@ -143,7 +209,9 @@ export class TabDialog {
         this.textBoxInput.value = '';
         this.updateButtons();
     }
-
+    private onClearButtonClick(args: any): void {
+        this.clearButtonClick(args);
+    }
     private clearButtonClick = (args: any) => {
         this.removedItems.push(this.selectedTabStop as TabStopListInfo);
         if (this.displayDiv.innerText !== this.localeValue.getConstant('All')) {
@@ -191,52 +259,52 @@ export class TabDialog {
         let ownerId: string = this.documentHelper.owner.containerId;
         this.target = createElement('div', { id: ownerId + '_tab', className: 'e-de-tab' });
 
-        const commonDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
-        this.target.appendChild(commonDiv);
+        this.commonDiv = createElement('div', { className: 'e-de-container-row' });
+        this.target.appendChild(this.commonDiv);
 
-        const tabStopLabelDiv: HTMLElement = createElement('div', { innerHTML: localeValue.getConstant('Tab stop position') + ':', className: 'e-de-para-dlg-heading' });
+        this.tabStopLabelDiv = createElement('div', { innerHTML: localeValue.getConstant('Tab stop position') + ':', className: 'e-de-para-dlg-heading' });
 
-        const tabStopDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
-        tabStopDiv.appendChild(tabStopLabelDiv);
-        const tabListDiv: HTMLElement = createElement('div', { className: 'e-tab-list' });
-        tabStopDiv.appendChild(tabListDiv);
+        this.tabStopDiv = createElement('div', { className: 'e-de-subcontainer-left' });
+        this.tabStopDiv.appendChild(this.tabStopLabelDiv);
+        this.tabListDiv = createElement('div', { className: 'e-tab-list' });
+        this.tabStopDiv.appendChild(this.tabListDiv);
         if (enableRtl) {
-            tabListDiv.classList.add('e-de-rtl');
+            this.tabListDiv.classList.add('e-de-rtl');
         }
-        const textBoxDiv: HTMLElement = createElement('div', { className: 'e-bookmark-textboxdiv' });
-        tabListDiv.appendChild(textBoxDiv);
+        this.textBoxDiv = createElement('div', { className: 'e-bookmark-textboxdiv' });
+        this.tabListDiv.appendChild(this.textBoxDiv);
 
         this.textBoxInput = createElement('input', { className: 'e-input e-tab-textbox-input', attrs: { autofocus: 'true' } }) as HTMLInputElement;
         this.textBoxInput.setAttribute('type', 'text');
         this.textBoxInput.setAttribute('aria-label', localeValue.getConstant('Tab stop position'));
-        textBoxDiv.appendChild(this.textBoxInput);
-        textBoxDiv.addEventListener('keyup', this.textBoxInputChange);
+        this.textBoxDiv.appendChild(this.textBoxInput);
+        this.textBoxDiv.addEventListener('keyup', this.textBoxInputChangeClickHandler);
         this.textBoxInput.value = !isNullOrUndefined(this.tabStopList) && this.tabStopList.length > 0 ? this.tabStopList[0].displayText as string : '';
 
-        const listviewDiv: HTMLElement = createElement('div', { className: 'e-tab-listViewDiv', attrs: { tabindex: '-1' } });
-        listviewDiv.setAttribute('aria-label', localeValue.getConstant('TabMarkList'));
-        tabListDiv.appendChild(listviewDiv);
+        this.listviewDiv = createElement('div', { className: 'e-tab-listViewDiv', attrs: { tabindex: '-1' } });
+        this.listviewDiv.setAttribute('aria-label', localeValue.getConstant('TabMarkList'));
+        this.tabListDiv.appendChild(this.listviewDiv);
 
         this.listviewInstance = new ListView({
             dataSource: this.tabStopList as { [key: string]: Object }[],
             fields: { text: 'displayText' },
             cssClass: 'e-bookmark-listview'
         });
-        this.listviewInstance.appendTo(listviewDiv);
-        this.listviewInstance.addEventListener('select', this.selectHandler);
+        this.listviewInstance.appendTo(this.listviewDiv);
+        this.listviewInstance.addEventListener('select', this.selectHandlerClickHandler);
 
-        commonDiv.appendChild(tabStopDiv);
+        this.commonDiv.appendChild(this.tabStopDiv);
 
-        const defaultTablabelDiv: HTMLElement = createElement('div', { innerHTML: localeValue.getConstant('Default tab stops') + ':', className: 'e-de-para-dlg-heading' });
+        this.defaultTablabelDiv = createElement('div', { innerHTML: localeValue.getConstant('Default tab stops') + ':', className: 'e-de-para-dlg-heading' });
 
-        const defaultTabDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
+        this.defaultTabDiv = createElement('div', { className: 'e-de-subcontainer-right' });
         
-        commonDiv.appendChild(defaultTabDiv);
-        const defaultTabStopDiv: HTMLElement = createElement('div', { className: 'e-de-dlg-container' });
-        let defaultTabStop: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
-        defaultTabStopDiv.appendChild(defaultTablabelDiv);
-        defaultTabStopDiv.appendChild(defaultTabStop);
-        defaultTabDiv.appendChild(defaultTabStopDiv);
+        this.commonDiv.appendChild(this.defaultTabDiv);
+        this.defaultTabStopDiv = createElement('div', { className: 'e-de-dlg-container' });
+        this.defaultTabStop = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
+        this.defaultTabStopDiv.appendChild(this.defaultTablabelDiv);
+        this.defaultTabStopDiv.appendChild(this.defaultTabStop);
+        this.defaultTabDiv.appendChild(this.defaultTabStopDiv);
 
         this.defaultTabStopIn = new NumericTextBox({
             format: '# pt', value: this.documentHelper.defaultTabWidth, min: 0, max: 1584, step: 1, enablePersistence: false, placeholder: localeValue.getConstant('Default tab stops'),
@@ -244,10 +312,10 @@ export class TabDialog {
             //focus: this.focusDefaultTabStop,
             //blur: this.blurDefaultTabStop,
         });
-        this.defaultTabStopIn.appendTo(defaultTabStop);
+        this.defaultTabStopIn.appendTo(this.defaultTabStop);
 
-        const defaultTabWarningDiv: HTMLElement = createElement('div', { innerHTML: localeValue.getConstant('Tab stops to be cleared') + ':', className: 'e-de-dlg-container' });
-        defaultTabDiv.appendChild(defaultTabWarningDiv);
+        this.defaultTabWarningDiv = createElement('div', { innerHTML: localeValue.getConstant('Tab stops to be cleared') + ':', className: 'e-de-dlg-container' });
+        this.defaultTabDiv.appendChild(this.defaultTabWarningDiv);
 
         this.displayDiv = createElement('div', { className: 'e-defaultTablabelDiv' });
         if (this.documentHelper.owner.enableRtl) {
@@ -255,204 +323,204 @@ export class TabDialog {
         } else {
             this.displayDiv.style.marginLeft = '20px';
         }
-        defaultTabDiv.appendChild(this.displayDiv);
+        this.defaultTabDiv.appendChild(this.displayDiv);
 
-        const alignmentDiv: HTMLElement = createElement('div', { className: 'e-de-dlg-container' });
-        this.target.appendChild(alignmentDiv);
-        const alignmentLabelDiv: HTMLElement = createElement('div', { innerHTML: localeValue.getConstant('Alignment') + ':', className: 'e-de-para-dlg-heading' });
-        alignmentDiv.appendChild(alignmentLabelDiv);
+        this.alignmentDiv = createElement('div', { className: 'e-de-dlg-container' });
+        this.target.appendChild(this.alignmentDiv);
+        this.alignmentLabelDiv = createElement('div', { innerHTML: localeValue.getConstant('Alignment') + ':', className: 'e-de-para-dlg-heading' });
+        this.alignmentDiv.appendChild(this.alignmentLabelDiv);
 
-        const alignmentPropertyDiv: HTMLElement = createElement('div', { styles: 'display: flex;' });
-        alignmentDiv.appendChild(alignmentPropertyDiv);
-        const alignmentPropertyDiv1: HTMLElement = createElement('div', { styles: 'display: flex; flex-direction: column; width: 33.33%' });
-        const leftDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const leftRadioBtn: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.alignmentPropertyDiv = createElement('div', { styles: 'display: flex;' });
+        this.alignmentDiv.appendChild(this.alignmentPropertyDiv);
+        this.alignmentPropertyDiv1 = createElement('div', { styles: 'display: flex; flex-direction: column; width: 33.33%' });
+        this.leftDiv = createElement('div') as HTMLDivElement;
+        this.leftRadioBtn = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }
         });
-        const decimalDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const decimalRadioBtn: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.decimalDiv = createElement('div') as HTMLDivElement;
+        this.decimalRadioBtn = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }
         });
 
 
-        leftDiv.appendChild(leftRadioBtn);
-        decimalDiv.appendChild(decimalRadioBtn);
-        alignmentPropertyDiv1.appendChild(leftDiv);
-        alignmentPropertyDiv1.appendChild(decimalDiv);
+        this.leftDiv.appendChild(this.leftRadioBtn);
+        this.decimalDiv.appendChild(this.decimalRadioBtn);
+        this.alignmentPropertyDiv1.appendChild(this.leftDiv);
+        this.alignmentPropertyDiv1.appendChild(this.decimalDiv);
 
-        alignmentPropertyDiv.appendChild(alignmentPropertyDiv1);
+        this.alignmentPropertyDiv.appendChild(this.alignmentPropertyDiv1);
 
         this.left = new RadioButton({ label: localeValue.getConstant('Left'), name: 'alignment', value: 'left', cssClass: 'e-small', checked: true, enableRtl: enableRtl, change: this.onTabAlignmentButtonClick });
         this.decimal = new RadioButton({ label: localeValue.getConstant('Decimal'), name: 'alignment', value: 'decimal', cssClass: 'e-small', enableRtl: enableRtl, change: this.onTabAlignmentButtonClick });
 
-        this.left.appendTo(leftRadioBtn);
-        this.decimal.appendTo(decimalRadioBtn);
+        this.left.appendTo(this.leftRadioBtn);
+        this.decimal.appendTo(this.decimalRadioBtn);
 
-        leftRadioBtn.setAttribute('aria-label', localeValue.getConstant('Left'));
-        decimalRadioBtn.setAttribute('aria-label', localeValue.getConstant('Decimal'));
+        this.leftRadioBtn.setAttribute('aria-label', localeValue.getConstant('Left'));
+        this.decimalRadioBtn.setAttribute('aria-label', localeValue.getConstant('Decimal'));
 
-        const alignmentPropertyDiv2: HTMLElement = createElement('div', { styles: 'display: flex; flex-direction: column; width: 33.33%' });
-        const centerDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const centerRadioBtn: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.alignmentPropertyDiv2 = createElement('div', { styles: 'display: flex; flex-direction: column; width: 33.33%' });
+        this.centerDiv = createElement('div') as HTMLDivElement;
+        this.centerRadioBtn = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }
         });
-        const barDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const barRadioBtn: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.barDiv = createElement('div') as HTMLDivElement;
+        this.barRadioBtn = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }
         });
 
-        barDiv.appendChild(barRadioBtn);
-        centerDiv.appendChild(centerRadioBtn);
-        alignmentPropertyDiv2.appendChild(centerDiv);
-        alignmentPropertyDiv2.appendChild(barDiv);
+        this.barDiv.appendChild(this.barRadioBtn);
+        this.centerDiv.appendChild(this.centerRadioBtn);
+        this.alignmentPropertyDiv2.appendChild(this.centerDiv);
+        this.alignmentPropertyDiv2.appendChild(this.barDiv);
 
         this.bar = new RadioButton({ label: localeValue.getConstant('Bar'), name: 'alignment', value: 'bar', cssClass: 'e-small', enableRtl: enableRtl, change: this.onBarClick });
         this.center = new RadioButton({ label: localeValue.getConstant('Center'), name: 'alignment', value: 'center', cssClass: 'e-small', enableRtl: enableRtl, change: this.onTabAlignmentButtonClick });
-        this.bar.appendTo(barRadioBtn);
-        this.center.appendTo(centerRadioBtn);
+        this.bar.appendTo(this.barRadioBtn);
+        this.center.appendTo(this.centerRadioBtn);
 
-        barRadioBtn.setAttribute('aria-label', localeValue.getConstant('Bar'));
-        centerRadioBtn.setAttribute('aria-label', localeValue.getConstant('Center'));
-        alignmentPropertyDiv.appendChild(alignmentPropertyDiv2);
+        this.barRadioBtn.setAttribute('aria-label', localeValue.getConstant('Bar'));
+        this.centerRadioBtn.setAttribute('aria-label', localeValue.getConstant('Center'));
+        this.alignmentPropertyDiv.appendChild(this.alignmentPropertyDiv2);
 
-        const alignmentPropertyDiv3: HTMLElement = createElement('div', { styles: 'display: flex; flex-direction: column;width: 33.33%' });
-        const rightDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const rightRadioBtn: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.alignmentPropertyDiv3 = createElement('div', { styles: 'display: flex; flex-direction: column;width: 33.33%' });
+        this.rightDiv = createElement('div') as HTMLDivElement;
+        this.rightRadioBtn = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }
         });
-        rightDiv.appendChild(rightRadioBtn);
-        alignmentPropertyDiv3.appendChild(rightDiv);
+        this.rightDiv.appendChild(this.rightRadioBtn);
+        this.alignmentPropertyDiv3.appendChild(this.rightDiv);
         this.right = new RadioButton({ label: localeValue.getConstant('Right'), name: 'alignment', value: 'right', cssClass: 'e-small', enableRtl: enableRtl, change: this.onTabAlignmentButtonClick });
-        this.right.appendTo(rightRadioBtn);
-        rightRadioBtn.setAttribute('aria-label', localeValue.getConstant('Right'));
+        this.right.appendTo(this.rightRadioBtn);
+        this.rightRadioBtn.setAttribute('aria-label', localeValue.getConstant('Right'));
 
-        alignmentPropertyDiv.appendChild(alignmentPropertyDiv3);
+        this.alignmentPropertyDiv.appendChild(this.alignmentPropertyDiv3);
 
-        const tabLeaderDiv: HTMLElement = createElement('div', { className: 'e-de-dlg-container' });
+        this.tabLeaderDiv = createElement('div', { className: 'e-de-dlg-container' });
 
-        const tabLeaderLabelDiv: HTMLElement = createElement('div', { innerHTML: localeValue.getConstant('Leader') + ':', className: 'e-de-para-dlg-heading' });
-        tabLeaderDiv.appendChild(tabLeaderLabelDiv);
-        this.target.appendChild(tabLeaderDiv);
+        this.tabLeaderLabelDiv = createElement('div', { innerHTML: localeValue.getConstant('Leader') + ':', className: 'e-de-para-dlg-heading' });
+        this.tabLeaderDiv.appendChild(this.tabLeaderLabelDiv);
+        this.target.appendChild(this.tabLeaderDiv);
 
-        const tabLeaderPropertyDiv: HTMLElement = createElement('div', { styles: 'display: flex;' });
-        tabLeaderDiv.appendChild(tabLeaderPropertyDiv);
+        this.tabLeaderPropertyDiv = createElement('div', { styles: 'display: flex;' });
+        this.tabLeaderDiv.appendChild(this.tabLeaderPropertyDiv);
 
-        const tabLeaderPropertyDiv1: HTMLElement = createElement('div', { styles: 'display: flex; flex-direction: column; width: 33.33%' });
+        this.tabLeaderPropertyDiv1 = createElement('div', { styles: 'display: flex; flex-direction: column; width: 33.33%' });
 
-        const noneDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const noneRadioBtn: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.noneDiv = createElement('div') as HTMLDivElement;
+        this.noneRadioBtn = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }
         });
-        const underscoreDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const underscoreRadioBtn: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.underscoreDiv = createElement('div') as HTMLDivElement;
+        this.underscoreRadioBtn = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }
         });
-        noneDiv.appendChild(noneRadioBtn);
-        underscoreDiv.appendChild(underscoreRadioBtn);
-        tabLeaderPropertyDiv1.appendChild(noneDiv);
-        tabLeaderPropertyDiv1.appendChild(underscoreDiv);
+        this.noneDiv.appendChild(this.noneRadioBtn);
+        this.underscoreDiv.appendChild(this.underscoreRadioBtn);
+        this.tabLeaderPropertyDiv1.appendChild(this.noneDiv);
+        this.tabLeaderPropertyDiv1.appendChild(this.underscoreDiv);
 
         this.none = new RadioButton({ label: '1 ' + localeValue.getConstant('None'), name: 'tabLeader', value: 'none', cssClass: 'e-small', checked: true, enableRtl: enableRtl });
         this.underscore = new RadioButton({ label: '4 _____', name: 'tabLeader', value: 'underscore', cssClass: 'e-small', enableRtl: enableRtl });
 
-        this.none.appendTo(noneRadioBtn);
-        this.underscore.appendTo(underscoreRadioBtn);
+        this.none.appendTo(this.noneRadioBtn);
+        this.underscore.appendTo(this.underscoreRadioBtn);
 
-        tabLeaderPropertyDiv.appendChild(tabLeaderPropertyDiv1);
+        this.tabLeaderPropertyDiv.appendChild(this.tabLeaderPropertyDiv1);
 
-        const tabLeaderPropertyDiv2: HTMLElement = createElement('div', { styles: 'display: flex; flex-direction: column; width: 33.33%' });
+        this.tabLeaderPropertyDiv2 = createElement('div', { styles: 'display: flex; flex-direction: column; width: 33.33%' });
 
-        const dottedDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const dottedRadioBtn: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.dottedDiv = createElement('div') as HTMLDivElement;
+        this.dottedRadioBtn = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }
         });
-        const singleDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const singleRadioBtn: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.singleDiv = createElement('div') as HTMLDivElement;
+        this.singleRadioBtn = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }
         });
 
-        dottedDiv.appendChild(dottedRadioBtn);
-        singleDiv.appendChild(singleRadioBtn);
+        this.dottedDiv.appendChild(this.dottedRadioBtn);
+        this.singleDiv.appendChild(this.singleRadioBtn);
         this.dotted = new RadioButton({ label: '2 .......', name: 'tabLeader', value: 'dotted', cssClass: 'e-small', enableRtl: enableRtl });
         this.single = new RadioButton({ label: '5 -------', name: 'tabLeader', value: 'single', cssClass: 'e-small', enableRtl: enableRtl });
-        this.dotted.appendTo(dottedRadioBtn);
-        this.single.appendTo(singleRadioBtn);
+        this.dotted.appendTo(this.dottedRadioBtn);
+        this.single.appendTo(this.singleRadioBtn);
 
-        tabLeaderPropertyDiv2.appendChild(dottedDiv);
-        tabLeaderPropertyDiv2.appendChild(singleDiv);
-        tabLeaderPropertyDiv.appendChild(tabLeaderPropertyDiv2);
+        this.tabLeaderPropertyDiv2.appendChild(this.dottedDiv);
+        this.tabLeaderPropertyDiv2.appendChild(this.singleDiv);
+        this.tabLeaderPropertyDiv.appendChild(this.tabLeaderPropertyDiv2);
 
-        const tabLeaderPropertyDiv3: HTMLElement = createElement('div', { styles: 'display: flex; flex-direction: column; width: 33.33%' });
+        this.tabLeaderPropertyDiv3 = createElement('div', { styles: 'display: flex; flex-direction: column; width: 33.33%' });
 
-        const HyphenDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const HyphenRadioBtn: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.HyphenDiv = createElement('div') as HTMLDivElement;
+        this.HyphenRadioBtn = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }
         });
 
-        HyphenDiv.appendChild(HyphenRadioBtn);
-        tabLeaderPropertyDiv3.appendChild(HyphenDiv);
+        this.HyphenDiv.appendChild(this.HyphenRadioBtn);
+        this.tabLeaderPropertyDiv3.appendChild(this.HyphenDiv);
         this.Hyphen = new RadioButton({ label: '3 -------', name: 'tabLeader', value: 'hyphen', cssClass: 'e-small', enableRtl: enableRtl });
-        this.Hyphen.appendTo(HyphenRadioBtn);
+        this.Hyphen.appendTo(this.HyphenRadioBtn);
 
-        tabLeaderPropertyDiv.appendChild(tabLeaderPropertyDiv3);
+        this.tabLeaderPropertyDiv.appendChild(this.tabLeaderPropertyDiv3);
 
-        const buttonDiv: HTMLElement = createElement('div', { className: 'e-de-tab-button', styles: 'display: flex;' });
-        this.target.appendChild(buttonDiv);
-        let tableElement: HTMLTableElement = createElement('table') as HTMLTableElement;
-        buttonDiv.appendChild(tableElement);
-        tableElement.style.width = '100%';
-        let row: HTMLTableRowElement = tableElement.insertRow();
+        this.buttonDiv = createElement('div', { className: 'e-de-tab-button', styles: 'display: flex;' });
+        this.target.appendChild(this.buttonDiv);
+        this.tableElement = createElement('table') as HTMLTableElement;
+        this.buttonDiv.appendChild(this.tableElement);
+        this.tableElement.style.width = '100%';
+        let row: HTMLTableRowElement = this.tableElement.insertRow();
         let cell: HTMLTableCellElement = row.insertCell();
-        const setbuttonDiv: HTMLElement = createElement('div', { className: 'e-de-tab-setBtn' });
-        buttonDiv.appendChild(setbuttonDiv);
-        const setButtonElement: HTMLElement = createElement('button', {
+        this.setbuttonDiv = createElement('div', { className: 'e-de-tab-setBtn' });
+        this.buttonDiv.appendChild(this.setbuttonDiv);
+        this.setButtonElement = createElement('button', {
             innerHTML: localeValue.getConstant('Set'),
             attrs: { type: 'button' }
         });
-        setButtonElement.setAttribute('aria-label', localeValue.getConstant('Set'));
-        setbuttonDiv.appendChild(setButtonElement);
+        this.setButtonElement.setAttribute('aria-label', localeValue.getConstant('Set'));
+        this.setbuttonDiv.appendChild(this.setButtonElement);
         this.setButton = new Button({ cssClass: 'e-button-custom' });
-        this.setButton.appendTo(setButtonElement);
-        cell.appendChild(setbuttonDiv);
-        setButtonElement.addEventListener('click', this.setButtonClick);
+        this.setButton.appendTo(this.setButtonElement);
+        cell.appendChild(this.setbuttonDiv);
+        this.setButtonElement.addEventListener('click', this.setButtonClickHandler);
         
         //setButtonElement.addEventListener('click', this.setTabStop);
 
         cell.style.width = '33.33%';
         cell.style.display = 'table-cell';
         cell = row.insertCell();
-        const clearbuttonDiv: HTMLElement = createElement('div', { className: 'e-de-tab-clearBtn' });
-        buttonDiv.appendChild(clearbuttonDiv);
-        const clearButtonElement: HTMLElement = createElement('button', {
+        this.clearbuttonDiv = createElement('div', { className: 'e-de-tab-clearBtn' });
+        this.buttonDiv.appendChild(this.clearbuttonDiv);
+        this.clearButtonElement = createElement('button', {
             innerHTML: localeValue.getConstant('Clear'),
             attrs: { type: 'button' }
         });
-        clearButtonElement.setAttribute('aria-label', localeValue.getConstant('Clear'));
-        clearbuttonDiv.appendChild(clearButtonElement);
+        this.clearButtonElement.setAttribute('aria-label', localeValue.getConstant('Clear'));
+        this.clearbuttonDiv.appendChild(this.clearButtonElement);
         this.clearButton = new Button({ cssClass: 'e-button-custom' });
-        this.clearButton.appendTo(clearButtonElement);
-        clearButtonElement.addEventListener('click', this.clearButtonClick);
+        this.clearButton.appendTo(this.clearButtonElement);
+        this.clearButtonElement.addEventListener('click', this.clearButtonClickHandler);
 
         //clearButtonElement.addEventListener('click', this.clearTabStop);
-        cell.appendChild(clearbuttonDiv);
+        cell.appendChild(this.clearbuttonDiv);
 
         cell.style.width = '33.33%';
         cell.style.display = 'table-cell';
         cell = row.insertCell();
-        const clearAllbuttonDiv: HTMLElement = createElement('div', { className: 'e-de-tab-clearAllBtn' });
-        buttonDiv.appendChild(clearAllbuttonDiv);
-        const clearAllButtonElement: HTMLElement = createElement('button', {
+        this.clearAllbuttonDiv = createElement('div', { className: 'e-de-tab-clearAllBtn' });
+        this.buttonDiv.appendChild(this.clearAllbuttonDiv);
+        this.clearAllButtonElement = createElement('button', {
             innerHTML: localeValue.getConstant('Clear All'),
             attrs: { type: 'button' }
         });
-        clearAllButtonElement.setAttribute('aria-label', localeValue.getConstant('Clear All'));
-        clearAllbuttonDiv.appendChild(clearAllButtonElement);
+        this.clearAllButtonElement.setAttribute('aria-label', localeValue.getConstant('Clear All'));
+        this.clearAllbuttonDiv.appendChild(this.clearAllButtonElement);
         this.clearAllButton = new Button({ cssClass: 'e-button-custom' });
-        this.clearAllButton.appendTo(clearAllButtonElement);
-        clearAllButtonElement.addEventListener('click', this.clearAllButtonClick);
+        this.clearAllButton.appendTo(this.clearAllButtonElement);
+        this.clearAllButtonElement.addEventListener('click', this.clearAllButtonClickHandler);
 
         //clearButtonElement.addEventListener('click', this.clearTabStop);
-        cell.appendChild(clearAllbuttonDiv);
+        cell.appendChild(this.clearAllbuttonDiv);
         cell.style.width = '33.33%';
         cell.style.display = 'table-cell';
 
@@ -488,8 +556,10 @@ export class TabDialog {
         }
         return 'None';
     }
-
     /* eslint-disable @typescript-eslint/no-explicit-any */
+    private onSelectHandlerClick(args: any): void {
+        this.selectHandler(args);
+    }
     private selectHandler = (args: any): void => {
         if (this.isAddUnits) {
             this.focusTextBox(args.text);
@@ -640,6 +710,8 @@ export class TabDialog {
      * @returns {void}
      */
     public destroy(): void {
+        this.removeEvents();
+        this.removeElements();
         this.target = undefined;
         this.textBoxInput = undefined;
         this.defaultTabStopIn = undefined;
@@ -665,6 +737,248 @@ export class TabDialog {
         this.tabStopList = undefined;
         this.localeValue = undefined;
     }
+    private removeEvents(): void {
+        if (this.textBoxDiv) {
+            this.textBoxDiv.removeEventListener('keyup', this.textBoxInputChangeClickHandler);
+        }
+        if (this.setButtonElement) {
+            this.setButtonElement.removeEventListener('click', this.setButtonClickHandler);
+        }
+        if (this.clearButtonElement) {
+            this.clearButtonElement.removeEventListener('click', this.clearButtonClickHandler);
+        }
+        if (this.clearAllButtonElement) {
+            this.clearAllButtonElement.removeEventListener('click', this.clearAllButtonClickHandler);
+        }
+        if (this.listviewInstance) {
+            this.listviewInstance.removeEventListener('select', this.selectHandlerClickHandler);
+        }
+    }
+    private removeElements(): void {
+        if (this.commonDiv) {
+            this.commonDiv.remove();
+            this.commonDiv = undefined;
+        }
+        if (this.tabStopLabelDiv) {
+            this.tabStopLabelDiv.remove();
+            this.tabStopLabelDiv = undefined;
+        }
+        if (this.tabStopDiv) {
+            this.tabStopDiv.remove();
+            this.tabStopDiv = undefined;
+        }
+        if (this.tabListDiv) {
+            this.tabListDiv.remove();
+            this.tabListDiv = undefined;
+        }
+        if (this.textBoxDiv) {
+            this.textBoxDiv.remove();
+            this.textBoxDiv = undefined;
+        }
+        if (this.listviewDiv) {
+            this.listviewDiv.remove();
+            this.listviewDiv = undefined;
+        }
+        if (this.defaultTablabelDiv) {
+            this.defaultTablabelDiv.remove();
+            this.defaultTablabelDiv = undefined;
+        }
+        if (this.defaultTabDiv) {
+            this.defaultTabDiv.remove();
+            this.defaultTabDiv = undefined;
+        }
+        if (this.defaultTabStopDiv) {
+            this.defaultTabStopDiv.remove();
+            this.defaultTabStopDiv = undefined;
+        }
+        if (this.defaultTabWarningDiv) {
+            this.defaultTabWarningDiv.remove();
+            this.defaultTabWarningDiv = undefined;
+        }
+        if (this.defaultTabStop) {
+            this.defaultTabStop.remove();
+            this.defaultTabStop = undefined;
+        }
+        if (this.displayDiv) {
+            this.displayDiv.remove();
+            this.displayDiv = undefined;
+        }
+        if (this.alignmentDiv) {
+            this.alignmentDiv.remove();
+            this.alignmentDiv = undefined;
+        }
+        if (this.alignmentLabelDiv) {
+            this.alignmentLabelDiv.remove();
+            this.alignmentLabelDiv = undefined;
+        }
+        if (this.alignmentPropertyDiv) {
+            this.alignmentPropertyDiv.remove();
+            this.alignmentPropertyDiv = undefined;
+        }
+        if (this.alignmentPropertyDiv1) {
+            this.alignmentPropertyDiv1.remove();
+            this.alignmentPropertyDiv1 = undefined;
+        }
+        if (this.leftDiv) {
+            this.leftDiv.remove();
+            this.leftDiv = undefined;
+        }
+        if (this.leftRadioBtn) {
+            this.leftRadioBtn.remove();
+            this.leftRadioBtn = undefined;
+        }
+        if (this.decimalDiv) {
+            this.decimalDiv.remove();
+            this.decimalDiv = undefined;
+        }
+        if (this.decimalRadioBtn) {
+            this.decimalRadioBtn.remove();
+            this.decimalRadioBtn = undefined;
+        }
+        if (this.alignmentPropertyDiv2) {
+            this.alignmentPropertyDiv2.remove();
+            this.alignmentPropertyDiv2 = undefined;
+        }
+        if (this.centerDiv) {
+            this.centerDiv.remove();
+            this.centerDiv = undefined;
+        }
+        if (this.centerRadioBtn) {
+            this.centerRadioBtn.remove();
+            this.centerRadioBtn = undefined;
+        }
+        if (this.barDiv) {
+            this.barDiv.remove();
+            this.barDiv = undefined;
+        }
+        if (this.barRadioBtn) {
+            this.barRadioBtn.remove();
+            this.barRadioBtn = undefined;
+        }
+        if (this.alignmentPropertyDiv3) {
+            this.alignmentPropertyDiv3.remove();
+            this.alignmentPropertyDiv3 = undefined;
+        }
+        if (this.rightDiv) {
+            this.rightDiv.remove();
+            this.rightDiv = undefined;
+        }
+        if (this.rightRadioBtn) {
+            this.rightRadioBtn.remove();
+            this.rightRadioBtn = undefined;
+        }
+        if (this.tabLeaderDiv) {
+            this.tabLeaderDiv.remove();
+            this.tabLeaderDiv = undefined;
+        }
+        if (this.tabLeaderLabelDiv) {
+            this.tabLeaderLabelDiv.remove();
+            this.tabLeaderLabelDiv = undefined;
+        }
+        if (this.tabLeaderPropertyDiv) {
+            this.tabLeaderPropertyDiv.remove();
+            this.tabLeaderPropertyDiv = undefined;
+        }
+        if (this.tabLeaderPropertyDiv1) {
+            this.tabLeaderPropertyDiv1.remove();
+            this.tabLeaderPropertyDiv1 = undefined;
+        }
+        if (this.noneDiv) {
+            this.noneDiv.remove();
+            this.noneDiv = undefined;
+        }
+        if (this.noneRadioBtn) {
+            this.noneRadioBtn.remove();
+            this.noneRadioBtn = undefined;
+        }
+        if (this.underscoreDiv) {
+            this.underscoreDiv.remove();
+            this.underscoreDiv = undefined;
+        }
+        if (this.underscoreRadioBtn) {
+            this.underscoreRadioBtn.remove();
+            this.underscoreRadioBtn = undefined;
+        }
+        if (this.tabLeaderPropertyDiv2) {
+            this.tabLeaderPropertyDiv2.remove();
+            this.tabLeaderPropertyDiv2 = undefined;
+        }
+        if (this.dottedDiv) {
+            this.dottedDiv.remove();
+            this.dottedDiv = undefined;
+        }
+        if (this.dottedRadioBtn) {
+            this.dottedRadioBtn.remove();
+            this.dottedRadioBtn = undefined;
+        }
+        if (this.singleDiv) {
+            this.singleDiv.remove();
+            this.singleDiv = undefined;
+        }
+        if (this.singleRadioBtn) {
+            this.singleRadioBtn.remove();
+            this.singleRadioBtn = undefined;
+        }
+        if (this.tabLeaderPropertyDiv3) {
+            this.tabLeaderPropertyDiv3.remove();
+            this.tabLeaderPropertyDiv3 = undefined;
+        }
+        if (this.HyphenDiv) {
+            this.HyphenDiv.remove();
+            this.HyphenDiv = undefined;
+        }
+        if (this.HyphenRadioBtn) {
+            this.HyphenRadioBtn.remove();
+            this.HyphenRadioBtn = undefined;
+        }
+        if (this.buttonDiv) {
+            this.buttonDiv.remove();
+            this.buttonDiv = undefined;
+        }
+        if (this.tableElement) {
+            this.tableElement.remove();
+            this.tableElement = undefined;
+        }
+        if (this.setbuttonDiv) {
+            this.setbuttonDiv.remove();
+            this.setbuttonDiv = undefined;
+        }
+        if (this.setButtonElement) {
+            this.setButtonElement.remove();
+            this.setButtonElement = undefined;
+        }
+        if (this.setButton) {
+            this.setButton.destroy();
+            this.setButton = undefined;
+        }
+        if (this.clearbuttonDiv) {
+            this.clearbuttonDiv.remove();
+            this.clearbuttonDiv = undefined;
+        }
+        if (this.clearButtonElement) {
+            this.clearButtonElement.remove();
+            this.clearButtonElement = undefined;
+        }
+        if (this.clearButton) {
+            this.clearButton.destroy();
+            this.clearButton = undefined;
+        }
+        if (this.clearAllbuttonDiv) {
+            this.clearAllbuttonDiv.remove();
+            this.clearAllbuttonDiv = undefined;
+        }
+        if (this.clearAllButtonElement) {
+            this.clearAllButtonElement.remove();
+            this.clearAllButtonElement = undefined;
+        }
+        if (this.clearAllButton) {
+            this.clearAllButton.destroy();
+            this.clearAllButton = undefined;
+        }
 
-
+        if (this.textBoxInput) {
+            this.textBoxInput.remove();
+            this.textBoxInput = undefined;
+        }
+    }
 }

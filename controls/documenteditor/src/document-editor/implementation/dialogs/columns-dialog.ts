@@ -49,6 +49,34 @@ export class ColumnsDialog {
     public numberOfColumns: number;
     private section: SelectionSectionFormat ;
     private pageWidth: number;
+
+    private displayText: HTMLDivElement;
+    private PresetsContainer: HTMLDivElement;
+    private oneDivContainer: HTMLDivElement;
+    private oneDivLabel: HTMLLabelElement;
+    private twoDivContainer: HTMLDivElement;
+    private twoDivLabel: HTMLLabelElement;
+    private threeDivContainer: HTMLDivElement;
+    private threeDivLabel: HTMLLabelElement;
+    private leftDivContainer: HTMLDivElement;
+    private leftDivLabel: HTMLLabelElement;
+    private rightDivContainer: HTMLDivElement;
+    private rightDivLabel: HTMLLabelElement;
+    private nuberOfColumnsContainer: HTMLElement;
+    private subcontainer: HTMLDivElement;
+    private subcontainer1: HTMLDivElement;
+    private lineCheckDiv: HTMLDivElement;
+    private lineCheck: HTMLInputElement;
+    private widthAndSpacingContainer: HTMLDivElement;
+    private widthAndSpacingContainerDiv: HTMLDivElement;
+    private widthAndSpacingText: HTMLDivElement;
+    private tableElement: HTMLTableElement;
+    private columnDiv: HTMLDivElement;
+    private columnCount: HTMLInputElement;
+    private equalCheckDiv: HTMLDivElement;
+    private equalCheck: HTMLInputElement;
+
+    private handleSettingCheckBoxActionHandler: EventListenerOrEventListenerObject = this.onhandleSettingCheckBoxActionClicked.bind(this);
     /**
      * @private
      */
@@ -75,103 +103,103 @@ export class ColumnsDialog {
             id: this.documentHelper.owner.containerId + '_Columns',
             className: 'e-de-table-border-shading-dlg'
         });
-        const displayText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.displayText = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Presets'),
             className: 'e-de-para-dlg-heading'
         });
-        const PresetsContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.PresetsContainer = <HTMLDivElement>createElement('div', {
             className: 'e-de-dlg-row'
         });
-        const oneDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.oneDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_One_Div_Container', className: 'e-de-preset-container'
         });
         this.oneDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_One_Div',
             className: 'e-icons e-de-ctnr-columns-one e-de-columns-presets-genral'
         });
-        const oneDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        this.oneDivLabel = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('One'), className: 'e-de-column-label',
             id: this.target.id + '_One_Div_Label'
         });
-        const twoDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.twoDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Two_Div_Container', className: 'e-de-preset-container'
         });
         this.twoDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Two_Div',
             className: 'e-icons e-de-ctnr-columns-two e-de-columns-presets-genral'
         });
-        const twoDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        this.twoDivLabel = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Two'), className: 'e-de-column-label',
             id: this.target.id + '_Two_Div_Label'
         });
-        const threeDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.threeDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Three_Div_Container', className: 'e-de-preset-container'
         });
         this.threeDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Three_Div',
             className: 'e-icons e-de-ctnr-columns-three  e-de-columns-presets-genral'
         });
-        const threeDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        this.threeDivLabel = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Three'), className: 'e-de-column-label',
             id: this.target.id + '_Three_Div_Label'
         });
-        const leftDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.leftDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Left_Div_Container', className: 'e-de-preset-container'
         });
         this.leftDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Left_Div',
             className: 'e-icons e-de-ctnr-columns-left e-de-columns-presets-genral'
         });
-        const leftDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        this.leftDivLabel = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Left'), className: 'e-de-column-label',
             id: this.target.id + '_Left_Div_Label'
         });
-        const rightDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.rightDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Right_Div_Container', className: 'e-de-preset-container'
         });
         this.rightDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Right_Div',
             className: 'e-icons e-de-ctnr-columns-right e-de-columns-presets-genral'
         });
-        const rightDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        this.rightDivLabel = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Right'), className: 'e-de-column-label' ,
             id: this.target.id + '_Right_Div_Label'
         });
-        const nuberOfColumnsContainer: HTMLElement = createElement('div', {
+        this.nuberOfColumnsContainer = createElement('div', {
             className: 'e-de-container-row e-de-columns-padding-alignment'
         });
-        const subcontainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.subcontainer = <HTMLDivElement>createElement('div', {
             className: 'e-de-subcontainer-left'
         });
 
-        oneDivContainer.setAttribute('aria-label', localeValue.getConstant('One'));
-        twoDivContainer.setAttribute('aria-label', localeValue.getConstant('Two'));
-        threeDivContainer.setAttribute('aria-label', localeValue.getConstant('Three'));
-        leftDivContainer.setAttribute('aria-label', localeValue.getConstant('Left'));
-        rightDivContainer.setAttribute('aria-label', localeValue.getConstant('Right'));
+        this.oneDivContainer.setAttribute('aria-label', localeValue.getConstant('One'));
+        this.twoDivContainer.setAttribute('aria-label', localeValue.getConstant('Two'));
+        this.threeDivContainer.setAttribute('aria-label', localeValue.getConstant('Three'));
+        this.leftDivContainer.setAttribute('aria-label', localeValue.getConstant('Left'));
+        this.rightDivContainer.setAttribute('aria-label', localeValue.getConstant('Right'));
         if (isRtl) {
             this.oneDiv.classList.add('e-de-rtl');
             this.twoDiv.classList.add('e-de-rtl');
             this.threeDiv.classList.add('e-de-rtl');
             this.leftDiv.classList.add('e-de-rtl');
             this.rightDiv.classList.add('e-de-rtl');
-            oneDivContainer.classList.add('e-de-rtl');
-            twoDivContainer.classList.add('e-de-rtl');
-            threeDivContainer.classList.add('e-de-rtl');
-            leftDivContainer.classList.add('e-de-rtl');
-            rightDivContainer.classList.add('e-de-rtl');
-            oneDivLabel.classList.add('e-de-rtl');
-            twoDivLabel.classList.add('e-de-rtl');
-            threeDivLabel.classList.add('e-de-rtl');
-            leftDivLabel.classList.add('e-de-rtl');
-            rightDivLabel.classList.add('e-de-rtl');
+            this.oneDivContainer.classList.add('e-de-rtl');
+            this.twoDivContainer.classList.add('e-de-rtl');
+            this.threeDivContainer.classList.add('e-de-rtl');
+            this.leftDivContainer.classList.add('e-de-rtl');
+            this.rightDivContainer.classList.add('e-de-rtl');
+            this.oneDivLabel.classList.add('e-de-rtl');
+            this.twoDivLabel.classList.add('e-de-rtl');
+            this.threeDivLabel.classList.add('e-de-rtl');
+            this.leftDivLabel.classList.add('e-de-rtl');
+            this.rightDivLabel.classList.add('e-de-rtl');
         }
 
         this.columnsCountBox = createElement('input', {
             attrs: { type: 'text' }
         }) as HTMLInputElement;
-        subcontainer.appendChild(this.columnsCountBox);
-        nuberOfColumnsContainer.appendChild(subcontainer);
+        this.subcontainer.appendChild(this.columnsCountBox);
+        this.nuberOfColumnsContainer.appendChild(this.subcontainer);
         this.section = this.documentHelper.selection.sectionFormat;
         this.pageWidth = this.section.pageWidth - this.section.leftMargin - this.section.rightMargin;
         this.columnValueTexBox = new NumericTextBox({
@@ -184,27 +212,27 @@ export class ColumnsDialog {
             change:  this.createTextBox
         });
         this.columnValueTexBox.appendTo(this.columnsCountBox);
-        const subcontainer1: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.subcontainer1 = <HTMLDivElement>createElement('div', {
             className: 'e-de-subcontainer-right'
         });
 
-        const lineCheckDiv: HTMLDivElement = createElement('div', {
+        this.lineCheckDiv = createElement('div', {
             className: 'e-de-columns-padding-alignment'
         }) as HTMLDivElement;
-        const lineCheck: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
-        subcontainer1.appendChild(lineCheckDiv);
-        lineCheckDiv.appendChild(lineCheck);
-        lineCheck.setAttribute('aria-labelledby', localeValue.getConstant('Line between column'));
+        this.lineCheck = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
+        this.subcontainer1.appendChild(this.lineCheckDiv);
+        this.lineCheckDiv.appendChild(this.lineCheck);
+        this.lineCheck.setAttribute('aria-labelledby', localeValue.getConstant('Line between column'));
         this.columnsCountBox.setAttribute('aria-labelledby', localeValue.getConstant('Number of columns'));
         this.lineCheckbox = new CheckBox({
             label: localeValue.getConstant('Line between column')
         });
-        const widthAndSpacingContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.widthAndSpacingContainer = <HTMLDivElement>createElement('div', {
             className: 'e-de-dlg-row'
         });
-        const widthAndSpacingContainerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.widthAndSpacingContainerDiv = <HTMLDivElement>createElement('div', {
         });
-        const widthAndSpacingText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.widthAndSpacingText = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Width and Spacing'),
             className: 'e-de-para-dlg-heading'
         });
@@ -226,9 +254,9 @@ export class ColumnsDialog {
         //     className: 'e-de-container-row'
         // });
 
-        const tableElement: HTMLTableElement = createElement('table') as HTMLTableElement;
-        tableElement.style.width = '96%';
-        const row: HTMLTableRowElement = tableElement.insertRow();
+        this.tableElement = createElement('table') as HTMLTableElement;
+        this.tableElement.style.width = '96%';
+        const row: HTMLTableRowElement = this.tableElement.insertRow();
         let cell: HTMLTableCellElement = row.insertCell();
         cell.innerHTML = localeValue.getConstant('Column');
         cell.style.width = '20%';
@@ -277,7 +305,7 @@ export class ColumnsDialog {
         // });
         //this.containerHead.appendChild(this.spaceCountSI);
         //this.spaceValueSI.appendTo(this.spaceCountSI);
-        const columnDiv: HTMLDivElement =  createElement('div', {styles: 'width:100%;height:100px;overflow-y: scroll;overflow-x: hidden;'}) as HTMLDivElement;
+        this.columnDiv =  createElement('div', {styles: 'width:100%;height:100px;overflow-y: scroll;overflow-x: hidden;'}) as HTMLDivElement;
         this.columnTable = createElement('table', {styles: 'width:100%;'}) as HTMLTableElement;
 
         const row1: HTMLTableRowElement = this.columnTable.insertRow();
@@ -341,60 +369,60 @@ export class ColumnsDialog {
         col.space.enabled = false;
         this.widthCountBox1.setAttribute('aria-labelledby', 'Width');
         this.spacingCountBox1.setAttribute('aria-labelledby', 'Space');
-        const equalCheckDiv: HTMLDivElement = createElement('div', {
+        this.equalCheckDiv = createElement('div', {
             className: 'e-de-columns-padding-alignment'
         }) as HTMLDivElement;
-        const equalCheck: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
-        equalCheckDiv.appendChild(equalCheck);
-        equalCheckDiv.setAttribute('aria-label', localeValue.getConstant('Equal column width'));
+        this.equalCheck = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
+        this.equalCheckDiv.appendChild(this.equalCheck);
+        this.equalCheckDiv.setAttribute('aria-label', localeValue.getConstant('Equal column width'));
         this.equalCheckbox = new CheckBox({
             label: localeValue.getConstant('Equal column width'),
             change: this.checkBox
         });
-        this.equalCheckbox.appendTo(equalCheck);
+        this.equalCheckbox.appendTo(this.equalCheck);
 
 
-        this.lineCheckbox.appendTo(lineCheck);
-        nuberOfColumnsContainer.appendChild(subcontainer1);
+        this.lineCheckbox.appendTo(this.lineCheck);
+        this.nuberOfColumnsContainer.appendChild(this.subcontainer1);
 
-        oneDivContainer.appendChild(this.oneDiv);
-        oneDivContainer.appendChild(oneDivLabel);
-        twoDivContainer.appendChild(this.twoDiv);
-        twoDivContainer.appendChild(twoDivLabel);
-        threeDivContainer.appendChild(this.threeDiv);
-        threeDivContainer.appendChild(threeDivLabel);
-        leftDivContainer.appendChild(this.leftDiv);
-        leftDivContainer.appendChild(leftDivLabel);
-        rightDivContainer.appendChild(this.rightDiv);
-        rightDivContainer.appendChild(rightDivLabel);
+        this.oneDivContainer.appendChild(this.oneDiv);
+        this.oneDivContainer.appendChild(this.oneDivLabel);
+        this.twoDivContainer.appendChild(this.twoDiv);
+        this.twoDivContainer.appendChild(this.twoDivLabel);
+        this.threeDivContainer.appendChild(this.threeDiv);
+        this.threeDivContainer.appendChild(this.threeDivLabel);
+        this.leftDivContainer.appendChild(this.leftDiv);
+        this.leftDivContainer.appendChild(this.leftDivLabel);
+        this.rightDivContainer.appendChild(this.rightDiv);
+        this.rightDivContainer.appendChild(this.rightDivLabel);
 
-        PresetsContainer.appendChild(oneDivContainer);
-        PresetsContainer.appendChild(twoDivContainer);
-        PresetsContainer.appendChild(threeDivContainer);
-        PresetsContainer.appendChild(leftDivContainer);
-        PresetsContainer.appendChild(rightDivContainer);
+        this.PresetsContainer.appendChild(this.oneDivContainer);
+        this.PresetsContainer.appendChild(this.twoDivContainer);
+        this.PresetsContainer.appendChild(this.threeDivContainer);
+        this.PresetsContainer.appendChild(this.leftDivContainer);
+        this.PresetsContainer.appendChild(this.rightDivContainer);
         //this.subWidthAndSpacingContainerDiv.appendChild(this.containerHead);
         //this.subWidthAndSpacingContainerDiv.appendChild(this.widthcontainerDiv1);//<- First add
 
-        widthAndSpacingContainerDiv.appendChild(widthAndSpacingText);
-        widthAndSpacingContainerDiv.appendChild(tableElement);
-        columnDiv.appendChild(this.columnTable);
-        widthAndSpacingContainerDiv.appendChild(columnDiv);
+        this.widthAndSpacingContainerDiv.appendChild(this.widthAndSpacingText);
+        this.widthAndSpacingContainerDiv.appendChild(this.tableElement);
+        this.columnDiv.appendChild(this.columnTable);
+        this.widthAndSpacingContainerDiv.appendChild(this.columnDiv);
         //widthAndSpacingContainerDiv.appendChild(this.subWidthAndSpacingContainerDiv);
-        widthAndSpacingContainer.appendChild(widthAndSpacingContainerDiv);
+        this.widthAndSpacingContainer.appendChild(this.widthAndSpacingContainerDiv);
 
-        this.target.appendChild(displayText);
-        this.target.appendChild(PresetsContainer);
-        this.target.appendChild(nuberOfColumnsContainer);
-        this.target.appendChild(widthAndSpacingContainer);
-        this.target.appendChild(equalCheckDiv);
+        this.target.appendChild(this.displayText);
+        this.target.appendChild(this.PresetsContainer);
+        this.target.appendChild(this.nuberOfColumnsContainer);
+        this.target.appendChild(this.widthAndSpacingContainer);
+        this.target.appendChild(this.equalCheckDiv);
 
         // Handling clicking
-        oneDivContainer.addEventListener('click', this.handleSettingCheckBoxAction);
-        twoDivContainer.addEventListener('click', this.handleSettingCheckBoxAction);
-        threeDivContainer.addEventListener('click', this.handleSettingCheckBoxAction);
-        leftDivContainer.addEventListener('click', this.handleSettingCheckBoxAction);
-        rightDivContainer.addEventListener('click', this.handleSettingCheckBoxAction);
+        this.oneDivContainer.addEventListener('click', this.handleSettingCheckBoxActionHandler);
+        this.twoDivContainer.addEventListener('click', this.handleSettingCheckBoxActionHandler);
+        this.threeDivContainer.addEventListener('click', this.handleSettingCheckBoxActionHandler);
+        this.leftDivContainer.addEventListener('click', this.handleSettingCheckBoxActionHandler);
+        this.rightDivContainer.addEventListener('click', this.handleSettingCheckBoxActionHandler);
         this.widthcontainerDiv1.style.display = 'flex';
 
         this.equalCheckbox.checked = true;
@@ -472,7 +500,7 @@ export class ColumnsDialog {
         cell1.style.width = '20%';
         const col: Column = new Column();
         // column
-        const columnCount: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.columnCount = <HTMLInputElement>createElement('input', {
 
         });
         col.index = new NumericTextBox({
@@ -484,8 +512,8 @@ export class ColumnsDialog {
             showSpinButton: false,
             floatLabelType: 'Always'
         });
-        cell1.appendChild(columnCount);
-        col.index.appendTo(columnCount);
+        cell1.appendChild(this.columnCount);
+        col.index.appendTo(this.columnCount);
 
         // width
         const cell2: HTMLTableCellElement = row.insertCell();
@@ -938,7 +966,9 @@ export class ColumnsDialog {
         this.documentHelper.dialog.dataBind();
         this.documentHelper.dialog.show();
     }
-
+    private onhandleSettingCheckBoxActionClicked(event: Event): void {
+        this.handleSettingCheckBoxAction(event);
+    }
     /**
      * @private
      * @param {Event} event - Specifies the event args.
@@ -1061,6 +1091,8 @@ export class ColumnsDialog {
      * @returns {void}
      */
     public destroy(): void {
+        this.removeElements();
+        this.removeEvents();
         this.target = undefined;
         this.oneDiv = undefined;
         this.twoDiv = undefined;
@@ -1068,6 +1100,181 @@ export class ColumnsDialog {
         this.leftDiv = undefined;
         this.rightDiv = undefined;
         this.documentHelper = undefined;
+    }
+    private removeEvents(): void {
+        if (this.oneDivContainer){
+            this.oneDivContainer.removeEventListener('click', this.handleSettingCheckBoxActionHandler);
+        }
+        if (this.twoDivContainer){
+            this.twoDivContainer.removeEventListener('click', this.handleSettingCheckBoxActionHandler);
+        }
+        if (this.threeDivContainer){
+            this.threeDivContainer.removeEventListener('click', this.handleSettingCheckBoxActionHandler);
+        }
+        if (this.leftDivContainer){
+            this.leftDivContainer.removeEventListener('click', this.handleSettingCheckBoxActionHandler);
+        }
+        if (this.rightDivContainer){
+            this.rightDivContainer.removeEventListener('click', this.handleSettingCheckBoxActionHandler);
+        }
+    }
+    private removeElements(): void {
+        if (this.target){
+            this.target.remove();
+        }
+        if (this.oneDiv){
+            this.oneDiv.remove();
+            this.oneDiv = undefined;
+        }
+        if (this.twoDiv){
+            this.twoDiv.remove();
+            this.twoDiv = undefined;
+        }
+        if (this.threeDiv){
+            this.threeDiv.remove();
+            this.threeDiv = undefined;
+        }
+        if (this.leftDiv){
+            this.leftDiv.remove();
+            this.leftDiv = undefined;
+        }
+        if (this.rightDiv){
+            this.rightDiv.remove();
+            this.rightDiv = undefined;
+        }
+        if (this.columnsCountBox){
+            this.columnsCountBox.remove();
+            this.columnsCountBox = undefined;
+        }
+        if (this.columnValueTexBox && this.columnValueTexBox.element && this.columnValueTexBox.element.parentNode) {
+            this.columnValueTexBox.destroy();
+            this.columnValueTexBox = undefined;
+        }
+        if (this.lineCheckbox){
+            this.lineCheckbox.destroy();
+            this.lineCheckbox = undefined;
+        }
+        if (this.equalCheckbox){
+            this.equalCheckbox.destroy();
+            this.equalCheckbox = undefined;
+        }
+        if (this.columnCountBox1){
+            this.columnCountBox1.remove();
+            this.columnCountBox1 = undefined;
+        }
+        if (this.widthCountBox1){
+            this.widthCountBox1.remove();
+            this.widthCountBox1 = undefined;
+        }
+        if (this.spacingCountBox1){
+            this.spacingCountBox1.remove();
+            this.spacingCountBox1 = undefined;
+        }
+        if (this.columnTable){
+            this.columnTable.remove();
+            this.columnTable = undefined;
+        }
+        if (this.displayText){
+            this.displayText.remove();
+            this.displayText = undefined;
+        }
+        if (this.PresetsContainer){
+            this.PresetsContainer.remove();
+            this.PresetsContainer = undefined;
+        }
+        if (this.oneDivContainer){
+            this.oneDivContainer.remove();
+            this.oneDivContainer = undefined;
+        }
+        if (this.oneDivLabel){
+            this.oneDivLabel.remove();
+            this.oneDivLabel = undefined;
+        }
+        if (this.twoDivContainer){
+            this.twoDivContainer.remove();
+            this.twoDivContainer = undefined;
+        }
+        if (this.twoDivLabel){
+            this.twoDivLabel.remove();
+            this.twoDivLabel = undefined;
+        }
+        if (this.threeDivContainer){
+            this.threeDivContainer.remove();
+            this.threeDivContainer = undefined;
+        }
+        if (this.threeDivLabel){
+            this.threeDivLabel.remove();
+            this.threeDivLabel = undefined;
+        }
+        if (this.leftDivContainer){
+            this.leftDivContainer.remove();
+            this.leftDivContainer = undefined;
+        }
+        if (this.leftDivLabel){
+            this.leftDivLabel.remove();
+            this.leftDivLabel = undefined;
+        }
+        if (this.rightDivContainer){
+            this.rightDivContainer.remove();
+            this.rightDivContainer = undefined;
+        }
+        if (this.rightDivLabel){
+            this.rightDivLabel.remove();
+            this.rightDivLabel = undefined;
+        }
+        if (this.nuberOfColumnsContainer){
+            this.nuberOfColumnsContainer.remove();
+            this.nuberOfColumnsContainer = undefined;
+        }
+        if (this.subcontainer){
+            this.subcontainer.remove();
+            this.subcontainer = undefined;
+        }
+        if (this.subcontainer1){
+            this.subcontainer1.remove();
+            this.subcontainer1 = undefined;
+        }
+        if (this.lineCheckDiv){
+            this.lineCheckDiv.remove();
+            this.lineCheckDiv = undefined;
+        }
+        if (this.lineCheck){
+            this.lineCheck.remove();
+            this.lineCheck = undefined;
+        }
+        if (this.widthAndSpacingContainer){
+            this.widthAndSpacingContainer.remove();
+            this.widthAndSpacingContainer = undefined;
+        }
+        if (this.widthAndSpacingContainerDiv){
+            this.widthAndSpacingContainerDiv.remove();
+            this.widthAndSpacingContainerDiv = undefined;
+        }
+        if (this.widthAndSpacingText){
+            this.widthAndSpacingText.remove();
+            this.widthAndSpacingText = undefined;
+        }
+        if (this.tableElement){
+            this.tableElement.remove();
+            this.tableElement = undefined;
+        }
+        if (this.columnDiv){
+            this.columnDiv.remove();
+            this.columnDiv = undefined;
+        }
+        if (this.columnCount){
+            this.columnCount.remove();
+            this.columnCount = undefined;
+        }
+        if (this.equalCheckDiv){
+            this.equalCheckDiv.remove();
+            this.equalCheckDiv = undefined;
+        }
+        if (this.equalCheck){
+            this.equalCheck.remove();
+            this.equalCheck = undefined;
+        }
+
     }
 }
 

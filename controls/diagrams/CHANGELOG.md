@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I627666` - Now, the layout renders properly without considering boundary constraints.
+- `#I628018` - Now, Flipping the group node properly rendered and rotation properly worked for the child nodes.
+
 ## 27.1.48 (2024-09-18)
 
 ### Diagram

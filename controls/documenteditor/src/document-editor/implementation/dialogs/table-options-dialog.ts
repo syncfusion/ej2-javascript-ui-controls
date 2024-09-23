@@ -28,6 +28,17 @@ export class TableOptionsDialog {
     private cellspacingTextBox: HTMLElement;
     private allowSpaceCheckBox: CheckBox;
     private cellSpaceTextBox: NumericTextBox;
+
+    private innerDiv: HTMLDivElement;
+    private innerDivLabel: HTMLElement;
+    private div: HTMLDivElement;
+    private cellSpaceLabel: HTMLElement;
+    private table2: HTMLTableElement;
+    private tr3: HTMLTableRowElement;
+    private td5: HTMLTableCellElement;
+    private allowSpaceCheckBox1: HTMLInputElement;
+    private td6: HTMLTableCellElement;
+    private divBtn: HTMLDivElement;
     /**
      * @private
      */
@@ -79,26 +90,26 @@ export class TableOptionsDialog {
         this.target = createElement('div', {
             id: this.documentHelper.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
         });
-        const innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div');
-        const innerDivLabel: HTMLElement = createElement('Label', {
+        this.innerDiv = <HTMLDivElement>createElement('div');
+        this.innerDivLabel = createElement('Label', {
             id: this.target.id + '_innerDivLabel', className: 'e-de-para-dlg-heading',
             innerHTML: localValue.getConstant('Default cell margins')
         });
-        innerDiv.appendChild(innerDivLabel);
-        CellOptionsDialog.getCellMarginDialogElements(this, innerDiv, localValue, false);
-        const div: HTMLDivElement = <HTMLDivElement>createElement('div');
-        const cellSpaceLabel: HTMLElement = createElement('Label', {
+        this.innerDiv.appendChild(this.innerDivLabel);
+        CellOptionsDialog.getCellMarginDialogElements(this, this.innerDiv, localValue, false);
+        this.div = <HTMLDivElement>createElement('div');
+        this.cellSpaceLabel = createElement('Label', {
             className: 'e-de-para-dlg-heading',
             id: this.target.id + '_cellSpaceLabel'
         });
-        cellSpaceLabel.innerHTML = localValue.getConstant('Default cell spacing');
-        div.appendChild(cellSpaceLabel);
-        const table2: HTMLTableElement = <HTMLTableElement>createElement('TABLE', {
+        this.cellSpaceLabel.innerHTML = localValue.getConstant('Default cell spacing');
+        this.div.appendChild(this.cellSpaceLabel);
+        this.table2 = <HTMLTableElement>createElement('TABLE', {
             styles: 'height: 30px;'
         });
-        const tr3: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr');
-        const td5: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-        const allowSpaceCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.tr3 = <HTMLTableRowElement>createElement('tr');
+        this.td5 = <HTMLTableCellElement>createElement('td');
+        this.allowSpaceCheckBox1 = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_cellcheck'
         });
         let td6Padding: string;
@@ -107,17 +118,17 @@ export class TableOptionsDialog {
         } else {
             td6Padding = 'padding-left:25px;';
         }
-        const td6: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: td6Padding });
+        this.td6 = <HTMLTableCellElement>createElement('td', { styles: td6Padding });
         this.cellspacingTextBox = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_cellspacing'
         });
-        td5.appendChild(allowSpaceCheckBox);
-        td6.appendChild(this.cellspacingTextBox); tr3.appendChild(td5); tr3.appendChild(td6);
-        table2.appendChild(tr3);
-        div.appendChild(table2);
-        const divBtn: HTMLDivElement = document.createElement('div');
-        this.target.appendChild(div);
-        this.target.appendChild(divBtn);
+        this.td5.appendChild(this.allowSpaceCheckBox1);
+        this.td6.appendChild(this.cellspacingTextBox); this.tr3.appendChild(this.td5); this.tr3.appendChild(this.td6);
+        this.table2.appendChild(this.tr3);
+        this.div.appendChild(this.table2);
+        this.divBtn = document.createElement('div');
+        this.target.appendChild(this.div);
+        this.target.appendChild(this.divBtn);
         this.cellSpaceTextBox = new NumericTextBox({
             value: 0, min: 0, max: 264.5, width: 174,
             decimals: 2, enablePersistence: false
@@ -129,8 +140,8 @@ export class TableOptionsDialog {
             enableRtl: isRtl,
             cssClass: 'e-de-tbl-margin-sub-header'
         });
-        this.allowSpaceCheckBox.appendTo(allowSpaceCheckBox);
-        allowSpaceCheckBox.setAttribute('aria-label',localValue.getConstant('Allow spacing between cells'));
+        this.allowSpaceCheckBox.appendTo(this.allowSpaceCheckBox1);
+        this.allowSpaceCheckBox1.setAttribute('aria-label',localValue.getConstant('Allow spacing between cells'));
         this.cellspacingTextBox.setAttribute('aria-label','cell spacing');
     }
     /**
@@ -306,10 +317,53 @@ export class TableOptionsDialog {
             this.tableFormatIn.destroy();
             this.tableFormatIn = undefined;
         }
+        this.removeElements();
         this.dialog = undefined;
         this.target = undefined;
         this.documentHelper = undefined;
         this.cellspacingTextBox = undefined;
         this.allowSpaceCheckBox = undefined;
+    }
+    private removeElements(): void {
+        if (this.innerDiv) {
+            this.innerDiv.remove();
+            this.innerDiv = undefined;
+        }
+        if (this.innerDivLabel) {
+            this.innerDivLabel.remove();
+            this.innerDivLabel = undefined;
+        }
+        if (this.div) {
+            this.div.remove();
+            this.div = undefined;
+        }
+        if (this.cellSpaceLabel) {
+            this.cellSpaceLabel.remove();
+            this.cellSpaceLabel = undefined;
+        }
+        if (this.table2) {
+            this.table2.remove();
+            this.table2 = undefined;
+        }
+        if (this.tr3) {
+            this.tr3.remove();
+            this.tr3 = undefined;
+        }
+        if (this.td5) {
+            this.td5.remove();
+            this.td5 = undefined;
+        }
+        if (this.allowSpaceCheckBox1) {
+            this.allowSpaceCheckBox1.remove();
+            this.allowSpaceCheckBox1 = undefined;
+        }
+        if (this.td6) {
+            this.td6.remove();
+            this.td6 = undefined;
+        }
+        if (this.divBtn) {
+            this.divBtn.remove();
+            this.divBtn = undefined;
+        }
     }
 }

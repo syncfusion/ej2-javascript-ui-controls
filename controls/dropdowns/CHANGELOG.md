@@ -2,13 +2,24 @@
 
 ## [Unreleased]
 
-## 27.1.48 (2024-09-18)
+## 27.1.50 (2024-09-24)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I635384` - Console error on initial rendering of `Dropdown Tree` when setting `checkDisabledChildren` to false with additional htmlAttributes has been resolved.
 
 ### ListBox
 
 #### Bug Fixes
 
+- `#I608662` - Issue with "listbox `RemoveItems` method performance issue occurs while using large number items" has been resolved.
+- `#I625107` - Issue with "Prevent the default sorting action for custom data from filtering updateData method" has been resolved.
+- `#I628439` - Issue with "Dual listbox sample move function not working properly with disabled items" has been resolved.
 - `#I904248` - Issue with "The `removeItems` method not working properly after drag and drop and specific the index value" has been resolved.
+
+## 27.1.48 (2024-09-18)
 
 ### DropDownTree
 
@@ -23,6 +34,7 @@
 - `#I630411` - Facing an console error when all nodes are not selectable while opening the popup in the Dropdown Tree component have been resolved.
 - `#I624932` - Multiple focus issue when enabled the showSelectAll and allowFiltering properties in the Dropdown Tree component has been resolved.
 - `#I625088` - The issue with selected field in the Dropdown Tree component has been resolved.
+- `#I629188` - The issue with SelectAll checkbox being checked after reopening popup following filter action has been resolved.
 
 ## 26.2.11 (2024-08-27)
 

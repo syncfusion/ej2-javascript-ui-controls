@@ -27,6 +27,7 @@ export class ConnectorLineEdit {
     private dateValidateModule: DateProcessor;
     private cumulativePredecessorChanges: IPredecessor[];
     private validatedOffsetIds: string[] = [];
+    private isPublicDependencyDelete: boolean = false;
     constructor(ganttObj?: Gantt) {
         this.parent = ganttObj;
         this.dateValidateModule = this.parent.dateValidationModule;
@@ -526,6 +527,7 @@ export class ConnectorLineEdit {
      * @private
      */
     public removePredecessor(ganttRecord: IGanttData): void {
+        this.isPublicDependencyDelete = true;
         this.updatePredecessorHelper(ganttRecord, null);
     }
     /**
@@ -562,7 +564,8 @@ export class ConnectorLineEdit {
             this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, stringValue, ganttRecord);
             this.parent.setRecordValue(this.parent.taskFields.dependency, stringValue, ganttRecord);
             const args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
-            args.action = editedArgs && editedArgs.action && editedArgs.action === 'CellEditing' ? editedArgs.action : 'DrawConnectorLine';
+            args.action = editedArgs && editedArgs.action && editedArgs.action === 'CellEditing' ? editedArgs.action : ((this.parent.contextMenuModule && this.parent.contextMenuModule['isCntxtMenuDependencyDelete']) ||
+                this.isPublicDependencyDelete) ? 'DeleteConnectorLine' : 'DrawConnectorLine';
             args.data = ganttRecord;
             this.parent.editModule.initiateUpdateAction(args);
             return true;
@@ -763,7 +766,7 @@ export class ConnectorLineEdit {
             && this.parent.taskFields.hasChildMapping)) {
             return;
         }
-        if (record) {
+        if (record && isScheduledTask(record.ganttProperties) !== null) {
             const prevPredecessor: IPredecessor[] = extend([], record.ganttProperties.predecessor, [], true) as IPredecessor[];
             const validPredecessor: IPredecessor[] = this.parent.predecessorModule.getValidPredecessor(record);
             if (validPredecessor.length > 0) {

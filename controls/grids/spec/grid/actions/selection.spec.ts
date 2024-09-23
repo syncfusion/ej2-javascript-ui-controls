@@ -4151,6 +4151,10 @@ describe('AutoFill Feature', () => {
         expect(value1 === value2).toBeTruthy();
     });
 
+    it('EJ2-909377 - code coverage', () => {
+        gridObj.resetIndentWidth();
+    });
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;

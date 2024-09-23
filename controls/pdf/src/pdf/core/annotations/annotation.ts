@@ -1274,8 +1274,10 @@ export abstract class PdfAnnotation {
     _flattenAnnotationTemplate(template: PdfTemplate, isNormalMatrix: boolean): void {
         const graphics: PdfGraphics = this._page.graphics;
         let currentBounds: {x: number, y: number, width: number, height: number} = this.bounds;
-        if (this._type === _PdfAnnotationType.lineAnnotation && !this._dictionary.has('AP')) {
+        if (this instanceof PdfLineAnnotation && !this._dictionary.has('AP')) {
             if (this._isLoaded) {
+                currentBounds = this._bounds;
+            } else if (this._setAppearance && this.flatten && !this.measure) {
                 currentBounds = this._bounds;
             } else {
                 currentBounds = _toRectangle([this.bounds.x, this.bounds.y,
@@ -1300,6 +1302,8 @@ export abstract class PdfAnnotation {
                     } else {
                         currentBounds.y = size[1] - (currentBounds.y + currentBounds.height);
                     }
+                } else if (this._setAppearance && this.flatten && !this.measure) {
+                    currentBounds = this.bounds;
                 } else if (!this._isLoaded) {
                     currentBounds.y = size[1] - (currentBounds.y + currentBounds.height);
                 }
@@ -1363,7 +1367,7 @@ export abstract class PdfAnnotation {
                 }
                 const scaleX: number = (template._size[0] > 0) ? bounds.width / template._size[0] : 1;
                 const scaleY: number = (template._size[1] > 0) ? bounds.height / template._size[1] : 1;
-                const needScale: boolean = !(scaleX === 1 && scaleY === 1);
+                const needScale: boolean = !(Math.round(scaleX) === 1 && Math.round(scaleY) === 1);
                 if (this.rotate !== PdfRotationAngle.angle0 && isRotatedMatrix) {
                     if (this.rotate === PdfRotationAngle.angle90) {
                         if (this._page.rotation === PdfRotationAngle.angle270) {
@@ -3215,6 +3219,14 @@ export class PdfLineAnnotation extends PdfComment {
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
         }
+        if (this.border.dash === null || typeof this.border.dash === 'undefined') {
+            this.border.dash = [];
+            if (this.border.style === PdfBorderStyle.dashed) {
+                this.border.dash.push(4);
+            } else if (this.border.style === PdfBorderStyle.dot) {
+                this.border.dash.push(2);
+            }
+        }
         if (this._measure) {
             this._appearanceTemplate = this._createLineMeasureAppearance(flatten);
         } else {
@@ -3235,6 +3247,11 @@ export class PdfLineAnnotation extends PdfComment {
                     this._bounds.y + this._bounds.height];
             }
             this._dictionary.update('Rect', updatedBounds);
+            if (this.flatten && !this.measure && this._page && this._page.size && Array.isArray(this._page.size) &&
+                this._page.size.length >= 2) {
+                this._bounds = {x: boundsArray[0], y: this._page.size[1] - (boundsArray[1] + boundsArray[3]),
+                    width: boundsArray[2], height: boundsArray[3]};
+            }
         }
     }
     _doPostProcess(isFlatten: boolean = false): void {
@@ -3665,8 +3682,10 @@ export class PdfLineAnnotation extends PdfComment {
         const pen: PdfPen = new PdfPen(typeof this.color !== 'undefined' ? this._color : [0, 0, 0], this.border.width);
         if (this.border.style === PdfBorderStyle.dashed) {
             pen._dashStyle = PdfDashStyle.dash;
+            pen._dashPattern = [3, 1];
         } else if (this.border.style === PdfBorderStyle.dot) {
             pen._dashStyle = PdfDashStyle.dot;
+            pen._dashPattern = [1, 1];
         }
         parameter.borderPen = pen;
         parameter.foreBrush = new PdfBrush(this.color);
@@ -11299,7 +11318,11 @@ export class PdfFreeTextAnnotation extends PdfComment {
         } else {
             template = new PdfTemplate(nativeRectangle, this._crossReference);
         }
-        _setMatrix(template, this._getRotationAngle());
+        const box: number[] = template._content.dictionary.getArray('BBox');
+        const angle: PdfRotationAngle = this._getRotationAngle();
+        if (box && angle !== null && typeof angle !== 'undefined') {
+            template._content.dictionary.set('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
+        }
         const parameter: _PaintParameter = new _PaintParameter();
         const text: string = this._obtainText();
         template._writeTransformation = false;
@@ -11490,7 +11513,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
         if (this.rotationAngle === PdfRotationAngle.angle90 && !this._isAllRotation) {
             rectangle = [-rectangle[1], rectangle[0], -rectangle[3], rectangle[2]];
         } else if (this.rotationAngle === PdfRotationAngle.angle180 && !this._isAllRotation) {
-            rectangle = [-(rectangle[0] + rectangle[2]), -rectangle[3], rectangle[2], -rectangle[3]];
+            rectangle = [-(rectangle[2] + rectangle[0]), -rectangle[1], rectangle[2], -rectangle[3]];
         } else if (this.rotationAngle === PdfRotationAngle.angle270 && !this._isAllRotation) {
             rectangle = [(rectangle[1] + rectangle[3]), -(rectangle[0] + rectangle[2]), -rectangle[3], rectangle[2]];
         } else if (angle === 0 && !this._isAllRotation) {
@@ -11582,7 +11605,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
         } else {
             if (this.rotationAngle === PdfRotationAngle.angle90 && !this._isAllRotation) {
                 graphics.rotateTransform(-90);
-                parameter.bounds = [-rectangle[1], rectangle[2] + rectangle[0] - rectangle[3], -rectangle[2]];
+                parameter.bounds = [-rectangle[1], rectangle[2] + rectangle[0], - rectangle[3], -rectangle[2]];
             } else if (this.rotationAngle === PdfRotationAngle.angle180 && !this._isAllRotation) {
                 graphics.rotateTransform(-180);
                 parameter.bounds = [-(rectangle[2] + rectangle[0]), -(rectangle[3] + rectangle[1]), rectangle[2], rectangle[3]];
@@ -11590,7 +11613,10 @@ export class PdfFreeTextAnnotation extends PdfComment {
                 graphics.rotateTransform(-270);
                 parameter.bounds = [rectangle[1] + rectangle[3], -rectangle[0], -rectangle[3], -rectangle[2]];
             }
-            this._drawFreeTextAnnotation(graphics, parameter, '', this._font, parameter.bounds, false, alignment, isRotation);
+            if (parameter.borderWidth > 0 && !this._isAllRotation) {
+                rectangle = parameter.bounds;
+            }
+            this._drawFreeTextAnnotation(graphics, parameter, '', this._font, rectangle, false, alignment, isRotation);
         }
     }
     _drawAppearance(graphics: PdfGraphics, parameter: _PaintParameter, rectangle: number[]): void {

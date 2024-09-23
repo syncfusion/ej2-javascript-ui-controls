@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- Issue with "Hovering style for primary button of color picker in bootstrap 5 theme" has been resolved.
+
 ## 27.1.48 (2024-09-18)
 
 ### ColorPicker

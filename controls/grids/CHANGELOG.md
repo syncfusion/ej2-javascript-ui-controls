@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### Grid
+
+#### Bug fixes
+
+- `#I625709` - The issue with adding/editing when the grid component is rendered inside the Dialog component has been resolved.
+- `#I628534` - The problem with the `BatchDelete` and `beforeBatchDelete` event arguments not being correct during bulk delete actions has been resolved.
+- `#I631245` - The issue with the Cancel Interface in the `beforeDataBound` event arguments has been resolved.
+- `#FB61172` - The issue with padding being added to the first cell during grid cell selection in the Material 3 theme has been resolved.
+- `#FB60975` - The issue where the cell was not highlighted when selecting a row using a method in the EJ2 Grid has been resolved.
+- `#I630248`, `#I631004` - The issue where the `minWidth` was not respected during window resizing has been resolved.
+- `#I629597` - The issue with excel custom filter with the second empty filter not applied to the grid has been resolved.
+- `#I631424` - The issue where the `AutoFill` position was not adjusted to corresponding cells when resizing the window has been resolved.
+- `#I633357` - The issue with vertical expansion when dragging with long names and text wrap enabled has been resolved.
+- `#I629718` - Grid didn't rendered properly while using the individual scripts has been fixed.
+- `#I632793` - `getSelectedRecords` is not working properly has been resolved.
+- `#I628424` - Header indent cell overlapped in a stacked frozen grid with grouped columns is fixed.
+
 ## 27.1.48 (2024-09-18)
 
 ### Grid

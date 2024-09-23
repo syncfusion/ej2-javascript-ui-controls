@@ -1,6 +1,6 @@
 import { extend, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
-import { IEditCell } from '../base/interface';
+import { IEditCell, IGrid  } from '../base/interface';
 import { DatePicker, DateTimePicker, PopupEventArgs, MaskedDateTime } from '@syncfusion/ej2-calendars';
 import { isEditable, getObject, getCustomDateFormat } from '../base/util';
 import { EditCellBase } from './edit-cell-base';
@@ -16,6 +16,12 @@ export class DatePickerEditCell extends EditCellBase implements IEditCell {
 
     /* @hidden */
     public edit: Edit;
+    public flag: boolean;
+
+    constructor(parent?: IGrid) {
+        super(parent);
+        this.flag = true;
+    }
 
     public write(args: { rowData: Object, element: Element, column: Column, type: string, row: HTMLElement, requestType: string }): void {
         this.edit = this.parent.editModule;
@@ -24,6 +30,10 @@ export class DatePickerEditCell extends EditCellBase implements IEditCell {
                 extend(
                     dateanddatetimerender(args, this.parent.editSettings.mode, this.parent.enableRtl, this.parent.cssClass, this),
                     args.column.edit.params));
+            if (this.flag) {
+                DatePicker.Inject(MaskedDateTime);
+                this.flag = false;
+            }
         }
         if (args.column.editType === 'datetimepickeredit') {
             this.obj = new DateTimePicker(

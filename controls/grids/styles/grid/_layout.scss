@@ -644,6 +644,18 @@
       }
     }
 
+    &:not(.sf-grid) .e-res-toolbar .e-toolbar-items .e-search-wrapper {
+      & .e-search-icon {
+        padding: $grid-res-toolbar-search-wrapper-icon-padding;
+        @if $grid-skin == 'bootstrap5.3' {
+          padding: 9px 8px;
+        }
+        @if $grid-skin == 'bootstrap4' {
+          padding: 9px 9.5px;
+        }
+      }
+    }
+
     .e-res-toolbar {
       border-bottom: 1px solid;
       border-bottom-color: $grid-header-border-color;
@@ -741,18 +753,6 @@
           }
           & .e-search-wrapper:has(.e-input-group) {
             width: 100%;
-          }
-        }
-
-        &:not(.sf-grid).e-search-wrapper {
-          & .e-search-icon {
-            padding: $grid-res-toolbar-search-wrapper-icon-padding;
-            @if $grid-skin == 'bootstrap5.3' {
-              padding: 9px 8px;
-            }
-            @if $grid-skin == 'bootstrap4' {
-              padding: 9px 9.5px;
-            }
           }
         }
 
@@ -952,8 +952,11 @@
       }
     }
 
-    &.e-default .e-grouptopleftcell {
-      border-top: $grid-grouptopleftcell-border-top;
+    &.e-default {
+      .e-grouptopleftcell,
+      .e-rowdragheader {
+        border-top: $grid-grouptopleftcell-border-top;
+      }
     }
 
     &.e-default .e-gridheader .e-headercell.e-firstheader,
@@ -961,10 +964,13 @@
       border-left: 1px solid;
     }
 
-    &.e-default.e-verticallines .e-grouptopleftcell,
-    &.e-default.e-bothlines .e-grouptopleftcell,
-    &.e-default.e-hidelines .e-grouptopleftcell {
-      border-top-width: 0;
+    &.e-default.e-verticallines,
+    &.e-default.e-bothlines,
+    &.e-default.e-hidelines {
+      .e-grouptopleftcell,
+      .e-rowdragheader {
+        border-top-width: 0;
+      }
     }
 
     &.e-default.e-verticallines,
@@ -1223,6 +1229,12 @@
       vertical-align: middle;
       white-space: nowrap;
       width: auto;
+    }
+
+    .e-rowcell.e-gridchkbox {
+      @if $grid-skin == 'fluent' {
+        padding-left: 8px;
+      }
     }
 
     &.e-left-shadow,
@@ -2168,13 +2180,12 @@
       font-weight: $grid-selection-font-weight;
     }
 
-    &:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground,
+    &:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground:not(.e-gridchkbox-cell),
     td.e-cellselectionbackground {
       font-weight: $grid-selection-font-weight;
       @if $grid-skin == 'material3' {
-        border: 1px solid rgba($content-text-color);
         padding-bottom: 7px;
-        @include grid-padding-left-right(7.5px, 7.5px);
+        @include grid-padding-left-right(8px, 8px);
       }
     }
 
@@ -2185,14 +2196,13 @@
     }
 
     &.e-bothlines td.e-rowcell.e-cellselectionbackground,
-    &.e-bothlines.e-rtl td.e-rowcell.e-cellselectionbackground,
-    &.e-rtl td.e-rowcell.e-cellselectionbackground {
+    &.e-bothlines.e-rtl td.e-rowcell.e-cellselectionbackground {
       @if $grid-skin == 'material3' {
         border: 1px solid rgba($content-text-color);
       }
     }
 
-    &:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground {
+    &:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground:not(.e-gridchkbox-cell) {
       @if $grid-skin == 'material3' {
         padding-top: 7px;
       }
@@ -2456,6 +2466,12 @@
     .e-toolbar-item.e-cc.e-ccdiv.e-cc-toolbar {
       margin-top: $grid-columnchooser-toolbardiv-margin-top;
       padding: $grid-columnchooser-toolbardiv-padding;
+    }
+
+    &:not(.sf-grid) .e-toolbar-item.e-cc.e-ccdiv.e-cc-toolbar {
+      @if $grid-skin == 'fluent' {
+        padding-bottom: 1px;
+      }
     }
 
     .e-edit-dialog {
@@ -3272,7 +3288,8 @@
     }
 
     &.e-wrap {
-      & .e-rowcell,
+      & .e-gridheader .e-rowcell,
+      & .e-gridcontent .e-rowcell,
       & .e-columnheader .e-stackedheadercelldiv,
       & .e-columnheader .e-headercelldiv,
       & .e-columnheader .e-headercell.e-fltr-icon .e-headercelldiv {
@@ -3284,6 +3301,10 @@
         .e-headercelldiv {
           max-height: $grid-rowcell-wrap-max-height;
         }
+      }
+
+      & .e-checkbox-wrapper {
+        vertical-align: middle;
       }
     }
 
@@ -3457,6 +3478,7 @@
     }
 
     &.sf-grid {
+      
       span.e-ungroupbutton.e-icons {
         margin-left: $grid-group-ungroupicon-margin-left;
         @if $grid-skin == 'material3' {

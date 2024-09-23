@@ -682,7 +682,7 @@ export class Annotation {
                 customData = this.pdfViewer.inkAnnotationSettings.customData;
             }
         } else {
-            customData = annotation.CustomData;
+            customData = typeof annotation.CustomData === 'string' ? JSON.parse(annotation.CustomData) : annotation.customData;
         }
         return customData;
     }
@@ -4793,7 +4793,6 @@ export class Annotation {
                 }
                 annotationType = 'textMarkup';
                 if (isTextMarkupUpdate) {
-                    this.textMarkupAnnotationModule.currentTextMarkupAnnotation = null;
                     this.textMarkupAnnotationModule.selectTextMarkupCurrentPage = null;
                 }
             } else if (annotation && annotation.stampAnnotationType === 'image' && annotation.shapeAnnotationType === 'stamp' && annotation.stampAnnotationPath) {
@@ -5026,7 +5025,7 @@ export class Annotation {
                 currentAnnotation.customData = annotation.customData;
             }
             currentAnnotation.isPrint = annotation.isPrint;
-            if (annotation.type !== 'TextMarkup') {
+            if (annotation.type !== 'TextMarkup' && annotation.shapeAnnotationType !== 'textMarkup') {
                 this.pdfViewer.renderDrawing();
                 this.updateCollection(annotationId, pageNumber, annotation, annotationType);
             }

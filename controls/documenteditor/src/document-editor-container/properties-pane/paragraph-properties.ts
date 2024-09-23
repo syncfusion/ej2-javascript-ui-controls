@@ -13,14 +13,7 @@ import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
  */
 export class Paragraph {
     private container: DocumentEditorContainer;
-    private textProperties: HTMLElement;
-    private leftAlignment: HTMLElement;
-    private rightAlignment: HTMLElement;
-    private centerAlignment: HTMLElement;
-    private justify: HTMLElement;
-    private increaseIndent: HTMLElement;
-    private decreaseIndent: HTMLElement;
-    private showHiddenMarks: HTMLElement;
+    //EJ2 Components
     private showHiddenMarksBtn: Button;
     private leftAlignmentBtn: Button;
     private rightAlignmentBtn: Button;
@@ -30,11 +23,18 @@ export class Paragraph {
     private decreaseIndentBtn: Button;
     private lineSpacing: DropDownButton;
     private style: ComboBox;
-    private isRetrieving: boolean = false;
-    private styleName: string;
-    public appliedBulletStyle: string = 'dot';
-    public appliedNumberingStyle: string = 'arabic';
-    public appliedLineSpacing: string = '';
+    private bulletListBtn: SplitButton;
+    private numberedListBtn: SplitButton;
+    private bordersBtn: Button;
+    //HTML Elements
+    private textProperties: HTMLElement;
+    private leftAlignment: HTMLElement;
+    private rightAlignment: HTMLElement;
+    private centerAlignment: HTMLElement;
+    private justify: HTMLElement;
+    private increaseIndent: HTMLElement;
+    private decreaseIndent: HTMLElement;
+    private showHiddenMarks: HTMLElement;
     private noneNumberTag: HTMLElement;
     private numberList: HTMLElement;
     private lowLetter: HTMLElement;
@@ -48,13 +48,51 @@ export class Paragraph {
     private flowerBullet: HTMLElement;
     private arrowBullet: HTMLElement;
     private tickBullet: HTMLElement;
+    private borders: HTMLElement;
+    private paragraphDiv: HTMLElement;
+    private label: HTMLElement;
+    private styleDiv: HTMLElement;
+    private styleSelect: HTMLSelectElement;
+    private indentWholeDiv: HTMLElement;
+    private indentDiv: HTMLElement;
+    private incDecIndentDiv: HTMLElement;
+    private listDiv: HTMLElement;
+    private paraDiv: HTMLElement;
+    private lineHeight: HTMLElement;
+    private listDropDown: HTMLElement;
+    private bulletButton: HTMLElement;
+    private numberingList: HTMLElement;
+    private numberListDropDiv: HTMLElement;
+    private numberListDropUlTag: HTMLElement;
+
+    //Event Handlers
+    private numberedAndBulletNoneClickHandler: EventListenerOrEventListenerObject = this.numberedNoneClick.bind(this);
+
+    private numberedNumberDotClickHandler: EventListenerOrEventListenerObject = this.numberedNumberDotClick.bind(this);
+    private numberedLowLetterClickHandler: EventListenerOrEventListenerObject = this.numberedLowLetterClick.bind(this);
+    private numberedUpLetterClickHandler: EventListenerOrEventListenerObject = this.numberedUpLetterClick.bind(this);
+    private numberedLowRomanClickHandler: EventListenerOrEventListenerObject = this.numberedLowRomanClick.bind(this);
+    private numberedUpRomanClickHandler: EventListenerOrEventListenerObject = this.numberedUpRomanClick.bind(this);
+    private numberSplitButtonBeforeOpenHandler: EventListenerOrEventListenerObject = this.numberSplitButtonBeforeOpen.bind(this);
+    private bulletDotClickHandler: EventListenerOrEventListenerObject = this.bulletDotClick.bind(this);
+    private bulletCircleClickHandler: EventListenerOrEventListenerObject = this.bulletCircleClick.bind(this);
+    private bulletSquareClickHandler: EventListenerOrEventListenerObject = this.bulletSquareClick.bind(this);
+    private bulletFlowerClickHandler: EventListenerOrEventListenerObject = this.bulletFlowerClick.bind(this);
+    private bulletArrowClickHandler: EventListenerOrEventListenerObject = this.bulletArrowClick.bind(this);
+    private bulletTickClickHandler: EventListenerOrEventListenerObject = this.bulletTickClick.bind(this);
+    private onrightAlignmentClickHandler: EventListenerOrEventListenerObject = this.onrightAlignmentClick.bind(this);
+
+
+    private isRetrieving: boolean = false;
+    private styleName: string;
+    public appliedBulletStyle: string = 'dot';
+    public appliedNumberingStyle: string = 'arabic';
+    public appliedLineSpacing: string = '';
+
     public localObj: L10n;
     private isRtl: boolean;
     private splitButtonClass: string = 'e-de-prop-splitbutton';
-    private bulletListBtn: SplitButton;
-    private numberedListBtn: SplitButton;
-    private borders: HTMLElement;
-    private bordersBtn: Button;
+
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
@@ -70,76 +108,76 @@ export class Paragraph {
         }
         this.textProperties = wholeDiv;
         const element: string = this.documentEditor.element.id + '_font_properties';
-        const paragraphDiv: HTMLElement = this.createDivElement(element + '_paragraph', wholeDiv, '');
-        classList(paragraphDiv, ['e-de-cntr-pane-padding'], []);
-        const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
-        label.innerHTML = this.localObj.getConstant('Paragraph');
-        paragraphDiv.appendChild(label);
-        const styleDiv: HTMLElement = this.createDivElement(element + '_styleDiv', paragraphDiv);
-        styleDiv.classList.add('e-de-ctnr-segment', 'e-de-ctnr-style-div');
-        const styleSelect: HTMLSelectElement = createElement('input', { id: element + '_style', styles: 'width:248px;letter-spacing: 0.05px;' }) as HTMLSelectElement;
-        styleDiv.appendChild(styleSelect);
-        this.createStyleDropDownList(styleSelect);
-        const indentWholeDiv: HTMLElement = this.createDivElement(element + '_indentWholeDiv', paragraphDiv);
-        indentWholeDiv.style.display = 'flex';
-        indentWholeDiv.classList.add('e-de-ctnr-segment');
+        this.paragraphDiv = this.createDivElement(element + '_paragraph', wholeDiv, '');
+        classList(this.paragraphDiv, ['e-de-cntr-pane-padding'], []);
+        this.label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+        this.label.innerHTML = this.localObj.getConstant('Paragraph');
+        this.paragraphDiv.appendChild(this.label);
+        this.styleDiv = this.createDivElement(element + '_styleDiv', this.paragraphDiv);
+        this.styleDiv.classList.add('e-de-ctnr-segment', 'e-de-ctnr-style-div');
+        this.styleSelect = createElement('input', { id: element + '_style', styles: 'width:248px;letter-spacing: 0.05px;' }) as HTMLSelectElement;
+        this.styleDiv.appendChild(this.styleSelect);
+        this.createStyleDropDownList(this.styleSelect);
+        this.indentWholeDiv = this.createDivElement(element + '_indentWholeDiv', this.paragraphDiv);
+        this.indentWholeDiv.style.display = 'flex';
+        this.indentWholeDiv.classList.add('e-de-ctnr-segment');
         if (isRtl) {
-            classList(indentWholeDiv, ['e-de-ctnr-segment-rtl'], []);
+            classList(this.indentWholeDiv, ['e-de-ctnr-segment-rtl'], []);
         }
-        const indentDiv: HTMLElement = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
+        this.indentDiv = this.createDivElement(element + '_indentDiv', this.indentWholeDiv, 'display:flex;');
         let indentClassName: string = 'e-de-ctnr-group-btn e-de-char-fmt-btn-left e-btn-group';
         if (isRtl) {
             indentClassName = 'e-rtl ' + indentClassName;
         }
-        indentDiv.className = indentClassName;
-        this.leftAlignment = this.createButtonTemplate(element + '_leftIndent', 'e-de-ctnr-alignleft e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', 'Align left Tooltip');
-        this.centerAlignment = this.createButtonTemplate(element + '_centerIndent', 'e-de-ctnr-aligncenter e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', 'Center Tooltip');
-        this.rightAlignment = this.createButtonTemplate(element + '_rightIndent', 'e-de-ctnr-alignright e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', 'Align right Tooltip');
-        this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', indentDiv, 'e-de-prop-indent-last-button', '40.5', 'Justify Tooltip');
+        this.indentDiv.className = indentClassName;
+        this.leftAlignment = this.createButtonTemplate(element + '_leftIndent', 'e-de-ctnr-alignleft e-icons', this.indentDiv, 'e-de-prop-indent-button', '40.5', 'Align left Tooltip');
+        this.centerAlignment = this.createButtonTemplate(element + '_centerIndent', 'e-de-ctnr-aligncenter e-icons', this.indentDiv, 'e-de-prop-indent-button', '40.5', 'Center Tooltip');
+        this.rightAlignment = this.createButtonTemplate(element + '_rightIndent', 'e-de-ctnr-alignright e-icons', this.indentDiv, 'e-de-prop-indent-button', '40.5', 'Align right Tooltip');
+        this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', this.indentDiv, 'e-de-prop-indent-last-button', '40.5', 'Justify Tooltip');
         let increaseIndentIconCss: string = 'e-de-ctnr-increaseindent e-icons';
         let decreaseIndentIconCss: string = 'e-de-ctnr-decreaseindent e-icons';
-        const incDecIndentDiv: HTMLElement = this.createDivElement(element + '_lineindentDiv', indentWholeDiv, 'display:flex;');
+        this.incDecIndentDiv = this.createDivElement(element + '_lineindentDiv', this.indentWholeDiv, 'display:flex;');
         indentClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
         if (isRtl) {
             indentClassName = 'e-rtl ' + indentClassName;
             increaseIndentIconCss += ' e-de-flip';
             decreaseIndentIconCss += ' e-de-flip';
         }
-        incDecIndentDiv.className = indentClassName;
-        this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', decreaseIndentIconCss, incDecIndentDiv, 'e-de-prop-indent-button', '37', 'Decrease indent');
-        this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', increaseIndentIconCss, incDecIndentDiv, 'e-de-prop-indent-last-button', '37', 'Increase indent');
-        const listDiv: HTMLElement = this.createDivElement(element + '_listDiv', paragraphDiv, 'display:flex;');
-        const paraDiv: HTMLElement = this.createDivElement(element + '_paraDiv', paragraphDiv, 'display:flex');
-        classList(listDiv, ['e-de-ctnr-segment', 'e-de-ctnr-group-btn'], []);
-        classList(paraDiv, ['e-de-ctnr-segment', 'e-de-ctnr-group-btn'], []);
+        this.incDecIndentDiv.className = indentClassName;
+        this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', decreaseIndentIconCss, this.incDecIndentDiv, 'e-de-prop-indent-button', '37', 'Decrease indent');
+        this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', increaseIndentIconCss, this.incDecIndentDiv, 'e-de-prop-indent-last-button', '37', 'Increase indent');
+        this.listDiv = this.createDivElement(element + '_listDiv', this.paragraphDiv, 'display:flex;');
+        this.paraDiv = this.createDivElement(element + '_paraDiv', this.paragraphDiv, 'display:flex');
+        classList(this.listDiv, ['e-de-ctnr-segment', 'e-de-ctnr-group-btn'], []);
+        classList(this.paraDiv, ['e-de-ctnr-segment', 'e-de-ctnr-group-btn'], []);
         if (isRtl) {
-            classList(listDiv, ['e-de-ctnr-segment-rtl', 'e-de-ctnr-group-btn'], []);
-            classList(paraDiv, ['e-de-ctnr-segment-rtl', 'e-de-ctnr-group-btn'], []);
+            classList(this.listDiv, ['e-de-ctnr-segment-rtl', 'e-de-ctnr-group-btn'], []);
+            classList(this.paraDiv, ['e-de-ctnr-segment-rtl', 'e-de-ctnr-group-btn'], []);
         }
-        const lineHeight: HTMLElement = createElement('button', { id: element + '_lineHeight', attrs: { type: 'button' } });
-        listDiv.appendChild(lineHeight);
-        this.lineSpacing = this.createLineSpacingDropdown(lineHeight);
+        this.lineHeight = createElement('button', { id: element + '_lineHeight', attrs: { type: 'button' } });
+        this.listDiv.appendChild(this.lineHeight);
+        this.lineSpacing = this.createLineSpacingDropdown(this.lineHeight);
 
-        const listDropDown: HTMLElement = this.createDivElement(element + '_listDropDiv', listDiv);
-        classList(listDropDown, ['de-split-button', 'e-de-ctnr-segment-list'], []);
+        this.listDropDown = this.createDivElement(element + '_listDropDiv', this.listDiv);
+        classList(this.listDropDown, ['de-split-button', 'e-de-ctnr-segment-list'], []);
         if (isRtl) {
-            classList(listDropDown, ['e-de-ctnr-segment-list-rtl'], []);
+            classList(this.listDropDown, ['e-de-ctnr-segment-list-rtl'], []);
         }
 
-        const bulletButton: HTMLElement = createElement('button', { id: element + '_bullet', attrs: { type: 'button' } });
-        listDropDown.appendChild(bulletButton);
-        const numberingList: HTMLElement = createElement('button', { id: element + '_numberingList', attrs: { type: 'button' } });
-        listDropDown.appendChild(numberingList);
+        this.bulletButton = createElement('button', { id: element + '_bullet', attrs: { type: 'button' } });
+        this.listDropDown.appendChild(this.bulletButton);
+        this.numberingList = createElement('button', { id: element + '_numberingList', attrs: { type: 'button' } });
+        this.listDropDown.appendChild(this.numberingList);
         let bulletIconCss: string = 'e-de-ctnr-bullets e-icons';
         let numberIconCss: string = 'e-de-ctnr-numbering e-icons';
         if (isRtl) {
             bulletIconCss += ' e-de-flip';
             numberIconCss += ' e-de-flip';
         }
-        this.createBulletListDropButton(bulletIconCss, bulletButton);
-        this.createNumberListDropButton(numberIconCss, numberingList);
-        this.borders = this.createButtonTemplate(element + '_borders', 'e-de-ctnr-borders e-icons', paraDiv, 'e-de-ctnr-group-btn', '37', 'Borders');
-        this.showHiddenMarks = this.createButtonTemplate(element + '_paraMark', 'e-de-e-paragraph-mark e-icons', paraDiv, 'e-de-ctnr-group-btn', '37', 'ShowHiddenMarks Tooltip');
+        this.createBulletListDropButton(bulletIconCss, this.bulletButton);
+        this.createNumberListDropButton(numberIconCss, this.numberingList);
+        this.borders = this.createButtonTemplate(element + '_borders', 'e-de-ctnr-borders e-icons', this.paraDiv, 'e-de-ctnr-group-btn', '37', 'Borders');
+        this.showHiddenMarks = this.createButtonTemplate(element + '_paraMark', 'e-de-e-paragraph-mark e-icons', this.paraDiv, 'e-de-ctnr-group-btn', '37', 'ShowHiddenMarks Tooltip');
     }
     private createSeparator(parentDiv: HTMLElement): void {
         const separator: HTMLElement = createElement('div', { className: 'e-de-prop-vline' });
@@ -232,53 +270,31 @@ export class Paragraph {
     }
 
     private createNumberListDropButton(iconcss: string, button: HTMLElement): void {
-        const div: HTMLElement = createElement('div', { id: 'target', styles: 'width: 211px;height: auto;display:none' });
-        const ulTag: HTMLElement = createElement('ul', {
+        this.numberListDropDiv = createElement('div', { id: 'target', styles: 'width: 211px;height: auto;display:none' });
+        this.numberListDropUlTag = createElement('ul', {
             styles: 'display: block; outline: 0px;',
             id: 'listMenu',
             className: 'e-de-floating-menu e-de-bullets-menu e-de-list-container e-de-list-thumbnail'
         });
-        div.appendChild(ulTag);
-        this.noneNumberTag = this.createNumberNoneListTag(ulTag);
-        this.noneNumberTag.addEventListener('click', this.numberedNoneClick.bind(this));
-        this.numberList = this.createNumberListTag(ulTag, '1.', '2.', '3.');
-        this.numberList.addEventListener('click', this.numberedNumberDotClick.bind(this));
-        this.lowLetter = this.createNumberListTag(ulTag, 'a.', 'b.', 'c.');
-        this.lowLetter.addEventListener('click', this.numberedLowLetterClick.bind(this));
-        this.upLetter = this.createNumberListTag(ulTag, 'A.', 'B.', 'C.');
-        this.upLetter.addEventListener('click', this.numberedUpLetterClick.bind(this));
-        this.lowRoman = this.createNumberListTag(ulTag, 'i.', 'ii.', 'iii.');
-        this.lowRoman.addEventListener('click', this.numberedLowRomanClick.bind(this));
-        this.upRoman = this.createNumberListTag(ulTag, 'I.', 'II.', 'III.');
-        this.upRoman.addEventListener('click', this.numberedUpRomanClick.bind(this));
+        this.numberListDropDiv.appendChild(this.numberListDropUlTag);
+        this.noneNumberTag = this.createNumberNoneListTag(this.numberListDropUlTag);
+        this.noneNumberTag.addEventListener('click', this.numberedAndBulletNoneClickHandler);
+        this.numberList = this.createNumberListTag(this.numberListDropUlTag, '1.', '2.', '3.');
+        this.numberList.addEventListener('click', this.numberedNumberDotClickHandler);
+        this.lowLetter = this.createNumberListTag(this.numberListDropUlTag, 'a.', 'b.', 'c.');
+        this.lowLetter.addEventListener('click', this.numberedLowLetterClickHandler);
+        this.upLetter = this.createNumberListTag(this.numberListDropUlTag, 'A.', 'B.', 'C.');
+        this.upLetter.addEventListener('click', this.numberedUpLetterClickHandler);
+        this.lowRoman = this.createNumberListTag(this.numberListDropUlTag, 'i.', 'ii.', 'iii.');
+        this.lowRoman.addEventListener('click', this.numberedLowRomanClickHandler);
+        this.upRoman = this.createNumberListTag(this.numberListDropUlTag, 'I.', 'II.', 'III.');
+        this.upRoman.addEventListener('click', this.numberedUpRomanClickHandler);
         const menuOptions: SplitButtonModel = {
-            target: div,
+            target: this.numberListDropDiv,
             iconCss: iconcss,
             cssClass: this.splitButtonClass,
-            beforeOpen: (): void => {
-                div.style.display = 'block';
-                let levelPattern: string = 'None';
-                if (!isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat)) {
-                    if (isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat.listId)
-                        || this.documentEditor.selectionModule.paragraphFormat.listId === -1) {
-                        levelPattern = 'None';
-                    }
-                    else {
-                        const list: WList = this.documentEditor.documentHelper.getListById(
-                            this.documentEditor.selectionModule.paragraphFormat.listId);
-                        const abstractList: WAbstractList = this.documentEditor.documentHelper.getAbstractListById(list.abstractListId);
-                        const startParagraph: ParagraphWidget = this.documentEditor.selectionModule.isForward ?
-                            this.documentEditor.selectionModule.start.paragraph : this.documentEditor.selectionModule.end.paragraph;
-                        const level: WListLevel = abstractList.levels[startParagraph.paragraphFormat.listFormat.listLevelNumber];
-                        levelPattern = level.listLevelPattern;
-                    }
-                }
-                this.updateSelectedNumberedListType(levelPattern);
-            },
-            beforeClose: (): void => {
-                div.style.display = 'none';
-                this.removeSelectedList();
-            }
+            beforeOpen: this.numberSplitButtonBeforeOpen.bind(this),
+            beforeClose: this.numberSplitButtonBeforeClose.bind(this)
         };
         this.numberedListBtn = new SplitButton(menuOptions);
         this.numberedListBtn.click = (): void => {
@@ -287,6 +303,30 @@ export class Paragraph {
         this.numberedListBtn.appendTo(button);
         button.parentElement.setAttribute('title', this.localObj.getConstant('Numbering'));
         button.parentElement.setAttribute('aria-label', this.localObj.getConstant('Numbering'));
+    }
+    private numberSplitButtonBeforeClose(): void {
+        this.numberListDropDiv.style.display = 'none';
+        this.removeSelectedList();
+    }
+    private numberSplitButtonBeforeOpen(): void {
+        this.numberListDropDiv.style.display = 'block';
+        let levelPattern: string = 'None';
+        if (!isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat)) {
+            if (isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat.listId)
+                || this.documentEditor.selectionModule.paragraphFormat.listId === -1) {
+                levelPattern = 'None';
+            }
+            else {
+                const list: WList = this.documentEditor.documentHelper.getListById(
+                    this.documentEditor.selectionModule.paragraphFormat.listId);
+                const abstractList: WAbstractList = this.documentEditor.documentHelper.getAbstractListById(list.abstractListId);
+                const startParagraph: ParagraphWidget = this.documentEditor.selectionModule.isForward ?
+                    this.documentEditor.selectionModule.start.paragraph : this.documentEditor.selectionModule.end.paragraph;
+                const level: WListLevel = abstractList.levels[startParagraph.paragraphFormat.listFormat.listLevelNumber];
+                levelPattern = level.listLevelPattern;
+            }
+        }
+        this.updateSelectedNumberedListType(levelPattern);
     }
     private updateSelectedBulletListType(listText: string): void {
         switch (listText) {
@@ -384,19 +424,19 @@ export class Paragraph {
         });
         div.appendChild(ulTag);
         this.noneBulletTag = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-none e-icons e-de-ctnr-list', true);
-        this.noneBulletTag.addEventListener('click', this.numberedNoneClick.bind(this));
+        this.noneBulletTag.addEventListener('click', this.numberedAndBulletNoneClickHandler);
         this.dotBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-dot e-icons e-de-ctnr-list', false);
-        this.dotBullet.addEventListener('click', this.bulletDotClick.bind(this));
+        this.dotBullet.addEventListener('click', this.bulletDotClickHandler);
         this.circleBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-circle e-icons e-de-ctnr-list', false);
-        this.circleBullet.addEventListener('click', this.bulletCircleClick.bind(this));
+        this.circleBullet.addEventListener('click', this.bulletCircleClickHandler);
         this.squareBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-square e-icons e-de-ctnr-list', false);
-        this.squareBullet.addEventListener('click', this.bulletSquareClick.bind(this));
+        this.squareBullet.addEventListener('click', this.bulletSquareClickHandler);
         this.flowerBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-flower e-icons e-de-ctnr-list', false);
-        this.flowerBullet.addEventListener('click', this.bulletFlowerClick.bind(this));
+        this.flowerBullet.addEventListener('click', this.bulletFlowerClickHandler);
         this.arrowBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-arrow e-icons e-de-ctnr-list', false);
-        this.arrowBullet.addEventListener('click', this.bulletArrowClick.bind(this));
+        this.arrowBullet.addEventListener('click', this.bulletArrowClickHandler);
         this.tickBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-tick e-icons e-de-ctnr-list', false);
-        this.tickBullet.addEventListener('click', this.bulletTickClick.bind(this));
+        this.tickBullet.addEventListener('click', this.bulletTickClickHandler);
         const menuOptions: SplitButtonModel = {
             target: div,
             iconCss: iconcss,
@@ -611,10 +651,11 @@ export class Paragraph {
         }
         return domStyle;
     }
+    private onrightAlignmentClick(): void {
+        this.leftAlignmentAction();
+    };
     public wireEvent(): void {
-        this.leftAlignment.addEventListener('click', (): void => {
-            this.leftAlignmentAction();
-        });
+        this.leftAlignment.addEventListener('click', this.onrightAlignmentClickHandler);
         this.rightAlignment.addEventListener('click', (): void => {
             this.rightAlignmentAction();
         });
@@ -645,7 +686,7 @@ export class Paragraph {
         });
     }
     public unwireEvents(): void {
-        this.leftAlignment.click = undefined;
+        this.leftAlignment.removeEventListener('click', this.onrightAlignmentClickHandler);
         this.rightAlignment.click = undefined;
         this.centerAlignment.click = undefined;
         this.justify.click = undefined;
@@ -713,18 +754,20 @@ export class Paragraph {
         }
     }
     private selectStyleValue(args: any): void {
-        let treeViewResult: HTMLElement = document.getElementById(this.documentEditor.containerId + '_treeDiv');
-                if (!isNullOrUndefined(treeViewResult) && !isNullOrUndefined(this.documentEditor.optionsPaneModule) && this.documentEditor.optionsPaneModule.isOptionsPaneShow) {
-                    treeViewResult.innerHTML = '';
-                    this.documentEditor.optionsPaneModule.data = this.documentEditor.optionsPaneModule.dataForTreeview();
-                    this.documentEditor.optionsPaneModule.initHeadingTab();
-                }
-        if (this.isRetrieving || !args.isInteracted) {
-            return;
+        if (this.container) {
+            let treeViewResult: HTMLElement = document.getElementById(this.documentEditor.containerId + '_treeDiv');
+            if (!isNullOrUndefined(treeViewResult) && !isNullOrUndefined(this.documentEditor.optionsPaneModule) && this.documentEditor.optionsPaneModule.isOptionsPaneShow) {
+                treeViewResult.innerHTML = '';
+                this.documentEditor.optionsPaneModule.data = this.documentEditor.optionsPaneModule.dataForTreeview();
+                this.documentEditor.optionsPaneModule.initHeadingTab();
+            }
+            if (this.isRetrieving || !args.isInteracted) {
+                return;
+            }
+            setTimeout((): void => {
+                this.applyStyleValue(args);
+            }, 10);
         }
-        setTimeout((): void => {
-            this.applyStyleValue(args);
-        }, 10);
     }
     private applyStyleValue(args: any): void {
         if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
@@ -984,16 +1027,97 @@ export class Paragraph {
         this.setLineSpacing();
         this.isRetrieving = false;
     }
+    private removeHTMLElements() {
+        this.leftAlignment.remove();
+        this.leftAlignment = null;
+        this.rightAlignment.remove();
+        this.rightAlignment = null;
+        this.centerAlignment.remove();
+        this.centerAlignment = null;
+        this.justify.remove();
+        this.justify = null;
+        this.increaseIndent.remove();
+        this.increaseIndent = null;
+        this.decreaseIndent.remove();
+        this.decreaseIndent = null;
+        this.showHiddenMarks.remove();
+        this.showHiddenMarks = null;
+
+        this.noneNumberTag.remove();
+        this.noneNumberTag = null;
+        this.numberList.remove();
+        this.numberList = null;
+        this.lowLetter.remove();
+        this.lowLetter = null;
+        this.upLetter.remove();
+        this.upLetter = null;
+        this.lowRoman.remove();
+        this.lowRoman = null;
+        this.upRoman.remove();
+        this.upRoman = null;
+        this.noneBulletTag.remove();
+        this.noneBulletTag = null;
+        this.dotBullet.remove();
+        this.dotBullet = null;
+        this.circleBullet.remove();
+        this.circleBullet = null;
+        this.squareBullet.remove();
+        this.squareBullet = null;
+        this.flowerBullet.remove();
+        this.flowerBullet = null;
+        this.arrowBullet.remove();
+        this.arrowBullet = null;
+        this.tickBullet.remove();
+        this.tickBullet = null;
+        this.borders.remove();
+        this.borders = null;
+        this.paragraphDiv.remove();
+        this.paragraphDiv = null
+        this.label.remove();
+        this.label = null;
+        // this.styleDiv.remove();
+        // this.styleDiv = null;
+        // this.styleSelect.remove();
+        // this.styleSelect = null;
+        this.indentWholeDiv.remove();
+        this.indentWholeDiv = null;
+        this.indentDiv.remove();
+        this.indentDiv = null;
+        this.incDecIndentDiv.remove();
+        this.incDecIndentDiv = null;
+        this.listDiv.remove();
+        this.listDiv = null;
+        this.paraDiv.remove();
+        this.paraDiv = null;
+        this.lineHeight.remove();
+        this.lineHeight = null;
+        this.listDropDown.remove();
+        this.listDropDown = null;
+        this.bulletButton.remove();
+        this.bulletButton = null;
+        this.numberingList.remove();
+        this.numberingList = null;
+        this.numberListDropDiv.remove();
+        this.numberListDropDiv = null;
+        this.numberListDropUlTag.remove();
+        this.numberListDropUlTag = null;
+    }
     public destroy(): void {
         this.container = undefined;
+        this.unwireEvents();
+        this.removeHTMLElements();
         if (this.lineSpacing) {
             this.lineSpacing.destroy();
             this.lineSpacing = undefined;
         }
-        if (this.style) {
-            this.style.destroy();
-            this.style = undefined;
-        }
+        // if (this.style) {
+        //     //this.style.destroy();
+        //     if(this.style.element) {
+        //         this.style.element.remove();
+        //     }
+        //     this.style.element = null;
+        //     this.style = undefined;
+        //}
         if (this.bulletListBtn) {
             this.bulletListBtn.destroy();
             this.bulletListBtn = undefined;

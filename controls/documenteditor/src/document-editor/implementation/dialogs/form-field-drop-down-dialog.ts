@@ -28,6 +28,36 @@ export class DropDownFormFieldDialog {
     private fieldBegin: FieldElementBox;
     private dropDownItems: string[];
 
+    private dialogDiv: HTMLDivElement;
+    private firstDiv: HTMLElement;
+    private secondDiv: HTMLElement;
+    private itemsDrpItemsLabel: HTMLElement;
+    private listviewDiv: HTMLElement;
+    private buttonDiv: HTMLElement;
+    private addButtonDiv: HTMLElement;
+    private addButtonEle: HTMLElement;
+    private editButtonDiv: HTMLElement;
+    private editButtonEle: HTMLElement;
+    private removeButtonDiv: HTMLElement;
+    private removeButtonEle: HTMLElement;
+    private moveBtnDiv: HTMLElement;
+    private moveUpButtonDiv: HTMLElement;
+    private moveUpButtonEle: HTMLElement;
+    private moveDownButtonDiv: HTMLElement;
+    private moveDownButtonEle: HTMLElement;
+    private fileSettingsLabel: HTMLElement;
+    private thirdDiv: HTMLElement;
+    private toolTipDiv: HTMLElement;
+    private bookmarkDiv: HTMLElement;
+    private dropDownEnableDiv: HTMLElement;
+    private dropDownEnableEle: HTMLInputElement;
+
+    private moveDownItemClickHandler: EventListenerOrEventListenerObject = this.onMouseDownItemClick.bind(this);
+    private keyUpOnTextBoxClickHandler: EventListenerOrEventListenerObject = this.onKeyUpOnTextBoxClick.bind(this);
+    private addItemtoListClickHandler: EventListenerOrEventListenerObject = this.onAddItemtoListClick.bind(this);
+    private moveUpItemClickHandler: EventListenerOrEventListenerObject = this.onMoveUpItemClick.bind(this);
+    private removeItemFromListClickHandler: EventListenerOrEventListenerObject = this.onRemoveItemFromListClick.bind(this);
+
     public constructor(owner: DocumentEditor) {
         this.owner = owner;
     }
@@ -48,20 +78,20 @@ export class DropDownFormFieldDialog {
      */
     private initTextDialog(localValue: L10n, isRtl?: boolean): void {
         this.target = createElement('div');
-        let dialogDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        let firstDiv: HTMLElement = createElement('div', { className: 'e-de-drp-dwn-frst-div' });
+        this.dialogDiv = createElement('div') as HTMLDivElement;
+        this.firstDiv = createElement('div', { className: 'e-de-drp-dwn-frst-div' });
 
         this.drpDownItemsInput = createElement('input', {
             className: 'e-input e-bookmark-textbox-input',
             id: 'fielditems_text_box'
         }) as HTMLInputElement;
-        this.drpDownItemsInput.addEventListener('keyup', this.onKeyUpOnTextBox);
-        let secondDiv: HTMLElement = createElement('div', { className: 'e-de-ff-drpdwn-dlg-scndiv' });
-        let itemsDrpItemsLabel: HTMLElement = createElement('div', {
+        this.drpDownItemsInput.addEventListener('keyup', this.keyUpOnTextBoxClickHandler);
+        this.secondDiv = createElement('div', { className: 'e-de-ff-drpdwn-dlg-scndiv' });
+        this.itemsDrpItemsLabel = createElement('div', {
             className: 'e-de-ff-dlg-drpdwn-heading',
             innerHTML: localValue.getConstant('Items in dropdown list')
         });
-        let listviewDiv: HTMLElement = createElement('div', {
+        this.listviewDiv = createElement('div', {
             className: 'e-bookmark-listViewDiv e-de-ff-drpdwn-listview',
             attrs: { style: 'height:100%' }
         });
@@ -69,116 +99,116 @@ export class DropDownFormFieldDialog {
             cssClass: 'e-bookmark-listview',
             select: this.selectHandler
         });
-        let buttonDiv: HTMLElement = createElement('div');
-        let addButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
-        let addButtonEle: HTMLElement = createElement('button', {
+        this.buttonDiv = createElement('div');
+        this.addButtonDiv = createElement('div', { className: 'e-bookmark-addbutton' });
+        this.addButtonEle = createElement('button', {
             innerHTML: localValue.getConstant('ADD'),
             attrs: { type: 'button', style: 'height:36px;width:100%' }
         });
         this.addButton = new Button({ cssClass: 'e-button-custom' });
         this.addButton.disabled = true;
-        addButtonEle.setAttribute('aria-label',localValue.getConstant('ADD'));
-        addButtonEle.addEventListener('click', this.addItemtoList.bind(this));
-        let editButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
-        editButtonDiv.style.display = 'none';
-        let editButtonEle: HTMLElement = createElement('button', {
+        this.addButtonEle.setAttribute('aria-label',localValue.getConstant('ADD'));
+        this.addButtonEle.addEventListener('click', this.addItemtoListClickHandler);
+        this.editButtonDiv = createElement('div', { className: 'e-bookmark-addbutton' });
+        this.editButtonDiv.style.display = 'none';
+        this.editButtonEle = createElement('button', {
             innerHTML: 'EDIT',
             attrs: { type: 'button', style: 'height:36px;width:100%' }
         });
         this.editButton = new Button({ cssClass: 'e-button-custom' });
-        editButtonEle.setAttribute('aria-label','EDIT');
-        let removeButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
-        let removeButtonEle: HTMLElement = createElement('button', {
+        this.editButtonEle.setAttribute('aria-label','EDIT');
+        this.removeButtonDiv = createElement('div', { className: 'e-bookmark-addbutton' });
+        this.removeButtonEle = createElement('button', {
             innerHTML: localValue.getConstant('REMOVE'),
             attrs: { type: 'button', style: 'height:36px;width:100%' }
         });
-        removeButtonEle.setAttribute('aria-label',localValue.getConstant('REMOVE'));
+        this.removeButtonEle.setAttribute('aria-label',localValue.getConstant('REMOVE'));
         this.removeButton = new Button({ cssClass: 'e-button-custom' });
-        removeButtonEle.addEventListener('click', this.removeItemFromList.bind(this));
-        let moveBtnDiv: HTMLElement = createElement('div', { attrs: { style: 'display:inline-flex' } });
-        let moveUpButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
-        let moveUpButtonEle: HTMLElement = createElement('button', {
+        this.removeButtonEle.addEventListener('click', this.removeItemFromListClickHandler);
+        this.moveBtnDiv = createElement('div', { attrs: { style: 'display:inline-flex' } });
+        this.moveUpButtonDiv = createElement('div', { className: 'e-bookmark-addbutton' });
+        this.moveUpButtonEle = createElement('button', {
             attrs: { type: 'button', style: 'height:36px;width:40px' },
             className: 'e-de-ff-drpdwn-mvup'
         });
-        moveUpButtonEle.setAttribute('aria-label','moveUp');
+        this.moveUpButtonEle.setAttribute('aria-label','moveUp');
         this.moveUpButton = new Button({ cssClass: 'e-button-custom', iconCss: 'e-de-arrow-up' });
-        moveUpButtonEle.addEventListener('click', this.moveUpItem.bind(this));
-        let moveDownButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
-        let moveDownButtonEle: HTMLElement = createElement('button', {
+        this.moveUpButtonEle.addEventListener('click', this.moveUpItemClickHandler);
+        this.moveDownButtonDiv = createElement('div', { className: 'e-bookmark-addbutton' });
+        this.moveDownButtonEle = createElement('button', {
             attrs: { type: 'button', style: 'height:36px;width:40px' },
             className: 'e-de-ff-drpdwn-mvdn'
         });
-        moveDownButtonEle.setAttribute('aria-label','moveDown');
+        this.moveDownButtonEle.setAttribute('aria-label','moveDown');
         this.moveDownButton = new Button({ cssClass: 'e-button-custom', iconCss: 'e-de-arrow-down' });
-        moveDownButtonEle.addEventListener('click', this.moveDownItem.bind(this));
-        let fileSettingsLabel: HTMLElement = createElement('div', {
+        this.moveDownButtonEle.addEventListener('click', this.moveDownItemClickHandler);
+        this.fileSettingsLabel = createElement('div', {
             className: 'e-de-para-dlg-heading',
             innerHTML: localValue.getConstant('Field settings')
         });
-        let thirdDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
-        let toolTipDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
-        let bookmarkDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
+        this.thirdDiv = createElement('div', { className: 'e-de-container-row' });
+        this.toolTipDiv = createElement('div', { className: 'e-de-subcontainer-left' });
+        this.bookmarkDiv = createElement('div', { className: 'e-de-subcontainer-right' });
         this.tooltipInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
         
         this.bookmarkInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
-        let dropDownEnableDiv: HTMLElement = createElement('div');
-        let dropDownEnableEle: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
+        this.dropDownEnableDiv = createElement('div');
+        this.dropDownEnableEle = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
         this.dropDownEnable = new CheckBox({
             cssClass: 'e-de-ff-dlg-check',
             label: localValue.getConstant('Dropdown enabled'),
             enableRtl: isRtl
         });
         if (isRtl) {
-            listviewDiv.classList.add('e-de-rtl');
-            moveUpButtonEle.classList.add('e-de-rtl');
-            toolTipDiv.classList.add('e-de-rtl');
-            bookmarkDiv.classList.add('e-de-rtl');
+            this.listviewDiv.classList.add('e-de-rtl');
+            this.moveUpButtonEle.classList.add('e-de-rtl');
+            this.toolTipDiv.classList.add('e-de-rtl');
+            this.bookmarkDiv.classList.add('e-de-rtl');
         }
-        dropDownEnableDiv.setAttribute('aria-label',localValue.getConstant('Dropdown enabled'));
-        this.target.appendChild(dialogDiv);
-        dialogDiv.appendChild(firstDiv);
-        firstDiv.appendChild(this.drpDownItemsInput);
-        dialogDiv.appendChild(itemsDrpItemsLabel);
+        this.dropDownEnableDiv.setAttribute('aria-label',localValue.getConstant('Dropdown enabled'));
+        this.target.appendChild(this.dialogDiv);
+        this.dialogDiv.appendChild(this.firstDiv);
+        this.firstDiv.appendChild(this.drpDownItemsInput);
+        this.dialogDiv.appendChild(this.itemsDrpItemsLabel);
 
-        dialogDiv.appendChild(secondDiv);
-        secondDiv.appendChild(listviewDiv);
-        this.listviewInstance.appendTo(listviewDiv);
+        this.dialogDiv.appendChild(this.secondDiv);
+        this.secondDiv.appendChild(this.listviewDiv);
+        this.listviewInstance.appendTo(this.listviewDiv);
 
-        secondDiv.appendChild(buttonDiv);
+        this.secondDiv.appendChild(this.buttonDiv);
 
-        buttonDiv.appendChild(addButtonDiv);
-        addButtonDiv.appendChild(addButtonEle);
-        this.addButton.appendTo(addButtonEle);
+        this.buttonDiv.appendChild(this.addButtonDiv);
+        this.addButtonDiv.appendChild(this.addButtonEle);
+        this.addButton.appendTo(this.addButtonEle);
 
-        buttonDiv.appendChild(editButtonDiv);
-        editButtonDiv.appendChild(editButtonEle);
-        this.editButton.appendTo(editButtonEle);
+        this.buttonDiv.appendChild(this.editButtonDiv);
+        this.editButtonDiv.appendChild(this.editButtonEle);
+        this.editButton.appendTo(this.editButtonEle);
 
-        buttonDiv.appendChild(removeButtonDiv);
-        removeButtonDiv.appendChild(removeButtonEle);
-        this.removeButton.appendTo(removeButtonEle);
+        this.buttonDiv.appendChild(this.removeButtonDiv);
+        this.removeButtonDiv.appendChild(this.removeButtonEle);
+        this.removeButton.appendTo(this.removeButtonEle);
 
-        buttonDiv.appendChild(moveBtnDiv);
+        this.buttonDiv.appendChild(this.moveBtnDiv);
 
-        moveBtnDiv.appendChild(moveUpButtonDiv);
-        moveUpButtonDiv.appendChild(moveUpButtonEle);
-        this.moveUpButton.appendTo(moveUpButtonEle);
+        this.moveBtnDiv.appendChild(this.moveUpButtonDiv);
+        this.moveUpButtonDiv.appendChild(this.moveUpButtonEle);
+        this.moveUpButton.appendTo(this.moveUpButtonEle);
 
-        moveBtnDiv.appendChild(moveDownButtonDiv);
-        moveDownButtonDiv.appendChild(moveDownButtonEle);
-        this.moveDownButton.appendTo(moveDownButtonEle);
+        this.moveBtnDiv.appendChild(this.moveDownButtonDiv);
+        this.moveDownButtonDiv.appendChild(this.moveDownButtonEle);
+        this.moveDownButton.appendTo(this.moveDownButtonEle);
 
-        dialogDiv.appendChild(fileSettingsLabel);
-        dialogDiv.appendChild(thirdDiv);
-        thirdDiv.appendChild(toolTipDiv);
-        toolTipDiv.appendChild(this.tooltipInput);
-        thirdDiv.appendChild(bookmarkDiv);
-        bookmarkDiv.appendChild(this.bookmarkInput);
+        this.dialogDiv.appendChild(this.fileSettingsLabel);
+        this.dialogDiv.appendChild(this.thirdDiv);
+        this.thirdDiv.appendChild(this.toolTipDiv);
+        this.toolTipDiv.appendChild(this.tooltipInput);
+        this.thirdDiv.appendChild(this.bookmarkDiv);
+        this.bookmarkDiv.appendChild(this.bookmarkInput);
 
-        dialogDiv.appendChild(dropDownEnableDiv);
-        dropDownEnableDiv.appendChild(dropDownEnableEle);
-        this.dropDownEnable.appendTo(dropDownEnableEle);
+        this.dialogDiv.appendChild(this.dropDownEnableDiv);
+        this.dropDownEnableDiv.appendChild(this.dropDownEnableEle);
+        this.dropDownEnable.appendTo(this.dropDownEnableEle);
         new TextBox({ placeholder: localValue.getConstant('Tooltip'), floatLabelType: 'Always' }, this.tooltipInput);
         new TextBox({ placeholder: localValue.getConstant('Name'), floatLabelType: 'Always' }, this.bookmarkInput)
         new TextBox({ placeholder: localValue.getConstant('Dropdown items'), floatLabelType: 'Always' }, this.drpDownItemsInput)
@@ -255,7 +285,9 @@ export class DropDownFormFieldDialog {
             this.listviewInstance.selectItem(toSelectItem);
         }
     }
-
+    private onAddItemtoListClick(): void {
+        this.addItemtoList();
+    }
     /**
      * @private
      * @returns {void}
@@ -267,7 +299,9 @@ export class DropDownFormFieldDialog {
         this.enableOrDisableButton();
         this.updateList();
     }
-
+    private onRemoveItemFromListClick(): void {
+        this.removeItemFromList();
+    }
     /**
      * @private
      * @returns {void}
@@ -289,7 +323,9 @@ export class DropDownFormFieldDialog {
         this.currentSelectedItem = args.text;
     }
 
-
+    private onMoveUpItemClick(): void {
+        this.moveUpItem();
+    }
     /**
      * @private
      * @returns {void}
@@ -300,7 +336,9 @@ export class DropDownFormFieldDialog {
         this.updateList();
     }
 
-
+    private onMouseDownItemClick(): void {
+        this.moveDownItem();
+    }
     /**
      * @private
      * @returns {void}
@@ -356,7 +394,9 @@ export class DropDownFormFieldDialog {
         }
     }
 
-
+    private onKeyUpOnTextBoxClick(): void {
+        this.onKeyUpOnTextBox();
+    }
     /**
      * @private
      * @returns {void}
@@ -419,6 +459,8 @@ export class DropDownFormFieldDialog {
         }
         this.owner = undefined;
         this.drpDownItemsInput = undefined;
+        this.removeEvents();
+        this.removeElements();
         if (this.listviewInstance) {
             this.listviewInstance.destroy();
             this.listviewInstance = undefined;
@@ -450,5 +492,117 @@ export class DropDownFormFieldDialog {
             this.dropDownEnable = undefined;
         }
         this.dropDownInstance = undefined;
+    }
+    private removeEvents(): void {
+        if (this.addButtonEle) {
+            this.addButtonEle.removeEventListener('click', this.addItemtoListClickHandler);
+        }
+        if (this.removeButtonEle) {
+            this.removeButtonEle.removeEventListener('click', this.removeItemFromListClickHandler);
+        }
+        if (this.moveUpButtonEle) {
+            this.moveUpButtonEle.removeEventListener('click', this.moveUpItemClickHandler);
+        }
+        if (this.moveDownButtonEle) {
+            this.moveDownButtonEle.removeEventListener('click', this.moveDownItemClickHandler);
+        }
+        if (this.drpDownItemsInput) {
+            this.drpDownItemsInput.removeEventListener('keyup', this.keyUpOnTextBoxClickHandler);
+        }
+    }
+    private removeElements(): void {
+        if (this.dialogDiv) {
+            this.dialogDiv.remove();
+            this.dialogDiv = undefined;
+        }
+        if (this.firstDiv) {
+            this.firstDiv.remove();
+            this.firstDiv = undefined;
+        }
+        if (this.secondDiv) {
+            this.secondDiv.remove();
+            this.secondDiv = undefined;
+        }
+        if (this.itemsDrpItemsLabel) {
+            this.itemsDrpItemsLabel.remove();
+            this.itemsDrpItemsLabel = undefined;
+        }
+        if (this.listviewDiv) {
+            this.listviewDiv.remove();
+            this.listviewDiv = undefined;
+        }
+        if (this.buttonDiv) {
+            this.buttonDiv.remove();
+            this.buttonDiv = undefined;
+        }
+        if (this.addButtonDiv) {
+            this.addButtonDiv.remove();
+            this.addButtonDiv = undefined;
+        }
+        if (this.addButtonEle) {
+            this.addButtonEle.remove();
+            this.addButtonEle = undefined;
+        }
+        if (this.editButtonDiv) {
+            this.editButtonDiv.remove();
+            this.editButtonDiv = undefined;
+        }
+        if (this.editButtonEle) {
+            this.editButtonEle.remove();
+            this.editButtonEle = undefined;
+        }
+        if (this.removeButtonDiv) {
+            this.removeButtonDiv.remove();
+            this.removeButtonDiv = undefined;
+        }
+        if (this.removeButtonEle) {
+            this.removeButtonEle.remove();
+            this.removeButtonEle = undefined;
+        }
+        if (this.moveBtnDiv) {
+            this.moveBtnDiv.remove();
+            this.moveBtnDiv = undefined;
+        }
+        if (this.moveUpButtonDiv) {
+            this.moveUpButtonDiv.remove();
+            this.moveUpButtonDiv = undefined;
+        }
+        if (this.moveUpButtonEle) {
+            this.moveUpButtonEle.remove();
+            this.moveUpButtonEle = undefined;
+        }
+        if (this.moveDownButtonDiv) {
+            this.moveDownButtonDiv.remove();
+            this.moveDownButtonDiv = undefined;
+        }
+        if (this.moveDownButtonEle) {
+            this.moveDownButtonEle.remove();
+            this.moveDownButtonEle = undefined;
+        }
+        if (this.fileSettingsLabel) {
+            this.fileSettingsLabel.remove();
+            this.fileSettingsLabel = undefined;
+        }
+        if (this.thirdDiv) {
+            this.thirdDiv.remove();
+            this.thirdDiv = undefined;
+        }
+        if (this.toolTipDiv) {
+            this.toolTipDiv.remove();
+            this.toolTipDiv = undefined;
+        }
+        if (this.bookmarkDiv) {
+            this.bookmarkDiv.remove();
+            this.bookmarkDiv = undefined;
+        }
+        if (this.dropDownEnableDiv) {
+            this.dropDownEnableDiv.remove();
+            this.dropDownEnableDiv = undefined;
+        }
+        if (this.dropDownEnableEle) {
+            this.dropDownEnableEle.remove();
+            this.dropDownEnableEle = undefined;
+        }
+        
     }
 }

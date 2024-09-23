@@ -111,7 +111,9 @@ export class AccumulationLegend extends BaseLegend {
             for (const point of series[i as number].points) {
                 if (!isNullOrUndefined(point.x) && !isNullOrUndefined(point.y)) {
                     this.legendCollections.push(new LegendOptions(
-                        point.x.toString(), point.color, series[i as number].legendShape, point.visible,
+                        (chart.useGroupingSeparator && typeof point.x === 'number') ? chart.intl.formatNumber(point.x as number, { useGrouping: true })
+                            : point.x.toString(), point.color,
+                        series[i as number].legendShape, point.visible,
                         seriesType, point.legendImageUrl, null, null,
                         point.index, series[i as number].index
                     ));

@@ -875,7 +875,7 @@ export class EventBase {
     }
 
     public generateOccurrence(event: Record<string, any>, viewDate?: Date, isMaxCount?: boolean): Record<string, any>[] {
-        const startDate: Date = event[this.parent.eventFields.startTime] as Date;
+        let startDate: Date = event[this.parent.eventFields.startTime] as Date;
         const endDate: Date = event[this.parent.eventFields.endTime] as Date;
         const eventRule: string = event[this.parent.eventFields.recurrenceRule] as string;
         const timeZoneDiff: number = endDate.getTimezoneOffset() - startDate.getTimezoneOffset();
@@ -889,6 +889,11 @@ export class EventBase {
         const newTimezone: string = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
         const firstDay: number = this.parent.activeViewOptions.firstDayOfWeek;
         const calendarMode: CalendarType = this.parent.calendarMode;
+        if (event[this.parent.eventFields.recurrenceRule] && event[this.parent.eventFields.recurrenceRule].includes('BYMONTHDAY') &&
+            this.parent.timezone && event[this.parent.eventFields.startTimezone] && event[this.parent.eventFields.endTimezone]) {
+            startDate = this.parent.tzModule.convert(event[this.parent.eventFields.startTime],
+                                                     this.parent.timezone, event[this.parent.eventFields.startTimezone]);
+        }
         const dates: number[] =
             generate(startDate, eventRule, exception, firstDay, maxCount, viewDate, calendarMode, newTimezone);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
@@ -903,10 +908,20 @@ export class EventBase {
                 }
             }
         }
+        let isDSTAdjusted: boolean = false;
+        let convertedDates: number[] = [];
+        if (event[this.parent.eventFields.recurrenceRule] && event[this.parent.eventFields.recurrenceRule].includes('BYMONTHDAY') &&
+            this.parent.timezone && event[this.parent.eventFields.startTimezone] && event[this.parent.eventFields.endTimezone]) {
+            isDSTAdjusted = true;
+            convertedDates.push(...dates.map((date: number) =>
+                this.parent.tzModule.convert(new Date(date), event[this.parent.eventFields.startTimezone], this.parent.timezone).getTime()
+            ));
+        }
+        convertedDates = convertedDates.length > 0 ? convertedDates : dates;
         const occurrenceCollection: Record<string, any>[] = [];
-        for (let date of dates) {
+        for (let date of convertedDates) {
             const clonedObject: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
-            date = this.getDSTAdjustedTime(date, clonedObject);
+            date = !isDSTAdjusted ? this.getDSTAdjustedTime(date, clonedObject) : date;
             clonedObject[this.parent.eventFields.startTime] = new Date(date);
             clonedObject[this.parent.eventFields.endTime] = new Date(new Date(date).setMilliseconds(duration));
             clonedObject[this.parent.eventFields.recurrenceID] = clonedObject[this.parent.eventFields.id];

@@ -21,6 +21,20 @@ export class BulletsAndNumberingDialog {
     private listFormat: WListFormat;
     private abstractList: WAbstractList;
     private tabObj: Tab;
+
+    private tabTarget: HTMLElement
+    private ulTag: HTMLElement;
+    private liTag: HTMLElement;
+    private liInnerDiv: HTMLElement
+    private liTag1: HTMLElement;
+    private liInnerDiv1: HTMLElement;
+    private liTag2: HTMLElement;
+    private liInnerDiv2: HTMLElement;
+    private liNextDiv: HTMLElement;
+    private ulTag1: HTMLElement;
+
+    private numberListClickHandler: EventListenerOrEventListenerObject = this.onNumberListClick.bind(this);
+    private bulletListClickHandler: EventListenerOrEventListenerObject = this.onBulletListClick.bind(this);
     /**
      * @private
      */
@@ -53,8 +67,8 @@ export class BulletsAndNumberingDialog {
     public initNumberingBulletDialog(locale: L10n): void {
         const id: string = this.documentHelper.owner.containerId;
         this.target = createElement('div', { id: id + '_insertNumberBulletDialog', className: 'e-de-number-bullet-dlg' });
-        const tabTarget: HTMLElement = createElement('div', { id: id + '_tabNumberBulletDialog', className: 'e-de-tab-number-bullet-dlg' });
-        this.target.appendChild(tabTarget);
+        this.tabTarget = createElement('div', { id: id + '_tabNumberBulletDialog', className: 'e-de-tab-number-bullet-dlg' });
+        this.target.appendChild(this.tabTarget);
         this.createNumberList(id, locale);
         this.createBulletList(id, locale);
         //Initialize Tab component
@@ -76,7 +90,7 @@ export class BulletsAndNumberingDialog {
         });
         this.tabObj.isStringTemplate = true;
         //Render initialized Tab component
-        this.tabObj.appendTo(tabTarget);
+        this.tabObj.appendTo(this.tabTarget);
 
     }
     private onTabSelect(args: SelectingEventArgs): void {
@@ -88,101 +102,101 @@ export class BulletsAndNumberingDialog {
     private createNumberList(id: string, locale: L10n): void {
         this.numberListDiv = createElement('div', { className: 'e-de-style-numbered-list', id: id + '_Number' });
         const numberListDiv: HTMLElement = this.numberListDiv;
-        const ulTag: HTMLElement = createElement('ul', {
+        this.ulTag = createElement('ul', {
             styles: 'display: block; outline: 0px;',
             id: 'listMenu',
             className: 'e-de-ui-wfloating-menu e-de-ui-bullets-menu e-de-list-container e-de-list-thumbnail'
         });
-        numberListDiv.appendChild(ulTag);
-        const numberedNone: HTMLElement = this.createNumberNoneListTag(ulTag, locale);
-        const numberedNumberDot: HTMLElement = this.createNumberListTag(ulTag, '1.', '2.', '3.', 'e-de-list-numbered-number-dot');
-        const numberedNumberBrace: HTMLElement = this.createNumberListTag(ulTag, '1)', '2)', '3)', 'e-de-list-numbered-number-brace');
-        const numberedUpRoman: HTMLElement = this.createNumberListTag(ulTag, 'I.', 'II.', 'III.', 'e-de-list-numbered-up-roman');
-        const numberedUpLettter: HTMLElement = this.createNumberListTag(ulTag, 'A.', 'B.', 'C.', 'e-de-list-numbered-up-letter');
-        const numberedLowLetterDot: HTMLElement = this.createNumberListTag(ulTag, 'a.', 'b.', 'c.', 'e-de-numbered-low-letter-dot');
-        const numberedLowLetterBrace: HTMLElement = this.createNumberListTag(ulTag, 'a)', 'b)', 'c)', 'e-de-list-numbered-low-letter-brace');
-        const numberedLowRoman: HTMLElement = this.createNumberListTag(ulTag, 'i.', 'ii.', 'iii.', 'e-de-list-numbered-low-roman');
-        numberedNone.addEventListener('click', this.numberListClick);
-        numberedNumberDot.addEventListener('click', this.numberListClick);
-        numberedNumberBrace.addEventListener('click', this.numberListClick);
-        numberedUpRoman.addEventListener('click', this.numberListClick);
-        numberedUpLettter.addEventListener('click', this.numberListClick);
-        numberedLowLetterBrace.addEventListener('click', this.numberListClick);
-        numberedLowLetterDot.addEventListener('click', this.numberListClick);
-        numberedLowRoman.addEventListener('click', this.numberListClick);
+        numberListDiv.appendChild(this.ulTag);
+        const numberedNone: HTMLElement = this.createNumberNoneListTag(this.ulTag, locale);
+        const numberedNumberDot: HTMLElement = this.createNumberListTag(this.ulTag, '1.', '2.', '3.', 'e-de-list-numbered-number-dot');
+        const numberedNumberBrace: HTMLElement = this.createNumberListTag(this.ulTag, '1)', '2)', '3)', 'e-de-list-numbered-number-brace');
+        const numberedUpRoman: HTMLElement = this.createNumberListTag(this.ulTag, 'I.', 'II.', 'III.', 'e-de-list-numbered-up-roman');
+        const numberedUpLettter: HTMLElement = this.createNumberListTag(this.ulTag, 'A.', 'B.', 'C.', 'e-de-list-numbered-up-letter');
+        const numberedLowLetterDot: HTMLElement = this.createNumberListTag(this.ulTag, 'a.', 'b.', 'c.', 'e-de-numbered-low-letter-dot');
+        const numberedLowLetterBrace: HTMLElement = this.createNumberListTag(this.ulTag, 'a)', 'b)', 'c)', 'e-de-list-numbered-low-letter-brace');
+        const numberedLowRoman: HTMLElement = this.createNumberListTag(this.ulTag, 'i.', 'ii.', 'iii.', 'e-de-list-numbered-low-roman');
+        numberedNone.addEventListener('click', this.numberListClickHandler);
+        numberedNumberDot.addEventListener('click', this.numberListClickHandler);
+        numberedNumberBrace.addEventListener('click', this.numberListClickHandler);
+        numberedUpRoman.addEventListener('click', this.numberListClickHandler);
+        numberedUpLettter.addEventListener('click', this.numberListClickHandler);
+        numberedLowLetterBrace.addEventListener('click', this.numberListClickHandler);
+        numberedLowLetterDot.addEventListener('click', this.numberListClickHandler);
+        numberedLowRoman.addEventListener('click', this.numberListClickHandler);
         this.target.appendChild(numberListDiv);
     }
 
     private createNumberListTag(ulTag: HTMLElement, text1: string, text2: string, text3: string, className: string): HTMLElement {
-        const liTag: HTMLElement = createElement('li', {
+        this.liTag = createElement('li', {
             styles: 'display:block',
             className: 'e-de-ui-wfloating-menuitem e-de-ui-wfloating-menuitem-md e-de-list-items  e-de-list-item-size ' + className
         });
-        ulTag.appendChild(liTag);
+        ulTag.appendChild(this.liTag);
         let innerHTML: string = '<div>' + text1 + '<span class="e-de-ui-list-line"></span></div><div>' + text2 + '<span class="e-de-ui-list-line">';
         innerHTML += '</span></div><div>' + text3 + '<span class="e-de-ui-list-line"> </span></div >';
-        const liInnerDiv: HTMLElement = createElement('div', {
+        this.liInnerDiv = createElement('div', {
             className: 'e-de-ui-list-header-presetmenu',
             id: 'e-de-ui-zlist0', innerHTML: innerHTML
         });
-        liTag.style.cssFloat = 'left';
-        liTag.appendChild(liInnerDiv);
-        return liTag;
+        this.liTag.style.cssFloat = 'left';
+        this.liTag.appendChild(this.liInnerDiv);
+        return this.liTag;
     }
     private createNumberNoneListTag(ulTag: HTMLElement, locale: L10n): HTMLElement {
-        const liTag: HTMLElement = createElement('li', {
+        this.liTag1 = createElement('li', {
             styles: 'display:block',
             className: 'e-de-ui-wfloating-menuitem e-de-ui-wfloating-menuitem-md e-de-list-items  e-de-list-item-size e-de-list-numbered-none'
         });
-        ulTag.appendChild(liTag);
+        ulTag.appendChild(this.liTag1);
         const innerHTML: string = '<div class="e-de-ui-bullets e-de-bullet-icons">' + locale.getConstant('None') + '</div>';
-        const liInnerDiv: HTMLElement = createElement('div', {
+        this.liInnerDiv1 = createElement('div', {
             className: 'e-de-ui-list-header-presetmenu',
             id: 'e-de-ui-zlist0', innerHTML: innerHTML
         });
-        liTag.style.cssFloat = 'left';
-        liTag.appendChild(liInnerDiv);
-        return liTag;
+        this.liTag1.style.cssFloat = 'left';
+        this.liTag1.appendChild(this.liInnerDiv1);
+        return this.liTag1;
     }
     private createBulletListTag(ulTag: HTMLElement, iconCss: string, className: string, locale?: L10n): HTMLElement {
-        const liTag: HTMLElement = createElement('li', {
+        this.liTag2 = createElement('li', {
             styles: 'display:block;',
             className: 'e-de-ui-wfloating-menuitem e-de-ui-wfloating-bullet-menuitem-md e-de-list-items  e-de-list-item-size ' + className
         });
-        ulTag.appendChild(liTag);
+        ulTag.appendChild(this.liTag2);
         const isNone: boolean = className === 'e-bullet-none';
-        const liInnerDiv: HTMLElement = createElement('div', {
+        this.liInnerDiv2 = createElement('div', {
             className: 'e-de-ui-bullet-list-header-presetmenu e-de-bullet-icon-size',
             styles: isNone ? 'font-size:9px;text-align: center;top: 13px;left:-2px;line-height:normal;position: relative' : ''
         });
-        const liNextDiv: HTMLElement = createElement('div', { className: !isNone ? iconCss : '', innerHTML: isNone ? locale.getConstant('None') : '' });
-        liInnerDiv.appendChild(liNextDiv);
-        liTag.appendChild(liInnerDiv);
-        return liTag;
+        this.liNextDiv = createElement('div', { className: !isNone ? iconCss : '', innerHTML: isNone ? locale.getConstant('None') : '' });
+        this.liInnerDiv2.appendChild(this.liNextDiv);
+        this.liTag2.appendChild(this.liInnerDiv2);
+        return this.liTag2;
     }
     private createBulletList(id: string, locale: L10n): void {
         this.bulletListDiv = createElement('div', { className: 'e-de-ui-bullet-list-header-presetmenu', id: id + '_Bullet' });
         const bulletListDiv: HTMLElement = this.bulletListDiv;
         bulletListDiv.style.display = 'none';
-        const ulTag: HTMLElement = createElement('ul', {
+        this.ulTag1 = createElement('ul', {
             styles: 'display: block; outline: 0px;', id: 'listMenu',
             className: 'e-de-ui-wfloating-menu e-de-ui-bullets-menu e-de-list-container e-de-list-thumbnail'
         });
-        bulletListDiv.appendChild(ulTag);
-        const bulletNone: HTMLElement = this.createBulletListTag(ulTag, 'e-de-icon-bullet-list-none e-de-bullet-icons', 'e-bullet-none', locale);
-        const bulletDot: HTMLElement = this.createBulletListTag(ulTag, 'e-de-icon-bullet-list-dot e-de-bullet-icons', 'e-bullet-dot');
-        const bulletCircle: HTMLElement = this.createBulletListTag(ulTag, 'e-de-icon-bullet-list-circle e-de-bullet-icons', 'e-bullet-circle');
-        const bulletSquare: HTMLElement = this.createBulletListTag(ulTag, 'e-de-icon-bullet-list-square e-de-bullet-icons', 'e-bullet-square');
-        const bulletFlower: HTMLElement = this.createBulletListTag(ulTag, 'e-de-icon-bullet-list-flower e-de-bullet-icons', 'e-bullet-flower');
-        const bulletArrow: HTMLElement = this.createBulletListTag(ulTag, 'e-de-icon-bullet-list-arrow e-de-bullet-icons', 'e-bullet-arrow');
-        const bulletTick: HTMLElement = this.createBulletListTag(ulTag, 'e-de-icon-bullet-list-tick e-de-bullet-icons', 'e-bullet-tick');
-        bulletNone.addEventListener('click', this.bulletListClick);
-        bulletDot.addEventListener('click', this.bulletListClick);
-        bulletCircle.addEventListener('click', this.bulletListClick);
-        bulletSquare.addEventListener('click', this.bulletListClick);
-        bulletFlower.addEventListener('click', this.bulletListClick);
-        bulletArrow.addEventListener('click', this.bulletListClick);
-        bulletTick.addEventListener('click', this.bulletListClick);
+        bulletListDiv.appendChild(this.ulTag1);
+        const bulletNone: HTMLElement = this.createBulletListTag(this.ulTag1, 'e-de-icon-bullet-list-none e-de-bullet-icons', 'e-bullet-none', locale);
+        const bulletDot: HTMLElement = this.createBulletListTag(this.ulTag1, 'e-de-icon-bullet-list-dot e-de-bullet-icons', 'e-bullet-dot');
+        const bulletCircle: HTMLElement = this.createBulletListTag(this.ulTag1, 'e-de-icon-bullet-list-circle e-de-bullet-icons', 'e-bullet-circle');
+        const bulletSquare: HTMLElement = this.createBulletListTag(this.ulTag1, 'e-de-icon-bullet-list-square e-de-bullet-icons', 'e-bullet-square');
+        const bulletFlower: HTMLElement = this.createBulletListTag(this.ulTag1, 'e-de-icon-bullet-list-flower e-de-bullet-icons', 'e-bullet-flower');
+        const bulletArrow: HTMLElement = this.createBulletListTag(this.ulTag1, 'e-de-icon-bullet-list-arrow e-de-bullet-icons', 'e-bullet-arrow');
+        const bulletTick: HTMLElement = this.createBulletListTag(this.ulTag1, 'e-de-icon-bullet-list-tick e-de-bullet-icons', 'e-bullet-tick');
+        bulletNone.addEventListener('click', this.bulletListClickHandler);
+        bulletDot.addEventListener('click', this.bulletListClickHandler);
+        bulletCircle.addEventListener('click', this.bulletListClickHandler);
+        bulletSquare.addEventListener('click', this.bulletListClickHandler);
+        bulletFlower.addEventListener('click', this.bulletListClickHandler);
+        bulletArrow.addEventListener('click', this.bulletListClickHandler);
+        bulletTick.addEventListener('click', this.bulletListClickHandler);
         this.target.appendChild(bulletListDiv);
     }
     /**
@@ -264,6 +278,10 @@ export class BulletsAndNumberingDialog {
         }
     };
 
+    private onNumberListClick(args: any): void {
+        this.numberListClick(args);
+    }
+
     private setActiveElement(args: any): void {
         const html: HTMLElement = args.currentTarget.parentElement;
         for (let i: number = 0; i < html.childElementCount; i++) {
@@ -303,6 +321,10 @@ export class BulletsAndNumberingDialog {
             this.fontFamily = 'Wingdings';
         }
     };
+
+    private onBulletListClick(args: any): void {
+        this.bulletListClick(args);
+    }
     /* eslint-enable */
     /**
      * @private
@@ -403,8 +425,68 @@ export class BulletsAndNumberingDialog {
             }
             this.target = undefined;
         }
+        this.removeEvents();
+        this.removeElements();
         this.bulletListDiv = undefined;
         this.numberListDiv = undefined;
+    }
+    private removeEvents(): void {
+        if (this.liTag) {
+            this.liTag.removeEventListener('click', this.numberListClickHandler);
+        }
+        if (this.liTag1) {
+            this.liTag1.removeEventListener('click', this.numberListClickHandler);
+        }
+        if (this.liTag2) {
+            this.liTag2.removeEventListener('click', this.numberListClickHandler);
+        }
+        if (this.liTag) {
+            this.liTag.removeEventListener('click', this.bulletListClickHandler);
+        }
+        if (this.liTag1) {
+            this.liTag1.removeEventListener('click', this.bulletListClickHandler);
+        }
+        if (this.liTag2) {
+            this.liTag2.removeEventListener('click', this.bulletListClickHandler);
+        }
+    }
+    private removeElements(): void {
+        if (this.ulTag) {
+            this.ulTag.remove();
+            this.ulTag = undefined;
+        }
+        if (this.ulTag1) {
+            this.ulTag1.remove();
+            this.ulTag1 = undefined;
+        }
+        if (this.liTag) {
+            this.liTag.remove();
+            this.liTag = undefined;
+        }
+        if (this.liTag1) {
+            this.liTag1.remove();
+            this.liTag1 = undefined;
+        }
+        if (this.liTag2) {
+            this.liTag2.remove();
+            this.liTag2 = undefined;
+        }
+        if (this.liNextDiv) {
+            this.liNextDiv.remove();
+            this.liNextDiv = undefined;
+        }
+        if (this.liInnerDiv) {
+            this.liInnerDiv.remove();
+            this.liInnerDiv = undefined;
+        }
+        if (this.liInnerDiv1) {
+            this.liInnerDiv1.remove();
+            this.liInnerDiv1 = undefined;
+        }
+        if (this.liInnerDiv2) {
+            this.liInnerDiv2.remove();
+            this.liInnerDiv2 = undefined;
+        }
     }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */

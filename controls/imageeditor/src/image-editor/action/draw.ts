@@ -2270,9 +2270,16 @@ export class Draw {
                 parent.notify('filter', { prop: 'update-finetunes', onPropertyChange: false });
             }
             proxy.lowerContext.drawImage(parent.baseImg, 0, 0, proxy.parent.lowerCanvas.width, proxy.parent.lowerCanvas.height);
+            let isCropped: boolean = false; let isSameDimension: boolean = false;
+            if (parent.isImageUpdated) {
+                const { srcWidth, srcHeight } = parent.img;
+                const { width, height } = parent.baseImgCanvas;
+                isCropped = srcWidth !== width || srcHeight !== height;
+                isSameDimension = parent.baseImg.width === width && parent.baseImg.height === height;
+            }
             hideSpinner(parent.element); parent.element.style.opacity = '1'; proxy.updateBaseImgCanvas();
             const fileOpened: OpenEventArgs = {fileName: this.fileName, fileType: this.fileType, isValidImage: true };
-            proxy.updateCanvas();
+            proxy.updateCanvas(isCropped, isSameDimension);
             if (parent.currObjType.isUndoZoom) {
                 parent.currObjType.isUndoZoom = false; proxy.parent.lowerCanvas.style.display = 'block';
             }
@@ -2314,10 +2321,22 @@ export class Draw {
         parent.baseImgCanvas.getContext('2d').drawImage(parent.baseImg, 0, 0);
     }
 
-    private updateCanvas(): void {
+    private updateCanvas(isCropped?: boolean, isSameDimension?: boolean): void {
         const parent: ImageEditor = this.parent;
-        if (!parent.isImageUpdated) {
+        if (!parent.isImageUpdated || !isCropped) {
             parent.img.srcWidth = parent.baseImgCanvas.width; parent.img.srcHeight = parent.baseImgCanvas.height;
+        } else if (!isSameDimension && isCropped) {
+            parent.img.srcLeft = 0; parent.img.srcTop = 0;
+            parent.img.srcWidth = parent.baseImgCanvas.width;
+            parent.img.srcHeight = parent.baseImgCanvas.height;
+            parent.currSelectionPoint = null;
+            parent.cropObj = {cropZoom: 0, defaultZoom: 0, totalPannedPoint: {x: 0, y: 0}, totalPannedClientPoint: {x: 0, y: 0},
+                totalPannedInternalPoint: {x: 0, y: 0}, tempFlipPanPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint, rotateFlipColl: [],
+                degree: 0, currFlipState: '', straighten: 0, destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint,
+                srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter : '', isBrightAdjust: false,
+                zoomFactor: 0, previousZoomValue : 0, aspectWidth: null, aspectHeight: null, frame: 'none', straightenZoom: 0,
+                adjustmentLevel: {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0, blur: 0,
+                    exposure: 0, transparency: 100, sharpen: false, bw: false}, currentFilter: '' };
         }
         const obj: Object = {width: 0, height: 0 };
         parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,

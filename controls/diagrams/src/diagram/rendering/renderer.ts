@@ -1945,10 +1945,13 @@ export class DiagramRenderer {
                     }
                 }
                 //EJ2-826617 - for BPMN node child rendering
-                if (!(child instanceof TextElement) && group.flip !== 'None' &&
+                if (!(child instanceof TextElement) &&
                     (group.elementActions & ElementAction.ElementIsGroup) && !(child.elementActions & ElementAction.ElementIsPort)
                     && parentG) {
-                    this.renderFlipElement(child, parentG || canvas, group.flip);
+                    // EJ2-907739-Flipping the group node does not rotate the child nodes
+                    if (child.flip === 'None') {
+                        this.renderFlipElement(child, parentG || canvas, group.flip);
+                    }
                 }
             }
             let selectedNode: NodeModel;

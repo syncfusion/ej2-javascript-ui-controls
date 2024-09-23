@@ -1,5 +1,5 @@
 import { isNullOrUndefined, getValue, setValue } from '@syncfusion/ej2-base';
-import { IGanttData, IWorkingTimeRange, ITaskData, IIndicator, ITaskSegment } from './interface';
+import { IGanttData, IWorkingTimeRange, ITaskData, IIndicator, ITaskSegment, IParent } from './interface';
 import { HolidayModel, DayWorkingTimeModel, EventMarkerModel, TaskFieldsModel } from '../models/models';
 import { ColumnModel as GanttColumnModel } from '../models/column';
 import { TextBox } from '@syncfusion/ej2-inputs';
@@ -757,7 +757,18 @@ export class DateProcessor {
                 const dayStartTime: number = this.parent['getCurrentDayStartTime'](sDate);
                 this.setTime(dayStartTime, sDate);
             } else if (!isNullOrUndefined(duration)) {
-                sDate = this.getProjectStartDate(ganttProp);
+                const ganttTask: IGanttData = this.parent.getTaskByUniqueID(ganttProp.uniqueID);
+                if (this.parent.allowUnscheduledTasks && ganttTask &&
+                    ganttTask.parentItem && isNullOrUndefined(startDate) && isNullOrUndefined(endDate)) {
+                    let parentTask: IGanttData = this.parent.getParentTask(ganttTask.parentItem);
+                    while (parentTask && !parentTask.ganttProperties.startDate) {
+                        parentTask = this.parent.getParentTask(parentTask.parentItem);
+                    }
+                    sDate = (!parentTask || !parentTask.ganttProperties.startDate) ? this.parent.cloneProjectStartDate
+                        : parentTask.ganttProperties.startDate;
+                } else {
+                    sDate = this.getProjectStartDate(ganttProp);
+                }
             }
         } else {
             sDate = new Date(startDate.getTime());

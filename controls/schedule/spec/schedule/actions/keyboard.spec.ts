@@ -115,27 +115,27 @@ describe('Keyboard interaction', () => {
         });
         it('alt one day view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altOne', key: '1' });
+            keyModule.keyActionHandler({ action: 'altOne', key: '1', code: 'Digit1' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-day');
         });
         it('alt two week view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altTwo', key: '2' });
+            keyModule.keyActionHandler({ action: 'altTwo', key: '2', code: 'Digit2' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-week');
         });
         it('alt three work week view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altThree', key: '3' });
+            keyModule.keyActionHandler({ action: 'altThree', key: '3', code: 'Digit3' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-work-week');
         });
         it('alt four month view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altFour', key: '4' });
+            keyModule.keyActionHandler({ action: 'altFour', key: '4', code: 'Digit4' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month');
         });
         it('alt five agenda view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altFive', key: '5' });
+            keyModule.keyActionHandler({ action: 'altFive', key: '5', code: 'Digit5' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-agenda');
         });
         it('tab key', () => {
@@ -1562,7 +1562,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.currentView).toEqual('Day');
             expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(8);
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 4, 2017');
-            keyModule.keyActionHandler({ action: 'altFive', key: '5' });
+            keyModule.keyActionHandler({ action: 'altFive', key: '5', code: 'Digit5' });
             expect(schObj.currentView).toEqual('Day');
         });
         it('Negative case for view navigation without headerbar', () => {
@@ -1572,7 +1572,7 @@ describe('Keyboard interaction', () => {
             schObj.showHeaderBar = false;
             schObj.dataBind();
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altOne', key: '1' });
+            keyModule.keyActionHandler({ action: 'altOne', key: '1', code: 'Digit1' });
             expect(schObj.headerModule).toBeNull();
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar-container').length).toEqual(0);
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar').length).toEqual(0);
@@ -1713,27 +1713,27 @@ describe('Keyboard interaction', () => {
         });
         it('alt one timeline day view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altOne', key: '1' });
+            keyModule.keyActionHandler({ action: 'altOne', key: '1', code: 'Digit1' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
         });
         it('alt two timeline week view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altTwo', key: '2' });
+            keyModule.keyActionHandler({ action: 'altTwo', key: '2', code: 'Digit2' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-week');
         });
         it('alt three timeline work week view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altThree', key: '3' });
+            keyModule.keyActionHandler({ action: 'altThree', key: '3', code: 'Digit3' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-work-week');
         });
         it('alt four timeline month view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altFour', key: '4' });
+            keyModule.keyActionHandler({ action: 'altFour', key: '4', code: 'Digit4' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-month');
         });
         it('alt five agenda view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altFive', key: '5' });
+            keyModule.keyActionHandler({ action: 'altFive', key: '5', code: 'Digit5' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-agenda');
         });
         it('tab key', () => {
@@ -1764,22 +1764,22 @@ describe('Keyboard interaction', () => {
         });
         it('alt six timeline day view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altSix', key: '6' });
+            keyModule.keyActionHandler({ action: 'altSix', key: '6', code: 'Digit6' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
         });
         it('alt seven timeline week view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altSeven', key: '7' });
+            keyModule.keyActionHandler({ action: 'altSeven', key: '7', code: 'Digit7' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-week');
         });
         it('alt eight timeline work week view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altEight', key: '8' });
+            keyModule.keyActionHandler({ action: 'altEight', key: '8', code: 'Digit8' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-work-week');
         });
         it('alt nine timeline month view', () => {
             schObj.element.focus();
-            keyModule.keyActionHandler({ action: 'altNine', key: '9' });
+            keyModule.keyActionHandler({ action: 'altNine', key: '9', code: 'Digit9' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-month');
         });
     });

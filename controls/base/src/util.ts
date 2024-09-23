@@ -237,7 +237,7 @@ export function isNullOrUndefined<T>(value: T): boolean {
  * @private
  */
 export function isUndefined<T>(value: T): boolean {
-    return ('undefined' === typeof value || value === null);
+    return ('undefined' === typeof value);
 }
 /**
  * To return the generated unique name

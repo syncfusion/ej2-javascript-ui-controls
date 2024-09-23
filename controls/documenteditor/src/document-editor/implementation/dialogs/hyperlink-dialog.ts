@@ -24,6 +24,18 @@ export class HyperlinkDialog {
     private bookmarkCheckbox: CheckBox = undefined;
     private bookmarkDiv: HTMLDivElement;
     private target: HTMLElement;
+
+    private container: HTMLElement;
+    private displayText1: HTMLElement;
+    private screenTipText1: HTMLElement;
+    private bookmarkText: HTMLElement;
+    private bookmarkValue: HTMLInputElement;
+    private bookmarkCheckDiv: HTMLDivElement;
+    private bookmarkCheck: HTMLInputElement;
+
+    private keyUpOnDisplayBoxClickHandler: EventListenerOrEventListenerObject = this.onKeyUpOnDisplayBoxClick.bind(this);
+    private onKeyUpOnUrlBoxClickHandler: EventListenerOrEventListenerObject = this.onKeyUpOnUrlBoxClick.bind(this);
+    private onScreenTipTextBoxClickHandler: EventListenerOrEventListenerObject = this.onScreenTipTextBoxClick.bind(this);
     /**
      * @private
      */
@@ -51,57 +63,57 @@ export class HyperlinkDialog {
     public initHyperlinkDialog(localValue: L10n, isRtl?: boolean): void {
         this.target = createElement('div', { className: 'e-de-hyperlink' });
 
-        const container: HTMLElement = createElement('div');
-        const displayText: HTMLElement = createElement('div', { className: 'e-de-dlg-container' });
+        this.container = createElement('div');
+        this.displayText1 = createElement('div', { className: 'e-de-dlg-container' });
         this.displayTextBox = createElement('input', { className: 'e-input' }) as HTMLInputElement;
-        this.displayTextBox.addEventListener('keyup', this.onKeyUpOnDisplayBox);
-        displayText.appendChild(this.displayTextBox);
-        container.appendChild(displayText);
+        this.displayTextBox.addEventListener('keyup', this.keyUpOnDisplayBoxClickHandler);
+        this.displayText1.appendChild(this.displayTextBox);
+        this.container.appendChild(this.displayText1);
         //container.appendChild(this.displayTextBox);
 
         this.addressText = createElement('div', { className: 'e-de-dlg-container'}) as HTMLDivElement;
         this.urlTextBox = createElement('input', { className: 'e-input', attrs: { autofocus: 'true' } }) as HTMLInputElement;
-        this.urlTextBox.addEventListener('input', this.onKeyUpOnUrlBox);
-        this.urlTextBox.addEventListener('keyup', this.onKeyUpOnUrlBox);
+        this.urlTextBox.addEventListener('input', this.onKeyUpOnUrlBoxClickHandler);
+        this.urlTextBox.addEventListener('keyup', this.onKeyUpOnUrlBoxClickHandler);
         this.addressText.appendChild(this.urlTextBox);
-        container.appendChild(this.addressText);
+        this.container.appendChild(this.addressText);
         //container.appendChild(this.urlTextBox);
 
-        const screenTipText: HTMLElement = createElement('div', { className: 'e-de-dlg-container' });
+        this.screenTipText1 = createElement('div', { className: 'e-de-dlg-container' });
         this.screenTipTextBox = createElement('input', { className: 'e-input' }) as HTMLInputElement;
-        this.screenTipTextBox.addEventListener('keyup', this.onScreenTipTextBox);
-        screenTipText.appendChild(this.screenTipTextBox);
-        container.appendChild(screenTipText);
+        this.screenTipTextBox.addEventListener('keyup', this.onScreenTipTextBoxClickHandler);
+        this.screenTipText1.appendChild(this.screenTipTextBox);
+        this.container.appendChild(this.screenTipText1);
         //container.appendChild(this.screenTipTextBox);
 
 
         this.bookmarkDiv = createElement('div', { styles: 'display:none;' }) as HTMLDivElement;
-        const bookmarkText: HTMLElement = createElement('div', { className: 'e-de-dlg-container' });
+        this.bookmarkText = createElement('div', { className: 'e-de-dlg-container' });
         //const bookmarkTextElement: HTMLElement = createElement('div', { className: 'e-de-hyperlink-dlg-bookmark' });
 
-        const bookmarkValue: HTMLInputElement = createElement('input') as HTMLInputElement;
-        bookmarkText.appendChild(bookmarkValue);
+        this.bookmarkValue = createElement('input') as HTMLInputElement;
+        this.bookmarkText.appendChild(this.bookmarkValue);
 
         this.bookmarkDropdown = new DropDownList({
             dataSource: [], change: this.onBookmarkchange,
             noRecordsTemplate: localValue.getConstant('No bookmarks found'),
             placeholder: localValue.getConstant('Bookmark'), floatLabelType: 'Always'
         });
-        this.bookmarkDropdown.appendTo(bookmarkValue);
-        this.bookmarkDiv.appendChild(bookmarkText);
+        this.bookmarkDropdown.appendTo(this.bookmarkValue);
+        this.bookmarkDiv.appendChild(this.bookmarkText);
         //this.bookmarkDiv.appendChild(bookmarkTextElement);
-        container.appendChild(this.bookmarkDiv);
+        this.container.appendChild(this.bookmarkDiv);
 
-        const bookmarkCheckDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const bookmarkCheck: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
-        bookmarkCheckDiv.appendChild(bookmarkCheck);
+        this.bookmarkCheckDiv = createElement('div') as HTMLDivElement;
+        this.bookmarkCheck = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
+        this.bookmarkCheckDiv.appendChild(this.bookmarkCheck);
         this.bookmarkCheckbox = new CheckBox({
             label: localValue.getConstant('Use bookmarks'),
             enableRtl: isRtl, change: this.onUseBookmarkChange
         });
-        this.bookmarkCheckbox.appendTo(bookmarkCheck);
-        container.appendChild(bookmarkCheckDiv);
-        this.target.appendChild(container);
+        this.bookmarkCheckbox.appendTo(this.bookmarkCheck);
+        this.container.appendChild(this.bookmarkCheckDiv);
+        this.target.appendChild(this.container);
         new TextBox({ placeholder: localValue.getConstant('Text to display'), floatLabelType: 'Always' }, this.displayTextBox);
         new TextBox({ placeholder: localValue.getConstant('Address'), floatLabelType: 'Always' }, this.urlTextBox);
         new TextBox({ placeholder: localValue.getConstant('ScreenTip text'), floatLabelType: 'Always' }, this.screenTipTextBox);
@@ -140,6 +152,9 @@ export class HyperlinkDialog {
     public hide(): void {
         this.closeHyperlinkDialog();
     }
+    private onKeyUpOnUrlBoxClick(event: KeyboardEvent): void {
+        this.onKeyUpOnUrlBox(event);
+    }
     /**
      * @private
      * @param {KeyboardEvent} event - Specifies the event args.
@@ -162,6 +177,9 @@ export class HyperlinkDialog {
         }
         this.enableOrDisableInsertButton();
     };
+    private onKeyUpOnDisplayBoxClick(): void {
+        this.onKeyUpOnDisplayBox();
+    }
     /**
      * @private
      * @returns {void}
@@ -170,6 +188,9 @@ export class HyperlinkDialog {
         this.displayText = this.displayTextBox.value;
         this.enableOrDisableInsertButton();
     };
+    private onScreenTipTextBoxClick(): void {
+        this.onScreenTipTextBox();
+    }
     public onScreenTipTextBox = (): void => {
         this.screenTipText = this.screenTipTextBox.value;
     };
@@ -362,6 +383,58 @@ export class HyperlinkDialog {
             }
             this.target.innerHTML = '';
             this.target = undefined;
+        }
+        this.removeEvents();
+        this.removeElements();
+    }
+    private removeEvents(): void {
+        if (this.displayTextBox) {
+            this.displayTextBox.removeEventListener('keyup', this.keyUpOnDisplayBoxClickHandler);
+        }
+        if (this.urlTextBox) {
+            this.urlTextBox.removeEventListener('input', this.onKeyUpOnUrlBoxClickHandler);
+            this.urlTextBox.removeEventListener('keyup', this.onKeyUpOnUrlBoxClickHandler);
+        }
+        if (this.screenTipTextBox){
+            this.screenTipTextBox.removeEventListener('keyup', this.onScreenTipTextBoxClickHandler);
+        }
+    }
+    private removeElements(): void {
+        if (this.container) {
+            this.container.remove();
+            this.container = undefined;
+        }
+        if (this.displayText1) {
+            this.displayText1.remove();
+            this.displayText1 = undefined;
+        }
+        if (this.addressText) {
+            this.addressText.remove();
+            this.addressText = undefined;
+        }
+        if (this.screenTipText1){
+            this.screenTipText1.remove();
+            this.screenTipText1 = undefined;
+        }
+        if (this.bookmarkDiv) {
+            this.bookmarkDiv.remove();
+            this.bookmarkDiv = undefined;
+        }
+        if (this.bookmarkText) {
+            this.bookmarkText.remove();
+            this.bookmarkText = undefined;
+        }
+        if (this.bookmarkValue) {
+            this.bookmarkValue.remove();
+            this.bookmarkValue = undefined;
+        }
+        if (this.bookmarkCheckDiv) {
+            this.bookmarkCheckDiv.remove();
+            this.bookmarkCheckDiv = undefined;
+        }
+        if (this.bookmarkCheck) {
+            this.bookmarkCheck.remove();
+            this.bookmarkCheck = undefined;
         }
     }
 }

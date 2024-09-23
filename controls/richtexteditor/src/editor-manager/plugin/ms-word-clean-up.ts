@@ -1009,6 +1009,14 @@ export class MsWordPaste {
                 for (let i: number = 0; i < listIgnoreTag.length; i++) {
                     listIgnoreTag[i as number].setAttribute('style', listIgnoreTag[i as number].getAttribute('style').replace(/\n/g, ''));
                 }
+                const listOrderCleanup: Element = firstChild.querySelector('span[style*="mso-list"]');
+                if (listOrderCleanup) {
+                    let style: string = listOrderCleanup.getAttribute('style');
+                    if (style) {
+                        style = style.replace(/\s*:\s*/g, ':');
+                        listOrderCleanup.setAttribute('style', style);
+                    }
+                }
                 const listOrder: Element = firstChild.querySelector('span[style="mso-list:Ignore"]');
                 if (!isNOU(listOrder)) {
                     this.listContents.push(listOrder.textContent.trim());

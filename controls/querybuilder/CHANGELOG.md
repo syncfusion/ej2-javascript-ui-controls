@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I898205` - Issue with While setting rule value as an empty string the rule was not created in QueryBuilder has been fixed.
+- `#I594200` - Issue with Script error thrown while filtering the field items of complex data binding in angular has been fixed.
+
 ## 27.1.48 (2024-09-18)
 
 ### QueryBuilder

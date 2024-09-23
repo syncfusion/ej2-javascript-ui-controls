@@ -757,22 +757,61 @@ export class Text {
             //#endregion
         }
     }
-
+    public removeHTMLElement(): void {
+        this.bold.remove();
+        this.bold = null;
+        this.italic.remove();
+        this.italic = null;
+        this.underline.remove();
+        this.underline = null;
+        this.strikethrough.remove();
+        this.strikethrough = null;
+        this.subscript.remove();
+        this.subscript = null;
+        this.superscript.remove();
+        this.superscript = null;
+        this.clearFormat.remove();
+        this.clearFormat = null;
+        this.fontColor.remove();
+        this.fontColor = null;
+        this.highlightColorInputElement.childNodes.forEach((element: HTMLElement) => {
+            this.highlightColorInputElement.removeChild(element);
+        });
+        this.highlightColorInputElement.remove();
+        this.highlightColorInputElement = null;
+        this.highlightColorElement.childNodes.forEach((element: HTMLElement) => {
+            this.highlightColorElement.removeChild(element);
+        });
+        this.highlightColorElement.remove();
+        this.highlightColorElement = null;
+    }
     public destroy(): void {
+        this.unwireEvents();
+        this.removeHTMLElement();
         if (this.highlightColor) {
             this.highlightColor.destroy();
             this.highlightColor = undefined;
         }
         if (this.fontColorInputElement) {
             this.fontColorInputElement.destroy();
+            this.fontColorInputElement.element.remove();
+            this.fontColorInputElement.element = null;
             this.fontColorInputElement = undefined;
         }
         if (this.fontSize) {
             this.fontSize.destroy();
+            if (this.fontSize.element) {
+                this.fontSize.element.remove();
+                this.fontSize.element = undefined;
+            }
             this.fontSize = undefined;
         }
         if (this.fontFamily) {
             this.fontFamily.destroy();
+            if (this.fontFamily.element) {
+                this.fontFamily.element.remove();
+                this.fontFamily.element = undefined;
+            }
             this.fontFamily = undefined;
         }
         if (this.changeCaseDropdown) {

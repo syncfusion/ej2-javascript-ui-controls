@@ -367,6 +367,40 @@ describe('Stacked header render module', () => {
         });
     });
 
-
+    describe('EJ2-907000 - HeaderText overlaps the indentcell while scrolling horizontally when the first column is frozen ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    groupSettings: { columns: ['CustomerID'] },
+                    frozenColumns: 1,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, minWidth: 10 },
+                        {
+                            headerText: 'ID', columns: [
+                                { field: 'CustomerID', headerText: 'Customer ID', width: 120, },
+                                { field: 'EmployeeID', textAlign: 'Right', headerText: 'Employee ID', width: 120, }
+                            ]
+                        },
+                        {
+                            headerText: 'Ship Details', columns: [
+                                { field: 'ShipCity', width: 120, headerText: 'Ship City' },
+                                { field: 'ShipCountry', headerText: 'Ship Country', width: 140, minWidth: 10 }
+                            ]
+                        }
+                    ]
+                }, done);
+        });
+        it('Ensure the Header indentcell calss name ', () => {
+            let trs = gridObj.getHeaderContent().querySelectorAll('tr');
+            expect(trs[1].cells[0].classList.contains('e-leftfreeze')).toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 
 });

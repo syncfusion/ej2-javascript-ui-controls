@@ -52,7 +52,8 @@
   --color-sf-flyout-text-color-selected: var(--color-sf-content-text-color-hover);
   --color-sf-flyout-text-color-focus: var(--color-sf-content-text-color-hover);
   --color-sf-flyout-text-color-disabled: var(--color-sf-content-text-color-disabled);
-  --color-sf-icon-color-hover: var(--color-sf-content-text-color);
+  --color-sf-icon-color-hover: #000;
+  --color-sf-icon-color-hover-alt: #fff;
   --color-sf-table-text-color-hover: #000;
   --color-sf-table-text-color-pressed: #000;
   --color-sf-table-text-color-selected: #000;
@@ -430,6 +431,7 @@ $table-text-color-selected: mapcolorvariable('table-text-color-selected') !defau
 
 $icon-color: mapcolorvariable('icon-color') !default;
 $icon-color-hover: mapcolorvariable('icon-color-hover') !default;
+$icon-color-hover-alt: mapcolorvariable('icon-color-hover-alt') !default;
 $icon-color-pressed: mapcolorvariable('icon-color-pressed') !default;
 $icon-color-disabled: mapcolorvariable('icon-color-disabled') !default;
 

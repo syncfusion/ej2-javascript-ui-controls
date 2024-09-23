@@ -1142,10 +1142,6 @@ export class Timeline {
                     if (startDate.getTimezoneOffset() > dubStartDate.getTimezoneOffset()) {
                         startDate.setTime(startDate.getTime() - ((1000 * 60 * 60) * (difference - count)));
                     }
-                    const differenceIncrement: number = ((increment / 60000) / count);
-                    if (mode === 'Minutes' && differenceIncrement !== difference && count === 15) {
-                        startDate.setTime(startDate.getTime() - (60000 * (count * difference)));
-                    }
                 }
             }
             if (startDate.getHours() === 5 && count === 2 && tier === 'bottomTier' &&
@@ -1333,7 +1329,7 @@ export class Timeline {
             if (!this.parent.isInDst(date)) {
                 increment += (1000 * 60 * 60 * diffCount);
             }
-            else if (this.parent.isInDst(date) && count !== 2) {
+            else if (this.parent.isInDst(date) && count !== 2 && count !== 15) {
                 increment -= (1000 * 60 * 60 * diffCount);
             }
         }
@@ -1375,6 +1371,24 @@ export class Timeline {
             }
         }
     }
+    public calculateTotalHours(mode: string, count: number): number {
+        let totalHour: number = 0;
+        switch (mode) {
+        case 'Hour':
+            totalHour = 1 * count;
+            break;
+        case 'Day':
+            totalHour = 24 * count;
+            break;
+        case 'Week':
+            totalHour = 7 * 24 * count;
+            break;
+        case 'Minutes':
+            totalHour = count / 60;
+            break;
+        }
+        return totalHour;
+    }
 
     /**
      * To construct template string.
@@ -1406,7 +1420,7 @@ export class Timeline {
         const date: string = isNullOrUndefined(formatter) ?
             this.parent.globalize.formatDate(scheduleWeeks, { format: this.parent.getDateFormat() }) :
             this.customFormat(scheduleWeeks, format, tier, mode, formatter);
-        thWidth = (this.getIncrement(scheduleWeeks, count, mode, isFirstCell) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
+        thWidth = Math.abs((this.getIncrement(scheduleWeeks, count, mode, isFirstCell) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
         const incrementValue: number = this.getIncrement(scheduleWeeks, count, mode);
         const newDate: Date = new Date(scheduleWeeks.getTime() + incrementValue);
         const dubNewDate: Date = new Date(scheduleWeeks.getTime() + ((60 * 60 * 1000) * count));
@@ -1414,31 +1428,24 @@ export class Timeline {
         const dubNewDateOffset: number = dubNewDate.getTime();
         const timelineStartDate: Date = this.parent.timelineModule.timelineStartDate;
         const timelineStartTime: number = timelineStartDate.getTime();
-        const transitions: Object = this.parent.dataOperation.getDSTTransitions(scheduleWeeks.getFullYear());
-        const dstStartTime: number = transitions['dstStart'].getTime();
+        const hasDST: boolean = this.parent.dataOperation.hasDSTTransition(scheduleWeeks.getFullYear());
+        const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        let transitions: Object;
+        let dstStartTime: number;
+        if (hasDST) {
+            transitions = this.parent.dataOperation.getDSTTransitions(scheduleWeeks.getFullYear(), timeZone);
+            dstStartTime = transitions['dstStart'].getTime();
+        }
         if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks)) ||
             (this.parent.isInDst(newDate) && !this.parent.isInDst(scheduleWeeks)) ||
-            (newDateOffset !== dubNewDateOffset && dubNewDateOffset > newDateOffset &&
+            (hasDST && newDateOffset !== dubNewDateOffset && dubNewDateOffset > newDateOffset &&
                 timelineStartTime <= dstStartTime)) {
             let temp: number;
             let totalHour: number = 0;
             const incrementHour: number = incrementValue / (1000 * 60 * 60);
             if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks))) {
-                switch (mode) {
-                case 'Hour':
-                    totalHour = 1 * count;
-                    break;
-                case 'Day':
-                    totalHour = 24 * count;
-                    break;
-                case 'Week':
-                    totalHour = 7 * 24 * count;
-                    break;
-                case 'Minutes':
-                    totalHour = count / 60;
-                    break;
-                }
-                if (incrementHour !== totalHour && incrementHour > totalHour) {
+                totalHour = this.calculateTotalHours(mode, count);
+                if (incrementHour !== totalHour && totalHour !== 0 && incrementHour > totalHour) {
                     temp = this.getIncrement(scheduleWeeks, count, mode) - ((1000 * 60 * 60) * (incrementHour - totalHour));
                     thWidth = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
                     if (thWidth === 0 && mode === 'Minutes') {
@@ -1453,20 +1460,7 @@ export class Timeline {
                 const bottomTierSettings: Object = zoomOrTimeline['bottomTier'] !== null ? zoomOrTimeline['bottomTier'] :
                     zoomOrTimeline['topTier'];
                 const bottomTierCountIsOneAndUnitIsHour: boolean = (bottomTierSettings['count'] === 1 && bottomTierSettings['unit'] === 'Hour');
-                switch (mode) {
-                case 'Hour':
-                    totalHour = 1 * count;
-                    break;
-                case 'Day':
-                    totalHour = 24 * count;
-                    break;
-                case 'Week':
-                    totalHour = 7 * 24 * count;
-                    break;
-                case 'Minutes':
-                    totalHour = count / 60;
-                    break;
-                }
+                totalHour = this.calculateTotalHours(mode, count);
                 if (incrementHour !== totalHour && incrementHour < totalHour && !(tier === 'topTier' && bottomTierCountIsOneAndUnitIsHour)) {
                     temp = this.getIncrement(scheduleWeeks, count, mode) + (1000 * 60 * 60);
                     thWidth = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;

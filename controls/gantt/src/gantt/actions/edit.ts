@@ -1085,7 +1085,9 @@ export class Edit {
             this.parent.connectorLineEditModule['calculateOffset'](args.data);
         }
         this.parent.predecessorModule['validatedParentIds'] = [];
-        this.initiateSaveAction(args);
+        if (!this.dialogModule['isFromDialogPredecessor']) {
+            this.initiateSaveAction(args);
+        }
     }
 
     private updateParentItemOnEditing(): void {
@@ -1307,8 +1309,14 @@ export class Edit {
             eventArgs.target = args.target;
         }
         eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords, true);
-        if (args.action && args.action === 'DrawConnectorLine') {
-            eventArgs.action = 'DrawConnectorLine';
+        if (args.action === 'DrawConnectorLine' || args.action === 'DeleteConnectorLine') {
+            eventArgs.action = args.action;
+            if (args.action === 'DeleteConnectorLine') {
+                this.parent.connectorLineEditModule['isPublicDependencyDelete'] = false;
+                if (this.parent.contextMenuModule) {
+                    this.parent.contextMenuModule['isCntxtMenuDependencyDelete'] = false;
+                }
+            }
         }
         const ganttObj: Gantt = this.parent;
         const currentBaselineStart: Date = { ...eventArgs.data.ganttProperties.baselineStartDate };
@@ -1511,7 +1519,7 @@ export class Edit {
             this.parent.timelineModule.updateTimeLineOnEditing([tempArray], args.action);
         }
         if (this.parent.viewType === 'ResourceView') {
-            if (args.action === 'TaskbarEditing' || args.action === 'DrawConnectorLine') {
+            if (args.action === 'TaskbarEditing' || args.action === 'DrawConnectorLine' || args.action === 'DeleteConnectorLine') {
                 this.updateSharedTask(args.data);
             } else if (args.action === 'DialogEditing' || args.action === 'CellEditing'  || args.action === 'methodUpdate') {
                 if (this.parent.editModule.dialogModule.isResourceUpdate) {

@@ -1,6 +1,6 @@
 import { PdfViewer } from '../index';
 import { PdfViewerBase, IPageAnnotations } from '../index';
-import { createElement, isNullOrUndefined, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, isBlazor, SanitizeHtmlHelper, Browser } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
@@ -2253,9 +2253,12 @@ export class Signature {
                     shapeAnnotationType: 'SignatureImage', opacity: currentAnnotation.opacity, fontFamily: currentAnnotation.fontFamily, fontSize: currentAnnotation.fontSize, strokeColor: currentAnnotation.strokeColor, thickness: currentAnnotation.thickness, signatureName: annotationName
                 };
             }
-            this.pdfViewer.add(annot as PdfAnnotationBase);
+            const obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
             const canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentAnnotation.pageIndex);
             this.pdfViewer.renderDrawing(canvass as any, currentAnnotation.pageIndex);
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                this.pdfViewer.select([obj.id]);
+            }
             this.pdfViewerBase.signatureAdded = true;
             this.storeSignatureData(currentAnnotation.pageIndex, annot);
             if (this.signaturetype === 'Draw') {
@@ -2268,6 +2271,9 @@ export class Signature {
             this.pdfViewer.fireSignatureAdd(currentAnnotation.pageIndex, currentAnnotation.signatureName,
                                             currentAnnotation.shapeAnnotationType, currentAnnotation.bounds, currentAnnotation.opacity,
                                             currentAnnotation.strokeColor, currentAnnotation.thickness, signatureData);
+            if (this.pdfViewer.annotation) {
+                this.pdfViewer.annotation.onAnnotationMouseDown();
+            }
             this.pdfViewerBase.currentSignatureAnnot = null;
             this.pdfViewerBase.signatureCount++;
         }

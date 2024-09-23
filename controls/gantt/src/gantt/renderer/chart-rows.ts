@@ -2073,15 +2073,24 @@ export class ChartRows extends DateProcessor {
                 for (let i: number = 0; i < taskbarElements.length; i++) {
                     taskbarElement = taskbarElements[i as number];
                     currentData = (!data.expanded && data.hasChildRecords) ? data.childRecords[i as number] : currentData;
-                    const id: string = this.parent.viewType === 'ResourceView' ?
+                    let id: any = this.parent.viewType === 'ResourceView' ?
                         taskbarElement.getAttribute('rowUniqueId') : currentData.ganttProperties.taskId.toString();
+                    if (currentData.ganttProperties.segments && currentData.ganttProperties.segments.length > 0 &&
+                        currentData.parentItem && !data.expanded) {
+                        id = this.parent.viewType === 'ResourceView' ?
+                            data.ganttProperties.rowUniqueID : data.ganttProperties.taskId.toString();
+                    }
                     trElement = this.parent.getRowByID(id);
                     trElement = trElement ? trElement : (taskbarElement.querySelector('.e-gantt-child-taskbar'));
                     if (trElement) {
-                        if (trElement.classList.contains('e-segmented-taskbar')) {
-                            const segmentedTasks: HTMLCollectionOf<HTMLElement> =
-                                trElement.parentElement.getElementsByClassName('e-segmented-taskbar') as HTMLCollectionOf<HTMLElement>;
+                        if (trElement.querySelectorAll('.e-segmented-taskbar')) {
+                            /* eslint-disable-next-line */
+                            let taskContainer: Element =
+                                trElement.querySelector(`.e-taskbar-main-container[rowuniqueid="${currentData.ganttProperties.rowUniqueID}"]`) ||
+                                trElement;
+                            const segmentedTasks: NodeListOf<Element> = taskContainer.querySelectorAll('.e-segmented-taskbar');
                             for (let i: number = 0; i < segmentedTasks.length; i++) {
+                                taskbarElement = segmentedTasks[i as number];
                                 this.customizeTaskbars(currentData, segmentedTasks[i as number], taskbarElement);
                             }
                         } else {

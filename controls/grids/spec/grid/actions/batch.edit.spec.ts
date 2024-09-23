@@ -5240,3 +5240,51 @@ describe('EJ2-904682: Batch edit through keyboard tab navigation not working for
         gridObj = null;
     });
 });
+
+describe('EJ2-906932: BatchDelete and beforeBatchDelete event arguments is not proper while bulk delete action =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+        {
+            dataSource: data,
+            editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+            allowPaging: true,
+            selectionSettings: {type: 'Multiple'},
+            pageSettings: { pageCount: 5 },
+            toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+            columns: [
+                {
+                    field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                    validationRules: { required: true }, width: 120
+                },
+                {
+                    field: 'CustomerID', headerText: 'Customer ID',
+                    validationRules: { required: true }, width: 140
+                },
+                { field: 'ShipName', headerText: 'Ship Name', width: 170 },
+                {
+                    field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150,
+                    edit: { params: { popupHeight: '300px' } }
+                }
+            ],
+            
+        }, done);
+    });
+
+    it('delete the record', (done: Function) => {
+        let beforeBatchDelete = (args?: any): void => {
+            expect(args.rowData.length).toBe(3);
+            gridObj.beforeBatchDelete = null;
+            done();
+        };
+        gridObj.beforeBatchDelete = beforeBatchDelete;
+        gridObj.clearSelection();
+        gridObj.selectRows([1,2,3]);
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_delete' } });
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

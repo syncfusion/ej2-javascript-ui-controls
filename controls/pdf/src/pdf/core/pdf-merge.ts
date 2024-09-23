@@ -1107,7 +1107,9 @@ export class _PdfMergeHelper {
         this._newList = new Map();
         this._annotationLayer = new Map();
         this._fieldNames = [];
-        this._destinationDocument.form._widgetReferences = [];
+        if (this._destinationDocument && this._destinationDocument._form && this._destinationDocument._form._widgetReferences) {
+            this._destinationDocument._form._widgetReferences = [];
+        }
     }
 }
 export class _PdfCopier {

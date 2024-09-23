@@ -640,4 +640,41 @@ describe('Slash Menu ', () => {
             }, 150);
         });
     });
+
+    describe('908869: Creating unwanted one line while pressing the slash key and select the heading 2 by enter key', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                slashMenuSettings: {
+                    enable: true,
+                },
+                value: '/'
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it ('Should apply heading 2 on select of the item.', (done: DoneFn) => {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.firstChild.firstChild, 1);
+            range.setEnd(editor.inputElement.firstChild.firstChild, 1);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyDownEvent);
+            const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyUpEvent);
+            setTimeout(() => {
+                const heading2: HTMLElement = document.querySelector('[data-value="Use this for key sections."]')
+                heading2.click();
+                setTimeout(() => {
+                    expect(editor.inputElement.innerHTML).toBe('<h2><br></h2>');
+                    done();
+                }, 50);
+            }, 150);
+        });
+    });
 });

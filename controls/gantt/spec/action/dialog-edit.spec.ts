@@ -10298,7 +10298,7 @@ describe('Update Notes tab', function () {
         ganttObj.openEditDialog(2);
         ganttObj.actionBegin = function (args: any): void {
             if (args.requestType === "beforeSave") {
-                expect(args.data.ganttProperties.notes).toBe('<p>ValueUpdated</p>')
+                expect(args.data.ganttProperties.notes).toBe('ValueUpdated')
                 done();
             }
         };
@@ -12220,6 +12220,379 @@ describe('Dialog close with args cancel', () => {
         if (saveRecord) {
             triggerMouseEvent(saveRecord, 'click');
         }
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.editModule.dialogModule.dialogClose();
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR907807-Update Notes tab styles', function () {
+    let ganttObj: Gantt;
+    beforeAll(function (done) {
+        ganttObj = createGantt({
+            dataSource: MT887459,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                notes: 'info',
+                resourceInfo: 'resources',
+                indicators: 'Indicators'
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                { field: 'info'},
+            ],
+            editDialogFields: [
+                { type: 'Notes' },
+                { type: 'General', headerText: 'General' },
+
+            ],
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName'
+            },
+            resources: editingResources,
+            enableContextMenu: true,
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            highlightWeekends: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    it('CR907807- Checking Notes Tab styles', (done: Function) => {
+        ganttObj.openEditDialog(3);
+        ganttObj.actionBegin = function (args: any): void {
+            if (args.requestType === "beforeSave") {
+                expect(args.data.ganttProperties.notes).toBe('<p><a href="">Click here</a></p>');
+                done();
+            }
+        };
+        let notesInstance = (document.getElementById(ganttObj.element.id + 'NotesTabContainer') as any).ej2_instances[0];
+        notesInstance.value = '<a href="">Click here</a>';
+        notesInstance.dataBind();
+        let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+        ganttObj.openEditDialog(3);
+        expect(ganttObj.currentViewData[2].ganttProperties.notes).toBe('<p><a href="">Click here</a></p>');
+    });
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Add predecessor for unscheduled tasks', () => {
+    let ganttObj: Gantt;
+    let editingData = [
+        {
+          TaskID: 1,
+          TaskName: 'Product concept',
+          StartDate: new Date('04/02/2024'),
+          EndDate: new Date('04/21/2024'),
+          subtasks: [
+            {
+              TaskID: 2,
+              TaskName: 'Defining the product and its usage',
+              Progress: 30,
+            },
+            {
+              TaskID: 3,
+              TaskName: 'Defining target audience',
+            },
+            {
+              TaskID: 4,
+              TaskName: 'Prepare product sketch and notes',
+              StartDate: new Date('04/02/2024'),
+              Duration: 2,
+              Predecessor: '2',
+              Progress: 30,
+            },
+          ],
+        },
+        {
+          TaskID: 5,
+          TaskName: 'Concept approval',
+          StartDate: new Date('04/02/2024'),
+          Duration: 0,
+          Predecessor: '3,4',
+          Indicators: [
+            {
+              date: '04/15/2024',
+              name: 'Design Phase',
+              tooltip: 'Design phase completed',
+              iconClass: 'okIcon e-icons',
+            },
+          ],
+        },
+        {
+          TaskID: 6,
+          TaskName: 'Market research',
+          StartDate: new Date('04/02/2024'),
+          EndDate: new Date('04/21/2024'),
+          subtasks: [
+            {
+              TaskID: 7,
+              TaskName: 'Demand analysis',
+              StartDate: new Date('04/04/2024'),
+              EndDate: new Date('04/21/2024'),
+              subtasks: [
+                {
+                  TaskID: 8,
+                  TaskName: 'Customer strength',
+                  StartDate: new Date('04/04/2024'),
+                  Duration: 4,
+                  Progress: 30,
+                },
+                {
+                  TaskID: 9,
+                  TaskName: 'Market opportunity analysis',
+                  StartDate: new Date('04/04/2024'),
+                  Duration: 4,
+                },
+              ],
+            },
+            {
+              TaskID: 10,
+              TaskName: 'Competitor analysis',
+              StartDate: new Date('04/04/2024'),
+              Duration: 4,
+              Predecessor: '7, 8',
+              Progress: 30,
+            },
+          ],
+        },
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: editingData,
+    resources: editingResources,
+    enableContextMenu: true,
+    taskFields: {
+        id: 'TaskID',
+    name: 'TaskName',
+    startDate: 'StartDate',
+    duration: 'Duration',
+    endDate: 'EndDate',
+    progress: 'Progress',
+    child: 'subtasks',
+    notes: 'info',
+    resourceInfo: 'resources',
+    manual: 'isManual',
+    dependency: 'Predecessor',
+    },
+    editSettings: {
+        allowAdding: true,
+        allowEditing: true,
+        allowDeleting: true,
+        allowTaskbarEditing: true,
+        showDeleteConfirmDialog: true
+    },
+    splitterSettings: {
+        columnIndex: 4
+    },
+    allowSelection: true,
+    allowRowDragAndDrop: true,
+    selectedRowIndex: 1,
+    selectionSettings: {
+        mode: 'Row',
+        type: 'Single',
+        enableToggle: false
+    },
+    tooltipSettings: {
+        showTooltip: true
+    },
+    filterSettings: {
+        type: 'Menu'
+    },
+    allowFiltering: true,
+    gridLines: "Both",
+    showColumnMenu: true,
+    highlightWeekends: true,
+    timelineSettings: {
+        showTooltip: true,
+        topTier: {
+            unit: 'Week',
+            format: 'dd/MM/yyyy'
+        },
+        bottomTier: {
+            unit: 'Day',
+            count: 1
+        }
+    },
+    allowResizing: true,
+    readOnly: false,
+    taskbarHeight: 20,
+    rowHeight: 40,
+    height: '550px',
+    allowUnscheduledTasks: true,
+        }, done);
+    });
+    beforeEach((done) => {
+        setTimeout(done, 500);
+    });
+    it('Checking for predecessor name', () => {
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.type === "save") {
+                expect(ganttObj.flatData[1].ganttProperties.duration).toBe(1);
+            }
+        };
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(7)') as HTMLElement;
+            triggerMouseEvent(dependency, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
+            input.value = "2FS";
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+    });
+    it('Checking for predecessor name', () => {
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.requestType === "save") {
+                expect(ganttObj.flatData[1].ganttProperties.predecessorsName).toBe('7FS+3 days');
+            }
+        };
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(7)') as HTMLElement;
+            triggerMouseEvent(dependency, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
+            input.value = "7FS+3";
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            ganttObj.editModule.dialogModule.dialogClose();
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Add duration for unscheduled tasks', () => {
+    let ganttObj: Gantt;
+    let editingData = [
+        {
+          TaskID: 1,
+          TaskName: 'Product concept',
+          StartDate: new Date('04/02/2024'),
+          EndDate: new Date('04/21/2024'),
+          subtasks: [
+            {
+              TaskID: 2,
+              TaskName: 'Defining the product and its usage',
+              Progress: 30,
+            },
+            {
+              TaskID: 3,
+              TaskName: 'Defining target audience',
+            },
+            {
+              TaskID: 4,
+              TaskName: 'Prepare product sketch and notes',
+              StartDate: new Date('04/02/2024'),
+              Duration: 2,
+              Progress: 30,
+            },
+          ],
+        }
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: editingData,
+    resources: editingResources,
+    enableContextMenu: true,
+    taskFields: {
+        id: 'TaskID',
+    name: 'TaskName',
+    startDate: 'StartDate',
+    duration: 'Duration',
+    endDate: 'EndDate',
+    progress: 'Progress',
+    child: 'subtasks',
+    notes: 'info',
+    resourceInfo: 'resources',
+    manual: 'isManual',
+    dependency: 'Predecessor',
+    },
+    editSettings: {
+        allowAdding: true,
+        allowEditing: true,
+        allowDeleting: true,
+        allowTaskbarEditing: true,
+        showDeleteConfirmDialog: true
+    },
+    splitterSettings: {
+        columnIndex: 4
+    },
+    allowSelection: true,
+    selectedRowIndex: 1,
+    selectionSettings: {
+        mode: 'Row',
+        type: 'Single',
+        enableToggle: false
+    },
+    tooltipSettings: {
+        showTooltip: true
+    },
+    filterSettings: {
+        type: 'Menu'
+    },
+    allowFiltering: true,
+    gridLines: "Both",
+    showColumnMenu: true,
+    highlightWeekends: true,
+    timelineSettings: {
+        showTooltip: true,
+        topTier: {
+            unit: 'Week',
+            format: 'dd/MM/yyyy'
+        },
+        bottomTier: {
+            unit: 'Day',
+            count: 1
+        }
+    },
+    allowResizing: true,
+    readOnly: false,
+    taskbarHeight: 20,
+    rowHeight: 40,
+    height: '550px',
+    allowUnscheduledTasks: true,
+        }, done);
+    });
+    beforeEach((done) => {
+        setTimeout(done, 500);
+    });
+    it('Checking for unscheuled task left value', () => {
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.requestType === "save") {
+                expect(ganttObj.flatData[2].ganttProperties.left).toBe(66);
+            }
+        };
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
+            triggerMouseEvent(dependency, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+            input.value = "1";
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(element, 'click');
     });
     afterAll(() => {
         if (ganttObj) {

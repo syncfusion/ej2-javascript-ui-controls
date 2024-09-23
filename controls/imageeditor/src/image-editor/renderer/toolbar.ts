@@ -226,7 +226,8 @@ export class ToolbarModule {
             BorderRadius: 'Border Radius',
             TextOutlineColor: 'Outline Color',
             TextOutlineWidth: 'Outline Width',
-            PixelSize: 'Pixel Size'
+            PixelSize: 'Pixel Size',
+            And: 'and'
         };
         this.l10n = new L10n('image-editor', this.defaultLocale, this.parent.locale);
     }
@@ -874,13 +875,11 @@ export class ToolbarModule {
             zoomIn.addEventListener('mousedown', this.zoomInBtnMouseDownHandler.bind(this));
             zoomIn.addEventListener('mouseup', this.zoomBtnMouseUpHandler.bind(this));
             zoomIn.addEventListener('click', this.zoomInBtnClickHandler.bind(this));
-            zoomIn.addEventListener('touchstart', this.zoomInBtnClickHandler.bind(this));
         }
         if (zoomOut) {
             zoomOut.addEventListener('mousedown', this.zoomOutBtnMouseDownHandler.bind(this));
             zoomOut.addEventListener('mouseup', this.zoomBtnMouseUpHandler.bind(this));
             zoomOut.addEventListener('click', this.zoomOutBtnClickHandler.bind(this));
-            zoomIn.addEventListener('touchstart', this.zoomInBtnClickHandler.bind(this));
         }
     }
 
@@ -5126,6 +5125,7 @@ export class ToolbarModule {
                 parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
                 parent.isFrameBtnClick = true;
                 parent.curFrameObjEvent = {previousFrameSetting: parent.tempFrameObj, currentFrameSetting: parent.frameObj };
+                parent.notify('draw', { prop: 'triggerFrameChange', value: { prevFrameSettings: parent.tempFrameObj, obj: {frameChangeEventArgs: null } }});
                 break;
             case 'redact':
                 parent.currObjType.isRedact = true;
@@ -5234,6 +5234,7 @@ export class ToolbarModule {
             if (Browser.isDevice) {parent.img.destTop -= (parent.cxtTbarHeight / 2); }
             else {parent.img.destTop += (parent.cxtTbarHeight / 2); }
             this.callFrameToolbar();
+            parent.notify('draw', { prop: 'triggerFrameChange', value: { prevFrameSettings: parent.frameObj, obj: {frameChangeEventArgs: null } }});
         }
     }
 

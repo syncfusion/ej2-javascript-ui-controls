@@ -1969,8 +1969,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public keyDown(e: KeyboardEvent): void {
         if (this.inputElement.classList.contains('e-mention')) {
             const mentionPopup: HTMLElement = this.inputElement.ownerDocument.getElementById(this.inputElement.id + '_popup');
+            const slashMenuPopup: HTMLElement = this.inputElement.ownerDocument.getElementById(this.inputElement.id + '_slash_menu_popup');
             const mentionKeys: string[] = mentionRestrictKeys;
-            if (mentionKeys.indexOf(e.key) !== -1 &&  mentionPopup && mentionPopup.classList.contains('e-popup-open')) {
+            const isMentionKeys: boolean = mentionKeys.indexOf(e.key) !== -1;
+            const isMentionPopupOpen: boolean = mentionPopup && mentionPopup.classList.contains('e-popup-open');
+            const isSlashMenuPopupOpen: boolean = slashMenuPopup && slashMenuPopup.classList.contains('e-popup-open');
+            if (isMentionKeys && (isMentionPopupOpen || isSlashMenuPopupOpen)) {
                 return;
             }
         }

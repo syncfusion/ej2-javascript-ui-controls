@@ -16,6 +16,22 @@ export class StylesDialog {
     private listviewInstance: ListView;
     private styleName: string;
     private localValue: L10n;
+
+    private dlgFields: HTMLElement;
+    private commonDiv: HTMLElement;
+    private searchDiv: HTMLElement;
+    private listviewDiv: HTMLElement;
+    private buttonDiv: HTMLElement;
+    private newButtonDiv: HTMLElement;
+    private newButtonElement: HTMLElement;
+    private newbutton: Button;
+    private modifybuttonDiv: HTMLElement;
+    private modifyButtonElement: HTMLElement;
+    private addbutton: Button;
+
+    private selecHandlerClickHandler: EventListener = this.onSelecHandlerClick.bind(this);
+    private addNewStyleClickHandler: EventListenerOrEventListenerObject = this.onAddNewStyleClick.bind(this);
+    private modifyStyleClickHandler: EventListenerOrEventListenerObject = this.onModifyStyleClick.bind(this);
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
@@ -38,20 +54,20 @@ export class StylesDialog {
         const id: string = this.documentHelper.owner.containerId + '_insert_styles';
         this.target = createElement('div', { id: id, className: 'e-de-styles' });
         const headerValue: string = localValue.getConstant('Styles');
-        const dlgFields: HTMLElement = createElement('div', { innerHTML: headerValue, className: 'e-de-para-dlg-heading' });
-        this.target.appendChild(dlgFields);
+        this.dlgFields = createElement('div', { innerHTML: headerValue, className: 'e-de-para-dlg-heading' });
+        this.target.appendChild(this.dlgFields);
 
-        const commonDiv: HTMLElement = createElement('div', { className: 'e-styles-common' });
-        this.target.appendChild(commonDiv);
+        this.commonDiv = createElement('div', { className: 'e-styles-common' });
+        this.target.appendChild(this.commonDiv);
 
-        const searchDiv: HTMLElement = createElement('div', { className: 'e-styles-list' });
-        commonDiv.appendChild(searchDiv);
+        this.searchDiv = createElement('div', { className: 'e-styles-list' });
+        this.commonDiv.appendChild(this.searchDiv);
         if (isRtl) {
-            searchDiv.classList.add('e-de-rtl');
+            this.searchDiv.classList.add('e-de-rtl');
         }
 
-        const listviewDiv: HTMLElement = createElement('div', { className: 'e-styles-listViewDiv', id: 'styles_listview' });
-        searchDiv.appendChild(listviewDiv);
+        this.listviewDiv = createElement('div', { className: 'e-styles-listViewDiv', id: 'styles_listview' });
+        this.searchDiv.appendChild(this.listviewDiv);
 
         this.listviewInstance = new ListView({
             dataSource: styles,
@@ -60,33 +76,33 @@ export class StylesDialog {
             showIcon: true
         });
 
-        this.listviewInstance.appendTo(listviewDiv);
-        this.listviewInstance.addEventListener('select', this.selectHandler);
+        this.listviewInstance.appendTo(this.listviewDiv);
+        this.listviewInstance.addEventListener('select', this.selecHandlerClickHandler);
 
-        const buttonDiv: HTMLElement = createElement('div', { className: 'e-styles-button' });
-        commonDiv.appendChild(buttonDiv);
+        this.buttonDiv = createElement('div', { className: 'e-styles-button' });
+        this.commonDiv.appendChild(this.buttonDiv);
 
-        const newButtonDiv: HTMLElement = createElement('div', { className: 'e-styles-addbutton' });
-        buttonDiv.appendChild(newButtonDiv);
-        const newButtonElement: HTMLElement = createElement('button', {
+        this.newButtonDiv = createElement('div', { className: 'e-styles-addbutton' });
+        this.buttonDiv.appendChild(this.newButtonDiv);
+        this.newButtonElement = createElement('button', {
             innerHTML: localValue.getConstant('New') + '...', id: 'new',
             attrs: { type: 'button' }
         });
-        newButtonDiv.appendChild(newButtonElement);
-        const newbutton: Button = new Button({ cssClass: 'e-button-custom' });
-        newbutton.appendTo(newButtonElement);
-        newButtonElement.addEventListener('click', this.addNewStyles);
+        this.newButtonDiv.appendChild(this.newButtonElement);
+        this.newbutton = new Button({ cssClass: 'e-button-custom' });
+        this.newbutton.appendTo(this.newButtonElement);
+        this.newButtonElement.addEventListener('click', this.addNewStyleClickHandler);
 
-        const modifybuttonDiv: HTMLElement = createElement('div', { className: 'e-styles-addbutton' });
-        buttonDiv.appendChild(modifybuttonDiv);
-        const modifyButtonElement: HTMLElement = createElement('button', {
+        this.modifybuttonDiv = createElement('div', { className: 'e-styles-addbutton' });
+        this.buttonDiv.appendChild(this.modifybuttonDiv);
+        this.modifyButtonElement = createElement('button', {
             innerHTML: localValue.getConstant('Modify') + '...', id: 'modify',
             attrs: { type: 'button' }
         });
-        modifybuttonDiv.appendChild(modifyButtonElement);
-        const addbutton: Button = new Button({ cssClass: 'e-button-custom' });
-        addbutton.appendTo(modifyButtonElement);
-        modifyButtonElement.addEventListener('click', this.modifyStyles);
+        this.modifybuttonDiv.appendChild(this.modifyButtonElement);
+        this.addbutton = new Button({ cssClass: 'e-button-custom' });
+        this.addbutton.appendTo(this.modifyButtonElement);
+        this.modifyButtonElement.addEventListener('click', this.modifyStyleClickHandler);
     }
     /**
      * @private
@@ -152,6 +168,9 @@ export class StylesDialog {
         }
         return styleName;
     }
+    private onModifyStyleClick(): void {
+        this.modifyStyles();
+    }
     /**
      * @private
      * @returns {void}
@@ -160,6 +179,9 @@ export class StylesDialog {
         this.documentHelper.dialog.hide();
         this.documentHelper.owner.styleDialogModule.show(this.styleName, this.localValue.getConstant('Modify Style'));
     };
+    private onSelecHandlerClick(args: SelectEventArgs): void {
+        this.selectHandler(args);
+    }
     /**
      * @param {SelectEventArgs} args - Specifies the event args.
      * @returns {void}
@@ -204,6 +226,9 @@ export class StylesDialog {
         this.documentHelper.dialog.hide();
         this.documentHelper.updateFocus();
     }
+    private onAddNewStyleClick(): void {
+        this.addNewStyles();
+    }
     /**
      * @private
      * @returns {void}
@@ -222,10 +247,69 @@ export class StylesDialog {
             this.listviewInstance.destroy();
             this.listviewInstance = undefined;
         }
+        this.removeEvents();
+        this.removeElements();
         this.documentHelper = undefined;
         this.styleName = undefined;
         this.localValue = undefined;
         this.target = undefined;
+    }
+    private removeEvents(): void {
+        if (this.newButtonElement) {
+            this.newButtonElement.removeEventListener('click', this.addNewStyleClickHandler);
+        }
+        if (this.modifyButtonElement) {
+            this.modifyButtonElement.removeEventListener('click', this.modifyStyleClickHandler);
+        }
+        if (this.listviewInstance) {
+            this.listviewInstance.removeEventListener('select', this.selecHandlerClickHandler);
+        }
+    }
+    private removeElements(): void {
+        if (this.dlgFields) {
+            this.dlgFields.remove();
+            this.dlgFields = undefined;
+        }
+        if (this.commonDiv) {
+            this.commonDiv.remove();
+            this.commonDiv = undefined;
+        }
+        if (this.searchDiv) {
+            this.searchDiv.remove();
+            this.searchDiv = undefined;
+        }
+        if (this.listviewDiv) {
+            this.listviewDiv.remove();
+            this.listviewDiv = undefined;
+        }
+        if (this.buttonDiv) {
+            this.buttonDiv.remove();
+            this.buttonDiv = undefined;
+        }
+        if (this.newButtonDiv) {
+            this.newButtonDiv.remove();
+            this.newButtonDiv = undefined;
+        }
+        if (this.newButtonElement) {
+            this.newButtonElement.remove();
+            this.newButtonElement = undefined;
+        }
+        if (this.newbutton) {
+            this.newbutton.destroy();
+            this.newbutton = undefined;
+        }
+        if (this.modifybuttonDiv) {
+            this.modifybuttonDiv.remove();
+            this.modifybuttonDiv = undefined;
+        }
+        if (this.modifyButtonElement) {
+            this.modifyButtonElement.remove();
+            this.modifyButtonElement = undefined;
+        }
+        if (this.addbutton) {
+            this.addbutton.destroy();
+            this.addbutton = undefined;
+        }
     }
 }
 

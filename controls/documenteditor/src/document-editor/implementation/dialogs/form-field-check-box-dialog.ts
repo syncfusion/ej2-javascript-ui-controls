@@ -22,6 +22,27 @@ export class CheckBoxFormFieldDialog {
     private exactlyNumber: NumericTextBox;
     private exactNumberDiv: HTMLElement;
     private fieldBegin: FieldElementBox;
+
+    private dialogDiv: HTMLDivElement;
+    private headingLabel: HTMLElement;
+    private sizeParentDiv: HTMLElement;
+    private autoDiv: HTMLElement;
+    private exactDiv: HTMLElement;
+    private autoEle: HTMLElement;
+    private exactEle: HTMLElement;
+    private exactNumber: HTMLInputElement;
+    private defaultValueLabel: HTMLElement;
+    private defaultcheckDiv: HTMLElement;
+    private notcheckDiv: HTMLElement;
+    private checkDiv: HTMLElement;
+    private notcheckEle: HTMLElement;
+    private checkEle: HTMLElement;
+    private checkBoxEnableDiv: HTMLElement;
+    private checBoxEnableEle: HTMLInputElement;
+    private fieldSettingsLabel: HTMLElement;
+    private settingsTotalDiv: HTMLElement;
+    private totalToolTipDiv: HTMLElement;
+    private totalBookmarkDiv: HTMLElement;
     /**
      * @param {DocumentHelper} owner - Specifies the document helper.
      * @private
@@ -46,16 +67,16 @@ export class CheckBoxFormFieldDialog {
      */
     private initCheckBoxDialog(localValue: L10n, isRtl?: boolean): void {
         this.target = createElement('div');
-        let dialogDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        let headingLabel: HTMLElement = createElement('div', {
+        this.dialogDiv = createElement('div') as HTMLDivElement;
+        this.headingLabel = createElement('div', {
             className: 'e-de-para-dlg-heading',
             innerHTML: localValue.getConstant('Check box size')
         });
-        let sizeParentDiv: HTMLElement = createElement('div', {className: 'e-de-container-row'}) as HTMLDivElement;
-        let autoDiv: HTMLElement = createElement('div', { className: 'e-de-ff-radio-scnd-div' }) as HTMLDivElement;
-        let exactDiv: HTMLElement = createElement('div', { className: 'e-de-ff-radio-scnd-div' }) as HTMLDivElement;
-        let autoEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div',attrs:{'aria-label':localValue.getConstant('Auto')}});
-        let exactEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div',attrs:{'aria-label':localValue.getConstant('Exactly')}});
+        this.sizeParentDiv = createElement('div', {className: 'e-de-container-row'}) as HTMLDivElement;
+        this.autoDiv = createElement('div', { className: 'e-de-ff-radio-scnd-div' }) as HTMLDivElement;
+        this.exactDiv = createElement('div', { className: 'e-de-ff-radio-scnd-div' }) as HTMLDivElement;
+        this.autoEle = createElement('input', { className: 'e-de-rtl-btn-div',attrs:{'aria-label':localValue.getConstant('Auto')}});
+        this.exactEle = createElement('input', { className: 'e-de-rtl-btn-div',attrs:{'aria-label':localValue.getConstant('Exactly')}});
         this.autoButton = new RadioButton({
             label: localValue.getConstant('Auto'), cssClass: 'e-small', change: this.changeBidirectional, checked: true,
             enableRtl: isRtl
@@ -65,20 +86,20 @@ export class CheckBoxFormFieldDialog {
             enableRtl: isRtl
         });
         this.exactNumberDiv = createElement('div', { className: 'e-de-ff-chck-exact' });
-        let exactNumber: HTMLInputElement = createElement('input', { attrs: { 'type': 'text', 'aria-label': localValue.getConstant('Exactly') } }) as HTMLInputElement;
+        this.exactNumber = createElement('input', { attrs: { 'type': 'text', 'aria-label': localValue.getConstant('Exactly') } }) as HTMLInputElement;
         this.exactlyNumber = new NumericTextBox({
             format: 'n', value: 10, min: 1, max: 1584, enablePersistence: false, enabled: false, cssClass: 'e-de-check-exactnumbr-width',
             enableRtl: isRtl
         });
-        let defaultValueLabel: HTMLElement = createElement('div', {
+        this.defaultValueLabel = createElement('div', {
             className: 'e-de-para-dlg-heading',
             innerHTML: localValue.getConstant('Default value')
         });
-        let defaultcheckDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' }) as HTMLDivElement;
-        let notcheckDiv: HTMLElement = createElement('div', { className: 'e-de-ff-radio-div' }) as HTMLDivElement;
-        let checkDiv: HTMLElement = createElement('div', { className: 'e-de-ff-radio-div' }) as HTMLDivElement;
-        let notcheckEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div',attrs:{'aria-label':localValue.getConstant('Not checked')}});
-        let checkEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div',attrs:{'aria-label':localValue.getConstant('Checked')}});
+        this.defaultcheckDiv = createElement('div', { className: 'e-de-container-row' }) as HTMLDivElement;
+        this.notcheckDiv = createElement('div', { className: 'e-de-ff-radio-div' }) as HTMLDivElement;
+        this.checkDiv = createElement('div', { className: 'e-de-ff-radio-div' }) as HTMLDivElement;
+        this.notcheckEle = createElement('input', { className: 'e-de-rtl-btn-div',attrs:{'aria-label':localValue.getConstant('Not checked')}});
+        this.checkEle = createElement('input', { className: 'e-de-rtl-btn-div',attrs:{'aria-label':localValue.getConstant('Checked')}});
         this.notCheckedButton = new RadioButton({
             label: localValue.getConstant('Not checked'), enableRtl: isRtl, cssClass: 'e-small', change: this.changeBidirect
         });
@@ -86,72 +107,72 @@ export class CheckBoxFormFieldDialog {
             label: localValue.getConstant('Checked'), value: 'check', enableRtl: isRtl, cssClass: 'e-small',
             change: this.changeBidirect, checked: true
         });
-        let fieldSettingsLabel: HTMLElement = createElement('div', {
+        this.fieldSettingsLabel = createElement('div', {
             className: 'e-de-para-dlg-heading',
             innerHTML: localValue.getConstant('Field settings')
         });
-        let settingsTotalDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
-        let totalToolTipDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
-        let totalBookmarkDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
+        this.settingsTotalDiv = createElement('div', { className: 'e-de-container-row' });
+        this.totalToolTipDiv = createElement('div', { className: 'e-de-subcontainer-left' });
+        this.totalBookmarkDiv = createElement('div', { className: 'e-de-subcontainer-right' });
 
         this.tooltipInputText = createElement('input', { className: 'e-input e-bookmark-textbox-input', attrs:{'aira-label': localValue.getConstant('Tooltip')} }) as HTMLInputElement;
 
         this.bookmarkInputText = createElement('input', { className: 'e-input e-bookmark-textbox-input', attrs:{'aira-label': localValue.getConstant('Name')} }) as HTMLInputElement;
-        let checkBoxEnableDiv: HTMLElement = createElement('div');
-        let checBoxEnableEle: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
-        checBoxEnableEle.setAttribute('aria-label',localValue.getConstant('Check box enabled'));
+        this.checkBoxEnableDiv = createElement('div');
+        this.checBoxEnableEle = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
+        this.checBoxEnableEle.setAttribute('aria-label',localValue.getConstant('Check box enabled'));
         this.checBoxEnableElement = new CheckBox({
             cssClass: 'e-de-ff-dlg-check',
             label: localValue.getConstant('Check box enabled'),
             enableRtl: isRtl
         });
         if (isRtl) {
-            autoDiv.classList.add('e-de-rtl');
-            exactDiv.classList.add('e-de-rtl');
+            this.autoDiv.classList.add('e-de-rtl');
+            this.exactDiv.classList.add('e-de-rtl');
             this.exactNumberDiv.classList.add('e-de-rtl');
-            notcheckDiv.classList.add('e-de-rtl');
-            checkDiv.classList.add('e-de-rtl');
-            totalToolTipDiv.classList.add('e-de-rtl');
-            totalBookmarkDiv.classList.add('e-de-rtl');
+            this.notcheckDiv.classList.add('e-de-rtl');
+            this.checkDiv.classList.add('e-de-rtl');
+            this.totalToolTipDiv.classList.add('e-de-rtl');
+            this.totalBookmarkDiv.classList.add('e-de-rtl');
         }
 
-        this.target.appendChild(dialogDiv);
+        this.target.appendChild(this.dialogDiv);
 
-        dialogDiv.appendChild(defaultValueLabel);
-        dialogDiv.appendChild(defaultcheckDiv);
-        defaultcheckDiv.appendChild(notcheckDiv);
-        notcheckDiv.appendChild(notcheckEle);
-        this.notCheckedButton.appendTo(notcheckEle);
-        defaultcheckDiv.appendChild(checkDiv);
-        checkDiv.appendChild(checkEle);
-        this.checkedButton.appendTo(checkEle);
+        this.dialogDiv.appendChild(this.defaultValueLabel);
+        this.dialogDiv.appendChild(this.defaultcheckDiv);
+        this.defaultcheckDiv.appendChild(this.notcheckDiv);
+        this.notcheckDiv.appendChild(this.notcheckEle);
+        this.notCheckedButton.appendTo(this.notcheckEle);
+        this.defaultcheckDiv.appendChild(this.checkDiv);
+        this.checkDiv.appendChild(this.checkEle);
+        this.checkedButton.appendTo(this.checkEle);
 
-        dialogDiv.appendChild(headingLabel);
-        dialogDiv.appendChild(sizeParentDiv);
-        sizeParentDiv.appendChild(autoDiv);
-        autoDiv.appendChild(autoEle);
-        this.autoButton.appendTo(autoEle);
-        sizeParentDiv.appendChild(exactDiv);
-        exactDiv.appendChild(exactEle);
-        this.exactButton.appendTo(exactEle);
-        exactDiv.appendChild(this.exactNumberDiv);
-        this.exactNumberDiv.appendChild(exactNumber);
-        this.exactlyNumber.appendTo(exactNumber);
+        this.dialogDiv.appendChild(this.headingLabel);
+        this.dialogDiv.appendChild(this.sizeParentDiv);
+        this.sizeParentDiv.appendChild(this.autoDiv);
+        this.autoDiv.appendChild(this.autoEle);
+        this.autoButton.appendTo(this.autoEle);
+        this.sizeParentDiv.appendChild(this.exactDiv);
+        this.exactDiv.appendChild(this.exactEle);
+        this.exactButton.appendTo(this.exactEle);
+        this.exactDiv.appendChild(this.exactNumberDiv);
+        this.exactNumberDiv.appendChild(this.exactNumber);
+        this.exactlyNumber.appendTo(this.exactNumber);
 
 
-        dialogDiv.appendChild(fieldSettingsLabel);
+        this.dialogDiv.appendChild(this.fieldSettingsLabel);
 
-        dialogDiv.appendChild(settingsTotalDiv);
-        settingsTotalDiv.appendChild(totalToolTipDiv);
-        settingsTotalDiv.appendChild(totalBookmarkDiv);
+        this.dialogDiv.appendChild(this.settingsTotalDiv);
+        this.settingsTotalDiv.appendChild(this.totalToolTipDiv);
+        this.settingsTotalDiv.appendChild(this.totalBookmarkDiv);
 
-        totalToolTipDiv.appendChild(this.tooltipInputText);
+        this.totalToolTipDiv.appendChild(this.tooltipInputText);
 
-        totalBookmarkDiv.appendChild(this.bookmarkInputText);
+        this.totalBookmarkDiv.appendChild(this.bookmarkInputText);
 
-        dialogDiv.appendChild(checkBoxEnableDiv);
-        checkBoxEnableDiv.appendChild(checBoxEnableEle);
-        this.checBoxEnableElement.appendTo(checBoxEnableEle);
+        this.dialogDiv.appendChild(this.checkBoxEnableDiv);
+        this.checkBoxEnableDiv.appendChild(this.checBoxEnableEle);
+        this.checBoxEnableElement.appendTo(this.checBoxEnableEle);
         
         new TextBox({placeholder: localValue.getConstant('Tooltip'), floatLabelType: 'Always'}, this.tooltipInputText);
         new TextBox({placeholder: localValue.getConstant('Name'), floatLabelType: 'Always'}, this.bookmarkInputText);
@@ -338,5 +359,88 @@ export class CheckBoxFormFieldDialog {
             this.exactlyNumber = undefined;
         }
         this.exactNumberDiv = undefined;
+        this.removeElements();
+    }
+    private removeElements(): void {
+        if (this.dialogDiv){
+            this.dialogDiv.remove();
+            this.dialogDiv = undefined;
+        }
+        if (this.headingLabel){
+            this.headingLabel.remove();
+            this.headingLabel = undefined;
+        }
+        if (this.sizeParentDiv){
+            this.sizeParentDiv.remove();
+            this.sizeParentDiv = undefined;
+        }
+        if (this.autoDiv){
+            this.autoDiv.remove();
+            this.autoDiv = undefined;
+        }
+        if (this.exactDiv){
+            this.exactDiv.remove();
+            this.exactDiv = undefined;
+        }
+        if (this.autoEle){
+            this.autoEle.remove();
+            this.autoEle = undefined;
+        }
+        if (this.exactEle){
+            this.exactEle.remove();
+            this.exactEle = undefined;
+        }
+        if (this.exactNumber){
+            this.exactNumber.remove();
+            this.exactNumber = undefined;
+        }
+        if (this.defaultValueLabel){
+            this.defaultValueLabel.remove();
+            this.defaultValueLabel = undefined;
+        }
+        if (this.defaultcheckDiv){
+            this.defaultcheckDiv.remove();
+            this.defaultcheckDiv = undefined;
+        }
+        if (this.notcheckDiv){
+            this.notcheckDiv.remove();
+            this.notcheckDiv = undefined;
+        }
+        if (this.checkDiv){
+            this.checkDiv.remove();
+            this.checkDiv = undefined;
+        }
+        if (this.notcheckEle){
+            this.notcheckEle.remove();
+            this.notcheckEle = undefined;
+        }
+        if (this.checkEle){
+            this.checkEle.remove();
+            this.checkEle = undefined;
+        }
+        if (this.checkBoxEnableDiv){
+            this.checkBoxEnableDiv.remove();
+            this.checkBoxEnableDiv = undefined;
+        }
+        if (this.checBoxEnableEle){
+            this.checBoxEnableEle.remove();
+            this.checBoxEnableEle = undefined;
+        }
+        if (this.fieldSettingsLabel){
+            this.fieldSettingsLabel.remove();
+            this.fieldSettingsLabel = undefined;
+        }
+        if (this.settingsTotalDiv){
+            this.settingsTotalDiv.remove();
+            this.settingsTotalDiv = undefined;
+        }
+        if (this.totalToolTipDiv){
+            this.totalToolTipDiv.remove();
+            this.totalToolTipDiv = undefined;
+        }
+        if (this.totalBookmarkDiv){
+            this.totalBookmarkDiv.remove();
+            this.totalBookmarkDiv = undefined;
+        }
     }
 }

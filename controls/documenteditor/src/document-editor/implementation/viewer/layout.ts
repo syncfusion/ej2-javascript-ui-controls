@@ -446,7 +446,7 @@ export class Layout {
         let prevBlock: BlockWidget;
         do {
 
-            if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
+            if (!this.isLayoutWhole && block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
                 && !block.tableFormat.allowAutoFit) {
                 block.calculateGrid();
             }
@@ -3505,11 +3505,11 @@ export class Layout {
     }
     public hasValidElement(paragraph: ParagraphWidget): boolean {
         let line: LineWidget = paragraph.firstChild as LineWidget;
-        if (line && !isNullOrUndefined(this.documentHelper.selection)) {
+        if (line) {
             let elementBox: ElementBox = line.children[0];
             while (elementBox) {
                 if (elementBox instanceof FieldElementBox) {
-                    elementBox = this.documentHelper.selection.getNextValidElementForField(elementBox);
+                    elementBox = this.documentHelper.getNextValidElementForField(elementBox);
                     if (!isNullOrUndefined(elementBox) && !elementBox.line.paragraph.equals(paragraph)) {
                         return false;
                     }
@@ -6951,6 +6951,17 @@ export class Layout {
                 }
             }
         }
+        cellspace = !isNullOrUndefined(cell.ownerTable) && !isNullOrUndefined(cell.ownerTable.tableFormat) ? HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.cellSpacing) : 0;
+        if (cellspace === 0 && cell.ownerTable.isContainInsideTable && !cell.ownerTable.header) {
+            const topBorder: WBorder = TableCellWidget.getCellTopBorder(cell);
+            if (cell.topMargin === 0 && topBorder.lineWidth === 0.75) {
+                top += HelperMethods.convertPointToPixel(0.5);
+            }
+            const leftBorder: WBorder = TableCellWidget.getCellLeftBorder(cell);
+            if (cell.leftMargin <= 0.5 && leftBorder.lineWidth === 0.75) {
+                left += HelperMethods.convertPointToPixel(0.8);
+            }
+        }
         cell.margin = new Margin(left, top, right, bottom);
         let autofit: boolean = cell.ownerTable.tableFormat.allowAutoFit;
         let cellWidth: number = cell.cellFormat.cellWidth;
@@ -6965,7 +6976,6 @@ export class Layout {
         if (!isNullOrUndefined(cell.previousWidget)) {
             prevColumnIndex = (cell.previousWidget as TableCellWidget).columnIndex + (cell.previousWidget as TableCellWidget).cellFormat.columnSpan;
         }
-        cellspace = !isNullOrUndefined(cell.ownerTable) && !isNullOrUndefined(cell.ownerTable.tableFormat) ? HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.cellSpacing) : 0;
         let prevSpannedCellWidth: number = 0;
         if (prevColumnIndex < cell.columnIndex) {
             prevSpannedCellWidth = HelperMethods.convertPointToPixel(cell.ownerTable.tableHolder.getPreviousSpannedCellWidth(prevColumnIndex, cell.columnIndex));
@@ -7556,6 +7566,10 @@ export class Layout {
                             } else if (isNullOrUndefined(splittedWidget) && heightType === 'AtLeast' && tableRowWidget.containerWidget.lastChild !== tableRowWidget) {
                                 splittedWidget = tableRowWidget;
                             }
+                        }
+                        // If the row height type is "At Least" and the row height is greater than the height of the client active area, the row will be moved to the next page. Therefore, it is necessary to add the `splittedCellWidget` to the current row.
+                        else if (heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) > viewer.clientActiveArea.height && this.documentHelper.splittedCellWidgets.length > 0 && this.isRowSpanEnd(row, viewer)) {
+                            this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.index - 1);
                         }
                         // if (heightType === 'AtLeast' && row.ownerTable.spannedRowCollection.keys.length > 0) {
                         //     splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow);
@@ -8220,7 +8234,9 @@ export class Layout {
                         cellWidget.cellFormat.rowSpan;
                     if (rowSpan > 1 && ((rowWidget.firstChild as TableCellWidget).columnIndex === 0)) {
                         if (this.isVerticalMergedCellContinue(currentRow) && currentRow.rowFormat.heightType !== "Exactly" && !isNullOrUndefined(currentRow.previousRenderedWidget) && currentRow.previousRenderedWidget instanceof TableRowWidget && currentRow.previousRenderedWidget.y + currentRow.previousRenderedWidget.height < cellWidget.y + cellWidget.height) {
+                            this.isRelayoutneed = true;
                             let splittedCell: TableCellWidget = this.getSplittedWidget(currentRow.previousRenderedWidget.y + currentRow.previousRenderedWidget.height, true, tableCollection, undefined, cellWidget, undefined, undefined, undefined, undefined, true);
+                            this.isRelayoutneed = false;
                             currentRow.childWidgets.splice(index, 0, splittedCell);
                             splittedCell.containerWidget = currentRow;
                             this.updateChildLocationForRow(currentRow.y, currentRow);

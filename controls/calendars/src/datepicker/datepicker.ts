@@ -696,9 +696,9 @@ export class DatePicker extends Calendar implements IInput {
                 formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
         }
-        returnDate = this.checkDateValue(this.globalize.parseDate(val, formatOptions));
+        returnDate = this.checkDateValue(this.globalize.parseDate(this.getAmPmValue(val), formatOptions));
         if (isNullOrUndefined(returnDate) && (this.getModuleName() === 'datetimepicker')) {
-            returnDate = this.checkDateValue(this.globalize.parseDate(val, formatDateTime));
+            returnDate = this.checkDateValue(this.globalize.parseDate(this.getAmPmValue(val), formatDateTime));
         }
         return returnDate;
     }
@@ -1298,19 +1298,18 @@ export class DatePicker extends Calendar implements IInput {
             this.inputElement.value = this.inputElement.value.trim();
         }
         if ((this.getModuleName() === 'datetimepicker')) {
-            if (this.checkDateValue(this.globalize.parseDate(this.inputElement.value, dateOptions))) {
-                const modifiedValue: string = this.inputElement.value.replace(/(am|pm|Am|aM|pM|Pm)/g, (match: string) => match.toLocaleUpperCase());
-                date = this.globalize.parseDate(modifiedValue, dateOptions);
+            if (this.checkDateValue(this.globalize.parseDate(this.getAmPmValue(this.inputElement.value), dateOptions))) {
+                date = this.globalize.parseDate(this.getAmPmValue(this.inputElement.value), dateOptions);
             } else {
                 if (this.calendarMode === 'Gregorian') {
                     formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd' };
                 } else {
                     formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 }
-                date = this.globalize.parseDate(this.inputElement.value, formatOptions);
+                date = this.globalize.parseDate(this.getAmPmValue(this.inputElement.value), formatOptions);
             }
         } else {
-            date = this.globalize.parseDate(this.inputElement.value, dateOptions);
+            date = this.globalize.parseDate(this.getAmPmValue(this.inputElement.value), dateOptions);
             date = (!isNullOrUndefined(date) && isNaN(+date)) ? null : date;
             if (!isNullOrUndefined(this.formatString) && this.inputElement.value !== '' && this.strictMode) {
                 if ((this.isPopupClicked || (!this.isPopupClicked && this.inputElement.value === this.previousElementValue))
@@ -1421,6 +1420,20 @@ export class DatePicker extends Calendar implements IInput {
         });
         this.popupObj.element.className += ' ' + this.cssClass;
         this.setAriaAttributes();
+    }
+
+    protected getAmPmValue(date: string | null | undefined): string {
+        try {
+            if (typeof date === 'string' && date.trim() !== '') {
+                // Replace am/pm variants with uppercase AM/PM
+                return date.replace(/(am|pm|Am|aM|pM|Pm)/g, (match: string) => match.toLocaleUpperCase());
+            }
+            // If date is null, undefined, or an empty string, return a default value or empty string
+            return '';
+        } catch (error) {
+            console.error('Error occurred while processing date:', error);
+            return ''; // Return a default value in case of an error
+        }
     }
 
     private CalendarSwipeHandler(e: SwipeEventArgs): void {
@@ -2088,19 +2101,19 @@ export class DatePicker extends Calendar implements IInput {
                 case 'value':
                     if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['value'] === undefined)) || dynamic)) {
                         const value: string = this.inputElement.getAttribute(prop);
-                        this.setProperties(setValue(prop, this.globalize.parseDate(value, options), {}), !dynamic);
+                        this.setProperties(setValue(prop, this.globalize.parseDate(this.getAmPmValue(value), options), {}), !dynamic);
                     }
                     break;
                 case 'min':
                     if ((+this.min === +new Date(1900, 0, 1)) || dynamic) {
                         const min: string = this.inputElement.getAttribute(prop);
-                        this.setProperties(setValue(prop, this.globalize.parseDate(min, options), {}), !dynamic);
+                        this.setProperties(setValue(prop, this.globalize.parseDate(this.getAmPmValue(min), options), {}), !dynamic);
                     }
                     break;
                 case 'max':
                     if ((+this.max === +new Date(2099, 11, 31)) || dynamic) {
                         const max: string = this.inputElement.getAttribute(prop);
-                        this.setProperties(setValue(prop, this.globalize.parseDate(max, options), {}), !dynamic);
+                        this.setProperties(setValue(prop, this.globalize.parseDate(this.getAmPmValue(max), options), {}), !dynamic);
                     }
                     break;
                 case 'type':

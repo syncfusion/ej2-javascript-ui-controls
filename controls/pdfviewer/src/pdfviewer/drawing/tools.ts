@@ -1345,7 +1345,8 @@ export class ResizeTool extends ToolBase {
                     this.commandHandler.annotation.updateCalibrateValues(this.prevSource);
                 }
                 if (this.prevSource.shapeAnnotationType === 'SignatureText') {
-                    const boundsRatio: number = newObject.bounds.width / oldObject.bounds.width;
+                    const oldObjectWidth: number = (oldObject.bounds && oldObject.bounds.width) ? oldObject.bounds.width : oldObject.width;
+                    const boundsRatio: number = newObject.bounds.width / oldObjectWidth;
                     newObject.fontSize = (this.prevSource as any).wrapper.children[1].style.fontSize * boundsRatio;
                     if (args.target != null) {
                         (args.target as PdfAnnotationBaseModel).fontSize = newObject.fontSize;

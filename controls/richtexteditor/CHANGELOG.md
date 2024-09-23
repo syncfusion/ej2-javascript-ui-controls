@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I620537` - Now, In localization, different text are used in alternative text quick toolbar item and alternative text dialog header.
+
+- `#I623355` - Now, the ordered and unordered lists are now rendered properly in the table when copied and pasted from an MS Word document to the Rich Text Editor.
+
+- `#I630039` - Now, when formatting is applied to the content, it functions correctly in the Firefox browser.
+
+- `#I627005` - Now, when the Rich Text Editor is placed inside a list, the list functionality works properly.
+
+- `#F191200` - Now, when a `blockquote` is applied and the `clearFormat` action is selected, the process correctly removes the `blockquote` and applies the appropriate `p` tags.
+
 ## 27.1.48 (2024-09-18)
 
 ### RichTextEditor

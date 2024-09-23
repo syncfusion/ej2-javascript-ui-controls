@@ -1676,7 +1676,11 @@ export class Selection implements IAction {
         }
     }
 
-    private drawBorders(): void {
+    /**
+     * @returns {void}
+     * @hidden
+     */
+    public drawBorders(): void {
         if (this.selectionSettings.cellSelectionMode === 'BoxWithBorder' && this.selectedRowCellIndexes.length && !this.parent.isEdit) {
             this.parent.element.classList.add('e-enabledboxbdr');
             if (!this.bdrElement) {
@@ -2757,9 +2761,12 @@ export class Selection implements IAction {
     private dataSuccess(res: Object[]): void {
         for (let i: number = 0; i < res.length; i++) {
             const pkValue: string = this.getPkValue(this.primaryKey, res[parseInt(i.toString(), 10)]);
-            if (isNullOrUndefined(this.selectedRowState[`${pkValue}`]) && res[parseInt(i.toString(), 10)][this.chkField]) {
-                this.selectedRowState[`${pkValue}`] = res[parseInt(i.toString(), 10)][this.chkField];
-                this.persistSelectedData.push(res[parseInt(i.toString(), 10)][this.chkField]);
+            const chkValue: boolean = res[parseInt(i.toString(), 10)][this.chkField];
+            if (isNullOrUndefined(this.selectedRowState[`${pkValue}`]) && chkValue && typeof chkValue === 'boolean') {
+                this.selectedRowState[`${pkValue}`] = chkValue;
+                if (this.parent.isPersistSelection) {
+                    this.persistSelectedData.push(res[parseInt(i.toString(), 10)]);
+                }
             }
         }
     }

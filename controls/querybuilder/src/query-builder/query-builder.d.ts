@@ -346,6 +346,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private dragElement;
     private prvtEvtTgrDaD;
     private isDragEventPrevent;
+    private isValueEmpty;
     private ddTree;
     /**
      * Triggers when the component is created.

@@ -1305,6 +1305,21 @@ describe('Chart', () => {
             chartObj.series[0].removePoint(7); chartObj.series[0].removePoint(8);
             chartObj.refresh();unbindResizeEvents(chartObj);
         });
+        it('Spline range area series - Checking low point larger than the high', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0');
+                expect(svg.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].dataSource = [
+                { x: 1, low: 10, high: 2 }, { x: 2, low: 24, high: 22 },
+                { x: 3, low: 55, high: 50 }, { x: 4, low: 220, high: 202 },
+                { x: 5, low: 25, high: 20 }, { x: 6, low: 45, high: 34 },
+                { x: 7, low: 40, high: 23 }, { x: 8, low: 50, high: 40 }
+            ];
+            chartObj.refresh();unbindResizeEvents(chartObj);
+        });
     });
 
     it('memory leak', () => {

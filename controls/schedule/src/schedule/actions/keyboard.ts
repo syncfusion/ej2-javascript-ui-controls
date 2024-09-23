@@ -585,8 +585,11 @@ export class KeyboardInteraction {
         return this.parent.eventBase.selectWorkCellByTime([selectedObject]) as HTMLTableCellElement;
     }
     private processViewNavigation(e: KeyboardEventArgs): void {
-        const index: number = parseInt(e.key, 10) - 1;
-        if (!isNullOrUndefined(this.parent.views) && index < this.parent.views.length) {
+        if (isNullOrUndefined(e.code)) {
+            return;
+        }
+        const index: number = parseInt(e.code.slice(e.code.length - 1), 10) - 1;
+        if (!isNaN(index) && !isNullOrUndefined(this.parent.views) && index < this.parent.views.length) {
             const view: View = this.parent.viewCollections[parseInt(index.toString(), 10)].option;
             this.parent.changeView(view, e, undefined, index);
             if (this.parent.headerModule) {

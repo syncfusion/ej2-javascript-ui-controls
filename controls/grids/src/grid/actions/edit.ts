@@ -885,7 +885,7 @@ export class Edit implements IAction {
                     (parentsUntil(e.target as HTMLElement, literals.gridContent) || ((this.parent.frozenRows ||
                     (this.parent.editSettings.showAddNewRow && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)))
                     && parentsUntil(e.target as HTMLElement, literals.headerContent)))
-                    && !document.getElementsByClassName('e-popup-open').length) {
+                    && (!document.getElementsByClassName('e-popup-open').length || document.querySelectorAll('.e-popup-open .e-editcell').length)) {
                 e.preventDefault();
                 this.endEdit();
             }

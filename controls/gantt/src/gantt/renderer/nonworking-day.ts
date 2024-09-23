@@ -178,11 +178,17 @@ export class NonWorkingDay {
                 const sDateOffset: number = sDate.getTimezoneOffset();
                 const dubDateOffset: number = dubDate.getTimezoneOffset();
                 if (!isFirstExecution) {
+                    const isHourTimeline: boolean =
+                        (this.parent.timelineModule.bottomTier === 'Hour' &&
+                            this.parent.timelineModule.customTimelineSettings.bottomTier.count === 1) ||
+                        (this.parent.timelineModule.topTier === 'Hour' &&
+                            this.parent.timelineModule.customTimelineSettings.topTier.count === 1 &&
+                            this.parent.timelineModule.bottomTier === 'Minutes' &&
+                            (this.parent.timelineModule.customTimelineSettings.bottomTier.count === 30 ||
+                                this.parent.timelineModule.customTimelineSettings.bottomTier.count === 15));
                     if (sDateOffset !== this.parent.timelineModule.timelineStartDate.getTimezoneOffset() &&
                         !this.weekendWidthUpdated) {
-                        if (this.parent.timelineModule.bottomTier === 'Hour' &&
-                            this.parent.timelineModule.customTimelineSettings.bottomTier.count === 1 &&
-                            sDateOffset < dubDateOffset) {
+                        if (isHourTimeline && sDateOffset < dubDateOffset) {
                             width = width - (this.parent.perDayWidth / 24);
                             this.weekendWidthUpdated = true;
                         }

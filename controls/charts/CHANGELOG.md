@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### Chart
+
+- `#I631309` - Now, the spline range area chart will handle null values properly.
+
+### Accumulation Chart
+
+- `#I630866` - Now, the group separator will work for both the tooltip x-point and the legend text.
+
 ## 27.1.48 (2024-09-18)
 
 ### Chart

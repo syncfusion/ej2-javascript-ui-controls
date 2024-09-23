@@ -1635,7 +1635,7 @@ export class SelectionParagraphFormat {
      * @private
      */
     public setList(listAdv: WList, isListDialog?: boolean): void {
-        if ((this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.documentHelper.owner.isDocumentLoaded) {
+        if ((this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.documentHelper.owner.isDocumentLoaded || (!isNullOrUndefined(this.selection) && this.selection.checkContentControlLocked(true))) {
             return;
         }
         const list: WList = this.documentHelper.getListById(this.listId);

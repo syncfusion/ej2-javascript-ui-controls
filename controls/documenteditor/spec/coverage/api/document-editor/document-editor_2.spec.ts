@@ -156,7 +156,7 @@ describe("checkModuleInjection", function() {
             let contentControlData: ContentControlInfo = { title: placeHolderPrefix + 'Name', tag: '', value: 'John', canDelete: false, canEdit: false, type: 'RichText' };
             data.push(contentControlData);
             documenteditor.importContentControlData(data);
-            expect(documenteditor.documentHelper.contentControlCollection.length).toBe(2);
+            expect(documenteditor.documentHelper.contentControlCollection.length).toBe(4);
     
         });
         it('ContentControl export', () => {
@@ -166,7 +166,7 @@ describe("checkModuleInjection", function() {
             documenteditor.editor.insertContentControl('ComboBox', 'One', ['One', 'Two', 'Three']);
             documenteditor.editor.insertContentControl('Text', 'Hello World');
             let contentControlInfos: ContentControlInfo[] = documenteditor.exportContentControlData();
-            expect(contentControlInfos.length).toBe(4);
+            expect(contentControlInfos.length).toBe(8);
         });
         it('Reset ContentControl', () => {
             console.log('Reset ContentControl');
@@ -179,6 +179,6 @@ describe("checkModuleInjection", function() {
             let contentControlData: ContentControlInfo = { title: placeHolderPrefix + 'Name', tag: '', value: 'John', canDelete: false, canEdit: false, type: 'RichText' };
             data.push(contentControlData);
             documenteditor.resetContentControlData(data);
-            expect(documenteditor.documentHelper.contentControlCollection.length).toBe(6);
+            expect(documenteditor.documentHelper.contentControlCollection.length).toBe(12);
         });
     });

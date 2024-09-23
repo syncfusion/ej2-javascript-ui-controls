@@ -177,7 +177,7 @@ describe('Foreign Key =>', () => {
             };
             (<any>gridObj.filterModule).filterModule = undefined;
             (<any>gridObj.filterModule).filterDialogOpen(gridObj.getForeignKeyColumns()[1], gridObj.getHeaderTable().querySelectorAll('.e-filtermenudiv.e-icons')[2]);
-            (<any>gridObj.filterModule).filterModule.filterByColumn('EmployeeID', 'equal', new Date(-664743600000), 'or', false, 'equal', new Date(-200088000000));
+            (<any>gridObj.filterModule).filterModule.filterByColumn('EmployeeID', 'equal', new Date(-664743600000), 'or', false, false, 'equal', new Date(-200088000000));
         });
 
 // test case continuously failed so exculde this

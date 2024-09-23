@@ -4196,7 +4196,7 @@ export class Selection {
         indexInInline = inlineObj.index;
         if ((!isNullOrUndefined(inline) && indexInInline === inline.length && inline.nextNode instanceof FieldElementBox)
             || inline instanceof ShapeElementBox) {
-            const nextValidInline: ElementBox = this.getNextValidElement((inline.nextNode as ElementBox));
+            const nextValidInline: ElementBox = this.documentHelper.getNextValidElement((inline.nextNode as ElementBox));
             if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 0) {
                 inline = nextValidInline;
             }
@@ -5951,26 +5951,6 @@ export class Selection {
         return isNullOrUndefined(previousValidInline) ? inline : previousValidInline;
     }
     /**
-     * Get next valid element
-     *
-     * @private
-     */
-    public getNextValidElement(inline: ElementBox): ElementBox {
-        let nextValidInline: ElementBox = undefined;
-        if (inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
-            return inline;
-        }
-        while (inline instanceof FieldElementBox) {
-            if (inline.fieldType === 0 && !isNullOrUndefined((inline as FieldElementBox).fieldEnd)) {
-                return isNullOrUndefined(nextValidInline) ? inline : nextValidInline;
-            } else if (inline.fieldType === 1 && !isNullOrUndefined((inline as FieldElementBox).fieldBegin)) {
-                nextValidInline = inline;
-            }
-            inline = inline.nextNode as ElementBox;
-        }
-        return (isNullOrUndefined(nextValidInline) ? inline : nextValidInline) as ElementBox;
-    }
-    /**
      * Return next valid inline with index
      *
      * @private
@@ -5980,7 +5960,7 @@ export class Selection {
         if (inline.length === index && (nextNode instanceof FieldElementBox
             || (!(inline instanceof ImageElementBox) && (nextNode instanceof BookmarkElementBox || nextNode instanceof CommentCharacterElementBox)))) {
             //If inline is last item within field, then set field end as text position.
-            const nextInline: ElementBox = this.getNextValidElement((inline.nextNode as FieldElementBox)) as ElementBox;
+            const nextInline: ElementBox = this.documentHelper.getNextValidElement((inline.nextNode as FieldElementBox)) as ElementBox;
             if ((nextInline instanceof FieldElementBox && nextInline.fieldType === 1)
                 || (nextInline instanceof BookmarkElementBox && nextInline.bookmarkType === 1)
                 || (nextInline instanceof CommentCharacterElementBox && nextInline.commentType === 1)) {
@@ -6053,7 +6033,7 @@ export class Selection {
      * @private
      */
     public getFieldCharacterPosition(firstInline: ElementBox): Point {
-        const nextValidInline: ElementBox = this.getNextValidElementForField(firstInline);
+        const nextValidInline: ElementBox = this.documentHelper.getNextValidElementForField(firstInline);
 
         //If field separator/end exists at end of paragraph, then move to next paragraph.
         if (isNullOrUndefined(nextValidInline)) {
@@ -6090,25 +6070,6 @@ export class Selection {
                 }
             }
             return false;
-    }
-    /**
-     * @private
-     */
-    public getNextValidElementForField(firstInline: ElementBox): ElementBox {
-        if (firstInline instanceof FieldElementBox && firstInline.fieldType === 0
-            && HelperMethods.isLinkedFieldCharacter((firstInline as FieldElementBox))) {
-            const fieldBegin: FieldElementBox = firstInline as FieldElementBox;
-            if (isNullOrUndefined(fieldBegin.fieldSeparator)) {
-                firstInline = fieldBegin.fieldEnd;
-            } else {
-                firstInline = fieldBegin.fieldSeparator;
-            }
-        }
-        let nextValidInline: ElementBox = undefined;
-        if (!isNullOrUndefined(firstInline.nextNode)) {
-            nextValidInline = this.getNextValidElement((firstInline.nextNode as ElementBox)) as ElementBox;
-        }
-        return nextValidInline;
     }
     /**
      * Get paragraph end position
@@ -6188,7 +6149,7 @@ export class Selection {
             indexInInline = 1;
         }
         while (!isNullOrUndefined(inline) && indexInInline === inline.length && inline.nextNode instanceof FieldElementBox) {
-            const nextValidInline: ElementBox = this.getNextValidElement((inline.nextNode)) as ElementBox;
+            const nextValidInline: ElementBox = this.documentHelper.getNextValidElement((inline.nextNode)) as ElementBox;
             if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 0) {
                 const fieldBegin: FieldElementBox = nextValidInline;
                 inline = this.getRenderedField(fieldBegin) as ElementBox;
@@ -6236,7 +6197,7 @@ export class Selection {
         }
         const startInline: ElementBox = inline;
         //ToDo: Check previous inline here.
-        const nextValidInline: ElementBox = this.getNextValidElementForField(startInline);
+        const nextValidInline: ElementBox = this.documentHelper.getNextValidElementForField(startInline);
         //If field separator/end exists at end of paragraph, then move to next paragraph.
         if (isNullOrUndefined(nextValidInline)) {
             let lineWidget: LineWidget = undefined;
@@ -6352,7 +6313,7 @@ export class Selection {
     }
 
     private getFieldCharacterHeight(startInline: FieldElementBox, format: WCharacterFormat, isEmptySelection: boolean, topMargin: number, isItalic: boolean): CaretHeightInfo {
-        const nextValidInline: ElementBox = this.getNextValidElementForField(startInline);
+        const nextValidInline: ElementBox = this.documentHelper.getNextValidElementForField(startInline);
         //If field separator/end exists at end of paragraph, then move to next paragraph.
         if (isNullOrUndefined(nextValidInline)) {
             const nextParagraph: ParagraphWidget = startInline.line.paragraph as ParagraphWidget;
@@ -6445,7 +6406,7 @@ export class Selection {
      */
     public isLastRenderedInline(inline: ElementBox, index: number): boolean {
         while (index === inline.length && inline.nextNode instanceof FieldElementBox) {
-            const nextValidInline: ElementBox = this.getNextValidElement((inline.nextNode as ElementBox)) as ElementBox;
+            const nextValidInline: ElementBox = this.documentHelper.getNextValidElement((inline.nextNode as ElementBox)) as ElementBox;
             index = 0;
             if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 0) {
                 inline = nextValidInline;
@@ -8872,7 +8833,7 @@ export class Selection {
         let nextValidInline: ElementBox = undefined;
         if (!isNullOrUndefined(startInline.nextNode)) {
             //Check the next node is a valid and returns inline.
-            nextValidInline = this.getNextValidElement((startInline.nextNode as ElementBox)) as ElementBox;
+            nextValidInline = this.documentHelper.getNextValidElement((startInline.nextNode as ElementBox)) as ElementBox;
         }
         //If field separator/end exists at end of paragraph, then move to next paragraph.
         if (isNullOrUndefined(nextValidInline)) {
@@ -11338,21 +11299,27 @@ export class Selection {
                 let user: string = this.documentHelper.editRanges.keys[i];
                 editRangeStart = this.documentHelper.editRanges.get(user);
                 for (let j: number = 0; j < editRangeStart.length; j++) {
-                    this.editRangeCollection.push(editRangeStart[j]);
+                    if (!isNullOrUndefined(editRangeStart[j].editRangeEnd)) {
+                        this.editRangeCollection.push(editRangeStart[j]);
+                    }
                 }
             }
         } else {
             if (this.documentHelper.editRanges.containsKey(this.owner.currentUser)) {
                 editRangeStart = this.documentHelper.editRanges.get(this.owner.currentUser);
                 for (let j: number = 0; j < editRangeStart.length; j++) {
-                    this.editRangeCollection.push(editRangeStart[j]);
+                    if (!isNullOrUndefined(editRangeStart[j].editRangeEnd)) {
+                        this.editRangeCollection.push(editRangeStart[j]);
+                    }
                 }
             }
             if (this.documentHelper.editRanges.containsKey('Everyone')) {
                 let user: string = 'Everyone';
                 everyOneArea = this.documentHelper.editRanges.get(user);
                 for (let j: number = 0; j < everyOneArea.length; j++) {
-                    this.editRangeCollection.push(everyOneArea[j]);
+                    if (!isNullOrUndefined(everyOneArea[j].editRangeEnd)) {
+                        this.editRangeCollection.push(everyOneArea[j]);
+                    }
                 }
             }
         }
@@ -11782,6 +11749,24 @@ export class Selection {
                 }
                 if ((cCStartInsideSelction) || (cCEndInsideSelction)) {
                     if (!(cCstart.isAtSamePosition(start) || cCend.isAtSamePosition(start)) && (contentControlStart.contentControlProperties.lockContentControl || contentControlStart.contentControlProperties.lockContents)) {
+                        return true;
+                    }
+                }
+            }
+            if (checkFormat) {
+
+                let cCStartInsideSelction: boolean = ((cCstart.isExistAfter(start) || cCstart.isAtSamePosition(start)) && (cCstart.isExistBefore(end) || cCstart.isAtSamePosition(end)));
+
+                let cCEndInsideSelction: boolean = ((cCend.isExistAfter(start) || cCend.isAtSamePosition(start)) && (cCend.isExistBefore(end) || cCend.isAtSamePosition(end)));
+                if (cCStartInsideSelction && cCEndInsideSelction) {
+                    if (contentControlStart.contentControlProperties.lockContents) {
+                        this.owner.trigger(contentControlEvent);
+                        return true;
+                    }
+                    return false;
+                }
+                if ((cCStartInsideSelction) || (cCEndInsideSelction)) {
+                    if (!(cCstart.isAtSamePosition(start) || cCend.isAtSamePosition(start)) && contentControlStart.contentControlProperties.lockContents) {
                         return true;
                     }
                 }

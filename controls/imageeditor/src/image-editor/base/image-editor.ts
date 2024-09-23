@@ -1422,6 +1422,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: browseObj }});
         const supportObj: Object = { key: 'SupportText' };
         this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: supportObj }});
+        const andObj: Object = { key: 'And' };
+        this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: andObj }});
         const dropAreaElement: HTMLElement = this.createElement('div', { id: this.element.id + '_dropArea', className: 'e-ie-drop-area', attrs: { style: 'position: relative;' }});
         const dropIconElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-icon e-icons e-image', attrs: { style: 'position: absolute;' }});
         const dropContentElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-content', attrs: { style: 'position: absolute; display: none;' }});
@@ -1435,7 +1437,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         dropContentElement.appendChild(dropAnchorElement); minDropContentElem.appendChild(minDropAnchorElem);
         (dropAnchorElement as HTMLAnchorElement).href = ''; (minDropAnchorElem as HTMLAnchorElement).href = '';
         const dropInfoElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-info', attrs: { position: 'absolute' }});
-        dropInfoElement.textContent = supportObj['value'] + ' SVG, PNG, and JPG';
+        dropInfoElement.textContent = supportObj['value'] + ' SVG, PNG, ' + andObj['value'] + ' JPG';
         const dropUploader: HTMLElement = dropAreaElement.appendChild(this.createElement('input', {
             id: this.element.id + '_dropfileUpload', className: 'e-fileUpload e-image-upload'
         }));
@@ -1685,7 +1687,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
             this.notify('draw', {prop: 'open', value: {data: data}});
         } else {
-            this.updateImage(data, imageSettings.backgroundColor);
+            this.updateImage(data, imageSettings ? imageSettings.backgroundColor : null);
         }
     }
 
@@ -2890,7 +2892,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private updateImage(data: string | ImageData, imageBackgroundColor?: string): void {
-        if (data || imageBackgroundColor) {
+        if (data || imageBackgroundColor || imageBackgroundColor === '') {
             const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
             const object: Object = {currObj: {} as CurrentObject };
             this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
@@ -2930,7 +2932,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     }
                 }, 100);
             }
-            if (imageBackgroundColor) {
+            if (imageBackgroundColor || imageBackgroundColor === '') {
                 this.notify('draw', { prop: 'imageBackgroundColor', onPropertyChange: false, value: {color: imageBackgroundColor }});
                 this.notify('draw', { prop: 'render-image', value: { isMouseWheel: false } });
                 if (!data) {

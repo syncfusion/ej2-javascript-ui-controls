@@ -1,0 +1,63 @@
+@include export-module('tooltip-bigger') {
+  .e-bigger .e-tooltip-wrap,
+  .e-tooltip-wrap.e-bigger {
+  
+    .e-tooltip-close {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+        border-radius: 10px;
+        border-width: 1px;
+        height: 20px;
+        width: 20px;
+      }
+  
+      &::before {
+        @if ($skin-name == 'tailwind') {
+          font-size: 10px;
+          vertical-align: middle;
+        }
+  
+        @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+          @if ($skin-name == 'bootstrap5.3') {
+            font-size: 8px;
+            left: calc(50% - 4px);
+          }
+
+          @else {
+            font-size: 11px;
+            left: calc(50% - 6px);
+          }
+        }
+      }
+    }
+  
+    .e-tip-content {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+        line-height: 22px;
+      }
+      @else if ($skin-name == 'Material3') {
+        line-height: 24px;
+      }
+      @else {
+        line-height: 20px;
+      }
+      padding: $tooltip-mobile-horizontal-padding $tooltip-mobile-vertical-padding;
+      @if $skin-name == 'bootstrap4' {
+        line-height: 1.5;
+      }
+    }
+  
+    &.e-rtl {
+      .e-tooltip-close::before {
+        @if ($skin-name == 'tailwind') {
+          font-size: 10px;
+          margin-right: 4px;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-tooltip-wrap .e-tip-content,
+  .e-tooltip-wrap.e-bigger .e-tip-content {
+    font-size: $tooltip-mobile-font-size;
+  }
+}

@@ -102,6 +102,12 @@
             color: $rte-drop-btn-active-color;
           }
         }
+
+        .e-tbar-btn:hover {
+          @if $theme-name == 'bootstrap5.3' {
+            color: $rte-drop-btn-active-color;
+          }
+        }
       }
 
       .e-toolbar-extended {
@@ -128,6 +134,12 @@
           background: $rte-drop-btn-active-bg;
         }
 
+        .e-toolbar-item .e-tbar-btn:hover {
+          @if $theme-name == 'bootstrap5.3' {
+            color: $rte-drop-btn-active-color;
+          }
+        }
+
         @if $skin-name == 'bootstrap5' {
           .e-toolbar-item .e-tbar-btn:focus,
           .e-toolbar-item .e-tbar-btn:hover {
@@ -146,7 +158,7 @@
       background: transparent;
       color: transparent;
     }
-    @if $skin-name == 'Material3'  or $skin-name == 'fluent2' or $skin-name == 'fluent2-highcontrast' or $skin-name == 'fluent2-dark' {
+    @if $skin-name == 'Material3'  or $skin-name == 'fluent2' or $theme-name == 'fluent2-highcontrast' or $skin-name == 'fluent2-dark' {
       ::selection {
         color: $rte-selection-color;
         background: $rte-selection-bg;
@@ -264,7 +276,7 @@
         .e-rte-list-primary-content {
 
           &:hover {
-            @if $skin-name == 'fluent2-highcontrast' {
+            @if $theme-name == 'fluent2-highcontrast' {
               background: $rte-split-btn-span-active-bg;
             }
             @else {
@@ -284,7 +296,7 @@
         .e-caret {
 
           &:hover {
-            @if $skin-name == 'fluent2-highcontrast' {
+            @if $theme-name == 'fluent2-highcontrast' {
               background: $rte-split-btn-span-active-bg;
             }
             @else {
@@ -346,7 +358,7 @@
               justify-content: center;
             }
             &:hover {
-              @if $skin-name == 'fluent2-highcontrast' {
+              @if $theme-name == 'fluent2-highcontrast' {
                 background: $rte-split-btn-span-active-bg;
               }
               @else {
@@ -357,7 +369,7 @@
 
           .e-caret {
             &:hover {
-              @if $skin-name == 'fluent2-highcontrast' {
+              @if $theme-name == 'fluent2-highcontrast' {
                 background: $rte-split-btn-span-active-bg;
               }
               @else {
@@ -651,8 +663,14 @@
       }
     }
   }
+  
   .e-richtexteditor .e-rte-toolbar .e-toolbar-extended .e-toolbar-item .e-tbar-btn.e-active .e-icons {
-    color: $rte-tlbar-expand-active;
+    @if $theme-name == 'fluent2-highcontrast' {
+      color: $rte-drop-btn-active-color;
+    }
+    @else {
+      color: $rte-tlbar-expand-active;
+    }
   }
 
   .e-rte-emojipicker-popup.e-popup.e-popup-open {

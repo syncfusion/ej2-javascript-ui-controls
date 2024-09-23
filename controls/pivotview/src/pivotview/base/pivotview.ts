@@ -3646,7 +3646,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 break;
             case 'pivotValues':
             case 'displayOption': {
-                if (!this.showToolbar && newProp.displayOption && Object.keys(newProp.displayOption).length === 1 &&
+                if (newProp.displayOption && Object.keys(newProp.displayOption).length === 1 &&
                     newProp.displayOption.view) {
                     this.currentView = (newProp.displayOption.view === 'Both' ?
                         this.displayOption.primary : newProp.displayOption.view);
@@ -3703,6 +3703,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 } else if (this.showToolbar && !isNullOrUndefined(newProp.displayOption) && newProp.displayOption.view) {
                     this.currentView = (newProp.displayOption.view === 'Both' ?
                         this.displayOption.primary : newProp.displayOption.view);
+                }
+                if (this.showToolbar) {
+                    this.toolbarModule.refreshToolbar();
                 }
                 const engine: PivotEngine | OlapEngine = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
                 if (!isNullOrUndefined(engine.fieldList) || !isNullOrUndefined(engine.pivotValues)) {

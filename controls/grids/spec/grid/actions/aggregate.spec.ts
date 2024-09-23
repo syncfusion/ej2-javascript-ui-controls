@@ -2102,4 +2102,37 @@ describe('Aggregates Functionality testing', () => {
             grid = null;
         });
     });
+
+    describe('EJ2-904811: Not able to provide aggregate type as an array of string in ASP Net Core', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid({
+                dataSource: new DataManager({
+                    json: [{ OrderID: 1, Freight: 1 }, { OrderID: 2, Freight: 2 }],
+                }),
+                columns: [
+                    { field: 'OrderID', width: 100, isPrimaryKey: true },
+                    { field: 'Freight', type: 'number', width: 120 },
+                ],
+                aggregates: ([{
+                    columns: [
+                        {
+                            types: ['Max', 'Min', 'Sum'],
+                            field: 'Freight',
+                            columnName: 'Freight',
+                            format: 'C2',
+                            footerTemplate: 'Sum: ${Sum}, Min:${Min}, Max:${Max}',
+                        },
+                    ],
+                }] as any),
+            }, done);
+        });
+        it('Check the aggregate data', () => {
+            expect((grid as any).getFooterContentTable().querySelector('.e-templatecell').innerText).toBe('Sum: $3.00, Min:$1.00, Max:$2.00');
+        });
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
 });

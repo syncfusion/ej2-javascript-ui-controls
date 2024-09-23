@@ -617,7 +617,7 @@ export class UndoRedo {
                             do {
                                 const rowData: IGanttData = rowItems[rowIndex + 1];
                                 if (!rowData || (rowData && currentData.ganttProperties.taskId !== rowData.ganttProperties.taskId)) {
-                                    if (currentData.parentItem) {
+                                    if (currentData && currentData.parentItem) {
                                         record['id'] = extend([], [currentData.ganttProperties.taskId], [], true)[0];
                                     }
                                     else {
@@ -666,6 +666,9 @@ export class UndoRedo {
                             }
                             else {
                                 currentData = this.parent.treeGrid.parentData[parentIndex - 1];
+                                if (!currentData) {
+                                    currentData = this.parent.treeGrid.parentData[parentIndex as number];
+                                }
                                 record['id'] = extend([], [currentData['ganttProperties'].taskId], [], true)[0];
                             }
                         }
@@ -695,6 +698,9 @@ export class UndoRedo {
                             do {
                                 const rowData: IGanttData = rowItems[rowIndex + 1];
                                 if (!rowData || (rowData && currentData['ganttProperties'].taskId !== rowData.ganttProperties.taskId)) {
+                                    if (!currentData) {
+                                        currentData = this.parent.treeGrid.parentData[parentIndex as number];
+                                    }
                                     record['id'] = extend([], [currentData['ganttProperties'].taskId], [], true)[0];
                                 }
                                 else {

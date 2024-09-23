@@ -3009,6 +3009,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Suggestions': 'Suggestions',
         'The password is incorrect': 'The password is incorrect',
         'Error in establishing connection with web server': 'Error in establishing connection with web server',
+        'Failed to load the file':'Failed to load the file' ,
         'Highlight the regions I can edit': 'Highlight the regions I can edit',
         'Show All Regions I Can Edit': 'Show All Regions I Can Edit',
         'Find Next Region I Can Edit': 'Find Next Region I Can Edit',
@@ -4330,6 +4331,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (!this.refreshing) {
             this.element = undefined;
+            this.rulerHelper.destroy();
         }
         if (this.parser) {
             this.parser.destroy();
@@ -4662,6 +4664,18 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.regularModule) {
             this.regularModule.destroy();
             this.regularModule = undefined;
+        }
+        if (this.hRuler) {
+            this.hRuler.destroy();
+            this.hRuler = undefined;
+        }
+        if (this.vRuler) {
+            this.vRuler.destroy();
+            this.vRuler = undefined;
+        }
+        if (this.rulerContainer) {
+            this.rulerContainer.remove();
+            this.rulerContainer = null;
         }
     }
     /* eslint-enable */

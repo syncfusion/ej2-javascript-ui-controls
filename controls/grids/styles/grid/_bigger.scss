@@ -1227,28 +1227,18 @@
     }
 
     .e-bigger &.e-bothlines.e-rtl td.e-rowcell.e-cellselectionbackground,
-    &.e-bothlines.e-bigger.e-rtl td.e-rowcell.e-cellselectionbackground,
-    .e-bigger &.e-rtl td.e-rowcell.e-cellselectionbackground,
-    &.e-bigger.e-rtl td.e-rowcell.e-cellselectionbackground {
+    &.e-bothlines.e-bigger.e-rtl td.e-rowcell.e-cellselectionbackground {
       @if $grid-skin == 'material3' {
         border: 1px solid rgba($content-text-color);
       }
     }
 
-    .e-bigger &:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground,
-    .e-bigger & td.e-cellselectionbackground,
-    &.e-bigger:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground,
-    &.e-bigger td.e-cellselectionbackground {
+    .e-bigger &:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground:not(.e-gridchkbox-cell),
+    &.e-bigger:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground:not(.e-gridchkbox-cell) {
       @if $grid-skin == 'material3' {
-        padding-bottom: 13px;
-        @include grid-padding-left-right(11.5px, 11.5px);
-      }
-    }
-
-    .e-bigger &:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground,
-    &.e-bigger:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground {
-      @if $grid-skin == 'material3' {
-        padding-top: 13px;
+        padding-top: 0;
+        padding-bottom: 0;
+        @include grid-padding-left-right(12px, 12px);
       }
     }
 
@@ -1888,6 +1878,9 @@
   
         & .e-res-apply-btn:disabled {
           color: $grid-btn-disabled-bgcolor;
+          @if $grid-skin == 'fluent2' {
+            color: $primary-text-disabled;
+          }
         }
         & .e-btn {
           @if $grid-skin != 'fluent2' {

@@ -69,6 +69,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     private targetEle: HTMLElement;
     // Specifies the first render of Sidebar component.
     private firstRender: boolean;
+    private documentClickContext: EventListenerObject = this.documentclickHandler.bind(this);
 
     /**
      * Specifies the size of the Sidebar in dock state.
@@ -328,9 +329,11 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
 
     private setCloseOnDocumentClick(): void {
         if (this.closeOnDocumentClick) {
-            EventHandler.add(document, 'mousedown touchstart', this.documentclickHandler, this);
+            document.addEventListener('mousedown', this.documentClickContext);
+            document.addEventListener('touchstart', this.documentClickContext);
         } else {
-            EventHandler.remove(document, 'mousedown touchstart', this.documentclickHandler);
+            document.removeEventListener('mousedown', this.documentClickContext);
+            document.removeEventListener('touchstart', this.documentClickContext);
         }
     }
 
@@ -628,9 +631,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             (args.startX <= 20 && args.distanceX >= 50 && args.velocity >= 0.5)) {
             this.show();
         } else if (this.isOpen && this.position === 'Left' && args.swipeDirection === 'Left') {
-            this.hide();
+            this.hide(args.originalEvent as Event);
         } else if (this.isOpen && this.position === 'Right' && args.swipeDirection === 'Right') {
-            this.hide();
+            this.hide(args.originalEvent as Event);
         } else if (!this.isOpen && this.position === 'Right' && args.swipeDirection === 'Left'
             && (window.innerWidth - args.startX <= 20 && args.distanceX >= 50 && args.velocity >= 0.5)) {
             this.show();

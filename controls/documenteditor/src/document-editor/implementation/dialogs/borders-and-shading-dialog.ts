@@ -67,6 +67,46 @@ export class BordersAndShadingDialog {
     private ulelementShading: DropDownList;
     private borderWidth: NumericTextBox;
     private isShadingChanged: boolean = false;
+
+
+    private displayText: HTMLDivElement;
+    private settingAndPreviewContainer: HTMLDivElement;
+    private settingsContiner: HTMLDivElement;
+    private styleContainer: HTMLDivElement;
+    private previewContiner: HTMLDivElement;
+    private previewSubContainer1: HTMLDivElement;
+    private previewSubContainer2: HTMLDivElement;
+    private styleSubContainer: HTMLDivElement;
+    private dropdownListDiv: HTMLDivElement;
+    private dropDownList: HTMLInputElement;
+    private widthcontainerDiv: HTMLDivElement;
+    private widthNumericDiv: HTMLDivElement;
+    private widthNumeric: HTMLInputElement;
+    private colorDiv: HTMLDivElement;
+    private colorText: HTMLDivElement;
+    private borderColorPickerElement: HTMLInputElement;
+    private settingText: HTMLDivElement;
+    private settingsSubContiner: HTMLDivElement;
+    private noneDivContainer: HTMLDivElement;
+    private noneDivLabel: HTMLLabelElement;
+    private boxDivContainer: HTMLDivElement;
+    private boxDivLabel: HTMLLabelElement;
+    private allDivContainer: HTMLDivElement;
+    private allDivLabel: HTMLLabelElement;
+    private customDivContainer: HTMLDivElement;
+    private customDivLabel: HTMLLabelElement;
+    private previewDivHorizontalContainer: HTMLDivElement;
+    private previewDivVerticalContainer: HTMLDivElement;
+    private previewText: HTMLDivElement;
+    private shadingText: HTMLDivElement;
+    private shadings: HTMLDivElement;
+    private colorPickerDiv: HTMLDivElement;
+    private label: HTMLDivElement;
+    private shadingColorPickerElement: HTMLInputElement;
+    private shdApply: HTMLDivElement;
+
+    private handleSettingCheckBoxActionHandler: EventListenerOrEventListenerObject = this.onhandleSettingCheckBoxActionClicked.bind(this);
+    private handlePreviewCheckBoxActionHandler: EventListenerOrEventListenerObject = this.onhandlePreviewCheckBoxActionClicked.bind(this);
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
@@ -89,100 +129,100 @@ export class BordersAndShadingDialog {
             id: this.documentHelper.owner.containerId + '_table_border_shadings',
             className: 'e-de-table-border-shading-dlg'
         });
-        const displayText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.displayText = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Borders'),
             className: 'e-de-table-border-heading'
         });
-        const settingAndPreviewContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.settingAndPreviewContainer = <HTMLDivElement>createElement('div', {
             className: 'e-de-dlg-row'
         });
-        const settingsContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.settingsContiner = <HTMLDivElement>createElement('div', {
         });
-        const styleContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.styleContainer = <HTMLDivElement>createElement('div', {
         });
-        const previewContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.previewContiner = <HTMLDivElement>createElement('div', {
             className: 'e-de-table-border-preview-container'
         });
-        const previewSubContainer1: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.previewSubContainer1 = <HTMLDivElement>createElement('div', {
             className: 'e-de-dlg-row'
         });
-        const previewSubContainer2: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.previewSubContainer2 = <HTMLDivElement>createElement('div', {
         });
-        const styleSubContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.styleSubContainer = <HTMLDivElement>createElement('div', {
             className: 'e-de-container-row'
         });
-        const dropdownListDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.dropdownListDiv = <HTMLDivElement>createElement('div', {
             className: 'e-de-subcontainer-left'
         });
-        const dropDownList: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.dropDownList = <HTMLInputElement>createElement('input', {
         });
-        const widthcontainerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.widthcontainerDiv = <HTMLDivElement>createElement('div', {
             className: 'e-de-container-row'
         });
-        const widthNumericDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.widthNumericDiv = <HTMLDivElement>createElement('div', {
             className: 'e-de-subcontainer-left'
         });
-        const widthNumeric: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.widthNumeric = <HTMLInputElement>createElement('input', {
         });
-        const colorDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.colorDiv = <HTMLDivElement>createElement('div', {
             className: 'e-de-subcontainer-right'
         });
-        const colorText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.colorText = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Color'),
             className: 'e-de-table-border-clr-heading'
         });
-        const borderColorPickerElement: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.borderColorPickerElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'color' },
             className: 'e-dlg-clr-pkr-top'
         });
-        const settingText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.settingText = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Setting'),
             className: 'e-de-table-setting-heading'
         });
-        const settingsSubContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.settingsSubContiner = <HTMLDivElement>createElement('div', {
             className: 'e-de-dlg-row'
         });
-        const noneDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.noneDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_None_Div_Container'
         });
         this.noneDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_None_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
-        const noneDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        this.noneDivLabel = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('None'), className: 'e-de-table-setting-labels-heading',
             id: this.target.id + '_None_Div_Label'
         });
-        const boxDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.boxDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Box_Div_Container'
         });
         this.boxDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Box_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
-        const boxDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        this.boxDivLabel = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Box'), className: 'e-de-table-setting-labels-heading',
             id: this.target.id + '_Box_Div_Label'
         });
-        const allDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.allDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_All_Div_Container'
         });
         this.allDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_All_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
-        const allDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        this.allDivLabel = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('All'), className: 'e-de-table-setting-labels-heading',
             id: this.target.id + '_All_Div_Label'
         });
-        const customDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.customDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Custom_Div_Container'
         });
         this.customDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Custom_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
-        const customDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        this.customDivLabel = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Custom'), className: 'e-de-table-setting-labels-heading',
             id: this.target.id + '_Custom_Div_Label'
         });
@@ -204,7 +244,7 @@ export class BordersAndShadingDialog {
             this.allDivTransparent.classList.add('e-de-rtl');
             this.customDivTransparent.classList.add('e-de-rtl');
         }
-        const previewText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.previewText = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Preview'), className: 'e-de-table-setting-heading'
         });
         this.previewDiv = createElement('div', {
@@ -231,7 +271,7 @@ export class BordersAndShadingDialog {
             id: this.target.id + '_Preview_Div_Horizontal',
             className: 'e-de-border-dlg-preview-inside-divs'
         }) as HTMLDivElement;
-        const previewDivVerticalContainer: HTMLDivElement = createElement('div') as HTMLDivElement;
+        this.previewDivVerticalContainer = createElement('div') as HTMLDivElement;
         this.previewDivTopTopContainer = createElement('div', {
             styles: 'margin-top: 0',
             className: 'e-de-table-border-icon-container',
@@ -265,7 +305,7 @@ export class BordersAndShadingDialog {
             id: this.target.id + '_Preview_Div_LeftDiagonal',
             className: 'e-de-table-border-inside-preview e-de-table-border-preview-genral'
         }) as HTMLDivElement;
-        const previewDivHorizontalContainer: HTMLDivElement = createElement('div', { className: 'e-de-dlg-row' }) as HTMLDivElement;
+        this.previewDivHorizontalContainer = createElement('div', { className: 'e-de-dlg-row' }) as HTMLDivElement;
         this.previewDivBottomLeftContainer = createElement('div', {
             id: this.target.id + '_Preview_Div_BottomLeft_Container',
             className: 'e-de-table-border-icon-container'
@@ -332,19 +372,19 @@ export class BordersAndShadingDialog {
         }) as HTMLDivElement;
         this.shadingContiner = createElement('div', {
         }) as HTMLDivElement;
-        const shadingText: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.shadingText = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Shading'), className: 'e-de-table-border-heading'
         });
-        const shadings: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-dlg-row' });
-        const colorPickerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-border-clr-left-container' });
-        const label: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.shadings = <HTMLDivElement>createElement('div', { className: 'e-de-dlg-row' });
+        this.colorPickerDiv = <HTMLDivElement>createElement('div', { className: 'e-de-table-border-clr-left-container' });
+        this.label = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Fill'), className: 'e-de-table-border-clr-heading'
         });
-        const shadingColorPickerElement: HTMLInputElement = <HTMLInputElement>createElement('input', {
+        this.shadingColorPickerElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'color' },
             id: this.target.id + '_shading_color'
         });
-        const shdApply: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        this.shdApply = <HTMLDivElement>createElement('div', {
             className: 'e-de-subcontainer-right'
         });
         const ulelementShading: HTMLSelectElement = <HTMLSelectElement>createElement('input', {
@@ -356,27 +396,27 @@ export class BordersAndShadingDialog {
                 { Value: 'Table', Name: localeValue.getConstant('Table') },
                 { Value: 'Paragraph', Name: localeValue.getConstant('Paragraph') }
             ];
-        shdApply.appendChild(ulelementShading);
+        this.shdApply.appendChild(ulelementShading);
 
         this.noneDiv.appendChild(this.noneDivTransparent);
         this.boxDiv.appendChild(this.boxDivTransparent);
         this.allDiv.appendChild(this.allDivTransparent);
         this.customDiv.appendChild(this.customDivTransparent);
-        noneDivContainer.appendChild(this.noneDiv);
-        noneDivContainer.appendChild(noneDivLabel);
-        boxDivContainer.appendChild(this.boxDiv);
-        boxDivContainer.appendChild(boxDivLabel);
-        allDivContainer.appendChild(this.allDiv);
-        allDivContainer.appendChild(allDivLabel);
-        customDivContainer.appendChild(this.customDiv);
-        customDivContainer.appendChild(customDivLabel);
+        this.noneDivContainer.appendChild(this.noneDiv);
+        this.noneDivContainer.appendChild(this.noneDivLabel);
+        this.boxDivContainer.appendChild(this.boxDiv);
+        this.boxDivContainer.appendChild(this.boxDivLabel);
+        this.allDivContainer.appendChild(this.allDiv);
+        this.allDivContainer.appendChild(this.allDivLabel);
+        this.customDivContainer.appendChild(this.customDiv);
+        this.customDivContainer.appendChild(this.customDivLabel);
 
-        settingsContiner.appendChild(settingText);
-        settingsContiner.appendChild(settingsSubContiner);
-        settingsSubContiner.appendChild(noneDivContainer);
-        settingsSubContiner.appendChild(boxDivContainer);
-        settingsSubContiner.appendChild(allDivContainer);
-        settingsSubContiner.appendChild(customDivContainer);
+        this.settingsContiner.appendChild(this.settingText);
+        this.settingsContiner.appendChild(this.settingsSubContiner);
+        this.settingsSubContiner.appendChild(this.noneDivContainer);
+        this.settingsSubContiner.appendChild(this.boxDivContainer);
+        this.settingsSubContiner.appendChild(this.allDivContainer);
+        this.settingsSubContiner.appendChild(this.customDivContainer);
 
         this.previewDivBottomcenter.appendChild(this.previewDivBottomcenterTransparent);
         this.previewDivBottomRight.appendChild(this.previewDivBottomRightTransparent);
@@ -396,71 +436,71 @@ export class BordersAndShadingDialog {
         this.previewDivTopCenterContainer.appendChild(this.previewDivTopCenter);
         this.previewDivTopTopContainer.appendChild(this.previewDivTopTop);
 
-        previewContiner.appendChild(previewText);
-        previewContiner.appendChild(previewSubContainer1);
+        this.previewContiner.appendChild(this.previewText);
+        this.previewContiner.appendChild(this.previewSubContainer1);
 
-        previewSubContainer1.appendChild(previewDivVerticalContainer);
-        previewSubContainer1.appendChild(previewSubContainer2);
+        this.previewSubContainer1.appendChild(this.previewDivVerticalContainer);
+        this.previewSubContainer1.appendChild(this.previewSubContainer2);
 
-        previewSubContainer2.appendChild(this.previewDiv);
-        previewSubContainer2.appendChild(previewDivHorizontalContainer);
+        this.previewSubContainer2.appendChild(this.previewDiv);
+        this.previewSubContainer2.appendChild(this.previewDivHorizontalContainer);
 
         this.previewDiv.appendChild(this.previewLeftDiagonalDiv);
         this.previewDiv.appendChild(this.previewRightDiagonalDiv);
         this.previewDiv.appendChild(this.previewHorizontalDiv);
         this.previewDiv.appendChild(this.previewVerticalDiv);
 
-        previewDivHorizontalContainer.appendChild(this.previewDivBottomLeftContainer);
-        previewDivHorizontalContainer.appendChild(this.previewDivBottomcenterContainer);
-        previewDivHorizontalContainer.appendChild(this.previewDivBottomRightContainer);
-        previewDivHorizontalContainer.appendChild(this.previewDivDiagonalRightContainer);
+        this.previewDivHorizontalContainer.appendChild(this.previewDivBottomLeftContainer);
+        this.previewDivHorizontalContainer.appendChild(this.previewDivBottomcenterContainer);
+        this.previewDivHorizontalContainer.appendChild(this.previewDivBottomRightContainer);
+        this.previewDivHorizontalContainer.appendChild(this.previewDivDiagonalRightContainer);
 
-        previewDivVerticalContainer.appendChild(this.previewDivTopTopContainer);
-        previewDivVerticalContainer.appendChild(this.previewDivTopCenterContainer);
-        previewDivVerticalContainer.appendChild(this.previewDivTopBottomContainer);
-        previewDivVerticalContainer.appendChild(this.previewDivLeftDiagonalContainer);
+        this.previewDivVerticalContainer.appendChild(this.previewDivTopTopContainer);
+        this.previewDivVerticalContainer.appendChild(this.previewDivTopCenterContainer);
+        this.previewDivVerticalContainer.appendChild(this.previewDivTopBottomContainer);
+        this.previewDivVerticalContainer.appendChild(this.previewDivLeftDiagonalContainer);
 
-        shadings.appendChild(colorPickerDiv);
-        colorPickerDiv.appendChild(label);
-        colorPickerDiv.appendChild(shadingColorPickerElement);
-        shadings.appendChild(shdApply);
+        this.shadings.appendChild(this.colorPickerDiv);
+        this.colorPickerDiv.appendChild(this.label);
+        this.colorPickerDiv.appendChild(this.shadingColorPickerElement);
+        this.shadings.appendChild(this.shdApply);
 
-        this.shadingContiner.appendChild(shadingText);
-        this.shadingContiner.appendChild(shadings);
+        this.shadingContiner.appendChild(this.shadingText);
+        this.shadingContiner.appendChild(this.shadings);
 
-        styleContainer.appendChild(styleSubContainer);
-        styleSubContainer.appendChild(dropdownListDiv);
-        dropdownListDiv.appendChild(dropDownList);
-        styleContainer.appendChild(widthcontainerDiv);
-        widthcontainerDiv.appendChild(widthNumericDiv);
-        widthNumericDiv.appendChild(widthNumeric);
-        widthcontainerDiv.appendChild(colorDiv);
-        colorDiv.appendChild(colorText);
-        colorDiv.appendChild(borderColorPickerElement);
-        borderColorPickerElement.setAttribute('aria-label', colorText.innerHTML);
-        settingAndPreviewContainer.appendChild(settingsContiner);
-        settingAndPreviewContainer.appendChild(previewContiner);
+        this.styleContainer.appendChild(this.styleSubContainer);
+        this.styleSubContainer.appendChild(this.dropdownListDiv);
+        this.dropdownListDiv.appendChild(this.dropDownList);
+        this.styleContainer.appendChild(this.widthcontainerDiv);
+        this.widthcontainerDiv.appendChild(this.widthNumericDiv);
+        this.widthNumericDiv.appendChild(this.widthNumeric);
+        this.widthcontainerDiv.appendChild(this.colorDiv);
+        this.colorDiv.appendChild(this.colorText);
+        this.colorDiv.appendChild(this.borderColorPickerElement);
+        this.borderColorPickerElement.setAttribute('aria-label', this.colorText.innerHTML);
+        this.settingAndPreviewContainer.appendChild(this.settingsContiner);
+        this.settingAndPreviewContainer.appendChild(this.previewContiner);
 
-        this.target.appendChild(displayText);
-        this.target.appendChild(settingAndPreviewContainer);
-        this.target.appendChild(styleContainer);
+        this.target.appendChild(this.displayText);
+        this.target.appendChild(this.settingAndPreviewContainer);
+        this.target.appendChild(this.styleContainer);
         this.target.appendChild(this.shadingContiner);
 
         // Handling Setting Container
-        noneDivContainer.addEventListener('click', this.handleSettingCheckBoxAction);
-        boxDivContainer.addEventListener('click', this.handleSettingCheckBoxAction);
-        allDivContainer.addEventListener('click', this.handleSettingCheckBoxAction);
-        customDivContainer.addEventListener('click', this.handleSettingCheckBoxAction);
+        this.noneDivContainer.addEventListener('click', this.handleSettingCheckBoxActionHandler);
+        this.boxDivContainer.addEventListener('click', this.handleSettingCheckBoxActionHandler);
+        this.allDivContainer.addEventListener('click', this.handleSettingCheckBoxActionHandler);
+        this.customDivContainer.addEventListener('click', this.handleSettingCheckBoxActionHandler);
 
         // Handling Preview Div Container
-        this.previewDivBottomcenterContainer.addEventListener('click', this.handlePreviewCheckBoxAction);
-        this.previewDivBottomLeftContainer.addEventListener('click', this.handlePreviewCheckBoxAction);
-        this.previewDivBottomRightContainer.addEventListener('click', this.handlePreviewCheckBoxAction);
-        this.previewDivTopTopContainer.addEventListener('click', this.handlePreviewCheckBoxAction);
-        this.previewDivTopBottomContainer.addEventListener('click', this.handlePreviewCheckBoxAction);
-        this.previewDivTopCenterContainer.addEventListener('click', this.handlePreviewCheckBoxAction);
-        this.previewDivDiagonalRightContainer.addEventListener('click', this.handlePreviewCheckBoxAction);
-        this.previewDivLeftDiagonalContainer.addEventListener('click', this.handlePreviewCheckBoxAction);
+        this.previewDivBottomcenterContainer.addEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        this.previewDivBottomLeftContainer.addEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        this.previewDivBottomRightContainer.addEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        this.previewDivTopTopContainer.addEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        this.previewDivTopBottomContainer.addEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        this.previewDivTopCenterContainer.addEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        this.previewDivDiagonalRightContainer.addEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        this.previewDivLeftDiagonalContainer.addEventListener('click', this.handlePreviewCheckBoxActionHandler);
 
         // handling dropdown change
         this.borderWidth = new NumericTextBox({
@@ -468,7 +508,7 @@ export class BordersAndShadingDialog {
             floatLabelType: 'Always', placeholder: localeValue.getConstant('Width'),
             enablePersistence: false
         });
-        this.borderWidth.appendTo(widthNumeric);
+        this.borderWidth.appendTo(this.widthNumeric);
         const empList: any = [
             { 'Svg': '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 5.5H98" stroke-linejoin="round"/></svg></div>', 'LineStyle': 'Single' },
             { 'Svg': '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 5.5H98" stroke-linejoin="round" stroke-dasharray="1 1"/></svg></div>', 'LineStyle': 'Dot' },
@@ -495,7 +535,7 @@ export class BordersAndShadingDialog {
             { 'Svg': '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 1.5H98" stroke="#A0A0A0" stroke-linejoin="round"/><path d="M0 8.5H98" stroke-linejoin="round"/></svg></div>', 'LineStyle': 'Outset' },
             { 'Svg': '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 1.5H98" stroke-linejoin="round"/><path d="M0 8.5H98" stroke="#A0A0A0" stroke-linejoin="round"/></svg></div>', 'LineStyle': 'Inset' }
         ];
-        widthNumeric.setAttribute('aria-labelledby', localeValue.getConstant('width'));
+        this.widthNumeric.setAttribute('aria-labelledby', localeValue.getConstant('width'));
         const itemTemplate: string | Function = initializeCSPTemplate(
             function (data: any): string { return `<div>${data.Svg}</div>`; }
         );
@@ -508,8 +548,8 @@ export class BordersAndShadingDialog {
             placeholder: localeValue.getConstant('Style'),
             enableRtl: isRtl
         });
-        this.borderStyle.appendTo(dropDownList);
-        dropDownList.setAttribute('aria-lablledby', localeValue.getConstant('Style'));
+        this.borderStyle.appendTo(this.dropDownList);
+        this.dropDownList.setAttribute('aria-lablledby', localeValue.getConstant('Style'));
         this.ulelementShading = new DropDownList({
             dataSource: ulelementShadingValue,
             fields: { text: 'Name', value: 'Value' },
@@ -530,7 +570,7 @@ export class BordersAndShadingDialog {
             enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors
         });
         this.documentHelper.borderColorPicker = this.borderColorPicker;
-        this.borderColorPicker.appendTo(borderColorPickerElement);
+        this.borderColorPicker.appendTo(this.borderColorPickerElement);
         this.shadingColorPicker = new ColorPicker({
             value: '#FFFFFF', change: this.applyPreviewTableBackgroundColor,
             enableRtl: isRtl, locale: this.documentHelper.owner.locale, cssClass: 'e-de-dlg-clr-picker',
@@ -540,9 +580,9 @@ export class BordersAndShadingDialog {
             enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors
         });
         this.documentHelper.shadingColorPicker = this.shadingColorPicker;
-        this.shadingColorPicker.appendTo(shadingColorPickerElement);
+        this.shadingColorPicker.appendTo(this.shadingColorPickerElement);
         if (isRtl) {
-            label.classList.add('e-de-rtl');
+            this.label.classList.add('e-de-rtl');
         }
     }
     /**
@@ -759,6 +799,13 @@ export class BordersAndShadingDialog {
         }];
         this.documentHelper.dialog.dataBind();
         this.documentHelper.dialog.show();
+    }
+
+    private onhandleSettingCheckBoxActionClicked(event: Event): void {
+        this.handleSettingCheckBoxAction(event);
+    }
+    private onhandlePreviewCheckBoxActionClicked(event: Event): void {
+        this.handlePreviewCheckBoxAction(event);
     }
     /**
      * @private
@@ -1385,6 +1432,8 @@ export class BordersAndShadingDialog {
         if (!isNullOrUndefined(this.ulelementShading)) {
             this.ulelementShading.destroy();
         }
+        this.removeEvents();
+        this.removeElements();
         this.ulelementShading = undefined;
         this.noneDivTransparent = undefined;
         this.boxDivTransparent = undefined;
@@ -1424,6 +1473,373 @@ export class BordersAndShadingDialog {
         this.customDiv = undefined;
         this.allDiv = undefined;
         this.boxDiv = undefined;
+        this.displayText = undefined;
+        this.settingAndPreviewContainer = undefined;
+        this.settingsContiner = undefined;
+        this.styleContainer = undefined;
+        this.previewContiner = undefined;
+        this.previewSubContainer1 = undefined;
+        this.previewSubContainer2 = undefined;
+        this.styleSubContainer = undefined;
+        this.dropdownListDiv = undefined;
+        this.dropDownList = undefined;
+        this.widthcontainerDiv = undefined;
+        this.widthNumericDiv = undefined;
+        this.widthNumeric = undefined;
+        this.colorDiv = undefined;
+        this.colorText = undefined;
+        this.borderColorPickerElement = undefined;
+        this.settingText = undefined;
+        this.settingsSubContiner = undefined;
+        this.noneDivContainer = undefined;
+        this.noneDivLabel = undefined;
+        this.boxDivContainer = undefined;
+        this.boxDivLabel = undefined;
+        this.allDivContainer = undefined;
+        this.allDivLabel = undefined;
+        this.customDivContainer = undefined;
+        this.customDivLabel = undefined;
+        this.previewDivHorizontalContainer = undefined;
+        this.previewDivVerticalContainer = undefined;
+        this.previewText = undefined;
+        this.shadingText = undefined;
+        this.shadings = undefined;
+        this.colorPickerDiv = undefined;
+        this.label = undefined;
+        this.shadingColorPickerElement = undefined;
+        this.shdApply = undefined;
         this.documentHelper = undefined;
+    }
+    private removeEvents(): void {
+        if (this.noneDivContainer){
+            this.noneDivContainer.removeEventListener('click', this.handleSettingCheckBoxActionHandler);
+        }
+        if (this.boxDivContainer){
+            this.boxDivContainer.removeEventListener('click', this.handleSettingCheckBoxActionHandler);
+        }
+        if (this.allDivContainer){
+            this.allDivContainer.removeEventListener('click', this.handleSettingCheckBoxActionHandler);
+        }
+        if (this.customDivContainer){
+            this.customDivContainer.removeEventListener('click', this.handleSettingCheckBoxActionHandler);
+        }
+        if (this.previewDivBottomcenterContainer){
+            this.previewDivBottomcenterContainer.removeEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        }
+        if (this.previewDivBottomLeftContainer){
+            this.previewDivBottomLeftContainer.removeEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        }
+        if (this.previewDivBottomRightContainer){
+            this.previewDivBottomRightContainer.removeEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        }
+        if (this.previewDivTopBottomContainer){
+            this.previewDivTopBottomContainer.removeEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        }
+        if (this.previewDivTopCenterContainer){
+            this.previewDivTopCenterContainer.removeEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        }
+        if (this.previewDivTopTopContainer){
+            this.previewDivTopTopContainer.removeEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        }
+        if (this.previewDivDiagonalRightContainer){
+            this.previewDivDiagonalRightContainer.removeEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        }
+        if (this.previewDivLeftDiagonalContainer){
+            this.previewDivLeftDiagonalContainer.removeEventListener('click', this.handlePreviewCheckBoxActionHandler);
+        }
+    }
+    private removeElements(): void {
+        if (this.noneDivTransparent){
+            this.noneDivTransparent.remove();
+            this.noneDivTransparent = undefined;
+        }
+        if (this.boxDivTransparent){
+            this.boxDivTransparent.remove();
+            this.boxDivTransparent = undefined;
+        }
+        if (this.allDivTransparent){
+            this.allDivTransparent.remove();
+            this.allDivTransparent = undefined;
+        }
+        if (this.customDivTransparent){
+            this.customDivTransparent.remove();
+            this.customDivTransparent = undefined;
+        }
+        if (this.previewDiv){
+            this.previewDiv.remove();
+            this.previewDiv = undefined;
+        }
+        if (this.previewRightDiagonalDiv){
+            this.previewRightDiagonalDiv.remove();
+            this.previewRightDiagonalDiv = undefined;
+        }
+        if (this.previewLeftDiagonalDiv){
+            this.previewLeftDiagonalDiv.remove();
+            this.previewLeftDiagonalDiv = undefined;
+        }
+        if (this.previewVerticalDiv){
+            this.previewVerticalDiv.remove();
+            this.previewVerticalDiv = undefined;
+        }
+        if (this.previewHorizontalDiv){
+            this.previewHorizontalDiv.remove();
+            this.previewHorizontalDiv = undefined;
+        }
+        if (this.previewDivTopTopContainer){
+            this.previewDivTopTopContainer.remove();
+            this.previewDivTopTopContainer = undefined;
+        }
+        if (this.previewDivTopTop){
+            this.previewDivTopTop.remove();
+            this.previewDivTopTop = undefined;
+        }
+        if (this.previewDivTopCenterContainer){
+            this.previewDivTopCenterContainer.remove();
+            this.previewDivTopCenterContainer = undefined;
+        }
+        if (this.previewDivTopCenter){
+            this.previewDivTopCenter.remove();
+            this.previewDivTopCenter = undefined;
+        }
+        if (this.previewDivTopBottomContainer){
+            this.previewDivTopBottomContainer.remove();
+            this.previewDivTopBottomContainer = undefined;
+        }
+        if (this.previewDivTopBottom){
+            this.previewDivTopBottom.remove();
+            this.previewDivTopBottom = undefined;
+        }
+        if (this.previewDivLeftDiagonalContainer){
+            this.previewDivLeftDiagonalContainer.remove();
+            this.previewDivLeftDiagonalContainer = undefined;
+        }
+        if (this.previewDivLeftDiagonal){
+            this.previewDivLeftDiagonal.remove();
+            this.previewDivLeftDiagonal = undefined;
+        }
+        if (this.previewDivBottomLeftContainer){
+            this.previewDivBottomLeftContainer.remove();
+            this.previewDivBottomLeftContainer = undefined;
+        }
+        if (this.previewDivBottomLeft){
+            this.previewDivBottomLeft.remove();
+            this.previewDivBottomLeft = undefined;
+        }
+        if (this.previewDivBottomcenterContainer){
+            this.previewDivBottomcenterContainer.remove();
+            this.previewDivBottomcenterContainer = undefined
+        }
+        if (this.previewDivBottomcenter){
+            this.previewDivBottomcenter.remove();
+            this.previewDivBottomcenter = undefined;
+        }
+        if (this.previewDivBottomRightContainer){
+            this.previewDivBottomRightContainer.remove();
+            this.previewDivBottomRightContainer = undefined;
+        }
+        if (this.previewDivBottomRight){
+            this.previewDivBottomRight.remove();
+            this.previewDivBottomRight = undefined;
+        }
+        if (this.previewDivDiagonalRightContainer){
+            this.previewDivDiagonalRightContainer.remove();
+            this.previewDivDiagonalRightContainer = undefined
+        }
+        if (this.previewDivDiagonalRight){
+            this.previewDivDiagonalRight.remove();
+            this.previewDivDiagonalRight = undefined;
+        }
+        if (this.previewDivTopTopTransParent){
+            this.previewDivTopTopTransParent.remove();
+            this.previewDivTopTopTransParent = undefined;
+        }
+        if (this.previewDivTopCenterTransParent){
+            this.previewDivTopCenterTransParent.remove();
+            this.previewDivTopCenterTransParent = undefined;
+        }
+        if (this.previewDivTopBottomTransParent){
+            this.previewDivTopBottomTransParent.remove();
+            this.previewDivTopBottomTransParent = undefined;
+        }
+        if (this.previewDivLeftDiagonalTransParent){
+            this.previewDivLeftDiagonalTransParent.remove();
+            this.previewDivLeftDiagonalTransParent = undefined
+        }
+        if (this.previewDivBottomLeftTransparent){
+            this.previewDivBottomLeftTransparent.remove();
+            this.previewDivBottomLeftTransparent = undefined;
+        }
+        if (this.previewDivBottomcenterTransparent){
+            this.previewDivBottomcenterTransparent.remove();
+            this.previewDivBottomcenterTransparent = undefined
+        }
+        if (this.previewDivBottomRightTransparent){
+            this.previewDivBottomRightTransparent.remove();
+            this.previewDivBottomRightTransparent = undefined
+        }
+        if (this.previewDivDiagonalRightTransparent){
+            this.previewDivDiagonalRightTransparent.remove();
+            this.previewDivDiagonalRightTransparent = undefined
+        }
+        if (this.shadingContiner){
+            this.shadingContiner.remove();
+            this.shadingContiner = undefined
+        }
+        if (this.noneDiv){
+            this.noneDiv.remove();
+            this.noneDiv = undefined;
+        }
+        if (this.customDiv){
+            this.customDiv.remove();
+            this.customDiv = undefined;
+        }
+        if (this.allDiv){
+            this.allDiv.remove();
+            this.allDiv = undefined;
+        }
+        if (this.boxDiv){
+            this.boxDiv.remove();
+            this.boxDiv = undefined
+        }
+        if (this.displayText){
+            this.displayText.remove();
+            this.displayText = undefined
+        }
+        if (this.settingAndPreviewContainer){
+            this.settingAndPreviewContainer.remove();
+            this.settingAndPreviewContainer = undefined;
+        }
+        if (this.settingsContiner){
+            this.settingsContiner.remove();
+            this.settingsContiner = undefined;
+        }
+        if (this.styleContainer){
+            this.styleContainer.remove();
+            this.styleContainer = undefined
+        }
+        if (this.previewContiner){
+            this.previewContiner.remove();
+            this.previewContiner = undefined;
+        }
+        if (this.previewSubContainer1){
+            this.previewSubContainer1.remove();
+            this.previewSubContainer1 = undefined;
+        }
+        if (this.previewSubContainer2){
+            this.previewSubContainer2.remove();
+            this.previewSubContainer2 = undefined;
+        }
+        if (this.styleSubContainer){
+            this.styleSubContainer.remove();
+            this.styleSubContainer = undefined;
+        }
+        if (this.dropdownListDiv){
+            this.dropdownListDiv.remove();
+            this.dropdownListDiv = undefined
+        }
+        if (this.dropDownList){
+            this.dropDownList.remove();
+            this.dropDownList = undefined
+        }
+        if (this.widthcontainerDiv){
+            this.widthcontainerDiv.remove();
+            this.widthcontainerDiv = undefined;
+        }
+        if (this.widthNumericDiv){
+            this.widthNumericDiv.remove();
+            this.widthNumericDiv = undefined;
+        }
+        if (this.widthNumeric){
+            this.widthNumeric.remove();
+            this.widthNumeric = undefined
+        }
+        if (this.colorDiv){
+            this.colorDiv.remove();
+            this.colorDiv = undefined
+        }
+        if (this.colorText){
+            this.colorText.remove();
+            this.colorText = undefined;
+        }
+        if (this.borderColorPickerElement){
+            this.borderColorPickerElement.remove();
+            this.borderColorPickerElement = undefined;
+        }
+        if (this.settingText){
+            this.settingText.remove();
+            this.settingText = undefined
+        }
+        if (this.settingsSubContiner){
+            this.settingsSubContiner.remove();
+            this.settingsSubContiner = undefined;
+        }
+        if (this.noneDivContainer){
+            this.noneDivContainer.remove();
+            this.noneDivContainer = undefined;
+        }
+        if (this.noneDivLabel){
+            this.noneDivLabel.remove();
+            this.noneDivLabel = undefined;
+        }
+        if (this.boxDivContainer){
+            this.boxDivContainer.remove();
+            this.boxDivContainer = undefined;
+        }
+        if (this.boxDivLabel){
+            this.boxDivLabel.remove();
+            this.boxDivLabel = undefined;
+        }
+        if (this.allDivContainer){
+            this.allDivContainer.remove();
+            this.allDivContainer = undefined;
+        }
+        if (this.allDivLabel){
+            this.allDivLabel.remove();
+            this.allDivLabel = undefined;
+        }
+        if (this.customDivContainer){
+            this.customDivContainer.remove();
+            this.customDivContainer = undefined;
+        }
+        if (this.customDivLabel){
+            this.customDivLabel.remove();
+            this.customDivLabel = undefined;
+        }
+        if (this.previewDivHorizontalContainer){
+            this.previewDivHorizontalContainer.remove();
+            this.previewDivHorizontalContainer = undefined;
+        }
+        if (this.previewDivVerticalContainer){
+            this.previewDivVerticalContainer.remove();
+            this.previewDivVerticalContainer = undefined;
+        }
+        if (this.previewText){
+            this.previewText.remove();
+            this.previewText = undefined;
+        }
+        if (this.shadingText){
+            this.shadingText.remove();
+            this.shadingText = undefined;
+        }
+        if (this.shadings){
+            this.shadings.remove();
+            this.shadings = undefined;
+        }
+        if (this.colorPickerDiv){
+            this.colorPickerDiv.remove();
+            this.colorPickerDiv = undefined;
+        }
+        if (this.label){
+            this.label.remove();
+            this.label = undefined;
+        }
+        if (this.shadingColorPickerElement){
+            this.shadingColorPickerElement.remove();
+            this.shadingColorPickerElement = undefined;
+        }
+        if (this.shdApply){
+            this.shdApply.remove();
+            this.shdApply = undefined;
+        }
     }
 }

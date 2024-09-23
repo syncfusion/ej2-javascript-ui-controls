@@ -2299,7 +2299,7 @@ export class Editor {
         let contentControl : ContentControl = this.documentHelper.owner.editor.getContentControl();
         if ((!this.owner.isReadOnlyMode && !this.documentHelper.selection.checkContentControlLocked()) || this.selection.isInlineFormFillMode() ||
             ((this.documentHelper.protectionType === 'FormFieldsOnly' || this.documentHelper.protectionType == 'NoProtection') && (contentControl.contentControlProperties.multiline && !isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked()))
-              || (!isNullOrUndefined(contentControl) && contentControl.contentControlProperties.type === 'RichText' && (contentControl.contentControlWidgetType === 'Block' || contentControl.contentControlWidgetType === 'Cell') )) {
+              || (!isNullOrUndefined(contentControl) && contentControl.contentControlProperties.type === 'RichText' && this.canEditContentControl && (contentControl.contentControlWidgetType === 'Block' || contentControl.contentControlWidgetType === 'Cell') )) {
             if (Browser.isDevice) {
                 this.documentHelper.isCompositionStart = false;
             }
@@ -2724,6 +2724,7 @@ export class Editor {
         if (!isNullOrUndefined(value)) {
             this.documentHelper.selection.selectContentInternal(blockStartContentControl);
             this.paste(value);
+            properties.hasPlaceHolderText = false;
         }
         this.updatePropertiesToBlock(blockStartContentControl, true);
         if (properties.hasPlaceHolderText) {
@@ -2805,6 +2806,7 @@ export class Editor {
                 let span: TextElementBox = new TextElementBox();
                 if (!isNullOrUndefined(value)) {
                     span.text = value;
+                    properties.hasPlaceHolderText = false;
                 } else {
                     const locale: L10n = new L10n('documenteditor', this.owner.defaultLocale);
                     locale.setLocale(this.owner.locale);
@@ -3639,7 +3641,7 @@ export class Editor {
                 }
                 this.setCharFormatForCollaborativeEditing(insertFormat);
 
-                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && (<TextElementBox>inline).text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat) && this.canInsertRevision(inline, revisionType)
+                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && (<TextElementBox>inline).text !== ' ')) && !(inline instanceof ContentControl) && insertFormat.isSameFormat(inline.characterFormat) && this.canInsertRevision(inline, revisionType)
                     || (text.trim() === '' && !isBidi && inline.characterFormat.bidi) || isRtl && insertFormat.isSameFormat(inline.characterFormat) && isSpecialChars) {
                     this.insertTextInline(inline, selection, text, indexInInline);
                     this.setCharFormatForCollaborativeEditing(inline.characterFormat);
@@ -6792,7 +6794,7 @@ export class Editor {
                 let currentInline: ElementInfo = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
                 let element: ElementBox = this.selection.getPreviousValidElement(currentInline.element);
                 if (element !== currentInline.element) {
-                    element = this.selection.getNextValidElement(currentInline.element);
+                    element = this.documentHelper.getNextValidElement(currentInline.element);
                 }
                 let insertFormat: WCharacterFormat;
                 if (startParagraph.isEmpty()) {
@@ -10589,12 +10591,13 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public getContentControl(): ContentControl {
-        for (let i: number = 0; i < this.documentHelper.contentControlCollection.length; i++) {
-            if (this.documentHelper.contentControlCollection[i].paragraph.isInHeaderFooter && this.documentHelper.owner.layoutType === "Continuous") {
+    public getContentControl(contentControl?: ContentControl): ContentControl {
+        let contentLength: number = !isNullOrUndefined(contentControl) ? 1 : this.documentHelper.contentControlCollection.length;
+        for (let i: number = 0; i < contentLength; i++) {
+            let contentControlStart: ContentControl = !isNullOrUndefined(contentControl) ? contentControl : this.documentHelper.contentControlCollection[i];
+            if (contentControlStart.paragraph.isInHeaderFooter && this.documentHelper.owner.layoutType === "Continuous") {
                 continue;
             }
-            let contentControlStart: ContentControl = this.documentHelper.contentControlCollection[i];
             let line: LineWidget = contentControlStart.line as LineWidget;
             if (!isNullOrUndefined(line.children) && !isNullOrUndefined(line.children.length)) {
                 let position: PositionInfo = this.selection.getPosition(contentControlStart);
@@ -10674,7 +10677,7 @@ export class Editor {
     public onApplyCharacterFormat(property: string, value: Object, update?: boolean, applyStyle?: boolean): void {
         let allowFormatting: boolean = this.documentHelper.isFormFillProtectedMode
             && this.documentHelper.selection.isInlineFormFillMode() && this.allowFormattingInFormFields(property);
-        if ((this.restrictFormatting && !allowFormatting) || !isNullOrUndefined(this.selection) && this.selection.checkContentControlLocked(true)) {
+        if ((this.restrictFormatting && !allowFormatting) || (!isNullOrUndefined(this.selection) && this.selection.checkContentControlLocked(true))) {
             return;
         }
         this.documentHelper.layout.isBidiReLayout = true;
@@ -12594,7 +12597,7 @@ export class Editor {
     public onApplyParagraphFormat(property: string, value: Object, update: boolean, isSelectionChanged: boolean, isSkipPositionCheck?: boolean): void {
         let allowFormatting: boolean = this.documentHelper.isFormFillProtectedMode
             && this.documentHelper.selection.isInlineFormFillMode() && this.allowFormattingInFormFields(property);
-        if (this.restrictFormatting && !allowFormatting) {
+        if ((this.restrictFormatting && !allowFormatting) || (!isNullOrUndefined(this.selection) && this.selection.checkContentControlLocked(true))) {
             return;
         }
         this.setPreviousBlockToLayout();
@@ -19081,6 +19084,12 @@ export class Editor {
                             }
                             this.unLinkFieldCharacter(elementBox);
                             elementBox.line.children.splice(elementIndex, 1);
+                            if (!isNullOrUndefined(elementBox.line.layoutedElements) && elementBox.line.layoutedElements.length > 0 && elementBox.line.layoutedElements.indexOf(elementBox) !== -1) {
+                                elementBox.line.layoutedElements.splice(elementIndex, 1);
+                            }
+                            if (elementBox.line.children.length === 0) {
+                                elementBox.line.layoutedElements = undefined;
+                            }
                         }
                         if (elementBox instanceof FootnoteElementBox) {
                             if (elementBox.footnoteType === 'Footnote') {
@@ -19566,7 +19575,7 @@ export class Editor {
         }
         if (!isNullOrUndefined(inline)) {
             let nextRenderedInline: ElementBox = undefined;
-            let nextInline: ElementBox = selection.getNextValidElement(inline);
+            let nextInline: ElementBox = this.documentHelper.getNextValidElement(inline);
             if (nextInline instanceof ElementBox) {
                 nextRenderedInline = nextInline;
             }

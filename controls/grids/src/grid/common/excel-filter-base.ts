@@ -670,7 +670,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             type: this.options.type
         });
         mPredicate = new Predicate(field, firstOperator.toLowerCase(), arg.arg3, !matchCase, ignoreAccent);
-        if (!isNullOrUndefined(secondValue) && !isNullOrUndefined(secondOperator)) {
+        if (!isNullOrUndefined(secondOperator)) {
             fColl.push({
                 field: field,
                 predicate: predicate,

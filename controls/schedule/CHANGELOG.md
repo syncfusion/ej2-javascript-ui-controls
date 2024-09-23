@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### Schedule
+
+#### Bug fixes
+
+- `#FB60159` - An issue where the monthly recurrence appointment was rendered on the wrong date without considering the `StartTimezone` value of the appointment is fixed.
+
 ## 27.1.48 (2024-09-18)
 
 ### Schedule
@@ -19,6 +27,13 @@
 #### Bug fixes
 
 - `#I194307` - An issue where the `firstDayOfWeek` property was not working in the year view's specific settings has been fixed.
+
+## 26.2.14 (2024-09-10)
+
+### Schedule
+
+#### Bug fixes
+
 - `#I621521` - An issue where the tooltip shows the wrong end time value when the start and end of the appointment are the same has been fixed.
 - `#FB60391` - Deleted recurrence appointment added into the `changedRecords` instead of `deletedRecords` and upon clicking `YES` in the series edit confirmation alert to delete the individual occurrences the deleted records not included in the `deletedRecords` in the `actionBegin` event has been fixed.
 

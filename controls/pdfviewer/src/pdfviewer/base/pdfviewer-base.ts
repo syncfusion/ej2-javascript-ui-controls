@@ -102,6 +102,10 @@ export class PdfViewerBase {
     /**
      * @private
      */
+    public documentPathByteArray: string | Uint8Array;
+    /**
+     * @private
+     */
     public pageSize: ISize[] = [];
     /**
      * @private
@@ -878,7 +882,7 @@ export class PdfViewerBase {
             }
             if (this.pdfViewer.documentPath) {
                 if (this.pdfViewer.enableHtmlSanitizer) {
-                    this.pdfViewer.documentPath = SanitizeHtmlHelper.sanitize(this.pdfViewer.documentPath);
+                    this.pdfViewer.documentPath = SanitizeHtmlHelper.sanitize(this.pdfViewer.documentPath as string);
                 }
                 if (isBlazor()) {
                     this.pdfViewer._dotnetInstance.invokeMethodAsync('LoadDocumentFromClient', this.pdfViewer.documentPath);
@@ -977,7 +981,7 @@ export class PdfViewerBase {
                 else if (!isUrlLoaded && !documentData.includes('pdf;base64,') && this.clientSideRendering) {
                     const dataType: string = this.identifyDataType(documentData);
                     const isDataType: boolean = dataType === 'URL';
-                    isValidData = this.isValidBase64(documentData) && isDataType;
+                    isValidData = this.isValidBase64(documentData) || isDataType;
                     if (isValidData) {
                         documentData = this.convertBase64(pdfbytearray);
                         this.pdfViewer.fileByteArray = documentData;
@@ -1261,7 +1265,7 @@ export class PdfViewerBase {
      * @returns {Promise<string | null>} - promise
      */
     public getPdfByteArray(input: string): Promise<any | null> {
-        if (typeof input == 'string' && (input.startsWith('http://') || input.startsWith('https://') || input.includes('pdf;base64,') || input.startsWith('blob:'))) {
+        if (typeof input == 'string' && this.clientSideRendering && (input.startsWith('http://') || input.startsWith('https://') || input.includes('pdf;base64,') || input.startsWith('blob:'))) {
             return fetch(input)
                 .then((response: any) => {
                     if (response.ok) {
@@ -1604,7 +1608,9 @@ export class PdfViewerBase {
             }
             else if (!this.pdfViewer.fileByteArray && !isNullOrUndefined(this.pdfViewer.toolbarModule) &&
              this.pdfViewer.toolbarModule.uploadedFile) {
-                this.pdfViewer.fileByteArray = this.convertBase64(this.pdfViewer.toolbarModule.uploadedFile.replace(/^data:+[a-zA-Z]+\/[a-zA-Z]+;base64,/g, ''));
+                if (typeof this.pdfViewer.toolbarModule.uploadedFile == 'string') {
+                    this.pdfViewer.fileByteArray = this.convertBase64(this.pdfViewer.toolbarModule.uploadedFile.replace(/^data:+[a-zA-Z]+\/[a-zA-Z]+;base64,/g, ''));
+                }
             } else if (!this.pdfViewer.fileByteArray && data.documentData) {
                 this.pdfViewer.fileByteArray = this.convertBase64(data.documentData);
             }
@@ -4650,7 +4656,7 @@ export class PdfViewerBase {
         return (event.target as any).className !== 'e-pv-formfield-input' &&
             (event.target as any).className !== 'e-pv-formfield-textarea' &&
             (event.target as any).className !== 'e-pv-properties-name-edit-input e-input e-lib e-textbox e-control' &&
-            (event.target as any).className !== 'e-pv-properties-value-input e-input e-lib e-textbox e-control' && (event.target as any).id !== this.pdfViewer.element.id + '_search_input' && (event.target as any).className !== 'e-input-group e-pv-search-input e-input-focus';
+            (event.target as any).className !== 'e-pv-properties-value-input e-input e-lib e-textbox e-control' && (event.target as any).id !== this.pdfViewer.element.id + '_search_input' && (event.target as any).className !== 'e-input-group e-pv-search-input e-input-focus' && (event.target as any).className !== 'e-pdfviewer-formFields';
     }
 
     private DeleteKeyPressed(event: KeyboardEvent): void {

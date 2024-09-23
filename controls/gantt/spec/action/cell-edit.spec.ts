@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * Gantt taskbaredit spec
  */
 import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, UndoRedo} from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData,unscheduledData1, MT887459,actionFailureData, resourceData, Data893564, CR898960, crValidateIssue} from '../base/data-source.spec';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData, unscheduledData1, MT887459, actionFailureData, resourceData, Data893564, CR898960, crValidateIssue, criticalPath, editingResources3 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
@@ -3613,7 +3613,7 @@ describe('Cr-885322 duration get deleted when start date empty', () => {
     it('Checking parent date', (done: Function) => {
         ganttObj.actionComplete = (args: any): void => {
             if(args.requestType === 'add') {
-                expect(args.data.ganttProperties.left).toBe(33);
+                expect(args.data.ganttProperties.left).toBe(66);
                 done();
             }
         }
@@ -6179,6 +6179,117 @@ describe('CR issue validation', () => {
         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
         triggerMouseEvent(dragElement, 'mouseup');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Console error occurs when connecting predecessor with decimal task Id', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource:criticalPath,
+                  dateFormat: 'MMM dd, y',
+                  enableCriticalPath: true,
+                  taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources',
+                  },
+                  editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                  },
+                  toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'ExpandAll',
+                    'CollapseAll',
+                    'Indent',
+                    'Outdent',
+                  ],
+                  allowSelection: true,
+                  gridLines: 'Both',
+                  height: '450px',
+                  treeColumnIndex: 1,
+                  resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                  },
+                  resources: editingResources3,
+                  highlightWeekends: true,
+                  timelineSettings: {
+                    topTier: {
+                      unit: 'Week',
+                      format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                      unit: 'Day',
+                    },
+                  },
+                  columns: [
+                    { field: 'TaskID', width: 80 },
+                    {
+                      field: 'TaskName',
+                      headerText: 'Job Name',
+                      width: '250',
+                      clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' },
+                  ],
+                  eventMarkers: [
+                    { day: '4/17/2024', label: 'Project approval and kick-off' },
+                    { day: '5/3/2024', label: 'Foundation inspection' },
+                    { day: '6/7/2024', label: 'Site manager inspection' },
+                    { day: '7/16/2024', label: 'Property handover and sign-off' },
+                  ],
+                  labelSettings: {
+                    leftLabel: 'TaskName',
+                    rightLabel: 'resources',
+                  },
+                  editDialogFields: [
+                    { type: 'General', headerText: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                  ],
+                  splitterSettings: {
+                    position: '35%',
+                  },
+                  projectStartDate: new Date('09/01/2024'),
+                  // projectEndDate: new Date('07/28/2024'),
+            }, done);
+    });
+    it('update  predecessor with decimal task Id', () => {
+        let endDateColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(endDateColumn, 'dblclick');
+        let input: any = (<EJ2Instance>document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor')).ej2_instances[0];
+        input.value = '4SS';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe('4 SS');
+
     });
     afterAll(() => {
         if (ganttObj) {

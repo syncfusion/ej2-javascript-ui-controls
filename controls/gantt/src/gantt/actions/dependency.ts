@@ -112,7 +112,18 @@ export class Dependency {
                 if (!isNullOrUndefined(record) && isNullOrUndefined(record[task.startDate])
                     && isNullOrUndefined(record[task.duration]) && isNullOrUndefined(record[task.endDate])) {
                     record[task.duration] = 1;
-                    record[task.startDate] = this.parent.projectStartDate;
+                    let startDate: Date;
+                    const parentItem: IParent = predData.parentItem;
+                    if (parentItem) {
+                        let parentTask: IGanttData = this.parent.getParentTask(predData.parentItem);
+                        while (parentTask && !parentTask.ganttProperties.startDate) {
+                            parentTask = this.parent.getParentTask(parentTask.parentItem);
+                        }
+                        startDate = parentTask ? parentTask.ganttProperties.startDate : this.parent.cloneProjectStartDate;
+                    } else {
+                        startDate = this.parent.cloneProjectStartDate;
+                    }
+                    record[task.startDate] = startDate;
                     this.parent.updateRecordByID(record);
                 }
             }

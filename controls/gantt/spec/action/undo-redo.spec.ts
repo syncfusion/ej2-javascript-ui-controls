@@ -2,7 +2,7 @@
  * Gantt sort spec
  */
 import { Gantt,Selection, Sort,UndoRedo,Edit,Toolbar, RowDD,Filter, ContextMenu, ContextMenuClickEventArgs, ColumnMenu, DayMarkers, Reorder, Resize, CriticalPath } from '../../src/index';
-import { baselineData, cellEditData, filteredData, projectData, projectData1, projectData2, projectData3, projectData4, resourceDataUndo, resourceResourcesUndo, resourcesData, sbSampleResource, sbSampleResourceData } from '../base/data-source.spec';
+import { baselineData, cellEditData, filteredData, projectData, projectData1, projectData2, projectData3, projectData4, resourceDataUndo, resourceResourcesUndo, resourcesData, sbSampleResource, sbSampleResourceData, undoredo907807 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ResizeArgs } from '@syncfusion/ej2-grids';
 interface EJ2Instance extends HTMLElement {
@@ -6495,6 +6495,73 @@ describe('Gantt redo action for delete parent record', () => {
             }
         };
         ganttObj.redo()
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR907807- Gantt redo action for delete records', () => {
+    Gantt.Inject(Sort,UndoRedo,Edit,Toolbar, Selection );
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: undoredo907807,
+                height: '450px',
+                highlightWeekends: true,
+                showColumnMenu: true,
+                enableContextMenu: true,
+                allowFiltering: true,
+                enableUndoRedo: true,
+                allowSorting: true,
+                allowResizing: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'ID', width: 100 },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor', headerText: 'Dependency' }
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search', 'Undo', 'Redo'],
+                undoRedoActions: ['Sorting', 'Add', 'ColumnReorder', 'ColumnResize', 'ColumnState', 'Delete', 'Edit', 'Filtering', 'Indent', 'Outdent', 'NextTimeSpan', 'PreviousTimeSpan', 'RowDragAndDrop', 'Search'],
+                treeColumnIndex: 1,
+                labelSettings: {
+                    leftLabel: 'TaskName'
+                },
+                splitterSettings: {
+                    columnIndex: 2
+                },
+                projectStartDate: new Date('03/24/2024'),
+                projectEndDate: new Date('07/06/2024')
+            }, done);
+    });
+    it('delete record', () => {
+        ganttObj.deleteRecord(4);
+        ganttObj.deleteRecord(3);
+        ganttObj.deleteRecord(2);
+        ganttObj.deleteRecord(1);
+        expect(ganttObj.currentViewData.length).toBe(0);
     });
     afterAll(() => {
         if (ganttObj) {

@@ -12,6 +12,11 @@ import { SelectionSectionFormat } from '../selection';
 export class NotesDialog {
     private footCount: HTMLInputElement;
     private target: HTMLElement;
+
+    private firstDiv: HTMLElement;
+    private startatValue: HTMLElement;
+    private numberFormatDiv: HTMLDivElement;
+    private formatType: HTMLElement;
     /**
      * @private
      */
@@ -46,15 +51,15 @@ export class NotesDialog {
     public notesDialog(localValue: L10n, isRtl?: boolean): void {
         const idName: string = this.documentHelper.owner.containerId + '_insert_Footnote';
         this.target = createElement('div', { id: idName, className: 'e-de-insert-footnote' });
-        const firstDiv: HTMLElement = createElement('div');
+        this.firstDiv = createElement('div');
 
-        const startatValue: HTMLElement = createElement('div');
+        this.startatValue = createElement('div');
         this.footCount = createElement('input', {
             attrs: { type: 'text' }, id: this.documentHelper.owner.containerId + 'row'
         }) as HTMLInputElement;
-        startatValue.appendChild(this.footCount);
-        const numberFormatDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-container-row' });
-        const formatType: HTMLElement = createElement('select', {
+        this.startatValue.appendChild(this.footCount);
+        this.numberFormatDiv = <HTMLDivElement>createElement('div', { className: 'e-de-container-row' });
+        this.formatType = createElement('select', {
             id: this.target.id + '_papersize', styles: 'padding-bottom: 20px;',
             innerHTML: '<option value="1, 2, 3, ...">' + localValue.getConstant('1, 2, 3, ...') +
                 '</option><option value="a, b, c, ...">' + localValue.getConstant('a, b, c, ...') +
@@ -62,17 +67,17 @@ export class NotesDialog {
                 '</option><option value="I, II, III, ...">' + localValue.getConstant('I, II, III, ...') +
                 '</option><option value="i, ii, iii, ...">' + localValue.getConstant('i, ii, iii, ...') + '</option>'
         }) as HTMLSelectElement;
-        numberFormatDiv.appendChild(formatType);
+        this.numberFormatDiv.appendChild(this.formatType);
         this.notesList = new DropDownList({
             enableRtl: isRtl, placeholder: localValue.getConstant('Number format'),
             floatLabelType: 'Always',
             htmlAttributes: { 'aria-labelledby': localValue.getConstant('Number format') }
         });
-        this.notesList.appendTo(formatType);
-        firstDiv.appendChild(numberFormatDiv);
-        firstDiv.appendChild(startatValue);
+        this.notesList.appendTo(this.formatType);
+        this.firstDiv.appendChild(this.numberFormatDiv);
+        this.firstDiv.appendChild(this.startatValue);
 
-        this.target.appendChild(firstDiv);
+        this.target.appendChild(this.firstDiv);
 
         this.startValueTextBox = new NumericTextBox({
             format: '#',
@@ -265,8 +270,30 @@ export class NotesDialog {
             this.notesList.destroy();
             this.notesList = undefined;
         }
+        this.removeElements();
         this.footCount = undefined;
         this.documentHelper = undefined;
     }
-
+    private removeElements(): void {
+        if (this.firstDiv) {
+            this.firstDiv.remove();
+            this.firstDiv = undefined;
+        }
+        if (this.startatValue) {
+            this.startatValue.remove();
+            this.startatValue = undefined;
+        }
+        if (this.numberFormatDiv) {
+            this.numberFormatDiv.remove();
+            this.numberFormatDiv = undefined;
+        }
+        if (this.formatType) {
+            this.formatType.remove();
+            this.formatType = undefined;
+        }
+        if (this.target) {
+            this.target.remove();
+            this.target = undefined;
+        }
+    }
 }

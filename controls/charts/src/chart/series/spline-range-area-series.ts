@@ -190,10 +190,12 @@ export class SplineRangeAreaSeries extends SplineBase {
                                   xAxis, yAxis, inverted);
                     betweenPt1 = getPoint(lowControlPt1.x, lowControlPt1.y, xAxis, yAxis, inverted);
                     betweenPt2 = getPoint(lowControlPt2.x, lowControlPt2.y, xAxis, yAxis, inverted);
-                    direction = direction.concat('C ' + betweenPt2.x + ' '
+                    if (!isNaN(betweenPt1.y) || !isNaN(betweenPt2.y)) {
+                        direction = direction.concat('C ' + betweenPt2.x + ' '
                             + betweenPt2.y + ' ' + betweenPt1.x + ' ' + betweenPt1.y + ' ' + pt.x + ' ' + pt.y + ' ');
-                    this.borderDirection += 'C ' + betweenPt2.x + ' '
-                    + betweenPt2.y + ' ' + betweenPt1.x + ' ' + betweenPt1.y + ' ' + pt.x + ' ' + pt.y + ' ';
+                        this.borderDirection += 'C ' + betweenPt2.x + ' '
+                            + betweenPt2.y + ' ' + betweenPt1.x + ' ' + betweenPt1.y + ' ' + pt.x + ' ' + pt.y + ' ';
+                    }
                 }
                 else {
                     if (yAxis.isAxisInverse){

@@ -235,14 +235,14 @@ export class ColumnWidthService {
         }
     }
 
-    public getTableWidth(columns: Column[]): number | string {
+    public getTableWidth(columns: Column[], resetIndentWidth?: boolean): number | string {
         let tWidth: number | string = 0;
         let isAutoColumn: boolean = false;
         for (const column of columns) {
             if (column.visible !== false) {
                 let cWidth: string | number = this.getWidth(column);
                 if (column.width === 'auto' || !column.width) {
-                    if (this.parent.allowResizing) {
+                    if (this.parent.allowResizing && !resetIndentWidth) {
                         if (!column.maxWidth) {
                             isAutoColumn = true;
                         }

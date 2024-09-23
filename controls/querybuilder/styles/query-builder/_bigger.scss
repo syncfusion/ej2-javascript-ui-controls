@@ -2,6 +2,11 @@
   .e-query-builder.e-device,
   .e-bigger.e-query-builder,
   .e-bigger .e-query-builder {
+    &.e-multi-connector {
+      & .e-rule-list .e-group-container {
+        margin-top: 0 !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
     & .e-group-container  {
       padding: $device-rulecon-padding;
     }

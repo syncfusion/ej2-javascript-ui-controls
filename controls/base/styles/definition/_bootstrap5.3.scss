@@ -352,7 +352,6 @@
 
   //tab
   --color-sf-tab-border: #e9ecef;
-  --color-sf-tab-text-color: #0a58ca;
 
   //stepper
   --color-sf-stepper: #fff;
@@ -700,7 +699,6 @@
 
   //tab
   --color-sf-tab-border: #343a40;
-  --color-sf-tab-text-color: #8bb9fe;
 
   //stepper
   --color-sf-stepper: #212529;
@@ -1075,7 +1073,6 @@ $badge-dark-border-color: mapcolorvariable('badge-dark-border-color') !default;
 $badge-dark-text-color: mapcolorvariable('badge-dark-text-color') !default;
 
 $tab-border: mapcolorvariable('tab-border') !default;
-$tab-text-color: mapcolorvariable('tab-text-color') !default;
 $stepper: mapcolorvariable('stepper') !default;
 
 $primary-shadow: mapcolorvariable('primary-shadow') !default;
@@ -1572,5 +1569,4 @@ $badge-dark-border-color: $badge-dark-border-color;
 $badge-dark-text-color: $badge-dark-text-color;
 
 $tab-border: $tab-border;
-$tab-text-color: $tab-text-color;
 $stepper:$stepper;

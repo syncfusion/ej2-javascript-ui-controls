@@ -301,7 +301,7 @@ export let toolsLocale: { [key: string]: string } = {
     'remove': 'remove',
     'insertlink': 'insertLink',
     'display': 'display',
-    'alttext': 'alternateHeader',
+    'alttext': 'imageAlternateText',
     'dimension': 'dimension',
     'fullscreen': 'fullscreen',
     'maximize': 'maximize',

@@ -179,7 +179,9 @@ export class AccumulationTooltip extends BaseTooltip {
         const regExp: RegExpConstructor = RegExp;
         for (const dataValue of Object.keys(point)) {
             value = new regExp('${point' + '.' + dataValue + '}', 'gm');
-            format = format.replace(value.source, point[dataValue as string]);
+            const pointValue: string = (dataValue === 'x' && this.accumulation.useGroupingSeparator && typeof point[dataValue as string] === 'number') ?
+                this.accumulation.intl.formatNumber(point.x as number, { useGrouping: true }) : point[dataValue as string];
+            format = format.replace(value.source, pointValue);
         }
 
         for (const dataValue of Object.keys(Object.getPrototypeOf(series))) {

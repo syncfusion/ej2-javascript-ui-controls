@@ -320,6 +320,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected CurrentEvent: KeyboardEventArgs | MouseEvent = null;
     protected virtualSelectAllData: { [key: string]: Object }[] | string[] | number[] | boolean[];
     protected firstItem: string | number | boolean | object;
+    protected preventDefActionFilter: boolean;
     protected virtualListInfo: VirtualInfo = {
         currentPageNumber: null,
         direction: null,
@@ -1543,7 +1544,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, this.sortOrder);
                 }
                 addClass([this.list], dropDownBaseClasses.grouping);
-            } else {
+            } else if (this.getModuleName() !== 'listbox' || (this.getModuleName() === 'listbox' && !this.preventDefActionFilter)) {
                 dataSource = this.getSortedDataSource(dataSource);
             }
             const options: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
@@ -2124,7 +2125,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
         const itemsCount: number = this.getItems().length;
-        let isListboxEmpty: boolean = itemsCount === 0;
+        const isListboxEmpty: boolean = itemsCount === 0;
         const selectedItemValue: Element = this.list.querySelector('.' + dropDownBaseClasses.selected);
         items = (items instanceof Array ? items : [items]) as { [key: string]: Object }[] | string[] | boolean[] | number[];
         let index: number;
@@ -2174,7 +2175,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             if (this.getModuleName() === 'listbox') {
                 this.updateActionCompleteData(li, item as { [key: string]: Object }, isListboxEmpty ? null : index + i);
-                isListboxEmpty = true;
             } else {
                 this.updateActionCompleteData(li, item as { [key: string]: Object }, index);
             }

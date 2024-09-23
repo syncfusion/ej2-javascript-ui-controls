@@ -2,7 +2,7 @@
  * Gantt connector line spec
  */
 
-import { baselineData, connectorLineFFDatasource, connectorLineFSDatasource, connectorLineSFDatasource, connectorLineSSDatasource, data5, data6, data7, editingData1, predecessorData, projectNewData1, predcessor1, connectorLineData } from '../base/data-source.spec';
+import { baselineData, connectorLineFFDatasource, connectorLineFSDatasource, connectorLineSFDatasource, connectorLineSSDatasource, data5, data6, data7, editingData1, predecessorData, projectNewData1, predcessor1, connectorLineData, CR909421 } from '../base/data-source.spec';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ITaskbarEditedEventArgs } from '../../src/index';
 
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
@@ -2414,5 +2414,96 @@ describe('Checking connector line position', () => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
+    });
+});
+describe('CR:909421-Change the event argument action property value while deleting dependency', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: CR909421,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'Predecessor', headerText: 'Predecessor' }
+                ],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                enableContextMenu: true,
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+        setTimeout(done, 500);
+    });
+    it('Checking actionBegin event requestType while contextMenu Delete Depedency', (done: Function) => {
+        ganttObj.actionBegin = (args?: any): void => {
+            if (args.requestType === "beforeSave") {
+                expect(args.action).toBe('DeleteConnectorLine');
+            }
+            done();
+        };
+        let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+        let e = {
+            item: ganttObj.contextMenuModule.contextMenu.items[5].items[0],
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+    });
+    it('Remove Predecessor', () => {
+        ganttObj.actionBegin = (args?: any): void => {
+            if (args.requestType === "beforeSave") {
+                expect(args.action).toBe('DeleteConnectorLine');
+            }
+        };
+        ganttObj.removePredecessor((ganttObj.flatData[3].ganttProperties.taskId));
+    });
+    it('Add Predecessor', () => {
+        ganttObj.actionBegin = (args?: any): void => {
+            if (args.requestType === "beforeSave") {
+                expect(args.action).toBe('DrawConnectorLine');
+            }
+        };
+        ganttObj.addPredecessor((ganttObj.flatData[3].ganttProperties.taskId), '3FS');
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);       
     });
 });

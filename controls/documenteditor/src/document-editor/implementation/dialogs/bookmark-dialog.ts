@@ -1,4 +1,4 @@
-import { ListView } from '@syncfusion/ej2-lists';
+import { ListView, SelectEventArgs } from '@syncfusion/ej2-lists';
 import { Button } from '@syncfusion/ej2-buttons';
 import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentHelper } from '../viewer';
@@ -18,6 +18,26 @@ export class BookmarkDialog {
     private addButton: Button;
     private deleteButton: Button;
     private gotoButton: Button;
+
+    private dlgFields: HTMLElement;
+    private commonDiv: HTMLElement;
+    private searchDiv: HTMLElement;
+    private textBoxDiv: HTMLElement
+    private listviewDiv: HTMLElement;
+    private buttonDiv: HTMLElement;
+    private addbuttonDiv: HTMLElement;
+    private deleteButtonDiv: HTMLElement;
+    private addButtonElement: HTMLElement;
+    private deleteButtonElement: HTMLElement;
+    private gotoButtonDiv: HTMLElement;
+    private gotoButtonElement: HTMLElement;
+
+
+    private listViewInstanceClickHandler: EventListener  = this.onListInstanceClicked.bind(this);
+    private onKeyUpOnTextBoxClickHandler: EventListenerOrEventListenerObject = this.onKeyUpOnTextBoxClicked.bind(this);
+    private addBookmarkClickHandler: EventListenerOrEventListenerObject = this.onAddBookmarkClicked.bind(this);
+    private deleteBookmarkClickHandler: EventListenerOrEventListenerObject = this.onDeleteBookmarkClicked.bind(this);
+    private gotoBookmarkClickHandler: EventListenerOrEventListenerObject = this.onGotoBookmarkClicked.bind(this);
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
@@ -40,29 +60,29 @@ export class BookmarkDialog {
         const id: string = this.documentHelper.owner.containerId + '_insert_bookmark';
         this.target = createElement('div', { id: id, className: 'e-de-bookmark' });
         const headerValue: string = localValue.getConstant('Bookmark name') + ':';
-        const dlgFields: HTMLElement = createElement('div', { innerHTML: headerValue, className: 'e-bookmark-dlgfields' });
-        this.target.appendChild(dlgFields);
+        this.dlgFields = createElement('div', { innerHTML: headerValue, className: 'e-bookmark-dlgfields' });
+        this.target.appendChild(this.dlgFields);
 
-        const commonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-common' });
-        this.target.appendChild(commonDiv);
+        this.commonDiv = createElement('div', { className: 'e-bookmark-common' });
+        this.target.appendChild(this.commonDiv);
 
-        const searchDiv: HTMLElement = createElement('div', { className: 'e-bookmark-list' });
-        commonDiv.appendChild(searchDiv);
+        this.searchDiv = createElement('div', { className: 'e-bookmark-list' });
+        this.commonDiv.appendChild(this.searchDiv);
         if (isRtl) {
-            searchDiv.classList.add('e-de-rtl');
+            this.searchDiv.classList.add('e-de-rtl');
         }
 
-        const textBoxDiv: HTMLElement = createElement('div', { className: 'e-bookmark-textboxdiv' });
-        searchDiv.appendChild(textBoxDiv);
+        this.textBoxDiv = createElement('div', { className: 'e-bookmark-textboxdiv' });
+        this.searchDiv.appendChild(this.textBoxDiv);
 
         this.textBoxInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', id: 'bookmark_text_box', attrs: { autofocus: 'true' } }) as HTMLInputElement;
         this.textBoxInput.setAttribute('type', 'text');
         this.textBoxInput.setAttribute('aria-label', localValue.getConstant('Bookmark name'));
-        textBoxDiv.appendChild(this.textBoxInput);
+        this.textBoxDiv.appendChild(this.textBoxInput);
 
-        const listviewDiv: HTMLElement = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview', attrs: { tabindex: '-1', role: 'listbox' }});
-        listviewDiv.setAttribute('aria-label', localValue.getConstant('BookMarkList'));
-        searchDiv.appendChild(listviewDiv);
+        this.listviewDiv = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview', attrs: { tabindex: '-1', role: 'listbox' }});
+        this.listviewDiv.setAttribute('aria-label', localValue.getConstant('BookMarkList'));
+        this.searchDiv.appendChild(this.listviewDiv);
         // const arts: string[] = this.documentHelper.bookmarks.keys;
 
         this.listviewInstance = new ListView({
@@ -71,54 +91,70 @@ export class BookmarkDialog {
         });
         const hasNoBookmark: boolean = (bookmarks === undefined || bookmarks.length === 0);
 
-        this.listviewInstance.appendTo(listviewDiv);
-        this.listviewInstance.addEventListener('select', this.selectHandler);
+        this.listviewInstance.appendTo(this.listviewDiv);
+        this.listviewInstance.addEventListener('select', this.listViewInstanceClickHandler);
 
-        const buttonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-button' });
-        commonDiv.appendChild(buttonDiv);
+        this.buttonDiv = createElement('div', { className: 'e-bookmark-button' });
+        this.commonDiv.appendChild(this.buttonDiv);
 
-        const addbuttonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
-        buttonDiv.appendChild(addbuttonDiv);
-        const addButtonElement: HTMLElement = createElement('button', {
+        this.addbuttonDiv = createElement('div', { className: 'e-bookmark-addbutton' });
+        this.buttonDiv.appendChild(this.addbuttonDiv);
+        this.addButtonElement = createElement('button', {
             innerHTML: localValue.getConstant('Add'), id: 'add',
             attrs: { type: 'button' }
         });
-        addButtonElement.setAttribute('aria-label', localValue.getConstant('Add'));
-        addbuttonDiv.appendChild(addButtonElement);
+        this.addButtonElement.setAttribute('aria-label', localValue.getConstant('Add'));
+        this.addbuttonDiv.appendChild(this.addButtonElement);
         this.addButton = new Button({ cssClass: 'e-button-custom' });
         this.addButton.disabled = true;
-        this.addButton.appendTo(addButtonElement);
-        this.textBoxInput.addEventListener('input', this.onKeyUpOnTextBox);
-        this.textBoxInput.addEventListener('keyup', this.onKeyUpOnTextBox);
-        addButtonElement.addEventListener('click', this.addBookmark);
+        this.addButton.appendTo(this.addButtonElement);
+        this.textBoxInput.addEventListener('input', this.onKeyUpOnTextBoxClickHandler);
+        this.textBoxInput.addEventListener('keyup', this.onKeyUpOnTextBoxClickHandler);
+        this.addButtonElement.addEventListener('click', this.addBookmarkClickHandler);
 
-        const deleteButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-deletebutton' });
-        buttonDiv.appendChild(deleteButtonDiv);
-        const deleteButtonElement: HTMLElement = createElement('button', {
+        this.deleteButtonDiv = createElement('div', { className: 'e-bookmark-deletebutton' });
+        this.buttonDiv.appendChild(this.deleteButtonDiv);
+        this.deleteButtonElement = createElement('button', {
             innerHTML: localValue.getConstant('Delete'), id: 'delete',
             attrs: { type: 'button' }
         });
-        deleteButtonElement.setAttribute('aria-label', localValue.getConstant('Delete'));
-        deleteButtonDiv.appendChild(deleteButtonElement);
+        this.deleteButtonElement.setAttribute('aria-label', localValue.getConstant('Delete'));
+        this.deleteButtonDiv.appendChild(this.deleteButtonElement);
         this.deleteButton = new Button({ cssClass: 'e-button-custom' });
         this.deleteButton.disabled = hasNoBookmark;
-        this.deleteButton.appendTo(deleteButtonElement);
-        deleteButtonElement.addEventListener('click', this.deleteBookmark);
+        this.deleteButton.appendTo(this.deleteButtonElement);
+        this.deleteButtonElement.addEventListener('click', this.deleteBookmarkClickHandler);
 
 
-        const gotoButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-gotobutton' });
-        buttonDiv.appendChild(gotoButtonDiv);
-        const gotoButtonElement: HTMLElement = createElement('button', {
+        this.gotoButtonDiv = createElement('div', { className: 'e-bookmark-gotobutton' });
+        this.buttonDiv.appendChild(this.gotoButtonDiv);
+        this.gotoButtonElement = createElement('button', {
             innerHTML: localValue.getConstant('Go To'), id: 'goto',
             attrs: { type: 'button' }
         });
-        gotoButtonElement.setAttribute('aria-label', localValue.getConstant('Go To'));
-        gotoButtonDiv.appendChild(gotoButtonElement);
+        this.gotoButtonElement.setAttribute('aria-label', localValue.getConstant('Go To'));
+        this.gotoButtonDiv.appendChild(this.gotoButtonElement);
         this.gotoButton = new Button({ cssClass: 'e-button-custom' });
         this.gotoButton.disabled = hasNoBookmark;
-        this.gotoButton.appendTo(gotoButtonElement);
-        gotoButtonElement.addEventListener('click', this.gotoBookmark);
+        this.gotoButton.appendTo(this.gotoButtonElement);
+        this.gotoButtonElement.addEventListener('click', this.gotoBookmarkClickHandler);
     }
+    private onListInstanceClicked(args: SelectEventArgs) : void {
+        this.selectHandler(args);
+    }
+    private onKeyUpOnTextBoxClicked() : void {
+        this.onKeyUpOnTextBox();
+    }
+    private onAddBookmarkClicked() : void {
+        this.addBookmark();
+    }
+    private onDeleteBookmarkClicked() : void {
+        this.deleteBookmark();
+    }
+    private onGotoBookmarkClicked() : void {
+        this.gotoBookmark();
+    }
+
     /**
      * @private
      * @returns {void}
@@ -207,6 +243,8 @@ export class BookmarkDialog {
      * @returns {void}
      */
     public destroy(): void {
+        this.removeEvents();
+        this.removeElements();
         if (this.textBoxInput) {
             this.textBoxInput.remove();
             this.textBoxInput = undefined;
@@ -216,6 +254,90 @@ export class BookmarkDialog {
             this.listviewInstance = undefined;
         }
         this.documentHelper = undefined;
+    }
+    private removeElements(): void {
+        if (this.dlgFields){
+            this.dlgFields.remove();
+            this.dlgFields = undefined;
+        }
+        if (this.commonDiv){
+            this.commonDiv.remove();
+            this.commonDiv = undefined;
+        }
+        if (this.target) {
+            this.target.remove();
+            this.target = undefined;
+        }
+        if (this.textBoxDiv) {
+            this.textBoxDiv.remove();
+            this.textBoxDiv = undefined;
+        }
+        if (this.searchDiv) {
+            this.searchDiv.remove();
+            this.searchDiv = undefined;
+        }
+        if (this.listviewDiv) {
+            this.listviewDiv.remove();
+            this.listviewDiv = undefined;
+        }
+        if (this.buttonDiv) {
+            this.buttonDiv.remove();
+            this.buttonDiv = undefined;
+        }
+        if (this.addbuttonDiv) {
+            this.addbuttonDiv.remove();
+            this.addbuttonDiv = undefined;
+        }
+        if (this.deleteButtonDiv) {
+            this.deleteButtonDiv.remove();
+            this.deleteButtonDiv = undefined;
+        }
+        if (this.gotoButtonDiv) {
+            this.gotoButtonDiv.remove();
+            this.gotoButtonDiv = undefined;
+        }
+        if (this.addButtonElement) {
+            this.addButtonElement.remove();
+            this.addButtonElement = undefined;
+        }
+        if (this.deleteButtonElement) {
+            this.deleteButtonElement.remove();
+            this.deleteButtonElement = undefined;
+        }
+        if (this.gotoButtonElement) {
+            this.gotoButtonElement.remove();
+            this.gotoButtonElement = undefined;
+        }
+        if (this.addButton) {
+            this.addButton.destroy();
+            this.addButton = undefined;
+        }
+        if (this.deleteButton) {
+            this.deleteButton.destroy();
+            this.deleteButton = undefined;
+        }
+        if (this.gotoButton) {
+            this.gotoButton.destroy();
+            this.gotoButton = undefined;
+        }
+    }
+    private removeEvents(): void {
+        if (this.listviewInstance) {
+            this.listviewInstance.removeEventListener('select', this.listViewInstanceClickHandler);
+        }
+        if (this.textBoxInput) {
+            this.textBoxInput.removeEventListener('input', this.onKeyUpOnTextBoxClickHandler);
+            this.textBoxInput.removeEventListener('keyup', this.onKeyUpOnTextBoxClickHandler);
+        }
+        if (this.addButtonElement) {
+            this.addButtonElement.removeEventListener('click', this.addBookmarkClickHandler);
+        }
+        if (this.deleteButtonElement) {
+            this.deleteButtonElement.removeEventListener('click', this.deleteBookmarkClickHandler);
+        }
+        if (this.gotoButtonElement) {
+            this.gotoButtonElement.removeEventListener('click', this.gotoBookmarkClickHandler);
+        }
     }
 }
 

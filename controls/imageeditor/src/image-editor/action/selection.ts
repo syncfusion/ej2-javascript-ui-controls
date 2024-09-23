@@ -54,6 +54,9 @@ export class Selection {
     private isPreventShaping: boolean;
     private isGrabbing: boolean;
     private isTouchDblClick: boolean = false;
+    private isMouseDown: boolean = false;
+    private isMouseUp: boolean = false;
+    private mouseWheel: number = 0;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -358,13 +361,14 @@ export class Selection {
             flipObjColl: [], triangle: [], triangleRatio: [], order: null} as SelectionPoint;
         this.isFirstMove = false; this.cursorTargetId = this.dragElement = ''; this.isTouchDblClick = false;
         this.startTouches = []; this.tempTouches = []; this.currMousePoint = {x: 0, y: 0};
-        this.isPreventDragging = false; this.timer = undefined; this.tempObjColl = undefined;
+        this.isPreventDragging = false; this.timer = undefined; this.tempObjColl = undefined; this.mouseWheel = 0;
         this.textRow = 1; this.mouseDownPoint = {x: 0, y: 0}; this.previousPoint = {x: 0, y: 0};
         this.zoomType = 'Toolbar'; this.isInitialTextEdited = false; this.dragCanvas = this.isPinching = false;
         this.isFhdCustomized = false; this.touchEndPoint = {} as Point; this.panDown = null; this.isSliding = false;
         this.isFhdEditing = false; this.pathAdjustedIndex = null; this.touchTime = 0; this.isImageClarity = true;
         this.currentDrawingShape = ''; this.initialPrevObj = {} as CurrentObject; this.resizedElement = '';
         this.mouseDown = ''; this.isSliderActive = false; this.arrowShape = [ArrowheadType.None, ArrowheadType.SolidArrow];
+        this.isMouseDown = this.isMouseUp = false;
     }
 
     private performTabAction(): void {
@@ -1278,6 +1282,11 @@ export class Selection {
                 this.isPreventShaping = shapeResizingArgs.cancel;
                 parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false, value: {shapeSettings: shapeResizingArgs.currentShapeSettings, allowShapeOverflow: shapeResizingArgs.allowShapeOverflow}});
             } else {
+                if (this.isMouseDown) {
+                    shapeResizingArgs.action = 'resize-start';
+                } else if (this.isMouseUp) {
+                    shapeResizingArgs.action = 'resize-end';
+                }
                 const selectionResizingArgs: SelectionChangeEventArgs = {action: shapeResizingArgs.action,
                     previousSelectionSettings: {type: parent.getSelectionType(parent.activeObj.shape),
                         startX: shapeResizingArgs.previousShapeSettings.startX,
@@ -2877,6 +2886,7 @@ export class Selection {
         }
         const imageEditorClickEventArgs: ImageEditorClickEventArgs = {point: this.setXYPoints(e)};
         parent.trigger('click', imageEditorClickEventArgs);
+        this.isMouseDown = true; this.isMouseUp = false;
         this.clickEvent(imageEditorClickEventArgs, e);
     }
 
@@ -3225,6 +3235,7 @@ export class Selection {
                         }
                     }
                     if (type !== '') {
+                        parent.isZoomBtnClick = true;
                         parent.notify('draw', { prop: 'performPointZoom', onPropertyChange: false,
                             value: {x: center.x, y: center.y, type: type, isResize: null }});
                     }
@@ -3297,11 +3308,13 @@ export class Selection {
                 this.dragCanvas = parent.togglePan = true;
             }
         }
+        this.isMouseDown = false; this.isMouseUp = false;
     }
 
     private mouseUpEventHandler(e: MouseEvent & TouchEvent): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
-        parent.isKBDNavigation = false;
+        parent.isKBDNavigation = this.isMouseDown = false;
+        this.isMouseUp = true;
         if (!Browser.isDevice && ((parent.element.querySelector('#' + id + '_contextualToolbar') &&
             !parent.element.querySelector('#' + id + '_contextualToolbar').parentElement.classList.contains('e-hide')) ||
             (parent.element.querySelector('#' + id + '_headWrapper')
@@ -3451,6 +3464,10 @@ export class Selection {
                         parent.currObjType.isResize = false;
                         parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
                     }
+                } else if (isCropSelection && this.isMouseUp && parent.cursor.indexOf('resize') > -1) {
+                    const previousShapeSettings: ShapeSettings = this.updatePrevShapeSettings();
+                    const shapeResizingArgs: ShapeChangeEventArgs = {cancel: false, action: 'resize-end',  previousShapeSettings: previousShapeSettings};
+                    this.triggerShapeChange(shapeResizingArgs, shapeResizingArgs, 'resize');
                 }
                 if (parent.activeObj) {
                     let isCropSelection: boolean = false;
@@ -3554,6 +3571,7 @@ export class Selection {
             parent.isShapeDrawing = false;
             parent.notify('freehand-draw', { prop: 'resetSelPoints', onPropertyChange: false });
         }
+        this.isMouseUp = false;
     }
 
     private adjustActObjForLineArrow(obj?: SelectionPoint): boolean {
@@ -3989,6 +4007,7 @@ export class Selection {
         case (e.ctrlKey && '+'):
             if ((parent.zoomSettings.zoomTrigger & ZoomTrigger.Commands) === ZoomTrigger.Commands) {
                 this.zoomType = 'Commands';
+                parent.isZoomBtnClick = true;
                 parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
                     value: {zoomFactor: .1, zoomPoint: null}, isResize: null});
                 parent.notify('draw', { prop: 'redrawDownScale' });
@@ -4005,6 +4024,7 @@ export class Selection {
         case (e.ctrlKey && '-'):
             if ((parent.zoomSettings.zoomTrigger & ZoomTrigger.Commands) === ZoomTrigger.Commands) {
                 this.zoomType = 'Commands';
+                parent.isZoomBtnClick = true;
                 parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
                     value: {zoomFactor: -.1, zoomPoint: null}, isResize: null});
                 parent.notify('draw', { prop: 'redrawDownScale' });
@@ -4136,6 +4156,11 @@ export class Selection {
     }
 
     private handleScroll(e: KeyboardEvent): void {
+        this.mouseWheel++;
+        if (this.mouseWheel === 2) {
+            this.mouseWheel = 0;
+            return;
+        }
         const parent: ImageEditor = this.parent;
         let x: number; let y: number; let isInsideCanvas: boolean = false;
         if (e.type === 'mousewheel') {
@@ -4166,6 +4191,7 @@ export class Selection {
                 }
             }
             if (type !== '') {
+                parent.isZoomBtnClick = true;
                 parent.notify('draw', { prop: 'performPointZoom', onPropertyChange: false,
                     value: {x: x, y: y, type: type, isResize: null }});
                 parent.notify('draw', { prop: 'redrawDownScale' });
@@ -4487,6 +4513,11 @@ export class Selection {
                     this.shapeEvent(shapeChangingArgs);
                     parent.editCompleteArgs = shapeChangingArgs;
                 } else {
+                    if (this.isMouseDown) {
+                        shapeChangingArgs.action = 'resize-start';
+                    } else if (this.isMouseUp) {
+                        shapeChangingArgs.action = 'resize-end';
+                    }
                     const selectionChangingArgs: SelectionChangeEventArgs = {action: shapeChangingArgs.action,
                         previousSelectionSettings: {type: parent.getSelectionType(parent.activeObj.shape),
                             startX: shapeChangingArgs.previousShapeSettings.startX,

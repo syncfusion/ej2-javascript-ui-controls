@@ -113,7 +113,7 @@ describe("Quick Toolbar - Actions Module", () => {
             expect((<HTMLElement>imgTBItems.item(7)).title).toBe('Edit Link');
             expect((<HTMLElement>imgTBItems.item(8)).title).toBe('Remove Link');
             expect((<HTMLElement>imgTBItems.item(9)).title).toBe('Display');
-            expect((<HTMLElement>imgTBItems.item(10)).title).toBe('Alternative Text');
+            expect((<HTMLElement>imgTBItems.item(10)).title).toBe('Alternate Text');
             expect((<HTMLElement>imgTBItems.item(11)).title).toBe('Change Size');
             rteObj.quickToolbarModule.imageQTBar.removeQTBarItem(11);
         });
@@ -131,7 +131,7 @@ describe("Quick Toolbar - Actions Module", () => {
             expect((<HTMLElement>imgTBItems.item(7)).title).toBe('Edit Link');
             expect((<HTMLElement>imgTBItems.item(8)).title).toBe('Remove Link');
             expect((<HTMLElement>imgTBItems.item(9)).title).toBe('Display');
-            expect((<HTMLElement>imgTBItems.item(10)).title).toBe('Alternative Text');
+            expect((<HTMLElement>imgTBItems.item(10)).title).toBe('Alternate Text');
             (rteObj as any).keyDown({ which: 8, preventDefault: () => { }, action: null });
             document.getElementById('Image_Quick_Popup_4')
             expect(document.getElementById('Image_Quick_Popup_3')).toBe(null);

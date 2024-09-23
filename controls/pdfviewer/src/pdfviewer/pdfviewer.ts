@@ -8696,7 +8696,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.viewerBase.blazorUIAdaptor.resetToolbar();
         }
         this.isFormFieldsLoaded = true;
-        this.viewerBase.initiatePageRender(document, password);
+        if (this.viewerBase.documentPathByteArray instanceof Uint8Array && !this.viewerBase.clientSideRendering) {
+            const base64String: string = this.convertByteArrayToBase64(this.viewerBase.documentPathByteArray);
+            this.viewerBase.initiatePageRender(base64String, password);
+        } else {
+            this.viewerBase.initiatePageRender(document, password);
+        }
+    }
+
+    private convertByteArrayToBase64(byteArray: Uint8Array): string {
+        let binaryString: string = '';
+        const byteArrayLength: number = byteArray.byteLength;
+        for (let i: number = 0; i < byteArrayLength; i++) {
+            binaryString += String.fromCharCode(byteArray[parseInt(i.toString(), 10)]);
+        }
+        return btoa(binaryString);
     }
 
     /**
@@ -9262,8 +9276,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.viewerBase.importAnnotations(importData);
                 } else {
                     importData = JSON.stringify(importData);
+                    const encoder : TextEncoder = new TextEncoder();
+                    const utf8Bytes: Uint8Array = encoder.encode(importData);
                     this.viewerBase.isPDFViewerJson = false;
-                    this.viewerBase.importAnnotations(btoa(importData), AnnotationDataFormat.Json);
+                    this.viewerBase.importAnnotations(btoa(String.fromCharCode(...Array.from(utf8Bytes))), AnnotationDataFormat.Json);
                 }
             }
         } else {

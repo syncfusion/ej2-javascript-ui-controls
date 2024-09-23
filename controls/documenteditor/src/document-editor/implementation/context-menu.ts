@@ -750,9 +750,11 @@ export class ContextMenu {
     public hideSpellContextItems(): void {
         if (this.spellContextItems.length > 0) {
             for (let i: number = 0; i < this.spellContextItems.length; i++) {
-                let item: HTMLElement = document.getElementById(this.documentHelper.owner.element.id + this.spellContextItems[i].id);
-                if (!isNullOrUndefined(item)) {
-                    item.style.display = 'none';
+                if (this.customItems.indexOf(this.spellContextItems[i]) === -1) {
+                    let item: HTMLElement = document.getElementById(this.documentHelper.owner.element.id + this.spellContextItems[i].id);
+                    if (!isNullOrUndefined(item)) {
+                        item.style.display = 'none';
+                    }
                 }
             }
         }

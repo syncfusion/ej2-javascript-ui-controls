@@ -7732,7 +7732,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private initObjectExtend(obj: IElement, layer?: LayerModel, independentObj?: boolean): void {
         if (independentObj) {
             const checkBoundaryConstraints: boolean = this.commandHandler.checkBoundaryConstraints(
-                undefined, undefined, obj.wrapper.bounds);
+                undefined, undefined, obj.wrapper.bounds, true);
             //EJ2-71853 - Need to improve performance of diagram while rendering large number of nodes and connectors.
             // Removed the for loop which is iterating through the zindex table and removing the object from the table as it is not covered in any scenario.
             //EJ2-840575 - Order commands not working between Swimlane and other nodes while drag and drop from the palette
@@ -10818,7 +10818,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public updateObject(actualObject: Node | Connector, oldObject: Node | Connector, changedProp: Node | Connector): void {
         if (!(this.diagramActions & DiagramAction.ToolAction)) {
             const bound: Rect = actualObject.wrapper.children[0].bounds;
-            const checkBoundaryConstraints: boolean = this.commandHandler.checkBoundaryConstraints(undefined, undefined, bound);
+            const checkBoundaryConstraints: boolean = this.commandHandler.checkBoundaryConstraints(undefined, undefined, bound, true);
             if (!checkBoundaryConstraints) {
                 if (actualObject instanceof Node) {
                     const oldNode: Node = oldObject as Node;

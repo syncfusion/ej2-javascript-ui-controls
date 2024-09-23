@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### Image Editor
+
+#### Features
+
+- Added new action types 'resize-start' and 'resize-end' to the selectionChanging event. The event triggers 'resize-start' when resizing begins and 'resize-end' when resizing ends.
+
+#### Bug Fixes
+
+- `#I910189` - The issue with "Localization issue in ImageEditor" has been resolved.
+- `#I629743` - The issue with "zoomed event not triggered for mousewheel zoom" has been resolved.
+
 ## 27.1.48 (2024-09-18)
 
 ### ImageEditor

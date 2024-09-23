@@ -442,14 +442,14 @@ export class BatchEdit {
         const args: BeforeBatchDeleteArgs = {
             primaryKey: this.parent.getPrimaryKeyFieldNames(),
             rowIndex: index,
-            rowData: data ? data : gObj.getSelectedRecords()[0],
+            rowData: data ? data : gObj.getSelectedRecords(),
             cancel: false
         };
         if (data) {
             args.row = gObj.editModule.deleteRowUid ? gObj.getRowElementByUID(gObj.editModule.deleteRowUid)
                 : gObj.getRows()[gObj.getCurrentViewRecords().indexOf(data)];
         } else {
-            args.row = selectedRows[0];
+            args.row = selectedRows;
         }
         if (!args.row) {
             return;
@@ -462,8 +462,12 @@ export class BatchEdit {
             this.removeSelectedData = gObj.getSelectedRecords();
             gObj.clearSelection();
             beforeBatchDeleteArgs.row = beforeBatchDeleteArgs.row ?
-                beforeBatchDeleteArgs.row : data ? gObj.getRows()[parseInt(index.toString(), 10)] : selectedRows[0];
+                beforeBatchDeleteArgs.row as Element : data ? gObj.getRows()[parseInt(index.toString(), 10)] as Element :
+                    selectedRows as Element[];
             if (selectedRows.length === 1 || data) {
+                if (Array.isArray(beforeBatchDeleteArgs.row)) {
+                    beforeBatchDeleteArgs.row = beforeBatchDeleteArgs.row[0];
+                }
                 let uid: string = beforeBatchDeleteArgs.row.getAttribute('data-uid');
                 uid = data && this.parent.editModule.deleteRowUid ? uid = this.parent.editModule.deleteRowUid : uid;
                 if (beforeBatchDeleteArgs.row.classList.contains('e-insertedrow')) {
@@ -481,7 +485,7 @@ export class BatchEdit {
                 delete beforeBatchDeleteArgs.row;
             } else {
                 if (data) {
-                    index = parseInt(beforeBatchDeleteArgs.row.getAttribute(literals.dataRowIndex), 10);
+                    index = parseInt((beforeBatchDeleteArgs.row as Element).getAttribute(literals.dataRowIndex), 10);
                 }
                 for (let i: number = 0; i < selectedRows.length; i++) {
                     const uniqueid: string = selectedRows[parseInt(i.toString(), 10)].getAttribute('data-uid');
@@ -493,12 +497,12 @@ export class BatchEdit {
                         const selectedRow: Row<Column> = gObj.getRowObjectFromUID(uniqueid);
                         selectedRow.isDirty = true;
                         selectedRow.edit = 'delete';
-                        delete selectedRows[parseInt(i.toString(), 10)];
                         if (gObj.frozenRows && index < gObj.frozenRows && gObj.getDataRows().length >= gObj.frozenRows) {
                             gObj.getHeaderTable().querySelector(literals.tbody).appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
                         }
                     }
                 }
+                delete beforeBatchDeleteArgs.row;
             }
             this.refreshRowIdx();
             if (data) {

@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, enableRipple } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, dynamicChangeCheckbox } from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, dynamicChangeCheckbox, localDataHtmlAttributes } from '../../spec/treeview/datasource.spec';
 import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6} from '../../spec/treeview/datasource.spec';
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
 import { localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
@@ -747,6 +747,28 @@ describe('TreeView control', () => {
                     expect(newCheckedEle.length).toBe(4);
                     expect(treeObj.checkedNodes.length).toBe(4);
                     expect(treeObj.getAllCheckedNodes().length).toBe(4);
+                    done();
+                }, 450);
+            });
+
+            it('checking the null condition for htmlAttributes class', (done: Function) => {
+                treeObj = new TreeView({
+                    fields: { dataSource: localDataHtmlAttributes,
+                        parentID: 'pid', text: "name", hasChildren: "hasChild",
+                        expanded: "expanded", htmlAttributes: 'htmlAttributes'
+                    },
+                    showCheckBox: true, checkDisabledChildren: false
+                }, '#tree1');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(treeObj.element.querySelectorAll('li').length).toBe(6);
                     done();
                 }, 450);
             });

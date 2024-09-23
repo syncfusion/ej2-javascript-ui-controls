@@ -1615,26 +1615,33 @@ export class TaskProcessor extends DateProcessor {
             }
         }
     }
-    public getDSTTransitions(year: number): Object {
-        // Helper function to find the nth weekday of a month
+    public getDSTTransitions(year: number, timeZone: string): { dstStart: Date, dstEnd: Date } {
         function findNthWeekday(year: number, month: number, dayOfWeek: number, n: number): Date {
-            const firstDayOfMonth: Date = new Date(year, month, 1);
-            const firstDayOfWeek: number = (firstDayOfMonth.getDay() + 7) % 7; // Adjusting to match the required dayOfWeek (0 = Sunday, 1 = Monday, etc.)
+            const firstDayOfMonth: Date = new Date(Date.UTC(year, month, 1));
+            const firstDayOfWeek: number = firstDayOfMonth.getUTCDay();
             const offset: number = (dayOfWeek - firstDayOfWeek + 7) % 7;
-            return new Date(year, month, 1 + offset + (n - 1) * 7);
+            return new Date(Date.UTC(year, month, 1 + offset + (n - 1) * 7, 2, 0, 0));
         }
-
-        // DST start: Second Sunday in March
-        const dstStartDate: Date = findNthWeekday(year, 2, 0, 2); // March (month index 2), Sunday (0), 2nd occurrence
-        const dstStartTime: Date = new Date(dstStartDate.setHours(2, 0, 0)); // DST starts at 2:00 AM
-
-        // DST end: First Sunday in November
-        const dstEndDate: Date = findNthWeekday(year, 10, 0, 1); // November (month index 10), Sunday (0), 1st occurrence
-        const dstEndTime: Date = new Date(dstEndDate.setHours(2, 0, 0)); // DST ends at 2:00 AM
-
+        function convertToTimezone(date: Date, timeZone: string): Date {
+            const formatter: Intl.DateTimeFormat = new Intl.DateTimeFormat('en-US', {
+                timeZone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            const formatted: any = formatter.format(date);
+            const [month, day, year, hour, minute, second] = formatted.match(/\d+/g)!.map(Number);
+            return new Date(year, month - 1, day, hour, minute, second);
+        }
+        const dstStartDate: Date = findNthWeekday(year, 2, 0, 5);
+        const dstEndDate: Date = findNthWeekday(year, 9, 0, 5);
         return {
-            dstStart: dstStartTime,
-            dstEnd: dstEndTime
+            dstStart: convertToTimezone(dstStartDate, timeZone),
+            dstEnd: convertToTimezone(dstEndDate, timeZone)
         };
     }
     public hasDSTTransition(year: number): boolean {
@@ -1702,12 +1709,18 @@ export class TaskProcessor extends DateProcessor {
             ? new Date((this.parent.timelineModule['dateByLeftValue'](leftValueForStartDate)).toString()) : new Date(this.parent.timelineModule.timelineStartDate);
         if (timelineStartDate) {
             let leftValue: number;
-            const transitions: Object = this.getDSTTransitions(startDate.getFullYear());
+            const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const hasDST: boolean = this.hasDSTTransition(startDate.getFullYear());
+            let transitions: Object;
+            if (hasDST) {
+                transitions = this.getDSTTransitions(startDate.getFullYear(), timeZone);
+            }
             if (this.parent.isInDst(startDate) && !this.parent.isInDst(timelineStartDate)) {
-                let newTimelineStartDate: Date = new Date(timelineStartDate.getTime() - (60 * 60 * 1000));
-                if (this.parent.dayWorkingTime[0]['properties'].from > transitions['dstStart'].getHours() && tierMode === 'Day') {
-                    newTimelineStartDate  = new Date(timelineStartDate.getTime());
+                let newTimelineStartDate: Date;
+                if (this.parent.isInDst(date)) {
+                    newTimelineStartDate = new Date(timelineStartDate.getTime() - (60 * 60 * 1000));
+                } else {
+                    newTimelineStartDate = new Date(timelineStartDate.getTime());
                 }
                 leftValue = (date.getTime() - newTimelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
             }
@@ -1725,13 +1738,22 @@ export class TaskProcessor extends DateProcessor {
                     }
                 }
                 else {
+                    let newTimelineStartDate: Date;
+                    if (date.getTimezoneOffset() < timelineStartDate.getTimezoneOffset()) {
+                        newTimelineStartDate = new Date(timelineStartDate.getTime() - (60 * 60 * 1000));
+                    } else {
+                        newTimelineStartDate = new Date(timelineStartDate.getTime());
+                    }
                     leftValue = (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
                 }
             }
             const timelineStartTime: number = timelineStartDate.getTime();
-            const dstStartTime: number = transitions['dstStart'].getTime();
+            let dstStartTime: number | undefined;
+            if (transitions && transitions['dstStart']) {
+                dstStartTime = transitions['dstStart'].getTime();
+            }
             const isBeforeOrAtDSTStart: boolean = timelineStartTime <= dstStartTime;
-            if (this.parent.dayWorkingTime[0]['properties'].from > transitions['dstStart'].getHours() && isBeforeOrAtDSTStart && tierMode === 'Day' && hasDST && this.getSecondsInDecimal(date) === this.parent.defaultStartTime) {
+            if (hasDST && this.parent.dayWorkingTime[0]['properties'].from > transitions['dstStart'].getHours() && isBeforeOrAtDSTStart && tierMode === 'Day' && this.getSecondsInDecimal(date) === this.parent.defaultStartTime) {
                 if ((leftValue % this.parent.perDayWidth) !== 0) {
                     const leftDifference: number = this.parent.perDayWidth - (leftValue % this.parent.perDayWidth);
                     leftValue = leftValue + leftDifference;
@@ -1745,7 +1767,7 @@ export class TaskProcessor extends DateProcessor {
                 tierMode = topTier['unit'];
                 countValue = topTier['count'];
             }
-            if (countValue === 1 && tierMode === 'Hour' && startDate >= transitions['dstStart'] && isBeforeOrAtDSTStart && hasDST) {
+            if (hasDST && countValue === 1 && tierMode === 'Hour' && startDate >= transitions['dstStart'] && isBeforeOrAtDSTStart) {
                 leftValue = leftValue - (this.parent.perDayWidth / 24);
             }
             return leftValue;

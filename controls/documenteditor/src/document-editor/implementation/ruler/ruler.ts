@@ -139,6 +139,9 @@ export class Ruler {
      */
     public element: HTMLElement;
 
+    private rulerSpacediv: HTMLElement;
+    private rulerSVGElement: SVGElement;
+
     /**
      *  Constructor for creating the Ruler Component
      *
@@ -198,6 +201,19 @@ export class Ruler {
         this.unWireEvents();
         // this.notify('destroy', {});
         // super.destroy();
+        if (this.rulerSpacediv) {
+            this.rulerSpacediv.remove();
+            this.rulerSpacediv = null;
+        }
+        if (this.rulerSVGElement) {
+            this.rulerSVGElement.childNodes.forEach((element: HTMLElement) => {
+                this.rulerSVGElement.removeChild(element);
+                element = null;
+            });
+            this.rulerSVGElement.innerHTML = '';
+            this.rulerSVGElement.remove();
+            this.rulerSVGElement = null;
+        }
         this.element.classList.remove('e-ruler');
     }
 
@@ -245,15 +261,15 @@ export class Ruler {
 
     private renderRulerSpace(): HTMLElement {
         const rulerGeometry: Size = this.getRulerGeometry();
-        let div: HTMLElement = document.getElementById(this.element.id + '_ruler_space');
-        if (!div) {
-            div = this.rulerHelper.createHtmlElement('div', {
+        this.rulerSpacediv = document.getElementById(this.element.id + '_ruler_space');
+        if (!this.rulerSpacediv) {
+            this.rulerSpacediv  = this.rulerHelper.createHtmlElement('div', {
                 'id': this.element.id + '_ruler_space',
                 'style': 'height:' + rulerGeometry.height + 'px;width:' + rulerGeometry.width + 'px;cssFloat:' + 'left;'
             });
-            this.element.appendChild(div);
+            this.element.appendChild(this.rulerSpacediv );
         }
-        return div;
+        return this.rulerSpacediv ;
     }
 
     /**
@@ -267,15 +283,15 @@ export class Ruler {
         let length: number = 0;
         let offset: number = 0;
         const availableSize: Size = new Size();
-        const svg: SVGElement = this.getRulerSVG(rulerGeometry);
-        if (svg) {
+        this.rulerSVGElement = this.getRulerSVG(rulerGeometry);
+        if (this.rulerSVGElement) {
             length = this.length;
             availableSize.height = rulerSize;
             offset = this.offset;
             if (length && length !== Infinity) {
                 const unitLength: number = length;
                 const unitOffset: number = offset;
-                this.updateSegments(unitOffset, (unitLength + Math.abs(unitOffset)), svg, rulerSize);
+                this.updateSegments(unitOffset, (unitLength + Math.abs(unitOffset)), this.rulerSVGElement, rulerSize);
             }
         }
     }
@@ -494,62 +510,62 @@ export class Ruler {
         return div * scale / multiples;
     }
 
-    private createMarkerLine(rulerSvg: SVGSVGElement, rulerObj: HTMLElement, attr: Object): SVGElement {
-        let line: SVGElement;
-        if (rulerObj) {
-            line = rulerSvg.getElementById(rulerObj.id + '_marker') as SVGElement;
-            if (line) {
-                line.parentNode.removeChild(line);
-            }
-            line = this.rulerHelper.createSvgElement('line', attr);
-        }
-        return line;
-    }
+    // private createMarkerLine(rulerSvg: SVGSVGElement, rulerObj: HTMLElement, attr: Object): SVGElement {
+    //     let line: SVGElement;
+    //     if (rulerObj) {
+    //         line = rulerSvg.getElementById(rulerObj.id + '_marker') as SVGElement;
+    //         if (line) {
+    //             line.parentNode.removeChild(line);
+    //         }
+    //         line = this.rulerHelper.createSvgElement('line', attr);
+    //     }
+    //     return line;
+    // }
 
 
-    /**
-     * updateSegmentWidth method\
-     *
-     * @returns {void}    updateSegmentWidth method .\
-     * @param {HTMLElement} rulerObj - Defines the ruler Object
-     * @param {PointModel} currentPoint - Defines the current point for ruler Object
-     * @param {number} offset - Defines the offset ruler Object
-     *
-     * @private
-     */
-    public drawRulerMarker(rulerObj: HTMLElement, currentPoint: PointModel, offset: number): void {
-        let rulerSvg: SVGSVGElement;
-        let rulerSize: number;
-        let scale: number;
-        let diff: number;
-        let i: number;
-        let attr: Object;
-        let line: SVGElement;
-        const isHorizontal: boolean = this.orientation === 'Horizontal' ? true : false;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const rulerSvgElements: NodeListOf<SVGSVGElement> | any = rulerObj.getElementsByTagName('svg');
-        for (i = 0; i < rulerSvgElements.length; i++) {
-            if (rulerSvgElements[parseInt(i.toString(), 10)]) {
-                rulerSvg = rulerSvgElements[parseInt(i.toString(), 10)];
-            }
-            break;
-        }
-        if (rulerSvg) {
-            rulerSize = this.getRulerSize();
-            attr = {
-                'id': rulerObj.id + '_marker', 'x1': 0, 'y1': 0, 'x2': (isHorizontal ? 0 : rulerSize),
-                'y2': (isHorizontal ? rulerSize : 0), 'stroke': this.markerColor, 'stroke-width': 1.5,
-                'class': 'e-d-ruler-marker'
-            };
-            line = this.createMarkerLine(rulerSvg, rulerObj, attr);
-            scale = this.scale;
-            diff = this.offset - this.defStartValue;
-            const point: number = isHorizontal ? currentPoint.x : currentPoint.y;
-            const move: number = (point * scale) + offset + diff;
-            line.setAttribute('transform', 'translate(' + (isHorizontal ? ((move + 0.5) + ' 0.5') : ('0.5 ' + (move + 0.5))) + ')');
-            rulerSvg.appendChild(line);
-        }
-    }
+    // /**
+    //  * updateSegmentWidth method\
+    //  *
+    //  * @returns {void}    updateSegmentWidth method .\
+    //  * @param {HTMLElement} rulerObj - Defines the ruler Object
+    //  * @param {PointModel} currentPoint - Defines the current point for ruler Object
+    //  * @param {number} offset - Defines the offset ruler Object
+    //  *
+    //  * @private
+    //  */
+    // public drawRulerMarker(rulerObj: HTMLElement, currentPoint: PointModel, offset: number): void {
+    //     let rulerSvg: SVGSVGElement;
+    //     let rulerSize: number;
+    //     let scale: number;
+    //     let diff: number;
+    //     let i: number;
+    //     let attr: Object;
+    //     let line: SVGElement;
+    //     const isHorizontal: boolean = this.orientation === 'Horizontal' ? true : false;
+    //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //     const rulerSvgElements: NodeListOf<SVGSVGElement> | any = rulerObj.getElementsByTagName('svg');
+    //     for (i = 0; i < rulerSvgElements.length; i++) {
+    //         if (rulerSvgElements[parseInt(i.toString(), 10)]) {
+    //             rulerSvg = rulerSvgElements[parseInt(i.toString(), 10)];
+    //         }
+    //         break;
+    //     }
+    //     if (rulerSvg) {
+    //         rulerSize = this.getRulerSize();
+    //         attr = {
+    //             'id': rulerObj.id + '_marker', 'x1': 0, 'y1': 0, 'x2': (isHorizontal ? 0 : rulerSize),
+    //             'y2': (isHorizontal ? rulerSize : 0), 'stroke': this.markerColor, 'stroke-width': 1.5,
+    //             'class': 'e-d-ruler-marker'
+    //         };
+    //         line = this.createMarkerLine(rulerSvg, rulerObj, attr);
+    //         scale = this.scale;
+    //         diff = this.offset - this.defStartValue;
+    //         const point: number = isHorizontal ? currentPoint.x : currentPoint.y;
+    //         const move: number = (point * scale) + offset + diff;
+    //         line.setAttribute('transform', 'translate(' + (isHorizontal ? ((move + 0.5) + ' 0.5') : ('0.5 ' + (move + 0.5))) + ')');
+    //         rulerSvg.appendChild(line);
+    //     }
+    // }
 
     private getRulerGeometry(): Size {
         if (this.orientation === 'Horizontal') {

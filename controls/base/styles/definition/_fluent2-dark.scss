@@ -53,6 +53,7 @@
 
   --color-sf-icon-color: #d6d6d6;
   --color-sf-icon-color-hover: var(--color-sf-content-text-color);
+  --color-sf-icon-color-hover-alt: var(--color-sf-content-text-color);
   --color-sf-icon-color-pressed: var(--color-sf-content-text-color);
   --color-sf-icon-color-disabled: var(--color-sf-content-text-color-disabled);
 
@@ -380,7 +381,7 @@
   --color-sf-taskbar-bg: #b4d6fa;
   --color-sf-taskbar-border: #0f6cbd;
   --color-sf-taskbar-progress: #0f6cbd;
-  --color-sf-sort-bg-color: #e6e6e6;
+  --color-sf-sort-bg-color: #333333;
 }
 
 $content-bg-color: mapcolorvariable('content-bg-color') !default;
@@ -429,6 +430,7 @@ $table-text-color-selected: mapcolorvariable('table-text-color-selected') !defau
 
 $icon-color: mapcolorvariable('icon-color') !default;
 $icon-color-hover: mapcolorvariable('icon-color-hover') !default;
+$icon-color-hover-alt: mapcolorvariable('icon-color-hover-alt') !default;
 $icon-color-pressed: mapcolorvariable('icon-color-pressed') !default;
 $icon-color-disabled: mapcolorvariable('icon-color-disabled') !default;
 
@@ -1514,5 +1516,5 @@ $gantt-active-parent-task-color: $brand-primary-d10 !default;
 $btn-border-radius:4px !default;
 $btn-border-radius:4px !default;
 
-$switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
+$switch-box-shadow: 0 0 0 2px #000, 0 0 0 3px #fff !default;
 $progress-btn-spinner-color: #082338 !default;

@@ -1105,10 +1105,10 @@ export class DateRangePicker extends CalendarBase {
         if (this.firstHiddenChild && this.secondHiddenChild) {
             const format: Object = { format: this.formatString, type: 'datetime', skeleton: 'yMd' };
             if (typeof this.startDate === 'string') {
-                this.startDate = this.globalize.parseDate(this.startDate, format);
+                this.startDate = this.globalize.parseDate(this.getAmPmValue(this.startDate), format);
             }
             if (typeof this.endDate === 'string') {
-                this.endDate = this.globalize.parseDate(this.endDate, format);
+                this.endDate = this.globalize.parseDate(this.getAmPmValue(this.endDate), format);
             }
             this.firstHiddenChild.value = (this.startDate && this.globalize.formatDate(this.startDate, format))
                 || (this.inputElement.value);
@@ -1285,7 +1285,7 @@ export class DateRangePicker extends CalendarBase {
                     break;
                 case 'min':
                     if ((isNullOrUndefined(this.min) || +this.min === +new Date(1900, 0, 1))  || isDynamic) {
-                        const dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
+                        const dateValue: Date = this.globalize.parseDate(this.getAmPmValue(this.inputElement.getAttribute(prop)), format);
                         this.setProperties(setValue(prop, dateValue, {}), !isDynamic);
                     }
                     break;
@@ -1294,20 +1294,20 @@ export class DateRangePicker extends CalendarBase {
                     break;
                 case 'max':
                     if ((isNullOrUndefined(this.max) || +this.max === +new Date(2099, 11, 31))  || isDynamic) {
-                        const dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
+                        const dateValue: Date = this.globalize.parseDate(this.getAmPmValue(this.inputElement.getAttribute(prop)), format);
                         this.setProperties(setValue(prop, dateValue, {}), !isDynamic);
                     }
                     break;
                 case 'startDate':
                     if (isNullOrUndefined(this.startDate)) {
-                        const dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
+                        const dateValue: Date = this.globalize.parseDate(this.getAmPmValue(this.inputElement.getAttribute(prop)), format);
                         this.startValue = dateValue;
                         this.setValue();
                     }
                     break;
                 case 'endDate':
                     if (isNullOrUndefined(this.endDate)) {
-                        const dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
+                        const dateValue: Date = this.globalize.parseDate(this.getAmPmValue(this.inputElement.getAttribute(prop)), format);
                         this.endValue = dateValue;
                         this.setValue();
                     }
@@ -1544,8 +1544,8 @@ export class DateRangePicker extends CalendarBase {
                 if (range.length > 1) {
                     this.invalidValueString = null;
                     const dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
-                    const start : Date = this.globalize.parseDate(range[0], dateOptions);
-                    const end : Date = this.globalize.parseDate(range[1], dateOptions);
+                    const start : Date = this.globalize.parseDate(this.getAmPmValue(range[0]), dateOptions);
+                    const end : Date = this.globalize.parseDate(this.getAmPmValue(range[1]), dateOptions);
                     const startDate: Date = this.getStartEndDate(start, false, range, dateOptions);
                     const endDate: Date = this.getStartEndDate(end, true, range, dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
@@ -1619,7 +1619,7 @@ export class DateRangePicker extends CalendarBase {
 
     private getStartEndDate(date: Date, isEnd: boolean, range: string[], dateOptions: object): Date {
         if (this.depth === 'Month') {
-            return this.globalize.parseDate(range[isEnd ? 1 : 0].trim(), dateOptions);
+            return this.globalize.parseDate(this.getAmPmValue(range[isEnd ? 1 : 0]).trim(), dateOptions);
         } else if (this.depth === 'Year' && !isNullOrUndefined(date)) {
             return new Date(date.getFullYear(), date.getMonth() + (isEnd ? 1 : 0), isEnd ? 0 : 1);
         } else if (!isNullOrUndefined(date)) {
@@ -4727,6 +4727,19 @@ export class DateRangePicker extends CalendarBase {
             this.updateHeader();
         }
     }
+    private getAmPmValue(date: string | null | undefined): string {
+        try {
+            if (typeof date === 'string' && date.trim() !== '') {
+                // Replace am/pm variants with uppercase AM/PM
+                return date.replace(/(am|pm|Am|aM|pM|Pm)/g, (match: string) => match.toLocaleUpperCase());
+            }
+            // If date is null, undefined, or an empty string, return a default value or empty string
+            return '';
+        } catch (error) {
+            console.error('Error occurred while processing date:', error);
+            return ''; // Return a default value in case of an error
+        }
+    }
     private getStartEndValue(date : Date, isEnd : boolean): Date {
         if (this.depth === 'Month') {
             return this.checkDateValue(new Date(this.checkValue(date)));
@@ -4823,7 +4836,7 @@ export class DateRangePicker extends CalendarBase {
                 break;
             case 'startDate':
                 if (typeof newProp.startDate === 'string') {
-                    newProp.startDate = this.globalize.parseDate(<string>newProp.startDate, format);
+                    newProp.startDate = this.globalize.parseDate(this.getAmPmValue(<string>newProp.startDate), format);
                 }
                 if (+this.initStartDate !== +newProp.startDate) {
                     this.startValue = this.getStartEndValue(newProp.startDate, false);
@@ -4833,7 +4846,7 @@ export class DateRangePicker extends CalendarBase {
                 break;
             case 'endDate':
                 if (typeof newProp.endDate === 'string') {
-                    newProp.endDate = this.globalize.parseDate(<string>newProp.endDate, format);
+                    newProp.endDate = this.globalize.parseDate(this.getAmPmValue(<string>newProp.endDate), format);
                 }
                 if (+this.initEndDate !== +newProp.endDate) {
                     this.endValue = this.getStartEndValue(newProp.endDate, true);

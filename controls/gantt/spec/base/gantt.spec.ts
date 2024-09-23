@@ -4291,3 +4291,136 @@ describe('unscheduled task for FF type', () => {
         }
     });
 });
+describe('Coverage calling calculateTotalHours method', () => {
+    let ganttObj: Gantt;
+    let unscheduledData1: any = [
+        {
+          TaskID: 1,
+          TaskName: 'Task 1',
+          StartDate: null,
+          EndDate: null,
+          Duration: null,
+        },
+        {
+          TaskID: 2,
+          TaskName: 'Task 2',
+          StartDate: null,
+          EndDate: null,
+          Duration: 4,
+          Predecessor: '1FS',
+        },
+        {
+          TaskID: 3,
+          TaskName: 'Task 3',
+          StartDate: null,
+          EndDate: null,
+          Predecessor: '2FF',
+          Duration: 1,
+        },
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData1,
+        enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+        name: 'TaskName',
+        startDate: 'StartDate',
+        endDate: 'EndDate',
+        duration: 'Duration',
+        progress: 'Progress',
+        dependency: 'Predecessor',
+        child: 'subtasks',
+        notes: 'info',
+        resourceInfo: 'resources',
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+        },
+        splitterSettings: {
+            columnIndex: 4
+        },
+        toolbar: [{ text: 'Insert task', tooltipText: 'Insert task at top', id: 'toolbarAdd', prefixIcon: 'e-add-icon tb-icons' }, 'Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',],
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+            }, done);
+    });
+    it('Mode Hour', () => {
+        expect(ganttObj.timelineModule.calculateTotalHours('Hour',1)).toBe(1);
+    });
+    it('Mode Day', () => {
+        expect(ganttObj.timelineModule.calculateTotalHours('Day',1)).toBe(24);
+    });
+    it('Mode Week', () => {
+        expect(ganttObj.timelineModule.calculateTotalHours('Week',1)).toBe(168);
+    });
+    it('Mode Minutes', () => {
+        expect(Math.round(ganttObj.timelineModule.calculateTotalHours('Minutes',1))).toBe(0);
+    });
+    it('date by left', () => {
+        let left = 150;
+        let isMilestone = true;
+        let property = {
+            predecessorsName: '',
+            isAutoSchedule: true,
+            autoEndDate: new Date('2024-09-25T17:00:00'),
+            endDate: new Date('2024-09-24T17:00:00')
+        };
+        let value = ganttObj.timelineModule['dateByLeftValue'](left,isMilestone,property).getFullYear()
+        expect(value).toBe(2024);
+    });
+    it('calculateQuarterEndDate', () => {
+        let value = ganttObj.timelineModule['calculateQuarterEndDate'](new Date('2024-12-15'),3).getFullYear()
+        expect(value).toBe(2025);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

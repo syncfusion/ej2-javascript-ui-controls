@@ -1,5 +1,5 @@
 import { DocumentEditor, ContextType, BorderSettings, BorderType, LineStyle } from '../../document-editor';
-import { createElement, KeyboardEventArgs, classList, L10n } from '@syncfusion/ej2-base';
+import { createElement, KeyboardEventArgs, classList, L10n, remove } from '@syncfusion/ej2-base';
 import { Tab, TabItemModel, SelectingEventArgs } from '@syncfusion/ej2-navigations';
 import { TextProperties } from './text-properties-pane';
 import { ImageProperties } from './image-properties-pane';
@@ -51,6 +51,8 @@ export class TableProperties {
     private alignTop: Button;
 
     private borderSizeColorElement: HTMLCollectionOf<Element>;
+    private borderSizeButton: HTMLElement;
+    private borderStyleDiv: HTMLElement;
     public element: HTMLElement;
     private prevContext: ContextType;
     private isTopMarginApply: boolean = false;
@@ -438,12 +440,12 @@ export class TableProperties {
         this.documentEditor.documentHelper.shadingBtn = this.shadingBtn;
     }
     private initBorderStylesDiv(): void {
-        const borderStyleDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding' });
-        this.tableProperties.appendChild(borderStyleDiv);
+        this.borderStyleDiv = createElement('div', { className: 'e-de-property-div-padding' });
+        this.tableProperties.appendChild(this.borderStyleDiv);
         const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
         //label.classList.add('e-de-table-prop-label');
         label.textContent = this.localObj.getConstant('Border Style');
-        borderStyleDiv.appendChild(label);
+        this.borderStyleDiv.appendChild(label);
         const parentDiv: HTMLElement = createElement('div', { styles: 'display:inline-flex;' });
         const styleDiv: HTMLElement = createElement('div', { styles: 'width:min-content;height:126px', className: 'e-de-grp-btn-ctnr' });
         const div1: HTMLElement = createElement('div', { className: this.groupButtonClass + ' e-de-ctnr-group-btn-top' });
@@ -481,12 +483,12 @@ export class TableProperties {
         (styleTypeDiv.firstElementChild.lastElementChild.lastElementChild as HTMLElement).style.width = '30px';
         (styleTypeDiv.firstElementChild.lastElementChild.firstElementChild.firstElementChild as HTMLElement).style.width = '100%';
         classList((styleTypeDiv.lastElementChild.lastElementChild.lastElementChild.firstChild as HTMLElement), ['e-de-ctnr-highlightcolor'], ['e-caret']);
-        const borderSizeButton: HTMLElement = createElement('button', { id: this.elementId + '_tableBorderSize', className: 'e-de-border-size-button', styles: 'font-size:10px;padding:0px;', attrs: { type: 'button' } });
-        styleTypeDiv.appendChild(borderSizeButton);
-        this.borderSize = this.createBorderSizeDropDown('e-de-ctnr-strokesize e-icons', borderSizeButton);
+        this.borderSizeButton = createElement('button', { id: this.elementId + '_tableBorderSize', className: 'e-de-border-size-button', styles: 'font-size:10px;padding:0px;', attrs: { type: 'button' } });
+        styleTypeDiv.appendChild( this.borderSizeButton);
+        this.borderSize = this.createBorderSizeDropDown('e-de-ctnr-strokesize e-icons',  this.borderSizeButton);
         parentDiv.appendChild(styleTypeDiv);
         this.borderSizeColorElement = document.getElementsByClassName('e-de-border-width');
-        borderStyleDiv.appendChild(parentDiv);
+        this.borderStyleDiv.appendChild(parentDiv);
     }
     private initCellDiv(): void {
         const cellDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding' });
@@ -780,15 +782,45 @@ export class TableProperties {
             }
         }
     }
+    private removeHTMLDomElement(): void {
+        if (this.borderSizeButton) {
+            this.borderSizeButton.remove();
+            this.borderSizeButton = null;
+        }
+
+        if (this.borderStyleDiv) {
+            this.borderStyleDiv.childNodes.forEach((element: HTMLElement) => {
+                this.borderStyleDiv.removeChild(element);
+                element = null;
+            });
+            this.borderStyleDiv.innerHTML = '';
+            this.borderStyleDiv.remove();
+            this.borderStyleDiv = null;
+        }
+        if (this.tableProperties) {
+            this.tableProperties.childNodes.forEach((element: HTMLElement) => {
+                this.tableProperties.removeChild(element);
+                element = null;
+            });
+            this.tableProperties.innerHTML = '';
+            this.tableProperties.remove();
+            this.tableProperties = null;
+        }
+    }
     public destroy(): void {
         this.unWireEvent();
+
         this.container = undefined;
         if (this.shadingBtn) {
             this.shadingBtn.destroy();
+            this.shadingBtn.element.remove();
+            this.shadingBtn.element = null;
             this.shadingBtn = undefined;
         }
         if (this.borderBtn) {
             this.borderBtn.destroy();
+            this.borderBtn.element.remove();
+            this.borderBtn.element = null;
             this.borderBtn = undefined;
         }
         if (this.borderSize) {
@@ -808,6 +840,7 @@ export class TableProperties {
             this.leftMargin = undefined;
         }
         if (this.rightMargin) {
+            remove(this.rightMargin.element);
             this.rightMargin.destroy();
             this.rightMargin = undefined;
         }
@@ -849,42 +882,53 @@ export class TableProperties {
         if (this.tableTopBorder) {
             this.tableTopBorder.destroy();
         }
+        remove(this.tableTopBorder.element);
         this.tableTopBorder = undefined;
         if (this.tableCenterHorizontalBorder) {
             this.tableCenterHorizontalBorder.destroy();
         }
+        remove(this.tableCenterHorizontalBorder.element);
         this.tableCenterHorizontalBorder = undefined;
+
         if (this.tableBottomBorder) {
             this.tableBottomBorder.destroy();
         }
+        remove(this.tableBottomBorder.element);
         this.tableBottomBorder = undefined;
         if (this.horizontalMerge) {
             this.horizontalMerge.destroy();
         }
+        remove(this.horizontalMerge.element);
         this.horizontalMerge = undefined;
         if (this.insertRowAbove) {
             this.insertRowAbove.destroy();
         }
+        remove(this.insertRowAbove.element);
         this.insertRowAbove = undefined;
         if (this.insertRowBelow) {
             this.insertRowBelow.destroy();
         }
+        remove(this.insertRowBelow.element);
         this.insertRowBelow = undefined;
         if (this.insertColumnLeft) {
             this.insertColumnLeft.destroy();
         }
+        remove(this.insertColumnLeft.element);
         this.insertColumnLeft = undefined;
         if (this.insertColumnRight) {
             this.insertColumnRight.destroy();
         }
+        remove(this.insertColumnRight.element);
         this.insertColumnRight = undefined;
         if (this.deleteRow) {
             this.deleteRow.destroy();
         }
+        remove(this.deleteRow.element);
         this.deleteRow = undefined;
         if (this.deleteColumn) {
             this.deleteColumn.destroy();
         }
+        remove(this.deleteColumn.element);
         this.deleteColumn = undefined;
         if (this.alignBottom) {
             this.alignBottom.destroy();
@@ -897,6 +941,7 @@ export class TableProperties {
         if (this.alignTop) {
             this.alignTop.destroy();
         }
+        this.removeHTMLDomElement();
         this.alignTop = undefined;
         this.groupButtonClass = undefined;
         this.borderColor = undefined;

@@ -29,6 +29,14 @@ export class ContentControlPopUp {
     // private datePickerInstance: DateTimePicker;
     private ddlInstance: DropDownList;
     private dataPickerOkButton: Button;
+    private popupElement: HTMLElement;
+    private dropDownDiv: HTMLElement;
+    private textBoxButtonDiv: HTMLElement;
+    private textBoxOkButton: HTMLButtonElement;
+    private textBoxCancelButton: HTMLButtonElement;
+
+    private applyDropDownFormFieldValueHandler: EventListenerOrEventListenerObject = this.onapplyDropDownFormFieldValue.bind(this);
+    private closeButtonClickedHandler: EventListenerOrEventListenerObject = this.onCloseButtonClicked.bind(this);
     /**
      * @param {DocumentEditor} owner - Specifies the document editor.
      * @private
@@ -38,14 +46,14 @@ export class ContentControlPopUp {
     }
 
     private initPopup(): void {
-        const popupElement: HTMLElement = createElement('div', { className: 'e-de-form-popup' });
+        this.popupElement = createElement('div', { className: 'e-de-form-popup' });
         // this.textBoxContainer = this.initTextBoxInput();
         // popupElement.appendChild(this.textBoxContainer);
         // popupElement.appendChild(this.initNumericTextBox());
         // popupElement.appendChild(this.initDatePicker());
-        popupElement.appendChild(this.initDropDownList());
-        this.target = popupElement;
-        this.owner.documentHelper.viewerContainer.appendChild(popupElement);
+        this.popupElement.appendChild(this.initDropDownList());
+        this.target = this.popupElement;
+        this.owner.documentHelper.viewerContainer.appendChild(this.popupElement);
     }
 
     // private initTextBoxInput(): HTMLElement {
@@ -113,24 +121,24 @@ export class ContentControlPopUp {
     // }
 
     private initDropDownList(): HTMLElement {
-        const dropDownDiv: HTMLElement = createElement('div', { className: 'e-de-ddl-field' });
+        this.dropDownDiv = createElement('div', { className: 'e-de-ddl-field' });
         const dropDownInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
         const ddl: DropDownList = new DropDownList({ fields: { text: 'value' } });
         this.dropDownInput = dropDownInput;
-        const textBoxButtonDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
-        const textBoxOkButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
-        const textBoxCancelButton: HTMLButtonElement = createElement('button') as HTMLButtonElement;
-        textBoxOkButton.addEventListener('click', this.applyDropDownFormFieldValue);
-        textBoxCancelButton.addEventListener('click', this.closeButton);
-        dropDownDiv.appendChild(dropDownInput);
-        textBoxButtonDiv.appendChild(textBoxOkButton);
-        textBoxButtonDiv.appendChild(textBoxCancelButton);
-        dropDownDiv.appendChild(textBoxButtonDiv);
+        this.textBoxButtonDiv = createElement('div', { className: 'e-de-cmt-action-button' });
+        this.textBoxOkButton = createElement('button') as HTMLButtonElement;
+        this.textBoxCancelButton = createElement('button') as HTMLButtonElement;
+        this.textBoxOkButton.addEventListener('click', this.applyDropDownFormFieldValueHandler);
+        this.textBoxCancelButton.addEventListener('click', this.closeButtonClickedHandler);
+        this.dropDownDiv.appendChild(dropDownInput);
+        this.textBoxButtonDiv.appendChild(this.textBoxOkButton);
+        this.textBoxButtonDiv.appendChild(this.textBoxCancelButton);
+        this.dropDownDiv.appendChild(this.textBoxButtonDiv);
         ddl.appendTo(dropDownInput);
-        new Button({ cssClass: 'e-de-save e-primary', iconCss: 'e-de-save-icon' }, textBoxOkButton);
-        new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
+        new Button({ cssClass: 'e-de-save e-primary', iconCss: 'e-de-save-icon' }, this.textBoxOkButton);
+        new Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, this.textBoxCancelButton);
         this.ddlInstance = ddl;
-        return dropDownDiv;
+        return this.dropDownDiv;
     }
 
     // /**
@@ -159,6 +167,9 @@ export class ContentControlPopUp {
     //         this.hidePopup();
     //     }
     // };
+    private onapplyDropDownFormFieldValue(): void {
+        this.applyDropDownFormFieldValue();
+    }
     /**
      * @returns {void}
      */
@@ -219,7 +230,9 @@ export class ContentControlPopUp {
             this.popupObject.show();
         }
     }
-
+    private onCloseButtonClicked(): void {
+        this.closeButton();
+    }
     /**
      * @private
      * @returns {void}
@@ -251,7 +264,61 @@ export class ContentControlPopUp {
         if (this.contenControl) {
             this.contenControl.destroy();
         }
+        this.removeEvents();
+        this.removeElements();
         this.contenControl = undefined;
         this.owner = undefined;
+    }
+    private removeEvents(): void {
+        if (this.textBoxOkButton) {
+            this.textBoxOkButton.removeEventListener('click', this.applyDropDownFormFieldValueHandler);
+        }
+        if (this.textBoxCancelButton) {
+            this.textBoxCancelButton.removeEventListener('click', this.closeButtonClickedHandler);
+        }
+    }
+    private removeElements(): void {
+        if (this.target) {
+            this.target.remove();
+        }
+        if (this.dataPickerOkButton && this.dataPickerOkButton.element && this.dataPickerOkButton.element.parentNode) { 
+            this.dataPickerOkButton.destroy();
+            this.dataPickerOkButton = undefined;
+        }
+        if (this.ddlInstance) {
+            this.ddlInstance.destroy();
+            this.ddlInstance = undefined;
+        }
+        if (this.dataPickerOkButton) {
+            this.dataPickerOkButton.destroy();
+            this.dataPickerOkButton = undefined;
+        }
+        if (this.popupElement) {
+            this.popupElement.remove();
+            this.popupElement = undefined;
+        }
+        if (this.dropDownDiv) {
+            this.dropDownDiv.remove();
+            this.dropDownDiv = undefined;
+        }
+        if (this.textBoxButtonDiv) {
+            this.textBoxButtonDiv.remove();
+            this.textBoxButtonDiv = undefined;
+        }
+        if (this.textBoxOkButton) {
+            this.textBoxOkButton.remove();
+            this.textBoxOkButton = undefined;
+        }
+        if (this.textBoxCancelButton) {
+            this.textBoxCancelButton.remove();
+            this.textBoxCancelButton = undefined;
+        }
+        this.target = undefined;
+        this.dropDownInput = undefined;
+        this.ddlInstance = undefined;
+        this.dropDownDiv = undefined;
+        this.textBoxButtonDiv = undefined;
+        this.textBoxOkButton = undefined;
+        this.textBoxCancelButton = undefined;
     }
 }

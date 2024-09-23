@@ -287,3 +287,59 @@ describe('Clear Format with image caption', () => {
         expect(document.querySelector('.e-img-inner').childElementCount === 0).toBe(true);
     });
 });
+
+describe('Bug 907771: BlockQuote Applied Paragraphs Convert to Single Paragraph When Using Clear Format', () => {
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it(' - single line with p tag and blockquote', () => {
+        divElement.innerHTML = `<blockquote><p>Testing</p></blockquote>`;
+        new ClearFormat();
+        let node1: Node = document.getElementById('divElement').childNodes[0].childNodes[0].childNodes[0];
+        domSelection.setSelectionText(document, node1, node1, 0, node1.textContent.length);
+        ClearFormat.clear(document, divElement, 'P');
+        expect(document.getElementById('divElement').childElementCount).toBe(1);
+    });
+    it(' - single line with p tag and blockquote', () => {
+        divElement.innerHTML = `<blockquote><p>Testing</p></blockquote>`;
+        new ClearFormat();
+        let node1: Node = document.getElementById('divElement').childNodes[0].childNodes[0].childNodes[0];
+        domSelection.setSelectionText(document, node1, node1, 0, node1.textContent.length);
+        ClearFormat.clear(document, divElement, 'P');
+        expect(document.getElementById('divElement').childElementCount).toBe(1);
+    });
+    it(' - double line with p tags and blockquote', () => {
+        divElement.innerHTML = `<blockquote><p>Testing 1</p><p>Testing 2</p></blockquote>`;
+        new ClearFormat();
+        let node1: Node = document.getElementById('divElement').childNodes[0].childNodes[0].childNodes[0];
+        let node2: Node = document.getElementById('divElement').childNodes[0].childNodes[1].childNodes[0];
+        domSelection.setSelectionText(document, node1, node2, 0, node1.textContent.length);
+        ClearFormat.clear(document, divElement, 'P');
+        expect(document.getElementById('divElement').children[0].childElementCount).toBe(2);
+    });
+    it(' - double line with h1 tags and blockquote', () => {
+        divElement.innerHTML = `<blockquote><h1>Testing 1</h1><h1>Testing 2</h1></blockquote>`;
+        new ClearFormat();
+        let node1: Node = document.getElementById('divElement').childNodes[0].childNodes[0].childNodes[0];
+        let node2: Node = document.getElementById('divElement').childNodes[0].childNodes[1].childNodes[0];
+        domSelection.setSelectionText(document, node1, node2, 0, node1.textContent.length);
+        ClearFormat.clear(document, divElement, 'P');
+        expect(document.getElementById('divElement').children[0].childElementCount).toBe(2);
+    });
+    it(' - double line with p tags and blockquote with other styles', () => {
+        divElement.innerHTML = `<blockquote><h1>Te<em><span style="text-decoration: underline;">st<span style="background-color: rgb(255, 255, 0);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ing 1</span></span></span></em></h1><h1><span style="background-color: rgb(255, 255, 0);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><em><span style="text-decoration: underline;">Te</span></em></span></span><span style="background-color: rgb(255, 255, 0);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">sti</span></span>ng 2</h1></blockquote>`;
+        new ClearFormat();
+        let node1: Node = document.getElementById('divElement').childNodes[0].childNodes[0].childNodes[0];
+        let node2: Node = document.getElementById('divElement').childNodes[0].childNodes[1].childNodes[2];
+        domSelection.setSelectionText(document, node1, node2, 0, node2.textContent.length);
+        ClearFormat.clear(document, divElement, 'P');
+        expect(document.getElementById('divElement').children[0].childElementCount).toBe(2);
+    });
+});

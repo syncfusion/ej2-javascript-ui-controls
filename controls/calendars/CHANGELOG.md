@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#I628537` -  Fixed an issue where users were unable to navigate through data cells using the arrow keys while a popup was open.
+
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

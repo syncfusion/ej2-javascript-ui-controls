@@ -31,6 +31,7 @@
       }
     }
 
+    & .e-list-wrap:focus-visible,
     &:focus {
       outline: none;
     }

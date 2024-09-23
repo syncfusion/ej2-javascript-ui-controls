@@ -42,6 +42,40 @@ export class ContentControlPropertiesDialog {
     private convertedItems: { [key: string]: Object }[];
     private currentSelectedItem: string;
 
+    private container: HTMLElement;
+    private generalDiv: HTMLDivElement;
+    private genLabel: HTMLElement;
+    private displayText: HTMLElement;
+    private colorDiv: HTMLElement;
+    private fontColorLabel: HTMLElement;
+    private fontColorElement: HTMLElement;
+    private style: HTMLElement;
+    private remove: HTMLElement;
+    private removeContent: HTMLInputElement;
+    private lockedDiv: HTMLDivElement;
+    private lockedLabel: HTMLElement;
+    private contentDelete: HTMLElement;
+    private contentDeleted: HTMLInputElement;
+    private contentEdit: HTMLElement;
+    private contentEdited: HTMLInputElement;
+    private plainTextLabel: HTMLElement;
+    private multiline: HTMLInputElement;
+    private lockedcontentLabel: HTMLElement;
+    private commonDiv: HTMLElement;
+    private searchDiv: HTMLElement;
+    private textBoxDiv: HTMLElement;
+    private valueBoxDiv: HTMLElement;
+    private listviewDiv: HTMLElement;
+    private buttonDiv: HTMLElement;
+    private addbuttonDiv: HTMLElement;
+    private addButtonElement: HTMLElement;
+    private deleteButtonDiv: HTMLElement;
+    private deleteButtonElement: HTMLElement;
+
+    private keyUpOnTextBoxClickHandler: EventListenerOrEventListenerObject = this.onKeyUpOnTextBoxClicked.bind(this);
+    private setButtonClickHandler: EventListenerOrEventListenerObject = this.onSetButtonClick.bind(this);
+    private clearButtonClickHandler: EventListenerOrEventListenerObject = this.onClearButtonClick.bind(this);
+
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
@@ -68,66 +102,66 @@ export class ContentControlPropertiesDialog {
     }
     public initContentControlPropertiesDialog(localeValue: L10n, enableRtl: boolean): void {
         this.target = createElement('div', { className: 'e-de-hyperlink' });
-        const container: HTMLElement = createElement('div');
-        const generalDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const genLabel: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localeValue.getConstant('General') });
-        generalDiv.appendChild(genLabel);
-        const displayText: HTMLElement = createElement('div', { className: 'e-de-dlg-container' });
+        this.container = createElement('div');
+        this.generalDiv = createElement('div') as HTMLDivElement;
+        this.genLabel = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localeValue.getConstant('General') });
+        this.generalDiv.appendChild(this.genLabel);
+        this.displayText = createElement('div', { className: 'e-de-dlg-container' });
         this.titleText = createElement('input', { className: 'e-input' }) as HTMLInputElement;
-        displayText.appendChild(this.titleText);
-        generalDiv.appendChild(displayText);
+        this.displayText.appendChild(this.titleText);
+        this.generalDiv.appendChild(this.displayText);
         this.tagText = createElement('input', { className: 'e-input' }) as HTMLInputElement;
-        generalDiv.appendChild(this.tagText);
+        this.generalDiv.appendChild(this.tagText);
 
-        const colorDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
-        colorDiv.style.paddingTop = '10px';
+        this.colorDiv = createElement('div', { className: 'e-de-container-row' });
+        this.colorDiv.style.paddingTop = '10px';
         this.fontColorDiv = createElement('div', { className: 'e-de-font-dlg-display' });
-        const fontColorLabel: HTMLElement = createElement('label', {
+        this.fontColorLabel = createElement('label', {
             className: 'e-de-font-dlg-header-font-color e-de-font-color-margin',
             innerHTML: localeValue.getConstant('Color')
         });
         // if (isRtl) {
         //     fontColorLabel.classList.add('e-de-rtl');
         // }
-        this.fontColorDiv.appendChild(fontColorLabel);
-        const fontColorElement: HTMLElement = this.createInputElement('color', this.target.id + '_ColorDiv', 'e-de-font-dlg-color');
-        this.fontColorDiv.appendChild(fontColorElement);
-        colorDiv.appendChild(this.fontColorDiv);
-        generalDiv.appendChild(colorDiv);
+        this.fontColorDiv.appendChild(this.fontColorLabel);
+        this.fontColorElement = this.createInputElement('color', this.target.id + '_ColorDiv', 'e-de-font-dlg-color');
+        this.fontColorDiv.appendChild(this.fontColorElement);
+        this.colorDiv.appendChild(this.fontColorDiv);
+        this.generalDiv.appendChild(this.colorDiv);
         const { columns, createPopupOnClick, cssClass, disabled, enablePersistence, inline, mode, modeSwitcher, noColor, presetColors,
             showButtons } = this.documentHelper.owner.documentEditorSettings.colorPickerSettings;
         this.colorPicker = new ColorPicker({
             change: this.fontColorUpdate, value: '#000000', locale: this.documentHelper.owner.locale, enableOpacity: false, mode: mode, modeSwitcher: modeSwitcher, showButtons: showButtons, columns: columns, createPopupOnClick: createPopupOnClick, cssClass: cssClass, disabled: disabled, enablePersistence: enablePersistence, inline: inline, noColor: noColor, presetColors: presetColors
         });
-        this.colorPicker.appendTo(fontColorElement);
-        const style: HTMLElement = createElement('div', { styles: 'display:block' });
-        generalDiv.appendChild(style);
+        this.colorPicker.appendTo(this.fontColorElement);
+        this.style = createElement('div', { styles: 'display:block' });
+        this.generalDiv.appendChild(this.style);
 
-        const remove: HTMLElement = createElement('div', { styles: 'display:block' });
-        generalDiv.appendChild(remove);
-        const removeContent: HTMLInputElement = createElement('input', {
+        this.remove = createElement('div', { styles: 'display:block' });
+        this.generalDiv.appendChild(this.remove);
+        this.removeContent = createElement('input', {
             attrs: { type: 'checkbox' }
         }) as HTMLInputElement;
-        remove.appendChild(removeContent);
+        this.remove.appendChild(this.removeContent);
 
         this.removeCheckBox = new CheckBox({
             label: localeValue.getConstant('Remove content control when contents are edited'),
             cssClass: 'e-de-para-dlg-cs-check-box'
         });
-        this.removeCheckBox.appendTo(removeContent);
-        removeContent.setAttribute('aria-label', localeValue.getConstant('Remove content control when contents are edited'));
-        container.appendChild(generalDiv);
+        this.removeCheckBox.appendTo(this.removeContent);
+        this.removeContent.setAttribute('aria-label', localeValue.getConstant('Remove content control when contents are edited'));
+        this.container.appendChild(this.generalDiv);
 
-        const lockedDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        lockedDiv.style.paddingTop = '10px';
-        const lockedLabel: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localeValue.getConstant('Locking') });
-        lockedDiv.appendChild(lockedLabel);
-        const contentDelete: HTMLElement = createElement('div', { styles: 'display:block' });
-        lockedDiv.appendChild(contentDelete);
-        const contentDeleted: HTMLInputElement = createElement('input', {
+        this.lockedDiv = createElement('div') as HTMLDivElement;
+        this.lockedDiv.style.paddingTop = '10px';
+        this.lockedLabel = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localeValue.getConstant('Locking') });
+        this.lockedDiv.appendChild(this.lockedLabel);
+        this.contentDelete = createElement('div', { styles: 'display:block' });
+        this.lockedDiv.appendChild(this.contentDelete);
+        this.contentDeleted = createElement('input', {
             attrs: { type: 'checkbox' }
         }) as HTMLInputElement;
-        contentDelete.appendChild(contentDeleted);
+        this.contentDelete.appendChild(this.contentDeleted);
         this.contentDeletedCheckBox = new CheckBox({
             label: localeValue.getConstant('Content control cannot be deleted'),
             cssClass: 'e-de-para-dlg-cs-check-box',
@@ -141,69 +175,69 @@ export class ContentControlPropertiesDialog {
                 }
             }
         });
-        this.contentDeletedCheckBox.appendTo(contentDeleted);
-        contentDeleted.setAttribute('aria-label', localeValue.getConstant('Content control cannot be deleted'));
-        const contentEdit: HTMLElement = createElement('div', { styles: 'display:block' });
-        lockedDiv.appendChild(contentEdit);
-        const contentEdited: HTMLInputElement = createElement('input', {
+        this.contentDeletedCheckBox.appendTo(this.contentDeleted);
+        this.contentDeleted.setAttribute('aria-label', localeValue.getConstant('Content control cannot be deleted'));
+        this.contentEdit = createElement('div', { styles: 'display:block' });
+        this.lockedDiv.appendChild(this.contentEdit);
+        this.contentEdited = createElement('input', {
             attrs: { type: 'checkbox' }
         }) as HTMLInputElement;
-        contentEdit.appendChild(contentEdited);
+        this.contentEdit.appendChild(this.contentEdited);
         this.contentEditedCheckBox = new CheckBox({
             label: localeValue.getConstant('Contents cannot be edited'),
             cssClass: 'e-de-para-dlg-cs-check-box'
         });
-        this.contentEditedCheckBox.appendTo(contentEdited);
-        contentEdited.setAttribute('aria-label', localeValue.getConstant('Contents cannot be edited'));
-        container.appendChild(lockedDiv);
+        this.contentEditedCheckBox.appendTo(this.contentEdited);
+        this.contentEdited.setAttribute('aria-label', localeValue.getConstant('Contents cannot be edited'));
+        this.container.appendChild(this.lockedDiv);
         this.plainTextPropertiesDiv = createElement('div') as HTMLDivElement;
         this.plainTextPropertiesDiv.style.marginTop = '10px';
         this.plainTextPropertiesDiv.style.display = 'none';
-        const plainTextLabel: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localeValue.getConstant('Plain Text properties') });
-        this.plainTextPropertiesDiv.appendChild(plainTextLabel);
+        this.plainTextLabel = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localeValue.getConstant('Plain Text properties') });
+        this.plainTextPropertiesDiv.appendChild(this.plainTextLabel);
 
-        const multiline: HTMLInputElement = createElement('input', {
+        this.multiline = createElement('input', {
             attrs: { type: 'checkbox' }
         }) as HTMLInputElement;
-        this.plainTextPropertiesDiv.appendChild(multiline);
+        this.plainTextPropertiesDiv.appendChild(this.multiline);
 
         this.multilineCheckBox = new CheckBox({
             label: localeValue.getConstant('Allow carriage returns'),
             //enableRtl: isRtl,
             cssClass: 'e-de-para-dlg-cs-check-box'
         });
-        this.multilineCheckBox.appendTo(multiline);
-        multiline.setAttribute('aria-label', localeValue.getConstant('Allow carriage returns'));
-        container.appendChild(this.plainTextPropertiesDiv);
+        this.multilineCheckBox.appendTo(this.multiline);
+        this.multiline.setAttribute('aria-label', localeValue.getConstant('Allow carriage returns'));
+        this.container.appendChild(this.plainTextPropertiesDiv);
         this.dropDownPropertiesDiv = createElement('div') as HTMLDivElement;
         this.dropDownPropertiesDiv.style.marginTop = '10px';
         this.dropDownPropertiesDiv.style.display = 'none';
-        const lockedcontentLabel: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localeValue.getConstant('Drop_Down List properties') });
-        this.dropDownPropertiesDiv.appendChild(lockedcontentLabel);
-        const commonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-common' });
-        this.dropDownPropertiesDiv.appendChild(commonDiv);
-        const searchDiv: HTMLElement = createElement('div', { className: 'e-bookmark-list' });
-        commonDiv.appendChild(searchDiv);
-        const textBoxDiv: HTMLElement = createElement('div', { className: 'e-bookmark-textboxdiv' });
-        searchDiv.appendChild(textBoxDiv);
+        this.lockedcontentLabel = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localeValue.getConstant('Drop_Down List properties') });
+        this.dropDownPropertiesDiv.appendChild(this.lockedcontentLabel);
+        this.commonDiv = createElement('div', { className: 'e-bookmark-common' });
+        this.dropDownPropertiesDiv.appendChild(this.commonDiv);
+        this.searchDiv = createElement('div', { className: 'e-bookmark-list' });
+        this.commonDiv.appendChild(this.searchDiv);
+        this.textBoxDiv = createElement('div', { className: 'e-bookmark-textboxdiv' });
+        this.searchDiv.appendChild(this.textBoxDiv);
         this.textBoxInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', id: 'bookmark_text_box' }) as HTMLInputElement;
         this.textBoxInput.setAttribute('type', 'text');
-        this.textBoxInput.addEventListener('keyup', this.onKeyUpOnTextBox);
+        this.textBoxInput.addEventListener('keyup', this.keyUpOnTextBoxClickHandler);
         this.textBoxInput.setAttribute('aria-label', localeValue.getConstant('Display Text'));
 
-        textBoxDiv.appendChild(this.textBoxInput);
+        this.textBoxDiv.appendChild(this.textBoxInput);
 
-        const valueBoxDiv: HTMLElement = createElement('div', { className: 'e-bookmark-textboxdiv' });
-        searchDiv.appendChild(valueBoxDiv);
+        this.valueBoxDiv = createElement('div', { className: 'e-bookmark-textboxdiv' });
+        this.searchDiv.appendChild(this.valueBoxDiv);
         this.valueBoxInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', id: 'bookmark_text_box' }) as HTMLInputElement;
         this.valueBoxInput.setAttribute('type', 'text');
-        this.valueBoxInput.addEventListener('keyup', this.onKeyUpOnTextBox);
+        this.valueBoxInput.addEventListener('keyup', this.keyUpOnTextBoxClickHandler);
         this.valueBoxInput.setAttribute('aria-label', localeValue.getConstant('Value'));
 
-        valueBoxDiv.appendChild(this.valueBoxInput);
+        this.valueBoxDiv.appendChild(this.valueBoxInput);
 
-        const listviewDiv: HTMLElement = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview', attrs: { tabindex: '-1', role: 'listbox' } });
-        searchDiv.appendChild(listviewDiv);
+        this.listviewDiv = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview', attrs: { tabindex: '-1', role: 'listbox' } });
+        this.searchDiv.appendChild(this.listviewDiv);
 
         this.listviewInstance = new ListView({
             cssClass: 'e-bookmark-listview',
@@ -211,36 +245,36 @@ export class ContentControlPropertiesDialog {
             fields: { text: 'value' }
 
         });
-        this.listviewInstance.appendTo(listviewDiv);
-        const buttonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-button' });
-        commonDiv.appendChild(buttonDiv);
-        const addbuttonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
-        buttonDiv.appendChild(addbuttonDiv);
-        const addButtonElement: HTMLElement = createElement('button', {
+        this.listviewInstance.appendTo(this.listviewDiv);
+        this.buttonDiv = createElement('div', { className: 'e-bookmark-button' });
+        this.commonDiv.appendChild(this.buttonDiv);
+        this.addbuttonDiv = createElement('div', { className: 'e-bookmark-addbutton' });
+        this.buttonDiv.appendChild(this.addbuttonDiv);
+        this.addButtonElement = createElement('button', {
             innerHTML: 'Add', id: 'add',
             attrs: { type: 'button' }
         });
-        addButtonElement.setAttribute('aria-label', localeValue.getConstant('Add'));
-        addbuttonDiv.appendChild(addButtonElement);
+        this.addButtonElement.setAttribute('aria-label', localeValue.getConstant('Add'));
+        this.addbuttonDiv.appendChild(this.addButtonElement);
         this.addButton = new Button({ cssClass: 'e-button-custom' });
         this.addButton.disabled = true;
-        this.addButton.appendTo(addButtonElement);
+        this.addButton.appendTo(this.addButtonElement);
         //addButtonElement.addEventListener('click', this.setButtonClick);
-        addButtonElement.addEventListener('click', this.setButtonClick.bind(this));
-        const deleteButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-deletebutton' });
-        buttonDiv.appendChild(deleteButtonDiv);
-        const deleteButtonElement: HTMLElement = createElement('button', {
+        this.addButtonElement.addEventListener('click', this.setButtonClickHandler);
+        this.deleteButtonDiv = createElement('div', { className: 'e-bookmark-deletebutton' });
+        this.buttonDiv.appendChild(this.deleteButtonDiv);
+        this.deleteButtonElement = createElement('button', {
             innerHTML: 'Delete', id: 'delete',
             attrs: { type: 'button' }
         });
-        deleteButtonElement.setAttribute('aria-label', 'Delete');
-        deleteButtonDiv.appendChild(deleteButtonElement);
+        this.deleteButtonElement.setAttribute('aria-label', 'Delete');
+        this.deleteButtonDiv.appendChild(this.deleteButtonElement);
         this.deleteButton = new Button({ cssClass: 'e-button-custom' });
-        this.deleteButton.appendTo(deleteButtonElement);
-        deleteButtonElement.addEventListener('click', this.clearButtonClick);
+        this.deleteButton.appendTo(this.deleteButtonElement);
+        this.deleteButtonElement.addEventListener('click', this.clearButtonClickHandler);
 
-        container.appendChild(this.dropDownPropertiesDiv);
-        this.target.appendChild(container);
+        this.container.appendChild(this.dropDownPropertiesDiv);
+        this.target.appendChild(this.container);
 
         new TextBox({ placeholder: localeValue.getConstant('Title'), floatLabelType: 'Always' }, this.titleText);
         new TextBox({ placeholder: localeValue.getConstant('Tag'), floatLabelType: 'Always' }, this.tagText);
@@ -285,6 +319,9 @@ export class ContentControlPropertiesDialog {
         this.documentHelper.dialog.show();
     }
     /* eslint-disable  */
+    private onClearButtonClick(args: any): void {
+        this.clearButtonClick(args);
+    }
     private clearButtonClick = (args: any) => {
         (this.textBoxInput as HTMLInputElement).value = '';
         (this.valueBoxInput as HTMLInputElement).value = '';
@@ -296,6 +333,9 @@ export class ContentControlPropertiesDialog {
         }
         this.listviewInstance.dataSource = this.convertedItems.slice();
         this.listviewInstance.dataBind();
+    }
+    private onSetButtonClick(args: any): void {
+        this.setButtonClick(args);
     }
     /* eslint-disable  */
     private setButtonClick = (args: any) => {
@@ -314,6 +354,9 @@ export class ContentControlPropertiesDialog {
         }
         this.textBoxInput.value = '';
         this.valueBoxInput.value = '';
+    }
+    private onKeyUpOnTextBoxClicked(): void {
+        this.onKeyUpOnTextBox();
     }
     /**
      * @private
@@ -473,6 +516,8 @@ export class ContentControlPropertiesDialog {
         this.colorPicker = undefined;
 
         this.documentHelper = undefined;
+        this.removeEvents();
+        this.removeElements();
         if (!isNullOrUndefined(this.target)) {
             if (this.target.parentElement) {
                 this.target.parentElement.removeChild(this.target);
@@ -482,6 +527,138 @@ export class ContentControlPropertiesDialog {
                 i--;
             }
             this.target = undefined;
+        }
+    }
+    private removeEvents(): void {
+        if (this.addButtonElement) {
+            this.addButtonElement.removeEventListener('click', this.setButtonClickHandler);
+        }
+        if (this.deleteButtonElement) {
+            this.deleteButtonElement.removeEventListener('click', this.clearButtonClickHandler);
+        }
+        if (this.textBoxInput) {
+            this.textBoxInput.removeEventListener('keyup', this.keyUpOnTextBoxClickHandler);
+        }
+        if (this.valueBoxInput) {
+            this.valueBoxInput.removeEventListener('keyup', this.keyUpOnTextBoxClickHandler);
+        }
+    }
+    private removeElements(): void {
+        if (this.generalDiv){
+            this.generalDiv.remove();
+            this.generalDiv = undefined;
+        }
+        if (this.genLabel){
+            this.genLabel.remove();
+            this.genLabel = undefined;
+        }
+        if (this.displayText){
+            this.displayText.remove();
+            this.displayText = undefined;
+        }
+        if (this.colorDiv){
+            this.colorDiv.remove();
+            this.colorDiv = undefined;
+        }
+        if (this.fontColorDiv){
+            this.fontColorDiv.remove();
+            this.fontColorDiv = undefined;
+        }
+        if (this.fontColorLabel){
+            this.fontColorLabel.remove();
+            this.fontColorLabel = undefined;
+        }
+        if (this.fontColorElement){
+            this.fontColorElement.remove();
+            this.fontColorElement = undefined;
+        }
+        if (this.style){
+            this.style.remove();
+            this.style = undefined;
+        }
+        if (this.remove){
+            this.remove.remove();
+            this.remove = undefined;
+        }
+        if (this.removeContent){
+            this.removeContent.remove();
+            this.removeContent = undefined;
+        }
+        if (this.lockedDiv){
+            this.lockedDiv.remove();
+            this.lockedDiv = undefined;
+        }
+        if (this.lockedLabel){
+            this.lockedLabel.remove();
+            this.lockedLabel = undefined;
+        }
+        if (this.contentDelete){
+            this.contentDelete.remove();
+            this.contentDelete = undefined;
+        }
+        if (this.contentDeleted){
+            this.contentDeleted.remove();
+            this.contentDeleted = undefined;
+        }
+        if (this.contentEdit){
+            this.contentEdit.remove();
+            this.contentEdit = undefined;
+        }
+        if (this.contentEdited){
+            this.contentEdited.remove();
+            this.contentEdited = undefined;
+        }
+        if (this.plainTextLabel){
+            this.plainTextLabel.remove();
+            this.plainTextLabel = undefined;
+        }
+        if (this.multiline){
+            this.multiline.remove();
+            this.multiline = undefined;
+        }
+        if (this.lockedcontentLabel){
+            this.lockedcontentLabel.remove();
+            this.lockedcontentLabel = undefined;
+        }
+        if (this.commonDiv){
+            this.commonDiv.remove();
+            this.commonDiv = undefined;
+        }
+        if (this.searchDiv){
+            this.searchDiv.remove();
+            this.searchDiv = undefined;
+        }
+        if (this.textBoxDiv){
+            this.textBoxDiv.remove();
+            this.textBoxDiv = undefined;
+        }
+        if (this.valueBoxDiv){
+            this.valueBoxDiv.remove();
+            this.valueBoxDiv = undefined;
+        }
+        if (this.listviewDiv){
+            this.listviewDiv.remove();
+            this.listviewDiv = undefined;
+        }
+        if (this.buttonDiv){
+            this.buttonDiv.remove();
+            this.buttonDiv = undefined;
+        }
+        if (this.addbuttonDiv){
+            this.addbuttonDiv.remove();
+            this.addbuttonDiv = undefined;
+        }
+        if (this.addButtonElement){
+            this.addButtonElement.remove();
+            this.addButtonElement = undefined;
+        }
+        if (this.deleteButtonDiv){
+            this.deleteButtonDiv.remove();
+            this.deleteButtonDiv = undefined;
+        }
+        if (this.deleteButtonElement){
+            this.deleteButtonElement.remove();
+            this.deleteButtonElement = undefined;
         }
     }
 }

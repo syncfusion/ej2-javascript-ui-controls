@@ -2132,7 +2132,7 @@ export interface BatchDeleteArgs extends IPrimaryKey {
 
 export interface BeforeBatchDeleteArgs extends BatchDeleteArgs, ICancel {
     /** Defines the row element. */
-    row?: Element;
+    row?: Element | Element[];
 }
 
 export interface BeforeBatchSaveArgs extends ICancel {
@@ -2359,6 +2359,8 @@ export interface BeforeDataBoundArgs {
     result?: Object[];
     /** Defines the data count. */
     count?: number;
+    /** Defines the cancel option value. */
+    cancel?: boolean;
     /** Defines the aggregate values*/
     aggregates?: Object[];
     /** Defines the action of the argument*/

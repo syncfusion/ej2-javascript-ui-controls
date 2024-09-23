@@ -1241,7 +1241,7 @@ describe('EJ2-53727 - delete the row using deleteRow method', () => {
     });
     it('Delete - Batch Editing', (done: Function) => {
         const deletedRecords: string = 'deletedRecords';
-        const row: Element = gridObj.getRowByIndex(1);
+        const row: Element = gridObj.getRows()[1];
         gridObj.deleteRow(row as HTMLTableRowElement);
         expect(gridObj.getBatchChanges()[deletedRecords].length === 1).toBe(true);
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });

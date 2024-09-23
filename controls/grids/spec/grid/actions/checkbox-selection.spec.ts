@@ -1118,4 +1118,33 @@ describe('Grid checkbox selection functionality', () => {
             gridObj = selectionModule = rows = null;
         });
     });
+
+    describe('909807 - getSelectedRecords method was not working properly', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    columns: [
+                        { type: 'checkbox', field: 'Verified', width: 120 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 }
+                    ],
+                }, done);
+        });
+
+        it('selectAll checkbox check', function () {
+            (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+        });
+        it('selectAll checkbox uncheck', function () {
+            (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+            expect(gridObj.getSelectedRecords().length).toBe(0);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

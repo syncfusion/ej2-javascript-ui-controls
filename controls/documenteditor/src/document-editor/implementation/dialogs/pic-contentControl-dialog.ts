@@ -20,6 +20,7 @@ export class PicContentControlDialog {
      */
     public documentHelper: DocumentHelper;
 
+    private image: HTMLImageElement;
     private localeValue: L10n;
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper
@@ -86,10 +87,10 @@ export class PicContentControlDialog {
         fileReader.readAsDataURL(file);
     }
     private insertImage(data: string): void {
-        const image: HTMLImageElement = document.createElement('img');
+        this.image = document.createElement('img');
         const documentHelper: DocumentHelper = this.documentHelper;
         const container: DocumentEditorContainer = this.container;
-        image.addEventListener('load', function (): void {
+        this.image.addEventListener('load', function (): void {
             documentHelper.owner.editorModule.insertImageInternal(data, true, this.width, this.height, this.alt);
             //to upload an image newly = false, this condition applies and to replace the new image = true , this condition not applies
             if (!documentHelper.owner.selection.isImageSelected) {
@@ -97,7 +98,7 @@ export class PicContentControlDialog {
                 documentHelper.owner.editor.insertContentControl('Picture');
             }
         });
-        image.src = data;
+        this.image.src = data;
     }
     /**
      * @private
@@ -109,7 +110,10 @@ export class PicContentControlDialog {
             this.imagePicker.remove();
             this.imagePicker = undefined;
         }
-
+        if (this.image){
+            this.image.remove();
+            this.image = undefined;
+        }
     }
 
 }

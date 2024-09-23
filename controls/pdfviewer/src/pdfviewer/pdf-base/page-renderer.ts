@@ -425,8 +425,8 @@ export class PageRenderer{
                             rubberStampAnnotation.Apperarance = this.htmldata;
                             if (stampAnnotation._dictionary.has('CustomData')) {
                                 const customData: string = stampAnnotation._dictionary.get('CustomData');
-                                if (!(!isNullOrUndefined(customData) && customData.trim())) {
-                                    const ExistingCustomData: any = dictionary.get('CustomData');
+                                if ((!isNullOrUndefined(customData) && customData.trim())) {
+                                    const ExistingCustomData: any = dictionary.get('CustomData') ? dictionary.get('CustomData') : customData;
                                     if (ExistingCustomData) {
                                         rubberStampAnnotation.CustomData = ExistingCustomData;
                                     }

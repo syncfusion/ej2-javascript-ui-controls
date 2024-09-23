@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I623329` - Resolved the Heap memory increasing issue even after destroying the component.
+- `#I624644` - Improved the performance of rendering border for content control.
+- `#I627238` - Resolved formatting different when layouting the document.
+- `#I625566` - Content control with multiple paragraph now exported properly.
+- `#I626922` - Resolved script error when highlighting edit range.
+- `#I624612` - Nested table border is not render properly.
+- `#I627042` - Alert message it now shown properly when opening broken sfdt.
+- `#I624582` - Formatting now preserved properly when copy/paste content from excel document.
+
 ## 27.1.48 (2024-09-18)
 
 ### DocumentEditor

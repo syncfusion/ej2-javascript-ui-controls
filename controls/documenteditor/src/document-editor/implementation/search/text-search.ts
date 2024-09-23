@@ -30,7 +30,12 @@ export class TextSearch {
     }
 
     public find(pattern: string | RegExp, findOption?: FindOption): TextSearchResult {
-        return this.findNext(pattern, findOption, '0;0;0');
+        const result: TextSearchResult = this.findNext(pattern, findOption, '0;0;0');
+        if (!isNullOrUndefined(result)) {
+            const eventArgs: SearchResultsChangeEventArgs = { source: this.documentHelper.owner };
+            this.documentHelper.owner.trigger(searchResultsChangeEvent, eventArgs);
+        }
+        return result;
     }
     public findNext(pattern: string | RegExp, findOption?: FindOption, hierarchicalPosition?: string): TextSearchResult {
         if (typeof pattern === 'string') {

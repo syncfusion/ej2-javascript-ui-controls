@@ -1,7 +1,7 @@
 import { _PdfStream } from './base-stream';
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { _Linearization } from './pdf-parser';
-import { _isWhiteSpace, FormatError, _decode, _emptyPdfData } from './utils';
+import { _isWhiteSpace, FormatError, _decode, _emptyPdfData, _getNewGuidString } from './utils';
 import { _PdfCatalog } from './pdf-catalog';
 import { _PdfDictionary, _PdfReference, _isName, _PdfName, _clearPrimitiveCaches } from './pdf-primitives';
 import { PdfDestination, PdfPage } from './pdf-page';
@@ -62,6 +62,8 @@ export class PdfDocument {
     _bookmarkHashTable: Map<PdfPage, PdfBookmarkBase[]>;
     _targetIndex: number;
     _isDuplicatePage: boolean = false;
+    _mergeHelperCache: Map<string, _PdfMergeHelper>;
+    _uniqueID: string;
     /*
      * An event triggered during the splitting process, providing access to split PDF data and split index.
      *
@@ -1416,6 +1418,17 @@ export class PdfDocument {
         this._stream = undefined;
         this._form = undefined;
         _clearPrimitiveCaches();
+        if (this._mergeHelperCache) {
+            if (this._mergeHelperCache.size > 0) {
+                this._mergeHelperCache.forEach((value: _PdfMergeHelper, key: string) => { // eslint-disable-line
+                    if (value) {
+                        value._objectDispose();
+                    }
+                });
+            }
+            this._mergeHelperCache.clear();
+            this._mergeHelperCache = undefined;
+        }
     }
     get _destinationCollection(): _PdfNamedDestinationCollection {
         if (this._namedDestinationCollection === null || typeof this._namedDestinationCollection === 'undefined') {
@@ -1657,7 +1670,19 @@ export class PdfDocument {
                 pageReference.set(sourcepage._pageDictionary, null);
             }
         }
-        const helper: _PdfMergeHelper = new _PdfMergeHelper(this._crossReference, this, sourceDocument, pageReference, options);
+        let helper: _PdfMergeHelper;
+        if (!this._mergeHelperCache) {
+            this._mergeHelperCache = new Map<string, _PdfMergeHelper>();
+        }
+        if (!sourceDocument._uniqueID) {
+            sourceDocument._uniqueID = _getNewGuidString();
+        }
+        if (this._mergeHelperCache.has(sourceDocument._uniqueID)) {
+            helper = this._mergeHelperCache.get(sourceDocument._uniqueID);
+        } else {
+            helper = new _PdfMergeHelper(this._crossReference, this, sourceDocument, pageReference, options);
+            this._mergeHelperCache.set(sourceDocument._uniqueID, helper);
+        }
         let isLayersPresent: boolean = false;
         if ((!this ._isDuplicatePage && sourceDocument._catalog._catalogDictionary.has('OCProperties')) || (typeof options !== 'undefined' && !options.optimizeResources)) {
             isLayersPresent = true;

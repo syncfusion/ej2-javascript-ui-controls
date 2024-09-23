@@ -4875,3 +4875,44 @@ describe('EJ2-907682: The focus moves to the previous row on tabbing an editable
         gridObj = null;
     });
 });
+
+describe('EJ2-905237: Issue in Adding/Editing when grid component is rendered inside the Dialog component =>', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: [],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, validationRules: { required: true }, textAlign: 'Right' },
+                    { field: 'CustomerID' }
+                ],
+            }, done);
+    });
+
+    it('Click the add button', (done: Function) => {
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        done();
+    });
+    it('Add the row', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect((gridObj.currentViewData[0] as any).OrderID).toBe(10247);
+                expect((gridObj.currentViewData[0] as any).CustomerID).toBe('updated');
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (select('#' + gridObj.element.id + 'OrderID', gridObj.element) as any).value = 10247;
+        (select('#' + gridObj.element.id + 'CustomerID', gridObj.element) as any).value = 'updated';
+        gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

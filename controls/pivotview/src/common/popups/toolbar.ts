@@ -1777,6 +1777,7 @@ export class Toolbar {
      * @hidden
      */
     public refreshToolbar(): void {
+        this.destroy();
         this.createToolbar();
     }
 

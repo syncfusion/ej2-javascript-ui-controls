@@ -748,7 +748,9 @@ export class ListBox extends DropDownBase {
                 if (isNullOrUndefined(filterElem)) { return; }
                 filterElem.selectionStart = txtLength;
                 filterElem.selectionEnd = txtLength;
-                filterElem.focus();
+                if (filterElem.value !== '') {
+                    filterElem.focus();
+                }
             }
         }
         if (this.toolbarSettings.items.length && this.scope && this.scope.indexOf('#') > -1 && !isNullOrUndefined(e)) {
@@ -1171,29 +1173,23 @@ export class ListBox extends DropDownBase {
         const liElement: HTMLElement[] | NodeListOf<HTMLLIElement> = this.list.querySelectorAll('.' + dropDownBaseClasses.li);
         if (items) {
             items = (items instanceof Array ? items : [items]) as { [key: string]: Object }[] | string[] | boolean[] | number[];
-            const fields: FieldSettingsModel = this.fields; let dataValue: string; let objValue: string;
-            const dupData: {[key: string]: Object }[] = []; let itemIdx: number;
+            const fields: FieldSettingsModel = this.fields; let dataValue: string; const objValue: { [key: string]: number } = {};
+            const dupData: {[key: string]: Object }[] = [];
             extend(dupData, [], this.jsonData as { [key: string]: Object }[]);
             const removeIdxes: number [] = []; const removeLiIdxes: number [] = [];
+            for (let i: number = 0; i < dupData.length; i++) {
+                const value: any = (dupData[i as number] instanceof Object) ? dupData[i as number][fields.value] :
+                    dupData[i as number].toString();
+                objValue[value as any] = i;
+            }
             for (let j: number = 0; j < items.length; j++) {
-                if (items[j as number] instanceof Object) {
-                    dataValue = getValue(fields.value, items[j as number]);
-                } else {
-                    dataValue = items[j as number].toString();
-                }
-                for (let i: number = 0, len: number = dupData.length; i < len; i++) {
-                    if (dupData[i as number] instanceof Object) {
-                        objValue = getValue(fields.value, dupData[i as number]);
-                    } else {
-                        objValue = dupData[i as number].toString();
-                    }
-                    if (objValue === dataValue) {
-                        itemIdx = this.getIndexByValue(dataValue);
-                        const idx: number = itemIdx === i ? itemIdx : i;
-                        liCollections.push(liElement[idx as number]);
-                        removeIdxes.push(idx);
-                        removeLiIdxes.push(idx);
-                    }
+                dataValue = (items[j as number] instanceof Object) ? (items[j as number] as any)[fields.value] :
+                    items[j as number].toString();
+                if (Object.prototype.hasOwnProperty.call(objValue, dataValue)) {
+                    const idx: number = objValue[dataValue as string];
+                    liCollections.push(liElement[idx as number]);
+                    removeIdxes.push(idx);
+                    removeLiIdxes.push(idx);
                 }
             }
             const validRemoveIdxes: number[] = removeIdxes.sort((a: number, b: number) => b - a);
@@ -1994,7 +1990,7 @@ export class ListBox extends DropDownBase {
         }
         flistboxarray = newFlistboxArray;
         moveTo(fListBox.ulElement, tListBox.ulElement, flistboxarray, index);
-        this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
+        fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         if (isKey) { this.list.focus(); }
         index = (index) ? index : listData.length;
         for (let i: number = 0; i < flistboxarray.length; i++) {
@@ -2037,8 +2033,8 @@ export class ListBox extends DropDownBase {
         if (fListBox.listData.length === fListBox.jsonData.length) {
             fListBox.listData = fListBox.sortedData = fListBox.jsonData = tempData;
         } else if (fListBox.allowFiltering) {
+            const disabledData: { [key: string]: Object }[] = [];
             if (tempLiColl.length > 0) {
-                const disabledData: { [key: string]: Object }[] = [];
                 for (let i: number = 0; i < tempLiColl.length; i++) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     disabledData.push(this.getDataByValue(tempLiColl[i as number].getAttribute('data-value')) as any);
@@ -2054,7 +2050,12 @@ export class ListBox extends DropDownBase {
                     }
                 }
             }
-            fListBox.listData = fListBox.sortedData = [];
+            if (tempLiColl.length > 0) {
+                fListBox.listData = disabledData;
+                fListBox.sortedData = [];
+            } else {
+                fListBox.listData = fListBox.sortedData = [];
+            }
         }
         if (isRefresh) {
             const sourceElem: HTMLElement = tListBox.renderItems(listData as obj[], tListBox.fields);
@@ -2274,7 +2275,9 @@ export class ListBox extends DropDownBase {
                             if (eventArgsData.cancel) { return; }
                             this.isFiltered = true;
                             this.remoteFilterAction = true;
+                            this.preventDefActionFilter = eventArgsData.preventDefaultAction as boolean;
                             this.dataUpdater(dataSource, query, fields);
+                            this.preventDefActionFilter = false;
                         },
                         event: e,
                         cancel: false
@@ -2284,6 +2287,7 @@ export class ListBox extends DropDownBase {
                         if (args.cancel || (this.filterInput.value !== '' && this.isFiltered)) {
                             return;
                         }
+                        this.preventDefActionFilter = false;
                         if (!args.cancel && !this.isCustomFiltering && !args.preventDefaultAction) {
                             this.inputString = this.filterInput.value;
                             this.filteringAction(this.jsonData, new Query(), this.fields);
@@ -2684,7 +2688,9 @@ export class ListBox extends DropDownBase {
                 if (newProp.allowDragAndDrop) {
                     this.initDraggable();
                 } else {
-                    (getComponent(this.ulElement, 'sortable') as Sortable).destroy();
+                    if (this.ulElement.classList.contains('e-sortable')) {
+                        (getComponent(this.ulElement, 'sortable') as Sortable).destroy();
+                    }
                 }
                 break;
             case 'allowFiltering':

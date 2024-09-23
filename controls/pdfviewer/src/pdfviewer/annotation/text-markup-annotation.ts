@@ -2410,6 +2410,7 @@ export class TextMarkupAnnotation {
             this.clearAnnotationSelection(this.selectTextMarkupCurrentPage);
             const currentAnnot: any = this.currentTextMarkupAnnotation;
             this.pdfViewer.fireAnnotationUnSelect(currentAnnot.annotName, currentAnnot.pageNumber, currentAnnot);
+            this.currentTextMarkupAnnotation = null;
             this.clearCurrentAnnotation();
         }
     }

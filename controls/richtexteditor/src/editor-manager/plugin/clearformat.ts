@@ -1,7 +1,7 @@
 /**
  * `Clear Format` module is used to handle Clear Format.
  */
-import { closest } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { NodeSelection } from './../../selection/index';
 import { NodeCutter } from './nodecutter';
 import { DOMNode } from './dom-node';
@@ -212,9 +212,13 @@ export class ClearFormat {
                         nodeSelection.getRange(docElement),
                         parentNodes[index1 as number].parentNode as HTMLElement));
             }
+            const blockquoteNode: Node = closest(parentNodes[index1 as number], 'blockquote');
+            if (parentNodes[index1 as number].nodeName.toLocaleLowerCase() !== 'blockquote' && !isNullOrUndefined(blockquoteNode) && blockquoteNode.textContent === parentNodes[index1 as number].textContent) {
+                const blockNodes: Node[] = this.removeParent([blockquoteNode]);
+                this.unWrap(docElement, blockNodes, nodeCutter, nodeSelection);
+            }
             if (parentNodes[index1 as number].nodeName.toLocaleLowerCase() !== 'p') {
                 if (this.NONVALID_PARENT_TAGS.indexOf(parentNodes[index1 as number].nodeName.toLowerCase()) < 0
-                    && parentNodes[index1 as number].parentNode.nodeName.toLocaleLowerCase() !== 'p'
                     && !((parentNodes[index1 as number].nodeName.toLocaleLowerCase() === 'blockquote'
                         || parentNodes[index1 as number].nodeName.toLocaleLowerCase() === 'li')
                         && this.IGNORE_PARENT_TAGS.indexOf(parentNodes[index1 as number].childNodes[0].nodeName.toLocaleLowerCase()) > -1)
@@ -236,12 +240,15 @@ export class ClearFormat {
                         const blockNodes: Node[] = this.removeParent([childNodes[index2 as number]]);
                         this.unWrap(docElement, blockNodes, nodeCutter, nodeSelection);
                     } else if (this.BLOCK_TAGS.indexOf(childNodes[index2 as number].nodeName.toLocaleLowerCase()) > -1 &&
-                        childNodes[index2 as number].parentNode.nodeName.toLocaleLowerCase() ===
-                    childNodes[index2 as number].nodeName.toLocaleLowerCase()) {
+                        childNodes[index2 as number].nodeName.toLocaleLowerCase() === 'p') {
+                        if (childNodes[index2 as number].parentNode.nodeName.toLocaleLowerCase() === 'p') {
+                            InsertMethods.unwrap(childNodes[index2 as number].parentNode as HTMLElement);
+                        }
+                        InsertMethods.Wrap(childNodes[index2 as number] as HTMLElement, docElement.createElement(this.defaultTag));
                         InsertMethods.unwrap(childNodes[index2 as number]);
                     } else if (this.BLOCK_TAGS.indexOf(childNodes[index2 as number].nodeName.toLocaleLowerCase()) > -1 &&
-                        childNodes[index2 as number].nodeName.toLocaleLowerCase() === 'p') {
-                        InsertMethods.Wrap(childNodes[index2 as number] as HTMLElement, docElement.createElement(this.defaultTag));
+                        childNodes[index2 as number].parentNode.nodeName.toLocaleLowerCase() ===
+                    childNodes[index2 as number].nodeName.toLocaleLowerCase()) {
                         InsertMethods.unwrap(childNodes[index2 as number]);
                     }
                 }

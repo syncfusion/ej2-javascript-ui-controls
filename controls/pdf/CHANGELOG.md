@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an exception encountered while importing pages from a PDF document.
+- Resolved the image preservation issue in the custom appearance of the rubber stamp annotation when rotated to 270 degrees.
+- Resolved the preservation issue in free text annotation when rotation applied.
+- Resolved the preservation issue in line annotation when different border styles applied.
+
 ## 27.1.48 (2024-09-18)
 
 ### PDF Parser

@@ -440,6 +440,10 @@ export class Shape {
                 }
                 if (opacity !== null && opacity !== undefined) {parent.activeObj.opacity = opacity; }
                 strokeSettings.strokeWidth = strokeWidth ? strokeWidth : strokeSettings.strokeWidth;
+                const shape: string = parent.activeObj.shape;
+                if ((shape === 'rectangle' || shape === 'ellipse') && strokeWidth === 0) {
+                    strokeSettings.strokeWidth = 0;
+                }
                 strokeSettings.strokeColor = strokeColor ? strokeColor : strokeSettings.strokeColor;
                 strokeSettings.fillColor = fillColor ? fillColor : strokeSettings.fillColor;
                 strokeSettings.radius = radius ? radius : strokeSettings.radius;

@@ -3594,7 +3594,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 currentItem = isNOU(currentItem) ? currentItem : this.getNodeObject(resultId);
                 if (!isNOU(currentItem)) {
                     const htmlAttributes: { [key: string]: string } = currentItem[this.fields.htmlAttributes] as { [key: string]: string };
-                    if (htmlAttributes && htmlAttributes.class.indexOf(DISABLE) !== -1) {
+                    if (htmlAttributes && !isNOU(htmlAttributes.class) && htmlAttributes.class.indexOf(DISABLE) !== -1) {
                         shouldPreventUpdate = false;
                     }
                 }
@@ -4338,6 +4338,23 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         removeClass([this.element], DRAGGING);
         this.dragStartAction = false;
     }
+
+    private getOffsetX(event: MouseEvent | TouchEvent, target: HTMLElement): number {
+        if (event instanceof TouchEvent && event.changedTouches.length > 0) {
+            return event.changedTouches[0].clientX - target.getBoundingClientRect().left;
+        } else {
+            return (event as MouseEvent).offsetX;
+        }
+    }
+
+    private getOffsetY(event: MouseEvent | TouchEvent, target: HTMLElement): number {
+        if (event instanceof TouchEvent && event.changedTouches.length > 0) {
+            return event.changedTouches[0].clientY - target.getBoundingClientRect().top;
+        } else {
+            return (event as MouseEvent).offsetY;
+        }
+    }
+
     private dragAction(e: DropEventArgs, virtualEle: HTMLElement): void {
         const dropRoot: Element = closest(e.target, '.' + DROPPABLE);
         let dropWrap: Element = closest(e.target, '.' + TEXTWRAP);
@@ -4347,6 +4364,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.removeVirtualEle();
         document.body.style.cursor = '';
         const classList: DOMTokenList = e.target.classList;
+        const event: MouseEvent | TouchEvent = e.event;
+        const offsetY: number = this.getOffsetY(event, e.target as HTMLElement);
+        const offsetX: number = this.getOffsetX(event, e.target as HTMLElement);
         if (this.fullRowSelect && !dropWrap && !isNOU(classList) && classList.contains(FULLROW)) {
             dropWrap = e.target.nextElementSibling;
         }
@@ -4359,14 +4379,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 (!dropLi.isSameNode(this.dragLi) && !this.isDescendant(this.dragLi, dropLi)))) {
                 if (this.hasTemplate && dropLi) {
                     const templateTarget: HTMLElement = select(this.fullRowSelect ? '.' + FULLROW : '.' + TEXTWRAP, dropLi) as HTMLElement;
-                    if ((e && (!expand && !collapse) && e.event.offsetY < 7 && !checkWrapper) ||
-                        (((expand && e.event.offsetY < 5) || (collapse && e.event.offsetX < 3)))) {
+                    if ((e && (!expand && !collapse) && offsetY < 7 && !checkWrapper) ||
+                        (((expand && offsetY < 5) || (collapse && offsetX < 3)))) {
                         const index: number = this.fullRowSelect ? (1) : (0);
                         this.appendIndicator(dropLi, icon, index);
                     } else if (
                         (e && (!expand && !collapse) &&
-                        !checkWrapper && templateTarget && e.event.offsetY > templateTarget.offsetHeight - 10) ||
-                        ((expand && e.event.offsetY > 19) || (collapse && e.event.offsetX > 19))
+                        !checkWrapper && templateTarget && offsetY > templateTarget.offsetHeight - 10) ||
+                        ((expand && offsetY > 19) || (collapse && offsetX > 19))
                     ) {
                         const index: number = this.fullRowSelect ? (2) : (1);
                         this.appendIndicator(dropLi, icon, index);
@@ -4376,15 +4396,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 } else {
                     if (
-                        (dropLi && e && (!expand && !collapse) && (e.event.offsetY < 7) && !checkWrapper) ||
-                        (((expand && e.event.offsetY < 5) || (collapse && e.event.offsetX < 3)))
+                        (dropLi && e && (!expand && !collapse) && (offsetY < 7) && !checkWrapper) ||
+                        (((expand && offsetY < 5) || (collapse && offsetX < 3)))
                     ) {
                         const index: number = this.fullRowSelect ? (1) : (0);
                         this.appendIndicator(dropLi, icon, index);
                     } else if (
                         (dropLi && e && (!expand && !collapse) &&
-                        (e.target.offsetHeight > 0 && e.event.offsetY > (e.target.offsetHeight - 10)) && !checkWrapper) ||
-                        (((expand && e.event.offsetY > 19) || (collapse && e.event.offsetX > 19)))
+                        (e.target.offsetHeight > 0 && offsetY > (e.target.offsetHeight - 10)) && !checkWrapper) ||
+                        (((expand && offsetY > 19) || (collapse && offsetX > 19)))
                     ) {
                         const index: number = this.fullRowSelect ? (2) : (1);
                         this.appendIndicator(dropLi, icon, index);
@@ -4426,7 +4446,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private dropAction(e: DropEventArgs): void {
-        const offsetY: number = e.event.offsetY;
+        const event: MouseEvent | TouchEvent = e.event;
+        const offsetY: number = this.getOffsetY(event, e.target as HTMLElement);
         const dropTarget: Element = <Element>e.target;
         let dragObj: TreeView;
         let level: number;
@@ -4722,9 +4743,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private renderVirtualEle(e: DragEventArgs): void {
         let pre: boolean;
-        if (e.event.offsetY > e.target.offsetHeight - 2) {
+        const event: MouseEvent | TouchEvent = e.event;
+        const offsetY: number = this.getOffsetY(event, e.target as HTMLElement);
+        if (offsetY > e.target.offsetHeight - 2) {
             pre = false;
-        } else if (e.event.offsetY < 2) {
+        } else if (offsetY < 2) {
             pre = true;
         }
         const virEle: Element = this.createElement('div', { className: SIBLING });

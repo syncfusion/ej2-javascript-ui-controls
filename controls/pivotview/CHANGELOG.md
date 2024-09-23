@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### Pivot Table
+
+#### Bug fixes
+
+- The pivot chart will now render properly when the `displayOption` property is changed dynamically with the toolbar option enabled.
+
 ## 27.1.48 (2024-09-18)
 
 ### Pivot Table

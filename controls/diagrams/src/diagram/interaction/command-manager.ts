@@ -5796,7 +5796,7 @@ Remove terinal segment in initial
     }
 
     /**   @private  */
-    public checkBoundaryConstraints(tx: number, ty: number, nodeBounds?: Rect): boolean {
+    public checkBoundaryConstraints(tx: number, ty: number, nodeBounds?: Rect, isInitialRendering?: boolean): boolean {
         const pageSettings: PageSettings = this.diagram.pageSettings as PageSettings;
         const boundaryConstraints: BoundaryConstraints = (this.diagram.pageSettings as PageSettings).boundaryConstraints;
         const scroller: DiagramScroller = this.diagram.scroller;
@@ -5809,8 +5809,9 @@ Remove terinal segment in initial
             const left: number = (nodeBounds ? bounds.left : selectorBounds.left) + (tx || 0);
             const top: number = (nodeBounds ? bounds.top : selectorBounds.top) + (ty || 0);
             const bottom: number = (nodeBounds ? bounds.bottom : selectorBounds.bottom) + (ty || 0);
+            //Bug 906963: Layout is not rendered when boundaryConstraints set to "Page/Diagram"
             if (right <= width && left >= 0
-                && bottom <= height && top >= 0) {
+                && bottom <= height && top >= 0 || (this.diagram.layout.type !== 'None' && isInitialRendering)) {
                 return true;
             }
             return false;

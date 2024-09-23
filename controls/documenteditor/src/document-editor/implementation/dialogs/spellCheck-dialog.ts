@@ -25,6 +25,32 @@ export class SpellCheckDialog {
     public documentHelper: DocumentHelper;
     private isSpellChecking: boolean;
 
+    private textContainer: HTMLElement;
+    private spellContainer: HTMLElement;
+    private listviewDiv: HTMLElement;
+    private buttonDiv: HTMLElement;
+    private ignoreButtonElement: HTMLElement;
+    private ignorebutton: Button;
+    private ignoreAllButtonElement: HTMLElement;
+    private ignoreAllbutton: Button;
+    private addDictButtonElement: HTMLElement;
+    private addDictButton: Button;
+    private suggestionDiv: HTMLElement;
+    private suggestionContainer: HTMLElement;
+    private suggestListDiv: HTMLElement;
+    private suggestBtnContainder: HTMLElement;
+    private changeButtonElement: HTMLElement;
+    private changeButton: Button;
+    private changeAllButtonElement: HTMLElement;
+    private changeAllbutton: Button;
+
+    private ignoreClickHandler: EventListenerOrEventListenerObject = this.onIgnoreClick.bind(this);
+    private ignoreAllClickHandler: EventListenerOrEventListenerObject = this.onIgnoreAllClick.bind(this);
+    private addToDictClickHandler: EventListenerOrEventListenerObject = this.onAddToDictClick.bind(this);
+    private selectHandlerClickHandler: EventListener = this.onSelectHandlerClick.bind(this);
+    private changeButtonClickHandler: EventListenerOrEventListenerObject = this.onChangeButtonClick.bind(this);
+    private onChangeAllButtonClickHandler: EventListenerOrEventListenerObject = this.onChangeAllButtonClick.bind(this);
+
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
@@ -41,6 +67,9 @@ export class SpellCheckDialog {
     private getModuleName(): string {
         return 'SpellCheckDialog';
     }
+    private onSelectHandlerClick(args: SelectEventArgs): void {
+        this.selectHandler(args);
+    }
     /**
      * @param {SelectEventArgs} args - Specifies the event args.
      * @returns {void}
@@ -56,6 +85,9 @@ export class SpellCheckDialog {
         this.documentHelper.clearSelectionHighlight();
         this.documentHelper.hideDialog();
     };
+    private onIgnoreClick(): void {
+        this.onIgnoreClicked();
+    }
     /**
      * @private
      * @returns {void}
@@ -84,7 +116,9 @@ export class SpellCheckDialog {
             this.documentHelper.hideDialog();
         }
     }
-
+    private onIgnoreAllClick(): void {
+        this.onIgnoreAllClicked();
+    }
     /**
      * @private
      * @returns {void}
@@ -99,6 +133,9 @@ export class SpellCheckDialog {
             hideSpinner(this.documentHelper.dialog.element);
         }
     };
+    private onAddToDictClick(): void {
+        this.addToDictClicked();
+    }
     /**
      * @private
      * @returns {void}
@@ -114,6 +151,9 @@ export class SpellCheckDialog {
             this.documentHelper.hideDialog();
         }
     };
+    private onChangeButtonClick(): void {
+        this.changeButtonClicked();
+    }
     /**
      * @private
      * @returns {void}
@@ -129,6 +169,9 @@ export class SpellCheckDialog {
             this.selectedText = undefined;
         }
     };
+    private onChangeAllButtonClick(): void {
+        this.changeAllButtonClicked();
+    }
     /**
      * @private
      * @returns {void}
@@ -194,10 +237,8 @@ export class SpellCheckDialog {
                 /* eslint-disable @typescript-eslint/no-explicit-any */
                 const jsonObject: any = JSON.parse(data);
                 suggestions = jsonObject.Suggestions;
-                if (!isNullOrUndefined(this.parent)) {
-                    this.isSpellChecking = false;
-                    this.handleRetrievedSuggestion(error, suggestions);
-                }
+                this.isSpellChecking = false;
+                this.handleRetrievedSuggestion(error, suggestions);
             });
         } else {
             error = this.parent.spellCheckerModule.manageSpecialCharacters(error, undefined, true);
@@ -240,80 +281,80 @@ export class SpellCheckDialog {
         const id: string = this.documentHelper.owner.containerId + '_add_SpellCheck';
         this.target = createElement('div', { id: id, className: 'e-de-insert-spellchecker' });
         this.errorText = error;
-        const textContainer: HTMLElement = createElement('div', {
+        this.textContainer = createElement('div', {
             className: 'e-de-dlg-sub-header', innerHTML: localValue.getConstant('Spelling')
         });
-        this.target.appendChild(textContainer);
+        this.target.appendChild(this.textContainer);
 
-        const spellContainer: HTMLElement = createElement('div', { className: 'e-de-spellcheck-error-container' });
+        this.spellContainer = createElement('div', { className: 'e-de-spellcheck-error-container' });
 
-        const listviewDiv: HTMLElement = createElement('div', { className: 'e-de-dlg-spellcheck-listview' });
+        this.listviewDiv = createElement('div', { className: 'e-de-dlg-spellcheck-listview' });
 
-        spellContainer.appendChild(listviewDiv);
+        this.spellContainer.appendChild(this.listviewDiv);
         this.spellingListView = new ListView({
             dataSource: [error],
             cssClass: 'e-dlg-spellcheck-listitem'
         });
 
-        this.spellingListView.appendTo(listviewDiv);
+        this.spellingListView.appendTo(this.listviewDiv);
 
-        const buttonDiv: HTMLElement = createElement('div', { className: 'e-de-spellcheck-btncontainer' });
-        spellContainer.appendChild(buttonDiv);
-        const ignoreButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Ignore') });
-        buttonDiv.appendChild(ignoreButtonElement);
-        ignoreButtonElement.setAttribute('aria-label', localValue.getConstant('Ignore'));
-        const ignorebutton: Button = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
-        ignorebutton.appendTo(ignoreButtonElement);
-        ignoreButtonElement.addEventListener('click', this.onIgnoreClicked);
+        this.buttonDiv = createElement('div', { className: 'e-de-spellcheck-btncontainer' });
+        this.spellContainer.appendChild(this.buttonDiv);
+        this.ignoreButtonElement = createElement('button', { innerHTML: localValue.getConstant('Ignore') });
+        this.buttonDiv.appendChild(this.ignoreButtonElement);
+        this.ignoreButtonElement.setAttribute('aria-label', localValue.getConstant('Ignore'));
+        this.ignorebutton = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
+        this.ignorebutton.appendTo(this.ignoreButtonElement);
+        this.ignoreButtonElement.addEventListener('click', this.ignoreClickHandler);
 
-        const ignoreAllButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Ignore All') });
-        ignoreAllButtonElement.setAttribute('aria-label', localValue.getConstant('Ignore All'));
-        buttonDiv.appendChild(ignoreAllButtonElement);
-        const ignoreAllbutton: Button = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
-        ignoreAllbutton.appendTo(ignoreAllButtonElement);
-        ignoreAllButtonElement.addEventListener('click', this.onIgnoreAllClicked);
-        const addDictButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Add to Dictionary') });
-        addDictButtonElement.setAttribute('aria-label', localValue.getConstant('Add to Dictionary'));
-        buttonDiv.appendChild(addDictButtonElement);
-        const addDictButton: Button = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
-        addDictButton.appendTo(addDictButtonElement);
-        addDictButtonElement.addEventListener('click', this.addToDictClicked);
-        this.target.appendChild(spellContainer);
-        const suggestionDiv: HTMLElement = createElement('div', {
+        this.ignoreAllButtonElement = createElement('button', { innerHTML: localValue.getConstant('Ignore All') });
+        this.ignoreAllButtonElement.setAttribute('aria-label', localValue.getConstant('Ignore All'));
+        this.buttonDiv.appendChild(this.ignoreAllButtonElement);
+        this.ignoreAllbutton = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
+        this.ignoreAllbutton.appendTo(this.ignoreAllButtonElement);
+        this.ignoreAllButtonElement.addEventListener('click', this.ignoreAllClickHandler);
+        this.addDictButtonElement = createElement('button', { innerHTML: localValue.getConstant('Add to Dictionary') });
+        this.addDictButtonElement.setAttribute('aria-label', localValue.getConstant('Add to Dictionary'));
+        this.buttonDiv.appendChild(this.addDictButtonElement);
+        this.addDictButton = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
+        this.addDictButton.appendTo(this.addDictButtonElement);
+        this.addDictButtonElement.addEventListener('click', this.addToDictClickHandler);
+        this.target.appendChild(this.spellContainer);
+        this.suggestionDiv = createElement('div', {
             className: 'e-de-dlg-sub-header', innerHTML: localValue.getConstant('Suggestions')
         });
 
-        this.target.appendChild(suggestionDiv);
-        const suggestionContainer: HTMLElement = createElement('div', { className: 'e-de-spellcheck-suggestion-container' });
-        this.target.appendChild(suggestionContainer);
-        const suggestListDiv: HTMLElement = createElement('div', { className: 'e-de-dlg-spellcheck-listview' });
-        suggestListDiv.setAttribute('aria-label', localValue.getConstant('Suggestions')); 
-        suggestionContainer.appendChild(suggestListDiv);
+        this.target.appendChild(this.suggestionDiv);
+        this.suggestionContainer = createElement('div', { className: 'e-de-spellcheck-suggestion-container' });
+        this.target.appendChild(this.suggestionContainer);
+        this.suggestListDiv = createElement('div', { className: 'e-de-dlg-spellcheck-listview' });
+        this.suggestListDiv.setAttribute('aria-label', localValue.getConstant('Suggestions')); 
+        this.suggestionContainer.appendChild(this.suggestListDiv);
         this.suggestionListView = new ListView({
             dataSource: suggestion,
             cssClass: 'e-dlg-spellcheck-listitem'
         });
 
-        this.suggestionListView.appendTo(suggestListDiv);
-        this.suggestionListView.addEventListener('select', this.selectHandler);
-        const suggestBtnContainder: HTMLElement = createElement('div', { className: 'e-de-spellcheck-btncontainer' });
-        suggestionContainer.appendChild(suggestBtnContainder);
+        this.suggestionListView.appendTo(this.suggestListDiv);
+        this.suggestionListView.addEventListener('select', this.selectHandlerClickHandler);
+        this.suggestBtnContainder = createElement('div', { className: 'e-de-spellcheck-btncontainer' });
+        this.suggestionContainer.appendChild(this.suggestBtnContainder);
 
-        const changeButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Change')});
-        changeButtonElement.setAttribute('aria-label', localValue.getConstant('Change'));
-        suggestBtnContainder.appendChild(changeButtonElement);
-        const changeButton: Button = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
-        changeButton.appendTo(changeButtonElement);
-        changeButtonElement.addEventListener('click', this.changeButtonClicked);
-        const changeAllButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Change All')});
-        changeAllButtonElement.setAttribute('aria-label', localValue.getConstant('Change All'));
-        suggestBtnContainder.appendChild(changeAllButtonElement);
-        const changeAllbutton: Button = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
-        changeAllbutton.appendTo(changeAllButtonElement);
-        changeAllButtonElement.addEventListener('click', this.changeAllButtonClicked);
+        this.changeButtonElement = createElement('button', { innerHTML: localValue.getConstant('Change')});
+        this.changeButtonElement.setAttribute('aria-label', localValue.getConstant('Change'));
+        this.suggestBtnContainder.appendChild(this.changeButtonElement);
+        this.changeButton = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
+        this.changeButton.appendTo(this.changeButtonElement);
+        this.changeButtonElement.addEventListener('click', this.changeButtonClickHandler);
+        this.changeAllButtonElement = createElement('button', { innerHTML: localValue.getConstant('Change All')});
+        this.changeAllButtonElement.setAttribute('aria-label', localValue.getConstant('Change All'));
+        this.suggestBtnContainder.appendChild(this.changeAllButtonElement);
+        this.changeAllbutton = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
+        this.changeAllbutton.appendTo(this.changeAllButtonElement);
+        this.changeAllButtonElement.addEventListener('click', this.onChangeAllButtonClickHandler);
         if (isNullOrUndefined(suggestion) || suggestion.length === 0) {
-            changeButton.disabled = true;
-            changeAllbutton.disabled = true;
+            this.changeButton.disabled = true;
+            this.changeAllbutton.disabled = true;
         }
     }
     /**
@@ -339,5 +380,101 @@ export class SpellCheckDialog {
             this.suggestionListView = undefined;
         }
         this.selectedText = undefined;
+        this.removeEvents();
+        this.removeElements();
+    }
+    private removeEvents(): void {
+        if (this.ignoreButtonElement) {
+            this.ignoreButtonElement.removeEventListener('click', this.ignoreClickHandler);
+        }
+        if (this.ignoreAllButtonElement) {
+            this.ignoreAllButtonElement.removeEventListener('click', this.ignoreAllClickHandler);
+        }
+        if (this.addDictButtonElement) {
+            this.addDictButtonElement.removeEventListener('click', this.addToDictClickHandler);
+        }
+        if (this.changeButtonElement) {
+            this.changeButtonElement.removeEventListener('click', this.changeButtonClickHandler);
+        }
+        if (this.changeAllButtonElement) {
+            this.changeAllButtonElement.removeEventListener('click', this.onChangeAllButtonClickHandler);
+        }
+        if (this.suggestionListView) {
+            this.suggestionListView.removeEventListener('select', this.selectHandlerClickHandler);
+        }
+    }
+    private removeElements(): void {
+        if (this.textContainer) {
+            this.textContainer.remove();
+            this.textContainer = undefined;
+        }
+        if (this.spellContainer) {
+            this.spellContainer.remove();
+            this.spellContainer = undefined;
+        }
+        if (this.listviewDiv) {
+            this.listviewDiv.remove();
+            this.listviewDiv = undefined;
+        }
+        if (this.buttonDiv) {
+            this.buttonDiv.remove();
+            this.buttonDiv = undefined;
+        }
+        if (this.ignoreButtonElement) {
+            this.ignoreButtonElement.remove();
+            this.ignoreButtonElement = undefined;
+        }
+        if (this.ignorebutton) {
+            this.ignorebutton.destroy();
+            this.ignorebutton = undefined;
+        }
+        if (this.ignoreAllButtonElement) {
+            this.ignoreAllButtonElement.remove();
+            this.ignoreAllButtonElement = undefined;
+        }
+        if (this.ignoreAllbutton) {
+            this.ignoreAllbutton.destroy();
+            this.ignoreAllbutton = undefined;
+        }
+        if (this.addDictButtonElement) {
+            this.addDictButtonElement.remove();
+            this.addDictButtonElement = undefined;
+        }
+        if (this.addDictButton) {
+            this.addDictButton.destroy();
+            this.addDictButton = undefined;
+        }
+        if (this.suggestionDiv) {
+            this.suggestionDiv.remove();
+            this.suggestionDiv = undefined;
+        }
+        if (this.suggestionContainer) {
+            this.suggestionContainer.remove();
+            this.suggestionContainer = undefined;
+        }
+        if (this.suggestListDiv) {
+            this.suggestListDiv.remove();
+            this.suggestListDiv = undefined;
+        }
+        if (this.suggestBtnContainder) {
+            this.suggestBtnContainder.remove();
+            this.suggestBtnContainder = undefined;
+        }
+        if (this.changeButtonElement) {
+            this.changeButtonElement.remove();
+            this.changeButtonElement = undefined;
+        }
+        if (this.changeButton) {
+            this.changeButton.destroy();
+            this.changeButton = undefined;
+        }
+        if (this.changeAllButtonElement) {
+            this.changeAllButtonElement.remove();
+            this.changeAllButtonElement = undefined;
+        }
+        if (this.changeAllbutton) {
+            this.changeAllbutton.destroy();
+            this.changeAllbutton = undefined;
+        }
     }
 }

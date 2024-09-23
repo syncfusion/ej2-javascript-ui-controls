@@ -31,6 +31,7 @@ export class ContextMenu {
     private clickedPosition: number;
     private targetElement: Element;
     private isEdit: boolean;
+    private isCntxtMenuDependencyDelete: boolean = false;
     /**
      * @private
      */
@@ -211,6 +212,7 @@ export class ContextMenu {
             this.parent.treeGrid.grid.saveCell();
             break;
         case 'Dependency' + index:
+            this.isCntxtMenuDependencyDelete = true;
             this.parent.connectorLineEditModule.removePredecessorByIndex(this.rowData, index);
             break;
         case 'Auto':

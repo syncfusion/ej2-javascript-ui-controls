@@ -506,7 +506,7 @@ export class TextPosition {
             index = info.index;
             if (!isNullOrUndefined(inline) && index === inline.length && (inline.nextNode instanceof FieldElementBox
                 || inline.nextNode instanceof BookmarkElementBox)) {
-                const nextValidInline: ElementBox = this.selection.getNextValidElement((inline.nextNode as FieldElementBox)) as ElementBox;
+                const nextValidInline: ElementBox = this.documentHelper.getNextValidElement((inline.nextNode as FieldElementBox)) as ElementBox;
                 //Moves to field end mark or Bookmark end.
                 if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 1
                     || nextValidInline instanceof BookmarkElementBox && nextValidInline.bookmarkType === 1) {
@@ -818,7 +818,7 @@ export class TextPosition {
             inline = inlineObj.element;
             indexInInline = inlineObj.index;
             if (!isNullOrUndefined(inline) && indexInInline === inline.length && inline.nextNode instanceof FieldElementBox) {
-                const nextValidInline: ElementBox = this.selection.getNextValidElement(inline.nextNode);
+                const nextValidInline: ElementBox = this.documentHelper.getNextValidElement(inline.nextNode);
                 //Moves to field end mark.
                 if (nextValidInline instanceof FieldElementBox && (nextValidInline as FieldElementBox).fieldType === 1) {
                     inline = nextValidInline;
@@ -1917,7 +1917,7 @@ export class TextPosition {
             } else {
                 let inline: ElementBox = lastElement;
                 while (!isNullOrUndefined(inline) && inline.length === index && inline.nextNode instanceof FieldElementBox) {
-                    const nextInline: ElementBox = selection.getNextValidElement(inline.nextNode as FieldElementBox);
+                    const nextInline: ElementBox = this.documentHelper.getNextValidElement(inline.nextNode as FieldElementBox);
                     if (inline !== nextInline) {
                         inline = nextInline;
                         index = 0;

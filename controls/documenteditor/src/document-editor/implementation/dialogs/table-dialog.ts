@@ -16,6 +16,10 @@ export class TableDialog {
     private columnValueTexBox: NumericTextBox;
     private rowValueTextBox: NumericTextBox;
     private localeValue: L10n;
+
+    private parentDiv: HTMLElement;
+    private columnValue: HTMLElement;
+    private rowValue: HTMLElement;
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper
      * @private
@@ -34,24 +38,24 @@ export class TableDialog {
      */
     public initTableDialog(localValue: L10n): void {
         this.target = createElement('div', { className: 'e-de-insert-table' });
-        const parentDiv: HTMLElement = createElement('div');
+        this.parentDiv = createElement('div');
 
-        const columnValue: HTMLElement = createElement('div', { className: 'e-de-container-row' });
+        this.columnValue = createElement('div', { className: 'e-de-container-row' });
         this.columnsCountBox = createElement('input', {
             attrs: { type: 'text' }
         }) as HTMLInputElement;
-        columnValue.appendChild(this.columnsCountBox);
+        this.columnValue.appendChild(this.columnsCountBox);
         this.columnsCountBox.setAttribute('aria-labelledby', localValue.getConstant('Insert Table'));
 
-        const rowValue: HTMLElement = createElement('div');
+        this.rowValue = createElement('div');
         this.rowsCountBox = createElement('input', {
             attrs: { type: 'text' }
         }) as HTMLInputElement;
-        rowValue.appendChild(this.rowsCountBox);
+        this.rowValue.appendChild(this.rowsCountBox);
 
-        parentDiv.appendChild(columnValue);
-        parentDiv.appendChild(rowValue);
-        this.target.appendChild(parentDiv);
+        this.parentDiv.appendChild(this.columnValue);
+        this.parentDiv.appendChild(this.rowValue);
+        this.target.appendChild(this.parentDiv);
 
         this.rowValueTextBox = new NumericTextBox({
             format: '#',
@@ -74,8 +78,8 @@ export class TableDialog {
             floatLabelType: 'Always'
         });
         this.columnsCountBox.setAttribute('aria-labelledby', localValue.getConstant('Number of columns'));
-        parentDiv.setAttribute('aria-labelledby', localValue.getConstant('Insert Table'));
-        parentDiv.setAttribute('aria-describedby', localValue.getConstant('Insert Table'));
+        this.parentDiv.setAttribute('aria-labelledby', localValue.getConstant('Insert Table'));
+        this.parentDiv.setAttribute('aria-describedby', localValue.getConstant('Insert Table'));
         this.columnValueTexBox.appendTo(this.columnsCountBox);
     }
     /**
@@ -174,6 +178,7 @@ export class TableDialog {
         this.columnsCountBox = undefined;
         this.rowsCountBox = undefined;
         this.documentHelper = undefined;
+        this.removeElements();
         if (!isNullOrUndefined(this.target)) {
             if (this.target.parentElement) {
                 this.target.parentElement.removeChild(this.target);
@@ -183,6 +188,20 @@ export class TableDialog {
                 i--;
             }
             this.target = undefined;
+        }
+    }
+    private removeElements(): void {
+        if (this.parentDiv) {
+            this.parentDiv.remove();
+            this.parentDiv = undefined;
+        }
+        if (this.columnValue) {
+            this.columnValue.remove();
+            this.columnValue = undefined;
+        }
+        if (this.rowValue) {
+            this.rowValue.remove();
+            this.rowValue = undefined;
         }
     }
 }

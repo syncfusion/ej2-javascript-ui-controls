@@ -17310,3 +17310,207 @@ export let overviewData = [
         ParentId: 50,
     },
 ];
+export let CR909421 = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+        ]
+    }
+]
+export let criticalPath: Object = [
+    {
+        id: 1325,
+        TaskID: '1',
+        TaskName: 'P20 - New Task 1',
+        Description: 'Description',
+        StartDate: '2024-09-09T02:30:00.000Z',
+        EndDate: '2024-09-10T00:00:00.000Z',
+        Progress: 0,
+        Duration: 1,
+        BaselineStartDate: '2024-09-06T02:30:00.000Z',
+        BaselineDuration: 1,
+        BaselineEndDate: '2024-09-06T11:30:00.000Z',
+        Predecessor: '',
+        children: [],
+        subtasks: [],
+    },
+
+    {
+        id: 1326,
+
+        TaskID: '2',
+
+        TaskName: 'P20 - Task 10',
+
+        Description: 'Description',
+
+        StartDate: '2024-09-09T02:30:00.000Z',
+
+        EndDate: '2024-09-10T00:00:00.000Z',
+
+        Progress: 0,
+
+        Duration: 1,
+
+        BaselineStartDate: '2024-09-06T02:30:00.000Z',
+
+        BaselineDuration: 1,
+
+        BaselineEndDate: '2024-09-06T11:30:00.000Z',
+
+        Predecessor: '',
+
+        children: [],
+
+        subtasks: [],
+    },
+
+    {
+        id: 1328,
+
+        TaskID: '3',
+
+        TaskName: 'P20 - New Task 3',
+
+        Description: 'Description',
+
+        StartDate: '2024-09-09T02:30:00.000Z',
+
+        EndDate: '2024-09-10T00:00:00.000Z',
+
+        Progress: 0,
+
+        Duration: 1,
+
+        BaselineStartDate: '2024-09-06T02:30:00.000Z',
+
+        BaselineDuration: 1,
+
+        BaselineEndDate: '2024-09-06T11:30:00.000Z',
+
+        Predecessor: '',
+
+        children: [1327],
+
+        subtasks: [
+            {
+                id: 1327,
+
+                TaskID: '3.1',
+
+                color: 'Purple',
+
+                TaskName: 'Task 3',
+
+                Description: 'Description',
+
+                StartDate: '2024-09-09T02:30:00.000Z',
+
+                EndDate: '2024-09-10T00:00:00.000Z',
+
+                Progress: 0,
+
+                Duration: 1,
+
+                BaselineStartDate: '2024-09-06T02:30:00.000Z',
+
+                BaselineDuration: 1,
+
+                BaselineEndDate: '2024-09-06T11:30:00.000Z',
+
+                // Predecessor: '4 SS', 
+
+                children: [],
+            },
+        ],
+    },
+
+    {
+        id: 1329,
+
+        TaskID: '4',
+
+        TaskName: 'P20 - Task 4',
+
+        Description: 'Description',
+
+        StartDate: '2024-09-09T02:30:00.000Z',
+
+        Progress: 0,
+
+        Duration: 1,
+
+        BaselineStartDate: '2024-09-06T08:51:10.169Z',
+
+        BaselineDuration: 1,
+
+        BaselineEndDate: '2024-09-07T08:51:10.169Z',
+
+        Predecessor: '',
+
+        subtasks: [
+            {
+                id: 1330,
+
+                TaskID: '4.1',
+
+                TaskName: 'P20 - Task 4',
+
+                Description: 'Description',
+
+                StartDate: '2024-09-09T02:30:00.000Z',
+
+                Progress: 0,
+
+                Duration: 1,
+
+                BaselineStartDate: '2024-09-06T08:51:29.364Z',
+
+                BaselineDuration: 1,
+
+                BaselineEndDate: '2024-09-07T08:51:29.364Z',
+
+                Predecessor: '',
+            },
+        ],
+
+        children: [1330],
+    },
+]
+
+export let editingResources3: Object[] = [
+    { resourceId: 1, resourceName: 'Martin Tamer' },
+    { resourceId: 2, resourceName: 'Rose Fuller' },
+    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+    { resourceId: 4, resourceName: 'Fuller King' },
+    { resourceId: 5, resourceName: 'Davolio Fuller' },
+    { resourceId: 6, resourceName: 'Van Jack' },
+    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+    { resourceId: 8, resourceName: 'Jack Davolio' },
+    { resourceId: 9, resourceName: 'Tamer Vinet' },
+    { resourceId: 10, resourceName: 'Vinet Fuller' },
+    { resourceId: 11, resourceName: 'Bergs Anton' },
+    { resourceId: 12, resourceName: 'Construction Supervisor' }
+];
+export let undoredo907807: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product concept',
+        StartDate: new Date('04/02/2024'),
+        EndDate: new Date('04/21/2024'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2024'), Duration: 3, Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2024'), Duration: 3 },
+            {
+                TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2024'), Duration: 2,
+                Predecessor: '2', Progress: 30
+            },
+        ]
+    }
+];

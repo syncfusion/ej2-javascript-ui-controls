@@ -1638,7 +1638,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         axes.map((axis: Axis) => {
             axis.annotations.map((annotation: Annotation) => {
                 if (!annotationEnable) {
-                    annotationEnable = !isNullOrUndefined(annotation.content) && annotation.content.length !== 0;
+                    annotationEnable = ((!isNullOrUndefined(annotation.content) && annotation.content.length !== 0) || typeof(annotation.content) === 'function');
                 }
             });
         });

@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I628962` - The issue with placing the dragged item between the nodes in the TreeView during the drag and drop action has been resolved.
+- `#I635384` - Console error on initial rendering of `Dropdown Tree` when setting `checkDisabledChildren` to false with additional `htmlAttributes` has been resolved.
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I897592` - The issue with "Context menu reopens after selecting options quickly" has been resolved.
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#I629277` - The issue with the close arguments event value showing as null when performing a swipe action in the Sidebar component has been resolved.
+
+- `#I627602` - An issue with Sidebar component while utilizing multiple sidebars with `closeOnDocumentClick` property has been resolved.
+
 ## 27.1.48 (2024-09-18)
 
 ### Tab

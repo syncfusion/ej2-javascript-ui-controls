@@ -170,6 +170,14 @@ describe('ListBox', () => {
             (listObj as any).showCheckbox(true);
         });
 
+        it('Checkbox - SelectAll', () => {
+            listObj = new ListBox({ dataSource: data, allowFiltering: true }, elem);
+            listObj.selectionSettings.showCheckbox = true;
+            listObj.dataBind();
+            (listObj as any).selectAllItems();
+            (listObj as any).selectHandler({target: (listObj as any).list.querySelector('li') })
+        });
+
         it('Select All Checkbox', () => {
             listObj = new ListBox({ dataSource: data, allowFiltering: true, selectionSettings: { showCheckbox: true, showSelectAll: true } }, elem);
             let ele: any = listObj.list.getElementsByClassName('e-selectall-parent')[0];
@@ -1270,6 +1278,32 @@ describe('ListBox', () => {
             let datasource = ['Java']
             listObj = new ListBox({ dataSource: datasource }, elem);
             listObj.filter({dataSource: datasource});
+        });
+
+        it('905360 - Filtering updateData method with prevent default sorting', () => {
+            listObj = new ListBox({
+                dataSource: [
+                    { text: 'McLaren F1' },
+                    { text: 'Aston Martin One- 77' },
+                    { text: 'Jaguar XJ220' },
+                    { text: 'McLaren P1' },
+                    { text: 'Ferrari LaFerrari' }
+                ],
+                fields: { text: 'text' },
+                allowFiltering: true,
+                sortOrder: 'Ascending',
+                filtering: (args) => {    
+                    if (args.text.length > 1) {
+                        var matches = [ { text: 'McLaren Z1' }, { text: 'McLaren A1' } ];
+                        args.preventDefaultAction = true;
+                        args.updateData(matches, null)
+                    }
+                }
+            }, elem);
+            listObj.filterInput.value = 'mc';
+            listObj.KeyUp({ keyCode: 67, ctrlKey: false, text: 'mc', preventDefault: () => { } });
+            expect(listObj.liCollections.length).toEqual(2);
+            expect(listObj.liCollections[0].innerText).toEqual("McLaren Z1");
         });
     });
 

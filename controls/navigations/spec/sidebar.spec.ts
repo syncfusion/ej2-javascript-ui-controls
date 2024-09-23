@@ -581,11 +581,17 @@ describe("Sidebar DOM class Testing ", () => {
     });
 
     it("Sidebar closeOnDocumentClick test", () => {
+        let mouseEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            currentTarget: null,
+            target: document.body,
+            stopPropagation: (): void => { /** NO Code */ }
+        };
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ closeOnDocumentClick: true, type: 'Push' }, ele);
         sidebar.show();
-        triggerMouseEvent(<HTMLElement>document.querySelector('.e-content-section'), 'mousedown');
+        sidebar.documentclickHandler(mouseEventArgs);
         expect(sidebar.element.classList.contains('e-close')).toBe(true);
     });
 
@@ -2209,4 +2215,155 @@ describe("Sidebar testing ", () => {
         expect(aniEle1[0].style.marginLeft).toBe('250px');
         expect(aniEle1[0].style.marginRight).toBe('300px');
     });
+    it("two Sidebars with closeOnDocumentClick property", () => {
+        let sidebar: any;
+        let mouseEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            currentTarget: null,
+            target: document.body,
+            stopPropagation: (): void => { /** NO Code */ }
+        };
+        let ele: HTMLElement = document.getElementById("sidebar");
+        sidebar = new Sidebar({ type: "Auto", closeOnDocumentClick: true }, ele);
+        let ele1: HTMLElement = document.getElementById("sidebar1");
+        sidebar1 = new Sidebar({ type: 'Push', position: 'Right', target: '.maincontent', width: '300px' }, ele1);
+        expect(sidebar.isOpen).toBe(true);
+        sidebar.documentclickHandler(mouseEventArgs);
+        expect(ele.classList.contains("e-close")).toEqual(true);
+        expect(sidebar.isOpen).toBe(false);
+        sidebar1.show();
+        sidebar1.closeOnDocumentClick = true;
+        expect(sidebar1.isOpen).toBe(true);
+        sidebar1.documentclickHandler(mouseEventArgs);
+        expect(ele1.classList.contains("e-close")).toEqual(true);
+        expect(sidebar1.isOpen).toBe(false);
+    });
+});
+
+describe("Sidebar enableGestures testing with SwipeEventArgs in the close event ", () => {
+    let sidebar: any;
+    beforeEach((): void => {
+        let ele: HTMLElement = document.createElement("div");
+        let sibin: HTMLElement = document.createElement("div");
+        ele.innerHTML = "<h3>Testing of Sidebar</h3>"
+        sibin.innerHTML = "Side bar";
+        sibin.className = 'e-content-section';
+        ele.id = "sidebar";
+        ele.style.width = "300px";
+        ele.style.height = "100%";
+        document.body.style.margin = "0px";
+        let div: any = document.createElement('div');
+        let span: any = document.createElement('span');
+        div.className = 'e-context-element';
+        div.appendChild(span);
+        document.body.appendChild(div);
+        document.body.appendChild(ele);
+        document.body.appendChild(sibin);
+    });
+    afterEach((): void => {
+        if (sidebar) {
+            sidebar.destroy();
+        }
+        document.body.innerHTML = "";
+    });
+
+    it("Performing a swipe in desktop mode", () => {
+        let mouse: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            currentTarget: null,
+            target: document.body,
+            stopPropagation: (): void => { /** NO Code */ },
+            swipeDirection: 'Left',
+            startX: 20,
+            distanceX: 60,
+            velocity: 0.5,
+            originalEvent: {
+                isTrusted: true,
+                altKey: false,
+                button: 0,
+                type: "mouseup"
+            }
+        };
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ enableGestures: true, type: 'Push', 
+            close: function(args) {
+                expect(args.event).not.toBe(null);
+            }
+        }, ele);
+        expect(document.getElementById('sidebar').classList.contains('e-touch')).toBe(true);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+        sidebar.show();
+        expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+        sidebar.enableGestureHandler(mouse);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+    });
+
+});
+
+describe("Sidebar enableGestures testing with SwipeEventArgs in the close event ", () => {
+    let sidebar: any;
+    beforeEach((): void => {
+        let ele: HTMLElement = document.createElement("div");
+        let sibin: HTMLElement = document.createElement("div");
+        ele.innerHTML = "<h3>Testing of Sidebar</h3>";
+        sibin.innerHTML = "Side bar";
+        sibin.className = 'e-content-section';
+        ele.id = "sidebar";
+        ele.style.width = "300px";
+        ele.style.height = "100%";
+        document.body.style.margin = "0px";
+        let div: any = document.createElement('div');
+        let span: any = document.createElement('span');
+        div.className = 'e-context-element';
+        div.appendChild(span);
+        document.body.appendChild(div);
+        document.body.appendChild(ele);
+        document.body.appendChild(sibin);
+        let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+        Browser.userAgent = androidPhoneUa;
+
+    });
+    afterEach((): void => {
+        if (sidebar) {
+            sidebar.destroy();
+        }
+        document.body.innerHTML = "";
+        let androidPhoneUa: string = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36';
+        Browser.userAgent = androidPhoneUa;
+
+    });
+
+    it("Performing a swipe in mobile mode", () => {
+        let touch: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            currentTarget: null,
+            target: document.body,
+            stopPropagation: (): void => { /** NO Code */ },
+            swipeDirection: 'Left',
+            startX: 20,
+            distanceX: 60,
+            velocity: 0.5,
+            originalEvent: {
+                isTrusted: true,
+                altKey: false,
+                button: 0,
+                type: "touchend"
+            }
+        };
+        let ele: HTMLElement = document.getElementById("sidebar");
+        sidebar = new Sidebar({ enableGestures: true, type: "Auto",
+            close: function(args) {
+                expect(args.event).not.toBe(null);
+            }
+        }, ele);
+        expect(document.getElementById('sidebar').classList.contains('e-touch')).toBe(true);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+        sidebar.show();
+        expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+        sidebar.enableGestureHandler(touch);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+    });
+
 });

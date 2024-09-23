@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I626172` - Now, stamp annotation is saved properly when adding custom Data property.
+- `#I631717` - Now, Free text author and comment characters are not changed when importing the exported annotation.
+- `#I632150` - Now, the handwritten signature is properly selected after being added to the PDF viewer on a mobile device.
+- `#I626892` - Now, the large document opens in `standalone` PDF Viewer.
+- `#I632511` - Now, the fetch request is not sent if the URL is set to the document path on the Server-Backed PDF Viewer.
+- `#I632378` - Now, copy paste is working with formfields when `enableFormDesigner` as false.
+- `#I631207` - Now, the `textmarkup` annotations are not unselected when changing the properties programmatically.
+
 ## 27.1.48 (2024-09-18)
 
 ### PDF Viewer
@@ -22,6 +36,11 @@
 - Enabled multi-word search functionality within the PDF Viewer.
 - `#I592524` , `#I598159` - Added support for loading custom fonts in `PDFium` WASM to ensure proper rendering of page content.
 - `#I340793` , `#I345576` , `#I359942` , `#I379567` , `#I386590` , `#I605421` , `#I607974` - Added support for custom fonts in the `TypeHere` signature and initial fields.
+
+### Breaking Changes
+
+- In the Server-backed PDF Viewer, two action methods, `RenderPdfTexts` and `ValidatePassword`, are now required in the controller for proper functionality. This change is necessary because text extraction for PDF documents has been separated by default. Additionally, when importing a new PDF document in the organize window, a protected document validation check must be performed before the import.
+    - **Solution** : To update the `PDFViewerController` file on your server, refer to the framework-specific sample repository available [here](https://github.com/SyncfusionExamples/EJ2-PDFViewer-WebServices/tree/main) for guidance.
 
 ## 26.2.12 (2024-09-03)
 

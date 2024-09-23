@@ -2122,7 +2122,10 @@ export class DropDownList extends DropDownBase implements IInput {
                 selectedElement.setAttribute('value', value.toString());
             } else {
                 if (!isNullOrUndefined(this.hiddenElement)) {
-                    this.hiddenElement.innerHTML = '<option selected>' + this.text + '</option>';
+                    const option: any = document.createElement('option');
+                    option.text = this.text;
+                    option.setAttribute('selected', '');
+                    this.hiddenElement.appendChild(option);
                     const selectedElement: HTMLElement = this.hiddenElement.querySelector('option');
                     selectedElement.setAttribute('value', value.toString());
                 }

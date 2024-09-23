@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### Circular Gauge
+
+#### Bug fixes
+
+- The annotations will now render correctly when templates are provided through functions.
+
 ## 25.1.35 (2024-03-15)
 
 ### Circular Gauge

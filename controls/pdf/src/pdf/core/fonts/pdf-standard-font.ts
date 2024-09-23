@@ -1,5 +1,5 @@
 import { PdfStringFormat } from './pdf-string-format';
-import { _PdfFontMetrics, _WidthTable, _CjkWidthTable, _StandardWidthTable, _CjkSameWidth, _CjkDifferentWidth } from './pdf-font-metrics';
+import { _PdfFontMetrics, _CjkWidthTable, _StandardWidthTable, _CjkSameWidth, _CjkDifferentWidth } from './pdf-font-metrics';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { _PdfStringLayouter, _PdfStringLayoutResult } from './string-layouter';
 import { _UnicodeTrueTypeFont } from './unicode-true-type-font';

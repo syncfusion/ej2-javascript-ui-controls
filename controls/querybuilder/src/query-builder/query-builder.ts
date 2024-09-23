@@ -393,6 +393,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private dragElement: HTMLElement;
     private prvtEvtTgrDaD: boolean;
     private isDragEventPrevent: boolean;
+    private isValueEmpty: boolean = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private ddTree: any;
 
@@ -1413,7 +1414,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 .filter((filteredChild: { [key: string]: Object } | null): boolean => filteredChild !== null);
             this.changeDataSource(matchedDataSource);
             setTimeout(() => {
-                if (!isNullOrUndefined(proxy.ddTree)) {
+                if (!isNullOrUndefined(proxy.ddTree) && !isNullOrUndefined(proxy.ddTree.treeObj)) {
                     proxy.ddTree.treeObj.expandAll();
                 }
             }, 100);
@@ -1421,6 +1422,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
 
     private changeDataSource(data: { [key: string]: Object }[]): void {
+        this.updateDropdowntreeDS(data);
         this.ddTree.treeObj.fields = {
             dataSource: data,
             value: 'field',
@@ -1455,7 +1457,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
 
     private dropdownTreeClose(): void {
-        if (this.ddTree) { this.changeDataSource(this.columns as { [key: string]: Object }[]); }
+        if (this.ddTree) { this.changeDataSource(extend([], this.columns, [], true) as { [key: string]: Object }[]); }
         this.ddTree = null;
     }
 
@@ -2329,7 +2331,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private changeValue(i: number, args: ButtonChangeEventArgs | InputEventArgs | InputChangeEventArgs | CalendarChangeEventArgs): void {
         let element: Element;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (this.isNumInput && typeof (args as any).value === 'number') { this.isNumInput = false; return; }
+        if ((this.isNumInput && typeof (args as any).value === 'number') || ((args as any).type === 'input' && (args as any).target && (args as any).target.classList.contains('e-numerictextbox'))
+            && (this.selectedColumn.validation.max !==  Number.MAX_VALUE || this.selectedColumn.validation.min > 0)) {
+            this.isNumInput = false; return;
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((args as any).element && (args as any).element.classList.contains('e-multiselect')) {
             const multiSelectArgs: MultiSelectChangeEventArgs = args as MultiSelectChangeEventArgs;
@@ -2337,7 +2342,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else if (args.event) {
             element = args.event.target as Element;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } else if ((args as any).type === 'input' && (args as any).currentTarget) {
+        } else if ((args as any).type === 'input' && (args as any).target && (args as any).target.classList.contains('e-numerictextbox')) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             element = (args as any).currentTarget as Element;
         } else {
@@ -2392,7 +2397,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             value = (<InputEventArgs | InputChangeEventArgs | CalendarChangeEventArgs>args).value;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((args as any).type === 'input' && (args as any).currentTarget) {
+            if ((args as any).type === 'input' && (args as any).target && (args as any).target.classList.contains('e-numerictextbox')) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 value = Number((args as any).currentTarget.value) as number;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2760,11 +2765,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
                 const height: string = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
                 let operator: string | undefined;
-                operatorList.forEach((obj: { [key: string]: Object }) => {
-                    if ('value' in obj && typeof obj.value === 'string' && obj.value.toLowerCase() === rule.operator.toLowerCase()) {
-                        operator = obj.value;
-                    }
-                });
+                if (rule.operator) {
+                    operatorList.forEach((obj: { [key: string]: Object }) => {
+                        if ('value' in obj && typeof obj.value === 'string' && obj.value.toLowerCase() === rule.operator.toLowerCase()) {
+                            operator = obj.value;
+                        }
+                    });
+                }
                 let value: string | object = operator ? operator : operatorList[0].value;
                 let ddlIdx: number = 0;
                 if (!this.autoSelectOperator) { value = ''; ddlIdx = -1; }
@@ -4832,8 +4839,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (typeof target === 'string') {
             groupId = this.element.id + '_' + target as string;
             target = document.getElementById(groupId);
+            groupId = groupId.replace(this.element.id + '_', '');
         } else {
             groupId = groupElem.id.replace(this.element.id + '_', '');
+        }
+        if (groupId === 'group0' || !target) {
+            return;
         }
         const args: ChangeEventArgs = { groupID: groupId, cancel: false, type: 'deleteGroup' };
         if (!this.isImportRules && !this.prvtEvtTgrDaD) {
@@ -5194,6 +5205,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * @returns {RuleModel} - Valid rule or rules collection
      */
     public getValidRules(currentRule?: RuleModel): RuleModel {
+        this.isValueEmpty = true;
         if (!currentRule) {
             currentRule = this.getRules();
         }
@@ -5203,6 +5215,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const rule: RuleModel = !isNullOrUndefined(currentRule.isLocked) ?
             this.getRuleCollection({condition: ruleCondtion, rules: ruleColl, not: notCondition, isLocked: currentRule.isLocked}, true) :
             this.getRuleCollection({condition: ruleCondtion, rules: ruleColl, not: notCondition}, true);
+        this.isValueEmpty = false;
         return rule;
     }
     private getRuleCollection(rule: RuleModel, isValidRule: boolean): RuleModel {
@@ -5230,8 +5243,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     rule.value = null;
                 }
             }
-            if ((this.isRefreshed && this.enablePersistence) || (rule.field !== '' && rule.operator !== '' && (rule.value !== '' &&
-            rule.value !== undefined)) || (customObj && customObj.isQuestion)) {
+            if ((this.isRefreshed && this.enablePersistence) || (rule.field !== '' && rule.operator !== '' &&
+                (this.isValueEmpty ? rule.value !== '' && rule.value !== undefined : rule.value !== undefined)) ||
+                (customObj && customObj.isQuestion)) {
                 const condition: string = rule.condition; const lockedRule: boolean = rule.isLocked;
                 rule = { 'label': rule.label, 'field': rule.field, 'operator': rule.operator, 'type': rule.type, 'value': rule.value };
                 if (!isNullOrUndefined(lockedRule)) {
@@ -5374,6 +5388,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     public deleteGroups(groupIdColl: string[]): void {
         let i: number; const len: number = groupIdColl.length; let groupID: string;
         for (i = 0; i < len; i++) {
+            if (groupIdColl[i as number] === 'group0') {
+                continue;
+            }
             groupID = this.element.id + '_' + groupIdColl[i as number];
             this.deleteGroup(document.getElementById(groupID));
         }

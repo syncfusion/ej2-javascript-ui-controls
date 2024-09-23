@@ -856,18 +856,18 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 if (!(/^[a-zA-Z0-9- ]*$/).test(value)) {
                     valueExpression = this.setCurrentDate(this.getDateObject(value));
                     if (isNullOrUndefined(valueExpression)) {
-                        valueExpression = this.checkDateValue(this.globalize.parseDate(valueString, {
+                        valueExpression = this.checkDateValue(this.globalize.parseDate(this.getAmPmValue(valueString), {
                             format: this.getCldrDateTimeFormat(), type: 'datetime'
                         }));
                         if (isNullOrUndefined(valueExpression)) {
-                            valueExpression = this.checkDateValue(this.globalize.parseDate(valueString, {
+                            valueExpression = this.checkDateValue(this.globalize.parseDate(this.getAmPmValue(valueString), {
                                 format: this.formatString, type: 'dateTime', skeleton: 'yMd'
                             }));
                         }
                     }
                 }
             }
-            valueExp = this.globalize.parseDate(valueString, {
+            valueExp = this.globalize.parseDate(this.getAmPmValue(valueString), {
                 format: this.getCldrDateTimeFormat(), type: 'datetime'
             });
             valueExpression = (!isNullOrUndefined(valueExp) && valueExp instanceof Date && !isNaN(+valueExp)) ? valueExp : null;
@@ -905,7 +905,19 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
         return modules;
     }
-
+    protected getAmPmValue(date: string | null | undefined): string {
+        try {
+            if (typeof date === 'string' && date.trim() !== '') {
+                // Replace am/pm variants with uppercase AM/PM
+                return date.replace(/(am|pm|Am|aM|pM|Pm)/g, (match: string) => match.toLocaleUpperCase());
+            }
+            // If date is null, undefined, or an empty string, return a default value or empty string
+            return '';
+        } catch (error) {
+            console.error('Error occurred while processing date:', error);
+            return ''; // Return a default value in case of an error
+        }
+    }
     private cldrFormat(type: string): string {
         let cldrDateTimeString: string;
         if (this.locale === 'en' || this.locale === 'en-US') {
@@ -2378,10 +2390,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     protected timeParse(today: string, val: Date | string): Date {
         let value: Date;
-        value = this.globalize.parseDate(today + ' ' + val, {
+        value = this.globalize.parseDate(this.getAmPmValue(today + ' ' + val), {
             format: this.cldrDateFormat() + ' ' + this.cldrTimeFormat(), type: 'datetime'
         });
-        value = isNullOrUndefined(value) ? this.globalize.parseDate(today + ' ' + val, {
+        value = isNullOrUndefined(value) ? this.globalize.parseDate(this.getAmPmValue(today + ' ' + val), {
             format: this.cldrDateFormat() + ' ' + this.dateToNumeric(), type: 'datetime'
         }) : value;
         value = isNullOrUndefined(value) ? value : new Date(value.setMilliseconds(0));

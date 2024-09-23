@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 27.1.50 (2024-09-24)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I629988` - Change the event argument action property value while deleting dependency issue has been fixed.
+- `#I629758` - Console error while deleting last record with undo redo and styles not persists in notes tab in dialog issues has been fixed.
+- `#I631900` - Script error occurs while deleting last record when undo redo support is enabled issue has been fixed.
+- `#I625233` - Timeline cell disappeared during `DST` issue has been fixed.
+- `#I631255` - Incorrect left is updated during `DST` issue has been fixed.
+- `#I628433` - When adding a dependency to an unscheduled task, an exception is thrown issue has been fixed.
+- `#I632390` - While collapsing parent custom color applied for child disappeared issue has been fixed.
+
 ## 27.1.48 (2024-09-18)
 
 ### GanttChart

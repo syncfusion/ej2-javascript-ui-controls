@@ -628,6 +628,15 @@ describe('QueryBuilder', () => {
             'value': 'Sales Manager'
         }]
     };
+    const noValue: RuleModel = {
+        'condition': 'or',
+        'rules': [{
+            'label': 'DOB',
+            'field': 'DOB',
+            'type': 'date',
+            'operator': 'equal'
+        }]
+    };
 
     const fieldRules: RuleModel = {
         'condition': 'and',
@@ -3130,6 +3139,10 @@ describe('QueryBuilder', () => {
     describe('model binding support', () => {
         beforeEach((): void => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+            const template: Element = createElement('script', { id: 'template' });
+            template.setAttribute('type', 'text/x-template');
+            template.innerHTML = '<div class="e-slider-value"><div id = ${ruleID}_valuekey0 class="ticks_slider e-template"></div></div>';
+            document.body.appendChild(template);
         });
         afterEach(() => {
             if (queryBuilder) {
@@ -3368,6 +3381,61 @@ describe('QueryBuilder', () => {
             }, '#querybuilder');
             const inpElem: HTMLElement = document.getElementById('querybuilder_group0_rule0_filterkey');
             (queryBuilder as any).changeField({ element: inpElem, e: null, isInteracted: true, name: 'change', oldValue: ['Employee.ID'], value: ['Employee.DOB']});
+        });
+        it('Complex Databinding Support - Dropdown Tree with angular template', () => {
+            const columns: ColumnsModel[] = [
+                {field: 'Employee', label: 'Employee', columns: [
+                    { field: 'ID', label: 'ID', type: 'number', template: '#template'},
+                    { field: 'DOB', label: 'Date of birth', type: 'date'},
+                    { field: 'HireDate', label: 'Hire Date', type: 'date'},
+                    { field: 'Salary', label: 'Salary', type: 'number'},
+                    { field: 'Age', label: 'Age', type: 'number'},
+                    { field: 'Title', label: 'Title', type: 'string'}
+                ]},
+                {field: 'Name', label: 'Name', columns: [
+                    { field: 'FirstName', label: 'First Name', type: 'string'},
+                    { field: 'LastName', label: 'Last Name', type: 'string'}
+                ]},
+                {field: 'Country', label: 'Country', columns : [
+                    { field: 'State', label: 'State', columns : [
+                        { field: 'City', label: 'City', type: 'string'},
+                        { field: 'Zipcode', label: 'Zip Code', type: 'number'}] },
+                    { field: 'Region', label: 'Region', type: 'string'},
+                    { field: 'Name', label: 'Name', type: 'string'}
+                ]}
+            ];
+            let valueObj: Slider;
+            queryBuilder = new QueryBuilder({
+                dataSource: complexBindingData,
+                columns: columns,
+                separator: '.',
+                fieldMode: 'DropdownTree',
+                fieldModel: { allowFiltering: true },
+                actionBegin: (args: any) => {
+                    if (args.requestType === 'value-template-create') {
+                        if (args.rule.field === 'ID') {
+                            const defaultNumber: number = 31;
+                            if (args.rule.value === '') {
+                                args.rule.value = defaultNumber;
+                            }
+                            valueObj = new Slider({
+                                value: args.rule.value as number, min: 30, max: 50,
+                                ticks: { placement: 'Before', largeStep: 5, smallStep: 1 },
+                                change: (e: any) => {
+                                    const elem: HTMLElement = valueObj.element;
+                                    queryBuilder.notifyChange(e.value, elem, 'value');
+                                }
+                            });
+                            valueObj.appendTo('#' + args.ruleID + '_valuekey0');
+                        }
+                    }
+                }
+            }, '#querybuilder');
+            queryBuilder.isAngular = true;
+            const filter: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances[0];
+            filter.showPopup();
+            const input: HTMLElement = document.querySelector('.e-qb-ddt.e-popup-open .e-textbox');
+            queryBuilder.dropdownTreeFiltering({cancel: false, text: 'h', event: {srcElement: input }});
         });
     });
     describe('Customer_Bugs', () => {
@@ -4038,6 +4106,17 @@ describe('QueryBuilder', () => {
             }, '#querybuilder');
             queryBuilder.setRulesFromSql('Name = 9 OR ID = 8');
             expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual('Name = 9 OR ID = 8');
+        });
+
+        it('EJ2 - 898205 - While setting rule.value as an empty string the rule was not created in QueryBuilder', () => {
+            queryBuilder = new QueryBuilder({
+                columns: columnData,
+                rule: noValue,
+            }, '#querybuilder');
+            expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).field).toEqual('DOB');
+            expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).label).toEqual('DOB');
+            expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).operator).toEqual('equal');
+            expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).value).toEqual(null);
         });
 
     });

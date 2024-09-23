@@ -739,8 +739,8 @@ export class Edit {
         if (this.parent.editSettings.mode === 'Cell' && args.requestType === 'beginEdit') {
             args.cancel = true; return;
         }
-        if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
-        this.doubleClickTarget.classList.contains('e-treegridcollapse') || this.doubleClickTarget.classList.contains('e-frame'))) {
+        if (this.doubleClickTarget && args.requestType !== 'delete' && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
+            this.doubleClickTarget.classList.contains('e-treegridcollapse') || this.doubleClickTarget.classList.contains('e-frame'))) {
             args.cancel = true; this.doubleClickTarget = null;
             return;
         }

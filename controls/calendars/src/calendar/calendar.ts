@@ -826,22 +826,19 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.effect = '';
         switch (e.action) {
         case 'moveLeft':
-            if (this.getModuleName() !== 'daterangepicker' && !isNullOrUndefined((e.target as any)) &&
-               (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
+            if (this.getModuleName() !== 'daterangepicker' && !isNullOrUndefined((e.target as any))) {
                 this.keyboardNavigate(-1, view, e, this.max, this.min);
                 e.preventDefault();
             }
             break;
         case 'moveRight':
-            if (this.getModuleName() !== 'daterangepicker' && !isNullOrUndefined((e.target as any)) &&
-               (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
+            if (this.getModuleName() !== 'daterangepicker' && !isNullOrUndefined((e.target as any))) {
                 this.keyboardNavigate(1, view, e, this.max, this.min);
                 e.preventDefault();
             }
             break;
         case 'moveUp':
-            if (this.getModuleName() !== 'daterangepicker' && !isNullOrUndefined((e.target as any)) &&
-               (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
+            if (this.getModuleName() !== 'daterangepicker' && !isNullOrUndefined((e.target as any))) {
                 if (view === 0) {
                     this.keyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
                 } else {
@@ -851,8 +848,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
             break;
         case 'moveDown':
-            if (this.getModuleName() !== 'daterangepicker' && !isNullOrUndefined((e.target as any)) &&
-               (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
+            if (this.getModuleName() !== 'daterangepicker' && !isNullOrUndefined((e.target as any))) {
                 if (view === 0) {
                     this.keyboardNavigate(7, view, e, this.max, this.min);
                 } else {
@@ -1358,7 +1354,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected firstDay(date: Date): Date {
         const collection: Element[] = this.currentView() !== 'Decade' ? <NodeListOf<HTMLTableDataCellElement> & Element[]>
-            this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '') :
+            this.tableBodyElement.querySelectorAll('td:not(.' + OTHERMONTH + '):not(.' + WEEKNUMBER + ')') :
             <NodeListOf<HTMLTableDataCellElement> & Element[]>
             this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERDECADE + '');
         if (collection.length) {
@@ -1391,7 +1387,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         const collection: Element[] = this.currentView() === 'Decade' ? <NodeListOf<HTMLTableDataCellElement> & Element[]>
             this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERDECADE + '') :
             <NodeListOf<HTMLTableDataCellElement> & Element[]>
-            this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '');
+            this.tableBodyElement.querySelectorAll('td:not(.' + OTHERMONTH + '):not(.' + WEEKNUMBER + ')');
         if (collection.length) {
             for (let i: number = collection.length - 1; i >= 0; i--) {
                 if (!collection[i as number].classList.contains(DISABLED)) {

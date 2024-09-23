@@ -104,7 +104,7 @@ export class AnnotationRenderer {
             lineAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, lineAnnotation.bounds));
             this.preserveIsLockProperty(shapeAnnotation, lineAnnotation);
             if (!isNullOrUndefined(shapeAnnotation.customData)) {
-                lineAnnotation.setValues('CustomData', shapeAnnotation.customData);
+                lineAnnotation.setValues('CustomData', JSON.stringify(shapeAnnotation.customData));
             }
             if (shapeAnnotation.allowedInteractions && shapeAnnotation['allowedInteractions'] != null){
                 lineAnnotation.setValues('AllowedInteractions', JSON.stringify(shapeAnnotation['allowedInteractions']));
@@ -200,7 +200,7 @@ export class AnnotationRenderer {
             }
             this.preserveIsLockProperty(shapeAnnotation, squareAnnotation);
             if (!isNullOrUndefined(shapeAnnotation.customData)) {
-                squareAnnotation.setValues('CustomData', shapeAnnotation.customData);
+                squareAnnotation.setValues('CustomData', JSON.stringify(shapeAnnotation.customData));
             }
             if (shapeAnnotation.allowedInteractions && shapeAnnotation['allowedInteractions'] != null){
                 squareAnnotation.setValues('AllowedInteractions', JSON.stringify(shapeAnnotation['allowedInteractions']));
@@ -295,7 +295,7 @@ export class AnnotationRenderer {
             }
             this.preserveIsLockProperty(shapeAnnotation, circleAnnotation);
             if (!isNullOrUndefined(shapeAnnotation.customData)) {
-                circleAnnotation.setValues('CustomData', shapeAnnotation.customData);
+                circleAnnotation.setValues('CustomData', JSON.stringify(shapeAnnotation.customData));
             }
             if (shapeAnnotation.allowedInteractions && shapeAnnotation['allowedInteractions'] != null){
                 circleAnnotation.setValues('AllowedInteractions', JSON.stringify(shapeAnnotation['allowedInteractions']));
@@ -382,7 +382,7 @@ export class AnnotationRenderer {
             }
             this.preserveIsLockProperty(shapeAnnotation, polygonAnnotation);
             if (!isNullOrUndefined(shapeAnnotation.customData)) {
-                polygonAnnotation.setValues('CustomData', shapeAnnotation.customData);
+                polygonAnnotation.setValues('CustomData', JSON.stringify(shapeAnnotation.customData));
             }
             if (!isNullOrUndefined(shapeAnnotation.allowedInteractions)) {
                 polygonAnnotation.setValues('AllowedInteractions', JSON.stringify(shapeAnnotation.allowedInteractions));
@@ -460,7 +460,7 @@ export class AnnotationRenderer {
             this.preserveIsLockProperty(shapeAnnotation, polylineAnnotation);
             polylineAnnotation.setAppearance(true);
             if (!isNullOrUndefined(shapeAnnotation.customData)) {
-                polylineAnnotation.setValues('CustomData', shapeAnnotation.customData);
+                polylineAnnotation.setValues('CustomData', JSON.stringify(shapeAnnotation.customData));
             }
             if (!isNullOrUndefined(shapeAnnotation.allowedInteractions)) {
                 polylineAnnotation.setValues('AllowedInteractions', JSON.stringify(shapeAnnotation.allowedInteractions));
@@ -727,16 +727,13 @@ export class AnnotationRenderer {
             }
         }
         this.preserveIsLockProperty(inkSignatureAnnotation, inkAnnotation);
-        if (!isNullOrUndefined(inkSignatureAnnotation.customData)) {
-            inkAnnotation.setValues('CustomData', inkSignatureAnnotation.customData);
-        }
         inkAnnotation.border.width = thickness;
         inkAnnotation.opacity = opacity;
         inkAnnotation._isEnableControlPoints = false;
         inkAnnotation._dictionary.set('NM', inkSignatureAnnotation.annotName.toString());
         inkAnnotation.rotationAngle = this.getRotateAngle(inkSignatureAnnotation.rotationAngle);
         if (!isNullOrUndefined(inkSignatureAnnotation.customData)) {
-            inkAnnotation.setValues('CustomData', inkSignatureAnnotation.customData);
+            inkAnnotation.setValues('CustomData', JSON.stringify(inkSignatureAnnotation.customData));
         }
         inkAnnotation.setAppearance(true);
         page.annotations.add(inkAnnotation);
@@ -915,7 +912,7 @@ export class AnnotationRenderer {
         }
         this.preserveIsLockProperty(markupAnnotation, annotation);
         if (!isNullOrUndefined(markupAnnotation.customData)) {
-            annotation.setValues('CustomData', markupAnnotation.customData);
+            annotation.setValues('CustomData', JSON.stringify(markupAnnotation.customData));
         }
         if (!isNullOrUndefined(markupAnnotation.allowedInteractions)) {
             annotation.setValues('AllowedInteractions', JSON.stringify(markupAnnotation.allowedInteractions));
@@ -1106,7 +1103,7 @@ export class AnnotationRenderer {
             }
             this.preserveIsLockProperty(stampAnnotation, rubberStampAnnotation);
             if (!isNullOrUndefined(stampAnnotation.customData)) {
-                rubberStampAnnotation.setValues('CustomData', stampAnnotation.customData);
+                rubberStampAnnotation.setValues('CustomData', JSON.stringify(stampAnnotation.customData));
             }
             if (!isNullOrUndefined(stampAnnotation.icon)){
                 rubberStampAnnotation.setValues('iconName', stampAnnotation.icon);
@@ -1195,7 +1192,7 @@ export class AnnotationRenderer {
             rubberStampAnnotation.author = !isNullOrUndefined(stampAnnotation.author) && stampAnnotation.author.toString() !== '' ? stampAnnotation.author.toString() : 'Guest';
             this.preserveIsLockProperty(stampAnnotation, rubberStampAnnotation);
             if (!isNullOrUndefined(stampAnnotation.customData)) {
-                rubberStampAnnotation.setValues('CustomData', stampAnnotation.customData);
+                rubberStampAnnotation.setValues('CustomData', JSON.stringify(stampAnnotation.customData));
             }
             if (!isNullOrUndefined(stampAnnotation.rotateAngle)) {
                 rubberStampAnnotation.setValues('rotateAngle', stampAnnotation.rotateAngle.toString());
@@ -1312,7 +1309,7 @@ export class AnnotationRenderer {
                 lineAnnotation._dictionary.set('Measure', this.setMeasureDictionary(measureDetail));
             }
             if (!isNullOrUndefined(measureShapeAnnotation.customData)) {
-                lineAnnotation.setValues('CustomData', measureShapeAnnotation.customData);
+                lineAnnotation.setValues('CustomData', JSON.stringify(measureShapeAnnotation.customData));
             }
             if (measureShapeAnnotation.allowedInteractions && measureShapeAnnotation['allowedInteractions'] != null){
                 lineAnnotation.setValues('AllowedInteractions', JSON.stringify(measureShapeAnnotation['allowedInteractions']));
@@ -1398,7 +1395,7 @@ export class AnnotationRenderer {
                 polylineAnnotation._dictionary.set('Measure', this.setMeasureDictionary(measureDetail));
             }
             if (!isNullOrUndefined(measureShapeAnnotation.customData)) {
-                polylineAnnotation.setValues('CustomData', measureShapeAnnotation.customData);
+                polylineAnnotation.setValues('CustomData', JSON.stringify(measureShapeAnnotation.customData));
             }
             if (measureShapeAnnotation.allowedInteractions && measureShapeAnnotation['allowedInteractions'] !== null){
                 polylineAnnotation.setValues('AllowedInteractions', JSON.stringify(measureShapeAnnotation['allowedInteractions']));
@@ -1490,7 +1487,7 @@ export class AnnotationRenderer {
                 }
             }
             if (!isNullOrUndefined(measureShapeAnnotation.customData)) {
-                polygonAnnotation.setValues('CustomData', measureShapeAnnotation.customData);
+                polygonAnnotation.setValues('CustomData', JSON.stringify(measureShapeAnnotation.customData));
             }
             if (measureShapeAnnotation.allowedInteractions && measureShapeAnnotation['allowedInteractions'] != null){
                 polygonAnnotation.setValues('AllowedInteractions', JSON.stringify(measureShapeAnnotation['allowedInteractions']));
@@ -1555,7 +1552,7 @@ export class AnnotationRenderer {
         annotation.icon = PdfPopupIcon.comment;
         this.preserveIsLockProperty(popUpAnnotation, annotation);
         if (!isNullOrUndefined(popUpAnnotation.customData)) {
-            annotation.setValues('CustomData', popUpAnnotation.customData);
+            annotation.setValues('CustomData', JSON.stringify(popUpAnnotation.customData));
         }
         page.annotations.add(annotation);
     }
@@ -1692,7 +1689,7 @@ export class AnnotationRenderer {
         }
         this.preserveIsLockProperty(freeTextAnnotation, annotation);
         if (!isNullOrUndefined(freeTextAnnotation.customData)) {
-            annotation.setValues('CustomData', freeTextAnnotation.customData);
+            annotation.setValues('CustomData', JSON.stringify(freeTextAnnotation.customData));
         }
         if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'textAlign') && !isNullOrUndefined(freeTextAnnotation.textAlign))
         {
@@ -2126,7 +2123,7 @@ export class AnnotationRenderer {
             circleAnnotation._dictionary.set('Measure', this.setMeasureDictionary(measureDetail));
         }
         if (!isNullOrUndefined(measureShapeAnnotation.customData)) {
-            circleAnnotation.setValues('CustomData', measureShapeAnnotation.customData);
+            circleAnnotation.setValues('CustomData', JSON.stringify(measureShapeAnnotation.customData));
         }
         circleAnnotation.setAppearance(true);
         return circleAnnotation;
@@ -2514,7 +2511,7 @@ export class AnnotationRenderer {
         if (inkAnnot._dictionary.has('CustomData') && !isNullOrUndefined(inkAnnot._dictionary.get('CustomData'))) {
             const customData: any = inkAnnot._dictionary.get('CustomData');
             if (customData != null) {
-                signature.ExistingCustomData = JSON.stringify(customData);
+                signature.ExistingCustomData = customData;
             }
         }
         return signature;
@@ -2612,7 +2609,7 @@ export class AnnotationRenderer {
         if (squareAnnot._dictionary.has('CustomData') && !isNullOrUndefined(squareAnnot._dictionary.get('CustomData'))) {
             const customData: any = squareAnnot._dictionary.get('CustomData');
             if (customData != null) {
-                shapeAnnotation.ExistingCustomData = JSON.stringify(customData);
+                shapeAnnotation.ExistingCustomData = customData;
             }
         }
         return shapeAnnotation;
@@ -2709,7 +2706,7 @@ export class AnnotationRenderer {
         if (lineAnnot._dictionary.has('CustomData') && !isNullOrUndefined(lineAnnot._dictionary.get('CustomData'))) {
             const customData: any = lineAnnot._dictionary.get('CustomData');
             if (customData != null) {
-                shapeAnnotation.ExistingCustomData = JSON.stringify(customData);
+                shapeAnnotation.ExistingCustomData = customData;
             }
         }
         if (lineAnnot.lineIntent === PdfLineIntent.lineArrow || !lineAnnot._dictionary.has('Measure')) {
@@ -2741,7 +2738,7 @@ export class AnnotationRenderer {
             if (lineAnnot._dictionary.has('CustomData') && !isNullOrUndefined(lineAnnot._dictionary.get('CustomData'))) {
                 const customData: any = lineAnnot._dictionary.get('CustomData');
                 if (customData != null) {
-                    measureShapeAnnotation.ExistingCustomData = JSON.stringify(customData);
+                    measureShapeAnnotation.ExistingCustomData = customData;
                 }
             }
             return measureShapeAnnotation;
@@ -2870,7 +2867,7 @@ export class AnnotationRenderer {
         if (ellipseAnnot._dictionary.has('CustomData') && !isNullOrUndefined(ellipseAnnot._dictionary.get('CustomData'))) {
             const customData: any = ellipseAnnot._dictionary.get('CustomData');
             if (customData != null) {
-                shapeAnnotation.ExistingCustomData = JSON.stringify(customData);
+                shapeAnnotation.ExistingCustomData = customData;
             }
         }
         if (ellipseAnnot._dictionary.has('Measure')) {
@@ -2900,7 +2897,7 @@ export class AnnotationRenderer {
             if (ellipseAnnot._dictionary.has('CustomData') && !isNullOrUndefined(ellipseAnnot._dictionary.get('CustomData'))) {
                 const customData: any = ellipseAnnot._dictionary.get('CustomData');
                 if (customData != null) {
-                    measureShapeAnnotation.ExistingCustomData = JSON.stringify(customData);
+                    measureShapeAnnotation.ExistingCustomData = customData;
                 }
             }
             return measureShapeAnnotation;
@@ -3008,7 +3005,7 @@ export class AnnotationRenderer {
             const customData: any = polygonAnnot._dictionary.get('CustomData');
             if (customData != null)
             {
-                shapeAnnotation.ExistingCustomData = JSON.stringify(customData);
+                shapeAnnotation.ExistingCustomData = customData;
             }
         }
         if (polygonAnnot._dictionary.has('AllowedInteractions')) {
@@ -3045,8 +3042,8 @@ export class AnnotationRenderer {
             }
             if (polygonAnnot._dictionary.has('CustomData') && !isNullOrUndefined(polygonAnnot._dictionary.get('CustomData'))) {
                 const customData: any = polygonAnnot._dictionary.get('CustomData');
-                if (isNullOrUndefined(customData)) {
-                    measureShapeAnnotation.ExistingCustomData = JSON.stringify(customData);
+                if (!isNullOrUndefined(customData)) {
+                    measureShapeAnnotation.ExistingCustomData = customData;
                 }
             }
             return measureShapeAnnotation;
@@ -3153,7 +3150,7 @@ export class AnnotationRenderer {
             const customData: any = polyLineAnnot._dictionary.get('CustomData');
             if (customData != null)
             {
-                shapeAnnotation.ExistingCustomData = JSON.stringify(customData);
+                shapeAnnotation.ExistingCustomData = customData;
             }
         }
         if (polyLineAnnot._dictionary.has('AllowedInteractions')) {
@@ -3188,7 +3185,7 @@ export class AnnotationRenderer {
             if (polyLineAnnot._dictionary.has('CustomData') && !isNullOrUndefined(polyLineAnnot._dictionary.get('CustomData'))) {
                 const customData: any = polyLineAnnot._dictionary.get('CustomData');
                 if (customData != null) {
-                    measureShapeAnnotation.ExistingCustomData = JSON.stringify(customData);
+                    measureShapeAnnotation.ExistingCustomData = customData;
                 }
             }
             return measureShapeAnnotation;
@@ -3523,7 +3520,7 @@ export class AnnotationRenderer {
         if (popupAnnot._dictionary.has('CustomData') && !isNullOrUndefined(popupAnnot._dictionary.get('CustomData'))) {
             const customData: any = popupAnnot._dictionary.get('CustomData');
             if (customData != null) {
-                popupAnnotation.ExistingCustomData = JSON.stringify(customData);
+                popupAnnotation.ExistingCustomData = customData;
             }
         }
         for (let i: number = 0; i < popupAnnot.comments.count; i++) {
@@ -3627,7 +3624,7 @@ export class AnnotationRenderer {
         if (freeTextAnnot._dictionary.has('CustomData') && !isNullOrUndefined(freeTextAnnot._dictionary.get('CustomData'))) {
             const customData: any = freeTextAnnot._dictionary.get('CustomData');
             if (customData != null) {
-                freeTextAnnotation.ExistingCustomData = JSON.stringify(customData);
+                freeTextAnnotation.ExistingCustomData = customData;
             }
         }
         if (freeTextAnnot._dictionary.has('AllowedInteractions')) {
@@ -3969,7 +3966,7 @@ export class AnnotationRenderer {
             const customData: any = textMarkup._dictionary.get('CustomData');
             if (customData != null)
             {
-                markupAnnotation.ExistingCustomData = JSON.stringify(customData);
+                markupAnnotation.ExistingCustomData = customData;
             }
         }
         if (textMarkup._dictionary.has('AllowedInteractions')) {

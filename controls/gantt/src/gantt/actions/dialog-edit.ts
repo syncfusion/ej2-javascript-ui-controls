@@ -69,6 +69,7 @@ export class DialogEdit {
     private localeObj: L10n;
     private parent: Gantt;
     private rowIndex: number;
+    private isFromDialogPredecessor: boolean = false;
     /* eslint-disable-next-line */
     private formObj: any;
     /* eslint-disable-next-line */
@@ -3056,7 +3057,9 @@ export class DialogEdit {
                 if (id === 'General') {
                     this.updateGeneralTab(element, false);
                 } else if (id === 'Dependency') {
+                    this.isFromDialogPredecessor = true;
                     this.updatePredecessorTab(element);
+                    this.isFromDialogPredecessor = false;
                 } else if (id === 'Notes') {
                     this.updateNotesTab(element);
                 } else if (id === 'Resources') {
@@ -3366,7 +3369,7 @@ export class DialogEdit {
         const ganttObj: Gantt = this.parent;
         const rte: RichTextEditor = <RichTextEditor>(<EJ2Instance>notesElement).ej2_instances[0];
         if (this.isEdit) {
-            if (ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode === false) {
+            if (ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode) {
                 if (this.rowData.ganttProperties.notes !== rte.getHtml() && (this.rowData.ganttProperties.notes !== null || rte.getHtml() !== '<p><br></p>') && !this.disableUndo) {
                     this.disableUndo = true;
                 }

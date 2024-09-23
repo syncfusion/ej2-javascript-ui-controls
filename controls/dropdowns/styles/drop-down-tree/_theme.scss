@@ -97,6 +97,11 @@
             color: $icon-color;
           }
         }
+        ~ span.e-clear-icon {
+          @if $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'bootstrap5.3' {
+            background: transparent;
+          }
+        }
       }
 
       &.e-disabled {

@@ -139,13 +139,13 @@ export class Revision {
             }
             editorHistory.updateHistory();
         }
-        this.owner.editorModule.reLayout(this.owner.selectionModule);
-        if (blockInfo.paragraph.isInHeaderFooter) {
-            this.owner.editorModule.updateHeaderFooterWidget();
-        }
         if (reLayoutTable && this.owner.selectionModule.start.paragraph.isInsideTable) {
             const table: TableWidget = (this.owner.selectionModule.start.paragraph.containerWidget as TableCellWidget).ownerTable;
             this.owner.documentHelper.layout.reLayoutTable(table);
+        }
+        this.owner.editorModule.reLayout(this.owner.selectionModule);
+        if (blockInfo.paragraph.isInHeaderFooter) {
+            this.owner.editorModule.updateHeaderFooterWidget();
         }
     }
     private handleGroupAcceptReject(isAccept?: boolean): void {

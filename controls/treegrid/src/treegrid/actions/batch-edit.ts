@@ -292,10 +292,11 @@ export class BatchEdit {
         let data: ITreeData;
         let childs: ITreeData[];
         let uid: string;
-        if (!isNullOrUndefined(args.row) && this.parent.getSelectedRows().indexOf(args.row) === -1) {
+        const rowElement: Element = Array.isArray(args.row) ? args.row[0] : args.row;
+        if (!isNullOrUndefined(rowElement) && this.parent.getSelectedRows().indexOf(rowElement) === -1) {
             data = args.rowData;
             childs = findChildrenRecords(data);
-            uid = args.row.getAttribute('data-uid');
+            uid = rowElement.getAttribute('data-uid');
         }
         else {
             data = this.parent.grid.getSelectedRecords()[this.parent.grid.getSelectedRecords().length - 1];

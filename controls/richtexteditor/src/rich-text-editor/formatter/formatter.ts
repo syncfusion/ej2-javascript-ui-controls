@@ -138,7 +138,7 @@ export class Formatter {
                     }
                     self.isBlur = false;
                     const quickToolbarAction: boolean = !isNOU(event) && !isNOU(event.target) && (!isNOU(closest(event.target as HTMLElement, '.e-rte-elements.e-dropdown-popup.e-rte-dropdown-popup.e-quick-dropdown.e-popup-open')) || !isNOU(closest(event.target as HTMLElement, '.e-rte-elements.e-rte-quick-popup.e-popup-open')));
-                    if (isNOU(saveSelection) || (!quickToolbarAction && (isNOU(closest(saveSelection.range.startContainer.parentElement, '.e-img-caption')) ? true : !((closest(saveSelection.range.startContainer.parentElement, '.e-img-caption') as Element).getAttribute('contenteditable') === 'false')))) {
+                    if (isNOU(saveSelection) || (!quickToolbarAction && (isNOU(closest(saveSelection.range.startContainer.parentElement, '.e-img-caption')) ? true : !((closest(saveSelection.range.startContainer.parentElement, '.e-img-caption') as Element).getAttribute('contenteditable') === 'false'))) && !(Browser.userAgent.indexOf('Firefox') !== -1)) {
                         (self.contentModule.getEditPanel() as HTMLElement).focus();
                     }
                     if (self.editorMode === 'HTML' && !isKeyboardVideoInsert) {

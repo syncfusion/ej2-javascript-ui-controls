@@ -3106,6 +3106,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             && !(!isNullOrUndefined(this.dataSource) && (<DataResult>this.dataSource).result)) {
             this.isVirtualAdaptive = true;
         }
+        if (this.aggregateModule && this.aggregates.length) {
+            for (let i: number = 0; i < this.aggregates.length; i++) {
+                for (let j: number = 0; j < this.aggregates[parseInt(i.toString(), 10)].columns.length; j++) {
+                    const column: AggregateColumnModel = this.aggregates[parseInt(i.toString(), 10)].columns[parseInt(j.toString(), 10)];
+                    if (column['types']) {
+                        column.type = column['types'];
+                    }
+                }
+            }
+        }
         if (this.isReact) {
             const args: LoadEventArgs = {requireTemplateRef: this.requireTemplateRef};
             this.trigger(events.load, args);
@@ -6585,10 +6595,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if ((this.width === 'auto' || typeof (this.width) === 'string' && this.width.indexOf('%') !== -1)
             && this.getColumns().filter((col: Column) => (!col.width || col.width === 'auto') && col.minWidth).length > 0) {
-            const tgridWidth: number | string = this.widthService.getTableWidth(this.getColumns());
-            if (this.allowResizing && tgridWidth !== 'auto') {
-                this.widthService.setMinwidthBycalculation(tgridWidth as number);
-            }
+            const tgridWidth: number | string = this.widthService.getTableWidth(this.getColumns(), true);
+            this.widthService.setMinwidthBycalculation(tgridWidth as number);
         }
         if (this.isFrozenGrid() && this.enableColumnVirtualization && this.widthService) {
             this.widthService.refreshFrozenScrollbar();
@@ -6601,6 +6609,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (this.enableStickyHeader){
             this.scrollModule.makeStickyHeader();
+        }
+        if (this.enableAutoFill && this.selectionSettings.type === 'Multiple' && this.selectionModule &&
+            this.selectionSettings.mode === 'Cell' && this.selectionModule.selectedRowCellIndexes.length) {
+            this.selectionModule.updateAutoFillPosition();
+            this.selectionModule.drawBorders();
         }
     }
 

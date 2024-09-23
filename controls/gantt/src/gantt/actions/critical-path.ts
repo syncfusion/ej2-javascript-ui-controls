@@ -859,13 +859,15 @@ export class CriticalPath {
                             checkint = parseInt(values[0], 10);
                         }
                         if (criticalPathIds.indexOf(checkint) !== -1) {
+                            const taskIdString: string = String(currentdata['taskid']);
+                            const checkintString: string = String(checkint);
                             const lineElement: NodeList = this.parent.element.querySelectorAll('#ConnectorLineparent' +
-                                currentdata['taskid'] + 'child' + checkint);
+                                taskIdString.replace(/([.])/g, '\\$1') + 'child' + checkintString.replace(/([.])/g, '\\$1'));
                             if (lineElement.length > 0) {
-                                addClass(this.parent.element.querySelectorAll('#ConnectorLineparent' + currentdata['taskid'] + 'child' +
-                                    checkint)[0].querySelectorAll('.e-connector-line'), cls.criticalConnectorLineSVG);
-                                addClass(this.parent.element.querySelectorAll('#ConnectorLineparent' + currentdata['taskid'] + 'child' +
-                                    checkint)[0].querySelectorAll('.e-connector-line-arrow'), cls.criticalConnectorArrowSVG);
+                                addClass(this.parent.element.querySelectorAll('#ConnectorLineparent' + taskIdString.replace(/([.])/g, '\\$1') + 'child' +
+                                checkintString.replace(/([.])/g, '\\$1'))[0].querySelectorAll('.e-connector-line'), cls.criticalConnectorLineSVG);
+                                addClass(this.parent.element.querySelectorAll('#ConnectorLineparent' + taskIdString.replace(/([.])/g, '\\$1') + 'child' +
+                                checkintString.replace(/([.])/g, '\\$1'))[0].querySelectorAll('.e-connector-line-arrow'), cls.criticalConnectorArrowSVG);
                             }
                         }
                     }

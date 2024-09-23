@@ -295,7 +295,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                     }
                 }
             }
-            if (tr.querySelectorAll('.e-leftfreeze').length &&
+            if ((tr.querySelectorAll('.e-leftfreeze').length || tr.classList.contains('e-columnheader')) &&
                 (tr.querySelectorAll('.e-indentcell').length || tr.querySelectorAll('.e-grouptopleftcell').length)) {
                 const td: NodeListOf<Element> = tr.querySelectorAll('.e-indentcell, .e-grouptopleftcell');
                 for (let i: number = 0; i < td.length; i++) {

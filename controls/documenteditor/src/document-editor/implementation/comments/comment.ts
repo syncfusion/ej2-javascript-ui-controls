@@ -1533,7 +1533,7 @@ export class CommentView {
         if (this.deleteButton) {
             this.deleteButton.destroy();
             this.deleteButton = undefined;
-        }     
+        }
         if (this.parentElement) {
             this.parentElement.innerHTML = '';
             if (this.parentElement.parentElement) {
@@ -1548,16 +1548,28 @@ export class CommentView {
             }
         }
         this.commentView = undefined;
-        this.replyViewContainer = undefined;
+        if (this.replyViewContainer) {
+            this.replyViewContainer.innerHTML = '';
+            this.replyViewContainer.remove();
+            this.replyViewContainer = null;
+        }
         this.replyViewTextBox = undefined;
         this.replyFooter = undefined;
-        this.resolveView = undefined;
+        if (this.resolveView) {
+            this.resolveView.innerHTML = '';
+            this.resolveView.remove();
+            this.resolveView = null;
+        }
         this.menuBar = undefined;
         this.drawerAction = undefined;
         this.commentText = undefined;
         this.commentDate = undefined;
-        this.textAreaContainer = undefined;
-        this.textArea = undefined;
+
+        if (this.textAreaContainer) {
+            this.textAreaContainer.innerHTML = '';
+            this.textAreaContainer.remove();
+            this.textAreaContainer = null;
+        }
         this.drawerElement = undefined;
         this.drawerSpanElement = undefined;
         this.commentPane = undefined;

@@ -552,13 +552,13 @@ export class CheckBoxFilterBase {
         if ((checked.length !== this.itemsCnt || (searchInput && searchInput.value && searchInput.value !== ''))
         || this.infiniteRenderMod) {
             if (!this.infiniteRenderMod) {
-                coll = this.predicateIterate(checked, defaults, isNotEqual);
+                coll = this.complexQueryPredicate(checked, defaults, isNotEqual);
             } else if (this.infiniteRenderMod &&
                 (!this.infiniteSearchPred || (this.infiniteSearchPred && !this.infiniteSearchPred.isComplex))) {
                 this.infiniteFltrBtnHandler(coll);
             } else {
                 if (this.infiniteSearchPred.isComplex) {
-                    coll = this.predicateIterate(checked, defaults, isNotEqual);
+                    coll = this.complexQueryPredicate(checked, defaults, isNotEqual);
                 }
             }
             if ((this.options.type === 'date' || this.options.type === 'datetime') && check.length) {
@@ -608,7 +608,7 @@ export class CheckBoxFilterBase {
         }
     }
 
-    private predicateIterate(checkBoxChecked: Element[], defaults: object, isNotEqual: boolean): PredicateModel[] {
+    private complexQueryPredicate(checkBoxChecked: Element[], defaults: object, isNotEqual: boolean): PredicateModel[] {
         let value: string;
         let fObj: PredicateModel;
         let coll: PredicateModel[] = [];

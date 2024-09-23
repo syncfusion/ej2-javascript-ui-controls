@@ -13,6 +13,8 @@ import { Editor } from '../editor';
 export class DatePickerDialog {
     private calendar: Calendar;
     private target: HTMLElement;
+
+    private parentDiv: HTMLElement;
     /**
      * @private
      */
@@ -36,15 +38,15 @@ export class DatePickerDialog {
      */
     public initDateContentDialog(localValue: L10n): void {
         this.target = createElement('div');
-        const parentDiv: HTMLElement = createElement('div');
-        this.target.appendChild(parentDiv);
+        this.parentDiv = createElement('div');
+        this.target.appendChild(this.parentDiv);
         const calendar: Calendar = new Calendar({
             change: this.valueChange.bind(this)
         });
         if (this.documentHelper.owner.editor.dateValue){
             calendar.value = new Date(this.documentHelper.owner.editor.dateValue);
         }
-        calendar.appendTo(parentDiv);
+        calendar.appendTo(this.parentDiv);
         if (this.documentHelper.owner.editor.dateValue){
             calendar.value = new Date(this.documentHelper.owner.editor.dateValue);
         }
@@ -101,6 +103,10 @@ export class DatePickerDialog {
             this.calendar = undefined;
         }
         this.documentHelper = undefined;
+        if (this.parentDiv){
+            this.parentDiv.remove();
+            this.parentDiv = undefined;
+        }
         if (!isNullOrUndefined(this.target)) {
             if (this.target.parentElement) {
                 this.target.parentElement.removeChild(this.target);

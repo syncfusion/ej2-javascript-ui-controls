@@ -1078,11 +1078,11 @@ export class DateTimePicker extends DatePicker {
             if (this.dateFormatString === '') {
                 this.dateFormatString = this.cldrDateTimeFormat();
             }
-            dateObject = this.globalize.parseDate(this.inputElement.value, {
+            dateObject = this.globalize.parseDate(this.getAmPmValue(this.inputElement.value), {
                 format: this.dateFormatString, type: 'datetime'
             });
         } else {
-            dateObject = this.globalize.parseDate(this.inputElement.value, {
+            dateObject = this.globalize.parseDate(this.getAmPmValue(this.inputElement.value), {
                 format: this.cldrDateTimeFormat(), type: 'datetime', calendar: 'islamic'
             });
         }

@@ -684,14 +684,14 @@
       }
 
       & .e-group-container:not(:first-child) {
-        padding: 12px;
+        padding: 12px !important; /* stylelint-disable-line declaration-no-important */
         border: 1px solid;
         margin-top: 0;
         border-radius: 4px;
       }
 
       & .e-rule-list > .e-group-container:first-child {
-        padding: 12px;
+        padding: 12px !important; /* stylelint-disable-line declaration-no-important */
         border: 1px solid;
         border-radius: 4px;
       }
@@ -714,8 +714,8 @@
         margin-left: 0;
       }
 
-      & .e-qb-toggle-btn + .e-group-action .e-btn:first-child {
-        margin-left: 6px !important; /* stylelint-disable-line declaration-no-important */
+      & .e-qb-toggle-btn {
+        margin-right: 6px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       & .e-btn-group {

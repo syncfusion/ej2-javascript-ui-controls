@@ -60,6 +60,57 @@ export class StyleDialog {
     private onePointFiveLineSpacing: HTMLElement;
     private styleDropdwn: DropDownButton;
 
+    private container: HTMLElement;
+    private properties: HTMLElement;
+    private styleNameTypeDiv: HTMLElement;
+    private nameWholeDiv: HTMLElement;
+    private nameValue: HTMLInputElement;
+    private styleTypeWholeDiv: HTMLElement;
+    private styleTypeDivElement: HTMLElement;
+    private styleTypeValue: HTMLSelectElement;
+    private styleBasedParaDiv: HTMLElement;
+    private styleBasedOnWholeDiv: HTMLElement;
+    private styleBasedOnDivElement: HTMLElement;
+    private styleBasedOnValue: HTMLInputElement;
+    private styleParagraphWholeDiv: HTMLElement;
+    private styleParagraphDivElement: HTMLElement;
+    private styleParagraphValue: HTMLInputElement;
+    private formatting: HTMLElement;
+    private optionsDiv: HTMLElement;
+    private fontOptionsDiv: HTMLElement;
+    private paragraphOptionsDiv: HTMLElement;
+    private formatBtn: HTMLElement;
+    private fontFamilyElement: HTMLElement;
+    private fontSizeElement: HTMLElement;
+    private fontGroupButton: HTMLElement;
+    private fontColorElement: HTMLElement;
+    private alignmentDiv: HTMLElement;
+    private lineSpacingDiv: HTMLElement;
+    private spacingDiv: HTMLElement;
+    private beforeSpacingEle: HTMLElement;
+    private afterSpacingEle: HTMLElement;
+    private indentingDiv: HTMLElement;
+    private decreaseIndent: HTMLElement;
+    private increaseindent: HTMLElement;
+
+    private setLeftAlignmentClickHandler: EventListenerOrEventListenerObject = this.onSetLeftAlignmentClick.bind(this);
+    private setCenterAlignmentClickHandler: EventListenerOrEventListenerObject = this.onSetCenterAlignmentClick.bind(this);
+    private setRightAlignmentClickHandler: EventListenerOrEventListenerObject = this.onSetRightAlignmentClick.bind(this);
+    private setJustifyAlignmentClickHandler: EventListenerOrEventListenerObject = this.onSetJustifyAlignmentClick.bind(this);
+    private setSingleLineSpacingClickHandler: EventListenerOrEventListenerObject = this.setSingleLineSpacing.bind(this);
+    private setOnePointFiveLineSpacingClickHandler: EventListenerOrEventListenerObject = this.setOnePointFiveLineSpacing.bind(this);
+    private setDoubleLineSpacingClickHandler: EventListenerOrEventListenerObject = this.setDoubleLineSpacing.bind(this);
+    private increaseIndentValueHandler: EventListenerOrEventListenerObject = this.increaseIndentValue.bind(this);
+    private decreaseIndentValueHandler: EventListenerOrEventListenerObject = this.decreaseIndentValue.bind(this);
+    private increaseBeforeAfterSpacingValueHandler: EventListenerOrEventListenerObject = this.onIncreaseBeforeAfterSpacing.bind(this);
+    private decreaseBeforeAfterSpacingValueHandler: EventListenerOrEventListenerObject = this.onDecreaseBeforeAfterSpacing.bind(this);
+    private setUnderlinePropertyHandler: EventListenerOrEventListenerObject = this.onSetUnderlineProperty.bind(this);
+    private setItalicPropertyHandler: EventListenerOrEventListenerObject = this.onSetItalicProperty.bind(this);
+    private setBoldPropertyHandler: EventListenerOrEventListenerObject = this.onSetBoldProperty.bind(this);
+    private openDialogHandler: EventListener = this.onOpenDialog.bind(this);
+    private updateOkButtonClickHandler: EventListenerOrEventListenerObject = this.onUpdateOkButtonClick.bind(this);
+    private updateNextStyleHandler: EventListenerOrEventListenerObject = this.onUpdateNextStyle.bind(this);
+
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
@@ -86,94 +137,94 @@ export class StyleDialog {
         let instance: StyleDialog = this;
         this.localObj = localValue;
         this.target = createElement('div', { className: 'e-de-style-dialog' });
-        let container: HTMLElement = createElement('div');
+        this.container = createElement('div');
 
-        let properties: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localValue.getConstant('Properties') });
-        container.appendChild(properties);
-        let styleNameTypeDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
-        container.appendChild(styleNameTypeDiv);
-        let nameWholeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
-        styleNameTypeDiv.appendChild(nameWholeDiv);
+        this.properties = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localValue.getConstant('Properties') });
+        this.container.appendChild(this.properties);
+        this.styleNameTypeDiv = createElement('div', { className: 'e-de-container-row' });
+        this.container.appendChild(this.styleNameTypeDiv);
+        this.nameWholeDiv = createElement('div', { className: 'e-de-subcontainer-left' });
+        this.styleNameTypeDiv.appendChild(this.nameWholeDiv);
         // let name: HTMLElement = createElement('div', { className: 'e-de-style-name', innerHTML: localValue.getConstant('Name') + ':' });
         // nameWholeDiv.appendChild(name);
 
-        let nameValue: HTMLInputElement = createElement('input', { className: 'e-input e-de-style-dlg-name-input' }) as HTMLInputElement;
-        nameValue.addEventListener('keyup', this.updateOkButton);
-        nameValue.addEventListener('input', this.updateOkButton);
-        nameValue.addEventListener('blur', this.updateNextStyle);
-        nameWholeDiv.appendChild(nameValue);
-        new TextBox({placeholder: localValue.getConstant('Name') + ':', floatLabelType: 'Always' }, nameValue);
-        let styleTypeWholeDiv: HTMLElement = createElement('div', {className : 'e-de-subcontainer-right'});
-        styleNameTypeDiv.appendChild(styleTypeWholeDiv);
+        this.nameValue = createElement('input', { className: 'e-input e-de-style-dlg-name-input' }) as HTMLInputElement;
+        this.nameValue.addEventListener('keyup', this.updateOkButtonClickHandler);
+        this.nameValue.addEventListener('input', this.updateOkButtonClickHandler);
+        this.nameValue.addEventListener('blur', this.updateNextStyleHandler);
+        this.nameWholeDiv.appendChild(this.nameValue);
+        new TextBox({placeholder: localValue.getConstant('Name') + ':', floatLabelType: 'Always' }, this.nameValue);
+        this.styleTypeWholeDiv = createElement('div', {className : 'e-de-subcontainer-right'});
+        this.styleNameTypeDiv.appendChild(this.styleTypeWholeDiv);
 
         // let styleType: HTMLElement = createElement('div', { className: 'e-de-style-styletype', innerHTML:  });
         // styleTypeWholeDiv.appendChild(styleType);
-        let styleTypeDivElement: HTMLElement = createElement('div');
-        let styleTypeValue: HTMLSelectElement = createElement('select') as HTMLSelectElement;
+        this.styleTypeDivElement = createElement('div');
+        this.styleTypeValue = createElement('select') as HTMLSelectElement;
 
-        styleTypeValue.innerHTML = '<option value="Paragraph">' + localValue.getConstant('Paragraph') + '</option><option value="Character">' + localValue.getConstant('Character') + '</option><option value="Linked Style">' + localValue.getConstant('Linked Style') + '</option>';
-        styleTypeDivElement.appendChild(styleTypeValue);
+        this.styleTypeValue.innerHTML = '<option value="Paragraph">' + localValue.getConstant('Paragraph') + '</option><option value="Character">' + localValue.getConstant('Character') + '</option><option value="Linked Style">' + localValue.getConstant('Linked Style') + '</option>';
+        this.styleTypeDivElement.appendChild(this.styleTypeValue);
         this.styleType = new DropDownList({
             change: this.styleTypeChange,
             popupHeight: '253px', enableRtl: isRtl,
             placeholder: localValue.getConstant('Style type') + ':', floatLabelType: 'Always'
         });
-        this.styleType.appendTo(styleTypeValue);
-        styleTypeWholeDiv.appendChild(styleTypeDivElement);
+        this.styleType.appendTo(this.styleTypeValue);
+        this.styleTypeWholeDiv.appendChild(this.styleTypeDivElement);
 
-        let styleBasedParaDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
-        container.appendChild(styleBasedParaDiv);
-        let styleBasedOnWholeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
-        styleBasedParaDiv.appendChild(styleBasedOnWholeDiv);
+        this.styleBasedParaDiv = createElement('div', { className: 'e-de-container-row' });
+        this.container.appendChild(this.styleBasedParaDiv);
+        this.styleBasedOnWholeDiv = createElement('div', { className: 'e-de-subcontainer-left' });
+        this.styleBasedParaDiv.appendChild(this.styleBasedOnWholeDiv);
 
         //let styleBasedOn: HTMLElement = createElement('div', { className: 'e-de-style-style-based-on', innerHTML:  });
         //styleBasedOnWholeDiv.appendChild(styleBasedOn);
-        let styleBasedOnDivElement: HTMLElement = createElement('div', { className: 'e-de-style-style-based-on-div' });
+        this.styleBasedOnDivElement = createElement('div', { className: 'e-de-style-style-based-on-div' });
 
-        let styleBasedOnValue: HTMLInputElement = createElement('input') as HTMLInputElement;
+        this.styleBasedOnValue = createElement('input') as HTMLInputElement;
         //styleBasedOnValue.innerHTML = '<option>Normal</option><option>Heading 1</option><option>Heading 2</option><option>Heading 3</option><option>Heading 4</option><option>Heading 5</option><option>Heading 6</option>';
-        styleBasedOnDivElement.appendChild(styleBasedOnValue);
+        this.styleBasedOnDivElement.appendChild(this.styleBasedOnValue);
 
         this.styleBasedOn = new DropDownList({
             dataSource: [], select: this.styleBasedOnChange, popupHeight: '253px', enableRtl: isRtl,
             placeholder: localValue.getConstant('Style based on') + ':', floatLabelType: 'Always'
         });
-        this.styleBasedOn.appendTo(styleBasedOnValue);
-        styleBasedOnWholeDiv.appendChild(styleBasedOnDivElement);
+        this.styleBasedOn.appendTo(this.styleBasedOnValue);
+        this.styleBasedOnWholeDiv.appendChild(this.styleBasedOnDivElement);
 
-        let styleParagraphWholeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
-        styleBasedParaDiv.appendChild(styleParagraphWholeDiv);
+        this.styleParagraphWholeDiv = createElement('div', { className: 'e-de-subcontainer-right' });
+        this.styleBasedParaDiv.appendChild(this.styleParagraphWholeDiv);
         if (isRtl) {
-            nameWholeDiv.classList.add('e-de-rtl');
-            styleBasedOnWholeDiv.classList.add('e-de-rtl');
-            styleParagraphWholeDiv.classList.add('e-de-rtl');
+            this.nameWholeDiv.classList.add('e-de-rtl');
+            this.styleBasedOnWholeDiv.classList.add('e-de-rtl');
+            this.styleParagraphWholeDiv.classList.add('e-de-rtl');
         }
 
         //let styleParagraph: HTMLElement = createElement('div', { className: 'e-de-style-style-paragraph', innerHTML: });
         //styleParagraphWholeDiv.appendChild(styleParagraph);
-        let styleParagraphDivElement: HTMLElement = createElement('div');
+        this.styleParagraphDivElement = createElement('div');
 
-        let styleParagraphValue: HTMLInputElement = createElement('input') as HTMLInputElement;
+        this.styleParagraphValue = createElement('input') as HTMLInputElement;
 
         //styleParagraphValue.innerHTML = '<option>Normal</option><option>Heading 1</option><option>Heading 2</option><option>Heading 3</option><option>Heading 4</option><option>Heading 5</option><option>Heading 6</option>';
-        styleParagraphDivElement.appendChild(styleParagraphValue);
+        this.styleParagraphDivElement.appendChild(this.styleParagraphValue);
 
         this.styleParagraph = new DropDownList({
             dataSource: [], select: this.styleParagraphChange, popupHeight: '253px', enableRtl: isRtl,
             placeholder: localValue.getConstant('Style for following paragraph') + ':', floatLabelType: 'Always'
         });
-        this.styleParagraph.appendTo(styleParagraphValue);
-        styleParagraphWholeDiv.appendChild(styleParagraphDivElement);
-        let formatting: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localValue.getConstant('Formatting') });
-        container.appendChild(formatting);
-        let optionsDiv: HTMLElement = createElement('div', { className: 'e-de-style-options-div' });
-        container.appendChild(optionsDiv);
-        let fontOptionsDiv: HTMLElement = createElement('div', { styles: 'display:flex;margin-bottom: 14px;' });
-        optionsDiv.appendChild(fontOptionsDiv);
-        this.createFontOptions(fontOptionsDiv, isRtl);
-        let paragraphOptionsDiv: HTMLElement = createElement('div', { styles: 'display:flex', className: 'e-style-paragraph' });
-        optionsDiv.appendChild(paragraphOptionsDiv);
-        this.createParagraphOptions(paragraphOptionsDiv);
+        this.styleParagraph.appendTo(this.styleParagraphValue);
+        this.styleParagraphWholeDiv.appendChild(this.styleParagraphDivElement);
+        this.formatting = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localValue.getConstant('Formatting') });
+        this.container.appendChild(this.formatting);
+        this.optionsDiv = createElement('div', { className: 'e-de-style-options-div' });
+        this.container.appendChild(this.optionsDiv);
+        this.fontOptionsDiv = createElement('div', { styles: 'display:flex;margin-bottom: 14px;' });
+        this.optionsDiv.appendChild(this.fontOptionsDiv);
+        this.createFontOptions(this.fontOptionsDiv, isRtl);
+        this.paragraphOptionsDiv = createElement('div', { styles: 'display:flex', className: 'e-style-paragraph' });
+        this.optionsDiv.appendChild(this.paragraphOptionsDiv);
+        this.createParagraphOptions(this.paragraphOptionsDiv);
 
 
         // let radioOptionsDiv: HTMLElement = createElement('div', { styles: 'display:flex' });
@@ -194,16 +245,16 @@ export class StyleDialog {
         // this.template = new RadioButton({ label: 'Template', value: 'template', name: 'styles' });
         // this.template.appendTo(template);
         // radioOptionsDiv.appendChild(templateDiv);
-        this.createFormatDropdown(container, localValue, isRtl);
-        this.target.appendChild(container);
+        this.createFormatDropdown(this.container, localValue, isRtl);
+        this.target.appendChild(this.container);
     }
     private createFormatDropdown(parentDiv: HTMLElement, localValue: L10n, isRtl?: boolean): void {
-        let formatBtn: HTMLElement = createElement('button', {
+        this.formatBtn = createElement('button', {
             id: 'style_format_dropdown', innerHTML: localValue.getConstant('Format'),
             attrs: { type: 'button' }
         });
-        formatBtn.style.height = '31px';
-        parentDiv.appendChild(formatBtn);
+        this.formatBtn.style.height = '31px';
+        parentDiv.appendChild(this.formatBtn);
         let items: ItemModel[] = [{ text: localValue.getConstant('Font') + '...', id: 'style_font' },
         { text: localValue.getConstant('Paragraph') + '...', id: 'style_paragraph' },
         { text: localValue.getConstant('Numbering') + '...', id: 'style_numbering' }];
@@ -229,8 +280,11 @@ export class StyleDialog {
                 }
             },
         });
-        this.styleDropdwn.appendTo(formatBtn);
-        this.styleDropdwn.addEventListener('select', this.openDialog);
+        this.styleDropdwn.appendTo(this.formatBtn);
+        this.styleDropdwn.addEventListener('select', this.openDialogHandler);
+    }
+    private onOpenDialog(args: MenuEventArgs): void {
+        this.openDialog(args);
     }
     /**
      * 
@@ -251,7 +305,7 @@ export class StyleDialog {
         }
     }
     private createFontOptions(parentDiv: HTMLElement, isRtl?: boolean): void {
-        let fontFamilyElement: HTMLElement = createElement('input', {
+        this.fontFamilyElement = createElement('input', {
             id: this.target.id + '_fontName',
         });
         let fontStyle: { [key: string]: Object; }[];
@@ -259,14 +313,14 @@ export class StyleDialog {
         let itemTemplate: string | Function = initializeCSPTemplate(
             function (data: any): string { return `<span style="font-family: ${data.FontName};">${data.FontName}</span>`; }
         );
-        parentDiv.appendChild(fontFamilyElement);
+        parentDiv.appendChild(this.fontFamilyElement);
         this.fontFamily = new ComboBox({
             dataSource: fontStyle, query: new Query().select(['FontName']), fields: { text: 'FontName', value: 'value' },
             allowCustom: true, width: '123px', popupWidth: '123px',
             cssClass: 'e-style-font-fmaily-right', enableRtl: isRtl, change: this.fontFamilyChanged,
             showClearButton: false, itemTemplate: itemTemplate
         });
-        this.fontFamily.appendTo(fontFamilyElement);
+        this.fontFamily.appendTo(this.fontFamilyElement);
         this.fontFamily.isStringTemplate = isStringTemplate;
         let fontFamilyValue: string[] = this.documentHelper.owner.documentEditorSettings.fontFamilies;
         for (let i: number = 0; i < fontFamilyValue.length; i++) {
@@ -276,35 +330,38 @@ export class StyleDialog {
         }
         this.fontFamily.focus = (): void => { (this.fontFamily.element as HTMLInputElement).select(); };
         this.fontFamily.element.parentElement.setAttribute('title', this.localObj.getConstant('Font'));
-        let fontSizeElement: HTMLElement = createElement('input');
-        parentDiv.appendChild(fontSizeElement);
+        this.fontSizeElement = createElement('input');
+        parentDiv.appendChild(this.fontSizeElement);
         let sizeDataSource: number[] = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72];
         this.fontSize = new ComboBox({
             dataSource: sizeDataSource, width: '73px', cssClass: 'e-style-font-fmaily-right',
             enableRtl: isRtl, change: this.fontSizeUpdate
         });
         this.fontSize.showClearButton = false;
-        this.fontSize.appendTo(fontSizeElement);
-        let fontGroupButton: HTMLElement = createElement('div', { className: 'e-de-style-font-group-button' });
-        parentDiv.appendChild(fontGroupButton);
+        this.fontSize.appendTo(this.fontSizeElement);
+        this.fontGroupButton = createElement('div', { className: 'e-de-style-font-group-button' });
+        parentDiv.appendChild(this.fontGroupButton);
 
-        this.bold = this.createButtonElement(fontGroupButton, 'e-de-bold', 'e-de-style-bold-button-size', this.documentHelper.owner.containerId + '_style_bold');
+        this.bold = this.createButtonElement(this.fontGroupButton, 'e-de-bold', 'e-de-style-bold-button-size', this.documentHelper.owner.containerId + '_style_bold');
         this.bold.setAttribute('aria-label','bold');
-        this.bold.addEventListener('click', this.setBoldProperty);
+        this.bold.addEventListener('click', this.setBoldPropertyHandler);
 
-        this.italic = this.createButtonElement(fontGroupButton, 'e-de-italic', 'e-de-style-icon-button-size', this.documentHelper.owner.containerId + '_style_italic');
+        this.italic = this.createButtonElement(this.fontGroupButton, 'e-de-italic', 'e-de-style-icon-button-size', this.documentHelper.owner.containerId + '_style_italic');
         this.italic.setAttribute('aria-label','italic');
-        this.italic.addEventListener('click', this.setItalicProperty);
+        this.italic.addEventListener('click', this.setItalicPropertyHandler);
 
-        this.underline = this.createButtonElement(fontGroupButton, 'e-de-underline', 'e-de-style-icon-button-size', this.documentHelper.owner.containerId + '_style_underline');
+        this.underline = this.createButtonElement(this.fontGroupButton, 'e-de-underline', 'e-de-style-icon-button-size', this.documentHelper.owner.containerId + '_style_underline');
         this.underline.setAttribute('aria-label','underline');
-        this.underline.addEventListener('click', this.setUnderlineProperty);
-        let fontColorElement: HTMLElement = createElement('input', { attrs: { type: 'color' }, className: 'e-de-style-icon-button-size' });
-        parentDiv.appendChild(fontColorElement);
+        this.underline.addEventListener('click', this.setUnderlinePropertyHandler);
+        this.fontColorElement = createElement('input', { attrs: { type: 'color' }, className: 'e-de-style-icon-button-size' });
+        parentDiv.appendChild(this.fontColorElement);
         const {columns , createPopupOnClick  , disabled , enablePersistence , enableRtl , inline , mode , modeSwitcher , noColor , presetColors , showButtons} = this.documentHelper.owner.documentEditorSettings.colorPickerSettings;
         this.fontColor = new ColorPicker({ cssClass: 'e-de-style-font-color-picker', enableRtl: isRtl, change: this.fontColorUpdate, locale: this.documentHelper.owner.locale, enableOpacity: false , mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors });
         this.documentHelper.fontColor = this.fontColor;
-        this.fontColor.appendTo(fontColorElement);
+        this.fontColor.appendTo(this.fontColorElement);
+    }
+    private onSetBoldProperty(): void {
+        this.setBoldProperty();
     }
     /**
      * @private
@@ -314,6 +371,9 @@ export class StyleDialog {
         this.characterFormat.bold = !this.characterFormat.bold;
         this.fontButtonClicked();
     }
+    private onSetItalicProperty(): void {
+        this.setItalicProperty();
+    }
     /**
      * @private
      * @returns {void}
@@ -321,6 +381,9 @@ export class StyleDialog {
     private setItalicProperty = (): void => {
         this.characterFormat.italic = !this.characterFormat.italic;
         this.fontButtonClicked();
+    }
+    private onSetUnderlineProperty(): void {
+        this.setUnderlineProperty();
     }
     /**
      * @private
@@ -390,65 +453,73 @@ export class StyleDialog {
         this.characterFormat.fontColor = args.currentValue.hex;
     }
     private createParagraphOptions(parentDiv: HTMLElement): void {
-        let alignmentDiv: HTMLElement = createElement('div', { className: 'e-de-style-paragraph-group-button' });
-        parentDiv.appendChild(alignmentDiv);
-        this.leftAlign = this.createButtonElement(alignmentDiv, 'e-de-align-left', 'e-de-style-icon-button-size');
+        this.alignmentDiv = createElement('div', { className: 'e-de-style-paragraph-group-button' });
+        parentDiv.appendChild(this.alignmentDiv);
+        this.leftAlign = this.createButtonElement(this.alignmentDiv, 'e-de-align-left', 'e-de-style-icon-button-size');
         this.leftAlign.setAttribute('aria-label','leftAlign');
-        this.leftAlign.addEventListener('click', this.setLeftAlignment);
-        this.centerAlign = this.createButtonElement(alignmentDiv, 'e-de-align-center', 'e-de-style-icon-button-size');
+        this.leftAlign.addEventListener('click', this.setLeftAlignmentClickHandler);
+        this.centerAlign = this.createButtonElement(this.alignmentDiv, 'e-de-align-center', 'e-de-style-icon-button-size');
         this.centerAlign.setAttribute('aria-label','centerAlign');
-        this.centerAlign.addEventListener('click', this.setCenterAlignment);
-        this.rightAlign = this.createButtonElement(alignmentDiv, 'e-de-align-right', 'e-de-style-icon-button-size');
+        this.centerAlign.addEventListener('click', this.setCenterAlignmentClickHandler);
+        this.rightAlign = this.createButtonElement(this.alignmentDiv, 'e-de-align-right', 'e-de-style-icon-button-size');
         this.rightAlign.setAttribute('aria-label','rightAlign');
-        this.rightAlign.addEventListener('click', this.setRightAlignment);
-        this.justify = this.createButtonElement(alignmentDiv, 'e-de-justify', 'e-de-style-icon-button-last-size');
+        this.rightAlign.addEventListener('click', this.setRightAlignmentClickHandler);
+        this.justify = this.createButtonElement(this.alignmentDiv, 'e-de-justify', 'e-de-style-icon-button-last-size');
         this.justify.setAttribute('aria-label','justify');
-        this.justify.addEventListener('click', this.setJustifyAlignment);
-        let lineSpacingDiv: HTMLElement = createElement('div', { className: 'e-de-style-paragraph-group-button' });
-        parentDiv.appendChild(lineSpacingDiv);
-        this.singleLineSpacing = this.createButtonElement(lineSpacingDiv, 'e-de-single-spacing', 'e-de-style-icon-button-first-size');
+        this.justify.addEventListener('click', this.setJustifyAlignmentClickHandler);
+        this.lineSpacingDiv = createElement('div', { className: 'e-de-style-paragraph-group-button' });
+        parentDiv.appendChild(this.lineSpacingDiv);
+        this.singleLineSpacing = this.createButtonElement(this.lineSpacingDiv, 'e-de-single-spacing', 'e-de-style-icon-button-first-size');
         this.singleLineSpacing.setAttribute('aria-label','singleLineSpacing');
-        this.singleLineSpacing.addEventListener('click', () => {
-            this.lineSpacing = 1;
-            this.updateParagraphFormat();
-        });
+        this.singleLineSpacing.addEventListener('click', this.setSingleLineSpacingClickHandler);
 
-        this.onePointFiveLineSpacing = this.createButtonElement(lineSpacingDiv, 'e-de-one-point-five-spacing', 'e-de-style-icon-button-size');
+        this.onePointFiveLineSpacing = this.createButtonElement(this.lineSpacingDiv, 'e-de-one-point-five-spacing', 'e-de-style-icon-button-size');
         this.onePointFiveLineSpacing.setAttribute('aria-label','onePointFiveLineSpacing');
-        this.onePointFiveLineSpacing.addEventListener('click', () => {
-            this.lineSpacing = 1.5;
-            this.updateParagraphFormat();
-        });
-        this.doubleLineSpacing = this.createButtonElement(lineSpacingDiv, 'e-de-double-spacing', 'e-de-style-icon-button-last-size');
+        this.onePointFiveLineSpacing.addEventListener('click', this.setOnePointFiveLineSpacingClickHandler);
+        this.doubleLineSpacing = this.createButtonElement(this.lineSpacingDiv, 'e-de-double-spacing', 'e-de-style-icon-button-last-size');
         this.doubleLineSpacing.setAttribute('aria-label','doubleLineSpacing');
-        this.doubleLineSpacing.addEventListener('click', () => {
-            this.lineSpacing = 2;
-            this.updateParagraphFormat();
-        });
-        let spacingDiv: HTMLElement = createElement('div', { className: 'e-de-style-paragraph-group-button' });
-        parentDiv.appendChild(spacingDiv);
-        let beforeSpacing: HTMLElement = this.createButtonElement(spacingDiv, 'e-de-before-spacing', 'e-de-style-icon-button-first-size');
-        beforeSpacing.setAttribute('aria-label','beforeSpacing');
-        let afterSpacing: HTMLElement = this.createButtonElement(spacingDiv, 'e-de-after-spacing', 'e-de-style-icon-button-last-size');
-        afterSpacing.setAttribute('aria-label','afterSpacing');
-        beforeSpacing.addEventListener('click', this.increaseBeforeAfterSpacing);
-        afterSpacing.addEventListener('click', this.decreaseBeforeAfterSpacing);
-        let indentingDiv: HTMLElement = createElement('div', { className: 'e-de-style-paragraph-indent-group-button' });
-        parentDiv.appendChild(indentingDiv);
-        let decreaseIndent: HTMLElement = this.createButtonElement(indentingDiv, 'e-de-indent', 'e-de-style-icon-button-first-size');
-        decreaseIndent.setAttribute('aria-label','decreaseIndent');
-        decreaseIndent.addEventListener('click', () => {
-            if (this.leftIndent >= 36) {
-                this.leftIndent -= 36;
-            } else {
-                this.leftIndent = 0;
-            }
-        });
-        let increaseindent: HTMLElement = this.createButtonElement(indentingDiv, 'e-de-outdent', 'e-de-style-icon-button-size');
-        increaseindent.setAttribute('aria-label','increaseindent');
-        increaseindent.addEventListener('click', () => {
-            this.leftIndent += 36;
-        });
+        this.doubleLineSpacing.addEventListener('click', this.setDoubleLineSpacingClickHandler);
+        this.spacingDiv = createElement('div', { className: 'e-de-style-paragraph-group-button' });
+        parentDiv.appendChild(this.spacingDiv);
+        this.beforeSpacingEle = this.createButtonElement(this.spacingDiv, 'e-de-before-spacing', 'e-de-style-icon-button-first-size');
+        this.beforeSpacingEle.setAttribute('aria-label','beforeSpacing');
+        this.afterSpacingEle = this.createButtonElement(this.spacingDiv, 'e-de-after-spacing', 'e-de-style-icon-button-last-size');
+        this.afterSpacingEle.setAttribute('aria-label','afterSpacing');
+        this.beforeSpacingEle.addEventListener('click', this.increaseBeforeAfterSpacingValueHandler);
+        this.afterSpacingEle.addEventListener('click', this.decreaseBeforeAfterSpacingValueHandler);
+        this.indentingDiv = createElement('div', { className: 'e-de-style-paragraph-indent-group-button' });
+        parentDiv.appendChild(this.indentingDiv);
+        this.decreaseIndent = this.createButtonElement(this.indentingDiv, 'e-de-indent', 'e-de-style-icon-button-first-size');
+        this.decreaseIndent.setAttribute('aria-label','decreaseIndent');
+        this.decreaseIndent.addEventListener('click', this.decreaseIndentValueHandler);
+        this.increaseindent = this.createButtonElement(this.indentingDiv, 'e-de-outdent', 'e-de-style-icon-button-size');
+        this.increaseindent.setAttribute('aria-label','increaseindent');
+        this.increaseindent.addEventListener('click', this.increaseIndentValueHandler);
+    }
+    private setSingleLineSpacing(): void {
+        this.lineSpacing = 1;
+        this.updateParagraphFormat();
+    }
+    private setOnePointFiveLineSpacing(): void {
+        this.lineSpacing = 1.5;
+        this.updateParagraphFormat();
+    }
+    private setDoubleLineSpacing(): void {
+        this.lineSpacing = 2;
+        this.updateParagraphFormat();
+    }
+    private increaseIndentValue(): void {
+        this.leftIndent += 36;
+    }
+    private decreaseIndentValue(): void {
+        if (this.leftIndent >= 36) {
+            this.leftIndent -= 36;
+        } else {
+            this.leftIndent = 0;
+        }
+    }
+    private onSetLeftAlignmentClick(): void {
+        this.setLeftAlignment();
     }
     /**
      * @private
@@ -462,6 +533,9 @@ export class StyleDialog {
         }
         this.updateParagraphFormat();
     }
+    private onSetRightAlignmentClick(): void {
+        this.setRightAlignment();
+    }
     /**
      * @private
      * @returns {void}
@@ -474,6 +548,9 @@ export class StyleDialog {
         }
         this.updateParagraphFormat();
     }
+    private onSetCenterAlignmentClick(): void {
+        this.setCenterAlignment();
+    }
     /**
      * @private
      * @returns {void}
@@ -485,6 +562,9 @@ export class StyleDialog {
             this.textAlignment = 'Center';
         }
         this.updateParagraphFormat();
+    }
+    private onSetJustifyAlignmentClick(): void {
+        this.setJustifyAlignment();
     }
     /**
      * @private
@@ -510,6 +590,9 @@ export class StyleDialog {
         return buttonElement;
 
     }
+    private onIncreaseBeforeAfterSpacing(): void {
+        this.increaseBeforeAfterSpacing();
+    }
     /**
      * @private
      * @returns {void}
@@ -517,6 +600,9 @@ export class StyleDialog {
     private increaseBeforeAfterSpacing = (): void => {
         this.beforeSpacing += 6;
         this.afterSpacing += 6;
+    }
+    private onDecreaseBeforeAfterSpacing(): void {
+        this.decreaseBeforeAfterSpacing();
     }
     /**
      * @private
@@ -546,6 +632,9 @@ export class StyleDialog {
         }
         this.styleBasedOn.enabled = true;
     }
+    private onUpdateNextStyle(args: FocusEvent): void {
+        this.updateNextStyle(args);
+    }
     /**
      * @private
      * @returns {void}
@@ -564,6 +653,9 @@ export class StyleDialog {
             this.styleParagraph.index = styles.indexOf(typedName);
             // this.styleParagraph.dataBind();
         }
+    }
+    private onUpdateOkButtonClick(): void {
+        this.updateOkButton();
     }
     /**
      * @private
@@ -1170,6 +1262,190 @@ export class StyleDialog {
         if (this.afterSpacing) {
             this.afterSpacing = undefined;
         }
+        this.removeEvents();
+        this.removeElements();
         this.documentHelper = undefined;
+    }
+    private removeEvents(): void {
+        if (this.nameValue) {
+            this.nameValue.removeEventListener('input', this.updateOkButtonClickHandler);
+            this.nameValue.removeEventListener('keyup', this.updateOkButtonClickHandler);
+            this.nameValue.removeEventListener('blur', this.updateNextStyleHandler);
+        }
+        if (this.styleDropdwn) {
+            this.styleDropdwn.removeEventListener('select', this.openDialogHandler);
+        }
+        if (this.bold) {
+            this.bold.removeEventListener('click', this.setBoldPropertyHandler);
+        }
+        if (this.italic) {
+            this.italic.removeEventListener('click', this.setItalicPropertyHandler);
+        }
+        if (this.underline) {
+            this.underline.removeEventListener('click', this.setUnderlinePropertyHandler);
+        }
+        if (this.leftAlign) {
+            this.leftAlign.removeEventListener('click', this.setLeftAlignmentClickHandler);
+        }
+        if (this.centerAlign) {
+            this.centerAlign.removeEventListener('click', this.setCenterAlignmentClickHandler);
+        }
+        if (this.rightAlign) {
+            this.rightAlign.removeEventListener('click', this.setRightAlignmentClickHandler);
+        }
+        if (this.justify) {
+            this.justify.removeEventListener('click', this.setJustifyAlignmentClickHandler);
+        }
+        if (this.singleLineSpacing) {
+            this.singleLineSpacing.removeEventListener('click', this.setSingleLineSpacingClickHandler);
+        }
+        if (this.onePointFiveLineSpacing) {
+            this.onePointFiveLineSpacing.removeEventListener('click', this.setOnePointFiveLineSpacingClickHandler);
+        }
+        if (this.doubleLineSpacing) {
+            this.doubleLineSpacing.removeEventListener('click', this.setDoubleLineSpacingClickHandler);
+        }
+        if (this.beforeSpacingEle) {
+            this.beforeSpacingEle.removeEventListener('click', this.increaseBeforeAfterSpacingValueHandler);
+        }
+        if (this.afterSpacingEle) {
+            this.afterSpacingEle.removeEventListener('click', this.decreaseBeforeAfterSpacingValueHandler);
+        }
+        if (this.decreaseIndent) {
+            this.decreaseIndent.removeEventListener('click', this.decreaseIndentValueHandler);
+        }
+        if (this.increaseindent) {
+            this.increaseindent.removeEventListener('click', this.increaseIndentValueHandler);
+        }
+    }
+    private removeElements(): void {
+        if (this.container) {
+            this.container.remove();
+            this.container = undefined;
+        }
+        if (this.properties) {
+            this.properties.remove();
+            this.properties = undefined;
+        }
+        if (this.styleNameTypeDiv) {
+            this.styleNameTypeDiv.remove();
+            this.styleNameTypeDiv = undefined;
+        }
+        if (this.nameWholeDiv) {
+            this.nameWholeDiv.remove();
+            this.nameWholeDiv = undefined;
+        }
+        if (this.nameValue) {
+            this.nameValue.remove();
+            this.nameValue = undefined;
+        }
+        if (this.styleTypeWholeDiv) {
+            this.styleTypeWholeDiv.remove();
+            this.styleTypeWholeDiv = undefined;
+        }
+        if (this.styleTypeDivElement) {
+            this.styleTypeDivElement.remove();
+            this.styleTypeDivElement = undefined;
+        }
+        if (this.styleTypeValue) {
+            this.styleTypeValue.remove();
+            this.styleTypeValue = undefined;
+        }
+        if (this.styleBasedParaDiv) {
+            this.styleBasedParaDiv.remove();
+            this.styleBasedParaDiv = undefined;
+        }
+        if (this.styleBasedOnWholeDiv) {
+            this.styleBasedOnWholeDiv.remove();
+            this.styleBasedOnWholeDiv = undefined;
+        }
+        if (this.styleBasedOnDivElement) {
+            this.styleBasedOnDivElement.remove();
+            this.styleBasedOnDivElement = undefined;
+        }
+        if (this.styleBasedOnValue) {
+            this.styleBasedOnValue.remove();
+            this.styleBasedOnValue = undefined;
+        }
+        if (this.styleParagraphWholeDiv) {
+            this.styleParagraphWholeDiv.remove();
+            this.styleParagraphWholeDiv = undefined;
+        }
+        if (this.styleParagraphDivElement) {
+            this.styleParagraphDivElement.remove();
+            this.styleParagraphDivElement = undefined;
+        }
+        if (this.styleParagraphValue) {
+            this.styleParagraphValue.remove();
+            this.styleParagraphValue = undefined;
+        }
+        if (this.formatting) {
+            this.formatting.remove();
+            this.formatting = undefined;
+        }
+        if (this.optionsDiv) {
+            this.optionsDiv.remove();
+            this.optionsDiv = undefined;
+        }
+        if (this.fontOptionsDiv) {
+            this.fontOptionsDiv.remove();
+            this.fontOptionsDiv = undefined;
+        }
+        if (this.paragraphOptionsDiv) {
+            this.paragraphOptionsDiv.remove();
+            this.paragraphOptionsDiv = undefined;
+        }
+        if (this.formatBtn) {
+            this.formatBtn.remove();
+            this.formatBtn = undefined;
+        }
+        if (this.fontFamilyElement) {
+            this.fontFamilyElement.remove();
+            this.fontFamilyElement = undefined;
+        }
+        if (this.fontSizeElement) {
+            this.fontSizeElement.remove();
+            this.fontSizeElement = undefined;
+        }
+        if (this.fontGroupButton) {
+            this.fontGroupButton.remove();
+            this.fontGroupButton = undefined;
+        }
+        if (this.fontColorElement) {
+            this.fontColorElement.remove();
+            this.fontColorElement = undefined;
+        }
+        if (this.alignmentDiv) {
+            this.alignmentDiv.remove();
+            this.alignmentDiv = undefined;
+        }
+        if (this.lineSpacingDiv) {
+            this.lineSpacingDiv.remove();
+            this.lineSpacingDiv = undefined;
+        }
+        if (this.spacingDiv){
+            this.spacingDiv.remove();
+            this.spacingDiv = undefined;
+        }
+        if (this.beforeSpacingEle) {
+            this.beforeSpacingEle.remove();
+            this.beforeSpacingEle = undefined;
+        }
+        if (this.afterSpacingEle) {
+            this.afterSpacingEle.remove();
+            this.afterSpacingEle = undefined;
+        }
+        if (this.indentingDiv) {
+            this.indentingDiv.remove();
+            this.indentingDiv = undefined;
+        }
+        if (this.decreaseIndent) {
+            this.decreaseIndent.remove();
+            this.decreaseIndent = undefined;
+        }
+        if (this.increaseindent) {
+            this.increaseindent.remove();
+            this.increaseindent = undefined;
+        }
     }
 }

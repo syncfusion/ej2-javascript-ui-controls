@@ -651,6 +651,9 @@ export class DocumentHelper {
 
     private isAutoResizeCanStart: boolean = false;
     private isRestartNumbering: boolean = false;
+    private hRuler:HTMLElement;
+    private vRuler:HTMLElement;
+    private markIndicator:HTMLElement
 
     /**
      * Gets visible bounds.
@@ -2011,19 +2014,19 @@ export class DocumentHelper {
             this.iframe.style.left = this.owner.viewer.containerLeft + 'px';
         }
         if (this.owner.hRuler) {
-            let hRuler = document.getElementById(this.owner.element.id + ('_hRulerBottom'));
-            hRuler.style.top = this.viewerContainer.scrollTop + 'px';
-            let markIndicator = document.getElementById(this.owner.element.id + ('_markIndicator'));
-            if(markIndicator) {
-                markIndicator.style.top = this.viewerContainer.scrollTop + 'px';
+            this.hRuler = document.getElementById(this.owner.element.id + ('_hRulerBottom'));
+            this.hRuler.style.top = this.viewerContainer.scrollTop + 'px';
+            this.markIndicator = document.getElementById(this.owner.element.id + ('_markIndicator'));
+            if(this.markIndicator) {
+                this.markIndicator.style.top = this.viewerContainer.scrollTop + 'px';
             }
         }
         if (this.owner.vRuler) {
-            let vRuler = document.getElementById(this.owner.element.id + ('_vRulerBottom'));
-            vRuler.style.left = this.viewerContainer.scrollLeft + 'px';
-            let markIndicator = document.getElementById(this.owner.element.id + ('_markIndicator'));
-            if(markIndicator) {
-                markIndicator.style.left = this.viewerContainer.scrollLeft + 'px';
+            this.vRuler = document.getElementById(this.owner.element.id + ('_vRulerBottom'));
+            this.vRuler.style.left = this.viewerContainer.scrollLeft + 'px';
+            this.markIndicator = document.getElementById(this.owner.element.id + ('_markIndicator'));
+            if(this.markIndicator) {
+                this.markIndicator.style.left = this.viewerContainer.scrollLeft + 'px';
             }
         }
         if(this.owner.rulerHelper && !isNullOrUndefined(this.owner.rulerHelper.vRulerBottom)) {
@@ -4087,6 +4090,27 @@ export class DocumentHelper {
         if (!isNullOrUndefined(this.owner)) {
             this.unWireEvent();
         }
+        if (this.vRuler) {
+            this.vRuler.childNodes.forEach((element: HTMLElement) => {
+                this.vRuler.removeChild(element);
+                element = null;
+            });
+            this.vRuler.innerHTML = '';
+            this.vRuler.remove();
+            this.vRuler = null;
+        }
+        if (this.hRuler) {
+            this.hRuler.childNodes.forEach((element: HTMLElement) => {
+                this.hRuler.removeChild(element);
+                element = null;
+            });
+            this.hRuler.innerHTML = '';
+            this.hRuler.remove();
+            this.hRuler = null;
+        }
+        if (this.markIndicator) {
+            this.markIndicator.remove();
+        }
         if (this.styles) {
             this.styles.destroy();
             this.styles = undefined;
@@ -4831,6 +4855,45 @@ export class DocumentHelper {
             domStyle += 'text-decoration:' + textDecoration + ';';
         }
         return domStyle;
+    }
+    /**
+     * Get next valid element
+     *
+     * @private
+     */
+    public getNextValidElement(inline: ElementBox): ElementBox {
+        let nextValidInline: ElementBox = undefined;
+        if (inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
+            return inline;
+        }
+        while (inline instanceof FieldElementBox) {
+            if (inline.fieldType === 0 && !isNullOrUndefined((inline as FieldElementBox).fieldEnd)) {
+                return isNullOrUndefined(nextValidInline) ? inline : nextValidInline;
+            } else if (inline.fieldType === 1 && !isNullOrUndefined((inline as FieldElementBox).fieldBegin)) {
+                nextValidInline = inline;
+            }
+            inline = inline.nextNode as ElementBox;
+        }
+        return (isNullOrUndefined(nextValidInline) ? inline : nextValidInline) as ElementBox;
+    }
+    /**
+     * @private
+     */
+    public getNextValidElementForField(firstInline: ElementBox): ElementBox {
+        if (firstInline instanceof FieldElementBox && firstInline.fieldType === 0
+            && HelperMethods.isLinkedFieldCharacter((firstInline as FieldElementBox))) {
+            const fieldBegin: FieldElementBox = firstInline as FieldElementBox;
+            if (isNullOrUndefined(fieldBegin.fieldSeparator)) {
+                firstInline = fieldBegin.fieldEnd;
+            } else {
+                firstInline = fieldBegin.fieldSeparator;
+            }
+        }
+        let nextValidInline: ElementBox = undefined;
+        if (!isNullOrUndefined(firstInline.nextNode)) {
+            nextValidInline = this.getNextValidElement((firstInline.nextNode as ElementBox)) as ElementBox;
+        }
+        return nextValidInline;
     }
 }
 /**

@@ -52,6 +52,16 @@ export class CellOptionsDialog {
      * @private
      */
     public cellFormatIn: WCellFormat;
+
+    private innerDiv: HTMLDivElement;
+    private innerDivLabel: HTMLElement;
+    private table: HTMLTableElement;
+    private tr: HTMLTableRowElement;
+    private td: HTMLTableCellElement;
+    private divBtn: HTMLDivElement;
+    private table1: HTMLDivElement;
+
+    private changeSameAsTableClickHandler: EventListener = this.onChangeSameAsTable.bind(this);
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
@@ -73,6 +83,9 @@ export class CellOptionsDialog {
     private getModuleName(): string {
         return 'CellOptionsDialog';
     }
+    private onChangeSameAsTable(): void {
+        this.changeSameAsTable();
+    }
     /**
      * @private
      * @param {L10n} localValue - Specifies the locale.
@@ -84,27 +97,27 @@ export class CellOptionsDialog {
         this.target = createElement('div', {
             className: 'e-de-table-cell-margin-dlg'
         });
-        const innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div');
-        const innerDivLabel: HTMLElement = createElement('Label', {
+        this.innerDiv = <HTMLDivElement>createElement('div');
+        this.innerDivLabel = createElement('Label', {
             className: 'e-de-para-dlg-heading'
         });
-        innerDivLabel.innerHTML = localValue.getConstant('Cell margins');
-        innerDiv.appendChild(innerDivLabel);
-        const table: HTMLTableElement = <HTMLTableElement>createElement('TABLE', {
+        this.innerDivLabel.innerHTML = localValue.getConstant('Cell margins');
+        this.innerDiv.appendChild(this.innerDivLabel);
+        this.table = <HTMLTableElement>createElement('TABLE', {
             styles: 'padding-bottom: 8px;padding-top: 8px;', className: 'e-de-cell-margin-top'
         });
-        const tr: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr');
-        const td: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { className: 'e-de-tbl-btn-separator' });
+        this.tr = <HTMLTableRowElement>createElement('tr');
+        this.td = <HTMLTableCellElement>createElement('td', { className: 'e-de-tbl-btn-separator' });
         const sameAsTableCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_sameAsCheckBox'
         });
         sameAsTableCheckBox.setAttribute('aria-label', localValue.getConstant('Same as the whole table'));
-        td.appendChild(sameAsTableCheckBox);
-        tr.appendChild(td); table.appendChild(tr);
-        innerDiv.appendChild(table);
-        CellOptionsDialog.getCellMarginDialogElements(this, innerDiv, localValue, true);
-        const divBtn: HTMLDivElement = document.createElement('div');
-        this.target.appendChild(divBtn);
+        this.td.appendChild(sameAsTableCheckBox);
+        this.tr.appendChild(this.td); this.table.appendChild(this.tr);
+        this.innerDiv.appendChild(this.table);
+        CellOptionsDialog.getCellMarginDialogElements(this, this.innerDiv, localValue, true);
+        this.divBtn = document.createElement('div');
+        this.target.appendChild(this.divBtn);
         this.sameAsTableCheckBox = new CheckBox({
             label: localValue.getConstant('Same as the whole table'),
             change: this.changeSameAsTable,
@@ -112,7 +125,7 @@ export class CellOptionsDialog {
         });
         sameAsTableCheckBox.setAttribute('aria-label', localValue.getConstant('Same as the whole table'));
         this.sameAsTableCheckBox.appendTo(sameAsTableCheckBox);
-        this.sameAsTableCheckBox.addEventListener('change', this.changeSameAsTable);
+        this.sameAsTableCheckBox.addEventListener('change', this.changeSameAsTableClickHandler);
     }
     /**
      * @private
@@ -301,10 +314,44 @@ export class CellOptionsDialog {
             }
             this.target = undefined;
         }
+        this.removeElements();
+        this.unWireEvents();
         this.dialog = undefined;
         this.target = undefined;
         this.documentHelper = undefined;
         this.sameAsTableCheckBox = undefined;
+    }
+
+    private removeElements(): void {
+        if (this.table){
+            this.table.remove();
+            this.table = undefined;
+        }
+        if (this.innerDiv){
+            this.innerDiv.remove();
+            this.innerDiv = undefined;
+        }
+        if (this.innerDivLabel){
+            this.innerDivLabel.remove();
+            this.innerDivLabel = undefined;
+        }
+        if (this.tr){
+            this.tr.remove();
+            this.tr = undefined;
+        }
+        if (this.td){
+            this.td.remove();
+            this.td = undefined;
+        }
+        if (this.divBtn){
+            this.divBtn.remove();
+            this.divBtn = undefined;
+        }
+    }
+    private unWireEvents(): void {
+        if (this.sameAsTableCheckBox) {
+            this.sameAsTableCheckBox.removeEventListener('change', this.changeSameAsTableClickHandler);
+        }
     }
     /**
      * @private
@@ -316,7 +363,7 @@ export class CellOptionsDialog {
      */
     public static getCellMarginDialogElements(dialog: CellOptionsDialog | TableOptionsDialog, div: HTMLDivElement, locale: L10n, cellOptions: boolean): void {
         if (!isNullOrUndefined(dialog)) {
-            const table: HTMLTableElement = <HTMLTableElement>createElement('div');
+            const table1: HTMLTableElement = <HTMLTableElement>createElement('div');
             const tr1: HTMLTableRowElement = <HTMLTableRowElement>createElement('div', { className: 'e-de-container-row' });
             const td1: HTMLTableCellElement = <HTMLTableCellElement>createElement('div', { className: 'e-de-subcontainer-left' });
 
@@ -348,9 +395,9 @@ export class CellOptionsDialog {
             });
             // rightTextBox.setAttribute('aria-label','RightMargin');
             td4.appendChild(rightTextBox);
-            tr2.appendChild(td3); tr2.appendChild(td4); table.appendChild(tr1);
-            table.appendChild(tr2);
-            div.appendChild(table);
+            tr2.appendChild(td3); tr2.appendChild(td4); table1.appendChild(tr1);
+            table1.appendChild(tr2);
+            div.appendChild(table1);
             dialog.target.appendChild(div);
             dialog.topMarginBox = new NumericTextBox({
                 value: 0, min: 0, max: 1584, decimals: 2,

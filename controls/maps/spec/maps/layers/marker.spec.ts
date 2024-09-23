@@ -2354,7 +2354,8 @@ describe('Map marker properties tesing', () => {
                 },
                 layers: [
                     {
-                        
+                        //url:'GoogleStaticMap', 
+                        //key:'AIzaSyBhIDLGwyY8654k7_Ziss1Nx-mKO6kwvcw',
                     },
                     {
                         

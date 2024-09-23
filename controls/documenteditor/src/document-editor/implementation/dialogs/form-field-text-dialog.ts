@@ -28,6 +28,22 @@ export class TextFormFieldDialog {
     private textFormatDropDown: ComboBox;
     private fieldBegin: FieldElementBox;
 
+    private dialogDiv: HTMLDivElement;
+    private firstDiv: HTMLElement;
+    private typeDiv: HTMLElement;
+    private typeDropDownList: HTMLInputElement;
+    private secondDiv: HTMLElement;
+    private maxLengthDiv: HTMLElement;
+    private maxLength: HTMLInputElement;
+    private textFromatDiv: HTMLElement;
+    private textFormatList: HTMLInputElement;
+    private fileSettingsLabel: HTMLElement;
+    private thirdDiv: HTMLElement;
+    private toolTipTotalDiv: HTMLElement;
+    private bookmarkTotalDiv: HTMLElement;
+    private fillInEnableDiv: HTMLElement;
+    private fillInEnableEle: HTMLInputElement;
+
     private localObj: L10n;
 
     /**
@@ -53,9 +69,9 @@ export class TextFormFieldDialog {
      */
     private initTextDialog(localValue: L10n, isRtl?: boolean): void {
         this.target = createElement('div');
-        let dialogDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        let firstDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
-        let typeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
+        this.dialogDiv = createElement('div') as HTMLDivElement;
+        this.firstDiv = createElement('div', { className: 'e-de-container-row' });
+        this.typeDiv = createElement('div', { className: 'e-de-subcontainer-left' });
         this.defaultTextDiv = createElement('div', { className: 'e-de-subcontainer-right' });
         // let typeLabel: HTMLElement = createElement('div', {
         //     className: 'e-de-ff-dlg-heading-small',
@@ -67,7 +83,7 @@ export class TextFormFieldDialog {
             { Value: 'Number', Name: localValue.getConstant('Number') },
             { Value: 'Date', Name: localValue.getConstant('Date') }
             ];
-        let typeDropDownList: HTMLInputElement = createElement('input') as HTMLInputElement;
+        this.typeDropDownList = createElement('input') as HTMLInputElement;
         this.typeDropDown = new DropDownList({
             dataSource: typeDropDownitems,
             popupHeight: '150px',
@@ -83,13 +99,13 @@ export class TextFormFieldDialog {
         //     innerHTML: localValue.getConstant('Default text')
         // });
         this.defaultTextInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
-        let secondDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
-        let maxLengthDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
+        this.secondDiv = createElement('div', { className: 'e-de-container-row' });
+        this.maxLengthDiv = createElement('div', { className: 'e-de-subcontainer-left' });
         // let maxLengthLabel: HTMLElement = createElement('div', {
         //     className: 'e-de-ff-dlg-heading-small',
         //     innerHTML: localValue.getConstant('Maximum length')
         // });
-        let maxLength: HTMLInputElement = createElement('input',{attrs:{'aria-labelledby':localValue.getConstant('Maximum length')}}) as HTMLInputElement;
+        this.maxLength = createElement('input',{attrs:{'aria-labelledby':localValue.getConstant('Maximum length')}}) as HTMLInputElement;
         this.maxLengthNumber = new NumericTextBox({
             format: 'n', value: 0, min: 0, max: 32767, width: '100%', enablePersistence: false,
             placeholder: localValue.getConstant('Maximum length'), floatLabelType: 'Always',
@@ -112,12 +128,12 @@ export class TextFormFieldDialog {
                 }
             },
         });
-        let textFromatDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
+        this.textFromatDiv = createElement('div', { className: 'e-de-subcontainer-right' });
         // this.textFormatLabel = createElement('div', {
         //     className: 'e-de-ff-dlg-heading-small',
         //     innerHTML: localValue.getConstant('Text format')
         // });
-        let textFormatList: HTMLInputElement = createElement('input') as HTMLInputElement;
+        this.textFormatList = createElement('input') as HTMLInputElement;
         let formatDropDownitems: { [key: string]: Object }[] =
             [
                 { Value: "Uppercase", Name: localValue.getConstant("Uppercase") },
@@ -138,13 +154,13 @@ export class TextFormFieldDialog {
         this.textFormatDropDown.focus = (): void => {
             (this.textFormatDropDown.element as HTMLInputElement).select();
         };
-        let fileSettingsLabel: HTMLElement = createElement('div', {
+        this.fileSettingsLabel = createElement('div', {
             className: 'e-de-ff-dlg-heading',
             innerHTML: localValue.getConstant('Field settings')
         });
-        let thirdDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
-        let toolTipTotalDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
-        let bookmarkTotalDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
+        this.thirdDiv = createElement('div', { className: 'e-de-container-row' });
+        this.toolTipTotalDiv = createElement('div', { className: 'e-de-subcontainer-left' });
+        this.bookmarkTotalDiv = createElement('div', { className: 'e-de-subcontainer-right' });
         // let toolTipHeadingLabel: HTMLElement = createElement('div', {
         //     className: 'e-de-ff-dlg-heading-small',
         //     innerHTML: localValue.getConstant('Tooltip')
@@ -155,54 +171,54 @@ export class TextFormFieldDialog {
         //     innerHTML: localValue.getConstant('Name')
         // });
         this.bookmarkTextInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
-        let fillInEnableDiv: HTMLElement = createElement('div');
-        let fillInEnableEle: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' }}) as HTMLInputElement;
-        fillInEnableEle.setAttribute('aria-label',localValue.getConstant('Fillin enabled'));
+        this.fillInEnableDiv = createElement('div');
+        this.fillInEnableEle = createElement('input', { attrs: { type: 'checkbox' }}) as HTMLInputElement;
+        this.fillInEnableEle.setAttribute('aria-label',localValue.getConstant('Fillin enabled'));
         this.fillInEnable = new CheckBox({
             cssClass: 'e-de-ff-dlg-check',
             label: localValue.getConstant('Fillin enabled'),
             enableRtl: isRtl
         });
         if (isRtl) {
-            typeDiv.classList.add('e-de-rtl');
-            maxLengthDiv.classList.add('e-de-rtl');
-            toolTipTotalDiv.classList.add('e-de-rtl');
-            bookmarkTotalDiv.classList.add('e-de-rtl');
+            this.typeDiv.classList.add('e-de-rtl');
+            this.maxLengthDiv.classList.add('e-de-rtl');
+            this.toolTipTotalDiv.classList.add('e-de-rtl');
+            this.bookmarkTotalDiv.classList.add('e-de-rtl');
         }
 
-        this.target.appendChild(dialogDiv);
+        this.target.appendChild(this.dialogDiv);
 
-        dialogDiv.appendChild(firstDiv);
-        firstDiv.appendChild(typeDiv);
+        this.dialogDiv.appendChild(this.firstDiv);
+        this.firstDiv.appendChild(this.typeDiv);
         //typeDiv.appendChild(typeLabel);
-        typeDiv.appendChild(typeDropDownList);
-        this.typeDropDown.appendTo(typeDropDownList);
-        firstDiv.appendChild(this.defaultTextDiv);
+        this.typeDiv.appendChild(this.typeDropDownList);
+        this.typeDropDown.appendTo(this.typeDropDownList);
+        this.firstDiv.appendChild(this.defaultTextDiv);
         //this.defaultTextDiv.appendChild(this.defaultTextLabel);
         this.defaultTextDiv.appendChild(this.defaultTextInput);
 
-        dialogDiv.appendChild(secondDiv);
-        secondDiv.appendChild(maxLengthDiv);
+        this.dialogDiv.appendChild(this.secondDiv);
+        this.secondDiv.appendChild(this.maxLengthDiv);
         //maxLengthDiv.appendChild(maxLengthLabel);
-        maxLengthDiv.appendChild(maxLength);
-        this.maxLengthNumber.appendTo(maxLength);
-        secondDiv.appendChild(textFromatDiv);
+        this.maxLengthDiv.appendChild(this.maxLength);
+        this.maxLengthNumber.appendTo(this.maxLength);
+        this.secondDiv.appendChild(this.textFromatDiv);
         //textFromatDiv.appendChild(this.textFormatLabel);
-        textFromatDiv.appendChild(textFormatList);
-        this.textFormatDropDown.appendTo(textFormatList);
+        this.textFromatDiv.appendChild(this.textFormatList);
+        this.textFormatDropDown.appendTo(this.textFormatList);
 
-        dialogDiv.appendChild(fileSettingsLabel);
-        dialogDiv.appendChild(thirdDiv);
-        thirdDiv.appendChild(toolTipTotalDiv);
+        this.dialogDiv.appendChild(this.fileSettingsLabel);
+        this.dialogDiv.appendChild(this.thirdDiv);
+        this.thirdDiv.appendChild(this.toolTipTotalDiv);
         //toolTipTotalDiv.appendChild(toolTipHeadingLabel);
-        toolTipTotalDiv.appendChild(this.tooltipTextInput);
-        thirdDiv.appendChild(bookmarkTotalDiv);
+        this.toolTipTotalDiv.appendChild(this.tooltipTextInput);
+        this.thirdDiv.appendChild(this.bookmarkTotalDiv);
         //bookmarkTotalDiv.appendChild(bookmarkHeadingLabel);
-        bookmarkTotalDiv.appendChild(this.bookmarkTextInput);
+        this.bookmarkTotalDiv.appendChild(this.bookmarkTextInput);
 
-        dialogDiv.appendChild(fillInEnableDiv);
-        fillInEnableDiv.appendChild(fillInEnableEle);
-        this.fillInEnable.appendTo(fillInEnableEle);
+        this.dialogDiv.appendChild(this.fillInEnableDiv);
+        this.fillInEnableDiv.appendChild(this.fillInEnableEle);
+        this.fillInEnable.appendTo(this.fillInEnableEle);
         this.defaultTextLabel = new TextBox({placeholder: localValue.getConstant('Default text'), floatLabelType: 'Always'}, this.defaultTextInput);
         new TextBox({placeholder: localValue.getConstant('Tooltip'), floatLabelType: 'Always'}, this.tooltipTextInput);
         new TextBox({placeholder: localValue.getConstant('Name'), floatLabelType: 'Always',htmlAttributes:{'aria-labelledby':localValue.getConstant('Name')}}, this.bookmarkTextInput);
@@ -455,5 +471,68 @@ export class TextFormFieldDialog {
         this.defaultTextLabel = undefined;
         this.defaultTextDiv = undefined;
         this.textFormatLabel = undefined;
+        this.removeElements();
+    }
+    private removeElements(): void {
+        if (this.dialogDiv){
+            this.dialogDiv.remove();
+            this.dialogDiv = undefined;
+        }
+        if (this.firstDiv){
+            this.firstDiv.remove();
+            this.firstDiv = undefined;
+        }
+        if (this.typeDiv){
+            this.typeDiv.remove();
+            this.typeDiv = undefined;
+        }
+        if (this.typeDropDownList){
+            this.typeDropDownList.remove();
+            this.typeDropDownList = undefined;
+        }
+        if (this.secondDiv){
+            this.secondDiv.remove();
+            this.secondDiv = undefined;
+        }
+        if (this.maxLengthDiv){
+            this.maxLengthDiv.remove();
+            this.maxLengthDiv = undefined;
+        }
+        if (this.maxLength){
+            this.maxLength.remove();
+            this.maxLength = undefined;
+        }
+        if (this.textFromatDiv){
+            this.textFromatDiv.remove();
+            this.textFromatDiv = undefined;
+        }
+        if (this.textFormatList){
+            this.textFormatList.remove();
+            this.textFormatList = undefined;
+        }
+        if (this.fileSettingsLabel){
+            this.fileSettingsLabel.remove();
+            this.fileSettingsLabel = undefined;
+        }
+        if (this.thirdDiv){
+            this.thirdDiv.remove();
+            this.thirdDiv = undefined;
+        }
+        if (this.toolTipTotalDiv){
+            this.toolTipTotalDiv.remove();
+            this.toolTipTotalDiv = undefined;
+        }
+        if (this.bookmarkTotalDiv){
+            this.bookmarkTotalDiv.remove();
+            this.bookmarkTotalDiv = undefined;
+        }
+        if (this.fillInEnableDiv){
+            this.fillInEnableDiv.remove();
+            this.fillInEnableDiv = undefined;
+        }
+        if (this.fillInEnableEle){
+            this.fillInEnableEle.remove();
+            this.fillInEnableEle = undefined;
+        }
     }
 }
