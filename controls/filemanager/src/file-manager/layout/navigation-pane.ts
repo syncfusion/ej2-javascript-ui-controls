@@ -105,8 +105,7 @@ export class NavigationPane {
 
     private addDragDrop(): void {
         if (!this.parent.isMobile && this.treeObj) {
-            if (this.parent.allowDragAndDrop) {
-                if (this.dragObj) { this.dragObj.destroy(); }
+            if (this.parent.allowDragAndDrop && isNOU(this.dragObj)) {
                 this.dragObj = new Draggable(this.treeObj.element, {
                     cursorAt: this.parent.dragCursorPosition,
                     dragTarget: '.' + CLS.FULLROW,
@@ -123,6 +122,7 @@ export class NavigationPane {
                 });
             } else if (!this.parent.allowDragAndDrop && this.dragObj) {
                 this.dragObj.destroy();
+                this.dragObj = null;
             }
         }
     }
@@ -653,7 +653,7 @@ export class NavigationPane {
     }
     /* istanbul ignore next */
     private checkDropPath(args: ReadArgs): void {
-        if (isFileSystemData(this.parent) && this.parent.path === this.parent.dropPath || this.parent.targetModule === 'navigationpane') {
+        if (isFileSystemData(this.parent) && (this.parent.path === this.parent.dropPath || this.parent.targetModule === 'navigationpane')) {
             return;
         }
         if (this.parent.hasId) {

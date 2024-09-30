@@ -727,16 +727,11 @@ export class WCharacterFormat {
         }
         if (format.hasValue('fontFamily')) {
             this.fontFamily = format.getValue('fontFamily') as string;
-        }
-        if (format.hasValue('fontFamilyAscii')) {
-            this.fontFamilyAscii = format.getValue('fontFamilyAscii') as string;
-        }
-        if (format.hasValue('fontFamilyFarEast')) {
-            this.fontFamilyFarEast = format.getValue('fontFamilyFarEast') as string;
-        }
-        if (format.hasValue('fontFamilyNonFarEast')) {
-            this.fontFamilyNonFarEast = format.getValue('fontFamilyNonFarEast') as string;
-        }
+            this.fontFamilyFarEast = format.getValue('fontFamily') as string;
+            this.fontFamilyAscii = format.getValue('fontFamily') as string;
+            this.fontFamilyNonFarEast = format.getValue('fontFamily') as string;
+            this.fontFamilyBidi = format.getValue('fontFamily') as string;
+        }        
         if (format.hasValue('underline')) {
             this.underline = format.getValue('underline') as Underline;
         }
@@ -787,9 +782,6 @@ export class WCharacterFormat {
         }
         if (format.hasValue('complexScript')) {
             this.complexScript = format.getValue('complexScript') as boolean;
-        }
-        if (format.hasValue('fontFamilyBidi')) {
-            this.fontFamilyBidi = format.getValue('fontFamilyBidi') as string;
         }
     }
 

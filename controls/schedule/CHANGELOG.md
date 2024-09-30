@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I617009` - An issue where the appointment drag position is not updating according to the mouse cursor in the vertical views of the schedule has been fixed.
+
 ## 27.1.50 (2024-09-24)
 
 ### Schedule

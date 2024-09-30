@@ -1411,14 +1411,15 @@ export class Edit {
         });
         this.parent.ganttChartModule.reRenderConnectorLines();
     }
+
     /* eslint-disable-next-line */
-    private dmSuccess(e: any, args: ITaskbarEditedEventArgs): void {
+    private updateEditedFields(e: any) {
         let eLength: number;
         let rec: ITaskData;
         if (e.changedRecords) {
             eLength = e.changedRecords['length'];
         }
-        else{
+        else {
             eLength = e['length'];
         }
         for (let i: number = 0; i < eLength; i++) {
@@ -1436,11 +1437,20 @@ export class Edit {
             }
             this.updateEditedRecordFields(rec, this.parent.editedRecords[parseInt(i.toString(), 10)]);
         }
+    }
+    /* eslint-disable-next-line */
+    private dmSuccess(e: any, args: ITaskbarEditedEventArgs): void {
+        this.updateEditedFields(e);
         this.saveSuccess(args);
     }
 
     private updateEditedRecordFields(rec: ITaskData, editedRecord: IGanttData): void {
         const fields: TaskFieldsModel = this.parent.taskFields;
+        const _aLength: number = Object.keys(rec).length;
+        for (let j: number = 0, _a: string[] = Object.keys(rec); j < _aLength; j++) {
+            const key: string = _a[parseInt(j.toString(), 10)];
+            (editedRecord as IGanttData)[`${key}`] = rec[`${key}`];
+        }
         if (fields.id !== null) {
             editedRecord.ganttProperties['taskId'] = rec[fields.id];
         }
@@ -2619,6 +2629,7 @@ export class Edit {
         this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
         this.parent.treeGrid.parentData = [];
         this.isAdded = false;
+        this.parent.treeGrid.editModule['isOnBatch'] = false;
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
             this.refreshRecordInImmutableMode();
@@ -3202,6 +3213,7 @@ export class Edit {
         this.parent.addDeleteRecord = true;
         this.parent.treeGrid['isAddedFromGantt'] = true;
         this.isAdded = true;
+        this.parent.treeGrid.editModule['isOnBatch'] = false;
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
             this.parent.modifiedRecords = args.modifiedRecords;
@@ -4196,6 +4208,7 @@ export class Edit {
         }
     }
     private indentSuccess(e: ReturnType, args: RowDropEventArgs, isDrag: boolean): void {
+        this.updateEditedFields(e);
         this.indentOutdentSuccess(args, isDrag);
     }
     private indentFailure(e: { result: Object[] }): void {
@@ -4203,6 +4216,9 @@ export class Edit {
     }
     private indentOutdentSuccess(args: RowDropEventArgs, isDrag: boolean): void {
         this.parent.treeGrid.parentData = [];
+        if (this.parent.treeGrid.editModule) {
+            this.parent.treeGrid.editModule['isOnBatch'] = false;
+        }
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
             this.refreshRecordInImmutableMode(args.data, isDrag);
@@ -4223,6 +4239,7 @@ export class Edit {
                 updateDates(args.modifiedRecords[i as number], this.parent);
             }
         }
+        this.parent.previousRecords = {};
         this.parent.trigger('actionComplete', args);
         if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
             this.parent.hideMaskRow();

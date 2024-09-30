@@ -514,6 +514,9 @@ export class BatchEdit {
             gObj.trigger(events.batchDelete, beforeBatchDeleteArgs);
             gObj.notify(events.batchDelete, { rows: this.parent.getRowsObject() });
             gObj.notify(events.toolbarRefresh, {});
+            if (!gObj.getContentTable().querySelector('tr.e-row')) {
+                gObj.renderModule.renderEmptyRow();
+            }
         });
     }
 

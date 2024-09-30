@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I632186` - Custom column not refreshed properly while indent and outdent issue has been fixed.
+- `#I631776` - Dates given in the data source are not displayed same as segment data source issue has been fixed.
+- `#I633422` - Incorrect start date updated using `updateRecordByID` issue has been fixed.
+
 ## 27.1.50 (2024-09-24)
 
 ### GanttChart

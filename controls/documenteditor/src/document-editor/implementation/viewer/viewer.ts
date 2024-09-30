@@ -3479,8 +3479,8 @@ export class DocumentHelper {
             x = 30;
         }
         y = endPage.boundingRectangle.y * this.zoomFactor + (this.pages.indexOf(endPage) + 1) * (this.owner.viewer as PageLayoutViewer).pageGap * (1 - this.zoomFactor);
-        let scrollTop: number = this.owner.viewer.containerTop;
-        let scrollLeft: number = this.owner.viewer.containerLeft;
+        let scrollTop: number = this.viewerContainer.scrollTop;
+        let scrollLeft: number = this.viewerContainer.scrollLeft;
         let pageHeight: number = this.visibleBounds.height;
         let caretInfo: CaretHeightInfo = this.selection.updateCaretSize(this.owner.selectionModule.end, true);
         let topMargin: number = caretInfo.topMargin;

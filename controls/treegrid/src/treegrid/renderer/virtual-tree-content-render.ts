@@ -416,13 +416,14 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             - this.parent.pageSettings.pageSize;
             index = (index > 0) ? index : 0;
             if (!isNullOrUndefined(this[`${selectedRowIndex}`]) && this[`${selectedRowIndex}`] !== -1 && index !== this[`${selectedRowIndex}`] &&
-                ((this.parent.rowHeight * this.parent.pageSettings.pageSize) < content.scrollTop)) {
+                ((this.parent.rowHeight * this.parent.pageSettings.pageSize) < content.scrollTop) &&
+                !(this.parent.root && this.parent.root.treeGrid && this.parent.root.treeGrid.isGantt)) {
                 index = this[`${selectedRowIndex}`];
             }
             this.startIndex = index;
             this.endIndex = index + this.parent.pageSettings.pageSize;
             if (this.endIndex > this.totalRecords) {
-                const lastInx: number = this.totalRecords - 1;
+                const lastInx: number = this.totalRecords;
                 const remains: number = this.endIndex % lastInx;
                 this.endIndex = lastInx;
                 this.startIndex = (this.startIndex - remains) < 0 ? 0 : (this.startIndex - remains);
@@ -459,7 +460,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             let nextSetResIndex: number = ~~(content.scrollTop / rowHeight);
             const isLastBlock: boolean = (this[`${selectedRowIndex}`] + this.parent.pageSettings.pageSize) < this.totalRecords ? false : true;
             if (!isNullOrUndefined(this[`${selectedRowIndex}`]) && this[`${selectedRowIndex}`] !== -1 &&
-             nextSetResIndex !== this[`${selectedRowIndex}`] && !isLastBlock) {
+             nextSetResIndex !== this[`${selectedRowIndex}`] && !isLastBlock && !(this.parent.root && this.parent.root.treeGrid && this.parent.root.treeGrid.isGantt)) {
                 nextSetResIndex = this[`${selectedRowIndex}`];
             }
             let lastIndex: number = nextSetResIndex + this.parent.pageSettings.pageSize;

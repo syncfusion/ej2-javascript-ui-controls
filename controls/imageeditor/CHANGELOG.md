@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "undo-redo collection updated multiple times while customizing arrow annotation" has been resolved.
+- The issue with "Image Editor arrow intersection point is improper" has bee resolved.
+
 ## 27.1.50 (2024-09-24)
 
 ### Image Editor

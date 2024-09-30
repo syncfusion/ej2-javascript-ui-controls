@@ -446,6 +446,9 @@ export class Resize implements IAction {
                                 this.widthService.setColumnWidth(new Column({ width: '30px' }), i);
                             }
                         }
+                        if (this.parent.isRowDragable()) {
+                            this.widthService.setColumnWidth(new Column({ width: '30px' }));
+                        }
                         for (const col of this.refreshColumnWidth()) {
                             this.widthService.setColumnWidth(col);
                         }

@@ -1,5 +1,5 @@
-import { DocumentEditor, ContextType, TableOfContentsSettings } from '../../document-editor/index';
-import { createElement, L10n, classList } from '@syncfusion/ej2-base';
+import { DocumentEditor, ContextType, TableOfContentsSettings, FieldElementBox } from '../../document-editor/index';
+import { createElement, L10n, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Button, CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Toolbar } from '../tool-bar';
@@ -329,6 +329,16 @@ export class TocProperties {
         this.updateBtn.content = this.documentEditor.selectionModule.contextType === 'TableOfContents' ? this.localObj.getConstant('Update') : this.localObj.getConstant('Insert');
         this.updateBtn.element.setAttribute('aria-label', this.updateBtn.content);
         this.prevContext = this.documentEditor.selectionModule.contextType;
+        if (this.documentEditor.selectionModule.contextType === 'TableOfContents') {
+            const tocField: FieldElementBox = this.documentEditor.selectionModule.getTocFieldInternal();
+            const code: string = this.documentEditor.selectionModule.getFieldCode(tocField);
+            if (code.toLocaleLowerCase().indexOf('toc') !== -1 && !isNullOrUndefined(this.documentEditor.editorModule)) {
+                const tocSettings: TableOfContentsSettings = this.documentEditor.editorModule.getTocSettings(code, tocField);
+                this.borderLevelStyle.value = tocSettings.endLevel.toString();
+            }
+        } else {
+            this.borderLevelStyle.value = "3";
+        }
         this.enableDisableInsertButton(this.documentEditor.selectionModule.isPlainContentControl());
         this.documentEditor.resize();
         if (isShow) {

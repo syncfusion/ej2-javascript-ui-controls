@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I628997` - The drill-through popup will now display the proper data when using the Pivot Table with the server-side engine and DataTable.
+
 ## 27.1.50 (2024-09-24)
 
 ### Pivot Table

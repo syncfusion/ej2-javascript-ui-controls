@@ -5780,6 +5780,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             arrow = strokeWidth > 1 ? '==>' : '-->';
         } else if (decoratorShape === 'None') {
             arrow = '---';
+        } else {
+            arrow = '-->';
         }
 
         return arrow;
@@ -5787,7 +5789,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     // Method to get the node shape
     private getNodeShape(node: NodeModel): string {
-        const label: string = node.annotations[0].content || '';
+        const label: string = node.annotations.length > 0 ? node.annotations[0].content : '';
         const shape: string = (node.shape as FlowShape | BasicShape).shape;
         if (shape) {
             switch (shape) {

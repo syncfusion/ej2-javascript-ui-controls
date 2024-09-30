@@ -34,7 +34,8 @@ export class FocusStrategy {
     private focusByClick: boolean = false;
     private firstHeaderCellClick: boolean = false;
     private passiveHandler: EventListener;
-    private prevIndexes: IIndex = {};
+    /** @hidden */
+    public prevIndexes: IIndex = {};
     private focusedColumnUid: string;
     private refMatrix: Function = this.refreshMatrix(true);
     private rowModelGen: RowModelGenerator;
@@ -184,7 +185,7 @@ export class FocusStrategy {
         const isHeader: boolean = !isNullOrUndefined(closest(<HTMLElement>e.target, '.' + literals.gridHeader));
         isContent = isContent && isHeader ? !isContent : isContent;
         if (!isContent && isNullOrUndefined(closest(<HTMLElement>e.target, '.' + literals.gridHeader)) ||
-            (<Element>e.target).classList.contains(literals.content) ||
+            (<Element>e.target).classList.contains(literals.content) || (<Element>e.target).classList.contains(literals.headerContent) ||
             (!isNullOrUndefined(closest(<HTMLElement>e.target, '.e-unboundcell')) && !force)) { return; }
         this.setActive(isContent);
         const beforeArgs: CellFocusArgs = { cancel: false, byKey: false, byClick: !isNullOrUndefined(e.target), clickArgs: <Event>e };

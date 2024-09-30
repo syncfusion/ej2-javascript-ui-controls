@@ -3463,7 +3463,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             if (httprequestEventArgs.cancel) {
                 reject(null);
             } else {
-                ajax.send(formData);
+                ajax.send(formData, httprequestEventArgs);
             }
         });
     }

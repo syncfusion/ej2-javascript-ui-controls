@@ -996,7 +996,7 @@ export class Draw {
                 actObj.end = 'arrowSolid';
             }
             this.drawArrowHead(canvasDraw, true); this.drawArrowHead(canvasDraw, false);
-            if (actObj.end === 'none') {
+            if (actObj.end === 'none' && actObj.start !== 'circle' && actObj.start !== 'square') {
                 this.shapeLine(canvasDraw, actPoint.startX, actPoint.startY,
                                actPoint.endX, actPoint.endY);
             }
@@ -1359,9 +1359,10 @@ export class Draw {
         const isStartArrow: boolean = actObj.start === 'arrow';
         const isEndArrow: boolean = actObj.end === 'arrow';
         const isEndCircleOrSquare: boolean = actObj.end === 'circle' || actObj.end === 'square';
+        const isStartCircleOrSquare: boolean = actObj.start === 'circle' || actObj.start === 'square';
         if ((start && actObj.triangleDirection === 'left' || actObj.triangleDirection === 'right') &&
-            ((isStartArrow && actObj.end === 'none') || (isStartArrow && !isEndCircleOrSquare)) ||
-            (!start && (isEndArrow && actObj.start === 'none' || !isStartArrow && !isEndCircleOrSquare))) {
+            ((isStartArrow && actObj.end === 'none') || (isStartArrow && !isEndCircleOrSquare && !isStartCircleOrSquare)) ||
+            (!start && (isEndArrow && actObj.start === 'none' || !isStartArrow && !isEndCircleOrSquare && !isStartCircleOrSquare))) {
             this.shapeLine(canvasDraw, startX, startY, endX, endY);
         }
         if ((start && actObj.triangleDirection === 'left') || (!start && actObj.triangleDirection === 'right')) {
@@ -1391,9 +1392,10 @@ export class Draw {
         const angle: number = Math.atan2(this.dy, this.dx);
         const isStartArrowSolid: boolean = actObj.start === 'arrowSolid';
         const isEndArrowSolid: boolean = actObj.end === 'arrowSolid';
+        const isStartCircleOrSquare: boolean = actObj.start === 'circle' || actObj.start === 'square';
         const isEndCircleOrSquare: boolean = actObj.end === 'circle' || actObj.end === 'square';
-        if ((start && (isStartArrowSolid && actObj.end === 'none') || (isStartArrowSolid && !isEndCircleOrSquare)) ||
-            (!start && (isEndArrowSolid && actObj.start === 'none' || !isStartArrowSolid && !isEndCircleOrSquare))) {
+        if ((start && (isStartArrowSolid && actObj.end === 'none') || (isStartArrowSolid && !isEndCircleOrSquare && !isStartCircleOrSquare)) ||
+            (!start && (isEndArrowSolid && actObj.start === 'none' || !isStartArrowSolid && !isEndCircleOrSquare && !isStartCircleOrSquare))) {
             this.shapeLine(canvasDraw, startX, startY, endX, endY);
         }
         if ((start && actObj.triangleDirection === 'left') || (!start && actObj.triangleDirection === 'right')) {

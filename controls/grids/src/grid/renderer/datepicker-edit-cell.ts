@@ -5,7 +5,6 @@ import { DatePicker, DateTimePicker, PopupEventArgs, MaskedDateTime } from '@syn
 import { isEditable, getObject, getCustomDateFormat } from '../base/util';
 import { EditCellBase } from './edit-cell-base';
 import { Edit } from '../actions/edit';
-DatePicker.Inject(MaskedDateTime);
 
 /**
  * `DatePickerEditCell` is used to handle datepicker cell type editing.
@@ -16,11 +15,11 @@ export class DatePickerEditCell extends EditCellBase implements IEditCell {
 
     /* @hidden */
     public edit: Edit;
-    public flag: boolean;
+    public isMaskModuleInjected: boolean;
 
     constructor(parent?: IGrid) {
         super(parent);
-        this.flag = true;
+        this.isMaskModuleInjected = true;
     }
 
     public write(args: { rowData: Object, element: Element, column: Column, type: string, row: HTMLElement, requestType: string }): void {
@@ -30,9 +29,9 @@ export class DatePickerEditCell extends EditCellBase implements IEditCell {
                 extend(
                     dateanddatetimerender(args, this.parent.editSettings.mode, this.parent.enableRtl, this.parent.cssClass, this),
                     args.column.edit.params));
-            if (this.flag) {
+            if (this.isMaskModuleInjected) {
                 DatePicker.Inject(MaskedDateTime);
-                this.flag = false;
+                this.isMaskModuleInjected = false;
             }
         }
         if (args.column.editType === 'datetimepickeredit') {

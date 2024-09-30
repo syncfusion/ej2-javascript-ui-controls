@@ -15057,7 +15057,7 @@ export class Editor {
                             if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change' && start.paragraph === paragraph && end.paragraph != paragraph && startOffset >= paragraphStart && isCombineNextParagraph) {
                                 isCombineLastBlock = true;
                             }
-                            currentParagraph = this.splitParagraph(paragraph, paragraph.firstChild as LineWidget, 0, startLine, startOffset, true);
+                            currentParagraph = this.splitParagraph(paragraph, paragraph.firstChild as LineWidget, 0, startLine, startOffset, true, true);
                             if (!isNullOrUndefined(currentParagraph) && !isNullOrUndefined(this.editorHistory) && (this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
                                 this.deletaRevisionIDs(currentParagraph.characterFormat);
                             }
@@ -15067,7 +15067,15 @@ export class Editor {
                             }
                             this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction, isCombineLastBlock, skipHistoryCollection);
                             this.removeRevisionForBlock(paragraph, undefined, false, true);
-                            this.addRemovedNodes(paragraph);
+                            if (!isNullOrUndefined(this.owner.editorHistory) && !isNullOrUndefined(this.owner.editorHistory.currentBaseHistoryInfo) && this.owner.editorHistory.currentBaseHistoryInfo.action === 'Paste' && this.owner.editorHistory.historyInfoStack.length > 0 && this.owner.editorHistory.historyInfoStack[0].action === 'DragAndDropContent') {
+                                this.addRemovedNodes(paragraph.clone());
+                                this.removeFieldInBlock(paragraph);
+                                this.removeFieldInBlock(paragraph, true);
+                                this.removeFieldInBlock(paragraph, undefined, true);
+                                this.removeCommentsInBlock(paragraph);
+                            } else {
+                                this.addRemovedNodes(paragraph);
+                            }
                             isCombineLastBlock = false;
                         }
                     }
@@ -15342,7 +15350,7 @@ export class Editor {
         return undefined;
     }
 
-    private splitParagraph(paragraphAdv: ParagraphWidget, startLine: LineWidget, startOffset: number, endLine: LineWidget, endOffset: number, removeBlock: boolean): ParagraphWidget {
+    private splitParagraph(paragraphAdv: ParagraphWidget, startLine: LineWidget, startOffset: number, endLine: LineWidget, endOffset: number, removeBlock: boolean, skipElementRemoval?: boolean): ParagraphWidget {
         let paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.paragraphFormat = new WParagraphFormat(paragraph);
         paragraph.characterFormat = new WCharacterFormat(paragraph);
@@ -15371,7 +15379,7 @@ export class Editor {
         paragraph.containerWidget = paragraphAdv.containerWidget;
         this.updateNextBlocksIndex(paragraph, true);
         if (removeBlock) {
-            this.removeBlock(paragraphAdv);
+            this.removeBlock(paragraphAdv, undefined, skipElementRemoval);
         }
 
         this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, paragraph.containerWidget as BodyWidget, paragraph, false);
@@ -19159,7 +19167,7 @@ export class Editor {
                 } else if (revision.revisionType === 'Deletion') {
                     if (index !== -1 && revision.author !== this.owner.currentUser && revision.range.length > 0) {
                         let range: Object[] = revision.range;
-                        let startOff: number = range[0] instanceof WCharacterFormat ? 0 : (range[0] as ElementBox).line.getOffset(range[0] as ElementBox, 0);
+                        let startOff: number = range[0] instanceof WCharacterFormat || range[0] instanceof WRowFormat ? 0 : (range[0] as ElementBox).line.getOffset(range[0] as ElementBox, 0);
                         let lastEle: any = range[range.length - 1] instanceof WCharacterFormat ? range[range.length - 2] : range[range.length - 1];
                         let endOff: number = lastEle.line.getOffset(lastEle, lastEle.length);
                         let isRevisionInserted: boolean = false;
@@ -20901,6 +20909,7 @@ export class Editor {
             let endOffset: number = 0;
             if (!isNullOrUndefined(bookmarkEnd.properties)) {
                 if (bookmarkEnd.properties['isAfterParagraphMark']) {
+                    this.selection.start.setPositionForSelection(bookmark.line, bookmark, 0, this.selection.start.location);
                     endOffset = 2;
                 }
             }
@@ -20947,16 +20956,31 @@ export class Editor {
             // History for inserting bookmark with existing bookmark name was changed as a complex history as per MS word behavior and added the below lines for getting existing bookmarks offset in history  
             let start: TextPosition = this.selection.start.clone();
             let end: TextPosition = this.selection.end.clone();
+            if (!this.selection.isForward) {
+                start = this.selection.end.clone();
+                end = this.selection.start.clone();
+            }
             let startElementInfo: ElementInfo = this.selection.getElementInfo(start.currentWidget, start.offset);
             let isBookmark: boolean = false;
-            let bookmarkEndElementInfo: ElementInfo;
+            let bookmarkNextElementInfo: ElementInfo;
+            let previousElementInfo: ElementInfo;
+            // handled the case where if the bookmark select method is called we get the element present before the bookmark so if the next element is bookmark we get the bookmark.
+            if (startElementInfo.element !== bookmark && startElementInfo.element.nextElement === bookmark) {
+                previousElementInfo = this.selection.getElementInfo(start.currentWidget, start.offset);
+                startElementInfo = this.selection.getElementInfo(start.currentWidget, start.offset + 1);
+                // Updates the offset to the current bookmark for accurate selection.
+                start.offset += 1;
+            }
             if (startElementInfo.element === bookmark) {
                 isBookmark = true;
-                bookmarkEndElementInfo = this.selection.getElementInfo(start.currentWidget, start.offset + 1);
+                bookmarkNextElementInfo = this.selection.getElementInfo(start.currentWidget, start.offset === 0 ? start.offset + 2 : start.offset + 1);
             }
-            let endElementInfo : ElementInfo = this.selection.getElementInfo(end.currentWidget, end.offset);
+            let endElementInfo: ElementInfo = this.selection.getElementInfo(end.currentWidget, end.offset);
+            if (endElementInfo.element === bookmarkEnd) {
+                endElementInfo = this.selection.getElementInfo(end.currentWidget, end.offset - 1);
+            }
             this.selection.start.setPositionParagraph(bookmark.line, bookmark.line.getOffset(bookmark, bookmark.length));
-            this.selection.end.setPositionParagraph(bookmarkEnd.line, bookmarkEnd.line.getOffset(bookmarkEnd, bookmarkEnd.length) -1);
+            this.selection.end.setPositionParagraph(bookmarkEnd.line, bookmarkEnd.line.getOffset(bookmarkEnd, bookmarkEnd.length) - 1);
             this.initHistory('DeleteBookmark');
             this.selection.selectPosition(start, end);
             if (this.editorHistory) {
@@ -20968,11 +20992,24 @@ export class Editor {
             if (this.editorHistory) {
                 this.editorHistory.updateHistory();
             }
-            if (isBookmark && !isNullOrUndefined(bookmarkEndElementInfo)) {
-                this.selection.start.setPositionParagraph(bookmarkEndElementInfo.element.line, (bookmarkEndElementInfo.element.line.getOffset(bookmarkEndElementInfo.element, startElementInfo.index) - 1));
+            if (isBookmark && !isNullOrUndefined(bookmarkNextElementInfo) && bookmarkNextElementInfo.element !== bookmark && bookmarkNextElementInfo.element !== bookmarkEnd) {
+                this.selection.start.setPositionParagraph(bookmarkNextElementInfo.element.line, (bookmarkNextElementInfo.element.line.getOffset(bookmarkNextElementInfo.element, bookmarkNextElementInfo.index) - 1));
+                isBookmark = true;
+            } else {
+                isBookmark = false;
             }
             if (endElementInfo.element !== bookmark && endElementInfo.element !== bookmarkEnd) {
                 this.selection.end.setPositionParagraph(endElementInfo.element.line, endElementInfo.element.line.getOffset(endElementInfo.element, endElementInfo.index));
+            }
+            // Handles the case where the start and end positions are the same.
+            if (endElementInfo.element === bookmark && !isNullOrUndefined(bookmarkNextElementInfo) &&  bookmarkNextElementInfo.element === bookmarkEnd) {
+                if (!isBookmark && !isNullOrUndefined(previousElementInfo)) {
+                    this.selection.start.setPositionParagraph(previousElementInfo.element.line, previousElementInfo.element.line.getOffset(previousElementInfo.element, previousElementInfo.index));
+                    this.selection.selectPosition(this.selection.start, this.selection.start);
+                } else if (isNullOrUndefined(previousElementInfo) && bookmarkNextElementInfo.element === bookmarkEnd) {
+                    start.offset = start.offset === 0 ? start.offset : start.offset - 1;
+                    this.selection.selectPosition(start, start);
+                }
             }
         }
         this.fireContentChange();
@@ -22225,7 +22262,10 @@ export class Editor {
         }
 
     }
-    private getTocSettings(code: string, tocField: FieldElementBox): TableOfContentsSettings {
+    /**
+     * @private
+     */
+    public getTocSettings(code: string, tocField: FieldElementBox): TableOfContentsSettings {
         const tocSettings: TableOfContentsSettings = {};
         tocSettings.includePageNumber = true;
         tocSettings.rightAlign = true;

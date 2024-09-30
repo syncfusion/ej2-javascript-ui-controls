@@ -501,7 +501,7 @@ export class FontDialog {
         if (this.strikethroughBox.checked && this.doublestrikethrough.checked) {
             this.strikethroughBox.checked = false;
             this.doublestrikethrough.checked = false;
-            if (args.event.currentTarget.id === this.target.id + '_doubleStrikeThrough') {
+            if (args.event.currentTarget.innerText === this.target.id + 'Double strikethrough') {
                 this.doublestrikethrough.checked = true;
             } else {
                 this.strikethroughBox.checked = true;
@@ -510,7 +510,7 @@ export class FontDialog {
         if (this.superscript.checked && this.subscript.checked) {
             this.subscript.checked = false;
             this.superscript.checked = false;
-            if (args.event.currentTarget.id === this.target.id + '_subScript') {
+            if (args.event.currentTarget.innerText === this.target.id + 'Subscript') {
                 this.subscript.checked = true;
             } else {
                 this.superscript.checked = true;

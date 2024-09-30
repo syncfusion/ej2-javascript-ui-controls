@@ -1059,8 +1059,7 @@ export class DetailsView {
 
     private createDragObj(): void {
         if (this.gridObj) {
-            if (this.parent.allowDragAndDrop) {
-                if (this.dragObj) { this.dragObj.destroy(); }
+            if (this.parent.allowDragAndDrop && isNullOrUndefined(this.dragObj)) {
                 this.dragObj = new Draggable(this.gridObj.element, {
                     cursorAt: this.parent.dragCursorPosition,
                     distance: 5,
@@ -1077,6 +1076,7 @@ export class DetailsView {
                 });
             } else if (!this.parent.allowDragAndDrop && this.dragObj) {
                 this.dragObj.destroy();
+                this.dragObj = null;
             }
         }
     }

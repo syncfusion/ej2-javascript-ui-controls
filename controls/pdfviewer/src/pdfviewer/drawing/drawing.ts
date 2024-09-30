@@ -859,8 +859,8 @@ export class Drawing {
             };
             if (!isNullOrUndefined(field) && field.id !== 'diagram_helper') {
                 this.pdfViewer.fireFormFieldRemoveEvent('formFieldRemove', field, obj.pageIndex);
+                this.pdfViewer.formDesignerModule.removeFieldsFromAnnotationCollections(obj.id, field.name);
             }
-            this.pdfViewer.formDesignerModule.removeFieldsFromAnnotationCollections(obj.id, field.name);
         }
         this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
     }
@@ -2686,16 +2686,16 @@ export class Drawing {
                 if (children[1].childNodes.length === 1) {
                     if (actualObject.textAlign === 'Justify') {
                         children[1].horizontalAlignment = 'Left';
-                        children[1].setOffsetWithRespectToBounds(0, 0, null);
+                        children[1].setOffsetWithRespectToBounds(0.01, 0, null);
                     } else if (actualObject.textAlign === 'Right') {
                         children[1].horizontalAlignment = 'Right';
-                        children[1].setOffsetWithRespectToBounds(0.97, 0, null);
+                        children[1].setOffsetWithRespectToBounds(1, 0, null);
                     } else if (actualObject.textAlign === 'Left') {
                         children[1].horizontalAlignment = 'Left';
-                        children[1].setOffsetWithRespectToBounds(0, 0, null);
+                        children[1].setOffsetWithRespectToBounds(0.01, 0, null);
                     } else if (actualObject.textAlign === 'Center') {
                         children[1].horizontalAlignment = 'Center';
-                        children[1].setOffsetWithRespectToBounds(0.46, 0, null);
+                        children[1].setOffsetWithRespectToBounds(0.51, 0, null);
                     }
                 } else if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
                     children[1].horizontalAlignment = 'Center';
@@ -2850,7 +2850,7 @@ export class Drawing {
                 children.actualSize.height = actualObject.wrapper.desiredSize.height;
             }
         }
-        if (actualObject && actualObject.shapeAnnotationType === 'FreeText' && actualObject.subject === 'Text Box') {
+        if (actualObject && actualObject.shapeAnnotationType === 'FreeText' && !isNullOrUndefined(actualObject.subject)) {
             if (actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
                 const children: any[] = actualObject.wrapper.children;
                 if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
@@ -2858,16 +2858,16 @@ export class Drawing {
                 } else if (children[1].childNodes.length === 1) {
                     if (actualObject.textAlign === 'Justify') {
                         children[1].horizontalAlignment = 'Left';
-                        children[1].setOffsetWithRespectToBounds(0, 0, null);
+                        children[1].setOffsetWithRespectToBounds(0.01, 0, null);
                     } else if (actualObject.textAlign === 'Right') {
                         children[1].horizontalAlignment = 'Right';
-                        children[1].setOffsetWithRespectToBounds(0.97, 0, null);
+                        children[1].setOffsetWithRespectToBounds(1, 0, null);
                     } else if (actualObject.textAlign === 'Left') {
                         children[1].horizontalAlignment = 'Left';
-                        children[1].setOffsetWithRespectToBounds(0, 0, null);
+                        children[1].setOffsetWithRespectToBounds(0.01, 0, null);
                     } else if (actualObject.textAlign === 'Center') {
                         children[1].horizontalAlignment = 'Center';
-                        children[1].setOffsetWithRespectToBounds(0.46, 0, null);
+                        children[1].setOffsetWithRespectToBounds(0.51, 0, null);
                     }
                 }
                 for (let i: number = 0; i < children.length; i++) {
@@ -3145,8 +3145,14 @@ export class Drawing {
                     }
                 }
             }
-            if ((right <= width - 3 || left >= 1 && bottom <= height - 3 && top >= heightDifference) || isSkip) {
+            if (right <= width - 3 && left >= 1 && bottom <= height - 3 && top >= heightDifference) {
                 return true;
+            }
+            if (isSkip) {
+                heightDifference = 10;
+                if (right <= width - 10 && left >= 10 && bottom <= height - 10 && top >= heightDifference) {
+                    return true;
+                }
             }
         }
         return false;
@@ -3568,7 +3574,7 @@ export class Drawing {
                                     if (newNode.shapeAnnotationType === 'SignatureText' || newNode.shapeAnnotationType === 'HandWrittenSignature' || newNode.shapeAnnotationType === 'SignatureImage') {
                                         this.pdfViewer.viewerBase.signatureModule.storeSignatureData(newNode.pageIndex, newNode);
                                     }
-                                    if (!newNode.formFieldAnnotationType) {
+                                    if (!newNode.formFieldAnnotationType && newNode.shapeAnnotationType !== 'SignatureText' && newNode.shapeAnnotationType !== 'HandWrittenSignature' && newNode.shapeAnnotationType !== 'SignatureImage') {
                                         this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(false), null, newNode as PdfAnnotationBase, 'Addition', '', newNode as PdfAnnotationBase, newNode);
                                     }
                                 } else {
@@ -3578,6 +3584,9 @@ export class Drawing {
                                     }
                                     if (newNode.shapeAnnotationType === 'SignatureText' || newNode.shapeAnnotationType === 'HandWrittenSignature' || newNode.shapeAnnotationType === 'SignatureImage') {
                                         this.pdfViewer.viewerBase.signatureModule.storeSignatureData(newNode.pageIndex, newNode);
+                                    }
+                                    if (!newNode.formFieldAnnotationType && newNode.shapeAnnotationType !== 'SignatureText' && newNode.shapeAnnotationType !== 'HandWrittenSignature' && newNode.shapeAnnotationType !== 'SignatureImage') {
+                                        this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(false), null, newNode as PdfAnnotationBase, 'Addition', '', newNode as PdfAnnotationBase, newNode);
                                     }
                                 }
                                 const addedAnnot: PdfAnnotationBaseModel | PdfFormFieldBaseModel = this.add(newNode);

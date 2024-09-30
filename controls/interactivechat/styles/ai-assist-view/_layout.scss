@@ -10,7 +10,6 @@
       border-bottom: 1px solid;
       .e-toolbar-item {
         position: relative;
-        margin-right: 12px;
         &::after {
           content: '';
           position: absolute;
@@ -23,11 +22,6 @@
         }
         .e-tbar-btn {
           padding: 0;
-          @if ($skin-name == 'bootstrap5.3') {
-            &:focus {
-              box-shadow: none;
-            }
-          }
         }
       }
     }
@@ -65,19 +59,21 @@
       }
     }
     .e-view-header {
-      .e-toolbar .e-toolbar-items:not(.e-tbar-pos):not(.e-toolbar-multirow) .e-toolbar-item:first-child {
+      .e-toolbar .e-toolbar-items .e-toolbar-item.e-assist-view-header,
+      .e-toolbar .e-toolbar-items .e-toolbar-item.e-custom-view-header {
         margin-left: 12px;
+      }
+      .e-toolbar.e-rtl .e-toolbar-items .e-toolbar-item.e-assist-view-header,
+      .e-toolbar.e-rtl .e-toolbar-items .e-toolbar-item.e-custom-view-header {
+        margin-right: 12px;
+        margin-left: 0;
+      }
+      .e-toolbar.e-rtl .e-toolbar-items:first-child > .e-toolbar-right .e-toolbar-item:last-child {
+        margin-left: 8px;
+        margin-right: 0;
       }
       .e-toolbar.e-rtl .e-toolbar-items:first-child > .e-toolbar-item:last-child:last-child {
         margin-left: 8px;
-      }
-      .e-toolbar.e-rtl .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:first-child {
-        margin-left: 0;
-      }
-      .e-toolbar.e-rtl .e-toolbar-items:first-child > .e-toolbar-item:last-child:first-child,
-      .e-toolbar.e-rtl .e-toolbar-items:first-child > .e-toolbar-right .e-toolbar-item:first-child {
-        margin-left: 8px;
-        margin-right: 0;
       }
       .e-toolbar .e-toolbar-item.e-assist-view-header .e-tbar-btn .e-tbar-btn-text,
       .e-toolbar .e-toolbar-item.e-custom-view-header .e-tbar-btn .e-tbar-btn-text {
@@ -297,7 +293,7 @@
         position: absolute;
         right: 20px;
         font-size: $send-icon-size;
-        bottom: 11px;
+        bottom: 8px;
         padding-top: 2px;
       }
       .e-assist-send.disabled {
@@ -435,11 +431,11 @@
         width: 100%;
       }
       .e-view-container .e-suggestions {
-        padding-right: 6px;
+        padding-right: 8px;
       }
       &.e-rtl {
         .e-view-container .e-suggestions {
-          padding-left: 6px;
+          padding-left: 8px;
         }
       }
     }

@@ -7,7 +7,7 @@ import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 
 
-import { data1, doubleClickRead, fileCopySuccess, fileCopyRead, folderRead, folderCopy, folderCopySuccess, folderCopyRead, searchpng, data1pasteIN, data1pasteIN2, data1pasteIN3, data1pasteIN4, folderDragSuccess1, folderDragRead, folderDragSuccess2, data18 } from '../data';
+import { data1, doubleClickRead, fileCopySuccess, fileCopyRead, folderRead, folderCopy, folderCopySuccess, folderCopyRead, searchpng, data1pasteIN, data1pasteIN2, data1pasteIN3, data1pasteIN4, folderDragSuccess, folderDragSuccess1, folderDragRead, folderDragSuccess2, data18 } from '../data';
 import { data23, multiItemCopyRead, multiCopySuccess1, multiCopySuccess, doubleClickRead2, dragOnHover } from '../data';
 import { multiCopySuccess2, multiItemCopyRead2, multiCopySuccess3, multiItemCopyRead1, multiItemCopyRead3, fileCopymissing2, fileCopymissing1 } from '../data';
 import { createElement, closest, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
@@ -1597,6 +1597,72 @@ describe('FileManager control Details view', () => {
                 expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                 done();
             }, 100);
+        });
+
+        it('drag and drop nested grid to tree', (done) => {
+            feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[2].firstElementChild.dispatchEvent(dblclickevent);
+            let nestedData: any = JSON.parse(JSON.stringify(doubleClickRead2));
+            nestedData.files.push({ "name": "Documents", "previousName": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\" });
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(nestedData)
+            });
+            setTimeout(function () {
+                let gridObj: any = feObj.detailsviewModule.gridObj;
+                let li: any = gridObj.getRows();
+                let rect: any = li[0].querySelector('.e-fe-grid-name').getClientRects();
+                expect(document.querySelector('.e-fe-clone')).toBe(null);
+                var mousedown = getEventObject('MouseEvents', 'mousedown', li[0].querySelector('.e-fe-grid-name'), li[0].querySelector('.e-fe-grid-name'), rect[0].x + 4, rect[0].y + 4);
+                EventHandler.trigger(gridObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[0].querySelector('.e-fe-grid-name'), li[0].querySelector('.e-fe-grid-name'), rect[0].x + 10, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                expect(document.querySelector('.e-fe-clone') === null).toBe(false);
+                expect(li[0].classList.contains('e-blur')).toBe(true);
+                rect = li[3].querySelector('.e-fe-grid-name').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[3].querySelector('.e-fe-grid-name');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = li[2].querySelector('.e-fe-grid-name').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[2].querySelector('.e-fe-grid-name');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = li[0].querySelector('.e-fe-grid-name').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-fe-grid-name');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                var treeObj = feObj.navigationpaneModule.treeObj;
+                li = treeObj.element.querySelectorAll('li');
+                rect = li[2].querySelector('.e-fullrow').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[2].querySelector('.e-fullrow');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = li[2].querySelector('.e-fullrow').getClientRects();
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-fullrow'), li[2].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+                mouseup.type = 'mouseup';
+                mouseup.currentTarget = document;
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+                expect(document.querySelector('.e-fe-clone')).toBe(null);
+                expect(start).toBe(1);
+                expect(stop).toBe(1);
+                expect(drop).toBe(0);
+                expect(drag > 1).toBe(true);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderDragSuccess)
+                });
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderDragRead)
+                });
+                setTimeout(function () {
+                    expect(feObj.path == '/Employees/').toBe(true);
+                    expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(1);
+                    done();
+                }, 100);
+            }, 500);
         });
 
         it('drag and drop grid to undroppable area', () => {

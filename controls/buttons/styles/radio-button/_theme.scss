@@ -144,7 +144,7 @@
         }
 
         &::before {
-          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' {
             background-color: $radio-btn-disabled-not-checked-bg-color;
           }
           @else {

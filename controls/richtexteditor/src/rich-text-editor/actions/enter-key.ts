@@ -177,7 +177,11 @@ export class EnterKeyAction {
                             } else {
                                 let nearBlockNode: Element;
                                 if (isTableEnter && this.parent.formatter.editorManager.domNode.isBlockNode(this.startNode)) {
-                                    nearBlockNode = this.startNode;
+                                    if (this.range.startContainer.nodeName === '#text' && !isNOU(this.range.startContainer.previousSibling) && this.range.startContainer.previousSibling.nodeName === 'HR') {
+                                        nearBlockNode = this.range.startContainer.nextSibling as Element;
+                                    } else {
+                                        nearBlockNode = this.startNode;
+                                    }
                                 } else {
                                     nearBlockNode = this.parent.formatter.editorManager.domNode.blockParentNode(this.startNode);
                                 }
@@ -222,7 +226,7 @@ export class EnterKeyAction {
                                         isNearBlockLengthZero = false;
                                     } else {
                                         if ((nearBlockNode.textContent.trim().length !== 0 ||
-                                        nearBlockNode.childNodes[0].nodeName === 'IMG' ||
+                                            (!isNOU(nearBlockNode.childNodes[0]) && nearBlockNode.childNodes[0].nodeName === 'IMG') ||
                                         (nearBlockNode.textContent.trim() === '' && nearBlockNode.querySelectorAll('img, audio, video').length > 0))) {
                                             if ((this.range.startOffset === this.range.endOffset && this.range.startOffset !== 0)) {
                                                 newElem = this.parent.formatter.editorManager.nodeCutter.SplitNode(

@@ -27,13 +27,11 @@
 }
 
 @mixin checkbox-style($left, $right) {
-  @if $skin-name != 'fluent2' {
-    .e-checkbox-left {
-      margin: $left;
-    }
-    .e-checkbox-right {
-      margin: $right;
-    }
+  .e-checkbox-left {
+    margin: $left;
+  }
+  .e-checkbox-right {
+    margin: $right;
   }
 }
 
@@ -270,6 +268,10 @@
         @else {
           @include size(30px, 30px);
         }
+      }
+
+      &.e-virtualization .e-list-container{
+        overflow: unset;
       }
 
       & .e-list-container {

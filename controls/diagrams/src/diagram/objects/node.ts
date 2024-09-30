@@ -3046,9 +3046,11 @@ export class Node extends NodeBase implements IElement {
         (annotationcontent as TextElement).rotationReference = annotation.rotationReference;
         annotationcontent.id = this.id + '_' + annotation.id;
         if (this.width !== undefined && !annotation.template) {
-            if (annotation.width === undefined || (annotation.width > this.width &&
-                (annotation.style.textWrapping === 'Wrap' || annotation.style.textWrapping === 'WrapWithOverflow'))) {
-                annotationcontent.width = this.width;
+            //910583: Annotation Wrapper updates wrongly after save and load.
+            if (annotation.width === undefined){
+                if (annotation.style.textWrapping === 'Wrap' || annotation.style.textWrapping === 'WrapWithOverflow') {
+                    annotationcontent.width = this.width;
+                }
             }
         }
         annotationcontent.margin = annotation.margin;

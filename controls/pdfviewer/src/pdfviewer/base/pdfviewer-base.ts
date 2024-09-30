@@ -304,6 +304,7 @@ export class PdfViewerBase {
     private previousTime: number = 0;
     private currentTime: number = 0;
     private isTouchScrolled: boolean = false;
+    private isgetFocused: boolean = false;
     private goToPageInput: HTMLElement;
     /**
      * @private
@@ -2951,7 +2952,10 @@ export class PdfViewerBase {
             scrollNodeX = parentNode.scrollLeft;
             scrollNodeY = parentNode.scrollTop;
         }
-        this.viewerContainer.focus();
+        if (!this.isgetFocused) {
+            this.viewerContainer.focus();
+        }
+        this.isgetFocused = false;
         if (this.pdfViewer.annotation && this.pdfViewer.annotation.stickyNotesAnnotationModule.accordionContainer) {
             this.updateCommentPanel();
         }
@@ -4748,14 +4752,22 @@ export class PdfViewerBase {
         }
         if (this.isShapeBasedAnnotationsEnabled()) {
             let canvas: Rect;
-            if (event.target && ((event.target as PdfAnnotationBaseModel).id.indexOf('_text') > -1 || ((event.target as HTMLElement).parentElement.classList.contains('foreign-object')) || (event.target as PdfAnnotationBaseModel).id.indexOf('_annotationCanvas') > -1 || (event.target as HTMLElement).classList.contains('e-pv-hyperlink')) && this.pdfViewer.annotation || (event.target as HTMLElement).classList.contains('e-pdfviewer-formFields')) {
-                const pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(event);
-                const diagram: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+            if (event.target && ((event.target as PdfAnnotationBaseModel).id.indexOf('_text') > -1 || ((event.target as HTMLElement).parentElement.classList.contains('foreign-object')) || (event.target as PdfAnnotationBaseModel).id.indexOf('_annotationCanvas') > -1 || (event.target as HTMLElement).classList.contains('e-pv-hyperlink')) && this.pdfViewer.annotation || (event.target as HTMLElement).classList.contains('e-pdfviewer-formFields') || (event.target as HTMLElement).classList.contains('e-pv-text-layer')) {
+                let pageIndex: number;
+                if (this.pdfViewer.annotation) {
+                    pageIndex = this.pdfViewer.annotation.getEventPageNumber(event);
+                }
+                else {
+                    const pageId: string = (event.target as HTMLElement).id;
+                    const match: RegExpMatchArray = pageId.match(/\d+/);
+                    pageIndex = match ? parseInt(match[0], 10) : this.pdfViewer.currentPageNumber - 1;
+                }
+                const diagram: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
                 if (diagram) {
                     const canvas1: Rect = diagram.getBoundingClientRect() as any;
                     const left: number = canvas1.x ? canvas1.x : canvas1.left;
                     const top: number = canvas1.y ? canvas1.y : canvas1.top;
-                    if (this.pdfViewer.annotationModule.stampAnnotationModule.currentStampAnnotation && this.pdfViewer.annotationModule.stampAnnotationModule.currentStampAnnotation.shapeAnnotationType === 'Image') {
+                    if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.stampAnnotationModule.currentStampAnnotation && this.pdfViewer.annotationModule.stampAnnotationModule.currentStampAnnotation.shapeAnnotationType === 'Image') {
                         canvas = new Rect(left, top, canvas1.width - 10, canvas1.height - 10);
                     } else {
                         canvas = new Rect(left + 1, top + 1, canvas1.width - 3, canvas1.height - 3);
@@ -5196,6 +5208,7 @@ export class PdfViewerBase {
         this.touchClientY = touchPoints[0].clientY;
         this.scrollY = touchPoints[0].clientY;
         this.previousTime = new Date().getTime();
+        this.diagramMouseDown(event);
         if (touchPoints.length === 1 && !((event.target as HTMLElement).classList.contains('e-pv-touch-select-drop') || (event.target as HTMLElement).classList.contains('e-pv-touch-ellipse'))) {
             if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.pageCount > 0 && !this.isThumb && !((event.target as HTMLElement).classList.contains('e-pv-hyperlink'))) {
                 this.handleTaps(touchPoints, event);
@@ -5231,6 +5244,9 @@ export class PdfViewerBase {
                 }
                 this.isLongTouchPropagated = true;
             }
+            else {
+                this.contextMenuModule.close();
+            }
         }
         const toolbarModule: any = this.pdfViewer.toolbarModule ? this.pdfViewer.toolbarModule.annotationToolbarModule : 'null';
         if (target.classList.contains('e-pv-text') && (!toolbarModule || !toolbarModule.textMarkupToolbarElement || toolbarModule.textMarkupToolbarElement.children.length === 0)) {
@@ -5239,7 +5255,6 @@ export class PdfViewerBase {
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             target.classList.remove('e-enable-text-selection');
         }
-        this.diagramMouseDown(event);
         if (this.action === 'Perimeter' || this.action === 'Distance' || this.action === 'Line' || this.action === 'Polygon' || this.action === 'DrawTool' || this.action === 'Drag' || this.action.indexOf('Rotate') !== -1 || this.action.indexOf('Resize') !== -1) {
             event.preventDefault();
         }
@@ -5638,6 +5653,7 @@ export class PdfViewerBase {
         }
         this.renderStampAnnotation(event);
         if (!Browser.isDevice) {
+            this.isgetFocused = true;
             this.focusViewerContainer();
         }
     };
@@ -9156,6 +9172,18 @@ export class PdfViewerBase {
      * @private
      * @returns {boolean} - Retunrs true or false.
      */
+    public isFormFieldsModule(): boolean {
+        if (this.pdfViewer.formFieldsModule) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @private
+     * @returns {boolean} - Retunrs true or false.
+     */
     public isCalibrateAnnotationModule(): boolean {
         if (this.pdfViewer.annotation) {
             if (this.pdfViewer.annotation && this.pdfViewer.annotation.measureAnnotationModule) {
@@ -9222,7 +9250,7 @@ export class PdfViewerBase {
      */
     public isShapeBasedAnnotationsEnabled(): boolean {
         if (this.isShapeAnnotationModule() || this.isCalibrateAnnotationModule() || this.isStampAnnotationModule() ||
-        this.isCommentAnnotationModule() || this.isFormDesignerModule()) {
+        this.isCommentAnnotationModule() || this.isFormDesignerModule() || this.isFormFieldsModule()) {
             return true;
         } else {
             return false;
@@ -9955,7 +9983,10 @@ export class PdfViewerBase {
                     }
                 }
                 else if (!this.pdfViewer.formDesignerModule && event.target.classList.contains('e-pdfviewer-formFields')) {
-                    const pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(event);
+                    let pageIndex: number;
+                    if (this.pdfViewer.annotation) {
+                        pageIndex = this.pdfViewer.annotation.getEventPageNumber(event);
+                    }
                     const currentPosition: PointModel = this.getMousePosition(event);
                     const relativePosition: PointModel = this.relativePosition(event);
                     const dataJson: any = this.getItemFromSessionStorage('_formfields');
@@ -9976,7 +10007,7 @@ export class PdfViewerBase {
                         let pageIndex: number;
                         if (this.pdfViewer.formDesignerModule) {
                             pageIndex = this.pdfViewer.formDesignerModule.getEventPageNumber(event);
-                        } else {
+                        } else if (this.pdfViewer.annotation) {
                             pageIndex = this.pdfViewer.annotation.getEventPageNumber(event);
                         }
                         if (this.isFormFieldMousedOver) {
@@ -12305,7 +12336,7 @@ export class PdfViewerBase {
     private isFreeTextAnnotation(annotations: PdfAnnotationBaseModel[]): boolean {
         let resut: boolean = false;
         if (annotations && annotations.length > 0) {
-            resut = annotations.some((s: PdfAnnotationBaseModel) => s.shapeAnnotationType === 'FreeText' && s.subject === 'Text Box');
+            resut = annotations.some((s: PdfAnnotationBaseModel) => s.shapeAnnotationType === 'FreeText' && !isNullOrUndefined(s.subject));
         }
         return resut;
     }

@@ -8590,4 +8590,57 @@ describe('904056: Count exceeds the maximum limit when copy paste content ', () 
     });
 });
 
+describe('908836: When press the delete key remove the BR tag.', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: `<p class="focusNode">1 Vem, poderoso Rei,<br>Teu nome cantarei;<br>Faz-me louvar;<br>Pai, glorioso és,<br>Tens tudo aos Teus pés,<br>Vem, reina sobre nós,<br>Eterno Deus.</p><p><br></p><p>2 Vem, ó Palavra de Deus,</p>`,
+        });
+        done();
+    });
+    it('Checking the the start container', (done: Function) => {
+        let node: HTMLElement = rteObj.inputElement.querySelector('.focusNode');
+        setCursorPoint(document, node.childNodes[0] as Element, node.childNodes[0].textContent.length);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 46;
+        keyBoardEvent.code = 'Delete';
+        (rteObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.innerHTML).toBe('<p class="focusNode">1 Vem, poderoso Rei,<br>Teu nome cantarei;<br>Faz-me louvar;<br>Pai, glorioso és,<br>Tens tudo aos Teus pés,<br>Vem, reina sobre nós,<br>Eterno Deus.</p><p><br></p><p>2 Vem, ó Palavra de Deus,</p>');
+            done();
+        }, 100);
+    });
+
+    it('Checking the the middle container', (done: Function) => {
+        let node: HTMLElement = rteObj.inputElement.querySelector('.focusNode');
+        setCursorPoint(document, node.childNodes[4] as Element, node.childNodes[4].textContent.length);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 46;
+        keyBoardEvent.code = 'Delete';
+        (rteObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.innerHTML).toBe('<p class="focusNode">1 Vem, poderoso Rei,<br>Teu nome cantarei;<br>Faz-me louvar;<br>Pai, glorioso és,<br>Tens tudo aos Teus pés,<br>Vem, reina sobre nós,<br>Eterno Deus.</p><p><br></p><p>2 Vem, ó Palavra de Deus,</p>');
+            done();
+        }, 100);
+    });
+
+    it('Checking the the end container', (done: Function) => {
+        let node: HTMLElement = rteObj.inputElement.querySelector('.focusNode');
+        setCursorPoint(document, node.childNodes[12] as Element, node.childNodes[12].textContent.length);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 46;
+        keyBoardEvent.code = 'Delete';
+        (rteObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.innerHTML).toBe('<p class="focusNode">1 Vem, poderoso Rei,<br>Teu nome cantarei;<br>Faz-me louvar;<br>Pai, glorioso és,<br>Tens tudo aos Teus pés,<br>Vem, reina sobre nós,<br>Eterno Deus.<br></p><p>2 Vem, ó Palavra de Deus,</p>');
+            done();
+        }, 100);
+    });
+    afterAll((done: Function) => {
+        destroy(rteObj);
+        done();
+    });
+});
+
 });

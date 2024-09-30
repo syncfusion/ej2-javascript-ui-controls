@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### Grid
+
+#### Bug fixes
+
+- `#I629864` - The `CSP` issue when using `CustomDataAdaptor` has been resolved.
+- `#I631247` - The issue with delete icon is disabled in toolbar when the grid `dataSource` is empty with Batch edit  has been resolved.
+- `#I630777` - The issue where Virtualization not working properly with specific `pageSize` values has been resolved.
+- `#I634165` - The issue with the Grid auto-saving the cell while using the `uploader` component with batch editing has been resolved.
+
 ## 27.1.50 (2024-09-24)
 
 ### Grid

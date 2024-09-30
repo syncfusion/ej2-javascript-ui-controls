@@ -1071,13 +1071,23 @@ export class UndoRedo {
     private updateObjColl(): void {
         const parent: ImageEditor = this.parent;
         for (let i: number = 0; i < parent.objColl.length; i++) {
-            const obj: SelectionPoint = parent.objColl[i as number];
+            let obj: SelectionPoint = parent.objColl[i as number];
+            let isUpdated: boolean = false;
             if (obj.shape === 'line' || obj.shape === 'arrow') {
                 if (obj.activePoint.width < 0) {
                     obj.activePoint.width = Math.abs(obj.activePoint.width);
+                    isUpdated = true;
                 }
                 if (obj.activePoint.height < 0) {
                     obj.activePoint.height = Math.abs(obj.activePoint.height);
+                    isUpdated = true;
+                }
+                if (isUpdated) {
+                    const activeObj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
+                    parent.activeObj = obj;
+                    parent.notify('shape', { prop: 'updImgRatioForActObj', onPropertyChange: false });
+                    obj = parent.activeObj;
+                    parent.activeObj = activeObj;
                 }
             }
         }

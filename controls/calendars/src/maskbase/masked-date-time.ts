@@ -202,6 +202,34 @@ export class MaskedDateTime {
     }
 
     private maskKeydownHandler(args : events): void {
+        if (args.e.key === 'Backspace') {
+            const start: number = this.parent.inputElement.selectionStart;
+            let formatText: string = '';
+            if (this.validCharacters.indexOf(this.hiddenMask[start as number]) !== -1) {
+                formatText = this.hiddenMask[start as number];
+            }
+            switch (formatText) {
+            case 'd':
+                this.dayTypeCount = Math.max(this.dayTypeCount - 1, 0);
+                break;
+            case 'M':
+                this.monthTypeCount = Math.max(this.monthTypeCount - 1, 0);
+                break;
+            case 'H':
+            case 'h':
+                this.hourTypeCount = Math.max(this.hourTypeCount - 1, 0);
+                break;
+            case 'm':
+                this.minuteTypeCount = Math.max(this.minuteTypeCount - 1, 0);
+                break;
+            case 's':
+                this.secondTypeCount = Math.max(this.secondTypeCount - 1, 0);
+                break;
+            default:
+                break;
+            }
+            return;
+        }
         this.dayTypeCount = this.monthTypeCount = this.hourTypeCount = this.minuteTypeCount = this.secondTypeCount = 0;
         if (args.e.key === 'Delete')
         {

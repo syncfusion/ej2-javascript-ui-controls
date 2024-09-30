@@ -710,11 +710,19 @@ export class DropDownList extends DropDownBase implements IInput {
             removeClass([this.inputWrapper.container], dropDownListClasses.disable);
             this.inputElement.setAttribute('aria-disabled', 'false');
             this.targetElement().setAttribute('tabindex', this.tabIndex);
+            if (this.inputWrapper && this.inputWrapper.container) {
+                this.inputWrapper.container.setAttribute('aria-disabled', 'false');
+                this.inputWrapper.container.removeAttribute('disabled');
+            }
         } else {
             this.hidePopup();
             addClass([this.inputWrapper.container], dropDownListClasses.disable);
             this.inputElement.setAttribute('aria-disabled', 'true');
             this.targetElement().tabIndex = -1;
+            if (this.inputWrapper && this.inputWrapper.container) {
+                this.inputWrapper.container.setAttribute('aria-disabled', 'true');
+                this.inputWrapper.container.setAttribute('disabled', '');
+            }
         }
     }
     /**

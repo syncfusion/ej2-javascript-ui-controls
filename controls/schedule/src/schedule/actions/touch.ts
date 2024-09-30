@@ -222,6 +222,9 @@ export class ScheduleTouch {
     }
 
     private onTransitionEnd(): void {
+        if (!isNullOrUndefined(this.element) && !this.element.classList.contains(cls.TRANSLATE_CLASS)) {
+            return;
+        }
         removeClass([this.element], cls.TRANSLATE_CLASS);
         this.element.style.transitionDuration = '';
         this.element.style.transform = '';

@@ -1840,7 +1840,7 @@ export class Image {
                                 };
                                 proxy.inputUrl.setAttribute('disabled', 'true');
                                 if (isNOU(proxy.parent.insertImageSettings.saveUrl) && this.isAllowedTypes
-                                    && !isNOU(this.dialogObj)) {
+                                    && !isNOU(this.dialogObj) && selectArgs.filesData[0].size <= this.uploadObj.maxFileSize) {
                                     (this.dialogObj.getButtons(0) as Button).element.removeAttribute('disabled');
                                 }
                             });

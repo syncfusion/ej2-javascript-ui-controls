@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#I628891` - Resolved the issue where the "DateTimePicker Mask" was not functioning correctly after deletion using the keyboard.
+
 ## 27.1.50 (2024-09-24)
 
 ### DatePicker

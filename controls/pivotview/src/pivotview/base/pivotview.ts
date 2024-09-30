@@ -3704,7 +3704,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.currentView = (newProp.displayOption.view === 'Both' ?
                         this.displayOption.primary : newProp.displayOption.view);
                 }
-                if (this.showToolbar) {
+                if (this.showToolbar && !isNullOrUndefined(newProp.displayOption) && newProp.displayOption.view) {
                     this.toolbarModule.refreshToolbar();
                 }
                 const engine: PivotEngine | OlapEngine = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;

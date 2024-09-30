@@ -840,14 +840,7 @@ function readSuccess(parent: IFileManager, result: ReadArgs, event: string): voi
         }
     }
     catch (error) {
-        const errorResult: ReadArgs = {
-            files: null,
-            error: {
-                message: error.message,
-                fileExists: null
-            }
-        };
-        onFailure(parent, errorResult, 'read');
+        handleCatchError(parent, error, 'read');
         parent.setProperties({ path: parent.oldPath }, true);
         parent.pathNames.pop();
     }
@@ -941,51 +934,60 @@ function createSuccess(parent: IFileManager, result: ReadArgs, itemName: string)
  * @private
  */
 function renameSuccess(parent: IFileManager, result: ReadArgs): void {
-    if (!isNOU(result.files)) {
-        if (!isNOU(parent.dialogObj)) { parent.dialogObj.hide(); }
-        const args: SuccessEventArgs = { action: 'rename', result: result };
-        parent.trigger('success', args);
-        parent.renamedItem = Array.isArray(result.files) ? result.files[0] : result.files;
-        const renameEventArgs: RenameEventArgs = {
-            newName: parent.renamedItem.name as string,
-            itemData: parent.renamedItem as any,
-            path: parent.path
-        };
-        parent.trigger('rename', renameEventArgs);
-        if (parent.activeModule === 'navigationpane') {
-            parent.pathId.pop();
-            parent.itemData = [getValue(parent.pathId[parent.pathId.length - 1], parent.feParent)];
-            read(parent, events.renameEndParent, getValue('filterPath', parent.renamedItem).replace(/\\/g, '/'));
-            parent.itemData[0] = parent.renamedItem;
-            if (getValue('filterPath', parent.renamedItem) === getValue('filterPath', parent.itemData[0]) && parent.pathNames.length > 1) {
-                parent.pathNames[parent.pathNames.length - 1] = parent.renameText;
-            }
-            read(parent, events.pathChanged, parent.path === '/' ? parent.path : getValue('filterPath', parent.renamedItem).replace(/\\/g, '/') + parent.renamedItem.name + '/');
-            parent.renamedItem = null;
-        } else {
-            parent.itemData = [getPathObject(parent)];
-            if (parent.breadcrumbbarModule.searchObj.value !== '') {
-                Search(parent, events.renameEnd, parent.path, parent.searchWord, parent.showHiddenItems, !parent.searchSettings.ignoreCase);
+    try {
+        if (!isNOU(result.files)) {
+            if (!isNOU(parent.dialogObj)) { parent.dialogObj.hide(); }
+            const args: SuccessEventArgs = { action: 'rename', result: result };
+            parent.trigger('success', args);
+            parent.renamedItem = Array.isArray(result.files) ? result.files[0] : result.files;
+            const renameEventArgs: RenameEventArgs = {
+                newName: parent.renamedItem.name as string,
+                itemData: parent.renamedItem as any,
+                path: parent.path
+            };
+            parent.trigger('rename', renameEventArgs);
+            if (parent.activeModule === 'navigationpane') {
+                parent.pathId.pop();
+                parent.itemData = [getValue(parent.pathId[parent.pathId.length - 1], parent.feParent)];
+                read(parent, events.renameEndParent, getValue('filterPath', parent.renamedItem).replace(/\\/g, '/'));
+                parent.itemData[0] = parent.renamedItem;
+                if (getValue('filterPath', parent.renamedItem) === getValue('filterPath', parent.itemData[0]) && parent.pathNames.length > 1) {
+                    parent.pathNames[parent.pathNames.length - 1] = parent.renameText;
+                }
+                read(parent, events.pathChanged, parent.path === '/' ? parent.path : getValue('filterPath', parent.renamedItem).replace(/\\/g, '/') + parent.renamedItem.name + '/');
+                parent.renamedItem = null;
             } else {
-                if (parent.isFiltered) {
-                    filter(parent, events.renameEnd);
+                parent.itemData = [getPathObject(parent)];
+                if (parent.breadcrumbbarModule.searchObj.value !== '') {
+                    Search(
+                        parent, events.renameEnd, parent.path, parent.searchWord,
+                        parent.showHiddenItems, !parent.searchSettings.ignoreCase
+                    );
                 } else {
-                    read(parent, events.renameEnd, parent.path);
+                    if (parent.isFiltered) {
+                        filter(parent, events.renameEnd);
+                    } else {
+                        read(parent, events.renameEnd, parent.path);
+                    }
                 }
             }
-        }
-    } else {
-        if (result.error.code === '400' && parent.dialogObj && parent.dialogObj.visible) {
-            const ele: HTMLInputElement = select('#rename', parent.dialogObj.element) as HTMLInputElement;
-            let error: string = getLocaleText(parent, 'Validation-Rename-Exists').replace('{0}', '"' + parent.currentItemText + '"');
-            error = error.replace('{1}', '"' + ele.value + '"');
-            ele.parentElement.nextElementSibling.innerHTML = error;
-            const args: FailureEventArgs = { action: 'rename', error: result.error };
-            parent.trigger('failure', args);
         } else {
-            if (!isNOU(parent.dialogObj)) { parent.dialogObj.hide(); }
-            onFailure(parent, result, 'rename');
+            if (result.error.code === '400' && parent.dialogObj && parent.dialogObj.visible) {
+                const ele: HTMLInputElement = select('#rename', parent.dialogObj.element) as HTMLInputElement;
+                let error: string = getLocaleText(parent, 'Validation-Rename-Exists').replace('{0}', '"' + parent.currentItemText + '"');
+                error = error.replace('{1}', '"' + ele.value + '"');
+                ele.parentElement.nextElementSibling.innerHTML = error;
+                const args: FailureEventArgs = { action: 'rename', error: result.error };
+                parent.trigger('failure', args);
+            } else {
+                if (!isNOU(parent.dialogObj)) { parent.dialogObj.hide(); }
+                onFailure(parent, result, 'rename');
+            }
         }
+    }
+    catch (error) {
+        if (!isNOU(parent.dialogObj)) { parent.dialogObj.hide(); }
+        handleCatchError(parent, error, 'rename');
     }
 }
 
@@ -1002,33 +1004,38 @@ function renameSuccess(parent: IFileManager, result: ReadArgs): void {
  */
 function pasteSuccess(
     parent: IFileManager, result: ReadArgs, path: string, operation: string): void {
-    const moveorcopyEventArgs: MoveEventArgs = {
-        itemData: result.files,
-        isCopy: operation === 'copy' ? true : false,
-        path: path,
-        targetData: parent.itemData[0] as { [key: string]: Object},
-        targetPath: parent.path
-    };
-    parent.trigger('move', moveorcopyEventArgs);
-    if (result.error && result.error.fileExists) {
-        parent.fileLength = 0;
-        if (!isNOU(result.files)) {
+    try {
+        const moveorcopyEventArgs: MoveEventArgs = {
+            itemData: result.files,
+            isCopy: operation === 'copy' ? true : false,
+            path: path,
+            targetData: parent.itemData[0] as { [key: string]: Object},
+            targetPath: parent.path
+        };
+        parent.trigger('move', moveorcopyEventArgs);
+        if (result.error && result.error.fileExists) {
+            parent.fileLength = 0;
+            if (!isNOU(result.files)) {
+                parent.isPasteError = true;
+                doPasteUpdate(parent, operation, result);
+            }
+            createExtDialog(parent, 'DuplicateItems', result.error.fileExists);
+            if (result.error.code === '404') {
+                createDialog(parent, 'Error', result);
+            }
+        } else if (!result.error && !isNOU(result.files)) {
+            parent.isPasteError = false;
+            doPasteUpdate(parent, operation, result);
+        } else if (result.error && !isNOU(result.files)) {
             parent.isPasteError = true;
             doPasteUpdate(parent, operation, result);
-        }
-        createExtDialog(parent, 'DuplicateItems', result.error.fileExists);
-        if (result.error.code === '404') {
             createDialog(parent, 'Error', result);
+        } else {
+            onFailure(parent, result, operation);
         }
-    } else if (!result.error && !isNOU(result.files)) {
-        parent.isPasteError = false;
-        doPasteUpdate(parent, operation, result);
-    } else if (result.error && !isNOU(result.files)) {
-        parent.isPasteError = true;
-        doPasteUpdate(parent, operation, result);
-        createDialog(parent, 'Error', result);
-    } else {
-        onFailure(parent, result, operation);
+    }
+    catch (error) {
+        handleCatchError(parent, error, operation);
     }
 }
 
@@ -1042,23 +1049,28 @@ function pasteSuccess(
  * @private
  */
 function deleteSuccess(parent: IFileManager, result: ReadArgs, path: string): void {
-    const deleteEventArgs: DeleteEventArgs = {
-        itemData: result.files,
-        path: path
-    };
-    parent.trigger('delete', deleteEventArgs);
-    if (!isNOU(result.files)) {
-        parent.setProperties({ path: path }, true);
-        parent.itemData = [getPathObject(parent)];
-        read(parent, events.deleteEnd, parent.path);
-        if (result.error) {
-            onFailure(parent, result, 'delete');
+    try {
+        const deleteEventArgs: DeleteEventArgs = {
+            itemData: result.files,
+            path: path
+        };
+        parent.trigger('delete', deleteEventArgs);
+        if (!isNOU(result.files)) {
+            parent.setProperties({ path: path }, true);
+            parent.itemData = [getPathObject(parent)];
+            read(parent, events.deleteEnd, parent.path);
+            if (result.error) {
+                onFailure(parent, result, 'delete');
+            } else {
+                const args: SuccessEventArgs = { action: 'delete', result: result };
+                parent.trigger('success', args);
+            }
         } else {
-            const args: SuccessEventArgs = { action: 'delete', result: result };
-            parent.trigger('success', args);
+            onFailure(parent, result, 'delete');
         }
-    } else {
-        onFailure(parent, result, 'delete');
+    }
+    catch (error) {
+        handleCatchError(parent, error, 'delete');
     }
 }
 /**
@@ -1074,12 +1086,17 @@ function deleteSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
 function detailsSuccess(
     // eslint:disable-next-line
     parent: IFileManager, result: ReadArgs, path: string, operation: string): void {
-    if (!isNOU(result.details)) {
-        createDialog(parent, operation, null, <FileDetails>result.details);
-        const args: SuccessEventArgs = { action: 'details', result: result };
-        parent.trigger('success', args);
-    } else {
-        onFailure(parent, result, 'details');
+    try {
+        if (!isNOU(result.details)) {
+            createDialog(parent, operation, null, <FileDetails>result.details);
+            const args: SuccessEventArgs = { action: 'details', result: result };
+            parent.trigger('success', args);
+        } else {
+            onFailure(parent, result, 'details');
+        }
+    }
+    catch (error) {
+        handleCatchError(parent, error, 'details');
     }
 }
 /**
@@ -1128,12 +1145,17 @@ export function Search(
  * @private
  */
 function searchSuccess(parent: IFileManager, result: ReadArgs, event: string): void {
-    if (!isNOU(result.files)) {
-        parent.notify(event, result);
-        const args: SuccessEventArgs = { action: 'search', result: result };
-        parent.trigger('success', args);
-    } else {
-        onFailure(parent, result, 'search');
+    try {
+        if (!isNOU(result.files)) {
+            parent.notify(event, result);
+            const args: SuccessEventArgs = { action: 'search', result: result };
+            parent.trigger('success', args);
+        } else {
+            onFailure(parent, result, 'search');
+        }
+    }
+    catch (error) {
+        handleCatchError(parent, error, 'search');
     }
 }
 /* istanbul ignore next */
@@ -1178,49 +1200,74 @@ export function Download(parent: IFileManager, path: string, items: string[]): v
                 parent.element.removeChild(form);
             }
             else {
-                let contentDisposition: string | null;
-                let fileName: string;
-                const fetch: Fetch = new Fetch({
-                    url: getValue('url', downloadArgs.ajaxSettings),
-                    type: getValue('type', downloadArgs.ajaxSettings),
-                    contentType: getValue('contentType', downloadArgs.ajaxSettings),
-                    responseType: getValue('responseType', downloadArgs.ajaxSettings),
-                    beforeSend: getValue('beforeSend', downloadArgs.ajaxSettings),
-                    onLoad: (e: Response) => {
-                        contentDisposition = e.headers.get('Content-Disposition');
-                        if (contentDisposition) {
-                            const filenameMatch: RegExpMatchArray | null = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-                            const extractedFilename: string | null = filenameMatch && filenameMatch[1];
-                            fileName = extractedFilename ? extractedFilename.replace(/['"]/g, '') : fileName;
-                        }
-                        else {
-                            fileName = parent.itemData.length > 1 ? 'files.zip' : getValue('isFile', parent.itemData[0]) ? getValue('name', parent.itemData[0]) : getValue('name', parent.itemData[0]) + '.zip';
-                        }
-                    },
-                    onSuccess: (e: Blob) => {
-                        parent.trigger('success', downloadArgs);
-                        const blob: Blob = e;
-                        const blobUrl: string = URL.createObjectURL(blob);
-                        const link: HTMLAnchorElement = document.createElement('a');
-                        link.href = blobUrl;
-                        link.download = fileName;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    },
-                    onFailure: (e: Response) => {
-                        const result: ReadArgs = {
-                            error: {
-                                code: e.status.toString(),
-                                message: getLocaleText(parent, 'Network-Error') + ' ' + parent.ajaxSettings.downloadUrl
+                try {
+                    let contentDisposition: string | null;
+                    let fileName: string;
+                    const fetch: Fetch = new Fetch({
+                        url: getValue('url', downloadArgs.ajaxSettings),
+                        type: getValue('type', downloadArgs.ajaxSettings),
+                        contentType: getValue('contentType', downloadArgs.ajaxSettings),
+                        responseType: getValue('responseType', downloadArgs.ajaxSettings),
+                        beforeSend: getValue('beforeSend', downloadArgs.ajaxSettings),
+                        onLoad: (e: Response) => {
+                            contentDisposition = e.headers.get('Content-Disposition');
+                            if (contentDisposition) {
+                                const filenameMatch: RegExpMatchArray | null = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                                const extractedFilename: string | null = filenameMatch && filenameMatch[1];
+                                fileName = extractedFilename ? extractedFilename.replace(/['"]/g, '') : fileName;
                             }
-                        };
-                        createDialog(parent, 'Error', result);
-                        parent.trigger('failure', downloadArgs);
-                    }
-                });
-                fetch.send(JSON.stringify(downloadArgs.data));
+                            else {
+                                fileName = parent.itemData.length > 1 ? 'files.zip' : getValue('isFile', parent.itemData[0]) ? getValue('name', parent.itemData[0]) : getValue('name', parent.itemData[0]) + '.zip';
+                            }
+                        },
+                        onSuccess: (e: Blob) => {
+                            parent.trigger('success', downloadArgs);
+                            const blob: Blob = e;
+                            const blobUrl: string = URL.createObjectURL(blob);
+                            const link: HTMLAnchorElement = document.createElement('a');
+                            link.href = blobUrl;
+                            link.download = fileName;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        },
+                        onFailure: (e: Response) => {
+                            const result: ReadArgs = {
+                                error: {
+                                    code: e.status.toString(),
+                                    message: getLocaleText(parent, 'Network-Error') + ' ' + parent.ajaxSettings.downloadUrl
+                                }
+                            };
+                            createDialog(parent, 'Error', result);
+                            parent.trigger('failure', downloadArgs);
+                        }
+                    });
+                    fetch.send(JSON.stringify(downloadArgs.data));
+                }
+                catch (error) {
+                    handleCatchError(parent, error, 'download');
+                }
             }
         }
     });
+}
+
+/**
+ * Function for on catch handler in File Manager.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {any} error - specifies the catch error.
+ * @param {string} action - specifies the action.
+ * @returns {void}
+ * @private
+ */
+function handleCatchError(parent: IFileManager, error: any, action: string): void {
+    const errorResult: ReadArgs = {
+        files: null,
+        error: {
+            message: error.message,
+            fileExists: null
+        }
+    };
+    onFailure(parent, errorResult, action);
 }

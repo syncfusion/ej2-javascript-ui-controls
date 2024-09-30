@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I633879` - Improved error handling and null value management in File Manager component file operations.
+
 ## 27.1.50 (2024-09-24)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I629895` - The issue with drag and drop action in the File Manager component with virtualization has been resolved.
+- `#FB61054` - The issue with navigation pane update while performing drag and drop action in the File Manager component has been resolved.
+
+## 27.1.48 (2024-09-18)
 
 ### FileManager
 

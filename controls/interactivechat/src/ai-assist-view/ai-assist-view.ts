@@ -453,6 +453,8 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
     /**
      * Specifies the collection of prompts and their responses in the AIAssistView component.
      *
+     * {% codeBlock src='ai-assistview/prompts/index.md' %}{% endcodeBlock %}
+     *
      * @type {PromptModel[]}
      * @default []
      */
@@ -462,6 +464,8 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
     /**
      * Specifies the list of prompt suggestions in the AIAssistView component.
      * Contains suggestions that can be used as prompts.
+     *
+     * {% codeBlock src='ai-assistview/promptSuggestions/index.md' %}{% endcodeBlock %}
      *
      * @type {string[]}
      * @default null
@@ -491,6 +495,7 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
      * Specifies the toolbar settings for the AIAssistView component.
      * Represents the configuration for toolbar items and actions within the component.
      *
+     * {% codeBlock src='ai-assistview/toolbarSettings/index.md' %}{% endcodeBlock %}
      *
      * @default []
      */
@@ -559,6 +564,8 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
      * Specifies the collection of assist view models in the AIAssistView component.
      * Represents the views available in the assist view.
      *
+     * {% codeBlock src='ai-assistview/views/index.md' %}{% endcodeBlock %}
+     *
      * @type {AssistViewModel[]}
      * @default null
      */
@@ -569,6 +576,8 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
      * Specifies the settings for the prompt toolbar in the AIAssistView component.
      * Represents the configuration for the toolbar associated with prompt items.
      *
+     * {% codeBlock src='ai-assistview/promptToolbarSettings/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      */
     @Complex<PromptToolbarSettingsModel>({ width: null, items: [] }, PromptToolbarSettings)
@@ -577,6 +586,8 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
     /**
      * Specifies the settings for the response toolbar in the AIAssistView component.
      * Represents the configuration for the toolbar associated with response items.
+     *
+     * {% codeBlock src='ai-assistview/responseToolbarSettings/index.md' %}{% endcodeBlock %}
      *
      * @default []
      */
@@ -597,6 +608,8 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
      * Specifies the template for the footer in the AIAssistView component.
      * Defines the content or layout used to render the footer. Can be a string or a function.
      *
+     * {% codeBlock src='ai-assistview/footerTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      * @angularType string | object
      * @reactType string | function | JSX.Element
@@ -610,6 +623,8 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
      * Specifies the template for rendering prompt items in the AIAssistView component.
      * Defines the content or layout used to render prompt items, and can be either a string or a function.
      * The template context includes prompt text and toolbar items.
+     *
+     * {% codeBlock src='ai-assistview/promptItemTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      * @angularType string | object
@@ -625,6 +640,8 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
      * Defines the content or layout used to render response items, and can be either a string or a function.
      * The template context includes the prompt text, response text, and toolbar items.
      *
+     * {% codeBlock src='ai-assistview/responseItemTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      * @angularType string | object
      * @reactType string | function | JSX.Element
@@ -639,6 +656,8 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
      * Defines the content or layout used to render prompt suggestion items, and can be either a string or a function.
      * The template context includes the index and suggestion text.
      *
+     * {% codeBlock src='ai-assistview/suggestionItemTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      * @angularType string | object
      * @reactType string | function | JSX.Element
@@ -651,6 +670,8 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
     /**
      * Specifies the template for the banner in the AIAssistView component.
      * Represents the content or layout used to render the banner. Can be a string or a function.
+     *
+     * {% codeBlock src='ai-assistview/bannerTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      * @angularType string | object
@@ -871,6 +892,7 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
         this.toolbarHeader = this.createElement('div', { attrs: { class: 'e-view-header' }});
         const toolbarEle: HTMLElement = this.createElement('div');
         this.toolbar.appendTo(toolbarEle);
+        this.toolbar.element.setAttribute('aria-label', 'assist-view-toolbar-header');
         this.toolbarHeader.appendChild(toolbarEle);
         this.element.appendChild(this.toolbarHeader);
         this.viewWrapper = this.createElement('div', { attrs: { class: 'e-view-content'} });
@@ -978,7 +1000,7 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
         }
         contentContainer.append(this.content);
         this.contentWrapper.appendChild(contentContainer);
-        this.stopResponding = this.createElement('div', { attrs: { class: 'e-stop-response', tabIndex: '0', 'aria-label': 'Stop Responding' } });
+        this.stopResponding = this.createElement('div', { attrs: { class: 'e-stop-response', tabIndex: '0', 'aria-label': 'Stop Responding', role: 'button' } });
         const stopRespondingIcon: HTMLElement = this.createElement('span', { attrs: { class: 'e-icons e-assist-stop' } });
         const stopRespondingContent: HTMLElement = this.createElement('span', { innerHTML: 'Stop Responding' });
         this.appendChildren(this.stopResponding, stopRespondingIcon, stopRespondingContent);
@@ -1390,6 +1412,7 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
             if (this.suggestions) { this.suggestions.hidden = false; }
         }
         this.responseToolbarEle.appendTo(footerContent);
+        this.responseToolbarEle.element.setAttribute('aria-label', `response-toolbar-${index}`);
         this.contentFooterEle.appendChild(footerContent);
     }
 
@@ -1605,6 +1628,7 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
             }
         });
         this.promptToolbarEle.appendTo(element);
+        this.promptToolbarEle.element.setAttribute('aria-label', `prompt-toolbar-${promptIndex}`);
     }
 
     private renderSkeleton(): void {

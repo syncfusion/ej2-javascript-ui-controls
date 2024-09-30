@@ -1242,6 +1242,9 @@ export class SfdtExport {
         let chartDataFormat: any = {};
         chartDataFormat[fillProperty[this.keywordIndex]] = {};
         chartDataFormat[lineProperty[this.keywordIndex]] = {};
+        if (!isNullOrUndefined(format.id)) {
+            chartDataFormat[idProperty[this.keywordIndex]] = format.id;
+        }
         if (!isNullOrUndefined(format.fill.color)) {
             if (format.fill.color.length > 6) {
                 chartDataFormat[fillProperty[this.keywordIndex]][foreColorProperty[this.keywordIndex]] = format.fill.color.substring(2);
@@ -1555,7 +1558,7 @@ export class SfdtExport {
             return true;
         }
         if (this.startContent && ((this.contentType === 'Inline'))) {
-            if (this.multipleLineContent) {
+            if (this.multipleLineContent && !isNullOrUndefined(inlines) && inlines.length > 0) {
                 this.inlineContentControl(element, element.nextNode, inlines);
                 this.contentInline = [];
             } else {

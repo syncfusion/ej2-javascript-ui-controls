@@ -3325,4 +3325,68 @@ describe('Triggering Row drag and drop event in resource view', () => {
         }
     });
 });
-
+describe('Update record after indent/outdent actions', () => {
+    let ganttObj_self: Gantt;
+    let editingData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('09/09/2024'),
+            ActualStartDate: new Date('09/16/2019'),
+        },
+        {
+            TaskID: 5,
+            TaskName: 'Project estimation',
+            StartDate: new Date('09/16/2024'),
+            ActualStartDate: new Date('09/16/2019'),
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj_self = createGantt(
+            {
+                dataSource: editingData,
+                allowRowDragAndDrop: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                selectedRowIndex: 1,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                gridLines: 'Both',
+                allowResizing: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '450px',
+            }, done);
+    });
+    it('Checking indent record date', function () {
+        ganttObj_self.actionComplete = (args: any): void => {
+            if (args.requestType == 'indented') {
+                ganttObj_self.updateRecordByID(ganttObj_self.flatData[0]);
+            }
+            if (args.requestType == 'save') {
+                expect(ganttObj_self.getFormatedDate(ganttObj_self.flatData[0].ganttProperties.startDate, 'M/d/yyyy')).toBe('9/16/2024');
+            }
+        };
+        ganttObj_self.indent();
+    });
+    afterAll(() => {
+        if (ganttObj_self) {
+            destroyGantt(ganttObj_self);
+        }
+    });
+});

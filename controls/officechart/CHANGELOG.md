@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 27.1.50 (2024-09-24)
+## 27.1.51 (2024-09-30)
+
+### Office Chart
+
+#### Bug Fixes
+
+- `#I629802` - Resolved the area, bar and line chart rendering issues.
+
+## 27.1.48 (2024-09-18)
 
 ### Office Chart
 

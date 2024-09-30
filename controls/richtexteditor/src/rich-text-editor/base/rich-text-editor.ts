@@ -830,14 +830,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * default: 'Paragraph',
      * width: '65px',
      * types: [
-     * { text: 'Paragraph' },
-     * { text: 'Code' },
-     * { text: 'Heading 1' },
-     * { text: 'Heading 2' },
-     * { text: 'Heading 3' },
-     * { text: 'Heading 4' },
-     * { text: 'Heading 5' },
-     * { text: 'Heading 6' }
+     * { text: 'Paragraph', value: 'P'},
+     * { text: 'Heading 1', value: 'H1' },
+     * { text: 'Heading 2', value: 'H2' },
+     * { text: 'Heading 3', value: 'H3' },
+     * { text: 'Heading 4', value: 'H4' },
+     * { text: 'Heading 5', value: 'H5' },
+     * { text: 'Heading 6', value: 'H6' },
+     * { text: 'Preformatted', value: 'Pre' },
      * ]
      * }
      */

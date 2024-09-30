@@ -4887,7 +4887,11 @@ describe('row indent', () => {
        ganttObj.selectRow(2);
        ganttObj.indent();
        expect(ganttObj.getFormatedDate(ganttObj.flatData[1].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/27/2017');
-    }); 
+    });
+    it('UpdateEditedRecordFields method',()=>{
+        ganttObj.editModule['updateEditedRecordFields'](ganttObj.flatData[1].ganttProperties, ganttObj.flatData[1]);
+        expect(ganttObj.flatData[1]['TaskName']).toBe('Child Task 1');
+     }); 
     afterAll(() => {
         destroyGantt(ganttObj);       
     });

@@ -6782,6 +6782,154 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe("908652 - Table Width Shrinks When Pasting a Table from Outlook and Adding a Column", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableColumns']
+                },
+                value: `<table border="1" cellspacing="0" cellpadding="0" style="border:none;" class="e-rte-table">
+                <tbody><tr style="height:31.25pt;">
+                 <td width="180" valign="top" style="width:135.3pt;border:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C1R1</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border:solid windowtext 1.0pt;
+                 border-left:none;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C2R1</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border:solid windowtext 1.0pt;
+                 border-left:none;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border:solid windowtext 1.0pt;
+                 border-left:none;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border:solid windowtext 1.0pt;
+                 border-left:none;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                </tr>
+                <tr style="height:29.85pt;">
+                 <td width="180" valign="top" style="width:135.3pt;border:solid windowtext 1.0pt;
+                 border-top:none;
+                 padding:0in 5.4pt 0in 5.4pt;height:29.85pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C1R2</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:29.85pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C2R2</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:29.85pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R2</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:29.85pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:29.85pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                </tr>
+                <tr style="height:31.25pt;">
+                 <td width="180" valign="top" style="width:135.3pt;border:solid windowtext 1.0pt;
+                 border-top:none;
+                 padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C1R3</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C2R3</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R3</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                </tr>
+                <tr style="height:29.85pt;">
+                 <td width="180" valign="top" style="width:135.3pt;border:solid windowtext 1.0pt;
+                 border-top:none;
+                 padding:0in 5.4pt 0in 5.4pt;height:29.85pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C1R4</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:29.85pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C2R4</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:29.85pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R4</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:29.85pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:29.85pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                </tr>
+                <tr style="height:31.25pt;">
+                 <td width="180" valign="top" style="width:135.3pt;border:solid windowtext 1.0pt;
+                 border-top:none;
+                 padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                 <td width="181" valign="top" style="width:135.4pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;height:31.25pt;">
+                 <p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">C3R1</p>
+                 </td>
+                </tr>
+               </tbody></table><p><br></p>`,
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Table Width Shrinks When Pasting a Table from Outlook and Adding a Column', (done: Function) => {
+            let domSelection: NodeSelection = new NodeSelection();
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
+            let tableCell: Element = document.querySelectorAll('tr')[1].querySelectorAll('td')[4];
+            let eventsArg: any = { pageX: 50, pageY: 300, target: tableCell };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                var table = rteObj.element.querySelector('table');
+                expect(table.style.width).toBe('');
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell.firstChild, tableCell.firstChild, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[1] as HTMLElement).click();
+                expect(table.style.width != '').toBe(true);
+                done();
+            }, 400);
+        });
+    });
+
     describe("904465 - Cell is not properly visible and cursor is not at correct position in cell after merging the all the cells in single row", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;

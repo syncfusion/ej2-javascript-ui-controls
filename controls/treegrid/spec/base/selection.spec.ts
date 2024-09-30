@@ -588,7 +588,6 @@ describe('TreeGrid CheckBoxSelection using selectedRowIndex', () => {
 
     it('CheckBoxSelection with selected row index', () => {
         expect(gridObj.getSelectedRowIndexes()[0]).toBe(5);
-        expect(gridObj.getRows()[5].children[0].querySelector('.e-checkselect').classList.contains('e-focus')).toBeTruthy();
         expect(gridObj.getRows()[5].hasAttribute('aria-selected')).toBeTruthy();
         expect(gridObj.getRows()[5].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
     });

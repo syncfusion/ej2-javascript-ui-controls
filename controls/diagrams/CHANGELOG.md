@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I637400` - Now, the Fixed user handle visibility works properly.
+- `#I629696` - Now, the image node is exported properly with every export region settings.
+- `#F194390` - Now, Annotation will render based on its width if defined.
+
 ## 27.1.50 (2024-09-24)
 
 ### Diagram

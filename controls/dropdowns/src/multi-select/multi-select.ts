@@ -3060,10 +3060,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.currentRemoveValue = this.allowObjectBinding ? getValue(((this.fields.value) ?
                         this.fields.value : ''), value) : value;
                     this.virtualSelectAll = false;
-                    let removeVal: number[] | string[] | boolean[] | object[] = this.value.slice(0);
-                    if (this.enableVirtualization && isClearAll){
-                        removeVal = [];
-                    }
+                    const removeVal: number[] | string[] | boolean[] | object[] = this.value.slice(0);
                     removeVal.splice(index, 1);
                     if (this.enableVirtualization && this.mode === 'CheckBox') {
                         this.selectedListData.splice(index, 1);
@@ -5367,7 +5364,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
             }
             this.updateHiddenElement();
-            this.value = [];
+            this.setProperties({ value: [] }, true);
             this.virtualSelectAll = false;
             if (!isNullOrUndefined(this.viewPortInfo.startIndex) && !isNullOrUndefined(this.viewPortInfo.endIndex)) {
                 this.notify('setCurrentViewDataAsync', {

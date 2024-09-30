@@ -126,12 +126,12 @@ export class PasteCleanup {
         if (e.args && !isNOU((e.args as ClipboardEvent).clipboardData)) {
             value = (e.args as ClipboardEvent).clipboardData.getData('text/html');
         }
-        this.parent.trigger(events.beforePasteCleanup, {value : value});
         if (e.args && value !== null && this.parent.editorMode === 'HTML') {
             let file: File;
             if (value.length === 0) {
                 const htmlRegex: RegExp = new RegExp(/<\/[a-z][\s\S]*>/i);
                 value = (e.args as ClipboardEvent).clipboardData.getData('text/plain');
+                this.parent.trigger(events.beforePasteCleanup, {value : value});
                 this.isNotFromHtml = value !== '' ? true : false;
                 value = value.replace(/</g, '&lt;');
                 value = value.replace(/>/g, '&gt;');
@@ -169,6 +169,7 @@ export class PasteCleanup {
                     isClipboardHTMLDataNull = true;
                 }
             } else if (value.length > 0) {
+                this.parent.trigger(events.beforePasteCleanup, {value : value});
                 this.parent.formatter.editorManager.observer.notify(EVENTS.MS_WORD_CLEANUP, {
                     args: e.args,
                     text: e.text,

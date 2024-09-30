@@ -1806,18 +1806,17 @@ export class DiagramRenderer {
         // let sx: number; let sy: number;
         let imageWidth: number; let imageHeight: number;
         let sourceWidth: number; let sourceHeight: number;
-
+        const contentWidth: number = element.contentSize.width;
+        const contentHeight: number = element.contentSize.height;
+        const widthRatio: number = options.width / contentWidth;
+        const heightRatio: number = options.height / contentHeight;
+        let ratio: number;
         if (element.stretch === 'Stretch') {
-            imageWidth = element.actualSize.width;
-            imageHeight = element.actualSize.height;
+            // 909174: Image node is not exported properly Issue Fix
+            ratio = Math.min(widthRatio, heightRatio);
+            imageWidth = contentWidth * ratio;
+            imageHeight = contentHeight * ratio;
         } else {
-            const contentWidth: number = element.contentSize.width;
-            const contentHeight: number = element.contentSize.height;
-
-            let widthRatio: number = options.width / contentWidth;
-            let heightRatio: number = options.height / contentHeight;
-
-            let ratio: number;
             switch (element.stretch) {
             case 'Meet':
                 ratio = Math.min(widthRatio, heightRatio);
@@ -1827,8 +1826,6 @@ export class DiagramRenderer {
                 options.y += Math.abs(options.height - imageHeight) / 2;
                 break;
             case 'Slice':
-                widthRatio = options.width / contentWidth;
-                heightRatio = options.height / contentHeight;
                 ratio = Math.max(widthRatio, heightRatio);
                 imageWidth = contentWidth * ratio;
                 imageHeight = contentHeight * ratio;

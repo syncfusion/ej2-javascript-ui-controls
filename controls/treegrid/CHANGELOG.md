@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I632368` - Last record removed during virtual scroll issue has been fixed.
+
 ## 27.1.48 (2024-09-18)
 
 ### Tree Grid

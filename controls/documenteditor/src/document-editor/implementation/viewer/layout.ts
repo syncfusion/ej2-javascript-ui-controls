@@ -5354,16 +5354,17 @@ export class Layout {
         let startBlock: BlockWidget = (block instanceof TableRowWidget) ? block.ownerTable : block;
         let isClientAreaUpdated: boolean = false;
         do {
-            this.viewer.updateClientAreaForBlock(startBlock, true);
             if (startBlock instanceof ParagraphWidget) {
                 if (currentBlock instanceof ParagraphWidget && currentBlock.equals(startBlock)) {
                     isClientAreaUpdated = true;
                     break;
                 }
+                this.viewer.updateClientAreaForBlock(startBlock, true);
                 this.addParagraphWidget(this.viewer.clientActiveArea, startBlock);
                 this.viewer.cutFromTop(this.viewer.clientActiveArea.y + startBlock.height);
                 this.viewer.updateClientAreaForBlock(startBlock, false);
             } else if (startBlock instanceof TableWidget) {
+                this.viewer.updateClientAreaForBlock(startBlock, true);
                 if (this.documentHelper.compatibilityMode !== 'Word2013' && !startBlock.isInsideTable) {
                     this.viewer.clientActiveArea.x = this.viewer.clientActiveArea.x -
                         HelperMethods.convertPointToPixel(((startBlock.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
@@ -5446,7 +5447,7 @@ export class Layout {
                 let width: number = textElement.width;
                 let text: string = textElement.text;
                 if (!addSubWidth) {
-                    text = HelperMethods.trimStart(text);  // trim start
+                    text = HelperMethods.trimStart(text);  // trim start.
                     addSubWidth = (text.length > 0);
                 }
                 if (addSubWidth) {
@@ -10330,7 +10331,7 @@ export class Layout {
                         if (!isNullOrUndefined(textElement)) {
                             const prevPageNum: string = textElement.text;
                             const paragraph: ParagraphWidget = fieldBegin.line.paragraph;
-                            if (!isNullOrUndefined(paragraph.containerWidget) && !(paragraph.containerWidget instanceof HeaderFooterWidget) && paragraph.containerWidget.indexInOwner === -1) {
+                            if (!isNullOrUndefined(paragraph.containerWidget) && (paragraph.containerWidget instanceof BodyWidget) && paragraph.containerWidget.indexInOwner === -1) {
                                 continue;
                             }
                             if (!isNullOrUndefined(paragraph.bodyWidget) && !isNullOrUndefined(paragraph.bodyWidget.page) && paragraph.bodyWidget.page.index !== -1) {

@@ -11,7 +11,7 @@ describe('Import function', () => {
                 items: ['ImportWord']
             },
             importWord: {
-                serviceUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/ImportFromWord',
+                serviceUrl: 'https://services.syncfusion.com/js/development/api/RichTextEditor/ImportFromWord',
             }
         });
         done();
@@ -49,7 +49,7 @@ describe('Export function', () => {
                 items: ['ExportWord', 'ExportPdf']
             },
             exportWord: {
-                serviceUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/ExportToDocx',
+                serviceUrl: 'https://services.syncfusion.com/js/development/api/RichTextEditor/ExportToDocx',
                 fileName: 'RichTextEditor.docx',
                 stylesheet: `
         .e-rte-content {
@@ -60,7 +60,7 @@ describe('Export function', () => {
     `
             },
             exportPdf: {
-                serviceUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/ExportToPdf',
+                serviceUrl: 'https://services.syncfusion.com/js/development/api/RichTextEditor/ExportToPdf',
                 fileName: 'RichTextEditor.pdf',
                 stylesheet: `
         .e-rte-content{
@@ -93,7 +93,7 @@ describe('Export function', () => {
                 items: ['ExportWord', 'ExportPdf']
             },
             exportWord: {
-                serviceUrl: 'https://ej2services.syncfusion.com/js/production/api/RichTextEditor/ExportToDocx',
+                serviceUrl: 'https://services.syncfusion.com/js/production/api/RichTextEditor/ExportToDocx',
                 fileName: 'RichTextEditor.docx',
                 stylesheet: `
         .e-rte-content {
@@ -104,7 +104,7 @@ describe('Export function', () => {
     `
             },
             exportPdf: {
-                serviceUrl: 'https://ej2services.syncfusion.com/js/production/api/RichTextEditor/ExportToPdf',
+                serviceUrl: 'https://services.syncfusion.com/js/production/api/RichTextEditor/ExportToPdf',
                 fileName: 'RichTextEditor.pdf',
                 stylesheet: `
         .e-rte-content{
@@ -137,10 +137,10 @@ describe('Covering Code', () => {
                 items: ['ImportWord', 'ExportWord', 'ExportPdf']
             },
             importWord: {
-                serviceUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/ImportFromWord',
+                serviceUrl: 'https://services.syncfusion.com/js/development/api/RichTextEditor/ImportFromWord',
             },
             exportWord: {
-                serviceUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/ExportToDocx',
+                serviceUrl: 'https://services.syncfusion.com/js/development/api/RichTextEditor/ExportToDocx',
                 fileName: 'RichTextEditor.docx',
                 stylesheet: `
         .e-rte-content {
@@ -151,7 +151,7 @@ describe('Covering Code', () => {
     `
             },
             exportPdf: {
-                serviceUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/ExportToPdf',
+                serviceUrl: 'https://services.syncfusion.com/js/development/api/RichTextEditor/ExportToPdf',
                 fileName: 'RichTextEditor.pdf',
                 stylesheet: `
         .e-rte-content{

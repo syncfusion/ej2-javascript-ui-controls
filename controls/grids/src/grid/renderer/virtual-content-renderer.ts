@@ -1246,13 +1246,21 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         return index >= totalBlocks || index === totalBlocks - 1;
     }
 
+    public isOddPageSize(): boolean {
+        return this.parent.pageSettings.pageSize % 2 !== 0;
+    }
+
+    public getOddBlockSize(): number {
+        return this.isOddPageSize() ? this.parent.pageSettings.pageSize / 2 : this.getBlockSize();
+    }
+
     public getGroupedTotalBlocks(): number {
         const rows: Object[] = this.parent.vcRows;
-        return Math.floor((rows.length / this.getBlockSize()) < 1 ? 1 : rows.length / this.getBlockSize());
+        return Math.floor((rows.length / this.getOddBlockSize()) < 1 ? 1 : rows.length / this.getOddBlockSize());
     }
 
     public getTotalBlocks(): number {
-        return Math.ceil(this.count / this.getBlockSize());
+        return Math.ceil(this.count / this.getOddBlockSize());
     }
 
     public getColumnOffset(block: number): number {
@@ -1363,7 +1371,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
      * @hidden */
     public refreshOffsets(): void {
         const gObj: IGrid = this.parent;
-        let row: number = 0; const bSize: number = this.getBlockSize();
+        let row: number = 0; const blockSize: number = this.getBlockSize();
+        const oddBlockSize: number = this.getOddBlockSize();
         const total: number = isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
         this.prevHeight = this.offsets[parseInt(total.toString(), 10)];
         this.maxBlock = total % 2 === 0 ? total - 2 : total - 1; this.offsets = {};
@@ -1372,12 +1381,19 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const blocks: number[] = Array.apply(null, Array(total)).map(() => ++row);
         for (let i: number = 0; i < blocks.length; i++) {
             const tmp: number = (this.vgenerator.cache[blocks[parseInt(i.toString(), 10)]] || []).length;
-            const rem: number = !isGroupAdaptive(this.parent) ? this.count % bSize : (gObj.vcRows.length % bSize);
-            const size: number = !isGroupAdaptive(this.parent) && blocks[parseInt(i.toString(), 10)] in this.vgenerator.cache ?
+            const rem: number = !isGroupAdaptive(this.parent) ? this.isOddPageSize() ?
+                Math.ceil(this.count % oddBlockSize) : this.count % blockSize : this.isOddPageSize() ?
+                Math.ceil(gObj.vcRows.length % oddBlockSize) : (gObj.vcRows.length % blockSize);
+            let size: number = !isGroupAdaptive(this.parent) && blocks[parseInt(i.toString(), 10)] in this.vgenerator.cache ?
                 tmp * this.parent.getRowHeight() : rem && blocks[parseInt(i.toString(), 10)] === total ? rem * this.parent.getRowHeight() :
                     this.getBlockHeight();
-                // let size: number = this.parent.groupSettings.columns.length && block in this.vgenerator.cache ?
-                // tmp * getRowHeight() : this.getBlockHeight();
+            if (this.isOddPageSize() && !(blocks[parseInt(i.toString(), 10)] in this.vgenerator.cache)
+                && !(rem && blocks[parseInt(i.toString(), 10)] === total)) {
+                size = (blocks[parseInt(i.toString(), 10)] % 2 !== 0 ? Math.floor(oddBlockSize)
+                    : Math.ceil(oddBlockSize)) * this.parent.getRowHeight();
+            }
+            // let size: number = this.parent.groupSettings.columns.length && block in this.vgenerator.cache ?
+            // tmp * getRowHeight() : this.getBlockHeight();
             this.offsets[blocks[parseInt(i.toString(), 10)]] = (this.offsets[blocks[parseInt(i.toString(), 10)] - 1] | 0) + size;
             this.tmpOffsets[blocks[parseInt(i.toString(), 10)]] = this.offsets[blocks[parseInt(i.toString(), 10)] - 1] | 0;
         }

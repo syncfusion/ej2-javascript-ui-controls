@@ -246,7 +246,6 @@ export class PdfRenderer {
                         const signatureField: PdfSignatureField = loadedForm.fieldAt(i) as PdfSignatureField;
                         if (signatureField.isSigned && this.formFieldsBase.showDigitalSignatureAppearance) {
                             signatureField.flatten = true;
-                            this.pdfViewerBase.updateDocumentEditedProperty(true);
                         }
                     }
                 }

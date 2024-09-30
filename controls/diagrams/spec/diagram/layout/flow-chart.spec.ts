@@ -6544,6 +6544,359 @@ let businessStartup = [
     }
   ]
 
+  const businessStartup3 = [
+    {
+        "empId": "A",
+        "name": "Start",
+        "shape": "Terminator",
+        "color": "#90EE90",
+        "parentId": null as any,
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "B",
+        "name": "Identify Business Idea",
+        "shape": "Or",
+        "color": "#4682B4",
+        "parentId": [
+            "A"
+        ],
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "C",
+        "name": "Conduct Market Research",
+        "shape": "Sort",
+        "color": "#4682B4",
+        "label": ["", "No"],
+        "parentId": [
+            "B",
+            "H"
+        ],
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "D",
+        "name": "Research Successful?",
+        "shape": "Decision",
+        "color": "#32CD32",
+        "parentId": [
+            "C"
+        ],
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "E",
+        "name": "Develop Business Plan",
+        "shape": "MultiDocument",
+        "color": "#4682B4",
+        "parentId": [
+            "D"
+        ],
+        "label": "Yes",
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "F",
+        "name": "Adjust Business Idea",
+        "shape": "Extract",
+        "color": "#FFD700",
+        "parentId": [
+            "D"
+        ],
+        "label": "No",
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "G",
+        "name": "Secure Funding",
+        "shape": "Collate",
+        "color": "#4682B4",
+        "parentId": [
+            "E",
+            "F"
+        ],
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "H",
+        "name": "Ready to Launch?",
+        "shape": "Card",
+        "color": "#32CD32",
+        "parentId": [
+            "G"
+        ],
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "I",
+        "name": "Launch Business",
+        "shape": "PaperTap",
+        "color": "#4682B4",
+        "parentId": [
+            "H"
+        ],
+        "label": "Yes",
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "J",
+        "name": "Implement Marketing Strategies",
+        "shape": "OffPageReference",
+        "color": "#4682B4",
+        "parentId": [
+            "I",
+            "L"
+        ],
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "K",
+        "name": "Achieve Success?",
+        "shape": "StoredData",
+        "color": "#32CD32",
+        "parentId": [
+            "J"
+        ],
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "L",
+        "name": "Revise Strategies",
+        "shape": "Merge",
+        "color": "#FFD700",
+        "parentId": [
+            "K"
+        ],
+        "label": "No",
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "M",
+        "name": "Celebrate Success",
+        "shape": "PredefinedProcess",
+        "color": "#4682B4",
+        "parentId": [
+            "K"
+        ],
+        "label": "Yes",
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "N",
+        "name": "End",
+        "shape": "SummingJunction",
+        "color": "#FF6347",
+        "parentId": [
+            "M"
+        ],
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+
+
+    {
+        "empId": "A1",
+        "name": "Start",
+        "shape": "Display",
+        "color": "#90EE90",
+        "parentId": null,
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "B1",
+        "name": "Identify Business Idea",
+        "shape": "Delay",
+        "color": "#4682B4",
+        "parentId": [
+            "A1"
+        ],
+        "arrowType": "Diamond",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "C1",
+        "name": "Conduct Market Research",
+        "shape": "LoopLimit",
+        "color": "#4682B4",
+        "label": ["", "No"],
+        "parentId": [
+            "B1",
+            "H1"
+        ],
+        "arrowType": "Circle",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "D1",
+        "name": "Research Successful?",
+        "shape": "SequentialAccessStorage",
+        "color": "#32CD32",
+        "parentId": [
+            "C1"
+        ],
+        "arrowType": "Fletch",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "E1",
+        "name": "Develop Business Plan",
+        "shape": "Preparation",
+        "color": "#4682B4",
+        "parentId": [
+            "D1"
+        ],
+        "label": "Yes",
+        "arrowType": "OpenFetch",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "F1",
+        "name": "Adjust Business Idea",
+        "shape": "Data",
+        "color": "#FFD700",
+        "parentId": [
+            "D1"
+        ],
+        "label": "No",
+        "arrowType": "DoubleArrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "G1",
+        "name": "Secure Funding",
+        "shape": "DirectData",
+        "color": "#4682B4",
+        "parentId": [
+            "E1",
+            "F1"
+        ],
+        "arrowType": "IndentedArrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "H1",
+        "name": "Ready to Launch?",
+        "shape": "Document",
+        "color": "#32CD32",
+        "parentId": [
+            "G1"
+        ],
+        "arrowType": "OutdentedArrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "I1",
+        "name": "Launch Business",
+        "shape": "SequentialData",
+        "color": "#4682B4",
+        "parentId": [
+            "H1"
+        ],
+        "label": "Yes",
+        "arrowType": "None",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "J1",
+        "name": "Implement Marketing Strategies",
+        "shape": "Collate",
+        "color": "#4682B4",
+        "parentId": [
+            "I1",
+            "L1"
+        ],
+        "arrowType": "Square",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "K1",
+        "name": "Achieve Success?",
+        "shape": "Annotation2",
+        "color": "#32CD32",
+        "parentId": [
+            "J1"
+        ],
+        "arrowType": "OpenArrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "L1",
+        "name": "Revise Strategies",
+        "shape": "ManualInput",
+        "color": "#FFD700",
+        "parentId": [
+            "K1"
+        ],
+        "label": "No",
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "M1",
+        "name": "Celebrate Success",
+        "shape": "ManualOperation",
+        "color": "#4682B4",
+        "parentId": [
+            "K1"
+        ],
+        "label": "Yes",
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    },
+    {
+        "empId": "N1",
+        "name": "End",
+        "shape": "Annotation",
+        "color": "#FF6347",
+        "parentId": [
+            "M1"
+        ],
+        "arrowType": "single-line-arrow",
+        "stroke": "#333",
+        "strokeWidth": 2
+    }
+    ];
+
 interface Employee {
     empId: string;
     parentId: string;
@@ -7259,6 +7612,12 @@ describe('Diagram Control', () => {
             diagram.layout.orientation = 'LeftToRight';
             diagram.dataBind();
             expect(diagram.nodes[0].style.fill === '#034d6d' && diagram.nodes.length === 18).toBe(true);
+            done();
+        });
+        it('Changing data source dynamically-64', (done: Function) => {
+            diagram.dataSourceSettings.dataSource = new DataManager(businessStartup3);
+            diagram.dataBind();
+            expect(diagram.nodes.length === 28).toBe(true);
             done();
         });
     });

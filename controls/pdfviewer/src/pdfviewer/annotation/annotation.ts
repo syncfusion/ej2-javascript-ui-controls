@@ -2599,7 +2599,9 @@ export class Annotation {
             this.modifyInCollections(currentAnnotation, 'fontSize');
             this.modifyInCollections(currentAnnotation, 'bounds');
             this.triggerAnnotationPropChange(currentAnnotation, false, false, false, true);
-            this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'fontSize', '', clonedObject, redoClonedObject);
+            if (isInteracted) {
+                this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'fontSize', '', clonedObject, redoClonedObject);
+            }
             freeTextAnnotation.inputBoxElement.blur();
         }
         const canvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentAnnotation.pageIndex);

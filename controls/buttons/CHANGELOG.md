@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#I909049` - The issue with "Need to set the aria-label attribute for the checkbox input element and not to the wrapper element" has been resolved.
+
+### RadioButton
+
+#### Bug Fixes
+
+- The issue with "Background color issue for disabled unselect radio button in bootstrap5 theme" has been resolved.
+
 ## 26.1.35 (2024-06-11)
 
 ### Floating Action Button

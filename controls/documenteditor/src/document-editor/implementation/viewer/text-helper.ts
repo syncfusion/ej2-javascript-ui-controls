@@ -793,15 +793,25 @@ export class TextHelper {
                 }
                 else if (hintType == FontHintType.EastAsia)
                 {
-                    // if (Document != null && Document.Settings.ThemeFontLanguages != null &&
-                    //     Document.Settings.ThemeFontLanguages.HasValue(WCharacterFormat.LocaleIdFarEastKey))
-                    // {
-                    //     fontName = this.getFontNameWithFontScript(majorMinorFontScheme, Document.Settings.ThemeFontLanguages.LocaleIdFarEast, hintType);
-                    //     if (fontName != null)
-                    //         fontNameFromTheme = fontName;
-                    // }
+                    if (!isNullOrUndefined(this.documentHelper.themeFontLanguage)) {
+                        fontName = this.getFontNameWithFontScript(majorMinorFontScheme, this.documentHelper.themeFontLanguage.localeIdFarEast, hintType);
+                        if (!isNullOrUndefined(fontName)) {
+                            fontNameFromTheme = fontName;
+                        }
+                        //When font information is not available at the file level, Microsoft Word uses the following fonts as the default font for the respective language.
+                        // else if (isNullOrUndefined(fontNameFromTheme))
+                        // {
+                        //     LocaleIDs lang = (LocaleIDs)Document.Settings.ThemeFontLanguages.LocaleIdFarEast;
+                        //     if (lang == LocaleIDs.zh_CN)
+                        //         fontNameFromTheme = "SimSun";
+                        //     else if (lang == LocaleIDs.ko_KR)
+                        //         fontNameFromTheme = "Batang";
+                        //     else if (lang == LocaleIDs.ja_JP)
+                        //         fontNameFromTheme = "MS Mincho";
+                        // }
+                    }
                 }
-                else if (isNullOrUndefined(fontNameFromTheme) && this.documentHelper.themeFontLanguage != null && (fontName === "minorBidi" || fontName === "majorBidi")) {
+                else if (isNullOrUndefined(fontNameFromTheme) && !isNullOrUndefined(this.documentHelper.themeFontLanguage) && (fontName === "minorBidi" || fontName === "majorBidi")) {
                     return fontName = this.getFontNameWithFontScript(majorMinorFontScheme, this.documentHelper.themeFontLanguage.localeIdBidi, hintType);
                 }
             }
@@ -839,7 +849,7 @@ export class TextHelper {
         //Chinese - Simplified
         //If lang script is "zh-CN", "zh-SG" or "zh", we should retrive the "Hans" font from a theme part.
         else if ((lang == 'zh_CN' || lang == 'zh_SG' || localeID == 2052) && fontTypeFaces.containsKey("Hans"))
-            fontName = fontTypeFaces.get("Arab");
+            fontName = fontTypeFaces.get("Hans");
         //Chinese - Traditional
         //If lang script is "zh-TW", "zh-HK", or "zh-MO", we should retrive the "Hant" font from a theme part.
         else if ((lang == 'zh_TW' || lang == 'zh_HK' || lang == 'zh_MO')

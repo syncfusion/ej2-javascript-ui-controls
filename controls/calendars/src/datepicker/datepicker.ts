@@ -809,10 +809,11 @@ export class DatePicker extends Calendar implements IInput {
         case 'ArrowDown':
         case 'Home':
         case 'End':
+        case 'Backspace':
         case 'Delete':
             if (this.enableMask && !this.popupObj && !this.readonly)
             {
-                if (e.code !== 'Delete')
+                if (e.code !== 'Delete' && e.code !== 'Backspace')
                 {
                     e.preventDefault();
                 }

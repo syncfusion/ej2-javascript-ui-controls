@@ -22,7 +22,7 @@ const RIPPLECHECK: string = 'e-ripple-check';
 const RIPPLEINDETERMINATE: string = 'e-ripple-stop';
 const RTL: string = 'e-rtl';
 const WRAPPER: string = 'e-checkbox-wrapper';
-const containerAttr: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value', 'id', 'tabindex'];
+const containerAttr: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value', 'id', 'tabindex', 'aria-label'];
 
 /**
  * The CheckBox is a graphical user interface element that allows you to select one or more options from the choices.

@@ -3201,6 +3201,8 @@ export class FormDesigner {
         if (formFieldObject.formFieldAnnotationType === 'DropdownList' || formFieldObject.formFieldAnnotationType === 'ListBox') {
             if ((options as DropdownFieldSettings).options) {
                 formFieldObject.options = (options as DropdownFieldSettings).options;
+                formFieldObject.selectedIndex = [];
+                formFieldObject.selectedIndex.push(0);
                 this.updateDropDownListDataSource(formFieldObject, htmlElement);
                 (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].options = formFieldObject.options;
             }
@@ -3235,10 +3237,12 @@ export class FormDesigner {
                 }
                 else if ( formFieldObject.formFieldAnnotationType === 'DropdownList' || formFieldObject.formFieldAnnotationType === 'ListBox')
                 {
+                    formFieldObject.selectedIndex = [];
                     for (let i: number = 0 as number; i <  (htmlElement as IElement).options.length ; i++)
                     {
                         if ((htmlElement as IElement).options[parseInt(i.toString(), 10)].text === (options as TextFieldSettings).value){
                             (htmlElement as IElement).options.selectedIndex = i;
+                            formFieldObject.selectedIndex.push(i);
                         }
                     }
                     if (!isNullOrUndefined((options as any).selectedIndex) && formFieldObject.selectedIndex !==

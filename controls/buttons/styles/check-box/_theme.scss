@@ -212,6 +212,13 @@
           }
         }
       }
+
+      &:hover .e-checkbox:focus + .e-frame.e-check {
+        @if $theme-name == 'fluent2-highcontrast' {
+          background-color: $primary-border-color-hover !important; /* stylelint-disable-line declaration-no-important */
+          border-color: $primary-border-color-hover !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
     }
   }
 }

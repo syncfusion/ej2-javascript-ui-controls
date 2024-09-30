@@ -223,6 +223,37 @@ describe('Toolbar functionalities', () => {
 
     });
 
+    describe('EJ2912751 - code coverage for memory leak issue toolbarTemplate', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            let templete: string = '<div><div style="padding: 12px" title="search" ><input id="txt" type="search" style="padding: 0 5px"placeholder="search"></input><span id="searchbutton" class="e-search e-icons"></span></div></div>';
+            document.body.appendChild(createElement('div', { innerHTML: templete, id: 'search' }));
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowGrouping: true,
+                    width: "400px",
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity' }],
+                    toolbarTemplate: '#search',
+                    load: function () {
+                        expect(this.isAngular).toBe(false);
+                        this.isAngular = true;
+                    },
+                }, done);
+        });
+
+        it('check toolbar template', () => {
+            expect(gridObj.toolbarModule.getToolbar().id).toBe('search');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+
+    });
+
     describe('EJ2-36447 Searching actionBegin , cancel is not working', () => {
         let gridObj: Grid;
         let actionBegin: (args?: Object) => void;

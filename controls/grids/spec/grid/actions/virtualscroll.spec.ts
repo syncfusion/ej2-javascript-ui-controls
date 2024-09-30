@@ -1931,3 +1931,33 @@ describe('enableColumnVirtualization code coverage', () => {
         gObj = null;
     });
 });
+
+describe('EJ2-909118: Virtualization not working properly with specific pageSize values', () => {
+    let gObj: Grid;
+    beforeAll((done: Function) => {
+        gObj = createGrid(
+            {
+                dataSource: filterData,
+                pageSettings: {pageSize: 25},
+                height: 300,
+                width: 800,
+                enableVirtualization: true,
+                allowGrouping: true,
+                columns: [    
+                    {field: 'OrderID', headerText:'OrderID', width:120, isPrimaryKey:true},
+                    {field: 'CustomerID', headerText:'CustomerID', width:120},      
+                    { field: 'Freight',textAlign: 'Right',width:110 ,format:'C2',headerText:"Freight"},
+                    {field: 'ShipCity', headerText:'ShipCity', width:130}    
+                ], 
+            }, done);
+    });
+
+    it('virtual content renderer coverage', () => {
+        gObj.groupColumn('OrderID');
+    });
+
+    afterAll(() => {
+        destroy(gObj);
+        gObj = null;
+    });
+});

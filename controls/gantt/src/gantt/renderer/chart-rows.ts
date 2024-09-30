@@ -489,7 +489,7 @@ export class ChartRows extends DateProcessor {
         this.refreshChartAfterSegment(mergeData, 'mergeSegment');
     }
     public updateSegment(segmentData: any, taskId: number | string): void {
-        if (!isNullOrUndefined(this.parent.taskFields.segmentId)) {
+        if (!isNullOrUndefined(this.parent.taskFields.segmentId) && this.parent.segmentData.length > 0) {
             if (!isNullOrUndefined(segmentData)) {
                 const segmentsArray: Object[] = [];
                 for (let i: number = 0; i < segmentData.length; i++) {

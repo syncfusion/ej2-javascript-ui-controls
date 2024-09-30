@@ -527,15 +527,22 @@ export class MsWordPaste {
                         const styleProperty: string = resultElem[j as number].getAttribute('style');
                         if (!isNOU(styleProperty) && styleProperty.trim() !== '') {
                             const valueSplit: string[] = values[i as number].split(';');
+                            for (let q: number = 0; q < valueSplit.length; q++) {
+                                if (valueSplit[q as number].split(':')[0] === 'border' && valueSplit[q as number].split(':')[1] === 'none') {
+                                    valueSplit.splice(q, 1);
+                                    q--;
+                                }
+                            }
                             if (!fromClass) {
                                 for (let k: number = 0; k < valueSplit.length; k++) {
-                                    if (styleProperty.indexOf(valueSplit[k as number].split(':')[0]) >= 0) {
+                                    const propertyName: string = valueSplit[k as number].split(':')[0];
+                                    if (styleProperty.includes(propertyName + ':')) {
                                         valueSplit.splice(k, 1);
                                         k--;
                                     }
                                 }
                             }
-                            const changedValue: string = styleProperty + valueSplit.join(';') + ';';
+                            const changedValue: string = valueSplit.join(';') + ';' + styleProperty;
                             resultElem[j as number].setAttribute('style', changedValue);
                         } else {
                             values[i as number] = values[i as number].replace(/text-indent:-(.*?)(?=;|$)/gm, '');

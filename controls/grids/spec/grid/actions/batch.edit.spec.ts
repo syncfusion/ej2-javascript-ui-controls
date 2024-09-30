@@ -2246,7 +2246,7 @@ describe('Batch Editing module', () => {
             gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'Reims';
             gridObj.cellSave = cellSave;
             //toolbar status check
-            expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(3);
+            expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(1);
             gridObj.editModule.saveCell();
         });
 
@@ -5281,6 +5281,50 @@ describe('EJ2-906932: BatchDelete and beforeBatchDelete event arguments is not p
         gridObj.clearSelection();
         gridObj.selectRows([1,2,3]);
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_delete' } });
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-909241: Delete Icon is disabled in Toolbar when the Grid dataSource is empty with Batch Edit =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+        {
+            editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+            allowPaging: true,
+            pageSettings: { pageCount: 5 },
+            toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+            columns: [
+                {
+                    field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                    validationRules: { required: true }, width: 120
+                },
+                {
+                    field: 'CustomerID', headerText: 'Customer ID', width: 140
+                },
+                { field: 'ShipName', headerText: 'Ship Name', width: 170 },
+                {
+                    field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150,
+                    edit: { params: { popupHeight: '300px' } }
+                }
+            ],
+            
+        }, done);
+    });
+
+    it('add the record', () => {
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        expect((<any>gridObj.editModule.getBatchChanges()).addedRecords.length).toBe(1);
+    });
+
+    it('delete the record', function () {
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_delete' } });
+        expect((<any>gridObj.editModule.getBatchChanges()).addedRecords.length).toBe(0);
+        expect(gridObj.currentViewData.length).toBe(0);
     });
 
     afterAll(() => {

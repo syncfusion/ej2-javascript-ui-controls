@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I627789` - Now, the context menu for form fields opens properly in desktop touch mode.
+- `#I630341` - Now, the text is properly aligned in the freetext annotation when using the subject property.
+- `#I629789` - Now, the `IsDocumentEdited` property set to false when loading the customer provided PDF document.
+- `#I632424` - Now, the object reference error won't occur when downloading with the dropdown field after updating the dropdown options programmatically.
+- `#I627479` - Now, the browse button is working properly  when dynamically changing enableFormFields API value.
+- `#I635120` - Now, After adding a freetext, changing the alignment and font size, the undo and redo functions working properly.
+- `#I635116` - Now, Freetext annotation appeared properly when update the alignment styling.
+- `#I635117` - Now, the undo and redo actions is properly working when perform the cut and paste action.
+- `#I630883` - Now, resizing the form field on the first page doesn't hide the form field on the third page.
+- `#I630441` - Now, the `pageMouseover` event is triggered without annotation and form designer modules.
+
 ## 27.1.50 (2024-09-24)
 
 ### PDF Viewer
@@ -15,6 +32,7 @@
 - `#I632511` - Now, the fetch request is not sent if the URL is set to the document path on the Server-Backed PDF Viewer.
 - `#I632378` - Now, copy paste is working with formfields when `enableFormDesigner` as false.
 - `#I631207` - Now, the `textmarkup` annotations are not unselected when changing the properties programmatically.
+- `#I627322` - Now, the Form fields can not be moved outside of the document.
 
 ## 27.1.48 (2024-09-18)
 

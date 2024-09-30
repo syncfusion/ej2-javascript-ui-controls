@@ -6,7 +6,7 @@ import { DataSourceModel } from '../diagram/data-source-model';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Diagram } from '../diagram';
 import { randomId, getFunction } from '../utility/base-util';
-import { cloneBlazorObject, getConnectorArrowType } from '../utility/diagram-util';
+import { cloneBlazorObject } from '../utility/diagram-util';
 import { updateDefaultValues } from '../utility/diagram-util';
 import { isBlazor } from '@syncfusion/ej2-base';
 import { DecoratorShapes } from '../enum/enum';
@@ -334,6 +334,56 @@ export class DataBinding {
                 return {type: 'Path', data: 'M 0 0 L 8 0 L 8 2 L 0 2 L 2 1 L 0 0' };
             case 'DoubleCircle':
                 return {type: 'Path', data: 'M 0 0 A 1 1 0 0 0 7 0 A 1 1 0 0 0 0 0 M -1 0 A 1 1 0 0 0 8 0 A 1 1 0 0 0 -1 0' };
+            case 'Document':
+                return {type: 'Flow', shape: 'Document' };
+            case 'PaperTap':
+                return {type: 'Flow', shape: 'PaperTap' };
+            case 'DirectData':
+                return {type: 'Flow', shape: 'DirectData' };
+            case 'SequentialData':
+                return {type: 'Flow', shape: 'SequentialData' };
+            case 'Sort':
+                return {type: 'Flow', shape: 'Sort' };
+            case 'MultiDocument':
+                return {type: 'Flow', shape: 'MultiDocument' };
+            case 'Collate':
+                return {type: 'Flow', shape: 'Collate' };
+            case 'SummingJunction':
+                return {type: 'Flow', shape: 'SummingJunction' };
+            case 'Or':
+                return {type: 'Flow', shape: 'Or' };
+            case 'InternalStorage':
+                return {type: 'Flow', shape: 'InternalStorage' };
+            case 'Extract':
+                return {type: 'Flow', shape: 'Extract' };
+            case 'ManualOperation':
+                return {type: 'Flow', shape: 'ManualOperation' };
+            case 'Merge':
+                return {type: 'Flow', shape: 'Merge' };
+            case 'OffPageReference':
+                return {type: 'Flow', shape: 'OffPageReference' };
+            case 'SequentialAccessStorage':
+                return {type: 'Flow', shape: 'SequentialAccessStorage' };
+            case 'Data':
+                return {type: 'Flow', shape: 'Data' };
+            case 'Card':
+                return {type: 'Flow', shape: 'Card' };
+            case 'Delay':
+                return {type: 'Flow', shape: 'Delay' };
+            case 'Preparation':
+                return {type: 'Flow', shape: 'Preparation' };
+            case 'Display':
+                return {type: 'Flow', shape: 'Display' };
+            case 'ManualInput':
+                return {type: 'Flow', shape: 'ManualInput' };
+            case 'LoopLimit':
+                return {type: 'Flow', shape: 'LoopLimit' };
+            case 'StoredData':
+                return {type: 'Flow', shape: 'StoredData' };
+            case 'Annotation':
+                return {type: 'Flow', shape: 'Annotation' };
+            case 'Annotation2':
+                return {type: 'Flow', shape: 'Annotation2' };
             default:
                 return { type: 'Flow', shape: 'Process' };
             }
@@ -455,17 +505,48 @@ export class DataBinding {
                 }
                 connModel.annotations = [{content: (targetNode.data as FlowChartData).label[parseInt(index.toString(), 10)]}];
             }
-            arrowType = getConnectorArrowType(targetNode.data as FlowChartData) as ArrowStyle;
+            arrowType = this.getConnectorArrowType(targetNode.data as FlowChartData) as ArrowStyle;
         }
         const obj: Connector = new Connector(diagram, 'connectors', connModel, true);
         if (arrowType){
-            obj.style.strokeWidth = arrowType.strokeWidth ? arrowType.strokeWidth : 1;
-            obj.targetDecorator.shape = arrowType.targetDecorator ? arrowType.targetDecorator as DecoratorShapes : 'Arrow' as DecoratorShapes;
-            obj.style.strokeDashArray = arrowType.strokeDashArray ? arrowType.strokeDashArray : '';
-            obj.style.opacity = arrowType.opacity !== undefined ? arrowType.opacity : 1;
+            obj.style.strokeWidth = arrowType.strokeWidth;
+            obj.targetDecorator.shape = arrowType.targetDecorator as DecoratorShapes;
         }
         updateDefaultValues(obj, connModel, diagram.connectorDefaults);
         return obj;
+    }
+
+    private getConnectorArrowType(data: FlowChartData): ArrowStyle {
+        if (data.arrowType !== ''){
+            switch (data.arrowType) {
+            case 'None':
+                return {targetDecorator: 'None', strokeWidth: 1};
+            case 'Arrow':
+                return {targetDecorator: 'Arrow', strokeWidth: 1};
+            case 'Diamond':
+                return {targetDecorator: 'Diamond', strokeWidth: 1};
+            case 'Circle':
+                return {targetDecorator: 'Circle', strokeWidth: 1};
+            case 'OpenArrow':
+                return {targetDecorator: 'OpenArrow', strokeWidth: 1};
+            case 'Square':
+                return {targetDecorator: 'Square', strokeWidth: 1};
+            case 'Fletch':
+                return {targetDecorator: 'Fletch', strokeWidth: 1};
+            case 'OpenFetch':
+                return {targetDecorator: 'OpenFetch', strokeWidth: 1};
+            case 'IndentedArrow':
+                return {targetDecorator: 'IndentedArrow', strokeWidth: 1};
+            case 'OutdentedArrow':
+                return {targetDecorator: 'OutdentedArrow', strokeWidth: 1};
+            case 'DoubleArrow':
+                return {targetDecorator: 'DoubleArrow', strokeWidth: 1};
+            default:
+                return {targetDecorator: 'Arrow', strokeWidth: 1};
+            }
+        } else {
+            return {targetDecorator: 'Arrow', strokeWidth: 1};
+        }
     }
 
 }

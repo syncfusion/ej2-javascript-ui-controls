@@ -4424,3 +4424,72 @@ describe('Coverage calling calculateTotalHours method', () => {
         }
     });
 });
+
+describe('SegmentData updated unncessary', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasksData1,
+                 taskFields: {
+                     id: 'TaskID',
+                     name: 'TaskName',
+                     startDate: 'StartDate',
+                     endDate: 'EndDate',
+                     duration: 'Duration',
+                     progress: 'Progress',
+                     dependency: 'Predecessor',
+                     child: 'subtasks',
+                     segments: 'Segments',
+                     segmentId: 'SegmentId',
+                     durationUnit: 'durationUnit',
+                 },
+                 editSettings: {
+                     allowAdding: true,
+                     allowEditing: true,
+                     allowDeleting: true,
+                     allowTaskbarEditing: true,
+                     showDeleteConfirmDialog: true,
+                 },
+                 columns: [
+                     { field: 'TaskID', width: 80 },
+                     {
+                         field: 'TaskName',
+                         headerText: 'Job Name',
+                         width: '250',
+                         clipMode: 'EllipsisWithTooltip',
+                     },
+                     { field: 'StartDate' },
+                     { field: 'EndDate' },
+                     { field: 'Duration' },
+                     { field: 'Progress' },
+                     { field: 'Predecessor' },
+                 ],
+                 toolbar: [
+                     'Add',
+                     'Edit',
+                     'Update',
+                     'Delete',
+                     'Cancel',
+                     'ExpandAll',
+                     'CollapseAll',
+                 ],
+                 enableContextMenu: true,
+                 allowSelection: true,
+                 height: '450px',
+                 treeColumnIndex: 1,
+                 highlightWeekends: true,
+                 splitterSettings: {
+                     position: '35%',
+                 },
+            }, done);
+    });
+    it('Checking segment data is empty', () => {
+        expect(ganttObj.segmentData.length).toBe(0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

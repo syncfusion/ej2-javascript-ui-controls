@@ -163,7 +163,7 @@ export class TableProperties {
 
     }
     private wireEvent(): void {
-        this.shadingBtn.addEventListener('change', this.changeBackgroundColor);
+        this.shadingBtn.addEventListener('change', this.changeBackgroundColor.bind(this));
         this.borderBtn.addEventListener('change', (args: ColorPickerEventArgs): void => {
             setTimeout((): void => {
                 this.borderColor = args.currentValue.hex; this.tableOutlineBorder.element.focus();

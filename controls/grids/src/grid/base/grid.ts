@@ -7418,8 +7418,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             && !this.keyPress && this.isEdit && !Browser.isDevice) {
             if (this.editSettings.mode === 'Batch' && !(((parentsUntil(relatedTarget, 'e-ddl') || parentsUntil(relatedTarget, 'e-ddt')) &&
                 (parentsUntil(relatedTarget, 'e-multi-select-list-wrapper') || parentsUntil(relatedTarget, 'e-input-filter'))) &&
-                parentsUntil(relatedTarget, 'e-input-group')) && (parentsUntil(relatedTarget, 'e-uploader') || !(relatedTarget &&
-                isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group'))))) {
+                parentsUntil(relatedTarget, 'e-input-group')) && (parentsUntil(relatedTarget, 'e-uploader') || (!(relatedTarget &&
+                isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group'))) && !parentsUntil((e.target as Element), 'edit-custom-template')))) {
                 this.editModule.saveCell();
                 this.notify(events.editNextValCell, {});
             }

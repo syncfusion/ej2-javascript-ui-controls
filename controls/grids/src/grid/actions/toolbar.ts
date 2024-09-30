@@ -10,6 +10,7 @@ import { ToolbarItems, ToolbarItem, ResponsiveToolbarAction } from '../base/enum
 import { ContextMenu as Menu } from '@syncfusion/ej2-navigations';
 import { OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
 import { SearchBox } from '../services/focus-strategy';
+import * as literals from '../base/string-literals';
 
 /**
  *
@@ -153,19 +154,28 @@ export class Toolbar {
             if (this.responsiveToolbarMenu) {
                 this.responsiveToolbarMenu.destroy();
             }
+            this.toolbar.off('render-react-toolbar-template', this.addReactToolbarPortals);
+            this.unWireEvent();
+            this.removeEventListener();
+            this.toolbar.created = null;
+            this.toolbar.clicked = null;
             if (!this.toolbar.element) {
                 this.parent.destroyTemplate(['toolbarTemplate']);
                 if (this.parent.isReact) {
                     this.parent.renderTemplates();
                 }
             } else {
-                this.toolbar.off('render-react-toolbar-template', this.addReactToolbarPortals);
                 this.toolbar.destroy();
             }
-            this.unWireEvent();
-            this.removeEventListener();
+            if (this.parent.isAngular) {
+                const viewStr: string = 'viewContainerRef';
+                const registerTemp: string = 'registeredTemplate';
+                this.toolbar[`${viewStr}`] = null;
+                this.toolbar[`${registerTemp}`] = null;
+            }
             if (this.element.parentNode) {
                 remove(this.element);
+                this.toolbar = null;
             }
         }
     }
@@ -357,7 +367,8 @@ export class Toolbar {
         let enableItems: string[] = [];
         let disableItems: string[] = [];
         const edit: EditSettingsModel = gObj.editSettings;
-        const hasData: number = gObj.currentViewData && gObj.currentViewData.length;
+        const hasData: number = (gObj.currentViewData && gObj.currentViewData.length) ||
+            (gObj.editSettings.mode === 'Batch' && gObj.editModule.getBatchChanges()[literals.addedRecords].length);
         const addRow: boolean = edit.showAddNewRow && !gObj.element.querySelector('.e-editedrow');
         if (edit.allowAdding) {
             enableItems.push(this.gridID + '_add');

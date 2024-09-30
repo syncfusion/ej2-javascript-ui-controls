@@ -2159,8 +2159,6 @@ export class TableWidget extends BlockWidget {
             cellWidth = (preferredWidth * containerWidth) / 100;
         } else if (preferredWidthType === 'Point') {
             cellWidth = preferredWidth;
-        } else if (!isNullOrUndefined(cell) && cell.cellFormat.cellWidth === 0 && cell.cellFormat.preferredWidth === 0 && cell.cellFormat.preferredWidthType === 'Auto' && cell.ownerTable.tableFormat.preferredWidthType === 'Percent' && cell.ownerTable.isInsideTable) {
-            cellWidth = containerWidth - this.tableHolder.getTotalWidth(0);
         }
         // For grid before and grid after with auto width, no need to calculate minimum preferred width.
         else if (!isNullOrUndefined(cell)) {
@@ -2525,14 +2523,8 @@ export class TableWidget extends BlockWidget {
             }
             for (let j: number = 0; j < rw.childWidgets.length; j++) {
                 let cell: TableCellWidget = rw.childWidgets[j] as TableCellWidget;
-                if (!(this.tableFormat.preferredWidthType === 'Auto' && cell.cellFormat.preferredWidthType === 'Percent') &&
-                    !(this.isInsideTable && this.tableFormat.preferredWidthType === 'Percent' && cell.cellFormat.preferredWidthType === 'Point'
-                    && ((this.containerWidget as TableCellWidget).cellFormat.preferredWidthType ==='Auto' 
-                    || (this.containerWidget as TableCellWidget).cellFormat.preferredWidthType === 'Percent')) 
-                    || cell.cellFormat.cellWidth === 0) {
-                    cell.cellFormat.cellWidth = this.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth);
-                    //By default, if cell preferred widthType is auto , width set based on table width and type is changed to 'Point'
-                }
+                cell.cellFormat.cellWidth = this.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth);
+                //By default, if cell preferred widthType is auto , width set based on table width and type is changed to 'Point'
             }
             if (rowFormat.gridAfter > 0) {
                 rowFormat.afterWidth = this.tableHolder.getCellWidth(0, rowFormat.gridAfter, tableWidth);
@@ -8433,6 +8425,10 @@ export class ChartDataFormat {
      * @private
      */
     public fill: ChartFill;
+    /**
+     * @private
+     */
+    public id: number;
     /**
      * @private
      */

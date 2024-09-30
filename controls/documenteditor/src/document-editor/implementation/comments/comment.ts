@@ -1222,12 +1222,12 @@ export class CommentView {
     }
 
     private enableReplyView(): void {
+        if (this.commentPane.isEditMode) {
+            return;
+        }
         const eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Reply', mentions: this.comment.mentions };
         this.owner.trigger(beforeCommentActionEvent, eventArgs);
         if (eventArgs.cancel && eventArgs.type === 'Reply') {
-            return;
-        }
-        if (this.commentPane.isEditMode) {
             return;
         }
         this.commentPane.currentEditingComment = this;

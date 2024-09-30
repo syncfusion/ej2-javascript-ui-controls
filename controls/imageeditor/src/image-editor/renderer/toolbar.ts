@@ -1346,6 +1346,9 @@ export class ToolbarModule {
             if (editTextElement) {editTextElement.classList.remove('e-overlay'); }
             if (zOrderElement) {zOrderElement.classList.remove('e-overlay'); }
         }
+        if (zOrderElement && (parent.shapeColl.length === 0 || (obj['freehandDrawSelectedId'] && parent.shapeColl.length === 1))) {
+            zOrderElement.classList.add('e-overlay');
+        }
     }
 
     private renderStraightenSlider(): void {
@@ -1788,10 +1791,10 @@ export class ToolbarModule {
                 fileSize = Math.floor(blob.size / 1024);
                 if (fileSize > 1000) {
                     const megabytes: number = fileSize / 1024;
-                    imageNameLabel.innerHTML = 'Image size: ' + megabytes.toFixed(2) + ' MB';
+                    imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + megabytes.toFixed(2) + ' MB';
                     fileSize = +megabytes.toFixed(2);
                 } else {
-                    imageNameLabel.innerHTML = 'Image size: ' + fileSize.toFixed(2) + ' KB';
+                    imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + fileSize.toFixed(2) + ' KB';
                     fileSize = +fileSize.toFixed(2);
                 }
                 if (Browser.isDevice) {
@@ -1807,6 +1810,44 @@ export class ToolbarModule {
                 }
                 this.fileSize = fileSize;
             }).bind(this), 'image/jpeg', quality);
+        } else if (!isNullOrUndefined(fileType) && fileType.toLowerCase() === 'png') {
+            if (Browser.isDevice) {
+                canvas.style.display = 'none';
+            } else {
+                ctx.drawImage(tempCanvas, 0, 0);
+                tempCanvas.toBlob((function (blob: any): void {
+                    fileSize = Math.floor(blob.size / 1024);
+                    if (fileSize > 1000) {
+                        const megabytes: number = fileSize / 1024;
+                        imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + megabytes.toFixed(2) + ' MB';
+                        fileSize = +megabytes.toFixed(2);
+                    } else {
+                        imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + fileSize.toFixed(2) + ' KB';
+                        fileSize = +fileSize.toFixed(2);
+                    }
+                    this.fileSize = fileSize;
+                }).bind(this), 'image/png', 1);
+            }
+        } else if (!isNullOrUndefined(fileType) && fileType.toLowerCase() === 'svg') {
+            if (Browser.isDevice) {
+                canvas.style.display = 'none';
+            } else {
+                ctx.drawImage(tempCanvas, 0, 0);
+                const svgDataUrl: string = tempCanvas.toDataURL('image/svg+xml');
+                const base64Data: string = svgDataUrl.split(',')[1];
+                const binaryStringLength: number = base64Data.length;
+                const rawByteSize: number = binaryStringLength;
+                let fileSize: number = Math.floor(rawByteSize / 1024); // KB
+                if (fileSize > 1000) {
+                    const megabytes: number = fileSize / 1024; // Convert to MB
+                    imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + megabytes.toFixed(2) + ' MB';
+                    fileSize = +megabytes.toFixed(2);
+                } else {
+                    imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + fileSize.toFixed(2) + ' KB';
+                    fileSize = +fileSize.toFixed(2);
+                }
+            }
+            this.fileSize = fileSize;
         } else {
             if (Browser.isDevice) {
                 canvas.style.display = 'none';

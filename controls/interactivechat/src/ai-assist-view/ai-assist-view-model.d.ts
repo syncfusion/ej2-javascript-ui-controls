@@ -297,6 +297,8 @@ export interface AIAssistViewModel extends ComponentModel{
     /**
      * Specifies the collection of prompts and their responses in the AIAssistView component.
      *
+     * {% codeBlock src='ai-assistview/prompts/index.md' %}{% endcodeBlock %}
+     *
      * @type {PromptModel[]}
      * @default []
      */
@@ -305,6 +307,8 @@ export interface AIAssistViewModel extends ComponentModel{
     /**
      * Specifies the list of prompt suggestions in the AIAssistView component.
      * Contains suggestions that can be used as prompts.
+     *
+     * {% codeBlock src='ai-assistview/promptSuggestions/index.md' %}{% endcodeBlock %}
      *
      * @type {string[]}
      * @default null
@@ -331,6 +335,7 @@ export interface AIAssistViewModel extends ComponentModel{
      * Specifies the toolbar settings for the AIAssistView component.
      * Represents the configuration for toolbar items and actions within the component.
      *
+     * {% codeBlock src='ai-assistview/toolbarSettings/index.md' %}{% endcodeBlock %}
      *
      * @default []
      */
@@ -392,6 +397,8 @@ export interface AIAssistViewModel extends ComponentModel{
      * Specifies the collection of assist view models in the AIAssistView component.
      * Represents the views available in the assist view.
      *
+     * {% codeBlock src='ai-assistview/views/index.md' %}{% endcodeBlock %}
+     *
      * @type {AssistViewModel[]}
      * @default null
      */
@@ -401,6 +408,8 @@ export interface AIAssistViewModel extends ComponentModel{
      * Specifies the settings for the prompt toolbar in the AIAssistView component.
      * Represents the configuration for the toolbar associated with prompt items.
      *
+     * {% codeBlock src='ai-assistview/promptToolbarSettings/index.md' %}{% endcodeBlock %}
+     *
      * @default null
      */
     promptToolbarSettings?: PromptToolbarSettingsModel;
@@ -408,6 +417,8 @@ export interface AIAssistViewModel extends ComponentModel{
     /**
      * Specifies the settings for the response toolbar in the AIAssistView component.
      * Represents the configuration for the toolbar associated with response items.
+     *
+     * {% codeBlock src='ai-assistview/responseToolbarSettings/index.md' %}{% endcodeBlock %}
      *
      * @default []
      */
@@ -426,6 +437,8 @@ export interface AIAssistViewModel extends ComponentModel{
      * Specifies the template for the footer in the AIAssistView component.
      * Defines the content or layout used to render the footer. Can be a string or a function.
      *
+     * {% codeBlock src='ai-assistview/footerTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      * @angularType string | object
      * @reactType string | function | JSX.Element
@@ -438,6 +451,8 @@ export interface AIAssistViewModel extends ComponentModel{
      * Specifies the template for rendering prompt items in the AIAssistView component.
      * Defines the content or layout used to render prompt items, and can be either a string or a function.
      * The template context includes prompt text and toolbar items.
+     *
+     * {% codeBlock src='ai-assistview/promptItemTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      * @angularType string | object
@@ -452,6 +467,8 @@ export interface AIAssistViewModel extends ComponentModel{
      * Defines the content or layout used to render response items, and can be either a string or a function.
      * The template context includes the prompt text, response text, and toolbar items.
      *
+     * {% codeBlock src='ai-assistview/responseItemTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      * @angularType string | object
      * @reactType string | function | JSX.Element
@@ -465,6 +482,8 @@ export interface AIAssistViewModel extends ComponentModel{
      * Defines the content or layout used to render prompt suggestion items, and can be either a string or a function.
      * The template context includes the index and suggestion text.
      *
+     * {% codeBlock src='ai-assistview/suggestionItemTemplate/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      * @angularType string | object
      * @reactType string | function | JSX.Element
@@ -476,6 +495,8 @@ export interface AIAssistViewModel extends ComponentModel{
     /**
      * Specifies the template for the banner in the AIAssistView component.
      * Represents the content or layout used to render the banner. Can be a string or a function.
+     *
+     * {% codeBlock src='ai-assistview/bannerTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      * @angularType string | object

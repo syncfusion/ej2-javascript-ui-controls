@@ -529,7 +529,7 @@ $chip-outline-warning-avatar-pressed-bg-color: $chip-outline-warning-pressed-bg-
 $chip-outline-warning-avatar-disabled-bg-color: $chip-outline-warning-disabled-bg-color !default;
 $chip-outline-warning-font-color: $warning-bg-color !default;
 $chip-outline-warning-hover-font-color: $warning-bg-color-hover !default;
-$chip-outline-warning-focus-font-color: $success-text !default;
+$chip-outline-warning-focus-font-color: $warning-bg-color-hover !default;
 $chip-outline-warning-active-font-color: $warning-bg-color-selected !default;
 $chip-outline-warning-focus-active-font-color: $warning-bg-color-focus !default;
 $chip-outline-warning-pressed-font-color: $warning-bg-color-pressed !default;

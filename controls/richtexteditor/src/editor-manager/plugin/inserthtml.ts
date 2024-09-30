@@ -278,6 +278,8 @@ export class InsertHtml {
                     }
                     const rangeElement: Node = closest(nearestAnchor, 'span');
                     rangeElement.appendChild(tempSpan);
+                } else if (nodes[0].nodeName === '#text' && nodes[0].nodeValue.includes('\u200B') && !isNOU(nodes[0].parentElement) && !isNOU(nodes[0].parentElement.previousElementSibling) && nodes[0].parentElement.previousElementSibling.classList.contains('e-mention-chip')) {
+                    range.startContainer.parentElement.insertAdjacentElement('afterend', tempSpan);
                 } else {
                     range.insertNode(tempSpan);
                 }
@@ -350,6 +352,23 @@ export class InsertHtml {
         }
         if (lastSelectionNode.nodeName === '#text') {
             this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
+        } else if (lastSelectionNode.nodeName === 'HR') {
+            const nextSiblingNode: HTMLElement = lastSelectionNode.nextSibling ? lastSelectionNode.nextSibling as HTMLElement : null;
+            const siblingTag: HTMLElement = enterAction === 'DIV' ? createElement('div') : createElement('p');
+            siblingTag.appendChild(createElement('br'));
+            if (!isNOU(nextSiblingNode) && nextSiblingNode.nodeName === 'HR') {
+                lastSelectionNode.parentNode.insertBefore(siblingTag, nextSiblingNode);
+                lastSelectionNode = siblingTag;
+            }
+            else if (!isNOU(nextSiblingNode)) {
+                lastSelectionNode = nextSiblingNode;
+            }
+            else {
+                lastSelectionNode.parentNode.appendChild(siblingTag);
+                lastSelectionNode.parentNode.insertBefore(lastSelectionNode, siblingTag);
+                lastSelectionNode = siblingTag;
+            }
+            nodeSelection.setSelectionText(docElement, lastSelectionNode, lastSelectionNode, 0, 0);
         } else {
             this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode, enterAction);
         }

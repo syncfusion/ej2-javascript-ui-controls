@@ -52,6 +52,16 @@
     .e-footer {
       .e-assist-send {
         font-size: $send-icon-size-bigger;
+        bottom: 9px;
+      }
+      .e-input-group.e-control-wrapper.e-multi-line-input {
+        .e-textarea {
+          min-height: 38px;
+          @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
+            padding: 6px 12px 6px 16px;
+            min-height: 28px;
+          }
+        }
       }
     }
     .e-stop-response.e-btn-active {

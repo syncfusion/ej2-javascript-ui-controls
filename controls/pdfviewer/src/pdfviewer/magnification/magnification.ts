@@ -1100,6 +1100,9 @@ export class Magnification {
                         }
                         const canvas: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + i);
                         if (canvas) {
+                            if (this.pdfViewerBase.textLayer) {
+                                this.pdfViewerBase.textLayer.clearTextLayers();
+                            }
                             canvas.style.width = (width) + 'px';
                             canvas.style.height = height + 'px';
                             if (this.pdfViewer.annotation) {

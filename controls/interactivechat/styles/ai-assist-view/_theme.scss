@@ -2,13 +2,17 @@
   .e-aiassistview {
     border-color: $assist-view-border-color;
     background-color: $assist-view-bg-color;
+    .e-view-content {
+      color: $response-text-color;
+    }
     .e-view-header {
       border-bottom-color: $assist-view-border-color;
       .e-toolbar-item::after {
         background-color: transparent;
       }
       .e-toolbar,
-      .e-toolbar-items {
+      .e-toolbar-items,
+      .e-tbar-btn {
         background: $assist-view-bg-color;
       }
       .e-toolbar-item.e-active::after {
@@ -129,14 +133,17 @@
         }
       }
     }
-    .e-view-header,
-    .e-prompt-toolbar,
-    .e-content-footer {
-      .e-toolbar .e-toolbar-item .e-tbar-btn:hover:active .e-icons,
-      .e-toolbar .e-toolbar-item .e-tbar-btn:hover .e-icons,
-      .e-toolbar .e-toolbar-item .e-tbar-btn:hover .e-tbar-btn-text,
-      .e-toolbar .e-toolbar-item .e-tbar-btn:hover:active .e-tbar-btn-text {
-        color: $header-text-color;
+    .e-view-header {
+      .e-toolbar {
+        .e-assist-view-header,
+        .e-custom-view-header {
+          &.e-toolbar-item .e-tbar-btn:hover:active .e-icons,
+          &.e-toolbar-item .e-tbar-btn:hover .e-icons,
+          &.e-toolbar-item .e-tbar-btn:hover .e-tbar-btn-text,
+          &.e-toolbar-item .e-tbar-btn:hover:active .e-tbar-btn-text {
+            color: $header-text-color;
+          }
+        }
       }
     }
     .e-view-header {

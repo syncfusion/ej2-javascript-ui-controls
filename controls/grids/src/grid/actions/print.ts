@@ -1,4 +1,4 @@
-import { print as printWindow, createElement, detach, classList, selectAll, extend } from '@syncfusion/ej2-base';
+import { print as printWindow, createElement, detach, classList, selectAll, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, PrintEventArgs } from '../base/interface';
 import { getPrintGridModel } from '../base/util';
 import { Scroll } from '../actions/scroll';
@@ -217,9 +217,11 @@ export class Print {
             detach(gObj.element);
         }
         this.printWind = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWind.moveTo(0, 0);
-        this.printWind.resizeTo(screen.availWidth, screen.availHeight);
-        this.printWind = printWindow(gObj.element, this.printWind);
+        if (!isNullOrUndefined(this.printWind)) {
+            this.printWind.moveTo(0, 0);
+            this.printWind.resizeTo(screen.availWidth, screen.availHeight);
+            this.printWind = printWindow(gObj.element, this.printWind);
+        }
     }
 
     private removeColGroup(gObj: IGrid) : void {

@@ -1628,7 +1628,12 @@
       /* stylelint-enable */
 
       .e-dlg-content {
-        padding: 24px 27px;
+        @if $grid-skin == 'fluent2' {
+          padding: 24px 27px;
+        }
+        @else {
+          padding: 8px 16px 8px 8px;
+        }
         overflow-y: hidden;
       }
 

@@ -487,6 +487,67 @@ describe('filter list data testing', () => {
                 },350);
             },350);
         });
+        it('Filter action with selecting multiple nodes then close and open the popup', (done) => {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+                allowFiltering: true,
+                treeSettings: { loadOnDemand: true },
+                allowMultiSelection: true,
+                showSelectAll: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+            let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect(ddtreeObj.value.length).toBe(1);
+            expect(ddtreeObj.value.indexOf('1') !== -1).toBe(true);
+            expect(ddtreeObj.treeObj.selectedNodes.length).toBe(1);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active').length).toBe(1);
+            expect((ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active')[0].querySelector('.e-list-text') as HTMLElement).innerText).toBe("Australia");
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'j';
+            filterObj.value = 'j';
+            let eventArgs: any = { value: 'j', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(function () {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(4);
+                let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+                mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+                mouseEventArgs.target = li[2].querySelector('.e-list-text');
+                (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+                expect(ddtreeObj.value.length).toBe(3);
+                expect(ddtreeObj.value.indexOf('1') !== -1).toBe(true);
+                expect(ddtreeObj.value.indexOf('11') !== -1).toBe(true);
+                expect(ddtreeObj.value.indexOf('21') !== -1).toBe(true);
+                filterEle.value = '';
+                filterObj.value = '';
+                eventArgs = { value: '', container: filterEle };
+                filterObj.input(eventArgs);
+                ddtreeObj.hidePopup();
+                setTimeout(function () {
+                    ddtreeObj.showPopup();
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+                    expect(ddtreeObj.treeObj.selectedNodes.length).toBe(3);
+                    expect(ddtreeObj.value.length).toBe(3);
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active').length).toBe(3);
+                    expect((ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active')[0].querySelector('.e-list-text') as HTMLElement).innerText).toBe("Australia");
+                    expect((ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active')[1].querySelector('.e-list-text') as HTMLElement).innerText).toBe("China");
+                    expect((ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active')[2].querySelector('.e-list-text') as HTMLElement).innerText).toBe("India");
+                    expect(ddtreeObj.treeObj.selectedNodes.indexOf('1') !== -1).toBe(true);
+                    expect(ddtreeObj.treeObj.selectedNodes.indexOf('11') !== -1).toBe(true);
+                    expect(ddtreeObj.treeObj.selectedNodes.indexOf('21') !== -1).toBe(true);
+                    done();
+                },350);
+            },350);
+        });
         it('closing selected chip on filter', (done) => {
             ddtreeObj = new DropDownTree({
                 fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
@@ -861,6 +922,42 @@ describe('filter list data testing', () => {
                 eventArgs = { value: '', container: filterEle };
                 filterObj.input(eventArgs);
                 setTimeout(function () {
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+                    expect(document.querySelector('.e-selectall-parent').classList.contains('e-hide-selectall')).toBe(false);
+                    done();
+                },350);
+            },350);
+        });
+        it('filter with selectall, close and reopen popup', (done) => {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+                allowFiltering: true,
+                treeSettings: { loadOnDemand: true },
+                showCheckBox: true,
+                showSelectAll: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            expect(document.querySelector('.e-selectall-parent').classList.contains('e-hide-selectall')).toBe(false);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'j';
+            filterObj.value = 'j';
+            let eventArgs: any = { value: 'j', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(function () {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(4);
+                expect(document.querySelector('.e-selectall-parent').classList.contains('e-hide-selectall')).toBe(true);
+                filterEle.value = '';
+                filterObj.value = '';
+                eventArgs = { value: '', container: filterEle };
+                filterObj.input(eventArgs);
+                ddtreeObj.hidePopup(); 
+                setTimeout(function () {
+                    ddtreeObj.showPopup();
                     expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
                     expect(document.querySelector('.e-selectall-parent').classList.contains('e-hide-selectall')).toBe(false);
                     done();

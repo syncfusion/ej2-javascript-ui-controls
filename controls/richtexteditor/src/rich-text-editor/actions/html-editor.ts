@@ -655,11 +655,12 @@ export class HtmlEditor {
                         this.isImageDelete = false;
                     }
                     const brNode: HTMLElement = this.deleteRangeElement.querySelector('BR');
+                    const brLastChildNode: Node = this.deleteRangeElement.lastChild;
                     if (brNode && brNode.classList.contains('e-rte-image-remove-focus')) {
                         removeClass([brNode], ['e-rte-image-focus']);
                         return;
-                    } else if (brNode) {
-                        detach(brNode);
+                    } else if (brNode && brLastChildNode && brLastChildNode.nodeName === 'BR') {
+                        detach(brLastChildNode);
                         (e.args as KeyboardEventArgs).preventDefault();
                     }
                     if (!isNullOrUndefined(this.deleteRangeElement) && (this.deleteOldRangeElement.tagName !== 'OL' && this.deleteOldRangeElement.tagName !== 'UL')

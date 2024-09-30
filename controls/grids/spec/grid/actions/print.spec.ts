@@ -578,3 +578,44 @@ describe('EJ2-852222, EJ2-853086 - script error on Export and print hierarchy gr
         gridObj = null;
     });
 });
+
+describe('EJ2-900635 - Script error thrown when clicking Print button => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: employeeData,
+                toolbar: ['Print'],
+                columns: [
+                    {
+                    field: 'EmployeeID',
+                    headerText: 'Employee ID',
+                    textAlign: 'Right',
+                    width: 125,
+                    },
+                    { field: 'FirstName', headerText: 'Name', width: 125 },
+                    { field: 'Title', headerText: 'Title', width: 180 },
+                    { field: 'City', headerText: 'City', width: 110 },
+                ],
+            }, done);
+    });
+
+    it('print success check', (done: Function) => {
+        gridObj.beforePrint = () => {
+            done();
+        };
+        select('#' + gridObj.element.id + '_print', gridObj.toolbarModule.getToolbar()).click();
+    });
+
+    it('printGridElement coevarge', (done: Function) => {
+        (gridObj as any).isPrinting = false;
+        (<any>gridObj.printModule).printGridElement(gridObj);
+        done();
+        
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

@@ -392,7 +392,13 @@ export class ChartComponent {
         if (data[majorUnitProperty[this.keywordIndex]] !== 0) {
             const isAutoMajor: any = data[isAutoMajorProperty[this.keywordIndex]];
             if (isAutoMajor && this.parseBoolValue(isAutoMajor)) {
-                primaryYAxis.interval = this.calculateMajorUnit(this.chartYValues);
+                const majorUnit: number = this.calculateMajorUnit(this.chartYValues);
+                if (majorUnit < 10 && (this.chartType === "Bar_Stacked_100" || this.chartType === "Line_Stacked_100" || this.chartType === "Column_Stacked_100" || this.chartType === "Line_Markers_Stacked_100" || this.chartType === "Area_Stacked_100")) {
+                    primaryYAxis.interval = 10;
+                }
+                else {
+                    primaryYAxis.interval = majorUnit;
+                }
             } else {
                 primaryYAxis.interval = data[majorUnitProperty[this.keywordIndex]];
             }
@@ -475,17 +481,33 @@ export class ChartComponent {
                     return obj[idProperty[this.keywordIndex]] === count
                 });
                 if (!isNullOrUndefined(seriesDataPoints)) {
-                    plotValue.color = this.chartFormat(seriesDataPoints, type);
+                    const color: any = this.chartFormat(seriesDataPoints, type);
+                    if (chart[chartTypeProperty[this.keywordIndex]] !== 'Column_Stacked') {
+                        plotValue.color = color;
+                    }
+                    else {
+                        plotValue['color' + j] = color;
+                    }
                 }
                 else {
                     if (seriesData[dataPointsProperty[this.keywordIndex]].length > 1 && seriesData[dataPointsProperty[this.keywordIndex]][parseInt(count.toString(), 10)][idProperty[this.keywordIndex]] === 0) {
                         seriesDataPoints = seriesData[dataPointsProperty[this.keywordIndex]][parseInt(count.toString(), 10)];
-                        plotValue.color = this.chartFormat(seriesDataPoints, type);
+                        const color: any = this.chartFormat(seriesDataPoints, type);
+                        if (chart[chartTypeProperty[this.keywordIndex]] !== 'Column_Stacked') {
+                            plotValue.color = color;
+                        } else {
+                            plotValue['color' + j] = color;
+                        }
                     }
                     else {
                         if (!isNullOrUndefined(seriesData[seriesFormatProperty[this.keywordIndex]]) && !isNullOrUndefined(seriesData[seriesFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]])) {
                             if (seriesData[seriesFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]][rgbProperty[this.keywordIndex]].length > 7) {
-                                plotValue.color = this.getColor(seriesData[seriesFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]][rgbProperty[this.keywordIndex]]);
+                                const color: any = this.getColor(seriesData[seriesFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]][rgbProperty[this.keywordIndex]]);
+                                if (chart[chartTypeProperty[this.keywordIndex]] !== 'Column_Stacked') {
+                                    plotValue.color = color;
+                                } else {
+                                    plotValue['color' + j] = color;
+                                }
                             }
                         }
                     }

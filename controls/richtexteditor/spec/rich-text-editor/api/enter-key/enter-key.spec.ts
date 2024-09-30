@@ -315,6 +315,50 @@ describe('List revert with BR configured - ', () => {
     });
 });
 
+describe('Bug 911192: Error thrown when pressing the Enter key after placing the cursor on an <hr> tag in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: '<p>Testing</p>'
+        });
+        done();
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('check insertHorizontalRule Executecommand for one line text while cursor placed at end of the line and press enter', () => {
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, nodetext.childNodes[0], nodetext.childNodes[0].textContent.length);
+        rteObj.executeCommand('insertHorizontalRule');
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        console.log(rteObj.inputElement.innerHTML);
+        expect(rteObj.inputElement.innerHTML).toBe('<p>Testing</p><hr><p><br></p><p><br></p>');
+    });
+    it('check insertHorizontalRule Executecommand for one line text while cursor placed at start of the line and press enter', () => {
+        rteObj.inputElement.innerHTML = '<p>Testing</p>';
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, nodetext.childNodes[0], 0);
+        rteObj.executeCommand('insertHorizontalRule');
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        console.log(rteObj.inputElement.innerHTML);
+        expect(rteObj.inputElement.innerHTML).toBe('<hr><p><br></p><p>Testing</p>');
+    });
+    it('check insertHorizontalRule Executecommand for one line text while cursor placed at middle of the line and press enter', () => {
+        rteObj.inputElement.innerHTML = '<p>Testing</p>';
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, nodetext.childNodes[0], 4);
+        rteObj.executeCommand('insertHorizontalRule');
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        console.log(rteObj.inputElement.innerHTML);
+        expect(rteObj.inputElement.innerHTML).toBe('<p>Test</p><hr><p><br></p><p>ing</p>');
+    });
+});
+
 describe('Enter key support - When `DIV` is configured', () => {
     let rteObj: RichTextEditor;
     keyboardEventArgs.shiftKey = false;

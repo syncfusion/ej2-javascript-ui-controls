@@ -489,7 +489,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
         if (this.stepperItemList && this.progressbar && this.element.classList.contains(HORIZSTEP)) {
             this.setProgressPosition(this.element, true);
         }
-        this.navigateToStep(this.activeStep, null, null, false);
+        this.navigateToStep(this.activeStep, null, null, false, false);
     }
 
     private updateStepFocus(): void {
@@ -1112,7 +1112,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
      */
     public refreshProgressbar(): void {
         if (this.stepperItemList && this.progressbar) { this.setProgressPosition(this.element); }
-        this.navigateToStep(this.activeStep, null, null, false);
+        this.navigateToStep(this.activeStep, null, null, false, false);
     }
 
     private updateElementClassArray(): void {

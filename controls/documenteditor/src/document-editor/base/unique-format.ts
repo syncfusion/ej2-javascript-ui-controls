@@ -622,6 +622,9 @@ export class WUniqueFormat {
         if (this.isNotEqual('localeIdAscii', source, modifiedProperty, modifiedValue, 2)) {
             return false;
         }
+        if (this.isNotEqual('localeIdFarEast', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
         if (this.isNotEqual('complexScript', source, modifiedProperty, modifiedValue, 2)) {
             return false;
         }

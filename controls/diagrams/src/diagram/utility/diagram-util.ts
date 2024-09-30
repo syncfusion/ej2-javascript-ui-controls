@@ -888,7 +888,8 @@ export function initFixedUserHandlesSymbol(
         options.height > 10 ? options.height - (options.padding.bottom + options.padding.top) : options.height;
     fixedUserHandleContent.width =
         options.width > 10 ? options.width - (options.padding.left + options.padding.right) : options.width;
-    fixedUserHandleContent.visible = fixedUserHandleContainer.visible;
+    //Bug 912616: Not able to hide the fixedUserHandle in diagram
+    fixedUserHandleContent.visible = options.visibility;
     fixedUserHandleContent.id = fixedUserHandleContainer.id + '_shape';
     fixedUserHandleContent.inversedAlignment = false;
     fixedUserHandleContent.horizontalAlignment = 'Center';

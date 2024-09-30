@@ -4413,6 +4413,207 @@ describe('Masked date time code coverage improvements ', () => {
         datetimepicker.destroy();
     });
 });
+describe('Masked date time backspace with day ', () => {
+    let mouseEventArgs: any = {
+        preventDefault: function () { },
+        stopPropagation: (): void => { /** NO Code */ },
+        target: null,
+        e: {
+            key: "ARROWLEFT"
+        },  
+    };
+    let date: DateTimePicker;
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'date' });
+        document.body.appendChild(ele);
+
+    });
+    afterEach(() => {
+        if (date) {
+            date.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('backspace action for day', () => {
+        datetimepicker = new DateTimePicker({
+            format: 'dd/MM/yyyy hh:mm a',
+            enableMask: true,
+        });
+        let mask : MaskedDateTime = new MaskedDateTime(datetimepicker);
+        (<any>mask).parent = datetimepicker;
+        datetimepicker.appendTo('#date');
+        (<any>mask).createMask();
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        datetimepicker.inputHandler();
+        datetimepicker.element.value = '01/month/year hour:minute AM';
+        datetimepicker.element.selectionStart = 0;
+        mouseEventArgs.e.key = 'Backspace';
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        datetimepicker.destroy();
+    });
+});
+describe('Masked date time backspace with month ', () => {
+    let mouseEventArgs: any = {
+        preventDefault: function () { },
+        stopPropagation: (): void => { /** NO Code */ },
+        target: null,
+        e: {
+            key: "ARROWLEFT"
+        },  
+    };
+    let date: DateTimePicker;
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'date' });
+        document.body.appendChild(ele);
+
+    });
+    afterEach(() => {
+        if (date) {
+            date.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('backspace action for month', () => {
+        datetimepicker = new DateTimePicker({
+            format: 'MM/dd/yyyy hh:mm a',
+            enableMask: true,
+        });
+        let mask : MaskedDateTime = new MaskedDateTime(datetimepicker);
+        (<any>mask).parent = datetimepicker;
+        datetimepicker.appendTo('#date');
+        (<any>mask).createMask();
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        datetimepicker.inputHandler();
+        datetimepicker.element.value = '01/day/year hour:minute AM';
+        datetimepicker.element.selectionStart = 0;
+        mouseEventArgs.e.key = 'Backspace';
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        datetimepicker.destroy();
+    });
+});
+describe('Masked date time backspace with minute ', () => {
+    let mouseEventArgs: any = {
+        preventDefault: function () { },
+        stopPropagation: (): void => { /** NO Code */ },
+        target: null,
+        e: {
+            key: "ARROWLEFT"
+        },  
+    };
+    let date: DateTimePicker;
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'date' });
+        document.body.appendChild(ele);
+
+    });
+    afterEach(() => {
+        if (date) {
+            date.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('backspace action for minute', () => {
+        datetimepicker = new DateTimePicker({
+            format: 'mm:hh a MM/dd/yyyy',
+            enableMask: true,
+        });
+        let mask : MaskedDateTime = new MaskedDateTime(datetimepicker);
+        (<any>mask).parent = datetimepicker;
+        datetimepicker.appendTo('#date');
+        (<any>mask).createMask();
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        datetimepicker.inputHandler();
+        datetimepicker.element.value = '01:hour AM 01/month/year';
+        datetimepicker.element.selectionStart = 0;
+        mouseEventArgs.e.key = 'Backspace';
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        datetimepicker.destroy();
+    });
+    
+});
+describe('Masked date time backspace with second ', () => {
+    let mouseEventArgs: any = {
+        preventDefault: function () { },
+        stopPropagation: (): void => { /** NO Code */ },
+        target: null,
+        e: {
+            key: "ARROWLEFT"
+        },  
+    };
+    let date: DateTimePicker;
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'date' });
+        document.body.appendChild(ele);
+
+    });
+    afterEach(() => {
+        if (date) {
+            date.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('backspace action for second', () => {
+        datetimepicker = new DateTimePicker({
+            format: 'ss:mm:hh a MM/dd/yyyy',
+            enableMask: true,
+        });
+        let mask : MaskedDateTime = new MaskedDateTime(datetimepicker);
+        (<any>mask).parent = datetimepicker;
+        datetimepicker.appendTo('#date');
+        (<any>mask).createMask();
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        datetimepicker.inputHandler();
+        datetimepicker.element.value = '01:minute:hour AM 01/month/year';
+        datetimepicker.element.selectionStart = 0;
+        mouseEventArgs.e.key = 'Backspace';
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        datetimepicker.destroy();
+    });
+});
+describe('Masked date time backspace with hour ', () => {
+    let mouseEventArgs: any = {
+        preventDefault: function () { },
+        stopPropagation: (): void => { /** NO Code */ },
+        target: null,
+        e: {
+            key: "ARROWLEFT"
+        },  
+    };
+    let date: DateTimePicker;
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'date' });
+        document.body.appendChild(ele);
+
+    });
+    afterEach(() => {
+        if (date) {
+            date.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('backspace action for hour', () => {
+        datetimepicker = new DateTimePicker({
+            format: 'hh:mm a MM/dd/yyyy',
+            enableMask: true,
+        });
+        let mask : MaskedDateTime = new MaskedDateTime(datetimepicker);
+        (<any>mask).parent = datetimepicker;
+        datetimepicker.appendTo('#date');
+        (<any>mask).createMask();
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        datetimepicker.inputHandler();
+        datetimepicker.element.value = '01:minute AM 01/month/year';
+        datetimepicker.element.selectionStart = 0;
+        mouseEventArgs.e.key = 'Backspace';
+        (<any>mask).maskKeydownHandler(mouseEventArgs);
+        datetimepicker.destroy();
+    });
+});
 describe('Time Restriction ', () => {
     let mouseEventArgs: any = {
         preventDefault: function () { },

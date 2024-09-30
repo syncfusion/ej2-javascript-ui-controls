@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I630952` - Now, pressing the delete key when the cursor is at the end of the container correctly removes the correct `br` tag in the Rich Text Editor.
+
+- `#I629344` - Now, the `Insert` button is disabled in the image dialog when the selected image size exceeds the maximum file size.
+
+- `#I630816` - Now, the `beforePasteCleanup` event arguments `Value` is not empty when content is copied and pasted from the Adobe Acrobat PDF read.
+
+- `#I629364` - Now, Border right will appear when pasting from the Excel in the Rich Text Editor.
+
 ## 27.1.50 (2024-09-24)
 
 ### RichTextEditor

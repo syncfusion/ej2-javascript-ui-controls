@@ -555,6 +555,11 @@ describe('CheckBox', () => {
             expect(element.parentElement.parentElement.getAttribute("data-containerid").indexOf("error-agreement")).toEqual(0);
             expect(element.parentElement.parentElement.getAttribute("test").indexOf("test")).toEqual(0);
         });
+
+        it('EJ2-909049 - Need to set the aria-label attribute for the checkbox input element and not to the wrapper element in core.', function () {
+            checkbox = new CheckBox({ htmlAttributes: { 'aria-label': 'checkbox aria label' } }, '#checkbox');
+            expect(checkbox.element.ariaLabel).toContain('checkbox aria label');
+        });
        
     });
 

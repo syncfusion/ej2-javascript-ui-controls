@@ -2346,3 +2346,4 @@ describe('EJ2-907977 - Focus is lost when enableColumnVirtualization is enabled 
         gridObj = null;
     });
 });
+

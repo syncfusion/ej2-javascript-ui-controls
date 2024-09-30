@@ -1,0 +1,34 @@
+@include export-module('splitter-bootstrap-icons') {
+  .e-splitter {
+    .e-split-bar {
+      &.e-split-bar-horizontal {
+        .e-resize-handler::before {
+          content: '\e984';
+          font-family: 'e-icons';
+          font-size: $splitbar-icon-size;
+        }
+
+        .e-resize-handler {
+          &.e-template-resize-handler::before {
+            content: '';
+          }
+        }
+      }
+
+      &.e-split-bar-vertical {
+        & .e-resize-handler::before {
+          content: '\e984';
+          font-family: 'e-icons';
+          font-size: $splitbar-icon-size;
+          transform: rotate(90deg);
+        }
+
+        .e-resize-handler {
+          &.e-template-resize-handler::before {
+            content: '';
+          }
+        }
+      }
+    }
+  }
+}

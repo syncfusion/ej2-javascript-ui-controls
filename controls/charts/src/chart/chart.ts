@@ -2064,7 +2064,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             tooltipdiv.appendChild(svg);
         }
         // For userInteraction
-        if (this.tooltip.enable) {
+        if (this.tooltip.enable && !this.stockChart) {
             appendChildElement(
                 this.enableCanvas, this.svgObject, this.renderer.createGroup(
                     { id: elementId + '_UserInteraction', style: 'pointer-events:none;' }
@@ -2208,7 +2208,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.stripLineModule.renderStripLine(this, 'Over', this.axisCollections);
         }
 
-        if (!this.tooltip.enable) {
+        if (!this.tooltip.enable || this.stockChart) {
             appendChildElement(
                 this.enableCanvas, this.svgObject, this.renderer.createGroup(
                     { id: this.element.id + '_UserInteraction', style: 'pointer-events:none;' }

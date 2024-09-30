@@ -2,13 +2,25 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### Stock Chart
+
+#### Bug Fixes
+
+- `#F194476` - The crosshair tooltip now displays correctly on the axis labels.
+
 ## 27.1.50 (2024-09-24)
 
 ### Chart
 
+#### Bug Fixes
+
 - `#I631309` - Now, the spline range area chart will handle null values properly.
 
 ### Accumulation Chart
+
+#### Bug Fixes
 
 - `#I630866` - Now, the group separator will work for both the tooltip x-point and the legend text.
 

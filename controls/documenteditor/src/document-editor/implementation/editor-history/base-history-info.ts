@@ -433,7 +433,13 @@ export class BaseHistoryInfo {
     }
     private revertBookmark(): void {
         const bookmarkInfo: BookmarkInfo = this.removedNodes[0] as BookmarkInfo;
-        const bookmark: BookmarkElementBox = bookmarkInfo.bookmark;
+        let bookmark: BookmarkElementBox = bookmarkInfo.bookmark;
+        // When perform undo, redo for drag and drop operation, bookmark reference changed so we couldn't insert or delete proper bookmark. so updated the bookmark based on name.
+        if (!isNullOrUndefined(bookmark) && (bookmark.line.indexInOwner === -1 || bookmark.line.paragraph.indexInOwner === -1) &&
+            !isNullOrUndefined(this.owner.documentHelper) && this.owner.documentHelper.bookmarks.length > 0) {
+            bookmark = this.owner.documentHelper.bookmarks.get(bookmark.name);
+            (this.removedNodes[0] as BookmarkInfo).bookmark = bookmark;
+        }
         if (this.editorHistory.isUndoing) {
             const markerData: MarkerInfo = this.owner.editorModule.getMarkerData(bookmark);
             this.documentHelper.bookmarks.add(bookmark.name, bookmark);
@@ -446,14 +452,20 @@ export class BaseHistoryInfo {
             this.markerData.push(markerData);
             bookmark.reference.line.children.splice(bookmarkInfo.endIndex, 0, bookmark.reference);
 
-            this.editorHistory.recordChanges(this);
+            // Skip recording the changes if the currentHistoryInfo action is InsertBookmark. Because, the changes will be recorded in the update complex history.
+            if (!(this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action === 'InsertBookmark')) {
+                this.editorHistory.recordChanges(this);
+            }
             if (this.owner.documentEditorSettings.showBookmarks === true) {
                 this.viewer.updateScrollBars();
             }
             this.owner.editorModule.fireContentChange();
         } else {
             this.owner.editorModule.deleteBookmarkInternal(bookmark);
-            this.editorHistory.undoStack.push(this);
+            // Skip recording the changes if the currentHistoryInfo action is InsertBookmark. Because, the changes will be recorded in the update complex history.
+            if (!(this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action === 'InsertBookmark')) {
+                this.editorHistory.undoStack.push(this);
+            }
         }
     }
     private revertComment(): void {
@@ -1065,7 +1077,11 @@ export class BaseHistoryInfo {
                         }
                     }
                     if (lastNode instanceof ParagraphWidget && this.owner.selectionModule.start.offset > 0 && !skipinsert) {
-                        this.owner.editorModule.insertNewParagraphWidget(lastNode, true);
+                        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Paste' && deletedNodes.length === 1) {
+                            this.owner.editorModule.insertNewParagraphWidget(lastNode, false);
+                        } else {
+                            this.owner.editorModule.insertNewParagraphWidget(lastNode, true);
+                        }
                         if (lastNode.characterFormat.removedIds.length > 0) {
                             this.owner.editorModule.constructRevisionFromID(lastNode.characterFormat, undefined);
                         }

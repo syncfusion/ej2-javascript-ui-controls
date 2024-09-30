@@ -205,6 +205,9 @@ export class Layout extends ChildProperty<Layout> {
      * * OrganizationalChart - Defines the type of the layout as Organizational Chart
      * * ComplexHierarchicalTree - Defines the type of the layout as complex HierarchicalTree
      * * RadialTree - Defines the type of the layout as Radial tree
+     * * MindMap - Defines the type of the layout as MindMap
+     * * SymmetricalLayout - Defines the type of the layout as SymmetricalLayout
+     * * Flowchart - Defines the type of the layout as Flowchart
      *
      * @default 'None'
      */

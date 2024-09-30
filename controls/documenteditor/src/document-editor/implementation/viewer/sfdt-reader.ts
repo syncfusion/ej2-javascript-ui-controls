@@ -2007,6 +2007,9 @@ export class SfdtReader {
     private parseChartSeriesDataPoints(dataPoints: any, series: ChartSeries): void {
         for (let i: number = 0; i < dataPoints.length; i++) {
             let chartFormat: ChartDataFormat = new ChartDataFormat();
+            if (dataPoints[i].hasOwnProperty(idProperty[this.keywordIndex])) {
+                chartFormat.id = dataPoints[i][idProperty[this.keywordIndex]];
+            }
             this.parseChartDataFormat(dataPoints[i], chartFormat);
             series.chartDataFormat.push(chartFormat);
         }

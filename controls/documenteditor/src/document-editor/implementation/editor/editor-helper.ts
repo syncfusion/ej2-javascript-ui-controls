@@ -18,7 +18,7 @@ import {
     keepLinesTogetherProperty, keepWithNextProperty, contextualSpacingProperty, widowControlProperty,
     topProperty, leftProperty, rightProperty, bottomProperty, horizontalProperty, verticalProperty,
     colorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, shadowProperty, spaceProperty, inlinesProperty,
-    characterFormatProperty, textProperty, fieldTypeProperty, hasFieldEndProperty
+    characterFormatProperty, textProperty, fieldTypeProperty, hasFieldEndProperty, localeIdFarEastProperty
 } from '../../index';
 import { FieldSettingsModel } from '@syncfusion/ej2-navigations';
 
@@ -846,8 +846,9 @@ export class HelperMethods {
         characterFormat[fontSizeBidiProperty[keywordIndex]] = isWriteAllValues? format.fontSizeBidi :isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
         characterFormat[fontFamilyBidiProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyBidi :isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
         characterFormat[allCapsProperty[keywordIndex]] = isWriteAllValues? format.allCaps :isInline ? HelperMethods.getBoolInfo(format.allCaps, keywordIndex) : format.getValue('allCaps');
-        characterFormat[localeIdBidiProperty[keywordIndex]] = isWriteAllValues? format.localeIdBidi :isInline ? format.localeIdBidi : format.getValue('localeIdBidi');
-        characterFormat[localeIdProperty[keywordIndex]]= isWriteAllValues? format.localeIdBidi :isInline ? format.localeIdAscii : format.getValue('localeIdAscii');
+        characterFormat[localeIdBidiProperty[keywordIndex]] = isWriteAllValues ? format.localeIdBidi : isInline ? format.localeIdBidi : format.getValue('localeIdBidi');
+        characterFormat[localeIdProperty[keywordIndex]] = isWriteAllValues ? format.localeIdBidi : isInline ? format.localeIdAscii : format.getValue('localeIdAscii');
+        characterFormat[localeIdFarEastProperty[keywordIndex]] = isWriteAllValues ? format.localeIdFarEast : isInline ? format.localeIdFarEast : format.getValue('localeIdFarEast');
         characterFormat[complexScriptProperty[keywordIndex]] = isWriteAllValues? format.complexScript :isInline ? HelperMethods.getBoolInfo(format.complexScript, keywordIndex) : format.getValue('complexScript');
         characterFormat[fontFamilyAsciiProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyAscii :isInline ? this.toWriteInline(format, 'fontFamilyAscii') : format.getValue('fontFamilyAscii');
         characterFormat[fontFamilyNonFarEastProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyNonFarEast :isInline ? this.toWriteInline(format, 'fontFamilyNonFarEast') : format.getValue('fontFamilyNonFarEast');

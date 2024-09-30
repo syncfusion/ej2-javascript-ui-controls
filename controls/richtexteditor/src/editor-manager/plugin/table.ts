@@ -235,6 +235,9 @@ export class TableCommand {
         for (let i: number = 0; i < thTdElm.length; i++) {
             thTdElm[i as number].dataset.oldWidth = (thTdElm[i as number].offsetWidth / (currentTabElm as HTMLElement).offsetWidth * 100) + '%';
         }
+        if (isNOU((currentTabElm as HTMLElement).style.width) || (currentTabElm as HTMLElement).style.width === '') {
+            (currentTabElm as HTMLElement).style.width = (currentTabElm as HTMLElement).offsetWidth + 'px';
+        }
         for (let i: number = 0; i < allRows.length; i++) {
             curCell = allRows[i as number].querySelectorAll(':scope > td, :scope > th')[colIndex as number];
             const colTemplate: Node = (curCell as HTMLElement).cloneNode(true);

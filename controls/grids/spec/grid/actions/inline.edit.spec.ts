@@ -4916,3 +4916,41 @@ describe('EJ2-905237: Issue in Adding/Editing when grid component is rendered in
         gridObj = null;
     });
 });
+
+describe('EJ2-912642: Focus not properly navigated by pressing tab after editing =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 10),
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Employee ID', width: 125, isPrimaryKey: true, validationRules: { required: true } },
+                    { field: 'CustomerID', headerText: 'Name', width: 120 },
+                    { field: 'ShipName', headerText: 'Title', width: 170 },
+                    { field: 'Freight', headerText: 'Freight', width: 120 },
+                ]
+            }, done);
+    });
+
+    it('Click the cell', () => {
+        (gridObj.getContentTable() as HTMLTableElement).rows[1].cells[2].click();
+    });
+
+    it('Start edit', () => {
+        gridObj.startEdit();
+    });
+
+    it('End edit', () => {
+        gridObj.endEdit();
+    });
+
+    it('Check focus class', () => {
+        expect(gridObj.getContentTable().querySelector('.e-focus')).toBe((gridObj.getContentTable() as HTMLTableElement).rows[1].cells[0]);
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

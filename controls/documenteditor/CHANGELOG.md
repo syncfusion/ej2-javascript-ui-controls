@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.1.51 (2024-09-30)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I630170` - Resolved the paragraph shifting issue when pasting text content.
+- `#I626306` - Resolved the font family and page content is not rendered properly.
+
 ## 27.1.50 (2024-09-24)
 
 ### DocumentEditor

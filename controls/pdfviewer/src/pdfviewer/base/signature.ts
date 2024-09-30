@@ -1535,7 +1535,11 @@ export class Signature {
     }
 
     private uploadSignatureImage(): void {
-        const signImage: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_signElement');
+        let signImage: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_signElement');
+        if (isNullOrUndefined(signImage)) {
+            this.createSignatureFileElement();
+            signImage = document.getElementById(this.pdfViewer.element.id + '_signElement');
+        }
         if (signImage) {
             signImage.click();
         }

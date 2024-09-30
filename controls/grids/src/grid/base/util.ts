@@ -1705,6 +1705,7 @@ export function resetDialogAppend(gObj: IGrid, dlgObj: Dialog): void {
     element.style.top = pos.top + 'px';
     element.style.left = pos.left + 'px';
     element.style.zIndex = (dlgObj.zIndex).toString();
+    element.style.width = dlgObj.element.offsetWidth + 'px';
     element.appendChild(dlgObj.element);
     const sbPanel: HTMLElement = document.querySelector('.sb-demo-section');
     if (sbPanel) {

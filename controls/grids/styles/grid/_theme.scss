@@ -875,7 +875,8 @@
   }
 
   @if $grid-skin == 'fluent2' {
-    .e-grid-menu .e-menu-item.e-focused .e-css.e-checkbox-wrapper .e-label {
+    .e-grid-menu .e-menu-item.e-focused .e-css.e-checkbox-wrapper .e-label,
+    .e-grid-menu .e-menu-item.e-focused .e-wrapper.e-checkbox-wrapper .e-label {
       color: $flyout-text-color-hover;
     }
   }
