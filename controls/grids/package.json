@@ -41,7 +41,7 @@
 		"canteen": "^1.0.5",
 		"jasmine-ajax": "^3.3.1",
 		"jasmine-core": "^2.6.1",
-		"karma": "^1.7.0",
+		 "karma": "6.4.2",
 		"karma-chrome-launcher": "^2.2.0",
 		"karma-generic-preprocessor": "^1.1.0",
 		"karma-htmlfile-reporter": "^0.3.5",
