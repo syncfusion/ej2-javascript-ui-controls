@@ -1,5 +1,6 @@
 import { IRenderer, IRichTextEditor } from '../base/interface';
 import { getEditValue } from '../base/util';
+import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 /**
  * Content module is used to render Rich Text Editor content
  *
@@ -11,7 +12,7 @@ export class ContentRender implements IRenderer {
     protected contentPanel: Element;
     //Module declarations
     protected parent: IRichTextEditor;
-    protected editableElement: Element;
+    protected editableElement: HTMLElement;
     /**
      * Constructor for content renderer module
      *
@@ -37,9 +38,15 @@ export class ContentRender implements IRenderer {
             id: this.parent.getID() + '_rte-edit-view',
             attrs: {
                 'contenteditable': 'true'
-            },
-            innerHTML: rteContent
+            }
         });
+        if (!isNOU(this.parent.fontFamily.default)) {
+            this.editableElement.style.fontFamily = this.parent.fontFamily.default;
+        }
+        if (!isNOU(this.parent.fontSize.default)) {
+            this.editableElement.style.fontSize = this.parent.fontSize.default;
+        }
+        this.editableElement.innerHTML = rteContent;
         div.appendChild(this.editableElement);
         this.setPanel(div);
         rteObj.rootContainer.appendChild(div);

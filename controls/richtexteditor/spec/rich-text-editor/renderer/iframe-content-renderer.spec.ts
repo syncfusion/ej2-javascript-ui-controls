@@ -185,4 +185,120 @@ describe('Iframe Content renderer module', () => {
             done();
         });
     });
+
+    describe('913745 - Browser spell check is not working in the iframe editor.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true,
+                },
+            });
+        });
+        it('Should have the spellcheck attribute to be true.', () => {
+            expect(rteObj.inputElement.spellcheck).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('913812 - Iframe editor and mention integration popup lack proper IDs.', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true,
+                },
+            });
+        });
+        it('Should have the id attribute for the body element.', () => {
+            expect(editor.inputElement.id).toBe(editor.getID() + '_rte-edit-view');
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+    });
+
+    describe('913740 - Default Font size and Font family property not applied to the Iframe editor.', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true,
+                },
+                fontSize: {
+                    default: '12pt'
+                },
+                fontFamily: {
+                    default: 'Segoe UI'
+                },
+            });
+        });
+        it('Should have the font size and font family attribute on initial rendering to the body element.', () => {
+            expect(editor.inputElement.style.fontSize).toBe('12pt');
+            expect(editor.inputElement.style.fontFamily).toBe('"Segoe UI"');
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+    });
+
+    describe('913748 - Iframe Editor content have line height style issues.', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true,
+                },
+                fontSize: {
+                    default: '12pt'
+                },
+                fontFamily: {
+                    default: 'Segoe UI'
+                },
+            });
+        });
+        it('Should have the e-content classname on initial rendering to the body element.', () => {
+            expect(editor.inputElement.classList.contains('e-content')).toBe(true);
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+    });
+
+    describe('913830 - Page scrolls when the iframe mode is enabled. CASE 1', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true,
+                },
+            });
+        });
+        it('Should have the overflow-y to be hidden on initial rendering to the body element.', () => {
+            expect(editor.inputElement.style.overflowY).toBe('hidden');
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+    });
+
+    describe('913830 - Page scrolls when the iframe mode is enabled. CASE 2', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true,
+                },
+                height: 400
+            });
+        });
+        it('Should not have the overflow-y to be hidden on initial rendering to the body element.', () => {
+            expect(editor.inputElement.style.overflowY).not.toBe('hidden');
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+    });
 });

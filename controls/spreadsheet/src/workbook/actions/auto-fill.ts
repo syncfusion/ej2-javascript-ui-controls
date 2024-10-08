@@ -68,9 +68,14 @@ export class WorkbookAutoFill {
         }
         const dataRangeIndices: number[] = getSwapRange(getRangeIndexes(options.dataRange));
         const fillRangeIndices: number[] = getSwapRange(getRangeIndexes(options.fillRange));
-        const autoFillOptions: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection,
-            sheetIndex: number } = { dataRange: dataRangeIndices, fillRange: fillRangeIndices, direction: options.direction, fillType:
-                options.fillType || this.fillInfo.fillType, sheetIndex: getSheetIndexFromAddress(this.parent, options.dataRange) };
+        const autoFillOptions: {
+            dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection,
+            dataSheetIndex: number, fillSheetIndex: number
+        } = {
+            dataRange: dataRangeIndices, fillRange: fillRangeIndices, direction: options.direction, fillType:
+                options.fillType || this.fillInfo.fillType, dataSheetIndex: getSheetIndexFromAddress(this.parent, options.dataRange)
+            , fillSheetIndex: getSheetIndexFromAddress(this.parent, options.fillRange)
+        };
         this.fillInfo = this.getFillInfo({ dataRange: dataRangeIndices, fillRange: fillRangeIndices, fillType: options.fillType,
             direction: options.direction });
         this.fillInfo.fillType = options.isFillOptClick ? options.fillType : this.fillInfo.fillType;
@@ -88,7 +93,7 @@ export class WorkbookAutoFill {
 
     private fillSeries(
         options: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection,
-            sheetIndex: number }): void {
+            dataSheetIndex: number, fillSheetIndex: number }): void {
         let val: string | string; let plen: number;
         let patterns: PatternInfo[] | number[]; let patrn: PatternInfo | number;
         let pRanges: { patternRange: number[], fillRange: number[] }; let patrnRange: number[];
@@ -102,8 +107,10 @@ export class WorkbookAutoFill {
         let cellIdx: { rowIndex: number, colIndex: number }; let cellProps: CellModel = {};
         let i: number = 0;
         let prevCellData: CellModel; let dateVal: Date; let dateObj: Date;
-        const sheetIndex: number = isUndefined(options.sheetIndex) ? this.parent.activeSheetIndex : options.sheetIndex;
-        const sheet: SheetModel = getSheet(this.parent, sheetIndex);
+        const dataSheetIndex: number = isUndefined(options.dataSheetIndex) ? this.parent.activeSheetIndex : options.dataSheetIndex;
+        const dataSheet: SheetModel = getSheet(this.parent, dataSheetIndex);
+        const fillSheetIndex: number = isUndefined(options.fillSheetIndex) ? this.parent.activeSheetIndex : options.fillSheetIndex;
+        const fillSheet: SheetModel = getSheet(this.parent, fillSheetIndex);
         const dminr: number = options.dataRange[0]; const dminc: number = options.dataRange[1]; const dmaxr: number = options.dataRange[2];
         const dmaxc: number = options.dataRange[3];
         const fminr: number = options.fillRange[0]; const fminc: number = options.fillRange[1]; const fmaxr: number = options.fillRange[2];
@@ -112,15 +119,15 @@ export class WorkbookAutoFill {
         const isReverseFill: boolean = ['Up', 'Left'].indexOf(options.direction) > -1;
         const len: number = isVFill ? dmaxc - dminc : dmaxr - dminr; const withFrmt: boolean = options.fillType === 'FillSeries';
         let prop: CellUpdateArgs; let cfRefreshAll: boolean;
-        const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length &&
-            [].slice.call(sheet.conditionalFormats);
+        const cf: ConditionalFormat[] = dataSheet.conditionalFormats && dataSheet.conditionalFormats.length &&
+            [].slice.call(dataSheet.conditionalFormats);
         const cfRule: ConditionalFormatModel[] = [];
         while (i <= len) {
             pRanges = this.updateFillValues(isVFill, dminr, dminc, dmaxr, dmaxc, fminr, fminc, fmaxr, fmaxc, i);
             patrnRange = pRanges.patternRange;
             fillRange = pRanges.fillRange;
-            patterns = this.getPattern(patrnRange, { isReverseFill: isReverseFill, isVFill: isVFill });
-            data = this.getRangeData({ range: patrnRange, sheetIdx: sheetIndex });
+            patterns = this.getPattern(patrnRange, { isReverseFill: isReverseFill, isVFill: isVFill }, dataSheetIndex);
+            data = this.getRangeData({ range: patrnRange, sheetIdx: dataSheetIndex });
             dlen = data.length;
             for (let l: number = 0; l < dlen; l++) {
                 if (data[l as number] && data[l as number].isReadOnly) {
@@ -132,7 +139,7 @@ export class WorkbookAutoFill {
                 return;
             }
             plen = patterns.length;
-            cells = this.getSelectedRange(sheet, { rowIndex: fillRange[0], colIndex: fillRange[1] }, { rowIndex: fillRange[2],
+            cells = this.getSelectedRange(fillSheet, { rowIndex: fillRange[0], colIndex: fillRange[1] }, { rowIndex: fillRange[2],
                 colIndex: fillRange[3] });
             clen = cells.length;
             if (isReverseFill) {
@@ -241,7 +248,7 @@ export class WorkbookAutoFill {
                     }
                     break;
                 }
-                prevCellData = getCell(cellIdx.rowIndex, cellIdx.colIndex, sheet, false, true);
+                prevCellData = getCell(cellIdx.rowIndex, cellIdx.colIndex, fillSheet, false, true);
                 if (prevCellData && prevCellData.isReadOnly) {
                     this.parent.notify(workbookReadonlyAlert, null);
                     return;
@@ -264,7 +271,7 @@ export class WorkbookAutoFill {
                 }
                 prop = { cell: cellProps, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
                     uiRefresh: true, pvtExtend: true, skipFormatCheck: true };
-                updateCell(this.parent, sheet, prop);
+                updateCell(this.parent, fillSheet, prop);
                 if (cf && !cfRefreshAll) {
                     cfRefreshAll = prop.isFormulaDependent;
                     if (!cfRefreshAll) {
@@ -284,7 +291,7 @@ export class WorkbookAutoFill {
 
     private copyCells(
         options: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection,
-            sheetIndex: number }): void {
+            dataSheetIndex: number, fillSheetIndex: number }): void {
         let i: number = 0; let j: number;
         let k: number; let patrnRange: number[];
         let fillRange: number[];
@@ -307,18 +314,20 @@ export class WorkbookAutoFill {
         const isVFill: boolean = ['Down', 'Up'].indexOf(options.direction) > -1;
         const isReverseFill: boolean = ['Up', 'Left'].indexOf(options.direction) > -1;
         const len: number = isVFill ? dMaxC - dMinC : dMaxR - dMinR;
-        const sheetIndex: number = isUndefined(options.sheetIndex) ? this.parent.activeSheetIndex : options.sheetIndex;
-        const sheet: SheetModel = getSheet(this.parent, sheetIndex);
+        const dataSheetIndex: number = isUndefined(options.dataSheetIndex) ? this.parent.activeSheetIndex : options.dataSheetIndex;
+        const dataSheet: SheetModel = getSheet(this.parent, dataSheetIndex);
+        const fillSheetIndex: number = isUndefined(options.fillSheetIndex) ? this.parent.activeSheetIndex : options.fillSheetIndex;
+        const fillSheet: SheetModel = getSheet(this.parent, fillSheetIndex);
         const formatOnly: boolean = options.fillType === 'FillFormattingOnly';
         let prevCellData: CellModel; let cfRefreshAll: boolean; let prop: CellUpdateArgs;
-        const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length &&
-            [].slice.call(sheet.conditionalFormats);
+        const cf: ConditionalFormat[] = dataSheet.conditionalFormats && dataSheet.conditionalFormats.length &&
+            [].slice.call(dataSheet.conditionalFormats);
         const cfRule: ConditionalFormatModel[] = [];
         while (i <= len) {
             pRanges = this.updateFillValues(isVFill, dMinR, dMinC, dMaxR, dMaxC, fMinR, fMinC, fMaxR, fMaxC, i);
             patrnRange = pRanges.patternRange;
             fillRange = pRanges.fillRange;
-            data = this.getRangeData({ range: patrnRange, sheetIdx: sheetIndex });
+            data = this.getRangeData({ range: patrnRange, sheetIdx: dataSheetIndex });
             dlen = data.length;
             for (let m: number = 0; m < dlen; m++) {
                 if (data[m as number] && data[m as number].isReadOnly) {
@@ -326,7 +335,7 @@ export class WorkbookAutoFill {
                     return;
                 }
             }
-            cells = this.getSelectedRange(sheet, { rowIndex: fillRange[0], colIndex: fillRange[1] },
+            cells = this.getSelectedRange(fillSheet, { rowIndex: fillRange[0], colIndex: fillRange[1] },
                                           { rowIndex: fillRange[2], colIndex: fillRange[3] });
             clen = cells.length;
             j = 0;
@@ -337,7 +346,7 @@ export class WorkbookAutoFill {
                 k = j % dlen;
                 cellIdx = cells[j as number];
                 if (formatOnly) {
-                    prevCellData = getCell(cellIdx.rowIndex, cellIdx.colIndex, sheet);
+                    prevCellData = getCell(cellIdx.rowIndex, cellIdx.colIndex, fillSheet);
                 }
                 Object.assign(cellProperty, data[k as number], null, true);
                 if (formatOnly) {
@@ -350,7 +359,7 @@ export class WorkbookAutoFill {
                 }
                 prop = { cell: cellProperty, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true, uiRefresh: true,
                     pvtExtend: true };
-                updateCell(this.parent, sheet, prop);
+                updateCell(this.parent, fillSheet, prop);
                 if (cf && !cfRefreshAll) {
                     cfRefreshAll = prop.isFormulaDependent;
                     if (!cfRefreshAll) {
@@ -391,7 +400,7 @@ export class WorkbookAutoFill {
         return { patternRange: patternRange, fillRange: fillRange };
     }
 
-    private getDataPattern(range: number[]): { val: string[] | number[], type: string }[] {
+    private getDataPattern(range: number[], sheetIdx?: number): { val: string[] | number[], type: string }[] {
         let val: string[] | string | number;
         let numValue: string;
         let type: string;
@@ -399,7 +408,10 @@ export class WorkbookAutoFill {
         let obj: { val: string[] | number[], type: string, dataVal?: string, start?: boolean, isStartWithMonth?: boolean } = { val: null,
             type: null };
         const patrn: { val: string[] | number[], type: string }[] = [];
-        const data: CellModel[] = this.getRangeData({ range: range, sheetIdx: this.parent.activeSheetIndex });
+        const data: CellModel[] = this.getRangeData({
+            range: range, sheetIdx: isUndefined(sheetIdx) ? this.parent.activeSheetIndex
+                : sheetIdx
+        });
         const dlen: number = data.length; let isStartNum: boolean; let isDateStartsWithMonth: boolean;
         if (dlen) {
             let count: number; let dataVal: string; let format: string; let isNumVal: boolean;
@@ -507,7 +519,11 @@ export class WorkbookAutoFill {
         }
         return { a: a, b: b };
     }
-    private getPattern(range: number[], options: { isReverseFill: boolean, isVFill: boolean }): PatternInfo[] | number[] {
+    private getPattern(
+        range: number[],
+        options: { isReverseFill: boolean, isVFill: boolean },
+        sheetIdx?: number
+    ): PatternInfo[] | number[] {
         let j: number;
         let idx: number;
         let temp: PatternInfo | number[];
@@ -517,7 +533,7 @@ export class WorkbookAutoFill {
         let i: number = 0;
         const pattern: PatternInfo[] | number[] = [];
         const patrns: { val?: number[] | string[], type: string, dataVal?: string, start?: boolean, isStartWithMonth?: boolean }[] =
-            this.getDataPattern(range);
+            this.getDataPattern(range, sheetIdx);
         const plen: number = patrns.length;
         let patrn: { val?: number[] | string[] | string | number, type?: string, isInPattern?: boolean, dataVal?: string, start?: boolean,
             isStartWithMonth?: boolean };
@@ -630,7 +646,7 @@ export class WorkbookAutoFill {
 
     private getRangeData(options: { range: number[], sheetIdx: number }): CellModel[] {
         const arr: CellModel[] = [];
-        const sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = isUndefined(options.sheetIdx) ? this.parent.getActiveSheet() : getSheet(this.parent, options.sheetIdx);
         let minR: number = options.range[0];
         let minC: number = options.range[1];
         const maxR: number = options.range[2];

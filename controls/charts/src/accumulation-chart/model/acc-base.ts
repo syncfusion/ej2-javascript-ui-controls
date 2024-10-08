@@ -976,7 +976,6 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         const point: AccPoints = new AccPoints();
         point.x = getValue(this.xName, data[i as number]);
         point.y = getValue(this.yName, data[i as number]);
-        point.percentage = (+(point.y / this.sumOfPoints * 100).toFixed(2));
         point.legendImageUrl = getValue(this.legendImageUrl, data[i as number]);
         point.color = getValue(this.pointColorMapping, data[i as number]);
         point.text = point.originalText = getValue(this.dataLabel.name || '', data[i as number]);
@@ -1045,6 +1044,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         let patternFill: string;
         const patterns: SelectionPattern[] = ['Chessboard', 'Dots', 'DiagonalForward', 'Crosshatch', 'Pacman', 'DiagonalBackward', 'Grid', 'Turquoise', 'Star', 'Triangle', 'Circle', 'Tile', 'HorizontalDash', 'VerticalDash', 'Rectangle', 'Box', 'VerticalStripe', 'HorizontalStripe', 'Bubble'];
         for (const point of this.points) {
+            point.percentage = (+(point.y / this.sumOfPoints * 100).toFixed(2));
             const argsData: IAccPointRenderEventArgs = {
                 cancel: false, name: pointRender, series: this, point: point, fill: point.color,
                 border: this.isEmpty(point) ? { width: this.emptyPointSettings.border.width, color: this.emptyPointSettings.border.color } :

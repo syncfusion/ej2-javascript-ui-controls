@@ -299,10 +299,11 @@ function checkResizeHandleForContainer(diagram: Diagram, element: DiagramElement
     const forty: number = 40 / diagram.scroller.currentZoom;
     const selectedItems: Selector = diagram.selectedItems as Selector;
     const width: number = element.actualSize.width; const height: number = element.actualSize.height;
-    const left: Rect = new Rect(x, y + 20, element.style.strokeWidth, height - 40);
-    const right: Rect = new Rect(x + width, y + 20, element.style.strokeWidth, height - 40);
-    const top: Rect = new Rect(x + 20, y, width - 40, element.style.strokeWidth);
-    const bottom: Rect = new Rect(x + 20, y + height, width - 40, element.style.strokeWidth);
+    // 910600: Update cursor type in swimlane based on the values
+    const left: Rect = new Rect(x, y, element.style.strokeWidth, height);
+    const right: Rect = new Rect(x + width, y, element.style.strokeWidth, height);
+    const top: Rect = new Rect(x, y, width, element.style.strokeWidth);
+    const bottom: Rect = new Rect(x, y + height, width, element.style.strokeWidth);
     const container: NodeModel = checkParentAsContainer(diagram, diagram.selectedItems.nodes[0], true) ?
         diagram.nameTable[(diagram.selectedItems.nodes[0] as Node).parentId] : diagram.selectedItems.nodes[0];
 

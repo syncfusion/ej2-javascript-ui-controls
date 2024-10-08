@@ -19,7 +19,7 @@ import { dispatchEvent, parseHtml, hasClass, convertToBlob } from '../base/util'
 import { DialogRenderer } from './dialog-renderer';
 import { isIDevice } from '../../common/util';
 import { imageResizeFactor } from '../../common/config';
-import { IImageResizeFactor } from '../../common/interface';
+import { IImageResizeFactor, ImageDimension } from '../../common/interface';
 /**
  * `Image` module is used to handle image actions.
  */
@@ -484,6 +484,17 @@ export class Image {
         }
     }
 
+    private adjustDimensionsByAspectRatio(width: number, height: number, aspectRatio: number, isWidthPrimary: boolean): ImageDimension {
+        if (isWidthPrimary) {
+            height = Math.round(width / aspectRatio);
+            width = Math.round(height * aspectRatio);
+        } else {
+            width = Math.round(height * aspectRatio);
+            height = Math.round(width / aspectRatio);
+        }
+        return { width, height };
+    }
+
     private pixToPerc(expected: number, parentEle: Element): number {
         return expected / parseFloat(getComputedStyle(parentEle).width) * 100;
     }
@@ -520,21 +531,22 @@ export class Image {
             const diffY: number = (pageY - this.pageY);
             const currentWidth: number  = this.imgEle.clientWidth;
             const currentHeight: number = this.imgEle.clientHeight;
-            let width: number = diffX * resizeFactor[0] + currentWidth;
-            let height: number = diffY * resizeFactor[1] + currentHeight;
-            width = (width < 16) ? 16 : width;
-            height = (height < 16) ? 16 : height;
-            if (Math.abs(diffX) >  Math.abs(diffY)) {
-                height = Math.round(width / this.aspectRatio);
-                width = Math.round(height * this.aspectRatio);
-            } else {
-                width = Math.round(height * this.aspectRatio);
-                height = Math.round(width / this.aspectRatio);
-            }
+            const width: number = diffX * resizeFactor[0] + currentWidth;
+            const height: number = diffY * resizeFactor[1] + currentHeight;
+            const dimensions: ImageDimension = this.adjustDimensions(width, height, diffX, diffY, this.aspectRatio);
             this.pageX = pageX;
             this.pageY = pageY;
-            this.imgDupMouseMove(width + 'px', height + 'px', e);
+            this.imgDupMouseMove(dimensions.width + 'px', dimensions.height + 'px', e);
         }
+    }
+
+    private adjustDimensions (width: number, height: number, diffX: number, diffY: number, aspectRatio: number): ImageDimension {
+        width = (width < 16) ? 16 : width;
+        height = (height < 16) ? 16 : height;
+        const isWidthPrimary: boolean = Math.abs(diffX) > Math.abs(diffY);
+        const dimensions: { width: number, height: number } =
+            this.adjustDimensionsByAspectRatio(width, height, aspectRatio, isWidthPrimary);
+        return dimensions;
     }
 
     private getResizeFactor(value: string): number[] {

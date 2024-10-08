@@ -621,6 +621,12 @@ export class WCharacterFormat {
         if (isNullOrUndefined(this.getValue('fontSize'))) {
             this.fontSize = format.getValue('fontSize') as number;
         }
+        if (isNullOrUndefined(this.getValue('boldBidi'))) {
+            this.boldBidi = format.getValue('boldBidi') as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('italicBidi'))) {
+            this.italicBidi = format.getValue('italicBidi') as boolean;
+        }
         if (isNullOrUndefined(this.getValue('characterSpacing'))) {
             this.characterSpacing = format.getValue('characterSpacing') as number;
         }

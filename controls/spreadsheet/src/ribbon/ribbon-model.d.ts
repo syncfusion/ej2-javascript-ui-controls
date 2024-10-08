@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, EmitType, ChildProperty } from '@syncfusion/ej2-base';import { getComponent, closest, EventHandler, getUniqueID, isNullOrUndefined } from '@syncfusion/ej2-base';import { Collection, Complex } from '@syncfusion/ej2-base';import { Tab, Toolbar, ItemModel, SelectingEventArgs, MenuItemModel, ClickEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';import { Menu, MenuEventArgs, BeforeOpenCloseMenuEventArgs, Item, MenuItem } from '@syncfusion/ej2-navigations';import { SelectEventArgs as TabSelectEventArgs } from '@syncfusion/ej2-navigations';import { SelectEventArgs } from '@syncfusion/ej2-dropdowns';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, EmitType, ChildProperty } from '@syncfusion/ej2-base';import { getComponent, closest, EventHandler, getUniqueID, isNullOrUndefined } from '@syncfusion/ej2-base';import { Collection, Complex } from '@syncfusion/ej2-base';import { Tab, Toolbar, ItemModel, SelectingEventArgs, MenuItemModel, ClickEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';import { Menu, MenuEventArgs, BeforeOpenCloseMenuEventArgs, Item, MenuItem } from '@syncfusion/ej2-navigations';import { SelectEventArgs as TabSelectEventArgs } from '@syncfusion/ej2-navigations';import { SelectEventArgs } from '@syncfusion/ej2-dropdowns';import { Spreadsheet } from '../spreadsheet/base';
 import {ExpandCollapseEventArgs} from "./ribbon";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -109,6 +109,14 @@ export interface RibbonModel extends ComponentModel{
      * @default []
      */
     items?: RibbonItemModel[];
+
+    /**
+     * Specifies the spreadsheet instance.
+     *
+     * @default null
+     * @hidden
+     */
+    spreadInstance?: Spreadsheet;
 
     /**
      * Triggers while selecting the tab item.

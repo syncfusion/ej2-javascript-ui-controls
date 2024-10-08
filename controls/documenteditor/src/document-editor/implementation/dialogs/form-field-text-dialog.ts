@@ -329,7 +329,7 @@ export class TextFormFieldDialog {
      * @returns {void}
      */
     public updateTextFormtas = (): void => {
-        let defautText: string = SanitizeHtmlHelper.sanitize(this.updateFormats(this.defaultTextInput.value) as string);
+        let defautText: string = this.updateFormats(this.defaultTextInput.value) as string;
         (this.defaultTextInput as HTMLInputElement).value = !isNullOrUndefined(defautText) ? defautText : '';
     }
 
@@ -412,8 +412,8 @@ export class TextFormFieldDialog {
                 formField.defaultValue = this.defaultTextInput.value;
                 formField.maxLength = this.maxLengthNumber.value;
                 formField.format = !isNullOrUndefined(format) ? format : '';
-                formField.name = SanitizeHtmlHelper.sanitize(this.bookmarkTextInput.value);
-                formField.helpText = SanitizeHtmlHelper.sanitize(this.tooltipTextInput.value);
+                formField.name = this.bookmarkTextInput.value;
+                formField.helpText = this.tooltipTextInput.value;
                 formField.enabled = this.fillInEnable.checked;
                 this.owner.editorModule.editFormField('Text', formField);
                 this.closeTextField();

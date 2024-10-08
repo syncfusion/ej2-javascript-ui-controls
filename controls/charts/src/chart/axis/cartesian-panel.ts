@@ -963,7 +963,7 @@ export class CartesianAxisLayoutPanel {
             pointX = isOpposed ? axis.scrollBarHeight !== 0 ? ((rect.x + axis.scrollBarHeight + padding) - yAxisLabelX) :
                 (rect.x - yAxisLabelX) : (rect.x + yAxisLabelX);
             if (isVerticalAngle) {
-                pointX += (isOpposed) ? -10 : 10;
+                pointX += (isOpposed) ? 5 : -5;
             }
             yAxisLabelX = labelPadding;
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, 'middle', label.text, '', 'middle', angle);

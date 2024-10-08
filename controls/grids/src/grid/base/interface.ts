@@ -22,7 +22,7 @@ import { Edit } from '../actions/edit';
 import { Selection } from '../actions/selection';
 import { Resize } from '../actions/resize';
 import { DropDownListModel, MultiSelectModel, ComboBoxModel } from '@syncfusion/ej2-dropdowns';
-import { NumericTextBoxModel, MaskedTextBoxModel } from '@syncfusion/ej2-inputs';
+import { NumericTextBoxModel, MaskedTextBoxModel, TextBoxModel } from '@syncfusion/ej2-inputs';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { Data } from '../actions/data';
 import { DatePickerModel, DateTimePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
@@ -945,7 +945,7 @@ export interface IEditCell {
     write?: void | Function | string;
     params?: DatePickerModel | NumericTextBoxModel | DropDownListModel |
     CheckBoxModel | MultiSelectModel | AutoCompleteModel | ComboBoxModel | SwitchModel |
-    TimePickerModel | MaskedTextBoxModel;
+    TimePickerModel | MaskedTextBoxModel | TextBoxModel;
     destroy?: Function | string;
 }
 /**

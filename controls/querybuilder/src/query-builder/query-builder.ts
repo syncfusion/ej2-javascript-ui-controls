@@ -2407,7 +2407,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 if (isNaN(value) && elem.value.indexOf(decimalSeparator) !== -1) {
                     value = this.intl.getNumberParser({ format: 'n' })(elem.value);
                 }
-                numericTextBoxObj.value = value as number;
+                if (!isNaN(value as number)) {
+                    numericTextBoxObj.value = value as number;
+                }
                 this.isNumInput = true;
             }
         }
@@ -3478,6 +3480,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                     target.nextElementSibling.innerHTML = '';
                 }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if (this.isAngular && !isNullOrUndefined((prevItemData as any).key) && this.fieldMode === 'DropdownTree') {
+                    delete prevItemData.template;
+                }
             }
             if (isRender) {
                 this.validateValue(rule, closest(target, '.e-rule-container'));
@@ -3512,6 +3518,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                 }
                 this.renderControls(target, itemData, rule, tempRule, isTempRendered);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if (this.isAngular && !isNullOrUndefined((itemData as any).key) && itemData.template && this.fieldMode === 'DropdownTree') {
+                    delete itemData.template;
+                }
             }
         } else {
             const parentElem: HTMLElement = target.parentElement.querySelector('.e-rule-value') as HTMLElement;

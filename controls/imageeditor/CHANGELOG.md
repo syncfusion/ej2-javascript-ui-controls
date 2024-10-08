@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "text annotation not proper in transformed state" has been resolved.
+- The issue with "image annotation not working properly in safari browser" has been resolved.
+
 ## 27.1.51 (2024-09-30)
 
 ### Image Editor

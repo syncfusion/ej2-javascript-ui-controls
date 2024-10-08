@@ -655,6 +655,18 @@ export let localDataHtmlAttributes: { [key: string]: Object }[] = [
     { id: 10, pid: 7, name: 'Acre' },
 ];
 
+export let selectableFieldData: { [key: string]: Object }[] = [
+    { id: 1, name: 'Australia', hasChild: true, selectable: false },
+    { id: 2, pid: 1, name: 'New South Wales', htmlAttributes: { id: 'custom1' } },
+    { id: 3, pid: 1, name: 'Victoria' },
+    { id: 4, pid: 1, name: 'South Australia' },
+    { id: 6, pid: 1, name: 'Western Australia' },
+    { id: 7, name: 'Brazil', hasChild: true },
+    { id: 8, pid: 7, name: 'Paraná' },
+    { id: 9, pid: 7, name: 'Ceará' },
+    { id: 10, pid: 7, name: 'Acre' },
+];
+
 export let localData10: { [key: string]: Object }[] = [
     { nodeId: '01', nodeText: 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Voluptatem, expedita, ea consequatur nesciunt error cum laudantium, doloribus quae consectetur architecto quibusdam fugit recusandae beatae deserunt distinctio molestias quam nostrum sapi',
     hasChild: true,},

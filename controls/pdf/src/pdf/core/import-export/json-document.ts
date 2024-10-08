@@ -1,6 +1,6 @@
 import { _ExportHelper } from './xfdf-document';
 import { PdfDocument } from './../pdf-document';
-import { _stringToAnnotationFlags, _convertToColor, _encode, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _bytesToString, _hexStringToByteArray, _decode } from './../utils';
+import { _stringToAnnotationFlags, _convertToColor, _encode, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _bytesToString, _hexStringToByteArray, _decode, _isNullOrUndefined } from './../utils';
 import { PdfPage } from './../pdf-page';
 import { PdfAnnotation, PdfLineAnnotation } from './../annotations/annotation';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
@@ -154,7 +154,7 @@ export class _JsonDocument extends _ExportHelper {
     }
     _writeDictionary(dictionary: _PdfDictionary, pageIndex: number, hasAppearance: boolean): void {
         let isBorderStyle: boolean = false;
-        if (dictionary.has('Type')) {
+        if (dictionary && dictionary.has('Type')) {
             const type: _PdfName = dictionary.get('Type');
             isBorderStyle = (type && type.name === 'Border' && this._skipBorderStyle);
         }
@@ -430,7 +430,7 @@ export class _JsonDocument extends _ExportHelper {
             break;
         case 'DS':
             value = dictionary.get('DS');
-            if (value) {
+            if (_isNullOrUndefined(value)) {
                 const styleTable: Map<string, string> = new Map<string, string>();
                 const textStyle: string[] = value.split(';');
                 for (let i: number = 0; i < textStyle.length; i++) {
@@ -481,7 +481,7 @@ export class _JsonDocument extends _ExportHelper {
     }
     _writeVertices(dictionary: _PdfDictionary): void {
         const vertices: number[] = dictionary.getArray('Vertices');
-        if (vertices && vertices.length > 0) {
+        if (_isNullOrUndefined(vertices) && vertices.length > 0) {
             const elementCount: number = vertices.length;
             if (elementCount % 2 === 0) {
                 let vertice: string = '';
@@ -559,29 +559,31 @@ export class _JsonDocument extends _ExportHelper {
     }
     _exportMeasureFormatDetails(key: string, measurementDetails: _PdfDictionary): void {
         const details: Map<string, string> = new Map<string, string>();
-        if (measurementDetails.has('C')) {
-            details.set('c', this._getValue(measurementDetails.get('C'), true));
-        }
-        if (measurementDetails.has('F')) {
-            details.set('f', this._getValue(measurementDetails.get('F'), true));
-        }
-        if (measurementDetails.has('D')) {
-            details.set('d', this._getValue(measurementDetails.get('D'), true));
-        }
-        if (measurementDetails.has('RD')) {
-            details.set('rd', this._getValue(measurementDetails.get('RD'), true));
-        }
-        if (measurementDetails.has('U')) {
-            details.set('u', this._getValue(measurementDetails.get('U'), true));
-        }
-        if (measurementDetails.has('RT')) {
-            details.set('rt', this._getValue(measurementDetails.get('RT'), true));
-        }
-        if (measurementDetails.has('SS')) {
-            details.set('ss', this._getValue(measurementDetails.get('SS'), true));
-        }
-        if (measurementDetails.has('FD')) {
-            details.set('fd', this._getValue(measurementDetails.get('FD'), true));
+        if (measurementDetails) {
+            if (measurementDetails.has('C')) {
+                details.set('c', this._getValue(measurementDetails.get('C'), true));
+            }
+            if (measurementDetails.has('F')) {
+                details.set('f', this._getValue(measurementDetails.get('F'), true));
+            }
+            if (measurementDetails.has('D')) {
+                details.set('d', this._getValue(measurementDetails.get('D'), true));
+            }
+            if (measurementDetails.has('RD')) {
+                details.set('rd', this._getValue(measurementDetails.get('RD'), true));
+            }
+            if (measurementDetails.has('U')) {
+                details.set('u', this._getValue(measurementDetails.get('U'), true));
+            }
+            if (measurementDetails.has('RT')) {
+                details.set('rt', this._getValue(measurementDetails.get('RT'), true));
+            }
+            if (measurementDetails.has('SS')) {
+                details.set('ss', this._getValue(measurementDetails.get('SS'), true));
+            }
+            if (measurementDetails.has('FD')) {
+                details.set('fd', this._getValue(measurementDetails.get('FD'), true));
+            }
         }
         this._table.set(key, this._convertToJson(details));
     }

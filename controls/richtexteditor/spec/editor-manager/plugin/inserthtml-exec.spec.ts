@@ -91,7 +91,7 @@ describe('Insert HTML  Exec plugin', () => {
             let node: Node = document.createElement('span');
             node.textContent = 'span Node';
             editorObj.execCommand("InsertHtml", null, null, ():boolean => { return true;}, node );
-            expect(node1.childNodes[0].nodeName.toLowerCase()).toBe('span');
+            expect(document.getElementById('span1').nextElementSibling.nodeName.toLowerCase()).toBe('span');
         });
         afterAll(() => {
             detach(elem);

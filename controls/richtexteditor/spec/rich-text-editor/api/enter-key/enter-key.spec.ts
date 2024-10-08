@@ -2216,7 +2216,7 @@ describe("EJ2-67119 - List item gets removed when press the enterkey in list sec
     it(' check for Enter key press end of the list', () => {
         rteObj.focusIn();
         let range: Range = new Range();
-        const contentElem : HTMLElement = <HTMLElement>document.body.querySelectorAll("ol")[0].childNodes[1];
+        const contentElem : HTMLElement = rteObj.inputElement.querySelectorAll("ol")[0].childNodes[1] as HTMLElement;
         range.setStart( contentElem,0 );
         range.setEnd( contentElem,0 );
         rteObj.formatter.editorManager.nodeSelection.setRange(document, range);

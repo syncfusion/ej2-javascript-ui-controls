@@ -670,11 +670,15 @@ export function checkLaneSize(obj: NodeModel): void {
 
     if (obj.shape.type === 'SwimLane' && !(obj.shape as SwimLaneModel).isLane && !(obj.shape as SwimLaneModel).isPhase) {
 
-        let lane: LaneModel; let i: number; let columns: ColumnDefinition[];
+        // 910832 - Lane height updating to negative values wrongly during resizing
+        let lane: LaneModel; let i: number; let j: number; let k: number;
         let size: number; //let laneCount: number = 0;
         const lanes: LaneModel[] = (obj.shape as SwimLaneModel).lanes;
         let laneIndex: number = findStartLaneIndex(obj);
         const rows: RowDefinition[] = (obj.wrapper.children[0] as GridPanel).rowDefinitions();
+        const columns: ColumnDefinition[] = (obj.wrapper.children[0] as GridPanel).columnDefinitions();
+        let widthSize: number;
+        let heightSize: number;
 
         for (i = 0; i < lanes.length; i++, laneIndex++) {
             lane = lanes[parseInt(i.toString(), 10)];
@@ -683,11 +687,22 @@ export function checkLaneSize(obj: NodeModel): void {
                 if (lane.height !== size) {
                     lane.height = size;
                 }
+                for (j = 0; j < columns.length; j++) {
+                    widthSize = columns[parseInt(j.toString(), 10)].width;
+                    if (lane.width !== widthSize) {
+                        lane.width = widthSize;
+                    }
+                }
             } else {
-                columns = (obj.wrapper.children[0] as GridPanel).columnDefinitions();
                 size = columns[parseInt(laneIndex.toString(), 10)].width;
                 if (lane.width !== size) {
                     lane.width = size;
+                }
+                for (k = 0; k < rows.length; k++) {
+                    heightSize = rows[parseInt(k.toString(), 10)].height;
+                    if (lane.height !== heightSize) {
+                        lane.height = heightSize;
+                    }
                 }
             }
         }
@@ -889,20 +904,28 @@ export function updateSwimLaneObject(diagram: Diagram, obj: Node, swimLane: Node
     const helperHeight: number = helperObject.wrapper.actualSize.height;
     const objWidth: number = obj.wrapper.actualSize.width;
     const objHeight: number = obj.wrapper.actualSize.height;
+    let i: number; let j: number;
+    // 910832 - Lane height updating to negative values wrongly during resizing
     if (parentNode.shape.type === 'SwimLane') {
         if (shape.orientation === 'Horizontal') {
             if (obj.isPhase) {
-                phases[obj.columnIndex].offset += (helperWidth - objWidth);
+                phases[obj.columnIndex].offset = obj.wrapper.width;
+                for (i = 0; i < lanes.length; i++) {
+                    lanes[parseInt(i.toString(), 10)].width = obj.wrapper.width;
+                }
             } else {
                 index = (shape.phaseSize && shape.phases.length > 0) ? index + 1 : index;
-                lanes[(obj.rowIndex - index)].height += (helperHeight - objHeight);
+                lanes[(obj.rowIndex - index)].height = obj.wrapper.height;
             }
         } else {
             if (obj.isPhase) {
-                phases[(obj.rowIndex - index)].offset += (helperHeight - objHeight);
+                phases[(obj.rowIndex - index)].offset = obj.wrapper.height;
+                for (j = 0; j < lanes.length; j++) {
+                    lanes[parseInt(j.toString(), 10)].height = obj.wrapper.height;
+                }
             } else {
                 index = (shape.phaseSize && shape.phases.length > 0) ? 1 : 0;
-                lanes[(obj.columnIndex - index)].width += (helperWidth - objWidth);
+                lanes[(obj.columnIndex - index)].width = obj.wrapper.width;
             }
         }
     }
@@ -1272,6 +1295,8 @@ export function addPhase(diagram: Diagram, parent: NodeModel, newPhase: PhaseMod
                 updateHeaderMaxWidth(diagram, parent);
                 diagram.drag(parent, x - parent.wrapper.bounds.x, y - parent.wrapper.bounds.y);
                 checkPhaseOffset(parent, diagram);
+                //911372-Lane Selector not updated after adding new phase at runtime
+                diagram.commandHandler.select(phaseNode);
                 if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
                     const entry: HistoryEntry = {
                         type: 'PhaseCollectionChanged', changeType: 'Insert', undoObject: cloneObject(phaseObj),

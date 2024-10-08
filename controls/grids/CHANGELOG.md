@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### Grid
+
+#### Bug fixes
+
+- `#I630299` - The issue where Virtualization loads indefinitely after applying Grouping, Filtering and scroll to the end has been resolved.
+- `#F194538` - The issue where the `UpdateCell` method does not change the value of the primary key column in a newly added record before saving in batch mode has been resolved.
+- `#I633129` - The issue where the `IEditCell` interface did not support the `TextBoxModel` property has been resolved.
+- `#I633624` - The issue where the focus was moved out of the column chooser dialog when pressing the tab key on the cancel button has been resolved.
+- `#I633945` - The issue where added records were not displayed while using `CustomDataAdaptor` with batch editing mode has been resolved.
+- `#FB61502` - Resolved the script error occurs when enter key press with column spanning and hidden columns.
+- `#I628507` - The issue where the reorder the stacked header with frozen column not working properly has been resolved.
+
 ## 27.1.51 (2024-09-30)
 
 ### Grid

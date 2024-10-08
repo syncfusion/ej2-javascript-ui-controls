@@ -171,7 +171,7 @@ export class Print {
                         rowHeight + (allowColumnAndRow ? this.defaultCellHeight : 0) : rowHeight;
                 }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const style: any = { borderBottom: '1px solid black', borderTop: '1px solid black', borderLeft: '1px solid black', borderRight: '1px solid black' };
+                let style: any = { borderBottom: '1px solid black', borderTop: '1px solid black', borderLeft: '1px solid black', borderRight: '1px solid black' };
                 const rightStyle: object = { borderRight: '1px solid black' };
                 if (allowColumnAndRow && this.isColumn) {
                     for (let k: number = start; k <= end; k++) {
@@ -227,6 +227,9 @@ export class Print {
                     for (let k: number = start; k <= end; k++) {
                         const cell: CellModel = sheet.rows[j as number] && !isNullOrUndefined(sheet.rows[j as number].cells) &&
                         sheet.rows[j as number].cells[k as number];
+                        if (!isNullOrUndefined(cell) && !isNullOrUndefined(cell.style)) {
+                            style = this.setBorderStyle(cell, style);
+                        }
                         if (isNullOrUndefined(sheet.columns[k as number]) || isNullOrUndefined(sheet.columns[k as number].hidden) ||
                             !sheet.columns[k as number].hidden) {
                             const isColumnSpan: boolean = !isNullOrUndefined(sheet.rows[j as number].cells) &&
@@ -273,8 +276,8 @@ export class Print {
                                 }
                                 if (!isNaN(sheet.rows[j as number].cells[k as number].colSpan) &&
                                         sheet.rows[j as number].cells[k as number].colSpan > 1) {
-                                    if (!isNullOrUndefined(sheet.rows[j + 1].cells) && sheet.rows[j + 1].cells.length > 0 &&
-                                        (!isNullOrUndefined(sheet.rows[j + 1].cells[k as number]) &&
+                                    if (!isNullOrUndefined(sheet.rows[j + 1]) && !isNullOrUndefined(sheet.rows[j + 1].cells) &&
+                                        sheet.rows[j + 1].cells.length > 0 && (!isNullOrUndefined(sheet.rows[j + 1].cells[k as number]) &&
                                         isNaN(sheet.rows[j + 1].cells[k as number].colSpan))) {
                                         this.parent.merge('' + getColumnHeaderText(k + 1) + (j + 1) + ':' +
                                         getColumnHeaderText(k + 1 + sheet.rows[j  as number].cells[k as number].colSpan - 1) + (j + 1));
@@ -424,11 +427,15 @@ export class Print {
                                         context.fillRect(currentX, currentY[k as number], cellWidth, cellHeight);
                                         context.fillStyle = color;
                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        const locationX: any = printInstance.calculateTextPosition(textWidth, cellWidth, currentX,
-                                                                                                   position);
-                                        const locationY: number = currentY[k as number] + (verticalAlign === 'top' ? textHeight + 2 :
+                                        let locationX: any = printInstance.calculateTextPosition(textWidth, cellWidth, currentX,
+                                                                                                 position);
+                                        let locationY: number = currentY[k as number] + (verticalAlign === 'top' ? textHeight + 2 :
                                             verticalAlign === 'middle' ? cellHeight > ((cellHeight / 2) + (textHeight / 2)) ?
                                                 ((cellHeight / 2) + (textHeight / 2)) : cellHeight : cellHeight);
+                                        if (!isNullOrUndefined(cell.style)) {
+                                            locationY = (!isNullOrUndefined(cell.style.borderBottom) && cell.style.borderBottom.indexOf('double') > -1) || (!isNullOrUndefined(cell.style.borderTop) && cell.style.borderTop.indexOf('double') > -1) ? locationY - 2 : locationY;
+                                            locationX = (!isNullOrUndefined(cell.style.borderLeft) && cell.style.borderLeft.indexOf('double') > -1) || (!isNullOrUndefined(cell.style.borderRight) && cell.style.borderRight.indexOf('double') > -1) ? locationX + (position === 'Left' ? 2 : -3) : locationX ;
+                                        }
                                         context.fillText(cellText, locationX, locationY);
                                         context.restore();
                                         printInstance.textDecoration(cell, context, locationX, locationY, color,
@@ -439,10 +446,12 @@ export class Print {
                                                                 backgroundColor);
                                 }
                                 if (cell.style && (cellWidth > 0 || cellHeight > 0) && (cell.style.borderBottom || cell.style.borderTop
-                                    || cell.style.borderLeft || cell.style.borderRight)) {
+                                    || cell.style.borderLeft || cell.style.borderRight && ((isNullOrUndefined(cell.rowSpan) &&
+                                    isNullOrUndefined(cell.colSpan)) || (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan > 0) ||
+                                    (!isNullOrUndefined(cell.colSpan) && cell.colSpan > 0)))) {
                                     printInstance.drawBorder(context, cell.style, currentX,
-                                                             (currentY[k as number] <= 0 ? 2 : currentY[k as number] - 2),
-                                                             cellWidth, cellHeight > 0 ? cellHeight : 2);
+                                                             (currentY[k as number] <= 0 ? 2 : currentY[k as number]),
+                                                             cellWidth, cellHeight);
                                 }
                             }
                             const currentWidth: number = (cellWidthSpan <= 0 ? cellWidth : (cellWidth ||
@@ -508,10 +517,15 @@ export class Print {
                         }
                     }
                 } else if (isExtraLine || isNullOrUndefined(sheet.rows[j as number])) {
-                    const style: object = { borderBottom: '1px solid black', borderTop: '1px solid black', borderLeft: '1px solid black', borderRight: '1px solid black' };
+                    let style: object = { borderBottom: '1px solid black', borderTop: '1px solid black', borderLeft: '1px solid black', borderRight: '1px solid black' };
                     borderOfHeaderText = ((height + cellHeight) + (j === 0 && allowColumnAndRow ?
                         this.defaultCellHeight : 0) > 1080) || (j === sheet.rows.length - 1) || (j === this.endRow - 1);
                     for (let k: number = start; k <= end; k++) {
+                        const cell: CellModel = sheet.rows[j as number] && !isNullOrUndefined(sheet.rows[j as number].cells) &&
+                        sheet.rows[j as number].cells[k as number];
+                        if (!isNullOrUndefined(cell) && !isNullOrUndefined(cell.style)) {
+                            style = this.setBorderStyle(cell, style);
+                        }
                         if (allowColumnAndRow && k === start) {
                             printInstance.rowHeaderText((j + 1).toString(), context, printInstance, headerWidth, currentX, style,
                                                         currentY[k as number], this.defaultCellHeight);
@@ -546,6 +560,15 @@ export class Print {
                 break;
             }
         }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private setBorderStyle(cell: CellModel, style: any): any {
+        style.borderBottom = !isNullOrUndefined(cell.style.borderBottom) ? cell.style.borderBottom : style.borderBottom ;
+        style.borderTop = !isNullOrUndefined(cell.style.borderTop) ? cell.style.borderTop : style.borderTop ;
+        style.borderRight = !isNullOrUndefined(cell.style.borderRight) ? cell.style.borderRight : style.borderRight ;
+        style.borderLeft = !isNullOrUndefined(cell.style.borderLeft) ? cell.style.borderLeft : style.borderLeft ;
+        return style;
     }
 
     private setToDefault(): void {
@@ -809,32 +832,201 @@ export class Print {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private drawBorder(context: CanvasRenderingContext2D, borderStyles: any, locationX: number, locationY: number, cellWidth: number,
                        cellHeight: number): void {
-        const { borderBottom, borderLeft, borderRight, borderTop, borderColor, borderWidth } = borderStyles;
+        const { borderBottom, borderLeft, borderRight, borderTop, borderColor } = borderStyles;
         context.strokeStyle = borderColor || 'black';
-        context.lineWidth = borderWidth || 1;
         if (!isNullOrUndefined(borderBottom) && borderBottom.indexOf('#FFFFFF') === -1) {
-            this.drawPath(locationX, locationY + cellHeight, locationX + cellWidth, locationY + cellHeight, context);
             context.strokeStyle = borderBottom.split(' ')[2];
+            this.drawPath(locationX, (locationY === 2 ? -2 : locationY) + cellHeight, locationX + cellWidth,
+                          (locationY === 2 ? -2 : locationY) + cellHeight, context, borderBottom, false, borderStyles, 'bottom');
         }
         if (!isNullOrUndefined(borderLeft) && borderLeft.indexOf('#FFFFFF') === -1) {
-            this.drawPath(locationX, locationY, locationX, locationY + cellHeight, context);
             context.strokeStyle = borderLeft.split(' ')[2];
+            this.drawPath(locationX, locationY, locationX, (locationY === 2 ? -2 : locationY) + cellHeight, context,
+                          borderLeft, true, borderStyles, 'left');
         }
         if (!isNullOrUndefined(borderRight) && borderRight.indexOf('#FFFFFF') === -1) {
-            this.drawPath(locationX + cellWidth, locationY, locationX + cellWidth, locationY + cellHeight, context);
             context.strokeStyle = borderRight.split(' ')[2];
+            this.drawPath(locationX + cellWidth, locationY, locationX + cellWidth, (locationY === 2 ? -2 : locationY) + cellHeight,
+                          context, borderRight, false, borderStyles, 'right');
         }
         if (!isNullOrUndefined(borderTop) && borderTop.indexOf('#FFFFFF') === -1) {
-            this.drawPath(locationX, locationY, locationX + cellWidth, locationY, context);
             context.strokeStyle = borderTop.split(' ')[2];
+            this.drawPath(locationX, locationY, locationX + cellWidth, locationY, context, borderTop, true, borderStyles, 'top');
         }
     }
-    private drawPath(startX: number, startY: number, endX: number, endY: number, context: CanvasRenderingContext2D): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private drawPath(startX: number, startY: number, endX: number, endY: number, context: CanvasRenderingContext2D, border: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                     isLeftOrTop: boolean, borderStyles: any, position: string): void {
         context.beginPath();
+        if (border.indexOf('dashed') > -1) {
+            context.setLineDash([3, 2]);
+            context.lineWidth = border.split(' ')[0].split('')[0];
+        } else if (border.indexOf('dotted') > -1) {
+            context.setLineDash([1, 1]);
+            context.lineWidth = border.split(' ')[0].split('')[0];
+        } else if (border.indexOf('double') > -1) {
+            context.setLineDash([]);
+            const isAllBorder: boolean = !isNullOrUndefined(borderStyles.borderBottom) && !isNullOrUndefined(borderStyles.borderLeft) &&
+                !isNullOrUndefined(borderStyles.borderRight) && !isNullOrUndefined(borderStyles.borderTop);
+            const isLeftBottom: boolean = !isNullOrUndefined(borderStyles.borderBottom) && !isNullOrUndefined(borderStyles.borderLeft) &&
+                isNullOrUndefined(borderStyles.borderRight) && isNullOrUndefined(borderStyles.borderTop);
+            const isLeftTop: boolean = isNullOrUndefined(borderStyles.borderBottom) && !isNullOrUndefined(borderStyles.borderLeft) &&
+                isNullOrUndefined(borderStyles.borderRight) && !isNullOrUndefined(borderStyles.borderTop);
+            const isLeftTopBotom: boolean = !isNullOrUndefined(borderStyles.borderBottom) && !isNullOrUndefined(borderStyles.borderLeft) &&
+                isNullOrUndefined(borderStyles.borderRight) && !isNullOrUndefined(borderStyles.borderTop);
+            const isRightBottom: boolean = !isNullOrUndefined(borderStyles.borderBottom) && isNullOrUndefined(borderStyles.borderLeft) &&
+                !isNullOrUndefined(borderStyles.borderRight) && isNullOrUndefined(borderStyles.borderTop);
+            const isRightTop: boolean = isNullOrUndefined(borderStyles.borderBottom) && isNullOrUndefined(borderStyles.borderLeft) &&
+                !isNullOrUndefined(borderStyles.borderRight) && !isNullOrUndefined(borderStyles.borderTop);
+            const isRightTopBottom: boolean = !isNullOrUndefined(borderStyles.borderBottom) && isNullOrUndefined(borderStyles.borderLeft) &&
+                !isNullOrUndefined(borderStyles.borderRight) && !isNullOrUndefined(borderStyles.borderTop);
+            const isLeftTopRight: boolean = isNullOrUndefined(borderStyles.borderBottom) && !isNullOrUndefined(borderStyles.borderLeft) &&
+                !isNullOrUndefined(borderStyles.borderRight) && !isNullOrUndefined(borderStyles.borderTop);
+            const isLeftBottomRight: boolean = !isNullOrUndefined(borderStyles.borderBottom) && !isNullOrUndefined(borderStyles.borderLeft)
+                && !isNullOrUndefined(borderStyles.borderRight) && isNullOrUndefined(borderStyles.borderTop);
+            context.lineWidth = 1;
+            const extraSpace: number = 3;
+            if (isAllBorder) {
+                if (startX === endX) {
+                    if (isLeftOrTop) {
+                        this.drawDoubleBorder(context, startX, startY, endX, endY, startX + extraSpace, startY + extraSpace,
+                                              endX + extraSpace, endY - (extraSpace - 1));
+                    } else {
+                        this.drawDoubleBorder(context, startX, startY, endX, endY, startX - extraSpace, startY + extraSpace,
+                                              endX - extraSpace, endY - (extraSpace - 1));
+                    }
+                }
+                else if (startY === endY) {
+                    if (isLeftOrTop) {
+                        this.drawDoubleBorder(context, startX, startY, endX, endY, startX + (extraSpace - 1), startY + extraSpace,
+                                              endX - (extraSpace - 1), endY + extraSpace);
+                    } else {
+                        this.drawDoubleBorder(context, startX, startY, endX, endY, startX + (extraSpace - 1), startY - extraSpace,
+                                              endX - (extraSpace - 1), endY - extraSpace);
+                    }
+                }
+            } else if (isLeftBottom) {
+                if (position === 'left') {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX + extraSpace, startY, endX + extraSpace,
+                                          endY - (extraSpace - 1));
+                }
+                else {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX + (extraSpace - 1), startY - extraSpace,
+                                          endX, endY - extraSpace);
+                }
+            }
+            else if (isLeftTop) {
+                if (position === 'left') {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX + extraSpace, startY + (extraSpace - 1),
+                                          endX + extraSpace, endY);
+                }
+                else {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX + (extraSpace - 1), startY + extraSpace,
+                                          endX, endY + extraSpace);
+                }
+            }
+            else if (isLeftTopBotom) {
+                if (position === 'left') {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX + extraSpace, startY + extraSpace,
+                                          endX + extraSpace, endY - (extraSpace - 1));
+                }
+                else if (position === 'top') {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX + (extraSpace - 1), startY + extraSpace,
+                                          endX, endY + extraSpace);
+                } else {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX + (extraSpace - 1), startY - extraSpace,
+                                          endX, endY - extraSpace);
+                }
+            }
+            else if (isRightBottom) {
+                if (position === 'right') {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX - extraSpace, startY, endX - extraSpace,
+                                          endY - (extraSpace - 1));
+                }
+                else {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX, startY - extraSpace, endX - (extraSpace - 1),
+                                          endY - extraSpace);
+                }
+            }
+            else if (isRightTop) {
+                if (position === 'right') {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX - extraSpace, startY + extraSpace,
+                                          endX - extraSpace, endY);
+                }
+                else {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX, startY + extraSpace, endX - (extraSpace - 1),
+                                          endY + extraSpace);
+                }
+            }
+            else if (isRightTopBottom) {
+                if (position === 'right') {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX - extraSpace, startY + extraSpace,
+                                          endX - extraSpace, endY - (extraSpace - 1));
+                }
+                else if (position === 'top') {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX, startY + extraSpace, endX - (extraSpace - 1),
+                                          endY + extraSpace);
+                } else {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX, startY - extraSpace, endX - (extraSpace - 1),
+                                          endY - extraSpace);
+                }
+            }
+            else if (isLeftTopRight) {
+                if (position === 'right') {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX - extraSpace, startY + extraSpace,
+                                          endX - extraSpace, endY);
+                }
+                else if (position === 'top') {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX + extraSpace, startY + extraSpace,
+                                          endX - (extraSpace - 1), endY + extraSpace);
+                } else {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX + extraSpace, startY + extraSpace,
+                                          endX + extraSpace, endY);
+                }
+            }
+            else if (isLeftBottomRight) {
+                if (position === 'right') {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX - extraSpace, startY, endX - extraSpace,
+                                          endY - (extraSpace - 1));
+                }
+                else if (position === 'bottom') {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX + (extraSpace - 1), startY - extraSpace,
+                                          endX - (extraSpace - 1), endY - extraSpace);
+                } else {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX + extraSpace, startY, endX + extraSpace,
+                                          endY - (extraSpace - 1));
+                }
+            }
+            else {
+                if (startX === endX) {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX + (position === 'left' ? extraSpace : -extraSpace),
+                                          startY, endX + (position === 'left' ? extraSpace : -extraSpace), endY);
+                }
+                else if (startY === endY) {
+                    this.drawDoubleBorder(context, startX, startY, endX, endY, startX, startY +
+                                          (position === 'top' ? extraSpace : -extraSpace), endX, endY + (position === 'top' ? extraSpace : -extraSpace));
+                }
+            }
+            context.stroke();
+            return;
+        } else {
+            context.setLineDash([]);
+            context.lineWidth = border.split(' ')[0].split('')[0];
+        }
         context.moveTo(startX, startY);
         context.lineTo(endX, endY);
         context.stroke();
     }
+
+    private drawDoubleBorder(context: CanvasRenderingContext2D, startX1: number, startY1: number, endX1: number, endY1: number,
+                             startX2: number, startY2: number, endX2: number, endY2: number) : void {
+        context.moveTo(startX1, startY1);
+        context.lineTo(endX1, endY1);
+        context.moveTo(startX2, startY2);
+        context.lineTo(endX2, endY2);
+    }
+
     private calculateTextPosition(textWidth: number, totalWidth: number, currentX: number, position: string): number {
         let x: number;
         const space: number = 3;

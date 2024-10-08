@@ -379,7 +379,7 @@ export class Lists {
                 }
                 if (isNested) {
                     this.cleanNode();
-                    (this.parent.editableElement as HTMLElement).focus();
+                    (this.parent.editableElement as HTMLElement).focus({ preventScroll: true });
                 }
                 if (!(e.event.action && e.event.action === 'indent')) {
                     this.saveSelection = this.domNode.saveMarker(this.saveSelection);
@@ -690,7 +690,7 @@ export class Lists {
                 span.parentNode.replaceChild(fragment, span);
             });
         }
-        (this.parent.editableElement as HTMLElement).focus();
+        (this.parent.editableElement as HTMLElement).focus({ preventScroll: true });
         if (isIDevice()) {
             setEditFrameFocus(this.parent.editableElement, selector);
         }
@@ -929,7 +929,8 @@ export class Lists {
                             parentNode.removeAttribute('style');
                         }
                     }
-                    const wrapper: string = '<' + e.enterAction + wrapperclass + this.domNode.attributes(element) + '></' + e.enterAction + '>';
+                    const wrapperTag: string = isNullOrUndefined(e.enterAction) ? CONSTANT.DEFAULT_TAG : e.enterAction;
+                    const wrapper: string = '<' + wrapperTag + wrapperclass + this.domNode.attributes(element) + '></' + wrapperTag + '>';
                     if (e.enterAction !== 'BR') {
                         this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
                     }

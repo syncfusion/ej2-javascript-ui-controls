@@ -135,11 +135,14 @@ export class TextHelper {
         }else{
             formatText = characterFormat.fontFamily.toLocaleLowerCase();
         }
+        const isBidi: boolean = characterFormat.bidi || characterFormat.complexScript;
         formatText += ';' + characterFormat.fontSize;
-        if (characterFormat.bold) {
+        const bold: boolean = isBidi ? characterFormat.boldBidi : characterFormat.bold;
+        const italic: boolean = isBidi ? characterFormat.italicBidi : characterFormat.italic;
+        if (bold) {
             formatText += ';' + 'bold';
         }
-        if (characterFormat.italic) {
+        if (italic) {
             formatText += ';' + 'italic';
         }
         return formatText;
@@ -154,9 +157,10 @@ export class TextHelper {
         let bold: string = '';
         let italic: string = '';
         let fontFamily: string = '';
+        const isBidi: boolean = characterFormat.bidi || characterFormat.complexScript;
         let fontSize: number = characterFormat.fontSize;
-        bold = characterFormat.bold ? 'bold' : '';
-        italic = characterFormat.italic ? 'italic' : '';
+        bold = isBidi ? (characterFormat.boldBidi ? 'bold' : '') : (characterFormat.bold ? 'bold' : '');
+        italic = isBidi ? (characterFormat.italicBidi ? 'italic' : '') : (characterFormat.italic ? 'italic' : '');
         fontFamily = this.getFontNameToRender(scriptType, characterFormat);
         fontSize = fontSize === 0 ? 0.5 : fontSize / (characterFormat.baselineAlignment === 'Normal' ? 1 : 1.5);
         this.context.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + '"' + fontFamily + '"';

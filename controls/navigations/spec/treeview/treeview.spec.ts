@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, enableRipple } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, dynamicChangeCheckbox, localDataHtmlAttributes } from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, dynamicChangeCheckbox, localDataHtmlAttributes, selectableFieldData } from '../../spec/treeview/datasource.spec';
 import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6} from '../../spec/treeview/datasource.spec';
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
 import { localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
@@ -856,6 +856,114 @@ describe('TreeView control', () => {
                 expect(treeObj.element.querySelectorAll('[aria-selected]').length).toBe(1);
                 expect(li[1].getAttribute('aria-selected')).toBe('true');
                 expect(i).toEqual(5);
+            });
+            it('selectable false node focus testing', () => {
+                let keyboardEventArgs: any = {
+                    preventDefault: (): void => {},
+                    action: null,
+                    target: null,
+                    stopImmediatePropagation: (): void => {},
+                };
+                treeObj = new TreeView({
+                fields: { dataSource: selectableFieldData, parentID: 'pid', text: "name", hasChildren: "hasChild",
+                    expanded: "expanded", htmlAttributes: 'htmlAttributes' },
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-node-focus')).toBe(false);
+                expect(li[0].classList.contains('e-prevent')).toBe(true);
+                keyboardEventArgs.action = 'tab';
+                treeObj.focusIn();
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            });
+            it('selectable false node expand testing', () => {
+                let keyboardEventArgs: any = {
+                    preventDefault: (): void => {},
+                    action: null,
+                    target: null,
+                    stopImmediatePropagation: (): void => {},
+                };
+                treeObj = new TreeView({
+                fields: { dataSource: selectableFieldData, parentID: 'pid', text: "name", hasChildren: "hasChild",
+                    expanded: "expanded", htmlAttributes: 'htmlAttributes' },
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-node-focus')).toBe(false);
+                expect(li[0].classList.contains('e-prevent')).toBe(true);
+                keyboardEventArgs.action = 'tab';
+                treeObj.focusIn();
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+                keyboardEventArgs.action = 'moveRight';
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect((li[0].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(true);
+                expect((li[0].querySelector('.e-icons') as Element).classList.contains('e-icon-expandable')).toBe(false);
+            });
+            it('selectable false node collapse testing', (done: Function) => {
+                let keyboardEventArgs: any = {
+                    preventDefault: (): void => {},
+                    action: null,
+                    target: null,
+                    stopImmediatePropagation: (): void => {},
+                };
+                treeObj = new TreeView({
+                fields: { dataSource: selectableFieldData, parentID: 'pid', text: "name", hasChildren: "hasChild",
+                    expanded: "expanded", htmlAttributes: 'htmlAttributes' },
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-node-focus')).toBe(false);
+                expect(li[0].classList.contains('e-prevent')).toBe(true);
+                keyboardEventArgs.action = 'tab';
+                treeObj.focusIn();
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+                treeObj.expandedNodes = ['1'];
+                setTimeout(() => {
+                    keyboardEventArgs.action = 'moveLeft';
+                    treeObj.keyActionHandler(keyboardEventArgs);
+                    expect((li[0].querySelector('.e-icons') as Element).classList.contains('e-icon-expandable')).toBe(true);
+                    expect((li[0].querySelector('.e-icons') as Element).classList.contains('e-icon-collapsible')).toBe(false);
+                    done();
+                }, 100); 
+            });
+            it('selectable false node space key selection testing', () => {
+                let keyboardEventArgs: any = {
+                    preventDefault: (): void => {},
+                    action: null,
+                    target: null,
+                    stopImmediatePropagation: (): void => {},
+                };
+                treeObj = new TreeView({
+                fields: { dataSource: selectableFieldData, parentID: 'pid', text: "name", hasChildren: "hasChild",
+                    expanded: "expanded", htmlAttributes: 'htmlAttributes' },
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-node-focus')).toBe(false);
+                expect(li[0].classList.contains('e-prevent')).toBe(true);
+                keyboardEventArgs.action = 'tab';
+                treeObj.focusIn();
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+                keyboardEventArgs.action = 'space';
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].classList.contains('e-active')).toBe(false);
+            });
+            it('selectable false node enter key selection testing', () => {
+                let keyboardEventArgs: any = {
+                    preventDefault: (): void => {},
+                    action: null,
+                    target: null,
+                    stopImmediatePropagation: (): void => {},
+                };
+                treeObj = new TreeView({
+                fields: { dataSource: selectableFieldData, parentID: 'pid', text: "name", hasChildren: "hasChild",
+                    expanded: "expanded", htmlAttributes: 'htmlAttributes' },
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-node-focus')).toBe(false);
+                expect(li[0].classList.contains('e-prevent')).toBe(true);
+                keyboardEventArgs.action = 'tab';
+                treeObj.focusIn();
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+                keyboardEventArgs.action = 'enter';
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].classList.contains('e-active')).toBe(false);
             });
             it('showCheckBox property right click testing', (done: Function) => {
                 let mouseEventArgs: any = {

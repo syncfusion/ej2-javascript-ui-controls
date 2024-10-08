@@ -4474,8 +4474,12 @@ export class PdfViewerBase {
                 }
                 switch (event.keyCode) {
                 case 79: // o key
-                    if (this.pdfViewer.toolbarModule && this.pdfViewer.enableToolbar) {
+                    if (this.pdfViewer.toolbarModule && this.pdfViewer.enableToolbar &&
+                        this.pdfViewer.toolbarSettings.toolbarItems.indexOf('OpenOption') !== -1) {
                         this.pdfViewer.toolbarModule.openFileDialogBox(event);
+                    }
+                    else {
+                        event.preventDefault();
                     }
                     break;
                 case 67: // c key

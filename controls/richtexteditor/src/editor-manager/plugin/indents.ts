@@ -100,7 +100,7 @@ export class Indents {
                 /* eslint-enable */
             }
         }
-        editEle.focus();
+        editEle.focus({ preventScroll: true });
         if (isIDevice()) {
             setEditFrameFocus(editEle, e.selector);
         }

@@ -81,11 +81,13 @@ export class PdfGraphics {
         }
         if (this._source && this._source.has('Resources')) {
             const obj: any = this._source.getRaw('Resources'); // eslint-disable-line
-            if (obj instanceof _PdfReference) {
-                this._hasResourceReference = true;
-                this._resourceObject = xref._fetch(obj);
-            } else if (obj instanceof _PdfDictionary) {
-                this._resourceObject = obj;
+            if (obj) {
+                if (obj instanceof _PdfReference) {
+                    this._hasResourceReference = true;
+                    this._resourceObject = xref._fetch(obj);
+                } else if (obj instanceof _PdfDictionary) {
+                    this._resourceObject = obj;
+                }
             }
         } else {
             this._resourceObject = new _PdfDictionary();
@@ -127,7 +129,7 @@ export class PdfGraphics {
     get _resources(): Map<_PdfReference, _PdfName> {
         if (typeof this._resourceMap === 'undefined') {
             this._resourceMap = new Map<_PdfReference, _PdfName>();
-            if (this._resourceObject.has('Font')) {
+            if (this._resourceObject && this._resourceObject.has('Font')) {
                 const fonts: _PdfDictionary = this._resourceObject.get('Font');
                 if (fonts && fonts.size > 0) {
                     fonts.forEach((key: string, value: any) => { // eslint-disable-line
@@ -853,7 +855,7 @@ export class PdfGraphics {
             }
             const scaleX: number = (template && template._size[0] > 0) ? bounds.width / template._size[0] : 1;
             const scaleY: number = (template && template._size[1] > 0) ? bounds.height / template._size[1] : 1;
-            const needScale: boolean = !(scaleX === 1 && scaleY === 1);
+            const needScale: boolean = !(Math.trunc(scaleX * 1000) / 1000 === 1 && Math.trunc(scaleY * 1000) / 1000 === 1);
             let cropBox: number[];
             let mediaBox: number[];
             if (this._page) {
@@ -896,7 +898,7 @@ export class PdfGraphics {
                                     templateBox[2] === template._size[0] &&
                                     templateBox[3] === template._size[1]) {
                                     matrix = new _PdfTransformationMatrix();
-                                    matrix._translate(bounds.x - templateMatrix[4], bounds.y + templateMatrix[5]);
+                                    matrix._translate(bounds.x - templateMatrix[4], -(bounds.y + templateMatrix[5]));
                                     matrix._scale(1, 1);
                                     scaleApplied = true;
                                 }
@@ -918,11 +920,13 @@ export class PdfGraphics {
             let ref: _PdfReference;
             if (this._resourceObject.has('XObject')) {
                 const obj: any = this._resourceObject.getRaw('XObject'); // eslint-disable-line
-                if (obj instanceof _PdfReference) {
-                    isReference = true;
-                    sourceDictionary = this._crossReference._fetch(obj);
-                } else if (obj instanceof _PdfDictionary) {
-                    sourceDictionary = obj;
+                if (obj) {
+                    if (obj instanceof _PdfReference) {
+                        isReference = true;
+                        sourceDictionary = this._crossReference._fetch(obj);
+                    } else if (obj instanceof _PdfDictionary) {
+                        sourceDictionary = obj;
+                    }
                 }
                 if (sourceDictionary) {
                     isNew = false;
@@ -2303,17 +2307,19 @@ export class PdfGraphics {
         let stroke: number = 0;
         let fill: number = 0;
         let mode: number = 0;
-        if (dictionary.has('CA')) {
-            stroke = dictionary.get('CA');
-        }
-        if (dictionary.has('ca')) {
-            fill = dictionary.get('ca');
-        }
-        if (dictionary.has('ca')) {
-            fill = dictionary.get('ca');
-        }
-        if (dictionary.has('BM')) {
-            mode = _mapBlendMode(dictionary.get('BM'));
+        if (dictionary) {
+            if (dictionary.has('CA')) {
+                stroke = dictionary.get('CA');
+            }
+            if (dictionary.has('ca')) {
+                fill = dictionary.get('ca');
+            }
+            if (dictionary.has('ca')) {
+                fill = dictionary.get('ca');
+            }
+            if (dictionary.has('BM')) {
+                mode = _mapBlendMode(dictionary.get('BM'));
+            }
         }
         const tkey: string = 'CA:' + stroke.toString() + '_ca:' + fill.toString() + '_BM:' + mode.toString();
         const tdata: _TransparencyData = new _TransparencyData();

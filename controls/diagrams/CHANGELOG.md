@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I632369` - Now, selector renders for newly added phase at runtime.
+- `#I632361` - Now, Node will be draggable inside swimlane after adding new phase at run time.
+- `#I632374` - Now, Height and Width of the lane will be updated properly.
+- `#I632335` - Now, Node selection is restricted on diagram focus.
+- `#I632371` - The resize cursor now updates correctly when hovering over the phase line.
+- `#I632404` - Now, Rotating the flipped node will rotates its annotation along with the node.
+
 ## 27.1.51 (2024-09-30)
 
 ### Diagram

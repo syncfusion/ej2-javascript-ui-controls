@@ -1164,4 +1164,41 @@ describe('Reorder module', () => {
         });
     });
 
+    describe('EJ2-52799 - Reorder the stacked header along with frozen column not assigning freeze property properly', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowReordering: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right',  freeze: 'Left', width: 120, minWidth: 10 },
+                        {
+                            headerText: 'ID', columns: [
+                                { field: 'CustomerID', headerText: 'Customer ID', freeze: 'Left' },
+                                { field: 'EmployeeID', textAlign: 'Right', headerText: 'Employee ID', freeze: 'Left' }
+                            ]
+                        },
+                        {
+                            headerText: 'Order Details', columns: [
+                                { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd', minWidth: 10 },
+                                { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2', minWidth: 10 },
+                            ]
+                        },
+                    ]
+                }, done);
+        });
+
+        it('Reorder the stacked Column', () => {
+            gridObj.reorderColumns('OrderDate', 'Freight');
+            let columns = gridObj.getColumns() as Column[];
+            expect(columns[3].freeze).toBe(undefined);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
 });

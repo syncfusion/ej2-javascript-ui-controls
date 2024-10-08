@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I638381` - Now, decreasing the indent for list items correctly preserves the paragraph format instead of converting them into a single paragraph in the Rich Text Editor.
+
+- `#I627005` - Now, the issue where applying a list or alignment at the last line in Firefox caused the page to scroll to the top when the Rich Text Editor was rendered in an `iframe` has been successfully resolved.
+
+- `#I625044` - Now, Resolved an issue where pasting mention chips inside a `<span>` resulted in unnecessary nested `<span>` tags in the Rich Text Editor.
+
+- `#I636882` - Now, inserting the link with a URL as multiple spaces using the link dialog is prevented in the Rich Text Editor.
+
+- `#I623355` - Now, the order list start attribute is maintained while copying and pasting content from Word document in the Rich Text Editor.
+
+- `#I633767` - Now, the tooltip for custom toolbar items works properly in the Rich Text Editor.
+
+- `#I631260` - Now, the Iframe editor's table border styles are handled with class names instead of tags.
+
+- Now the default font size and font family will be applied to the editor when the Iframe mode is enabled.
+
+- Now the browser spell check will work when the Iframe mode is enabled.
+
+- Now the editor content will have proper line height when the Iframe mode is enabled.
+
+- Now the Iframe editor's body element will have the class name `e-content` and then id.
+
+- Now, the issue where the page would scroll with the Iframe editor `height` set to `auto` when the table quick toolbar was opened has been resolved.
+
 ## 27.1.51 (2024-09-30)
 
 ### RichTextEditor
@@ -15,6 +45,8 @@
 - `#I630816` - Now, the `beforePasteCleanup` event arguments `Value` is not empty when content is copied and pasted from the Adobe Acrobat PDF read.
 
 - `#I629364` - Now, Border right will appear when pasting from the Excel in the Rich Text Editor.
+
+- `#I634675` - Now, pressing the enter key after inserting the `hr` tag using `executeCommand` works properly in the Rich Text Editor.
 
 ## 27.1.50 (2024-09-24)
 

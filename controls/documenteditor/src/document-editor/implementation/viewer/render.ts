@@ -1301,7 +1301,7 @@ private calculatePathBounds(data: string): Rect {
             // MS word render the content in right margin also.
             // So, we need to add right margin value while cliping the content
             let width: number = (cellWidget.width + cellWidget.margin.left + cellWidget.margin.right) - cellWidget.leftBorderWidth;
-            if (!this.isPrinting) {
+            if (!this.isPrinting && !(widget instanceof TableWidget && width === widget.width && this.documentHelper.compatibilityMode === 'Word2007')) {
 
                 this.clipRect(cellWidget.x - cellWidget.margin.left, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
             }
@@ -2204,11 +2204,13 @@ private calculatePathBounds(data: string): Rect {
 
         let color: string = revisionInfo.length > 0 ? this.getRevisionColor(revisionInfo) : format.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
+        const isRTL: boolean = format.bidi || this.documentHelper.textHelper.isRTLText(elementBox.text);
+        const isBidi: boolean = isRTL || format.complexScript;
         let bold: string = '';
         let italic: string = '';
         let fontSize: number = 11;
-        bold = format.bold ? 'bold' : '';
-        italic = format.italic ? 'italic' : '';
+        bold = isBidi ? (format.boldBidi ? 'bold' : '') : (format.bold ? 'bold' : '');
+        italic = isBidi ? (format.italicBidi ? 'italic' : '') : (format.italic ? 'italic' : '');
         fontSize = format.fontSize === 0 ? 0.5 : format.fontSize / (format.baselineAlignment === 'Normal' ? 1 : 1.5);
         fontSize = this.isPrinting ? fontSize : fontSize * this.documentHelper.zoomFactor;
         let renderFontFamily: string = this.documentHelper.textHelper.getFontNameToRender(elementBox.scriptType, format);
@@ -2238,8 +2240,6 @@ private calculatePathBounds(data: string): Rect {
             }
         }
         //this.pageContext.direction = 'ltr';
-
-        let isRTL: boolean = format.bidi || this.documentHelper.textHelper.isRTLText(elementBox.text);
         text = this.documentHelper.textHelper.setText(text, isRTL, format.bdo, true);
         if (format.allCaps) {
             text = text.toUpperCase();

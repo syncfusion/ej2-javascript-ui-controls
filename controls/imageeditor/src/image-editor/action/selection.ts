@@ -2975,6 +2975,7 @@ export class Selection {
             this.triggerShapeChange(shapeResizingArgs, shapeMovingArgs, 'mouse-down');
             parent.activeObj.activePoint = activePoint;
             parent.isShapeDrawing = true;
+            this.tempActiveObj = extend({}, parent.activeObj, {}, true) as SelectionPoint;
             return;
         }
         parent.notify('draw', { prop: 'resetFrameZoom', onPropertyChange: false, value: {isOk: true }});

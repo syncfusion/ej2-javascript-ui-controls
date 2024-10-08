@@ -1,5 +1,5 @@
 import { Workbook, CellModel, getCell, setCell, SheetModel, getSheet } from '../base/index';
-import { SerializationOptions, executeTaskAsync, getAutoDetectFormatParser } from '../common/index';
+import { CellStyleModel, FormatModel, SerializationOptions, executeTaskAsync, getAutoDetectFormatParser } from '../common/index';
 import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation, removeUniquecol, ExtendedRange } from '../common/index';
 import * as events from '../common/event';
 import { SaveWorker } from '../workers/save-worker';
@@ -389,6 +389,16 @@ export class WorkbookSave extends SaveWorker {
                 }
                 // eslint-disable-next-line no-prototype-builtins
                 if (value && typeof value === 'object' && value.hasOwnProperty('properties')) {
+                    if (value.propName && value.propName.toString() === 'conditionalFormats') {
+                        const properties: { format?: FormatModel } = value.properties;
+                        if (properties.format && properties.format.style) {
+                            const style: CellStyleModel = properties.format.style;
+                            if (style && style.backgroundColor === '#ffffff' && style.color === '#000000' &&
+                                style.fontWeight !== 'bold' && style.fontStyle !== 'italic' && style.textDecoration !== 'underline') {
+                                delete properties.format; // Remove format if it matches default cell style
+                            }
+                        }
+                    }
                     return value.properties;
                 } else if (value !== null) {
                     return value;

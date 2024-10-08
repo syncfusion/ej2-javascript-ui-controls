@@ -112,3 +112,14 @@ export interface ImageOrTableCursor  {
     end: boolean;
     endName: string;
 }
+
+/**
+ * The `ImageDimension` is used to specify the width and height of the editor image.
+ *
+ * @private
+ * @hidden
+ */
+export interface ImageDimension {
+    width: number;
+    height: number;
+}

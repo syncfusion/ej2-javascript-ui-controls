@@ -146,7 +146,7 @@ export class EventTooltip {
     }
 
     private setContent(content: string | HTMLElement | Function): void {
-        this.tooltipObj.setProperties({ content: content }, true);
+        this.tooltipObj.setProperties({ content: content, windowCollision: true }, true);
     }
 
     public close(): void {

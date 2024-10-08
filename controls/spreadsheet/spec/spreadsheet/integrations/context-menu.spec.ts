@@ -345,7 +345,7 @@ describe('Spreadsheet context menu module ->', () => {
                 const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
                 helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
                 setTimeout(() => {
-                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(11)').classList).toContain('e-disabled');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(11)').classList).toContain('e-menu-item');
                     (document.getElementsByClassName("e-cell")[0] as HTMLElement).click();
                     helper.invoke('unprotectSheet', ['Price Details 1']);
                     done();
@@ -489,7 +489,7 @@ describe('Spreadsheet context menu module ->', () => {
     });
     
     describe('CR-Issues->', () => {
-        describe('EJ2-51327, EJ2-55488, EJ2-55491, EJ2-62989', () => {
+        describe('EJ2-51327, EJ2-55488, EJ2-55491, EJ2-62989 EJ2-909167', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: defaultData }] }]
@@ -569,6 +569,23 @@ describe('Spreadsheet context menu module ->', () => {
                     expect(helper.getElement('#' + helper.id + '_contextmenu')).not.toBeUndefined();
                     helper.getInstance().contextMenuBeforeOpen = null;
                     done();
+                });
+            });
+            it('EJ2-909167 Context Menu is not triggered when freeze panes are applied with merged cells. ->', (done: Function) => {
+                helper.invoke('selectRange', ['A2']);
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('merge', ['A1:F3']);
+                helper.invoke('merge', ['A6:A10']);
+                spreadsheet.freezePanes(7,3);
+                setTimeout(() => {
+                    let td: HTMLElement = helper.invoke('getCell', [8, 4]);
+                    const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+                    td = document.elementFromPoint(coords.x,coords.y) as HTMLElement;
+                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                    setTimeout(() => {
+                        expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(11);
+                        done();
+                    });
                 });
             });
         });

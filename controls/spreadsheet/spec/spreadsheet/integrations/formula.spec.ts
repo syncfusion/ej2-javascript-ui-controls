@@ -16799,10 +16799,10 @@ describe('Spreadsheet formula module ->', () => {
                 rows: [{ cells: [{ value: '1' }, { value: '1' }] }, { cells: [{ value: '2' }, { value: '' }] }, { cells: [{ value: '3' }, { value: '1' }] }, { cells: [{ value: '4' }, { value: '1' }] }, { cells: [{ value: '5' }, { value: '1' }] }]
             }]
         };
-        beforeEach((done: Function) => {
+        beforeAll((done: Function) => {
             helper.initializeSpreadsheet(model, done);
         });
-        afterEach(() => {
+        afterAll(() => {
             helper.invoke('destroy');
         });
         it('COUNT formula is not updated value properly while the new insert and update the value', (done: Function) => {
@@ -16824,10 +16824,10 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(0);
             helper.invoke('insertRow', [5]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=COUNTIF(A1:A6,"=0")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=COUNTIF(A1:A5,"=0")');
                 expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(0);
                 helper.edit('A6', '0');
-                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(1);
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(0);
                 done();
             })
         });
@@ -16837,11 +16837,11 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(1);
             helper.invoke('insertRow', [5]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=COUNTIFs(A1:A6,"=1",B1:B6,"=1")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=COUNTIFs(A1:A5,"=1",B1:B5,"=1")');
                 expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(1);
                 helper.edit('A6', '1');
                 helper.edit('B6', '1');
-                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(2);
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(1);
                 done();
             })
         });
@@ -16864,10 +16864,23 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(1);
             helper.invoke('insertRow', [5]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=SUMIF(A1:A6,"=1")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=SUMIF(A1:A5,"=1")');
                 expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(1);
                 helper.edit('A6', '1');
-                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(2);
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(1);
+                done();
+            })
+        });
+        it('Nested SUM function is not value updated properly while the new insert and update the value', (done: Function) => {
+            helper.edit('A6', '=SUM(A1:A5,SUM(A1:A5))');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=SUM(A1:A5,SUM(A1:A5))');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(30);
+            helper.invoke('insertRow', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=SUM(A1:A5,SUM(A1:A5))');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(30);
+                helper.edit('A6', '1');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(30);
                 done();
             })
         });
@@ -16877,12 +16890,13 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(0);
             helper.invoke('insertRow', [5]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=SUMIFS(A1:A6,B1:B6,"=0")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=SUMIFS(A1:A5,B1:B5,"=0")');
                 expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(0);
                 helper.edit('A6', '6');
                 helper.edit('B2', '0');
                 helper.edit('B6', '0');
-                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(8);
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(2);
+                helper.edit('B2', '');
                 done();
             })
         });
@@ -16906,11 +16920,12 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#DIV/0!');
             helper.invoke('insertRow', [5]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=AVERAGEIF(A1:A6,"=0")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=AVERAGEIF(A1:A5,"=0")');
                 expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual('#DIV/0!');
                 helper.edit('A6', '0');
                 helper.edit('A2', '0');
                 expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(0);
+                helper.edit('A2', '2');
                 done();
             })
         });
@@ -16920,12 +16935,13 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#DIV/0!');
             helper.invoke('insertRow', [5]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=AVERAGEIFS(A1:A6,B1:B6,"=0")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=AVERAGEIFS(A1:A5,B1:B5,"=0")');
                 expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual('#DIV/0!');
                 helper.edit('A6', '6');
                 helper.edit('B2', '0');
                 helper.edit('B6', '0');
-                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(4);
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(2);
+                helper.edit('B2', '');
                 done();
             })
         });
@@ -17174,12 +17190,12 @@ describe('Spreadsheet formula module ->', () => {
         });
     });
     describe('EJ2-65615-> Column wise ->', () => {
-        beforeEach((done: Function) => {
+        beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{ rows: [{ cells: [{ value: '1' }, { value: '2' }, { value: '3' }, { value: '4' }, { value: '5' }] }, { cells: [{ value: '1' }, { value: '' }, { value: '1' }, { value: '1' }, { value: '1' }] }] }]
             }, done);
         });
-        afterEach(() => {
+        afterAll(() => {
             helper.invoke('destroy');
         });
         it('COUNT formula is not updated value properly while the new insert and update the value', (done: Function) => {
@@ -17201,10 +17217,10 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(0);
             helper.invoke('insertColumn', [5]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=COUNTIF(A1:F1,"=0")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=COUNTIF(A1:E1,"=0")');
                 expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(0);
                 helper.edit('F1', '0');
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(1);
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(0);
                 done();
             })
         });
@@ -17214,11 +17230,11 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(1);
             helper.invoke('insertColumn', [5]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=COUNTIFS(A1:F1,"=1",A2:F2,"=1")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=COUNTIFS(A1:E1,"=1",A2:E2,"=1")');
                 expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(1);
                 helper.edit('F1', '1');
                 helper.edit('F2', '1');
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(2);
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(1);
                 done();
             })
         });
@@ -17241,10 +17257,23 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(1);
             helper.invoke('insertColumn', [5]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=SUMIF(A1:F1,"=1")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=SUMIF(A1:E1,"=1")');
                 expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(1);
                 helper.edit('F1', '1');
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(2);
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(1);
+                done();
+            })
+        });
+        it('Nested SUM function is not value updated properly while the new insert and update the value', (done: Function) => {
+            helper.edit('F1', '=SUM(A1:E1,SUM(A1:E1))');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=SUM(A1:E1,SUM(A1:E1))');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(30);
+            helper.invoke('insertColumn', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=SUM(A1:E1,SUM(A1:E1))');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(30);
+                helper.edit('F1', '1');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(30);
                 done();
             })
         });
@@ -17254,12 +17283,13 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(0);
             helper.invoke('insertColumn', [5]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=SUMIFS(A1:F1,A2:F2,"=0")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=SUMIFS(A1:E1,A2:E2,"=0")');
                 expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(0);
                 helper.edit('F1', '6');
                 helper.edit('B2', '0');
                 helper.edit('F2', '0');
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(8);
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(2);
+                helper.edit('B2', '');
                 done();
             })
         });
@@ -17283,10 +17313,11 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual('#DIV/0!');
             helper.invoke('insertColumn', [5]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=AVERAGEIF(A1:F1,"=0")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=AVERAGEIF(A1:E1,"=0")');
                 expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('#DIV/0!');
                 helper.edit('F1', '0');
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(0);
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('#DIV/0!');
+                helper.edit('B1', '2');
                 done();
             })
         });
@@ -17296,12 +17327,13 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual('#DIV/0!');
             helper.invoke('insertColumn', [5]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=AVERAGEIFS(A1:F1,A2:F2,"=0")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=AVERAGEIFS(A1:E1,A2:E2,"=0")');
                 expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('#DIV/0!');
                 helper.edit('F1', '6');
                 helper.edit('B2', '0');
                 helper.edit('F2', '0');
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(4);
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(2);
+                helper.edit('B2', '');
                 done();
             })
         });
@@ -17329,6 +17361,191 @@ describe('Spreadsheet formula module ->', () => {
                 helper.edit('F1', '0');
                 expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('0');
                 done();
+            })
+        });
+    });
+
+    describe('EJ2-907348-> Refresh formula on insert row/column ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    rows: [{ cells: [{ value: '1' }, { value: '2' }, { value: '3' }, { value: '4' }, { value: '5' }] },
+                    { cells: [{ value: '1' }, { value: '' }, { value: '2' }, { value: '9' }, { value: '10' }] },
+                    { cells: [{ value: '12' }, { value: '0' }, { value: '11' }, { value: '5' }, { value: '6' }] },
+                    { cells: [{ value: '1' }, { value: '7' }, { value: '15' }, { value: '0' }, { value: '8' }] },
+                    { cells: [{ value: '1' }, { value: '' }, { value: '4' }, { value: '5' }, { value: '8' }] }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Formula range refreshing for inserting row above using context menu', (done: Function) => {
+            helper.edit('A6', '=SUM(A1:A5)');
+            helper.edit('B6', '=SUM(B1:B5)');
+            helper.edit('C6', '=SUM(A1:A5)');
+            helper.edit('D6', '=SUM(B1:B5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=SUM(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[1].formula).toEqual('=SUM(B1:B5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[2].formula).toEqual('=SUM(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[3].formula).toEqual('=SUM(B1:B5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(16);
+            expect(helper.getInstance().sheets[0].rows[5].cells[1].value).toEqual(9);
+            expect(helper.getInstance().sheets[0].rows[5].cells[2].value).toEqual(16);
+            expect(helper.getInstance().sheets[0].rows[5].cells[3].value).toEqual(9);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.invoke('selectRange', ['A6']);
+            helper.openAndClickCMenuItem(4, 0, [6, 1], true); // Insert Row Above
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=SUM(A1:A6)');
+                expect(helper.getInstance().sheets[0].rows[6].cells[1].formula).toEqual('=SUM(B1:B6)');
+                expect(helper.getInstance().sheets[0].rows[6].cells[2].formula).toEqual('=SUM(A1:A6)');
+                expect(helper.getInstance().sheets[0].rows[6].cells[3].formula).toEqual('=SUM(B1:B6)');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(16);
+                expect(helper.getInstance().sheets[0].rows[6].cells[1].value).toEqual(9);
+                expect(helper.getInstance().sheets[0].rows[6].cells[2].value).toEqual(16);
+                expect(helper.getInstance().sheets[0].rows[6].cells[3].value).toEqual(9);
+                helper.edit('A6', '10');
+                helper.edit('B6', '20');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(26);
+                expect(helper.getInstance().sheets[0].rows[6].cells[1].value).toEqual(29);
+                expect(helper.getInstance().sheets[0].rows[6].cells[2].value).toEqual(26);
+                expect(helper.getInstance().sheets[0].rows[6].cells[3].value).toEqual(29);
+                helper.openAndClickCMenuItem(4, 0, [6, 2], true); // Insert Row Below
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[7].cells[0].formula).toEqual('=SUM(A1:A7)');
+                    expect(helper.getInstance().sheets[0].rows[7].cells[1].formula).toEqual('=SUM(B1:B7)');
+                    expect(helper.getInstance().sheets[0].rows[7].cells[2].formula).toEqual('=SUM(A1:A7)');
+                    expect(helper.getInstance().sheets[0].rows[7].cells[3].formula).toEqual('=SUM(B1:B7)');
+                    expect(helper.getInstance().sheets[0].rows[7].cells[0].value).toEqual(26);
+                    expect(helper.getInstance().sheets[0].rows[7].cells[1].value).toEqual(29);
+                    expect(helper.getInstance().sheets[0].rows[7].cells[2].value).toEqual(26);
+                    expect(helper.getInstance().sheets[0].rows[7].cells[3].value).toEqual(29);
+                    helper.edit('A7', '10');
+                    helper.edit('B7', '20');
+                    expect(helper.getInstance().sheets[0].rows[7].cells[0].value).toEqual(36);
+                    expect(helper.getInstance().sheets[0].rows[7].cells[1].value).toEqual(49);
+                    expect(helper.getInstance().sheets[0].rows[7].cells[2].value).toEqual(36);
+                    expect(helper.getInstance().sheets[0].rows[7].cells[3].value).toEqual(49);
+                    done();
+                })
+            })
+        });
+        it('Formula range not refreshing for inserting row below using context menu', (done: Function) => {
+            helper.edit('B6', '=SUM(A1:B5)');
+            helper.edit('D6', '=MAX(C1:D5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[1].formula).toEqual('=SUM(A1:B5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[1].value).toEqual(25);
+            expect(helper.getInstance().sheets[0].rows[5].cells[3].formula).toEqual('=MAX(C1:D5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[3].value).toEqual('15');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.invoke('selectRange', ['A6']);
+            helper.openAndClickCMenuItem(4, 0, [6, 1], true); // Insert Row Above
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[1].formula).toEqual('=SUM(A1:B5)');
+                expect(helper.getInstance().sheets[0].rows[6].cells[1].value).toEqual(25);
+                expect(helper.getInstance().sheets[0].rows[6].cells[3].formula).toEqual('=MAX(C1:D5)');
+                expect(helper.getInstance().sheets[0].rows[6].cells[3].value).toEqual('15');
+                helper.openAndClickCMenuItem(4, 0, [6, 2], true); // Insert Row Below
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[7].cells[1].formula).toEqual('=SUM(A1:B5)');
+                    expect(helper.getInstance().sheets[0].rows[7].cells[1].value).toEqual(25);
+                    expect(helper.getInstance().sheets[0].rows[7].cells[3].formula).toEqual('=MAX(C1:D5)');
+                    expect(helper.getInstance().sheets[0].rows[7].cells[3].value).toEqual('15');
+                    expect(helper.getInstance().sheets[0].rows[7].cells[1].value).toEqual(25);
+                    expect(helper.getInstance().sheets[0].rows[7].cells[3].value).toEqual('15');
+                    done();
+                })
+            })
+        });
+        it('Formula range refreshing for inserting column before using context menu', (done: Function) => {
+            helper.edit('F1', '=SUM(A1:E1)');
+            helper.edit('F2', '=SUM(A2:E2)');
+            helper.edit('F3', '=SUM(A1:E1)');
+            helper.edit('F4', '=SUM(A2:E2)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=SUM(A1:E1)');
+            expect(helper.getInstance().sheets[0].rows[1].cells[5].formula).toEqual('=SUM(A2:E2)');
+            expect(helper.getInstance().sheets[0].rows[2].cells[5].formula).toEqual('=SUM(A1:E1)');
+            expect(helper.getInstance().sheets[0].rows[3].cells[5].formula).toEqual('=SUM(A2:E2)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(15);
+            expect(helper.getInstance().sheets[0].rows[1].cells[5].value).toEqual(22);
+            expect(helper.getInstance().sheets[0].rows[2].cells[5].value).toEqual(15);
+            expect(helper.getInstance().sheets[0].rows[3].cells[5].value).toEqual(22);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.invoke('selectRange', ['F1']);
+            helper.openAndClickCMenuItem(0, 7, [6, 1], null, true); // Insert Column Before
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=SUM(A1:F1)');
+                expect(helper.getInstance().sheets[0].rows[1].cells[6].formula).toEqual('=SUM(A2:F2)');
+                expect(helper.getInstance().sheets[0].rows[2].cells[6].formula).toEqual('=SUM(A1:F1)');
+                expect(helper.getInstance().sheets[0].rows[3].cells[6].formula).toEqual('=SUM(A2:F2)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(15);
+                expect(helper.getInstance().sheets[0].rows[1].cells[6].value).toEqual(22);
+                expect(helper.getInstance().sheets[0].rows[2].cells[6].value).toEqual(15);
+                expect(helper.getInstance().sheets[0].rows[3].cells[6].value).toEqual(22);
+                helper.edit('F1', '10');
+                helper.edit('F2', '20');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(25);
+                expect(helper.getInstance().sheets[0].rows[1].cells[6].value).toEqual(42);
+                expect(helper.getInstance().sheets[0].rows[2].cells[6].value).toEqual(25);
+                expect(helper.getInstance().sheets[0].rows[3].cells[6].value).toEqual(42);
+                helper.openAndClickCMenuItem(0, 5, [6, 2], null, true); // Insert Column After
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[7].formula).toEqual('=SUM(A1:G1)');
+                    expect(helper.getInstance().sheets[0].rows[1].cells[7].formula).toEqual('=SUM(A2:G2)');
+                    expect(helper.getInstance().sheets[0].rows[2].cells[7].formula).toEqual('=SUM(A1:G1)');
+                    expect(helper.getInstance().sheets[0].rows[3].cells[7].formula).toEqual('=SUM(A2:G2)');
+                    expect(helper.getInstance().sheets[0].rows[0].cells[7].value).toEqual(25);
+                    expect(helper.getInstance().sheets[0].rows[1].cells[7].value).toEqual(42);
+                    expect(helper.getInstance().sheets[0].rows[2].cells[7].value).toEqual(25);
+                    expect(helper.getInstance().sheets[0].rows[3].cells[7].value).toEqual(42);
+                    helper.edit('G1', '10');
+                    helper.edit('G2', '20');
+                    expect(helper.getInstance().sheets[0].rows[0].cells[7].value).toEqual(35);
+                    expect(helper.getInstance().sheets[0].rows[1].cells[7].value).toEqual(62);
+                    expect(helper.getInstance().sheets[0].rows[2].cells[7].value).toEqual(35);
+                    expect(helper.getInstance().sheets[0].rows[3].cells[7].value).toEqual(62);
+                    done();
+                })
+            })
+        });
+        it('Formula range not refreshing for inserting column before using context menu', (done: Function) => {
+            helper.edit('F1', '=SUM(A1:E2)');
+            helper.edit('F2', '=SUM(A2:E3)');
+            helper.edit('F3', '=SUM($A$1:$E$1)');
+            helper.edit('F4', '=SUM(A2:E2,A2:E2)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=SUM(A1:E2)');
+            expect(helper.getInstance().sheets[0].rows[1].cells[5].formula).toEqual('=SUM(A2:E3)');
+            expect(helper.getInstance().sheets[0].rows[2].cells[5].formula).toEqual('=SUM($A$1:$E$1)');
+            expect(helper.getInstance().sheets[0].rows[3].cells[5].formula).toEqual('=SUM(A2:E2,A2:E2)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(37);
+            expect(helper.getInstance().sheets[0].rows[1].cells[5].value).toEqual(56);
+            expect(helper.getInstance().sheets[0].rows[2].cells[5].value).toEqual(15);
+            expect(helper.getInstance().sheets[0].rows[3].cells[5].value).toEqual(44);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.invoke('selectRange', ['F1']);
+            helper.openAndClickCMenuItem(0, 7, [6, 1], null, true); // Insert Column Before
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=SUM(A1:E2)');
+                expect(helper.getInstance().sheets[0].rows[1].cells[6].formula).toEqual('=SUM(A2:E3)');
+                expect(helper.getInstance().sheets[0].rows[2].cells[6].formula).toEqual('=SUM($A$1:$E$1)');
+                expect(helper.getInstance().sheets[0].rows[3].cells[6].formula).toEqual('=SUM(A2:E2,A2:E2)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(37);
+                expect(helper.getInstance().sheets[0].rows[1].cells[6].value).toEqual(56);
+                expect(helper.getInstance().sheets[0].rows[2].cells[6].value).toEqual(15);
+                expect(helper.getInstance().sheets[0].rows[3].cells[6].value).toEqual(44);
+                helper.openAndClickCMenuItem(0, 5, [6, 2], null, true); // Insert Column After
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[7].formula).toEqual('=SUM(A1:E2)');
+                    expect(helper.getInstance().sheets[0].rows[1].cells[7].formula).toEqual('=SUM(A2:E3)');
+                    expect(helper.getInstance().sheets[0].rows[2].cells[7].formula).toEqual('=SUM($A$1:$E$1)');
+                    expect(helper.getInstance().sheets[0].rows[3].cells[7].formula).toEqual('=SUM(A2:E2,A2:E2)');
+                    expect(helper.getInstance().sheets[0].rows[0].cells[7].value).toEqual(37);
+                    expect(helper.getInstance().sheets[0].rows[1].cells[7].value).toEqual(56);
+                    expect(helper.getInstance().sheets[0].rows[2].cells[7].value).toEqual(15);
+                    expect(helper.getInstance().sheets[0].rows[3].cells[7].value).toEqual(44);
+                    done();
+                })
             })
         });
     });

@@ -2263,6 +2263,10 @@ export class BaseHistoryInfo {
                             this.insertIndex = this.endIndex;
                         }
                     } else {
+                        if (action === 'InsertTextParaReplace') {
+                            // when action is equal to InsertTextParaReplace we need not to calculate the para mark.
+                            this.startIndex > this.endIndex ? this.startIndex - 1 : this.endIndex -= 1;
+                        }
                         let deleteOperation: Operation = this.getDeleteOperation(action);
                         if(action === 'Enter' && this.owner.enableTrackChanges && this.editorHistory.isUndoing) {
                             deleteOperation.markerData = { isSkipTracking: true };

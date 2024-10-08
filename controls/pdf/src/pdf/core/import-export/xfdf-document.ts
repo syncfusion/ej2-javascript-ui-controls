@@ -355,7 +355,7 @@ export abstract class _ExportHelper {
     }
     _getAnnotationType(dictionary: _PdfDictionary): string {
         let type: string = '';
-        if (dictionary.has('Subtype')) {
+        if (dictionary && dictionary.has('Subtype')) {
             const subtype: _PdfName = dictionary.get('Subtype');
             if (subtype) {
                 type = subtype.name;
@@ -580,10 +580,10 @@ export abstract class _ExportHelper {
                  reference: _PdfReference,
                  annotationDictionary: _PdfDictionary,
                  pageDictionary: _PdfDictionary): void {
-        if (annotationDictionary.has('Popup')) {
+        if (annotationDictionary && annotationDictionary.has('Popup')) {
             const popupReference: _PdfReference = annotationDictionary.getRaw('Popup');
             const popup: _PdfDictionary = annotationDictionary.get('Popup');
-            if (popup instanceof _PdfDictionary) {
+            if (popup && popup instanceof _PdfDictionary) {
                 if (popupReference && popup ) {
                     popup.update('Parent', reference);
                 }

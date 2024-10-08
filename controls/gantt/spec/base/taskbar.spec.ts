@@ -4,7 +4,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, IQueryTaskbarInfoEventArgs } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
-import { baselineData, resourceData, projectData, projectNewData18, projectNewData19, projectNewData20, splitData, projectNewData21, taskModeData4, taskModeData5, projectNewData22, CR899690, addDependency } from './data-source.spec';
+import { baselineData, resourceData, projectData, projectNewData18, projectNewData19, projectNewData20, splitData, projectNewData21, taskModeData4, taskModeData5, projectNewData22, CR899690, addDependency, manualParentdata } from './data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 describe('Gantt taskbar rendering', () => {
@@ -281,13 +281,15 @@ describe('Gantt taskbar rendering', () => {
             ganttObj.labelSettings.rightLabel = 'resourceInfo';
             ganttObj.labelSettings.taskLabel = 'TaskId';
             ganttObj.dataBound = () => {
-                expect((ganttObj.element.querySelector('.' + cls.chartRow) as HTMLElement).offsetHeight).toBe(50);
-                expect((ganttObj.element.querySelector('.' + cls.taskBarMainContainer) as HTMLElement).offsetHeight).toBe(40);
-                expect((ganttObj.element.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor).toBe("blue");
-                expect((ganttObj.element.querySelector('.' + cls.baselineMilestoneContainer) as HTMLElement).style.backgroundColor).toBe("blue");
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('80');
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('Robert King');
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('2');
+                setTimeout(() => {
+                    expect((ganttObj.element.querySelector('.' + cls.chartRow) as HTMLElement).offsetHeight).toBe(50);
+                    expect((ganttObj.element.querySelector('.' + cls.taskBarMainContainer) as HTMLElement).offsetHeight).toBe(40);
+                    expect((ganttObj.element.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor).toBe("blue");
+                    expect((ganttObj.element.querySelector('.' + cls.baselineMilestoneContainer) as HTMLElement).style.backgroundColor).toBe("blue");
+                    expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('80');
+                    expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('Robert King');
+                    expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('2');
+                }, 100);
             }
         });
         it('Left/Right label with string template', () => {
@@ -1310,61 +1312,7 @@ describe('manual parent right resizing ', () => {
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
-                dataSource: [
-                    {
-                        'TaskID': 1,
-                        'TaskName': 'Parent Task 1',
-                        'StartDate': new Date('02/27/2017'),
-                        'EndDate': new Date('03/03/2017'),
-                        'Progress': '40',
-                        'isManual' : true,
-                        'Children': [
-                             { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
-                             'EndDate': new Date('03/03/2017'), 'Progress': '40' },
-                             { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
-                             'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
-                             { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
-                             'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
-                        ]
-                    },
-                    {
-                        'TaskID': 5,
-                        'TaskName': 'Parent Task 2',
-                        'StartDate': new Date('03/05/2017'),
-                        'EndDate': new Date('03/09/2017'),
-                        'Progress': '40',
-                        'isManual': true,
-                        'Children': [
-                             { 'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/06/2017'),
-                             'EndDate': new Date('03/09/2017'), 'Progress': '40' },
-                             { 'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/06/2017'),
-                             'EndDate': new Date('03/09/2017'), 'Progress': '40', },
-                             { 'TaskID': 8, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/28/2017'),
-                             'EndDate': new Date('03/05/2017'), 'Progress': '40', 'isManual': true },
-                             { 'TaskID': 9, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/04/2017'),
-                             'EndDate': new Date('03/09/2017'), 'Progress': '40', 'isManual': true }
-                        ]
-                    },
-                    {
-                        'TaskID': 10,
-                        'TaskName': 'Parent Task 3',
-                        'StartDate': new Date('03/13/2017'),
-                        'EndDate': new Date('03/17/2017'),
-                        'Progress': '40',
-                        'Children': [
-                             { 'TaskID': 11, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/13/2017'),
-                             'EndDate': new Date('03/17/2017'), 'Progress': '40' },
-                             { 'TaskID': 12, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/13/2017'),
-                             'EndDate': new Date('03/17/2017'), 'Progress': '40', },
-                             { 'TaskID': 13, 'TaskName': 'Child Task 3', 'StartDate': new Date('03/13/2017'),
-                             'EndDate': new Date('03/17/2017'), 'Progress': '40', },
-                             { 'TaskID': 14, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/12/2017'),
-                             'EndDate': new Date('03/17/2017'), 'Progress': '40', 'isManual': true },
-                             { 'TaskID': 15, 'TaskName': 'Child Task 5', 'StartDate': new Date('03/13/2017'),
-                             'EndDate': new Date('03/17/2017'), 'Progress': '40' }
-                        ]
-                    }
-                ],
+                dataSource: manualParentdata,
                 allowSorting: true,
                 enableContextMenu: true,
                 height: '450px',

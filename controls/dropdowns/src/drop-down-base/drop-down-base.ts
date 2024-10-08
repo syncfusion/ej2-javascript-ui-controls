@@ -1681,7 +1681,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 }
                 dataSource = ListBase.groupDataSource(
                     dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, this.sortOrder);
-            } else {
+            } else if (this.getModuleName() !== 'listbox' || (this.getModuleName() === 'listbox' && !this.preventDefActionFilter)) {
                 dataSource = this.getSortedDataSource(dataSource);
             }
             this.sortedData = dataSource;
@@ -1689,21 +1689,23 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
                 : dataSource;
             ulElement = this.templateListItem((this.getModuleName() === 'autocomplete') ? spliceData : dataSource, fields);
-            const oldUlElement: HTMLElement = this.list.querySelector('.e-list-parent');
-            const virtualUlElement: HTMLElement = this.list.querySelector('.e-virtual-ddl-content');
-            if ((listData.length >= this.virtualizedItemsCount && oldUlElement && virtualUlElement) || (oldUlElement && virtualUlElement && this.isAllowFiltering) || (oldUlElement && virtualUlElement && this.getModuleName() === 'autocomplete')) {
-                virtualUlElement.replaceChild(ulElement, oldUlElement);
-                const reOrderList: NodeListOf<Element> = this.list.querySelectorAll('.e-reorder');
-                if (this.list.querySelector('.e-virtual-ddl-content') && reOrderList && reOrderList.length > 0 && !isCheckBoxUpdate) {
-                    this.list.querySelector('.e-virtual-ddl-content').removeChild(reOrderList[0]);
+            if (this.isVirtualizationEnabled) {
+                const oldUlElement: HTMLElement = this.list.querySelector('.e-list-parent');
+                const virtualUlElement: HTMLElement = this.list.querySelector('.e-virtual-ddl-content');
+                if ((listData.length >= this.virtualizedItemsCount && oldUlElement && virtualUlElement) || (oldUlElement && virtualUlElement && this.isAllowFiltering) || (oldUlElement && virtualUlElement && this.getModuleName() === 'autocomplete')) {
+                    virtualUlElement.replaceChild(ulElement, oldUlElement);
+                    const reOrderList: NodeListOf<Element> = this.list.querySelectorAll('.e-reorder');
+                    if (this.list.querySelector('.e-virtual-ddl-content') && reOrderList && reOrderList.length > 0 && !isCheckBoxUpdate) {
+                        this.list.querySelector('.e-virtual-ddl-content').removeChild(reOrderList[0]);
+                    }
+                    this.updateListElements(listData);
                 }
-                this.updateListElements(listData);
-            }
-            else if ((!virtualUlElement)) {
-                this.list.innerHTML = '';
-                this.createVirtualContent();
-                this.list.querySelector('.e-virtual-ddl-content').appendChild(ulElement);
-                this.updateListElements(listData);
+                else if (!virtualUlElement) {
+                    this.list.innerHTML = '';
+                    this.createVirtualContent();
+                    this.list.querySelector('.e-virtual-ddl-content').appendChild(ulElement);
+                    this.updateListElements(listData);
+                }
             }
         } else {
             if (this.getModuleName() === 'multiselect' && this.virtualSelectAll){

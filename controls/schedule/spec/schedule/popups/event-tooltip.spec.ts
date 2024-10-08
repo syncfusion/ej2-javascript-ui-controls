@@ -476,6 +476,38 @@ describe('Schedule event tooltip module', () => {
         });
     });
 
+    describe('tooltip rendered on outside schedule viewport ', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Paris',
+            StartTime: new Date(2024, 8, 4, 15, 0),
+            EndTime: new Date(2024, 8, 4, 16, 30)
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '1000px', selectedDate: new Date(2024, 8, 4), currentView: 'Week',
+                eventSettings: { enableTooltip: true }
+            };
+            schObj = util.createSchedule(schOptions, eventData, done);
+            util.disableTooltipAnimation((schObj.eventTooltip as any).tooltipObj);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking tooltip rendered on outside schedule viewport', () => {
+            const target: HTMLElement = schObj.element.querySelector('.e-appointment');
+            expect(target.querySelector('.e-subject').innerHTML).toBe('Paris');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            util.triggerMouseEvent(target, 'mouseover');
+            const tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            expect(tooltipEle.offsetTop).toEqual(471);
+            util.triggerMouseEvent(target, 'mouseleave');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

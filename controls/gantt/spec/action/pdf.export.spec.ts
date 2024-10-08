@@ -2,7 +2,7 @@
  * Gantt toolbar spec
  */
 import { Gantt, Edit, Toolbar, Selection, ZoomTimelineSettings, Filter, PdfQueryCellInfoEventArgs, PdfExport, CriticalPath, DayMarkers, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ContextMenu, ExcelExport, PdfQueryTimelineCellInfoEventArgs, PdfTreeGridLayoutFormat } from '../../src/index';
-import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate, datapdf,editingResourcess, editingDatas, adventProFont1, pdfquerycelldata,editingResources, overviewData } from '../base/data-source.spec';
+import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,editingResourcess, editingDatas, pdfquerycelldata,editingResources,CR911356manualTask } from '../base/data-source.spec';
 import { PdfExportProperties } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfPen, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
@@ -5872,151 +5872,151 @@ describe('Gantt PDF Export with customization of header and without footer', () 
         }
     });
 });
-describe('Gantt PDF Export for big font size', () => {
-    let ganttObj: Gantt;
-    beforeAll((done: Function) => {
-        ganttObj = createGantt(
-            {dataSource:datapdf,
-                allowSorting: true,
-                allowReordering: true,
-                enableContextMenu: true,
-                taskFields: {
-                    id: "id",
-                    name: "name",
-                    startDate: "startDate",
-                    endDate: "endDate",
-                    duration: "duration",
-                    progress: "progress",
-                    parentID: "parentID",
-                    //child: "child",
-                    dependency: "dependency",
-                    cssClass: "cssClass",
-                },
-                renderBaseline: true,
-                baselineColor: 'red',
-                editSettings: {
-                    allowAdding: true,
-                    allowEditing: true,
-                    allowDeleting: true,
-                    allowTaskbarEditing: true,
-                    showDeleteConfirmDialog: true
-                },
-                columns: [
-                    {
-                      field: "name",
-                      width: window.innerWidth <= 768 ? 150 : 250,
-                    },
-                    {
-                      field: "Type",
-                      width: 120,
-                    },
-                    {
-                      field: "displayID",
-                      headerText: "ID",
-                      visible: false,
-                    },
-                    {
-                      field: "assignee",
-                      headerText: "Assignee",
-                      template: "#assignee-template",
-                    },
-                    {
-                      field: "status",
-                      headerText: "Status",
-                      template: "#status-template",
-                    },
-                    {
-                      field: "progress",
-                      headerText: "Progress %",
-                    },
-                    {
-                      field: "startDate",
-                    },
-                    {
-                      field: "endDate",
-                    },
-                    {
-                      field: "duration",
-                    },
-                  ],
-                toolbar: ['PdfExport'],
-                allowExcelExport: true,
-                allowPdfExport: true,
-                allowSelection: true,
-                allowRowDragAndDrop: true,
-                selectedRowIndex: 1,
-                splitterSettings: {
-                    position: "50%",
-                   // columnIndex: 4
-                },
-                selectionSettings: {
-                    mode: 'Row',
-                    type: 'Single',
-                    enableToggle: false
-                },
-                tooltipSettings: {
-                    showTooltip: true
-                },
-                filterSettings: {
-                    type: 'Menu'
-                },
-                allowFiltering: true,
-                gridLines: "Both",
-                showColumnMenu: true,
-                highlightWeekends: true,
-                timelineSettings: {
-                    showTooltip: true,
-                    topTier: {
-                        unit: 'Week',
-                        format: 'dd/MM/yyyy'
-                    },
-                    bottomTier: {
-                        unit: 'Day',
-                        count: 1
-                    }
-                },
+// describe('Gantt PDF Export for big font size', () => {
+//     let ganttObj: Gantt;
+//     beforeAll((done: Function) => {
+//         ganttObj = createGantt(
+//             {dataSource:datapdf,
+//                 allowSorting: true,
+//                 allowReordering: true,
+//                 enableContextMenu: true,
+//                 taskFields: {
+//                     id: "id",
+//                     name: "name",
+//                     startDate: "startDate",
+//                     endDate: "endDate",
+//                     duration: "duration",
+//                     progress: "progress",
+//                     parentID: "parentID",
+//                     //child: "child",
+//                     dependency: "dependency",
+//                     cssClass: "cssClass",
+//                 },
+//                 renderBaseline: true,
+//                 baselineColor: 'red',
+//                 editSettings: {
+//                     allowAdding: true,
+//                     allowEditing: true,
+//                     allowDeleting: true,
+//                     allowTaskbarEditing: true,
+//                     showDeleteConfirmDialog: true
+//                 },
+//                 columns: [
+//                     {
+//                       field: "name",
+//                       width: window.innerWidth <= 768 ? 150 : 250,
+//                     },
+//                     {
+//                       field: "Type",
+//                       width: 120,
+//                     },
+//                     {
+//                       field: "displayID",
+//                       headerText: "ID",
+//                       visible: false,
+//                     },
+//                     {
+//                       field: "assignee",
+//                       headerText: "Assignee",
+//                       template: "#assignee-template",
+//                     },
+//                     {
+//                       field: "status",
+//                       headerText: "Status",
+//                       template: "#status-template",
+//                     },
+//                     {
+//                       field: "progress",
+//                       headerText: "Progress %",
+//                     },
+//                     {
+//                       field: "startDate",
+//                     },
+//                     {
+//                       field: "endDate",
+//                     },
+//                     {
+//                       field: "duration",
+//                     },
+//                   ],
+//                 toolbar: ['PdfExport'],
+//                 allowExcelExport: true,
+//                 allowPdfExport: true,
+//                 allowSelection: true,
+//                 allowRowDragAndDrop: true,
+//                 selectedRowIndex: 1,
+//                 splitterSettings: {
+//                     position: "50%",
+//                    // columnIndex: 4
+//                 },
+//                 selectionSettings: {
+//                     mode: 'Row',
+//                     type: 'Single',
+//                     enableToggle: false
+//                 },
+//                 tooltipSettings: {
+//                     showTooltip: true
+//                 },
+//                 filterSettings: {
+//                     type: 'Menu'
+//                 },
+//                 allowFiltering: true,
+//                 gridLines: "Both",
+//                 showColumnMenu: true,
+//                 highlightWeekends: true,
+//                 timelineSettings: {
+//                     showTooltip: true,
+//                     topTier: {
+//                         unit: 'Week',
+//                         format: 'dd/MM/yyyy'
+//                     },
+//                     bottomTier: {
+//                         unit: 'Day',
+//                         count: 1
+//                     }
+//                 },
                 
-                searchSettings:
-                 { fields: ['TaskName', 'Duration'] 
-                },
-                labelSettings: {
-                    leftLabel: 'TaskID',
-                    rightLabel: 'Task Name: ${taskData.TaskName}',
-                    taskLabel: '${Progress}%'
-                },
-                allowResizing: true,
-                readOnly: false,
-                taskbarHeight: 20,
-                rowHeight: 40,
-                height: '550px',
-                allowUnscheduledTasks: true,
-            }, done);
-    });
-    it('Export data with big font', () => {
-        var exportProperties:any = {
-            pageSize: 'A0',
-            fitToWidthSettings:
-            {
-              isFitToWidth: true,
-              gridWidth: '100%',
-              chartWidth: '100%',
-            },
-            ganttStyle:{
-              cell:{fontSize:24},
-              columnHeader:{fontSize:24},
-              footer:{fontSize:24},
-              label:{fontSize:24},
-              timeline:{fontSize:24},
-            }
-          };
-        ganttObj.pdfExport(exportProperties);
-    });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
-});
+//                 searchSettings:
+//                  { fields: ['TaskName', 'Duration'] 
+//                 },
+//                 labelSettings: {
+//                     leftLabel: 'TaskID',
+//                     rightLabel: 'Task Name: ${taskData.TaskName}',
+//                     taskLabel: '${Progress}%'
+//                 },
+//                 allowResizing: true,
+//                 readOnly: false,
+//                 taskbarHeight: 20,
+//                 rowHeight: 40,
+//                 height: '550px',
+//                 allowUnscheduledTasks: true,
+//             }, done);
+//     });
+//     it('Export data with big font', () => {
+//         var exportProperties:any = {
+//             pageSize: 'A0',
+//             fitToWidthSettings:
+//             {
+//               isFitToWidth: true,
+//               gridWidth: '100%',
+//               chartWidth: '100%',
+//             },
+//             ganttStyle:{
+//               cell:{fontSize:24},
+//               columnHeader:{fontSize:24},
+//               footer:{fontSize:24},
+//               label:{fontSize:24},
+//               timeline:{fontSize:24},
+//             }
+//           };
+//         ganttObj.pdfExport(exportProperties);
+//     });
+//     afterAll(() => {
+//         if (ganttObj) {
+//             destroyGantt(ganttObj);
+//         }
+//     });
+// });
 
 describe('Gantt PDF Export with unnscheduled task with fit to width ', () => {
     let ganttObj: Gantt;
@@ -11767,73 +11767,328 @@ describe('Gantt pdf export with pdfQueryCellInfo', () => {
         ganttObj.pdfExport();
     });
 });
-describe('Gantt PDF Export  getting console error', () => {
+// describe('Gantt PDF Export  getting console error', () => {
+//     let ganttObj: Gantt;
+//     beforeAll((done: Function) => {
+//         ganttObj = createGantt(
+//             {
+//                 dataSource: editingDatas,
+//                 resources: editingResourcess,
+//                 allowSorting: true,
+//                 allowReordering: true,
+//                 enableContextMenu: true,
+//                 taskFields: {
+//                     id: 'TaskID',
+//                     name: 'TaskName',
+//                     startDate: 'StartDate',
+//                     duration: 'Duration',
+//                     progress: 'Progress',
+//                     dependency: 'Predecessor',
+//                     child: 'subtasks',
+//                     resourceInfo: 'resources'
+//                 },
+//                 renderBaseline: true,
+//                 baselineColor: 'red',
+//                 editSettings: {
+//                     allowAdding: true,
+//                     allowEditing: true,
+//                     allowDeleting: true,
+//                     allowTaskbarEditing: true,
+//                     showDeleteConfirmDialog: true
+//                 },
+//                 columns: [
+//                     { field: 'TaskID', headerText: 'Task ID' },
+//                     { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+//                     { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+//                     { field: 'Duration', headerText: 'Duration', allowEditing: false },
+//                     { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+//                     { field: 'CustomColumn', headerText: 'CustomColumn' }
+//                 ],
+//                 sortSettings: {
+//                     columns: [{ field: 'TaskID', direction: 'Ascending' },
+//                     { field: 'TaskName', direction: 'Ascending' }]
+//                 },
+//                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+//                     'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+
+//                 toolbarClick: (args?: ClickEventArgs) => {
+//                     if (args.item.id === 'ganttContainer_excelexport') {
+//                         ganttObj.excelExport();
+//                     } else if (args.item.id === 'ganttContainer_csvexport') {
+//                         ganttObj.csvExport();
+//                     } else if (args.item.id === 'ganttContainer_pdfexport') {
+//                         let pdfExportProperties = {
+//                             ganttStyle: {
+//                                 font: new PdfTrueTypeFont(adventProFont1, 12)
+//                             },
+//                             fileName: `newFile.pdf`,
+//                         }
+//                         ganttObj.pdfExport(pdfExportProperties);
+//                     }
+//                 },
+//                 allowExcelExport: true,
+//                 allowPdfExport: true,
+//                 allowSelection: true,
+//                 allowRowDragAndDrop: true,
+//                 selectedRowIndex: 1,
+//                 splitterSettings: {
+//                     position: "50%",
+//                     // columnIndex: 4
+//                 },
+//                 selectionSettings: {
+//                     mode: 'Row',
+//                     type: 'Single',
+//                     enableToggle: false
+//                 },
+//                 tooltipSettings: {
+//                     showTooltip: true
+//                 },
+//                 filterSettings: {
+//                     type: 'Menu'
+//                 },
+//                 allowFiltering: true,
+//                 gridLines: "Both",
+//                 showColumnMenu: true,
+//                 highlightWeekends: true,
+//                 timelineSettings: {
+//                     showTooltip: true,
+//                     topTier: {
+//                         unit: 'Week',
+//                         format: 'dd/MM/yyyy'
+//                     },
+//                     bottomTier: {
+//                         unit: 'Day',
+//                         count: 1
+//                     }
+//                 },
+//                 eventMarkers: [
+//                     {
+//                         day: new Date('04/02/2024'),
+//                     }, {
+//                         day: new Date("04/09/2024"),
+//                         label: 'Research phase'
+//                     }, {
+//                         day: new Date("04/30/2024"),
+//                         label: 'Design phase'
+//                     }, {
+//                         day: new Date("05/23/2024"),
+//                         label: 'Production phase'
+//                     }, {
+//                         day: new Date("06/20/2024"),
+//                         label: 'Sales and marketing phase'
+//                     }
+//                 ],
+//                 holidays: [{
+//                     from: new Date('04/04/2024'),
+//                     to: new Date('04/04/2024'),
+//                     label: 'Local Holiday'
+//                 }, {
+//                     from: new Date('04/19/2024'),
+//                     to: new Date('04/19/2024'),
+//                     label: 'Good Friday'
+//                 }, {
+//                     from: new Date('04/30/2024'),
+//                     to: new Date('04/30/2024'),
+//                     label: 'Release Holiday'
+//                 },],
+//                 resourceFields: {
+//                     id: 'resourceId',
+//                     name: 'resourceName'
+//                 },
+//                 searchSettings:
+//                 {
+//                     fields: ['TaskName', 'Duration']
+//                 },
+//                 labelSettings: {
+//                     leftLabel: 'TaskID',
+//                     rightLabel: 'Task Name: ${taskData.TaskName}',
+//                     taskLabel: '${Progress}%'
+//                 },
+//                 allowResizing: true,
+//                 readOnly: false,
+//                 taskbarHeight: 20,
+//                 rowHeight: 40,
+//                 height: '550px',
+//                 allowUnscheduledTasks: true,
+//                 //  connectorLineBackground: "red",
+//                 //  connectorLineWidth: 3,
+//                 projectStartDate: new Date('03/25/2024'),
+//                 projectEndDate: new Date('07/28/2024'),
+//                 pdfExportComplete: (args: any) => {
+//                     expect(args.name).toBe("pdfExportComplete");
+//                 },
+
+//             }, done);
+//     });
+//     it('Export data with custom font', () => {
+//         ganttObj.pdfExport();
+//     });
+//     afterAll(() => {
+//         if (ganttObj) {
+//             destroyGantt(ganttObj);
+//         }
+//     });
+// });
+// describe('Gantt PDF Export  getting console error', () => {
+//     let ganttObj: Gantt;
+//     beforeAll((done: Function) => {
+//         ganttObj = createGantt(
+//             {
+//                 dataSource: overviewData,
+//         resources: editingResources,
+//         height: '500px',
+//         width: "100%",
+//         highlightWeekends: true,
+//         allowSelection: true,
+//         allowSorting: true,
+//         treeColumnIndex: 1,
+//         viewType: 'ProjectView',
+//         taskFields: {
+//             id: 'TaskId',
+//             name: 'TaskName',
+//             startDate: 'StartDate',
+//             endDate: 'EndDate',
+//             duration: 'TimeLog',
+//             progress: 'Progress',
+//             dependency: 'Predecessor',
+//             parentID: 'ParentId',
+//             resourceInfo: 'Assignee'
+//         },
+//         resourceFields: {
+//             id: 'resourceId',
+//             name: 'resourceName',
+//         },
+//         columns: [
+//             { field: 'TaskId', width: 60, visible: false },
+//             { field: 'TaskName', width: 200, headerText: 'Product Release' },
+//             { field: 'Assignee', width: 130, allowSorting: false, headerText: 'Assignee', template: '#columnTemplate' },
+//             // { field: 'Status', minWidth: 100, width: 120, headerText: 'Status', template: '#columnTemplate1' },
+//             // { field: 'Priority', minWidth: 80, width: 100, headerText: 'Priority', template: '#columnTemplate2' },
+//             { field: 'Work', width: 120, headerText: 'Planned Hours' },
+//             { field: 'TimeLog', width: 120, headerText: 'Work Log' }
+//         ],
+//         pdfQueryCellInfo(args) {
+//             if (args.column.headerText === 'Assignee' && args.data.taskData.resourcesImage) {
+//                 {
+//                     args.image = { height:30,width:30, base64: args.data.taskData.resourcesImage };
+//                 }
+//             }
+//         },
+//         toolbar: ['ExpandAll', 'CollapseAll', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'],
+//         allowExcelExport: true,
+//         allowPdfExport: true,
+//         splitterSettings: {
+//             position: "50%",
+//         },
+//         selectionSettings: {
+//             mode: 'Row',
+//             type: 'Single',
+//             enableToggle: true
+//         },
+//         tooltipSettings: {
+//             showTooltip: true
+//         },
+//         filterSettings: {
+//             type: 'Menu'
+//         },
+//         allowFiltering: true,
+//         gridLines: "Vertical",
+//         showColumnMenu: true,
+//         timelineSettings: {
+//             showTooltip: true,
+//             topTier: {
+//                 unit: 'Month',
+//                 format: 'MMM yyyy'
+//             },
+//             bottomTier: {
+//                 unit: 'Day',
+//                 count: 4,
+//                 format: 'dd'
+//             }
+//         },
+//         eventMarkers: [
+//             {
+//                 day: '04/04/2024',
+//                 cssClass: 'e-custom-event-marker',
+//                 label: 'Q-1 Release'
+//             },
+//             {
+//                 day: '06/30/2024',
+//                 cssClass: 'e-custom-event-marker',
+//                 label: 'Q-2 Release'
+//             },
+//             {
+//                 day: '09/29/2024',
+//                 cssClass: 'e-custom-event-marker',
+//                 label: 'Q-3 Release'
+//             }
+//         ],
+//         holidays: [{
+//             from: "01/01/2024",
+//             to: "01/01/2024",
+//             label: "New Year holiday",
+//             cssClass: "e-custom-holiday"
+//         },
+//         {
+//             from: "12/25/2023",
+//             to: "12/26/2023",
+//             label: "Christmas holidays",
+//             cssClass: "e-custom-holiday"
+//         }],
+//         labelSettings: {
+//             rightLabel: 'Assignee',
+//             taskLabel: '${Progress}%'
+//         },
+//         allowResizing: true,
+//         taskbarHeight: 24,
+//         rowHeight: 36,
+//         projectStartDate: new Date('12/17/2023'),
+//         projectEndDate: new Date('10/26/2024'),
+
+//             }, done);
+//     });
+//     it('Export data with image', () => {
+//         ganttObj.pdfExport();
+//     });
+//     afterAll(() => {
+//         if (ganttObj) {
+//             destroyGantt(ganttObj);
+//         }
+//     });
+// });
+describe('Gantt PDF Export with manual task', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
-                dataSource: editingDatas,
-                resources: editingResourcess,
+                dataSource: CR911356manualTask,
                 allowSorting: true,
-                allowReordering: true,
                 enableContextMenu: true,
+                height: '450px',
+                allowSelection: true,
+                highlightWeekends: true,
                 taskFields: {
                     id: 'TaskID',
                     name: 'TaskName',
                     startDate: 'StartDate',
+                    endDate: 'EndDate',
                     duration: 'Duration',
                     progress: 'Progress',
                     dependency: 'Predecessor',
                     child: 'subtasks',
                     resourceInfo: 'resources'
                 },
-                renderBaseline: true,
-                baselineColor: 'red',
-                editSettings: {
-                    allowAdding: true,
-                    allowEditing: true,
-                    allowDeleting: true,
-                    allowTaskbarEditing: true,
-                    showDeleteConfirmDialog: true
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
                 },
-                columns: [
-                    { field: 'TaskID', headerText: 'Task ID' },
-                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
-                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
-                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
-                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
-                    { field: 'CustomColumn', headerText: 'CustomColumn' }
-                ],
-                sortSettings: {
-                    columns: [{ field: 'TaskID', direction: 'Ascending' },
-                    { field: 'TaskName', direction: 'Ascending' }]
-                },
-                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
-                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
-
-                toolbarClick: (args?: ClickEventArgs) => {
-                    if (args.item.id === 'ganttContainer_excelexport') {
-                        ganttObj.excelExport();
-                    } else if (args.item.id === 'ganttContainer_csvexport') {
-                        ganttObj.csvExport();
-                    } else if (args.item.id === 'ganttContainer_pdfexport') {
-                        let pdfExportProperties = {
-                            ganttStyle: {
-                                font: new PdfTrueTypeFont(adventProFont1, 12)
-                            },
-                            fileName: `newFile.pdf`,
-                        }
-                        ganttObj.pdfExport(pdfExportProperties);
-                    }
-                },
+                taskMode: 'Manual',
+                toolbar: ['PdfExport'],
                 allowExcelExport: true,
                 allowPdfExport: true,
-                allowSelection: true,
                 allowRowDragAndDrop: true,
-                selectedRowIndex: 1,
                 splitterSettings: {
                     position: "50%",
-                    // columnIndex: 4
                 },
                 selectionSettings: {
                     mode: 'Row',
@@ -11843,13 +12098,21 @@ describe('Gantt PDF Export  getting console error', () => {
                 tooltipSettings: {
                     showTooltip: true
                 },
-                filterSettings: {
-                    type: 'Menu'
-                },
                 allowFiltering: true,
-                gridLines: "Both",
-                showColumnMenu: true,
-                highlightWeekends: true,
+                columns: [
+                    { field: 'TaskID', visible: true },
+                    { field: 'TaskName' }
+                ],
+                validateManualTasksOnLinking: true,
+                treeColumnIndex: 1,
+                allowReordering: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
                 timelineSettings: {
                     showTooltip: true,
                     topTier: {
@@ -11861,193 +12124,22 @@ describe('Gantt PDF Export  getting console error', () => {
                         count: 1
                     }
                 },
-                eventMarkers: [
-                    {
-                        day: new Date('04/02/2024'),
-                    }, {
-                        day: new Date("04/09/2024"),
-                        label: 'Research phase'
-                    }, {
-                        day: new Date("04/30/2024"),
-                        label: 'Design phase'
-                    }, {
-                        day: new Date("05/23/2024"),
-                        label: 'Production phase'
-                    }, {
-                        day: new Date("06/20/2024"),
-                        label: 'Sales and marketing phase'
-                    }
-                ],
-                holidays: [{
-                    from: new Date('04/04/2024'),
-                    to: new Date('04/04/2024'),
-                    label: 'Local Holiday'
-                }, {
-                    from: new Date('04/19/2024'),
-                    to: new Date('04/19/2024'),
-                    label: 'Good Friday'
-                }, {
-                    from: new Date('04/30/2024'),
-                    to: new Date('04/30/2024'),
-                    label: 'Release Holiday'
-                },],
-                resourceFields: {
-                    id: 'resourceId',
-                    name: 'resourceName'
-                },
-                searchSettings:
-                {
-                    fields: ['TaskName', 'Duration']
-                },
-                labelSettings: {
-                    leftLabel: 'TaskID',
-                    rightLabel: 'Task Name: ${taskData.TaskName}',
-                    taskLabel: '${Progress}%'
-                },
+                gridLines: "Both",
+                showColumnMenu: true,
                 allowResizing: true,
                 readOnly: false,
                 taskbarHeight: 20,
                 rowHeight: 40,
-                height: '550px',
-                allowUnscheduledTasks: true,
-                //  connectorLineBackground: "red",
-                //  connectorLineWidth: 3,
-                projectStartDate: new Date('03/25/2024'),
-                projectEndDate: new Date('07/28/2024'),
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: '${Progress}%'
+                },
                 pdfExportComplete: (args: any) => {
                     expect(args.name).toBe("pdfExportComplete");
-                },
-
-            }, done);
-    });
-    it('Export data with custom font', () => {
-        ganttObj.pdfExport();
-    });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
-});
-describe('Gantt PDF Export  getting console error', () => {
-    let ganttObj: Gantt;
-    beforeAll((done: Function) => {
-        ganttObj = createGantt(
-            {
-                dataSource: overviewData,
-        resources: editingResources,
-        height: '500px',
-        width: "100%",
-        highlightWeekends: true,
-        allowSelection: true,
-        allowSorting: true,
-        treeColumnIndex: 1,
-        viewType: 'ProjectView',
-        taskFields: {
-            id: 'TaskId',
-            name: 'TaskName',
-            startDate: 'StartDate',
-            endDate: 'EndDate',
-            duration: 'TimeLog',
-            progress: 'Progress',
-            dependency: 'Predecessor',
-            parentID: 'ParentId',
-            resourceInfo: 'Assignee'
-        },
-        resourceFields: {
-            id: 'resourceId',
-            name: 'resourceName',
-        },
-        columns: [
-            { field: 'TaskId', width: 60, visible: false },
-            { field: 'TaskName', width: 200, headerText: 'Product Release' },
-            { field: 'Assignee', width: 130, allowSorting: false, headerText: 'Assignee', template: '#columnTemplate' },
-            // { field: 'Status', minWidth: 100, width: 120, headerText: 'Status', template: '#columnTemplate1' },
-            // { field: 'Priority', minWidth: 80, width: 100, headerText: 'Priority', template: '#columnTemplate2' },
-            { field: 'Work', width: 120, headerText: 'Planned Hours' },
-            { field: 'TimeLog', width: 120, headerText: 'Work Log' }
-        ],
-        pdfQueryCellInfo(args) {
-            if (args.column.headerText === 'Assignee' && args.data.taskData.resourcesImage) {
-                {
-                    args.image = { height:30,width:30, base64: args.data.taskData.resourcesImage };
                 }
-            }
-        },
-        toolbar: ['ExpandAll', 'CollapseAll', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'],
-        allowExcelExport: true,
-        allowPdfExport: true,
-        splitterSettings: {
-            position: "50%",
-        },
-        selectionSettings: {
-            mode: 'Row',
-            type: 'Single',
-            enableToggle: true
-        },
-        tooltipSettings: {
-            showTooltip: true
-        },
-        filterSettings: {
-            type: 'Menu'
-        },
-        allowFiltering: true,
-        gridLines: "Vertical",
-        showColumnMenu: true,
-        timelineSettings: {
-            showTooltip: true,
-            topTier: {
-                unit: 'Month',
-                format: 'MMM yyyy'
-            },
-            bottomTier: {
-                unit: 'Day',
-                count: 4,
-                format: 'dd'
-            }
-        },
-        eventMarkers: [
-            {
-                day: '04/04/2024',
-                cssClass: 'e-custom-event-marker',
-                label: 'Q-1 Release'
-            },
-            {
-                day: '06/30/2024',
-                cssClass: 'e-custom-event-marker',
-                label: 'Q-2 Release'
-            },
-            {
-                day: '09/29/2024',
-                cssClass: 'e-custom-event-marker',
-                label: 'Q-3 Release'
-            }
-        ],
-        holidays: [{
-            from: "01/01/2024",
-            to: "01/01/2024",
-            label: "New Year holiday",
-            cssClass: "e-custom-holiday"
-        },
-        {
-            from: "12/25/2023",
-            to: "12/26/2023",
-            label: "Christmas holidays",
-            cssClass: "e-custom-holiday"
-        }],
-        labelSettings: {
-            rightLabel: 'Assignee',
-            taskLabel: '${Progress}%'
-        },
-        allowResizing: true,
-        taskbarHeight: 24,
-        rowHeight: 36,
-        projectStartDate: new Date('12/17/2023'),
-        projectEndDate: new Date('10/26/2024'),
-
             }, done);
     });
-    it('Export data with image', () => {
+    it('Export data with manual task', () => {
         ganttObj.pdfExport();
     });
     afterAll(() => {

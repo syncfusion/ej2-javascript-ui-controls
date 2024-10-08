@@ -199,6 +199,10 @@
   display: block;
 }
 
+.e-multiselect.e-input-group.e-control-wrapper:not(.e-control-container) .e-multi-select-wrapper.e-down-icon .e-chips-collection {
+  margin-right: 30px;
+}
+
 .e-multi-select-wrapper .e-multi-hidden {
   border: 0;
   height: 0;

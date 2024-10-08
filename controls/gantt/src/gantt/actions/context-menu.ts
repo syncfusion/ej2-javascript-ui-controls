@@ -102,6 +102,9 @@ export class ContextMenu {
         let data: Object; let taskfields: TaskFieldsModel;
         const parentItem: ContextMenuItemModel = getValue('parentObj', args.item);
         let index: number = -1;
+        args.type = 'Content';
+        args.rowData = this.rowData;
+        this.parent.trigger('contextMenuClick', args);
         if (parentItem && !isNullOrUndefined(parentItem.id) && this.getKeyFromId(parentItem.id) === 'DeleteDependency') {
             index = parentItem.items.indexOf(args.item);
         }
@@ -233,9 +236,6 @@ export class ContextMenu {
             this.splitTaskCall(args);
             break;
         }
-        args.type = 'Content';
-        args.rowData = this.rowData;
-        this.parent.trigger('contextMenuClick', args);
     }
 
     private splitTaskCall(args: CMenuClickEventArgs): void {

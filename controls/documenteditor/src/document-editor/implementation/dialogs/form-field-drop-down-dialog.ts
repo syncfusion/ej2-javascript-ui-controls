@@ -293,8 +293,8 @@ export class DropDownFormFieldDialog {
      * @returns {void}
      */
     public addItemtoList = (): void => {
-        this.dropDownItems.push(SanitizeHtmlHelper.sanitize((this.drpDownItemsInput as HTMLInputElement).value));
-        this.currentSelectedItem = SanitizeHtmlHelper.sanitize((this.drpDownItemsInput as HTMLInputElement).value);
+        this.dropDownItems.push((this.drpDownItemsInput as HTMLInputElement).value);
+        this.currentSelectedItem = (this.drpDownItemsInput as HTMLInputElement).value;
         (this.drpDownItemsInput as HTMLInputElement).value = '';
         this.enableOrDisableButton();
         this.updateList();
@@ -429,8 +429,8 @@ export class DropDownFormFieldDialog {
         let dropDownField: DropDownFormField = new DropDownFormField();
         dropDownField.dropdownItems = this.dropDownItems;
         dropDownField.selectedIndex = 0;
-        dropDownField.name = SanitizeHtmlHelper.sanitize(this.bookmarkInput.value);
-        dropDownField.helpText = SanitizeHtmlHelper.sanitize(this.tooltipInput.value);
+        dropDownField.name = this.bookmarkInput.value;
+        dropDownField.helpText = this.tooltipInput.value;
         dropDownField.enabled = this.dropDownEnable.checked;
         this.owner.editorModule.editFormField('DropDown', dropDownField);
         this.closeDropDownField();

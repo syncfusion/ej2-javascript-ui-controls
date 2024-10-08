@@ -7,6 +7,7 @@ import { Menu, MenuEventArgs, BeforeOpenCloseMenuEventArgs, Item, MenuItem } fro
 import { SelectEventArgs as TabSelectEventArgs } from '@syncfusion/ej2-navigations';
 import { RibbonModel, RibbonItemModel, RibbonHeaderModel } from './ribbon-model';
 import { SelectEventArgs } from '@syncfusion/ej2-dropdowns';
+import { Spreadsheet } from '../spreadsheet/base';
 
 /**
  * Objects used for configuring the Ribbon tab header properties.
@@ -131,6 +132,15 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
      */
     @Collection<RibbonItemModel>([], RibbonItem)
     public items: RibbonItemModel[];
+
+    /**
+     * Specifies the spreadsheet instance.
+     *
+     * @default null
+     * @hidden
+     */
+    @Property(null)
+    private spreadInstance: Spreadsheet;
 
     /**
      * Triggers while selecting the tab item.
@@ -349,6 +359,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                     if (args.selectingIndex === this.getIndex(this.selectedTab)) { return; }
                     this.updateToolbar(this.getIndex(args.selectingIndex, true));
                     this.toolbarObj.dataBind();
+                    this.refreshTemplateItems(this.toolbarObj); // To refresh template items in the toolbar.
                     if (this.element.classList.contains('e-collapsed')) {
                         EventHandler.remove(args.selectedItem, 'click', this.ribbonExpandCollapse);
                     }
@@ -410,6 +421,14 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     private updateToolbar(index: number): void {
         this.toolbarObj.items = this.items[index as number].content; this.toolbarObj.dataBind();
+    }
+
+    private refreshTemplateItems(toolbarInstance?: Toolbar): void {
+        if (this.spreadInstance && this.spreadInstance.isReact && this.spreadInstance.portals &&
+            toolbarInstance && toolbarInstance.portals) {
+            this.spreadInstance.portals = this.spreadInstance.portals.concat(toolbarInstance.portals);
+            this.spreadInstance['renderReactTemplates']();
+        }
     }
 
     /**

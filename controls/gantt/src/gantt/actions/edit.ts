@@ -1006,6 +1006,19 @@ export class Edit {
         this.parent.dialogValidateMode.respectLink = false;
     }
 
+    private validateChildPredecessors(): void {
+        for (let i: number = 0; i < this.parent.predecessorModule.validatedChildItems.length; i++) {
+            const child: IGanttData = this.parent.predecessorModule.validatedChildItems[i as number];
+            if (child.ganttProperties.predecessor && child.ganttProperties.predecessor.length > 0) {
+                this.parent.editedTaskBarItem = child;
+                if (!this.isValidatedEditedRecord) {
+                    this.isFirstCall = true;
+                }
+                this.parent.predecessorModule.validatePredecessor(child, [], '');
+            }
+        }
+    }
+
     /**
      *
      * @param {ITaskAddedEventArgs} args - Edited event args like taskbar editing, dialog editing, cell editing
@@ -1025,16 +1038,7 @@ export class Edit {
         if ((this.parent.isConnectorLineUpdate || (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'])) && this.parent.autoCalculateDateScheduling &&
             !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)) {
             /* validating predecessor for updated child items */
-            for (let i: number = 0; i < this.parent.predecessorModule.validatedChildItems.length; i++) {
-                const child: IGanttData = this.parent.predecessorModule.validatedChildItems[i as number];
-                if (child.ganttProperties.predecessor && child.ganttProperties.predecessor.length > 0) {
-                    this.parent.editedTaskBarItem = child;
-                    if (!this.isValidatedEditedRecord) {
-                        this.isFirstCall = true;
-                    }
-                    this.parent.predecessorModule.validatePredecessor(child, [], '');
-                }
-            }
+            this.validateChildPredecessors();
             /** validating predecessor for current edited records */
             if (ganttRecord.ganttProperties.predecessor) {
                 this.parent.isMileStoneEdited = ganttRecord.ganttProperties.isMilestone;
@@ -1051,8 +1055,9 @@ export class Edit {
             this.parent.predecessorModule.isValidatedParentTaskID = '';
             if (this.parent.allowParentDependency && this.parent.predecessorModule.isValidatedParentTaskID !==
                 ganttRecord.ganttProperties.taskId && ganttRecord.hasChildRecords &&
-                this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate && (args.action === 'DrawConnectorLine')) {
+                this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate) {
                 this.parent.predecessorModule['updateChildItems'](ganttRecord);
+                this.validateChildPredecessors();
             }
             this.parent.predecessorModule.isValidatedParentTaskID = '';
             if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
@@ -1380,6 +1385,12 @@ export class Edit {
                 this.resetEditProperties(eventArgs);
                 // Trigger action complete event with save canceled request type
             } else {
+                // To update task data for modified records.
+                if (eventArg.modifiedRecords) {
+                    for (let i: number = 0; i < eventArg.modifiedRecords.length; i++) {
+                        this.parent.dataOperation.updateTaskData(eventArg.modifiedRecords[i as number]);
+                    }
+                }
                 eventArg.modifiedTaskData = getTaskData(eventArg.modifiedRecords, null, null, this.parent);
                 if (isRemoteData(this.parent.dataSource)) {
                     const data: DataManager = this.parent.dataSource as DataManager;
@@ -2552,6 +2563,13 @@ export class Edit {
             const recordIndex : number = this.parent.flatData.indexOf(deletedRecords[deletedRecords.length - 1]);
             this.parent.staticSelectedRowIndex = this.parent.selectedRowIndex = recordIndex;
             const record : IGanttData = this.parent.flatData[this.parent.selectedRowIndex + 1];
+            if (this.parent.enableVirtualization) {
+                // perform toolbar CollapseAll later delete action issue handle
+                if (!this.parent.isCollapseAll) {
+                    // Random parent record delete action, maintaining proper record selection
+                    this.parent.staticSelectedRowIndex = (recordIndex - (deletedRecords.length - 1));
+                }
+            }
             if (!isNullOrUndefined(record)) {
                 this.parent.currentSelection = record;
             }
@@ -3452,6 +3470,9 @@ export class Edit {
             }
             let args: ITaskAddedEventArgs = {};
             args = this.constructTaskAddedEventArgs(cAddedRecord, this.parent.editedRecords, 'beforeAdd');
+            if (!isNullOrUndefined(rowPosition)) {
+                args.rowPosition = rowPosition;
+            }
             if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent['isUndoRedoItemPresent']('Add')) {
                 if (this.parent.undoRedoModule['redoEnabled']) {
                     this.parent.undoRedoModule['disableRedo']();

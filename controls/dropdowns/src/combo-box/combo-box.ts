@@ -1080,6 +1080,7 @@ export class ComboBox extends DropDownList {
         super.render();
         this.setSearchBox();
         this.renderComplete();
+        this.autoFill = this.autofill;
     }
     /**
      * Return the module name of this component.

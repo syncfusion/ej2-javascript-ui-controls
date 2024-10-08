@@ -1662,14 +1662,13 @@ export class Editor {
             }
             this.selection.showHidePasteOptions(undefined, undefined);
         }
+        if (this.documentHelper.owner.isLayoutEnabled && !this.documentHelper.owner.editorModule.isUserInsert && !this.documentHelper.owner.isShiftingEnabled && !this.isSkipOperationsBuild && !this.isRemoteAction) {
+            this.documentHelper.owner.fireContentChange();
+        }
         if (!isNullOrUndefined(this.owner.optionsPaneModule) && this.owner.optionsPaneModule.isOptionsPaneShow
             && !this.owner.optionsPaneModule.isUpdateHeading && this.selection.paragraphFormat.outlineLevel !== 'BodyText') {
             this.owner.optionsPaneModule.updateHeadingTab();
         }
-        if (this.documentHelper.owner.isLayoutEnabled && !this.documentHelper.owner.editorModule.isUserInsert && !this.documentHelper.owner.isShiftingEnabled && !this.isSkipOperationsBuild && !this.isRemoteAction) {
-            this.documentHelper.owner.fireContentChange();
-        }
-
         if (this.owner.isSpellCheck && !isNullOrUndefined(this.selection.editPosition)) {
             this.triggerPageSpellCheck = false;
         }
@@ -2426,6 +2425,12 @@ export class Editor {
         }
         if (!isNullOrUndefined(sFormat.strikethrough) && format.strikethrough !== sFormat.strikethrough) {
             insertFormat.strikethrough = sFormat.strikethrough;
+        }
+        if (!isNullOrUndefined(sFormat.boldBidi) && format.boldBidi !== sFormat.boldBidi) {
+            insertFormat.boldBidi = sFormat.boldBidi;
+        }
+        if (!isNullOrUndefined(sFormat.italicBidi) && format.italicBidi !== sFormat.italicBidi) {
+            insertFormat.italicBidi = sFormat.italicBidi;
         }
         return insertFormat;
     }
@@ -12387,8 +12392,14 @@ export class Editor {
             return;
         }
         if (property === 'bold') {
+            if (this.isRTLFormat(format)) {
+                format.boldBidi = format.bold == format.boldBidi ? value as boolean : !value as boolean;
+            }
             format.bold = value as boolean;
         } else if (property === 'italic') {
+            if (this.isRTLFormat(format)) {
+                format.italicBidi = format.italic == format.italicBidi ? value as boolean : !value as boolean;
+            }
             format.italic = value as boolean;
         } else if (property === 'fontColor') {
             format.fontColor = value as string;
@@ -12418,6 +12429,10 @@ export class Editor {
                 this.editorHistory.currentBaseHistoryInfo.insertedFormat = format.fontColor;
             }
         }
+    }
+    private isRTLFormat(format: WCharacterFormat): boolean {
+        return format.bidi || format.complexScript || (!isNullOrUndefined(format.ownerBase) &&
+            format.ownerBase instanceof TextElementBox && this.documentHelper.textHelper.getRtlLanguage(format.ownerBase.text).isRtl);
     }
     /**
      * @private
@@ -22534,9 +22549,10 @@ export class Editor {
 
             if (widget instanceof ParagraphWidget && (this.isHeadingStyle(widget) || (tocSettings.includeOutlineLevels && this.isOutlineLevelStyle(widget)))) {
                 const bookmarkName: string = this.insertTocBookmark(widget);
-
-                this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat, isNavigationPane);
-                isFirstPara = false;
+                if (!isNullOrUndefined(bookmarkName)) {
+                    this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat, isNavigationPane);
+                    isFirstPara = false;
+                }
             }
             widget = this.selection.getNextParagraphBlock((widget as ParagraphWidget).getSplitWidgets().pop() as ParagraphWidget);
         }
@@ -22831,7 +22847,7 @@ export class Editor {
                     return (startElement as BookmarkElementBox).name;
                 }
                 const endElement: ElementBox = endLine.children[endLine.children.length - 1];
-                if ((startElement !== undefined) && (endElement !== undefined)) {
+                if ((startElement !== undefined) && (endElement !== undefined) && !this.isRemoteAction) {
                     this.selection.start.setPositionForSelection(startLine, startElement, 0, this.selection.start.location);
                     this.selection.end.setPositionForSelection(endLine, endElement, endElement.length, this.selection.end.location);
                     bookmarkName = this.generateBookmarkName();

@@ -1688,6 +1688,26 @@ describe('ListBox', () => {
             (listObj as any).isAngular = true;
             clearEle.click();
         });
+        it('Item template with filtering sample', () => {
+            listObj = new ListBox({ dataSource: data, itemTemplate: '<div class="ename"> ${text} </div>', allowFiltering: true }, elem);
+            var ele = listObj.list.getElementsByClassName('e-input-filter')[0];
+            var clearEle = listObj.list.getElementsByClassName('e-input-group-icon')[0];
+            ele.click();
+            ele.value = "j";
+            listObj.dataBind();
+            listObj.keyDownStatus = true;
+            listObj.onInput();
+            listObj.KeyUp({ preventDefault: function () { }, altKey: false, ctrlKey: false, shiftKey: false, char: '', key: 'j',
+                charCode: 22, keyCode: 74, which: 22, code: 22 });
+            expect(listObj.list.getElementsByClassName('e-input-filter')[0]).not.toBeNull();
+            clearEle.click();
+            expect(listObj.list.getElementsByClassName('e-input-filter')[0]).not.toBeNull();
+            ele = listObj.list.getElementsByClassName('e-input-filter')[0];
+            ele.click();
+            ele.value = "\t\t";
+            listObj.dataBind();
+            listObj.dataUpdater([]);
+        });
     });
     describe('Coverage improvements toolbar', () => {
         let elem1: HTMLElement = createElement('input', { id: 'listbox4' });

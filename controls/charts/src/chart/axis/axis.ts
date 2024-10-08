@@ -1273,7 +1273,11 @@ export class Axis extends ChildProperty<Axis> {
                     this.enableTrim ? (<string[]>label.text).join('<br>') : label.originalText, this.labelStyle, chart.themeStyle.axisLabelFont
                 );
             } else {
-                label.size = measureText(<string>label.text, this.labelStyle, chart.themeStyle.axisLabelFont);
+                if ((this.angle === -90 || this.angle === 90 || this.angle === 270 || this.angle === -270) && this.orientation === 'Vertical') {
+                    label.size = rotateTextSize(this.labelStyle, <string>label.text, this.angle, chart, chart.themeStyle.axisLabelFont);
+                } else {
+                    label.size = measureText(<string>label.text, this.labelStyle, chart.themeStyle.axisLabelFont);
+                }
             }
             const width: number = isAxisLabelBreak ? label.breakLabelSize.width : label.size.width;
             if (width > this.maxLabelSize.width) {

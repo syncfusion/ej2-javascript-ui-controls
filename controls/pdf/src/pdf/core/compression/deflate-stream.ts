@@ -1,3 +1,4 @@
+import { _isNullOrUndefined } from '../utils';
 import { _Inflater } from './inflater';
 
 export class _DeflateStream {
@@ -7,9 +8,15 @@ export class _DeflateStream {
     _buffer: number[];
     _inflater: _Inflater;
     constructor(data: number[], offset: number, leaveOpen: boolean) {
+        if (_isNullOrUndefined(data)) {
+            this._data = data;
+        } else {
+            this._data = [];
+        }
+        if (_isNullOrUndefined(leaveOpen)) {
+            this._leaveOpen = leaveOpen;
+        }
         this._offset = offset;
-        this._data = data;
-        this._leaveOpen = leaveOpen;
         this._inflater = new _Inflater();
         this._buffer = Array<number>(8192).fill(0);
     }
@@ -40,7 +47,7 @@ export class _DeflateStream {
         return {count: count - rCount, data: array};
     }
     _readBytes(): {buffer: number[], count: number} {
-        if (this._offset >= this._data.length) {
+        if (_isNullOrUndefined(this._offset) && this._offset >= this._data.length) {
             return {buffer: [], count: 0};
         } else {
             let count: number = 0;

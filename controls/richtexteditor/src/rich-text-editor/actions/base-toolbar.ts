@@ -194,7 +194,7 @@ export class BaseToolbar {
                 const tooltipText : string = items[num as number].tooltipText;
                 let shortCutKey : string;
                 const isMacDev: boolean = window.navigator.platform.toLocaleLowerCase().includes('mac');
-                if (windowKeys[`${tooltipText}`]){
+                if (windowKeys[`${tooltipText}`] && (!isNullOrUndefined(items[num as number].id) || !isNullOrUndefined(items[num as number].cssClass))) {
                     shortCutKey = isMacDev ? windowKeys[`${tooltipText}`].replace('Ctrl+', '⌘').replace('Shift+', '⇧').replace('Alt+', '⌥') : windowKeys[`${tooltipText}`];
                 }
                 else{

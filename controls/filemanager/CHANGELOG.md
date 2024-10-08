@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I632755` - The issue with mobile mode tap events in File Manager component large icons view has been resolved.
+- `#I634920` - The issue with multiple selection in File Manager component details view has been resolved.
+
 ## 27.1.51 (2024-09-30)
 
 ### FileManager

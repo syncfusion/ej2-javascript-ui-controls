@@ -2475,8 +2475,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     }
                     else {
                         const oldFocussedNode: HTMLElement = this.treeObj.element.querySelector('.e-node-focus');
-                        focusedElement = this.treeObj.element.querySelector('li[tabindex="0"]:not(.e-disable):not(.e-prevent)') ||
-                                         this.treeObj.element.querySelector('li:not(.e-disable):not(.e-prevent)');
+                        focusedElement = this.treeObj.element.querySelector('li[tabindex="0"]:not(.e-disable)') ||
+                                         this.treeObj.element.querySelector('li:not(.e-disable)');
                         if (oldFocussedNode && oldFocussedNode !== focusedElement) {
                             oldFocussedNode.setAttribute('tabindex', '-1');
                             removeClass([oldFocussedNode], 'e-node-focus');

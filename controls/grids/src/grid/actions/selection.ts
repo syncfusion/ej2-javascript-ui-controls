@@ -2774,9 +2774,9 @@ export class Selection implements IAction {
     private dataSuccess(res: Object[]): void {
         for (let i: number = 0; i < res.length; i++) {
             const pkValue: string = this.getPkValue(this.primaryKey, res[parseInt(i.toString(), 10)]);
-            const chkValue: boolean = res[parseInt(i.toString(), 10)][this.chkField];
-            if (isNullOrUndefined(this.selectedRowState[`${pkValue}`]) && chkValue && typeof chkValue === 'boolean') {
-                this.selectedRowState[`${pkValue}`] = chkValue;
+            const checkedFieldData: boolean = res[parseInt(i.toString(), 10)][this.chkField];
+            if (isNullOrUndefined(this.selectedRowState[`${pkValue}`]) && checkedFieldData && typeof checkedFieldData === 'boolean') {
+                this.selectedRowState[`${pkValue}`] = checkedFieldData;
                 if (this.parent.isPersistSelection) {
                     this.persistSelectedData.push(res[parseInt(i.toString(), 10)]);
                 }

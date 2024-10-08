@@ -1,9 +1,11 @@
+
 /**
  * Gantt virtual scroll spec
  */
 
+import { getValue } from '@syncfusion/ej2-base';
 import { Gantt, Edit, Toolbar, Selection, Filter, VirtualScroll, Sort, CriticalPath, DayMarkers } from '../../src/index';
-import { virtualData } from '../base/data-source.spec';
+import { virtualData, releaseVirtualData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 Gantt.Inject(Edit, Toolbar, Selection, Filter, VirtualScroll, Sort, CriticalPath, DayMarkers);
 interface EJ2Instance extends HTMLElement {
@@ -670,6 +672,240 @@ describe('Top value with Scale', () => {
         ganttObj.enableVirtualization = false;
         ganttObj.isVirtualScroll = true;
         ganttObj.treeGrid.dataBound();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+// describe('CR:911375-Scroll jumps when delete random parent record with virtualization', () => {
+//     Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, VirtualScroll, Sort);
+//     let ganttObj: Gantt;
+//     beforeAll((done: Function) => {
+//         ganttObj = createGantt(
+//         {
+//             dataSource: releaseVirtualData,
+//             treeColumnIndex: 1,
+//             taskFields: {
+//                 id: 'TaskID',
+//                 name: 'TaskName',
+//                 startDate: 'StartDate',
+//                 duration: 'Duration',
+//                 progress: 'Progress',
+//                 parentID: 'parentID'
+//             },
+//             enableVirtualization: true,
+//             enableTimelineVirtualization: true,
+//             editSettings: {
+//                 allowAdding: true,
+//                 allowEditing: true,
+//                 allowDeleting: true,
+//                 allowTaskbarEditing: true
+//             },
+//             allowReordering: true,
+//             enableContextMenu: true,
+//             columns: [
+//                 { field: 'TaskID' },
+//                 { field: 'TaskName' },
+//                 { field: 'StartDate' },
+//                 { field: 'Duration' },
+//                 { field: 'Progress' },
+//             ],
+//             toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search'],
+//             allowSelection: true,
+//             allowRowDragAndDrop: true,
+//             highlightWeekends: true,
+//             allowFiltering: true,
+//             gridLines: 'Both',
+//             height: '550px',
+//             timelineSettings: {
+//                 showTooltip: true,
+//                 topTier: {
+//                     unit: 'Week',
+//                     format: 'dd/MM/yyyy'
+//                 },
+//                 bottomTier: {
+//                     unit: 'Day',
+//                     count: 1
+//                 }
+//             },
+//             allowResizing: true,
+//             splitterSettings: {
+//                 columnIndex: 3
+//             },
+//         }, done);
+//     });
+//     beforeEach((done: Function) => {
+//         setTimeout(done, 500);
+//     });
+//     it('Delete a random parent record in virtual mode', (done: Function) => {
+//         ganttObj.rowSelected = (args: any) => {
+//             if (args.name === "rowSelected" && args.rowIndex === 47) {
+//                 // Except selected record TaskID after delete action
+//                 expect(ganttObj.selectedRowIndex).toBe(47);
+//                 expect(getValue('TaskID', ganttObj.flatData[ganttObj.selectedRowIndex])).toBe(55);
+//                 done();
+//             }
+//         };
+//         ganttObj.editModule.deleteRecord(48);
+//     });
+//     afterAll(() => {
+//         if (ganttObj) {
+//             destroyGantt(ganttObj);
+//         }
+//     });
+// });
+// describe('CR:911375-Scroll jumps when delete last parent record with virtualization', () => {
+//     Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, VirtualScroll, Sort);
+//     let ganttObj: Gantt;
+//     beforeAll((done: Function) => {
+//         ganttObj = createGantt(
+//         {
+//             dataSource: releaseVirtualData,
+//             treeColumnIndex: 1,
+//             taskFields: {
+//                 id: 'TaskID',
+//                 name: 'TaskName',
+//                 startDate: 'StartDate',
+//                 duration: 'Duration',
+//                 progress: 'Progress',
+//                 parentID: 'parentID'
+//             },
+//             enableVirtualization: true,
+//             enableTimelineVirtualization: true,
+//             editSettings: {
+//                 allowAdding: true,
+//                 allowEditing: true,
+//                 allowDeleting: true,
+//                 allowTaskbarEditing: true
+//             },
+//             allowReordering: true,
+//             enableContextMenu: true,
+//             columns: [
+//                 { field: 'TaskID' },
+//                 { field: 'TaskName' },
+//                 { field: 'StartDate' },
+//                 { field: 'Duration' },
+//                 { field: 'Progress' },
+//             ],
+//             toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search'],
+//             allowSelection: true,
+//             allowRowDragAndDrop: true,
+//             highlightWeekends: true,
+//             allowFiltering: true,
+//             gridLines: 'Both',
+//             height: '550px',
+//             timelineSettings: {
+//                 showTooltip: true,
+//                 topTier: {
+//                     unit: 'Week',
+//                     format: 'dd/MM/yyyy'
+//                 },
+//                 bottomTier: {
+//                     unit: 'Day',
+//                     count: 1
+//                 }
+//             },
+//             allowResizing: true,
+//             splitterSettings: {
+//                 columnIndex: 3
+//             },
+//         }, done);
+//     });
+//     beforeEach((done: Function) => {
+//         setTimeout(done, 500);
+//     });
+//     it('Delete a last parent record in virtual mode', () => {
+//         ganttObj.rowSelected = (args: any) => {
+//             if (args.name === "rowSelected" && args.rowIndex === 0) {
+//                 // Except selected record TaskID after delete action
+//                 expect(ganttObj.selectedRowIndex).toBe(0);
+//                 expect(getValue('TaskID', ganttObj.flatData[ganttObj.selectedRowIndex])).toBe(1);
+//             }
+//         };
+//         ganttObj.editModule.deleteRecord(2048);
+//     });
+//     afterAll(() => {
+//         if (ganttObj) {
+//             destroyGantt(ganttObj);
+//         }
+//     });
+// });
+describe('Adding new record while newRowPosition is Bottom in virtual mode', () => {
+    Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, VirtualScroll, Sort);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: releaseVirtualData,
+            treeColumnIndex: 1,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                parentID: 'parentID'
+            },
+            enableVirtualization: true,
+            enableTimelineVirtualization: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                newRowPosition: 'Bottom'
+            },
+            allowReordering: true,
+            enableContextMenu: true,
+            columns: [
+                { field: 'TaskID' },
+                { field: 'TaskName' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search'],
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            highlightWeekends: true,
+            allowFiltering: true,
+            gridLines: 'Both',
+            height: '550px',
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            allowResizing: true,
+            splitterSettings: {
+                columnIndex: 3
+            },
+        }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('Checking selectedRowIndex value while newRowPosition is Bottom in virtual mode', (done: Function) => {
+        ganttObj.rowSelected = (args: any) => {
+            if (args.name === "rowSelected" && args.rowIndex === 2050) {
+                // Except selected record TaskID after toolbar add action
+                expect(ganttObj.selectedRowIndex).toBe(2050);
+                expect(getValue('TaskID', ganttObj.flatData[ganttObj.selectedRowIndex])).toBe(2051);
+                done();
+            }
+        };
+        let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+        triggerMouseEvent(add, 'click');
+        let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
+        triggerMouseEvent(save, 'click');
     });
     afterAll(() => {
         if (ganttObj) {

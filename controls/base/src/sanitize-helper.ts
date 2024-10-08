@@ -49,6 +49,7 @@ const removeTags: string[] = [
 
 const removeAttrs: SanitizeRemoveAttrs[] = [
     { attribute: 'href', selector: '[href*="javascript:"]' },
+    { attribute: 'href', selector: 'a[href]' },
     { attribute: 'background', selector: '[background^="javascript:"]' },
     { attribute: 'style', selector: '[style*="javascript:"]' },
     { attribute: 'style', selector: '[style*="expression("]' },
@@ -214,9 +215,17 @@ export class SanitizeHtmlHelper {
         this.removeAttrs.forEach((item: { [key: string]: string }, index: number) => {
             const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(item.selector);
             if (elements.length > 0) {
-                elements.forEach((element: Element) => {
-                    element.removeAttribute(item.attribute);
-                });
+                if (item.selector === 'a[href]') {
+                    elements.forEach((element: Element) => {
+                        if ((element.getAttribute(item.attribute)).replace(/\t|\s|&/, '').indexOf('javascript:alert') !== -1) {
+                            element.removeAttribute(item.attribute);
+                        }
+                    });
+                } else {
+                    elements.forEach((element: Element) => {
+                        element.removeAttribute(item.attribute);
+                    });
+                }
             }
         });
     }

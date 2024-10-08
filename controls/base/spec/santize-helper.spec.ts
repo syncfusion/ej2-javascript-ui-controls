@@ -9,6 +9,7 @@ describe('Sanitize Html Helper', () => {
     let innerHTML: string = `<div>
     <div id="inline-event" onmouseover='javascript:alert(1)'></div>
     <div id="onpropertychange" onpropertychange='javascript:alert(1)'></div>
+    <a id="html-entity" href="jav&#x09;ascript:alert('XSS')" title="http://qwef" target="_blank" aria-label="Open in new window">qwef</a>
     <script>alert('hi')</script>
     <style> </style>
     <img src="javascript:alert('XSS Image');"/>
@@ -61,6 +62,9 @@ describe('Sanitize Html Helper', () => {
 
         it('should remove onpropertychange attribute', () => {
             expect(htmlObject.querySelector('#onpropertychange').hasAttribute('onpropertychange')).toBe(false);
+        });
+        it('should remove Html entity with href javascript alert', () => {
+            expect(htmlObject.querySelector('#html-entity').hasAttribute('href')).toBe(false);
         });
         afterAll(() => {
             detach(htmlObject);

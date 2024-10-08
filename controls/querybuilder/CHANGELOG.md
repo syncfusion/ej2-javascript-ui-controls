@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 27.1.51 (2024-09-30)
+## 27.1.52 (2024-10-08)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I594200` - Issue with "Script error thrown while adding the new condition in complex data binding sample with template in angular" has been fixed.
+
+## 27.1.50 (2024-09-24)
 
 ### QueryBuilder
 

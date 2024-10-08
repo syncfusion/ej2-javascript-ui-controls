@@ -152,6 +152,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private isTouched: boolean = false;
     protected isFocused: boolean = false;
     private clearButton: HTMLElement;
+    protected autoFill: boolean = false;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -2530,7 +2531,10 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
-    protected onInput(e: KeyboardEventArgs): void {
+    protected onInput(e: any): void {
+        if (!isNullOrUndefined(e) && !isNullOrUndefined(e.data) && e.data.length > 1 && this.autoFill && (this.getModuleName() === 'combobox' || this.getModuleName() === 'autocomplete')) {
+            this.inputElement.value = e.data;
+        }
         this.isValidKey = true;
         if (this.getModuleName() === 'combobox') { this.updateIconState(); }
         // For filtering works in mobile firefox.

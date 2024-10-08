@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I634826` - Manual parent taskbar pdf export is not working properly issue has been fixed.
+Here is the corrected sentence with typos resolved:
+- `#I634832` - The issue about `isShiftPressed` property in the row selecting event was not maintained properly has been fixed.
+- `#I633271` - Changing the events hitting order and add `rowPosition` property in `actionBegin` event issue has been fixed
+- `#I634857` - Parent dependency validation is not working properly issue has been fixed.
+
 ## 27.1.51 (2024-09-30)
 
 ### GanttChart
@@ -11,6 +23,8 @@
 - `#I632186` - Custom column not refreshed properly while indent and outdent issue has been fixed.
 - `#I631776` - Dates given in the data source are not displayed same as segment data source issue has been fixed.
 - `#I633422` - Incorrect start date updated using `updateRecordByID` issue has been fixed.
+- `#I510310` - Scroll jumps when using a 4K monitor with virtualization issue has been fixed.
+- `#I632368` - Last record removed during virtual scroll issue has been fixed.
 
 ## 27.1.50 (2024-09-24)
 

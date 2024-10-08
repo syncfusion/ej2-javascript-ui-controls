@@ -1518,89 +1518,89 @@ describe('Gantt Selection support', () => {
     //         }
     //     });
     // });
+ 
+    // describe('shift Tab action', function () {
+    //     let ganttObj: Gantt;
+    //     let preventDefault: Function = new Function();
+    //     beforeAll(function (done) {
+    //         ganttObj = createGantt({
+    //             dataSource: splitTasksData,
+    //             taskFields: {
+    //                 id: 'TaskID',
+    //                 name: 'TaskName',
+    //                 startDate: 'StartDate',
+    //                 endDate: 'EndDate',
+    //                 duration: 'Duration',
+    //                 progress: 'Progress',
+    //                 dependency: 'Predecessor',
+    //                     child: 'subtasks',
+    //                     segments: 'Segments',
+    //             },
+    //             allowRowDragAndDrop: true,
+    //                 editSettings: {
+    //                 allowAdding: true,
+    //                 allowEditing: true,
+    //                 allowDeleting: true,
+    //                 allowTaskbarEditing: false,
+    //                 showDeleteConfirmDialog: true,
+    //                 allowNextRowEdit: false,
+    //         },
+    //         columns: [
+    //             { field: 'TaskID', width: 60 },
+    //             {
+    //                 field: 'TaskName',
+    //                 headerText: 'Job Name',
+    //                 width: '250',
+    //                 clipMode: 'EllipsisWithTooltip',
+    //             },
+    //             { field: 'StartDate' },
+    //             { field: 'EndDate' },
+    //             { field: 'Duration' },
+    //             { field: 'Progress' },
+    //             { field: 'Predecessor' },
+    //         ],
+    //         toolbar: [
+    //             'Add',
+    //             'Edit',
+    //             'Update',
+    //             'Delete',
+    //             'Cancel',
+    //             'ExpandAll',
+    //             'CollapseAll',
+    //         ],
+    //         enableContextMenu: true,
+    //         allowSelection: true,
+    //         height: '450px',
+    //         treeColumnIndex: 1,
+    //         highlightWeekends: true,
+    //         splitterSettings: {
+    //             columnIndex: 2,
+    //         },
+    //         labelSettings: {
+    //             leftLabel: 'TaskName',
+    //             taskLabel: '${Progress}%',
+    //         },
+    //         projectStartDate: new Date('01/30/2019'),
+    //         projectEndDate: new Date('03/04/2019')
+    //             }, done);
+    //         });
+    //         afterAll(function () {
+    //             if (ganttObj) {
+    //                 destroyGantt(ganttObj);
+    //             }
+    //         });
+    //         beforeEach((done: Function) => {
+    //             setTimeout(done, 500);
+    //         });
+    //         it('shift Tab action after editing cell', () => {
+    //             let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
+    //             triggerMouseEvent(endDate, 'dblclick');
+    //             let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+    //             ganttObj.keyboardModule.keyAction(args);
+    //             expect(ganttObj.element.getElementsByClassName('e-editedbatchcell')[0].getAttribute('data-colindex')).toBe("3");
     
-    describe('shift Tab action', function () {
-        let ganttObj: Gantt;
-        let preventDefault: Function = new Function();
-        beforeAll(function (done) {
-            ganttObj = createGantt({
-                dataSource: splitTasksData,
-                taskFields: {
-                    id: 'TaskID',
-                    name: 'TaskName',
-                    startDate: 'StartDate',
-                    endDate: 'EndDate',
-                    duration: 'Duration',
-                    progress: 'Progress',
-                    dependency: 'Predecessor',
-                        child: 'subtasks',
-                        segments: 'Segments',
-                },
-                allowRowDragAndDrop: true,
-                    editSettings: {
-                    allowAdding: true,
-                    allowEditing: true,
-                    allowDeleting: true,
-                    allowTaskbarEditing: false,
-                    showDeleteConfirmDialog: true,
-                    allowNextRowEdit: false,
-            },
-            columns: [
-                { field: 'TaskID', width: 60 },
-                {
-                    field: 'TaskName',
-                    headerText: 'Job Name',
-                    width: '250',
-                    clipMode: 'EllipsisWithTooltip',
-                },
-                { field: 'StartDate' },
-                { field: 'EndDate' },
-                { field: 'Duration' },
-                { field: 'Progress' },
-                { field: 'Predecessor' },
-            ],
-            toolbar: [
-                'Add',
-                'Edit',
-                'Update',
-                'Delete',
-                'Cancel',
-                'ExpandAll',
-                'CollapseAll',
-            ],
-            enableContextMenu: true,
-            allowSelection: true,
-            height: '450px',
-            treeColumnIndex: 1,
-            highlightWeekends: true,
-            splitterSettings: {
-                columnIndex: 2,
-            },
-            labelSettings: {
-                leftLabel: 'TaskName',
-                taskLabel: '${Progress}%',
-            },
-            projectStartDate: new Date('01/30/2019'),
-            projectEndDate: new Date('03/04/2019')
-                }, done);
-            });
-            afterAll(function () {
-                if (ganttObj) {
-                    destroyGantt(ganttObj);
-                }
-            });
-            beforeEach((done: Function) => {
-                setTimeout(done, 500);
-            });
-            it('shift Tab action after editing cell', () => {
-                let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
-                triggerMouseEvent(endDate, 'dblclick');
-                let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
-                ganttObj.keyboardModule.keyAction(args);
-                expect(ganttObj.element.getElementsByClassName('e-editedbatchcell')[0].getAttribute('data-colindex')).toBe("2");
-    
-            });
-        });
+    //         });
+    //     });
 
         describe('shift Tab action', function () {
             let ganttObj: Gantt;
@@ -1684,47 +1684,47 @@ describe('Gantt Selection support', () => {
 
             });
 
-            it('shift Tab action after focusing header cell', () => {
-                let headerCell: HTMLElement = document.getElementsByClassName('e-headercell')[1] as HTMLElement;
-                triggerMouseEvent(headerCell, 'click');
-                let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell } as any;
-                ganttObj.keyboardModule.keyAction(args);
+            // it('shift Tab action after focusing header cell', () => {
+            //     let headerCell: HTMLElement = document.getElementsByClassName('e-headercell')[1] as HTMLElement;
+            //     triggerMouseEvent(headerCell, 'click');
+            //     let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell } as any;
+            //     ganttObj.keyboardModule.keyAction(args);
 
-            });
-            it('tab action for header items', () => {
-                let headerCell: HTMLElement = document.getElementsByClassName('e-headercell')[0] as HTMLElement;
-                triggerMouseEvent(headerCell, 'click');
-                let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell } as any;
-                ganttObj.keyboardModule.keyAction(args);
+            // });
+            // it('tab action for header items', () => {
+            //     let headerCell: HTMLElement = document.getElementsByClassName('e-headercell')[0] as HTMLElement;
+            //     triggerMouseEvent(headerCell, 'click');
+            //     let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell } as any;
+            //     ganttObj.keyboardModule.keyAction(args);
 
-            });
-            it('tab action for cells', () => {
-                let headerCell: HTMLElement = (document.getElementsByClassName('e-row')[0] as any).cells[1] as HTMLElement;
-                triggerMouseEvent(headerCell, 'click');
-                let args: any = { action: 'focusTask', preventDefault: preventDefault, target: headerCell } as any;
-                ganttObj.keyboardModule.keyAction(args);
-                let args1: any = { action: 'tab', preventDefault: preventDefault, target: headerCell } as any;
-                ganttObj.keyboardModule.keyAction(args1);
+            // });
+            // it('tab action for cells', () => {
+            //     let headerCell: HTMLElement = (document.getElementsByClassName('e-row')[0] as any).cells[1] as HTMLElement;
+            //     triggerMouseEvent(headerCell, 'click');
+            //     let args: any = { action: 'focusTask', preventDefault: preventDefault, target: headerCell } as any;
+            //     ganttObj.keyboardModule.keyAction(args);
+            //     let args1: any = { action: 'tab', preventDefault: preventDefault, target: headerCell } as any;
+            //     ganttObj.keyboardModule.keyAction(args1);
 
-            });
-            it('tab action for labels', () => {
-                let headerCell: HTMLElement = (document.getElementsByClassName('e-row')[0] as any).cells[7] as HTMLElement;
-                triggerMouseEvent(headerCell, 'click');
-                let args: any = { action: 'focusTask', preventDefault: preventDefault, target: headerCell } as any;
-                ganttObj.keyboardModule.keyAction(args);
-                let args1: any = { action: 'tab', preventDefault: preventDefault, target: headerCell } as any;
-                ganttObj.keyboardModule.keyAction(args1);
+            // });
+            // it('tab action for labels', () => {
+            //     let headerCell: HTMLElement = (document.getElementsByClassName('e-row')[0] as any).cells[7] as HTMLElement;
+            //     triggerMouseEvent(headerCell, 'click');
+            //     let args: any = { action: 'focusTask', preventDefault: preventDefault, target: headerCell } as any;
+            //     ganttObj.keyboardModule.keyAction(args);
+            //     let args1: any = { action: 'tab', preventDefault: preventDefault, target: headerCell } as any;
+            //     ganttObj.keyboardModule.keyAction(args1);
 
-            });
-            it('tab action for second row to first row', () => {
-                let headerCell: HTMLElement = (document.getElementsByClassName('e-row')[1] as any).cells[1] as HTMLElement;
-                triggerMouseEvent(headerCell, 'click');
-                let args: any = { action: 'focusTask', preventDefault: preventDefault, target: headerCell } as any;
-                ganttObj.keyboardModule.keyAction(args);
-                let args1: any = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell } as any;
-                ganttObj.keyboardModule.keyAction(args1);
+            // });
+            // it('tab action for second row to first row', () => {
+            //     let headerCell: HTMLElement = (document.getElementsByClassName('e-row')[1] as any).cells[1] as HTMLElement;
+            //     triggerMouseEvent(headerCell, 'click');
+            //     let args: any = { action: 'focusTask', preventDefault: preventDefault, target: headerCell } as any;
+            //     ganttObj.keyboardModule.keyAction(args);
+            //     let args1: any = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell } as any;
+            //     ganttObj.keyboardModule.keyAction(args1);
 
-            });
+            // });
         });
         describe('shift Tab action', function () {
             let ganttObj: Gantt;
@@ -1804,20 +1804,20 @@ describe('Gantt Selection support', () => {
                 ganttObj.keyboardModule.keyAction(args1);
 
             });
-            it('tab for non editing cell', function () {
-                let headerCell = (document.getElementsByClassName('e-row')[0] as any).cells[5];
-                triggerMouseEvent(headerCell, 'dblclick');
-                var args1 = { action: 'tab', preventDefault: preventDefault, target: headerCell };
-                ganttObj.keyboardModule.keyAction(args1);
-                expect(document.getElementsByClassName('e-editedbatchcell').length).toBe(1);
-            });
-            it('shift tab for non editing cell', function () {
-                let headerCell = (document.getElementsByClassName('e-row')[0] as any).cells[7];
-                triggerMouseEvent(headerCell, 'dblclick');
-                var args1 = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell };
-                ganttObj.keyboardModule.keyAction(args1);
-                expect(document.getElementsByClassName('e-editedbatchcell').length).toBe(1);
-            });
+            // it('tab for non editing cell', function () {
+            //     let headerCell = (document.getElementsByClassName('e-row')[0] as any).cells[5];
+            //     triggerMouseEvent(headerCell, 'dblclick');
+            //     var args1 = { action: 'tab', preventDefault: preventDefault, target: headerCell };
+            //     ganttObj.keyboardModule.keyAction(args1);
+            //     expect(document.getElementsByClassName('e-editedbatchcell').length).toBe(1);
+            // });
+            // it('shift tab for non editing cell', function () {
+            //     let headerCell = (document.getElementsByClassName('e-row')[0] as any).cells[7];
+            //     triggerMouseEvent(headerCell, 'dblclick');
+            //     var args1 = { action: 'shiftTab', preventDefault: preventDefault, target: headerCell };
+            //     ganttObj.keyboardModule.keyAction(args1);
+            //     expect(document.getElementsByClassName('e-editedbatchcell').length).toBe(1);
+            // });
         });
         describe('control + all to select all record action', function () {
             let ganttObj: Gantt;

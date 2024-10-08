@@ -1091,6 +1091,15 @@ export class ListBox extends DropDownBase {
                 li.setAttribute('aria-disabled', 'true');
             }
         });
+        if (this.allowFiltering && this.filterInput.value !== '' && this.toolbarSettings.items.length > 0) {
+            let canDisable: boolean = false;
+            this.liCollections.forEach((li: HTMLLIElement) => { if (!li.classList.contains('e-disabled')) { canDisable = true; }});
+            if (!canDisable) {
+                const wrap: Element = this.list.parentElement.getElementsByClassName('e-listbox-tool')[0];
+                const btn: HTMLButtonElement = wrap.querySelector('[data-value="moveAllTo"]');
+                btn.disabled = true;
+            }
+        }
     }
 
     /**
@@ -1920,6 +1929,12 @@ export class ListBox extends DropDownBase {
         if (fListBox.value.length === 1 && fListBox.getSelectedItems().length) {
             fListBox.value[0] = fListBox.getFormattedValue(fListBox.getSelectedItems()[0].getAttribute('data-value'));
         }
+        if (fListBox.liCollections.length === fListBox.ulElement.querySelectorAll('.e-disabled').length) {
+            const wrap: Element = this.list.parentElement.getElementsByClassName('e-listbox-tool')[0];
+            const toolbarAction: string = this.toolbarAction === 'moveFrom' ? 'moveAllFrom' : 'moveAllTo';
+            const btn: HTMLButtonElement = wrap.querySelector('[data-value="' + toolbarAction + '"]');
+            btn.disabled = true;
+        }
     }
 
     private selectNextList(elems: Element[], dataLiIdx: number[], dataIdx: number[], inst: ListBox): void {
@@ -2037,7 +2052,7 @@ export class ListBox extends DropDownBase {
             if (tempLiColl.length > 0) {
                 for (let i: number = 0; i < tempLiColl.length; i++) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    disabledData.push(this.getDataByValue(tempLiColl[i as number].getAttribute('data-value')) as any);
+                    disabledData.push(fListBox.getDataByValue(tempLiColl[i as number].getAttribute('data-value')) as any);
                 }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 fListBox.listData = (fListBox as any).listData.filter((obj1: any) =>
@@ -2059,9 +2074,7 @@ export class ListBox extends DropDownBase {
         }
         if (isRefresh) {
             const sourceElem: HTMLElement = tListBox.renderItems(listData as obj[], tListBox.fields);
-            if (!this.itemTemplate) {
-                tListBox.updateListItems(sourceElem, tListBox.ulElement);
-            }
+            tListBox.updateListItems(sourceElem, tListBox.ulElement);
         } else {
             (tListBox.sortedData as dataType[]) = listData;
         }
@@ -2500,6 +2513,9 @@ export class ListBox extends DropDownBase {
                 return true;
             }
         } else {
+            if (inst.ulElement.querySelectorAll('.e-disabled').length > 0) {
+                return inst.liCollections.length === inst.ulElement.querySelectorAll('.e-disabled').length;
+            }
             return inst.ulElement.querySelectorAll('.' + cssClass.li).length === 0;
         }
     }

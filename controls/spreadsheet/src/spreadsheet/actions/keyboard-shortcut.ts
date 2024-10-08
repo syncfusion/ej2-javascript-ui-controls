@@ -301,7 +301,7 @@ export class KeyboardShortcut {
                 this.parent.notify(findToolDlg, {});
             } else if (e.keyCode === 121) { /* Context menu open Shift+F10 */
                 const className: string = document.activeElement.className;
-                if (['e-spreadsheet', 'e-cell', 'e-header-cell', 'e-clipboard'].some((cls: string) => className.includes(cls))) {
+                if (['e-spreadsheet', 'e-cell', 'e-header-cell', 'e-clipboard', 'e-rowhdr-table', 'e-selectall-table', 'e-main-panel'].some((cls: string) => className.includes(cls))) {
                     this.focusTarget(sheet);
                 }
             }

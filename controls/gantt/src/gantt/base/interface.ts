@@ -533,6 +533,8 @@ export interface ITaskAddedEventArgs {
     action?: string;
     /** Defines the request type. */
     requestType?: string;
+    /** Defines the row position. */
+    rowPosition?: string;
 }
 export interface ICollapsingEventArgs {
     /** Defines the TreeGrid row element */

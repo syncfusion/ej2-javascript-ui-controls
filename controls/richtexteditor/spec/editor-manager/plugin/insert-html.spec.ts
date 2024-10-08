@@ -204,6 +204,33 @@ describe('Insert HTML', () => {
     });
 });
 
+describe('904084 - Copy and Paste of Mention Item Updates Inside Existing Span Tag', () => {
+    let innervalue: string = '<div id="parentDiv"><p><span id="span2">Span2tag</span></p></div>';
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Copy and Paste of Mention Item Updates Inside Existing Span Tag', () => {
+        let editNode: Element = document.getElementById('divElement');
+        let selectNode: Element = document.getElementById('parentDiv');
+        let pasteElement: HTMLElement = document.createElement('div');
+        pasteElement.classList.add('pasteContent');
+        let span: Element = document.createElement('span');
+        span.innerHTML= 'testTable1';
+        pasteElement.appendChild(span);
+        domSelection.setSelectionNode(document, selectNode);
+        InsertHtml.Insert(document, pasteElement, editNode);
+        expect(document.getElementById('divElement').innerHTML === '<div id="parentDiv"><p><span>testTable1</span></p></div>').toBe(true);
+    });
+});
+
 describe('EJ2-49169-InsertHtml for the pasted elements not inserted properly', function () {
     let innervalue: string = '<p><span>Please click this link to download a calendar reminder for this date and time</span></p><p><a classname="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank">https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics </a></p><p><br></p><p>This will affect both the US and DK production site.</p><p><br></p>';
     let nonDOMvalue: string = '<br>';

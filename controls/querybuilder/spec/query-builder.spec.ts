@@ -3437,6 +3437,75 @@ describe('QueryBuilder', () => {
             const input: HTMLElement = document.querySelector('.e-qb-ddt.e-popup-open .e-textbox');
             queryBuilder.dropdownTreeFiltering({cancel: false, text: 'h', event: {srcElement: input }});
         });
+        it('Complex Databinding Support - Dropdown Tree with angular template with operator change', () => {
+            const columns: ColumnsModel[] = [
+                {field: 'Employee', label: 'Employee', columns: [
+                    { field: 'ID', label: 'ID', type: 'number', template: '#template'},
+                    { field: 'DOB', label: 'Date of birth', type: 'date'},
+                    { field: 'HireDate', label: 'Hire Date', type: 'date'},
+                    { field: 'Salary', label: 'Salary', type: 'number'},
+                    { field: 'Age', label: 'Age', type: 'number'},
+                    { field: 'Title', label: 'Title', type: 'string'}
+                ]},
+                {field: 'Name', label: 'Name', columns: [
+                    { field: 'FirstName', label: 'First Name', type: 'string'},
+                    { field: 'LastName', label: 'Last Name', type: 'string'}
+                ]},
+                {field: 'Country', label: 'Country', columns : [
+                    { field: 'State', label: 'State', columns : [
+                        { field: 'City', label: 'City', type: 'string'},
+                        { field: 'Zipcode', label: 'Zip Code', type: 'number'}] },
+                    { field: 'Region', label: 'Region', type: 'string'},
+                    { field: 'Name', label: 'Name', type: 'string'}
+                ]}
+            ];
+            let valueObj: Slider;
+            let importRules: RuleModel = {
+                condition: 'and',
+                rules: [{
+                    label: 'ID',
+                    field: 'Employee.ID',
+                    type: 'string',
+                    operator: 'equal',
+                    value: 0
+                }]
+            };
+            queryBuilder = new QueryBuilder({
+                dataSource: complexBindingData,
+                columns: columns,
+                separator: '.',
+                fieldMode: 'DropdownTree',
+                rule: importRules,
+                actionBegin: (args: any) => {
+                    if (args.requestType === 'value-template-create') {
+                        if (args.rule.field === 'ID') {
+                            const defaultNumber: number = 31;
+                            if (args.rule.value === '') {
+                                args.rule.value = defaultNumber;
+                            }
+                            valueObj = new Slider({
+                                value: args.rule.value as number, min: 30, max: 50,
+                                ticks: { placement: 'Before', largeStep: 5, smallStep: 1 },
+                                change: (e: any) => {
+                                    const elem: HTMLElement = valueObj.element;
+                                    queryBuilder.notifyChange(e.value, elem, 'value');
+                                }
+                            });
+                            valueObj.appendTo('#' + args.ruleID + '_valuekey0');
+                        }
+                    }
+                }
+            }, '#querybuilder');
+            queryBuilder.isAngular = true;
+            let operatorElem: any = queryBuilder.element.querySelector('.e-operator .e-control').ej2_instances[0];
+            operatorElem.showPopup();
+            let itemsCln: NodeListOf<HTMLLIElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            itemsCln[2].click();
+            let childContent: Element = queryBuilder.element.firstElementChild.children[0];
+            const addBtn: HTMLElement = select('.e-add-btn', childContent) as HTMLElement;
+            addBtn.click();
+            (selectAll('.e-item', document.querySelectorAll('.e-dropdown-popup.e-addrulegroup.e-popup-open')[0])[1] as HTMLElement).click();
+        });
     });
     describe('Customer_Bugs', () => {
         beforeEach((): void => {

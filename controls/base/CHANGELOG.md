@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### Common
+
+#### Bug Fixes
+
+- `#I628053` - Resolved an issue where the sanitizer function did not properly handle HTML entities.
+
 ## 23.2.6 (2023-11-28)
 
 ### Common

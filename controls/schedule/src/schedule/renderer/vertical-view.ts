@@ -360,7 +360,7 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
 
     public getTopFromDateTime(date: Date): number {
-        const startHour: Date = this.getStartHour();
+        const startHour: Date = this.getStartEndHours(this.parent.activeViewOptions.startHour);
         const diffInMinutes: number = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
         return (diffInMinutes * this.getWorkCellHeight() * this.parent.activeViewOptions.timeScale.slotCount) /
             this.parent.activeViewOptions.timeScale.interval;

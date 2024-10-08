@@ -302,6 +302,10 @@ export class ViewBase {
         }
         startHour.setMilliseconds(0);
         endHour.setMilliseconds(0);
+        if (util.resetTime(date).getTime() !== util.resetTime(startHour).getTime()) {
+            startHour = new Date(2000, 0, 0, startHour.getHours(), startHour.getMinutes(), startHour.getMilliseconds());
+            endHour = new Date(2000, 0, 0, endHour.getHours(), endHour.getMinutes(), endHour.getMilliseconds());
+        }
         return !(util.getDateInMs(date) < util.getDateInMs(startHour) || util.getDateInMs(date) >= util.getDateInMs(endHour) ||
             !this.isWorkDay(date, workDays));
     }

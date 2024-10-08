@@ -3684,7 +3684,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 const iframeElement: HTMLIFrameElement = this.element.querySelector('#' + this.getID() + '_rte-view');
                 if (iframeElement) {
                     this.setAutoHeight(iframeElement);
-                    this.inputElement.style.overflow = 'hidden';
                 }
             }
         } else {
@@ -3707,9 +3706,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     private setAutoHeight(element: HTMLElement): void {
         if (!isNOU(element)) {
-            element.style.height = 'auto';
-            element.style.height = (this.inputElement.scrollHeight + 16) + 'px';
-            element.style.overflow = 'hidden';
+            if (element.nodeName === 'TEXTAREA') {
+                element.style.height = 'auto';
+                element.style.height = (this.inputElement.scrollHeight + 16) + 'px';
+                element.style.overflow = 'hidden';
+            } else if (element.nodeName === 'IFRAME') {
+                element.style.height = this.inputElement.parentElement.offsetHeight + 'px';
+            }
         }
     }
     private wireEvents(): void {

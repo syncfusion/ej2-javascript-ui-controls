@@ -718,7 +718,7 @@ export class UrlAdaptor extends Adaptor {
             return (query.isCountRequired ? { result: [], count: 0 } : []) as DataResult;
         }
         const d: { action: string } = JSON.parse(requests.data);
-        if (d && d.action === 'batch' && data && data.addedRecords) {
+        if (d && d.action === 'batch' && data && data.addedRecords && !isNullOrUndefined(changes)) {
             changes.addedRecords = data.addedRecords;
             return changes;
         }

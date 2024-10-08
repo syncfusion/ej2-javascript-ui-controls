@@ -1193,6 +1193,7 @@
       .e-filterbarcell,
       .e-filterbarcelldisabled {
         border-width: $grid-filtercell-both-border-width;
+        border-top-width: 1px;
       }
     }
 
@@ -3167,6 +3168,7 @@
         .e-filterbarcell,
         .e-filterbarcelldisabled {
           border-width: $grid-filtercell-both-border-width;
+          border-top-width: 1px;
         }
   
         .e-rowcell,

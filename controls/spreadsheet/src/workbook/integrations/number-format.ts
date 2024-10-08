@@ -574,12 +574,18 @@ export class WorkbookNumberFormat {
             type = 'date';
             // Split the format with ' ' for replacing d with E only for a day of the week in the MMM d, yyyy ddd format
             const formatArr: string[] = custFormat.split(' ');
-            let dayMatchStr: RegExpMatchArray;
+            let dayMatchStr: RegExpMatchArray; let splitFormat: string[]; let part: string; let separator: string;
             for (let formatIdx: number = 0; formatIdx < formatArr.length; formatIdx++) {
-                dayMatchStr = formatArr[formatIdx as number].match(/d/g);
-                if (dayMatchStr && dayMatchStr.length > 2) {
-                    formatArr[formatIdx as number] = formatArr[formatIdx as number].split('d').join('E');
+                separator = formatArr[formatIdx as number].includes(this.localeObj.dateSeparator) ? this.localeObj.dateSeparator : '-';
+                splitFormat = formatArr[formatIdx as number].split(separator);
+                for (let index: number = 0; index < splitFormat.length; index++) {
+                    part = splitFormat[index as number];
+                    dayMatchStr = part.match(/d/g);
+                    if (dayMatchStr && dayMatchStr.length > 2) {
+                        splitFormat[index as number] = part.split('d').join('E');
+                    }
                 }
+                formatArr[formatIdx as number] = splitFormat.join(separator);
             }
             custFormat = formatArr.join(' ');
         }

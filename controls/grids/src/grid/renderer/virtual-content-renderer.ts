@@ -674,8 +674,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 const lastOffSetKey: number = parseInt(this.offsetKeys[this.offsetKeys.length - 1], 10);
                 const blockIndex: number[] = this.currentInfo.blockIndexes;
                 const viewInfo: VirtualInfo = this.getInfoFromView(direction, current, e);
-                const disableShowMaskRow: boolean = this.prevInfo && current.axis === 'X'
-                    && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString();
+                const disableShowMaskRow: boolean = (this.prevInfo && current.axis === 'X'
+                    && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString())
+                    || (direction === 'down' && this.parent.allowGrouping && this.parent.groupSettings.columns.length
+                        && ((this.parent.allowFiltering && this.parent.filterSettings.columns.length)
+                            || this.parent.searchSettings.key.length) && this.offsetKeys.length <= 2);
                 if (!((blockIndex && blockIndex[0] === firstOffSetKey && direction === 'up') ||
                     (blockIndex && blockIndex[blockIndex.length - 1] === lastOffSetKey && direction === 'down') || disableShowMaskRow)) {
                     setTimeout(() => {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### Schedule
+
+#### Bug fixes
+
+- `#FB61586` - The issue with the schedule component tooltip rendering outside the viewport has been fixed.
+
 ## 27.1.51 (2024-09-30)
 
 ### Schedule
@@ -9,6 +17,7 @@
 #### Bug fixes
 
 - `#I617009` - An issue where the appointment drag position is not updating according to the mouse cursor in the vertical views of the schedule has been fixed.
+- `#I569000` - The issue with the current time indicator displaying discrepancies compared to the time scale on the start and end days of daylight saving time in the vertical view has been resolved.
 
 ## 27.1.50 (2024-09-24)
 

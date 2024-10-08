@@ -1564,7 +1564,7 @@ export class ToolbarModule {
         qualityOptionDiv.appendChild(parent.createElement('button', { id: id + '_qualitybuttonIcon', className: 'e-ie-img-icon-button', attrs: { type: 'button' } }));
         qualityNameDiv.appendChild(qualityOptionDiv);
         if (Browser.isDevice) {
-            qualityNameDiv.appendChild(parent.createElement('span', {
+            dialogRightContent.appendChild(parent.createElement('span', {
                 id: id + '_qualitySize', className: 'e-ie-img-quality-size'
             }));
         }
@@ -1811,41 +1811,39 @@ export class ToolbarModule {
                 this.fileSize = fileSize;
             }).bind(this), 'image/jpeg', quality);
         } else if (!isNullOrUndefined(fileType) && fileType.toLowerCase() === 'png') {
-            if (Browser.isDevice) {
-                canvas.style.display = 'none';
-            } else {
-                ctx.drawImage(tempCanvas, 0, 0);
-                tempCanvas.toBlob((function (blob: any): void {
-                    fileSize = Math.floor(blob.size / 1024);
-                    if (fileSize > 1000) {
-                        const megabytes: number = fileSize / 1024;
-                        imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + megabytes.toFixed(2) + ' MB';
-                        fileSize = +megabytes.toFixed(2);
-                    } else {
-                        imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + fileSize.toFixed(2) + ' KB';
-                        fileSize = +fileSize.toFixed(2);
-                    }
-                    this.fileSize = fileSize;
-                }).bind(this), 'image/png', 1);
-            }
-        } else if (!isNullOrUndefined(fileType) && fileType.toLowerCase() === 'svg') {
-            if (Browser.isDevice) {
-                canvas.style.display = 'none';
-            } else {
-                ctx.drawImage(tempCanvas, 0, 0);
-                const svgDataUrl: string = tempCanvas.toDataURL('image/svg+xml');
-                const base64Data: string = svgDataUrl.split(',')[1];
-                const binaryStringLength: number = base64Data.length;
-                const rawByteSize: number = binaryStringLength;
-                let fileSize: number = Math.floor(rawByteSize / 1024); // KB
+            ctx.drawImage(tempCanvas, 0, 0);
+            tempCanvas.toBlob((function (blob: any): void {
+                fileSize = Math.floor(blob.size / 1024);
                 if (fileSize > 1000) {
-                    const megabytes: number = fileSize / 1024; // Convert to MB
+                    const megabytes: number = fileSize / 1024;
                     imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + megabytes.toFixed(2) + ' MB';
                     fileSize = +megabytes.toFixed(2);
                 } else {
                     imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + fileSize.toFixed(2) + ' KB';
                     fileSize = +fileSize.toFixed(2);
                 }
+                if (Browser.isDevice) {
+                    canvas.style.display = 'none';
+                }
+                this.fileSize = fileSize;
+            }).bind(this), 'image/png', 1);
+        } else if (!isNullOrUndefined(fileType) && fileType.toLowerCase() === 'svg') {
+            ctx.drawImage(tempCanvas, 0, 0);
+            const svgDataUrl: string = tempCanvas.toDataURL('image/svg+xml');
+            const base64Data: string = svgDataUrl.split(',')[1];
+            const binaryStringLength: number = base64Data.length;
+            const rawByteSize: number = binaryStringLength;
+            let fileSize: number = Math.floor(rawByteSize / 1024); // KB
+            if (fileSize > 1000) {
+                const megabytes: number = fileSize / 1024; // Convert to MB
+                imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + megabytes.toFixed(2) + ' MB';
+                fileSize = +megabytes.toFixed(2);
+            } else {
+                imageNameLabel.innerHTML = this.l10n.getConstant('ImageSize') + ': ' + fileSize.toFixed(2) + ' KB';
+                fileSize = +fileSize.toFixed(2);
+            }
+            if (Browser.isDevice) {
+                canvas.style.display = 'none';
             }
             this.fileSize = fileSize;
         } else {

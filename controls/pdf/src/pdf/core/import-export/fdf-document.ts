@@ -8,7 +8,7 @@ import { PdfForm } from './../form/form';
 import { PdfAnnotation, PdfUriAnnotation, PdfRubberStampAnnotation, PdfFileLinkAnnotation, PdfTextWebLinkAnnotation, PdfRectangleAnnotation, PdfDocumentLinkAnnotation } from './../annotations/annotation';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
 import { PdfField } from './../form/field';
-import { _bytesToString, _getNewGuidString, _byteArrayToHexString, _stringToBytes } from './../utils';
+import { _bytesToString, _getNewGuidString, _byteArrayToHexString, _stringToBytes, _isNullOrUndefined } from './../utils';
 import { PdfCheckBoxField, PdfComboBoxField, PdfListBoxField, PdfRadioButtonListField, PdfTextBoxField } from './../form/field';
 import { PdfPage } from '../pdf-page';
 import { _StringTokenizer} from './../fonts/string-layouter';
@@ -138,10 +138,10 @@ export class _FdfDocument extends _ExportHelper {
         this._isAnnotationImport = true;
         const parser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(stream), null, true, false);
         this._readFdfData(parser);
-        if (this._annotationObjects !== null && typeof this._annotationObjects !== 'undefined' && this._annotationObjects.size > 0) {
+        if (_isNullOrUndefined(this._annotationObjects) && this._annotationObjects.size > 0) {
             this._annotationObjects.clear();
         }
-        if (this._table !== null && typeof this._table !== 'undefined' && this._table.size > 0) {
+        if (_isNullOrUndefined(this._table) && this._table.size > 0) {
             this._table.clear();
         }
     }
@@ -180,14 +180,14 @@ export class _FdfDocument extends _ExportHelper {
                 const dictionary: _PdfDictionary = value as _PdfDictionary;
                 dictionary._crossReference = this._crossReference;
                 dictionary._updated = true;
-                if (dictionary !== null && typeof dictionary !== 'undefined' && dictionary.has('Page')) {
+                if (dictionary && dictionary.has('Page')) {
                     const pageNumber: number = dictionary.get('Page');
                     if (pageNumber !== null && typeof pageNumber !== 'undefined') {
                         const pageIndex: number = pageNumber;
                         if (pageIndex < this._document.pageCount) {
                             const page: PdfPage = this._document.getPage(pageIndex);
                             const pageDictionary: _PdfDictionary = page._pageDictionary;
-                            if (pageDictionary !== null && typeof pageDictionary !== 'undefined') {
+                            if (pageDictionary) {
                                 const annotations: PdfAnnotationCollection = page.annotations;
                                 const annotation: PdfAnnotation = annotations._parseAnnotation(dictionary);
                                 if (annotation !== null && typeof annotation !== 'undefined') {
@@ -534,7 +534,7 @@ export class _FdfDocument extends _ExportHelper {
         this.fdfString += '[';
         const helper: _FdfHelper = new _FdfHelper();
         let listDictionary: Map<any, any> = list; // eslint-disable-line
-        if (array !== null && array.length > 0) {
+        if (_isNullOrUndefined(array) && array.length > 0) {
             const count: number = array.length;
             for (let i: number = 0; i < count; i++) {
                 const element: any = array[Number.parseInt(i.toString(), 10)]; // eslint-disable-line

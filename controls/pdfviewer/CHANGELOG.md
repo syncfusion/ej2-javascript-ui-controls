@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I631430` - Now, the form field index is correctly calculated, and `NaN` is no longer added to the form field name when creating new fields from the designer in PDF Viewer.
+- `#I634439` - Now, the value of the dropdown field name does not set to null in the `formFieldCollections` when the `enableFormDesigner` API is disabled.
+- `#I631901` - Now, the keyboard shortcuts for the `OpenOption` are disabled when the `OpenOption` item is not included in the toolbar.
+
 ## 27.1.51 (2024-09-30)
 
 ### PDF Viewer

@@ -2152,7 +2152,7 @@ export class Filter {
      * @returns {void} - Gets the filter information of the sheet.
      */
     private getFilterRangeHandler(args: FilterInfoArgs): void {
-        const sheetIdx: number = args.sheetIdx || this.parent.activeSheetIndex;
+        const sheetIdx: number = isNullOrUndefined(args.sheetIdx) ? this.parent.activeSheetIndex : args.sheetIdx;
         const filterOption: { range: number[], allowHeaderFilter?: boolean } = this.filterRange && this.filterRange.get(sheetIdx);
         if (filterOption) {
             args.hasFilter = true;

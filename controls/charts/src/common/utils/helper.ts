@@ -151,22 +151,13 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
         }
     }
     const axisSvgObject: Element = chart.svgRenderer.createSvg({ id: 'AxisLabelMax_svg' });
-    if (chart.element.parentElement.style.transform.indexOf('scale') > -1) {
-        document.body.appendChild(axisSvgObject);
-        axisSvgObject.appendChild(htmlObject);
-    } else {
-        chart.svgObject.appendChild(htmlObject);
-    }
+    document.body.appendChild(axisSvgObject);
+    axisSvgObject.appendChild(htmlObject);
     const box: ClientRect = htmlObject.getBoundingClientRect();
     if (transformValue) {
         chart.element.style.transform = transformValue;
     }
-    if (chart.element.parentElement.style.transform.indexOf('scale') > -1) {
-        remove(axisSvgObject);
-    }
-    else {
-        remove(htmlObject);
-    }
+    remove(axisSvgObject);
     if (!chart.delayRedraw && !chart.redraw && !(chart as Chart).stockChart && !(chart as Chart).pointsAdded) {
         remove(chart.svgObject);
     }
@@ -2696,32 +2687,8 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
         stringToNumber(chart.height, containerHeight || height) || containerHeight || height
     );
     if (chart.getModuleName() === 'chart') {
-        let scaleX: number = 1; let scaleY: number = 1;
-        if (chart.width === '' || chart.width === null || chart.width === '100%') {
-            if (containerWidth && chart.element.parentElement && chart.element.parentElement.style.transform.indexOf('scale') > -1) {
-                scaleX = 1;
-            }
-            else {
-                scaleX = chart.element.getBoundingClientRect().width > 0 ?
-                    chart.element.getBoundingClientRect().width / chart.availableSize.width : 1;
-            }
-            if (containerHeight && chart.element.parentElement && chart.element.parentElement.style.transform.indexOf('scale') > -1) {
-                scaleY = 1;
-            } else {
-                scaleY = chart.element.getBoundingClientRect().height > 0 ?
-                    chart.element.getBoundingClientRect().height / chart.availableSize.height : 1;
-            }
-            const transformValue: string = chart.element.style.transform;
-            if (transformValue) {
-                const scaleValue: number = parseFloat(transformValue.match(/scale\((.*?)\)/)[1]);
-                scaleX = scaleValue ? scaleX / scaleValue : scaleX;
-                scaleY = scaleValue ? scaleY / scaleValue : scaleY;
-            }
-            chart.availableSize.width = chart.availableSize.width * scaleX;
-            chart.availableSize.height = chart.availableSize.height * scaleY;
-        }
-        (chart as Chart).scaleX = scaleX;
-        (chart as Chart).scaleY = scaleY;
+        (chart as Chart).scaleX = 1;
+        (chart as Chart).scaleY = 1;
     }
 }
 /**

@@ -639,6 +639,31 @@ describe ('left indent testing', () => {
             });
         });
 
+        describe('912827 - Decreasing indent should convert list items into a single paragraph', () => {
+            let elem: HTMLElement = createElement('div', {
+                id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true" ><ol><li style=\"list-style-type: none;\"><ol><li>List 1</li><li>List 2</li><li>List 3</li><li>List 4</li></ol></li></ol></div>`,
+            });
+            beforeAll(() => {
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+
+            it('Decreasing indent should convert list items into a single paragraph', () => {
+                startNode = editNode.querySelector('ol');
+                editorObj.nodeSelection.setSelectionNode(document, startNode);
+                editorObj.execCommand("Indents", 'Outdent', null);
+                editorObj.execCommand("Indents", 'Outdent', null);
+                editorObj.execCommand("Indents", 'Outdent', null);
+                editorObj.execCommand("Indents", 'Outdent', null);
+                editorObj.nodeSelection.Clear(document);
+                expect(editNode.innerHTML === '<p>List 1</p><p>List 2</p><p>List 3</p><p>List 4</p>').toBe(true);
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+
         describe('EJ2-59780 - List not applied in fire fox testing', () => {
             let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
             let defaultUA: string = navigator.userAgent;

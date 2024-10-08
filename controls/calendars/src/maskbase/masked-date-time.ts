@@ -87,6 +87,7 @@ export class MaskedDateTime {
         this.parent.on('inputHandler', this.maskInputHandler, this);
         this.parent.on('keyDownHandler', this.maskKeydownHandler, this);
         this.parent.on('clearHandler', this.clearHandler, this);
+        this.parent.on('maskPasteInputHandler', this.maskPasteInputHandler, this);
     }
 
     public removeEventListener(): void {
@@ -98,6 +99,7 @@ export class MaskedDateTime {
         this.parent.off('inputHandler', this.maskInputHandler);
         this.parent.off('keyDownHandler', this.maskKeydownHandler);
         this.parent.off('clearHandler', this.clearHandler);
+        this.parent.off('maskPasteInputHandler', this.maskPasteInputHandler);
     }
 
     private createMask(mask: events): void {
@@ -719,6 +721,27 @@ export class MaskedDateTime {
         return formatValueSpecifier;
     }
 
+    private isValidDate(dateString: string): boolean {
+        const date: Date = new Date(dateString);
+        // Return true if the date is valid, false otherwise
+        return !isNaN(date.getTime());
+    }
+
+    private maskPasteInputHandler(): void {
+        if (this.isValidDate(this.parent.inputElement.value)) {
+            this.maskDateValue = new Date(this.parent.inputElement.value);
+            this.isDayPart = this.isMonthPart = this.isYearPart = this.isHourPart = this.isMinutePart = this.isSecondsPart = true;
+            this.updateValue();
+            if (!this.isBlur) {
+                this.validCharacterCheck();
+            }
+            return;
+        }
+        else {
+            this.maskInputHandler();
+        }
+    }
+
     private maskInputHandler(): void {
         let start: number = this.parent.inputElement.selectionStart;
         let formatText: string = '';
@@ -733,7 +756,6 @@ export class MaskedDateTime {
         this.isHiddenMask = false;
         this.previousHiddenMask = this.hiddenMask;
         this.previousValue = inputValue;
-        this.parent.inputElement.value = inputValue;
         this.parent.inputElement.value = inputValue;
         for (let i: number = 0; i < this.hiddenMask.length; i++){
             if (formatText === this.hiddenMask[i as number]){

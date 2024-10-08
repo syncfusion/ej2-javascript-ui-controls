@@ -977,7 +977,7 @@ export class DiagramEventHandler {
                 let avoidDropChildren: boolean = false;
                 const history: HistoryLog = this.updateContainerProperties();
                 let isGroupAction: boolean; this.addUmlNode();
-                this.inAction = false; this.isMouseDown = false; this.currentPosition = this.getMousePosition(evt);
+                this.inAction = false; this.isMouseDown = false;
                 if (this.diagram.selectedObject.helperObject) { isGroupAction = this.updateContainerBounds(); }
                 if (this.tool && (this.tool.prevPosition || this.tool instanceof LabelTool)) {
                     this.eventArgs.position = this.currentPosition;
@@ -2398,7 +2398,15 @@ export class DiagramEventHandler {
                             const swimlane: Node = this.diagram.getObject(parentNode.parentId) as Node;
                             const laneId: string = swimlane.id + (swimlane.shape as SwimLaneModel).lanes[0].id + '0';
                             const firstlane: NodeModel = this.diagram.getObject(laneId) as Node;
-                            const x: number = firstlane.wrapper.bounds.x; const y: number = firstlane.wrapper.bounds.y;
+                            // 910593: Node is not draggable inside swimlane after adding new phase
+                            let x: number; let y: number;
+                            if ((swimlane.shape as SwimLaneModel).orientation === 'Vertical'){
+                                x = firstlane.wrapper.bounds.x;
+                                y = swimlane.wrapper.bounds.y + (swimlane.shape as SwimLaneModel).header.height;
+                            }
+                            else{
+                                x = swimlane.wrapper.bounds.x; y = firstlane.wrapper.bounds.y;
+                            }
                             const width: number = swimlane.wrapper.bounds.bottomRight.x - x;
                             const height: number = swimlane.wrapper.bounds.bottomRight.y - y;
                             const swimlaneBounds: Rect = new Rect(x, y, width, height);
@@ -2557,8 +2565,9 @@ export class DiagramEventHandler {
                         obj.maxWidth = obj.wrapper.width;
                         obj.wrapper.maxWidth = obj.wrapper.width;
                     }
-                    updateSwimLaneObject(this.diagram, obj as Node, parentNode, helperObject);
+                    // 910832 - Lane height updating to negative values wrongly during resizing
                     container.updateColumnWidth(obj.columnIndex, helperObject.width, true, padding);
+                    updateSwimLaneObject(this.diagram, obj as Node, parentNode, helperObject);
                     if ((obj as Node).isPhase) {
                         const id: string = (parentNode.shape as SwimLaneModel).phases[obj.columnIndex].header.id;
                         const node: Node = this.diagram.nameTable[`${id}`];
@@ -2575,8 +2584,9 @@ export class DiagramEventHandler {
                     }
                 } else if (obj.rowIndex !== undefined) {
                     isUpdateRow = true;
-                    updateSwimLaneObject(this.diagram, obj as Node, parentNode, helperObject);
+                    // 910832 - Lane height updating to negative values wrongly during resizing
                     container.updateRowHeight(obj.rowIndex, helperObject.height, true, padding);
+                    updateSwimLaneObject(this.diagram, obj as Node, parentNode, helperObject);
                     if (parentNode.shape.type === 'SwimLane') {
                         parentNode.height = (parentNode.height) ? container.height : parentNode.height;
                         parentNode.wrapper.height = parentNode.height;

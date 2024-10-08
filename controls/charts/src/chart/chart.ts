@@ -3121,14 +3121,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (getElement(this.svgId)) {
             const svgRect: ClientRect = getElement(this.svgId).getBoundingClientRect();
             const rect: ClientRect = this.element.getBoundingClientRect();
-            if (this.width === '' || this.width === null || this.width === '100%') {
-                if (this.element.clientHeight) {
-                    this.scaleY = (rect.height - 4) / this.availableSize.height;
-                }
-            } else {
-                this.scaleX = svgRect.width / this.availableSize.width;
-                this.scaleY = svgRect.height / this.availableSize.height;
-            }
+            this.scaleX = svgRect.width / this.availableSize.width;
+            this.scaleY = svgRect.height / this.availableSize.height;
             this.mouseY = ((pageY - rect.top) - Math.max(svgRect.top - rect.top, 0)) / this.scaleY;
             this.mouseX = ((pageX - rect.left) - Math.max(svgRect.left - rect.left, 0)) / this.scaleX;
             if (this.stockChart) {

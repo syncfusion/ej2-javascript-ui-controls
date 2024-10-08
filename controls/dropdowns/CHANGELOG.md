@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I628439` - Issue with "Handle the toolbar button state while filtering with disabled listbox items" has been resolved.
+- `#I625107` - Issue with "The listbox Item template with filtering action related issues" has been resolved.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I636022` - Nodes with selectable as false cannot be expanded or collapsed using keyboard in `Dropdown Tree` has been resolved.
+
 ## 27.1.51 (2024-09-30)
 
 ### MultiSelect

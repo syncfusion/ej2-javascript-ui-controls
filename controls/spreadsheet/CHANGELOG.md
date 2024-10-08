@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I633175` - The border styles will now display correctly when printing a sheet or workbook.
+
 ## 26.1.35 (2024-06-11)
 
 ### Spreadsheet

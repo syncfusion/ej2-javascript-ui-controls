@@ -837,7 +837,7 @@ export class DragAndDrop extends ActionBase {
                     let appHeight: number = this.parent.activeViewOptions.timeScale.enable ? this.verticalEvent.getHeight(eStart, eEnd) :
                         this.actionObj.element.offsetHeight;
                     let topValue: number = this.parent.activeViewOptions.timeScale.enable ?
-                        this.verticalEvent.getTopValue(eStart, dayIndex, indexGroup) : this.actionObj.element.offsetTop;
+                        this.verticalEvent.getTopValue(eStart) : this.actionObj.element.offsetTop;
                     if (isNullOrUndefined(index)) {
                         if (i === 0) {
                             this.actionObj.clone.style.top = formatUnit(topValue);

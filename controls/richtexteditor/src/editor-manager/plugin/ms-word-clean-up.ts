@@ -724,6 +724,10 @@ export class MsWordPaste {
                             if (!isNaN(parseInt(startString, 10))) {
                                 startAttr = parseInt(startString, 10);
                             }
+                        } else if (listStyleType === 'decimal-leading-zero') {
+                            if (!isNaN(parseInt(startString, 10))) {
+                                startAttr = parseInt(startString, 10);
+                            }
                         } else if (listStyleType === 'upper-alpha') {
                             startAttr = (startString.split('.')[0].charCodeAt(0) - 64);
                         } else if (listStyleType === 'lower-alpha') {

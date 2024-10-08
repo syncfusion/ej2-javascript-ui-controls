@@ -492,6 +492,7 @@ export class EnterKeyAction {
                             (e.args as KeyboardEventArgs).preventDefault();
                         }
                         this.triggerActionComplete(e, shiftKey);
+                        this.parent.inputElement.dispatchEvent(new Event('input'));
                     }
                 });
             }

@@ -1353,6 +1353,48 @@ describe('Auto fill ->', () => {
             spreadsheet.print({ type: 'Workbook', allowRowColumnHeader: true, allowGridLines: true });
         });
     });
+
+    describe('Set Border Method for Printing->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('setBorder->', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setBorder({border: '1px solid #000000' }, 'A1');
+            let td: HTMLElement = helper.invoke('getCell', [0, 0]);
+    
+            spreadsheet.setBorder({borderTop: '1px solid red' }, 'A2');
+            spreadsheet.setBorder({borderRight: '1px dashed red', borderBottom: '1px dashed red' }, 'A3');
+            spreadsheet.setBorder({borderRight: '1px dotted red', borderBottom: '1px dotted red' }, 'A5');
+            spreadsheet.setBorder({borderRight: '2px solid red', borderBottom: '2px solid red' }, 'A6');
+            spreadsheet.setBorder({borderRight: '3px solid red', borderBottom: '3px solid red' }, 'A7');
+            
+            spreadsheet.setBorder({borderRight: '3px double #000000', borderBottom: '3px double #000000', borderLeft: '3px double #000000',borderTop: '3px double #000000' }, 'I3');
+            spreadsheet.setBorder({borderLeft: '3px double #000000', borderBottom: '3px double #000000' }, 'I4');
+            spreadsheet.setBorder({borderLeft: '3px double #000000', borderTop: '3px double #000000' }, 'I6');
+            spreadsheet.setBorder({borderLeft: '3px double #000000', borderTop: '3px double #000000', borderBottom: '3px double #000000' }, 'I8');
+            spreadsheet.setBorder({borderRight: '3px double #000000', borderBottom: '3px double #000000' }, 'K4');
+            spreadsheet.setBorder({borderRight: '3px double #000000', borderTop: '3px double #000000' }, 'K6');
+            spreadsheet.setBorder({borderRight: '3px double #000000', borderTop: '3px double #000000', borderBottom: '3px double #000000' }, 'K8');
+
+            spreadsheet.setBorder({borderRight: '3px double #000000', borderTop: '3px double #000000', borderLeft: '3px double #000000' }, 'M2');
+            spreadsheet.setBorder({borderRight: '3px double #000000', borderBottom: '3px double #000000', borderLeft: '3px double #000000' }, 'M4');
+            
+            expect(helper.getInstance().sheets[0].rows[2].cells[0].style.borderBottom).toBe('1px dashed red');
+            td = helper.invoke('getCell', [2, 3]);
+            done();
+        });
+
+        it('checking with Active sheet', async (): Promise<void> => {
+            await wait(3000); // Wait for 3 seconds
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.print();
+        });
+    });
+
     async function wait(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }

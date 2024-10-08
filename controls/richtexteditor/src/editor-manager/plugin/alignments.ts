@@ -97,7 +97,7 @@ export class Alignments {
                     selector: e.selector
                 });
             }
-            (this.parent.editableElement as HTMLElement).focus();
+            (this.parent.editableElement as HTMLElement).focus({ preventScroll: true });
             save = this.parent.domNode.saveMarker(save);
             if (isIDevice()) {
                 setEditFrameFocus(this.parent.editableElement, e.selector);

@@ -1,5 +1,5 @@
 import { _PdfDictionary, _PdfReference } from './pdf-primitives';
-import { _byteArrayToHexString, _bytesToString } from './utils';
+import { _byteArrayToHexString, _bytesToString, _isNullOrUndefined } from './utils';
 export abstract class _PdfBaseStream {
     offset: number;
     dictionary: _PdfDictionary;
@@ -221,7 +221,11 @@ export class _PdfContentStream extends _PdfBaseStream {
     }
     constructor(bytes: number[]) {
         super();
-        this._bytes = bytes;
+        if (_isNullOrUndefined(bytes)) {
+            this._bytes = bytes;
+        } else {
+            this._bytes = [];
+        }
         this.dictionary = new _PdfDictionary();
         this.dictionary._updated = true;
     }

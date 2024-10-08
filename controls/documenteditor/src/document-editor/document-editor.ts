@@ -3595,7 +3595,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo} Returns the form field info.
      */
     public getFormFieldInfo(name: string): TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo {
-        name = HelperMethods.sanitizeString(name);
         const formFields: FieldElementBox[] = this.documentHelper.formFields;
         for (let i: number = 0; i < formFields.length; i++) {
             if ((formFields[parseInt(i.toString(), 10)].formFieldData.name === name) && (formFields[parseInt(i.toString(), 10)].formFieldData.name !== '')) {

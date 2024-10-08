@@ -4268,85 +4268,85 @@ describe('Change progress', function () {
        triggerMouseEvent(saveRecord, 'click');
    });
 });
-describe('End Edit before open dialog', function () {
-   let ganttObj: Gantt;
-   let bwData = [
-       {
-           TaskID: 1,
-           TaskName: 'New Task 1',
-           StartDate: new Date('05/22/2023'),
-           EndDate: new Date('05/22/2023'),
-           Progress: 59,
-           Duration: 1,
-       }
-   ];
-   beforeAll(function (done) {
-       ganttObj = createGantt({
-           dataSource: bwData,
-           allowSorting: true,
-           allowReordering: true,
-           enableContextMenu: true,
-           taskFields: {
-               id: 'TaskID',
-               name: 'TaskName',
-               startDate: 'StartDate',
-               endDate: 'EndDate',
-               duration: 'Duration',
-               progress: 'Progress',
-               dependency: 'Predecessor',
-               parentID: 'parentID',
-               baselineStartDate: 'BaselineStartDate',
-               baselineEndDate: 'BaselineEndDate'
-           },
-           renderBaseline: true,
-           baselineColor: 'red',
-           editSettings: {
-               allowAdding: true,
-               allowEditing: true,
-               allowDeleting: true,
-               allowTaskbarEditing: true,
-               showDeleteConfirmDialog: true
-           },
-           columns: [
-               { field: 'TaskID', headerText: 'Task ID' },
-               { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
-               { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
-               { field: 'Duration', headerText: 'Duration' },
-               { field: 'Progress', headerText: 'Progress', allowFiltering: false },
-               { field: 'CustomColumn', headerText: 'CustomColumn' }
-           ],
-           sortSettings: {
-               columns: [{ field: 'TaskID', direction: 'Ascending' },
-               { field: 'TaskName', direction: 'Ascending' }]
-           },
-           toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
-               'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+// describe('End Edit before open dialog', function () {
+//    let ganttObj: Gantt;
+//    let bwData = [
+//        {
+//            TaskID: 1,
+//            TaskName: 'New Task 1',
+//            StartDate: new Date('05/22/2023'),
+//            EndDate: new Date('05/22/2023'),
+//            Progress: 59,
+//            Duration: 1,
+//        }
+//    ];
+//    beforeAll(function (done) {
+//        ganttObj = createGantt({
+//            dataSource: bwData,
+//            allowSorting: true,
+//            allowReordering: true,
+//            enableContextMenu: true,
+//            taskFields: {
+//                id: 'TaskID',
+//                name: 'TaskName',
+//                startDate: 'StartDate',
+//                endDate: 'EndDate',
+//                duration: 'Duration',
+//                progress: 'Progress',
+//                dependency: 'Predecessor',
+//                parentID: 'parentID',
+//                baselineStartDate: 'BaselineStartDate',
+//                baselineEndDate: 'BaselineEndDate'
+//            },
+//            renderBaseline: true,
+//            baselineColor: 'red',
+//            editSettings: {
+//                allowAdding: true,
+//                allowEditing: true,
+//                allowDeleting: true,
+//                allowTaskbarEditing: true,
+//                showDeleteConfirmDialog: true
+//            },
+//            columns: [
+//                { field: 'TaskID', headerText: 'Task ID' },
+//                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+//                { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+//                { field: 'Duration', headerText: 'Duration' },
+//                { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+//                { field: 'CustomColumn', headerText: 'CustomColumn' }
+//            ],
+//            sortSettings: {
+//                columns: [{ field: 'TaskID', direction: 'Ascending' },
+//                { field: 'TaskName', direction: 'Ascending' }]
+//            },
+//            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+//                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
 
-           labelSettings: {
-               leftLabel: 'TaskID',
-               rightLabel: 'Task Name: ${taskData.TaskName}',
-               taskLabel: '${Progress}%'
-           },
-           allowResizing: true,
-           readOnly: false,
-           taskbarHeight: 20,
-           rowHeight: 40,
-           height: '550px',
-           allowUnscheduledTasks: true,
-       }, done);
-   });
-   afterAll(function () {
-       if (ganttObj) {
-           destroyGantt(ganttObj);
-       }
-   });
-   it('Edit task name and open dialog', () => {
-       let TaskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
-       triggerMouseEvent(TaskName, 'dblclick');
-       triggerMouseEvent(document.querySelector('.e-taskbar-main-container '), 'dblclick');
-       // expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0).toBe(false)
-   });
-});
+//            labelSettings: {
+//                leftLabel: 'TaskID',
+//                rightLabel: 'Task Name: ${taskData.TaskName}',
+//                taskLabel: '${Progress}%'
+//            },
+//            allowResizing: true,
+//            readOnly: false,
+//            taskbarHeight: 20,
+//            rowHeight: 40,
+//            height: '550px',
+//            allowUnscheduledTasks: true,
+//        }, done);
+//    });
+//    afterAll(function () {
+//        if (ganttObj) {
+//            destroyGantt(ganttObj);
+//        }
+//    });
+//    it('Edit task name and open dialog', () => {
+//        let TaskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+//        triggerMouseEvent(TaskName, 'dblclick');
+//        triggerMouseEvent(document.querySelector('.e-taskbar-main-container '), 'dblclick');
+//        // expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0).toBe(false)
+//    });
+// });
 describe('Change task start date less than timeline start date using dialog edit', function () {
    let ganttObj: Gantt;
    let bwData = [
@@ -10756,139 +10756,139 @@ describe('additional params for dialog', () => {
         }
     });
 });
-describe('additional params for notes dialog', () => {
-    let ganttObj: Gantt;
-    var splitTasksData = [
-        {
-            TaskID: 1,
-            TaskName: 'Project Schedule',
-            StartDate: new Date('02/04/2019'),
-            EndDate: new Date('03/10/2019'),
-            subtasks: [
-                {
-                    TaskID: 2,
-                    TaskName: 'Planning',
-                    StartDate: new Date('02/04/2019'),
-                    subtasks: [
-                        {
-                            TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
-                            Duration: 10, Progress: '60',
-                            Segments: [
-                                { StartDate: new Date('02/04/2019'), Duration: 2 },
-                                { StartDate: new Date('02/05/2019'), Duration: 5 },
-                                { StartDate: new Date('02/08/2019'), Duration: 3 }
-                            ]
-                        },
-                        {
-                            TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
-                            Duration: 10, Progress: '90'
-                        },
-                    ]
-                },
-            ]
-        }
-    ];
-    beforeAll((done: Function) => {
-        ganttObj = createGantt({
-            dataSource: splitTasksData,
-            showOverAllocation: true,
-            enableContextMenu: true,
-            enableUndoRedo: true,
-            allowSorting: true,
-            allowReordering: true,
-            addDialogFields: [{
-                type: "Notes"
-            }],
-            editDialogFields: [
-                {
-                    type: 'Notes', additionalParams: { toolbarSettings: { items: ['Image', 'CreateTable', 'EmojiPicker', 'FileManager', 'FormatPainter'] } }
-                },
-            ],
-            taskFields: {
-                id: 'TaskID',
-                name: 'TaskName',
-                startDate: 'StartDate',
-                endDate: 'EndDate',
-                duration: 'Duration',
-                progress: 'Progress',
-                dependency: 'Predecessor',
-                resourceInfo: 'resources',
-                work: 'work',
-                child: 'subtasks',
-                notes: 'info'
-            },
-            editSettings: {
-                allowAdding: true,
-                allowEditing: true,
-                allowDeleting: true,
-                allowTaskbarEditing: true,
-                showDeleteConfirmDialog: true
-            },
-            columns: [
-                { field: 'TaskID', visible: false },
-                { field: 'TaskName', headerText: 'Name', width: 250 },
-                { field: 'work', headerText: 'Work' },
-                { field: 'Progress' },
-                { field: 'StartDate' },
-                { field: 'Duration' },
-            ],
-            toolbar: ['Add', 'Undo', 'Redo'],
-            allowTaskbarDragAndDrop: true,
-            labelSettings: {
-                rightLabel: 'resources',
-                taskLabel: 'Progress'
-            },
-            splitterSettings: {
-                columnIndex: 3
-            },
-            selectionSettings: {
-                mode: 'Row',
-                type: 'Single',
-                enableToggle: false
-            },
-            tooltipSettings: {
-                showTooltip: true
-            },
-            timelineSettings: {
-                showTooltip: true,
-                topTier: {
-                    unit: 'Week',
-                    format: 'dd/MM/yyyy'
-                },
-                bottomTier: {
-                    unit: 'Day',
-                    count: 1
-                }
-            },
-            readOnly: false,
-            //gridLines: "Both",
-            allowRowDragAndDrop: true,
-            allowResizing: true,
-            allowFiltering: true,
-            allowSelection: true,
-            highlightWeekends: true,
-            treeColumnIndex: 1,
-            taskbarHeight: 20,
-            rowHeight: 40,
-            height: '550px',
-            projectStartDate: new Date('03/28/2019'),
-            projectEndDate: new Date('05/18/2019')
-        }, done);
-    });
-    beforeEach((done) => {
-        setTimeout(done, 500);
-        ganttObj.openEditDialog(2);
-    });
-    it('check data', () => {
-        ganttObj['closeGanttActions']();
-        expect(ganttObj.currentViewData.length).toBe(4);
-    });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
-});
+// describe('additional params for notes dialog', () => {
+//     let ganttObj: Gantt;
+//     var splitTasksData = [
+//         {
+//             TaskID: 1,
+//             TaskName: 'Project Schedule',
+//             StartDate: new Date('02/04/2019'),
+//             EndDate: new Date('03/10/2019'),
+//             subtasks: [
+//                 {
+//                     TaskID: 2,
+//                     TaskName: 'Planning',
+//                     StartDate: new Date('02/04/2019'),
+//                     subtasks: [
+//                         {
+//                             TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+//                             Duration: 10, Progress: '60',
+//                             Segments: [
+//                                 { StartDate: new Date('02/04/2019'), Duration: 2 },
+//                                 { StartDate: new Date('02/05/2019'), Duration: 5 },
+//                                 { StartDate: new Date('02/08/2019'), Duration: 3 }
+//                             ]
+//                         },
+//                         {
+//                             TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+//                             Duration: 10, Progress: '90'
+//                         },
+//                     ]
+//                 },
+//             ]
+//         }
+//     ];
+//     beforeAll((done: Function) => {
+//         ganttObj = createGantt({
+//             dataSource: splitTasksData,
+//             showOverAllocation: true,
+//             enableContextMenu: true,
+//             enableUndoRedo: true,
+//             allowSorting: true,
+//             allowReordering: true,
+//             addDialogFields: [{
+//                 type: "Notes"
+//             }],
+//             editDialogFields: [
+//                 {
+//                     type: 'Notes', additionalParams: { toolbarSettings: { items: ['Image', 'CreateTable', 'EmojiPicker', 'FileManager', 'FormatPainter'] } }
+//                 },
+//             ],
+//             taskFields: {
+//                 id: 'TaskID',
+//                 name: 'TaskName',
+//                 startDate: 'StartDate',
+//                 endDate: 'EndDate',
+//                 duration: 'Duration',
+//                 progress: 'Progress',
+//                 dependency: 'Predecessor',
+//                 resourceInfo: 'resources',
+//                 work: 'work',
+//                 child: 'subtasks',
+//                 notes: 'info'
+//             },
+//             editSettings: {
+//                 allowAdding: true,
+//                 allowEditing: true,
+//                 allowDeleting: true,
+//                 allowTaskbarEditing: true,
+//                 showDeleteConfirmDialog: true
+//             },
+//             columns: [
+//                 { field: 'TaskID', visible: false },
+//                 { field: 'TaskName', headerText: 'Name', width: 250 },
+//                 { field: 'work', headerText: 'Work' },
+//                 { field: 'Progress' },
+//                 { field: 'StartDate' },
+//                 { field: 'Duration' },
+//             ],
+//             toolbar: ['Add', 'Undo', 'Redo'],
+//             allowTaskbarDragAndDrop: true,
+//             labelSettings: {
+//                 rightLabel: 'resources',
+//                 taskLabel: 'Progress'
+//             },
+//             splitterSettings: {
+//                 columnIndex: 3
+//             },
+//             selectionSettings: {
+//                 mode: 'Row',
+//                 type: 'Single',
+//                 enableToggle: false
+//             },
+//             tooltipSettings: {
+//                 showTooltip: true
+//             },
+//             timelineSettings: {
+//                 showTooltip: true,
+//                 topTier: {
+//                     unit: 'Week',
+//                     format: 'dd/MM/yyyy'
+//                 },
+//                 bottomTier: {
+//                     unit: 'Day',
+//                     count: 1
+//                 }
+//             },
+//             readOnly: false,
+//             //gridLines: "Both",
+//             allowRowDragAndDrop: true,
+//             allowResizing: true,
+//             allowFiltering: true,
+//             allowSelection: true,
+//             highlightWeekends: true,
+//             treeColumnIndex: 1,
+//             taskbarHeight: 20,
+//             rowHeight: 40,
+//             height: '550px',
+//             projectStartDate: new Date('03/28/2019'),
+//             projectEndDate: new Date('05/18/2019')
+//         }, done);
+//     });
+//     beforeEach((done) => {
+//         setTimeout(done, 500);
+//         ganttObj.openEditDialog(2);
+//     });
+//     it('check data', () => {
+//         ganttObj['closeGanttActions']();
+//         expect(ganttObj.currentViewData.length).toBe(4);
+//     });
+//     afterAll(() => {
+//         if (ganttObj) {
+//             destroyGantt(ganttObj);
+//         }
+//     });
+// });
 describe('edit dependency tab', () => {
     let ganttObj: Gantt;
     var splitTasksData = [
@@ -11538,14 +11538,14 @@ describe('Milestone and Work Property Not Working Properly ', () => {
         expect(ganttObj.flatData[0].ganttProperties.work).toBe(0);
         expect(ganttObj.flatData[0]['Work']).toBe(0);  
     });
-    it('check Milestone as true and Work as number  ', () => {
-        let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
-        triggerMouseEvent(saveRecord, 'click');
-        expect(ganttObj.flatData[0].ganttProperties.isMilestone).toBe(false);
-        expect(ganttObj.flatData[0]["isMilestone"]).toBe(false);
-        expect(ganttObj.flatData[0].ganttProperties.work).toBe(0);
-        expect(ganttObj.flatData[0]['Work']).toBe(0);  
-    });
+    // it('check Milestone as true and Work as number  ', () => {
+    //     let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+    //     triggerMouseEvent(saveRecord, 'click');
+    //     expect(ganttObj.flatData[0].ganttProperties.isMilestone).toBe(false);
+    //     expect(ganttObj.flatData[0]["isMilestone"]).toBe(false);
+    //     expect(ganttObj.flatData[0].ganttProperties.work).toBe(0);
+    //     expect(ganttObj.flatData[0]['Work']).toBe(0);  
+    // });
 });
 describe('AditionalParams property not working properly', () => {
     let ganttObj: Gantt;

@@ -648,7 +648,7 @@ export class Filter {
     private parseFilterString(filterString: string): any[] {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         let filterArray: any[] = [];
-        if (filterString !== 'none') {
+        if (filterString && filterString !== 'none') {
             filterArray = filterString.split(' ').map((filter: string) => {
                 const [name, value] = filter.match(/([a-z-]+)\(([^)]+)\)/).slice(1, 3);
                 return { filter: name, value: value };

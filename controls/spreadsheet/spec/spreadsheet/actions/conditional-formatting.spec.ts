@@ -1500,6 +1500,40 @@ describe('Conditional formatting ->', () => {
                 done();
             });
         });
+
+        describe('EJ2-910610 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{
+                        conditionalFormats: [
+                            {
+                                type: "LessThan", cFColor: "GreenFT", value: '26', range: 'E1:E11',
+                                format: {
+                                    style: {
+                                        backgroundColor: '#ffffff', color: '#000000', fontWeight: 'normal',
+                                        fontStyle: 'normal', textDecoration: 'none'
+                                    },
+                                },
+                            },
+                            { type: "LessThan", cFColor: "RedF", value: '20', range: 'D2:D11' },
+                        ], ranges: [{ dataSource: defaultData }]
+                    }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Color scales back color and font color not updated properly while exporting the imported CF applied excel.', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                expect(spreadsheet.sheets[0].conditionalFormats[0].format).toBeDefined();
+                // saveAsJson operation codes are used to replicate the case, since CI will not compatible with Worker task so invoking getStringifyObject method directly.
+                const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader'];
+                for (let i: number = 0, sheetCount: number = spreadsheet.sheets.length; i < sheetCount; i++) {
+                    spreadsheet.workbookSaveModule.getStringifyObject(spreadsheet.sheets[i], skipProps, i);
+                }
+                done();
+            });
+        });
     });
     describe('Apply conditional formatting with args.cancel in actionBegin event ->', () => {
         beforeEach((done: Function) => {

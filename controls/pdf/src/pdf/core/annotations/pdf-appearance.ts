@@ -2,6 +2,7 @@ import { _PdfCrossReference } from './../pdf-cross-reference';
 import { _PdfDictionary } from './../pdf-primitives';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { PdfAnnotation } from './annotation';
+import { _isNullOrUndefined } from '../utils';
 /**
  * `PdfAppearance` class represents the appearance of the annotation.
  * ```typescript
@@ -39,11 +40,13 @@ export class PdfAppearance {
      * @private
      */
     constructor(annot: PdfAnnotation, bounds: number[]) {
+        if (_isNullOrUndefined(bounds)) {
+            this._bounds = bounds;
+        } else {
+            this._bounds = [];
+        }
         this._annotations = annot;
         this._crossReference = annot._crossReference;
-        if (typeof bounds !== 'undefined') {
-            this._bounds = bounds;
-        }
         this._initialize();
     }
     /**
@@ -74,7 +77,7 @@ export class PdfAppearance {
      * ```
      */
     get normal(): PdfTemplate {
-        if (!this._templateNormal && this._dictionary.has('AP')) {
+        if (!this._templateNormal && this._dictionary && this._dictionary.has('AP')) {
             this._templateNormal = this._dictionary.get('N');
         }
         return this._templateNormal;

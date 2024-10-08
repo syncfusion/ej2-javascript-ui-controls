@@ -727,6 +727,8 @@ export class FormFields {
             currentField = currentData.GroupName;
             break;
         case 'DropDown':
+            currentField = currentData.ActualFieldName;
+            break;
         case 'ListBox':
             currentField = currentData.Text;
             break;

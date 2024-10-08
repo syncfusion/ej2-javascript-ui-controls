@@ -276,6 +276,9 @@ export class FocusStrategy {
         if (this.parent.filterSettings.type === 'Menu') {
             this.handleFilterNavigation(e, '.e-flmenu .e-input-group.e-popup-flmenu', '.e-flmenu .e-footer-content button:nth-child(2)');
         }
+        if (this.parent.showColumnChooser) {
+            this.handleFilterNavigation(e, '.e-ccdlg .e-ccsearch.e-cc.e-input', '.e-ccdlg .e-footer-content button:nth-child(2)');
+        }
         if (this.skipOn(e)) {
             return;
         }
@@ -1222,8 +1225,8 @@ export class Matrix {
         return !this.inValid(vector[parseInt(index.toString(), 10)]) ? index :
             this.first(
                 vector,
-                (['upArrow', 'downArrow', 'shiftUp', 'shiftDown'].indexOf(action) !== -1) ? moveTo ? 0 : ++index : index + navigator[1],
-                navigator, false, action);
+                (['upArrow', 'downArrow', 'shiftUp', 'shiftDown', 'enter', 'shiftEnter'].indexOf(action) !== -1) ? moveTo ? 0 : ++index :
+                    index + navigator[1], navigator, false, action);
     }
 
     public select(rowIndex: number, columnIndex: number): void {

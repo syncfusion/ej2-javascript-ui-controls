@@ -2405,6 +2405,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             idx = navIdx.pop();
             iitems = this.getItems(navIdx);
             menuitem = new MenuItem(iitems[0] as MenuItem, 'items', items[i as number], true);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (menuitem as any).parentObj = (iitems[0] as any).parentObj;
             iitems.splice(isAfter ? idx + 1 : idx, 0, menuitem);
             const uls: Element[] = this.isMenu ? [this.getWrapper()].concat(this.getPopups()) : [].slice.call(this.getWrapper().children);
             if (!isNullOrUndefined(idx) && navIdx.length < uls.length) {

@@ -61,7 +61,7 @@ export class _PdfCatalog {
         const nodesToVisit = [this._topPagesDictionary];
         const visitedNodes = new _PdfReferenceSet();
         const pagesRef = this._catalogDictionary.getRaw('Pages');
-        if (pagesRef instanceof _PdfReference) {
+        if (pagesRef && pagesRef instanceof _PdfReference) {
             visitedNodes.put(pagesRef);
         }
         const xref: _PdfCrossReference = this._crossReference;
@@ -81,7 +81,7 @@ export class _PdfCatalog {
                 }
                 visitedNodes.put(currentNode);
                 const obj = xref._fetch(currentNode);
-                if (obj instanceof _PdfDictionary) {
+                if (obj && obj instanceof _PdfDictionary) {
                     let type = obj.getRaw('Type');
                     if (type !== null && typeof type !== 'undefined' && type instanceof _PdfReference) {
                         type = xref._fetch(type);

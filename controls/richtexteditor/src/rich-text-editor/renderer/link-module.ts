@@ -394,7 +394,7 @@ export class Link {
     // eslint-disable-next-line
     private insertlink(e: MouseEvent | KeyboardEvent): void {
         const linkEle: HTMLElement = (this as NotifyArgs).selfLink.dialogObj.element as HTMLElement;
-        let linkUrl: string = (linkEle.querySelector('.e-rte-linkurl') as HTMLInputElement).value;
+        let linkUrl: string = (linkEle.querySelector('.e-rte-linkurl') as HTMLInputElement).value.trim();
         let linkText: string = (linkEle.querySelector('.e-rte-linkText') as HTMLInputElement).value;
         let linkTitle: string;
         if ((this as NotifyArgs).selfLink.parent.editorMode === 'HTML') {

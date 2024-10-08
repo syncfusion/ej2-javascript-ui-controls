@@ -1,7 +1,7 @@
 import { _PdfStream } from './base-stream';
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { _Linearization } from './pdf-parser';
-import { _isWhiteSpace, FormatError, _decode, _emptyPdfData, _getNewGuidString } from './utils';
+import { _isWhiteSpace, FormatError, _decode, _emptyPdfData, _getNewGuidString, _isNullOrUndefined } from './utils';
 import { _PdfCatalog } from './pdf-catalog';
 import { _PdfDictionary, _PdfReference, _isName, _PdfName, _clearPrimitiveCaches } from './pdf-primitives';
 import { PdfDestination, PdfPage } from './pdf-page';
@@ -767,7 +767,7 @@ export class PdfDocument {
             const parentDictionary: _PdfDictionary = this._crossReference._fetch(parentReference);
             if (parentDictionary && parentDictionary.has('Kids')) {
                 let kids: _PdfReference[] = parentDictionary.get('Kids');
-                if (kids.length === 1 && parentDictionary && parentDictionary.get('Type').name === 'Pages') {
+                if (_isNullOrUndefined(kids) && kids.length === 1 && parentDictionary && parentDictionary.get('Type').name === 'Pages') {
                     this._removeParent(parentReference, parentDictionary);
                 } else {
                     kids = kids.filter((item: _PdfReference) => item !== referenceToRemove);
@@ -1420,7 +1420,7 @@ export class PdfDocument {
         _clearPrimitiveCaches();
         if (this._mergeHelperCache) {
             if (this._mergeHelperCache.size > 0) {
-                this._mergeHelperCache.forEach((value: _PdfMergeHelper, key: string) => { // eslint-disable-line
+                this._mergeHelperCache.forEach((value: _PdfMergeHelper) => {
                     if (value) {
                         value._objectDispose();
                     }
@@ -1445,7 +1445,7 @@ export class PdfDocument {
         const { _catalog, _linearization, _crossReference } = this;
         const ref: _PdfReference = _PdfReference.get(_linearization.objectNumberFirst, 0);
         try {
-            const obj: any = _crossReference._fetch(ref); // eslint-disable-line
+            let obj: any = _crossReference._fetch(ref); // eslint-disable-line
             if (obj instanceof _PdfDictionary) {
                 const type: _PdfName = obj.get('Type');
                 if (_isName(type, 'Page') || (!obj.has('Type') && !obj.has('Kids'))) {

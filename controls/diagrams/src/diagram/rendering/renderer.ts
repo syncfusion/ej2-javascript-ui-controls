@@ -1996,7 +1996,8 @@ export class DiagramRenderer {
                         for (let i: number = 0; i < selectedNode.wrapper.children.length; i++) {
                             if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
                                 innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
-                                this.renderFlipElement(group, innerLabelContent, group.flip);
+                                this.renderFlipElement(group, innerLabelContent, group.flip,
+                                                       selectedNode.wrapper.children[parseInt(i.toString(), 10)]);
                                 return;
                             }
                         }
@@ -2006,7 +2007,8 @@ export class DiagramRenderer {
                         for (let i: number = 0; i < selectedNode.wrapper.children.length; i++) {
                             if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
                                 innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
-                                this.renderFlipElement(group, innerLabelContent, group.flip);
+                                this.renderFlipElement(group, innerLabelContent, group.flip,
+                                                       selectedNode.wrapper.children[parseInt(i.toString(), 10)]);
                             }
                         }
                         this.renderFlipElement(group, innerNodeContent, group.flip);
@@ -2042,7 +2044,8 @@ export class DiagramRenderer {
                         for (let i: number = 0; i < selectedNode.wrapper.children.length; i++) {
                             if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
                                 innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
-                                this.renderFlipElement(group, innerLabelContent, group.flip);
+                                this.renderFlipElement(group, innerLabelContent, group.flip,
+                                                       selectedNode.wrapper.children[parseInt(i.toString(), 10)]);
                                 return;
                             }
                         }
@@ -2052,7 +2055,8 @@ export class DiagramRenderer {
                         for (let i: number = 0; i < selectedNode.wrapper.children.length; i++) {
                             if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
                                 innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
-                                this.renderFlipElement(group, innerLabelContent, group.flip);
+                                this.renderFlipElement(group, innerLabelContent, group.flip,
+                                                       selectedNode.wrapper.children[parseInt(i.toString(), 10)]);
                             }
                         }
                         this.renderFlipElement(group, innerNodeContent, group.flip);
@@ -2066,7 +2070,8 @@ export class DiagramRenderer {
         }
     }
 
-    public renderFlipElement(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement, flip: FlipDirection): void {
+    public renderFlipElement(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement, flip: FlipDirection,
+                             textElement: DiagramElement = undefined): void {
         let attr: object = {};
         let scaleX: number = 1;
         let scaleY: number = 1;
@@ -2082,6 +2087,13 @@ export class DiagramRenderer {
                 posY = element.bounds.center.y;
                 offsetY = -element.bounds.center.y;
                 scaleY = -1;
+            }
+            // EJ2-910202-Annotation Rotates Opposite to Node Rotation Direction After Node Flip
+            if (textElement instanceof TextElement && (flip === 'Horizontal' || flip === 'Vertical')) {
+                const textPos: PointModel = textElement.getAbsolutePosition(textElement.desiredSize);
+                const angle: number =  Math.sin(element.rotateAngle * Math.PI / 180);
+                offsetX += - element.desiredSize.height * angle * (-2 * textPos.y / textElement.desiredSize.height + 1);
+                offsetY += element.desiredSize.width * angle * (-2 * textPos.x / textElement.desiredSize.width + 1);
             }
             attr = {
                 'transform': 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','

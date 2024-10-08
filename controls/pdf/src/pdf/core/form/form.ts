@@ -1,7 +1,7 @@
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfField, PdfTextBoxField, PdfButtonField, PdfCheckBoxField, PdfRadioButtonListField, PdfComboBoxField, PdfListBoxField, PdfSignatureField } from './field';
-import { _getInheritableProperty, _getPageIndex } from './../utils';
+import { _getInheritableProperty, _getPageIndex, _isNullOrUndefined } from './../utils';
 import { PdfFormFieldsTabOrder, _FieldFlag, _SignatureFlag } from './../enumerator';
 import { PdfPage } from './../pdf-page';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
@@ -429,7 +429,7 @@ export class PdfForm {
                 }
                 const fieldCollection: Map<number, PdfField[]> = new Map<number, PdfField[]>();
                 this._fieldCollection = this._getFields();
-                if (this._fieldCollection && this._fieldCollection.length > 0) {
+                if (_isNullOrUndefined(this._fieldCollection) && this._fieldCollection.length > 0) {
                     const page: PdfPage = this._fieldCollection[0].page;
                     if (page && document) {
                         for (let i: number = 0; i < this._fieldCollection.length; i++) {
@@ -525,7 +525,7 @@ export class PdfForm {
                     }
                 }
                 if (typeof fieldKids === 'undefined') {
-                    if (typeof fieldDictionary !== 'undefined') {
+                    if (fieldDictionary) {
                         if (this._fields.indexOf(ref) === -1) {
                             this._fields.push(ref);
                         }
@@ -552,17 +552,17 @@ export class PdfForm {
     }
     _isNode(kids: Array<any>) : boolean { // eslint-disable-line
         let isNode: boolean = false;
-        if (typeof kids !== 'undefined' && kids.length > 0) {
+        if (_isNullOrUndefined(kids) && kids.length > 0) {
             const entry: any = kids[0]; // eslint-disable-line
             let dictionary: _PdfDictionary;
-            if (typeof entry !== 'undefined' && entry !== null) {
+            if (_isNullOrUndefined(entry)) {
                 if (entry instanceof _PdfDictionary) {
                     dictionary = entry;
                 } else if (entry instanceof _PdfReference) {
                     dictionary = this._crossReference._fetch(entry);
                 }
             }
-            if (typeof dictionary !== 'undefined' && dictionary.has('Subtype')) {
+            if (dictionary && dictionary.has('Subtype')) {
                 const subtype: _PdfName = dictionary.get('Subtype');
                 if (subtype && subtype.name !== 'Widget') {
                     isNode = true;
@@ -582,12 +582,12 @@ export class PdfForm {
                         if (fieldKids && fieldKids.length > 0) {
                             fieldKids.forEach((kidReference: any) => { // eslint-disable-line
                                 let kidDictionary: _PdfDictionary;
-                                if (kidReference instanceof _PdfDictionary) {
+                                if (kidReference && kidReference instanceof _PdfDictionary) {
                                     kidDictionary = kidReference;
-                                } else if (kidReference instanceof _PdfReference) {
+                                } else if (kidReference && kidReference instanceof _PdfReference) {
                                     kidDictionary = this._crossReference._fetch(kidReference);
                                 }
-                                if (typeof kidDictionary !== 'undefined' && kidDictionary.has('Subtype')) {
+                                if (kidDictionary && kidDictionary.has('Subtype')) {
                                     const subtype: _PdfName = kidDictionary.get('Subtype');
                                     if (subtype && subtype.name === 'Widget') {
                                         this._widgetReferences.push(kidReference);
@@ -790,7 +790,7 @@ export class PdfForm {
     }
     _getRectangle(dictionary: _PdfDictionary): number[] {
         let rect: number[];
-        if (dictionary.has('Rect')) {
+        if (dictionary && dictionary.has('Rect')) {
             rect = dictionary.getArray('Rect');
         }
         return rect;
@@ -800,7 +800,7 @@ export class PdfForm {
         const dictionary: _PdfDictionary = field._dictionary;
         if (dictionary.has('Kids')) {
             const kids: _PdfDictionary[] = dictionary.getArray('Kids');
-            if (kids && kids.length >= 1) {
+            if (_isNullOrUndefined(kids) && kids.length >= 1) {
                 if (kids.length === 1) {
                     result = this._getRectangle(kids[0]);
                 } else {

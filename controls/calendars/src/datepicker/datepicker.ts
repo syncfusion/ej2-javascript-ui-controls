@@ -1067,13 +1067,20 @@ export class DatePicker extends Calendar implements IInput {
             this.show();
         }
     }
-    private inputHandler(): void {
+    private inputHandler(e?: any): void {
         this.isPopupClicked = false;
         if (this.enableMask)
         {
-            this.notify('inputHandler', {
-                module: 'MaskedDateTime'
-            });
+            if (!isNullOrUndefined(e) && !isNullOrUndefined(e.inputType) && e.inputType === 'insertFromPaste') {
+                this.notify('maskPasteInputHandler', {
+                    module: 'MaskedDateTime'
+                });
+            }
+            else {
+                this.notify('inputHandler', {
+                    module: 'MaskedDateTime'
+                });
+            }
         }
     }
     private inputBlurHandler(e: MouseEvent): void {

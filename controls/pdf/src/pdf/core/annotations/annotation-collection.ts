@@ -1,7 +1,7 @@
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfPage } from './../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
-import { _checkReview } from './../utils';
+import { _checkReview, _isNullOrUndefined } from './../utils';
 import { PdfAnnotation, PdfLineAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfAngleMeasurementAnnotation, PdfRectangleAnnotation, PdfSquareAnnotation, PdfPolyLineAnnotation, PdfPolygonAnnotation, PdfInkAnnotation, PdfPopupAnnotation, PdfAttachmentAnnotation, Pdf3DAnnotation, PdfFileLinkAnnotation, PdfWatermarkAnnotation, PdfRubberStampAnnotation, PdfSoundAnnotation, PdfFreeTextAnnotation, PdfRedactionAnnotation, PdfRichMediaAnnotation, PdfTextMarkupAnnotation, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfComment } from './annotation';
 import { PdfAnnotationFlag } from './../enumerator';
 /**
@@ -33,7 +33,11 @@ export class PdfAnnotationCollection {
      * @param {PdfPage} page PDF page object.
      */
     constructor(array: Array<_PdfReference>, xref: _PdfCrossReference, page: PdfPage) {
-        this._annotations = array;
+        if (_isNullOrUndefined(array)) {
+            this._annotations = array;
+        } else {
+            this._annotations = [];
+        }
         this._page = page;
         this._crossReference = xref;
         this._parsedAnnotations = new Map<number, PdfAnnotation>();
@@ -83,10 +87,10 @@ export class PdfAnnotationCollection {
         }
         if (!this._parsedAnnotations.has(index)) {
             let dictionary: _PdfReference | _PdfDictionary = this._annotations[Number.parseInt(index.toString(), 10)];
-            if (typeof dictionary !== 'undefined' && dictionary instanceof _PdfReference) {
+            if (dictionary && dictionary instanceof _PdfReference) {
                 dictionary = this._crossReference._fetch(dictionary);
             }
-            if (typeof dictionary !== 'undefined' && dictionary instanceof _PdfDictionary) {
+            if (dictionary && dictionary instanceof _PdfDictionary) {
                 const annotation: PdfAnnotation = this._parseAnnotation(dictionary);
                 if (annotation) {
                     annotation._ref = this._annotations[Number.parseInt(index.toString(), 10)];
@@ -135,7 +139,7 @@ export class PdfAnnotationCollection {
         this._annotations.push(reference);
         this._parsedAnnotations.set(index, annotation);
         let isAdded: boolean = false;
-        if (this._page._pageDictionary.has('Annots')) {
+        if (this._page && this._page._pageDictionary.has('Annots')) {
             const collection: _PdfReference[] = this._page._pageDictionary.get('Annots');
             if (collection !== null && typeof collection !== 'undefined' && collection.indexOf(reference) === -1) {
                 collection.push(reference);
@@ -147,7 +151,7 @@ export class PdfAnnotationCollection {
             this._page._pageDictionary.set('Annots', this._annotations);
         }
         this._page._pageDictionary._updated = true;
-        if (annotation instanceof PdfComment) {
+        if (annotation && annotation instanceof PdfComment) {
             this._addCommentsAndReview(annotation, annotation._dictionary.get('F'));
         }
         this._updateCustomAppearanceResource(annotation);
@@ -175,7 +179,7 @@ export class PdfAnnotationCollection {
      * ```
      */
     remove(annotation: PdfAnnotation): void {
-        if (annotation._ref) {
+        if (annotation && annotation._ref) {
             const index: number = this._annotations.lastIndexOf(annotation._ref);
             if (index > -1) {
                 this.removeAt(index);
@@ -239,7 +243,7 @@ export class PdfAnnotationCollection {
         this._parsedAnnotations = result;
     }
     _updateCustomAppearanceResource(annotation: PdfAnnotation): void {
-        if (annotation instanceof PdfRubberStampAnnotation && typeof annotation._appearance !== 'undefined') {
+        if (annotation && annotation instanceof PdfRubberStampAnnotation && typeof annotation._appearance !== 'undefined') {
             annotation._appearance.normal.graphics._processResources(annotation._crossReference);
         }
     }
@@ -273,7 +277,7 @@ export class PdfAnnotationCollection {
     }
     _parseAnnotation(dictionary: _PdfDictionary): PdfAnnotation {
         let annot: PdfAnnotation;
-        if (dictionary.has('Subtype')) {
+        if (dictionary && dictionary.has('Subtype') && this._page !== null && typeof this._page !== 'undefined') {
             const key: _PdfName = dictionary.get('Subtype');
             const size: number[] = dictionary.get('Rect');
             if (key) {
@@ -387,18 +391,20 @@ export class PdfAnnotationCollection {
     }
     _getLinkAnnotation(dictionary: _PdfDictionary): PdfFileLinkAnnotation | PdfUriAnnotation {
         let annot: PdfFileLinkAnnotation | PdfUriAnnotation;
-        if (dictionary.has('A')) {
-            const remote: _PdfDictionary = dictionary.get('A');
-            if (remote && remote.has('S')) {
-                const link: _PdfName = remote.get('S');
-                if (link && link.name === 'GoToR' && remote.has('F')) {
-                    annot = PdfFileLinkAnnotation._load(this._page, dictionary);
-                } else if (link && link.name === 'URI') {
-                    annot = PdfUriAnnotation._load(this._page, dictionary);
+        if (this._page) {
+            if (dictionary && dictionary.has('A')) {
+                const remote: _PdfDictionary = dictionary.get('A');
+                if (remote && remote.has('S')) {
+                    const link: _PdfName = remote.get('S');
+                    if (link && link.name === 'GoToR' && remote.has('F')) {
+                        annot = PdfFileLinkAnnotation._load(this._page, dictionary);
+                    } else if (link && link.name === 'URI') {
+                        annot = PdfUriAnnotation._load(this._page, dictionary);
+                    }
                 }
+            } else {
+                annot = PdfUriAnnotation._load(this._page, dictionary);
             }
-        } else {
-            annot = PdfUriAnnotation._load(this._page, dictionary);
         }
         return annot;
     }
@@ -437,7 +443,7 @@ export class PdfAnnotationCollection {
             }
             const annotationDictionary: _PdfDictionary = this._crossReference.
                 _fetch(this._annotations[Number.parseInt(index.toString(), 10)]);
-            if (annotationDictionary.has('Parent')) {
+            if (annotationDictionary && annotationDictionary.has('Parent')) {
                 const parentReference: _PdfReference = annotationDictionary.getRaw('Parent');
                 if ((parentReference && parentReference === ref) || ref ===
                     this._annotations[Number.parseInt(index.toString(), 10)]) {
@@ -485,9 +491,11 @@ export class PdfPopupAnnotationCollection {
      * @param {boolean} isReview Boolean flag to set review
      */
     constructor(annotation: PdfAnnotation, isReview: boolean) {
-        this._annotation = annotation;
+        if (annotation) {
+            this._annotation = annotation;
+        }
         this._isReview = isReview;
-        if (this._annotation._isLoaded || typeof annotation._page !== 'undefined') {
+        if (annotation && this._annotation._isLoaded || annotation._page) {
             this._page = annotation._page;
             this._parentDictionary = annotation._dictionary;
             if (this._annotation._isLoaded) {
@@ -663,10 +671,13 @@ export class PdfPopupAnnotationCollection {
         }
     }
     _parseReview(): void {
-        const collection: PdfAnnotationCollection = this._page.annotations;
+        let collection: PdfAnnotationCollection;
+        if (this._page) {
+            collection = this._page.annotations;
+        }
         const map: Map<_PdfReference, PdfAnnotation> = new Map<_PdfReference, PdfAnnotation>();
         map.set(this._annotation._ref, this._annotation);
-        if (collection._comments && collection._comments.length > 0) {
+        if (collection && collection._comments && collection._comments.length > 0) {
             const remaining: PdfPopupAnnotation[] = [];
             for (let i: number = 0; i < collection._comments.length; i++) {
                 const annotation: PdfPopupAnnotation = collection._comments[Number.parseInt(i.toString(), 10)];
@@ -683,7 +694,7 @@ export class PdfPopupAnnotationCollection {
             } else {
                 collection._comments = [];
             }
-        } else {
+        } else if (collection) {
             const count: number = collection.count;
             for (let i: number = 0; i < count; i++) {
                 const annotation: PdfAnnotation = collection.at(i);
@@ -704,8 +715,11 @@ export class PdfPopupAnnotationCollection {
         map.clear();
     }
     _parseComments(): void {
-        const collection: PdfAnnotationCollection = this._page.annotations;
-        if (collection._comments && collection._comments.length > 0) {
+        let collection: PdfAnnotationCollection;
+        if (this._page) {
+            collection = this._page.annotations;
+        }
+        if (collection && collection._comments && collection._comments.length > 0) {
             const remaining: PdfPopupAnnotation[] = [];
             for (let i: number = 0; i < collection._comments.length; i++) {
                 const annotation: PdfPopupAnnotation = collection._comments[Number.parseInt(i.toString(), 10)];
@@ -723,7 +737,7 @@ export class PdfPopupAnnotationCollection {
             } else {
                 collection._comments = [];
             }
-        } else {
+        } else if (collection) {
             const count: number = collection.count;
             for (let i: number = 0; i < count; i++) {
                 const annotation: PdfAnnotation = collection.at(i);

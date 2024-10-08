@@ -301,7 +301,7 @@ describe('Chart Control', () => {
         it('Checking Xaxis label rotation', (done: Function) => {
             loaded = (args: Object): void => {
                 let label = document.getElementById('chartContainer-0-axis-label-0');
-                expect(label.getAttribute('transform')).toBe('rotate(45,59.40455950540958,377.660978252405)');
+                expect(label.getAttribute('transform')).toBe('rotate(45,59.40455950540958,377.6609520654221)');
                 done();
             };
             chartObj.loaded = loaded;

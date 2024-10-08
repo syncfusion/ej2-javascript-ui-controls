@@ -2,7 +2,7 @@ import { Spreadsheet } from '../base/index';
 import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { closest, extend, detach, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus, getUpdateUsingRaf, updateSortCollection, isReadOnlyCells, readonlyAlert } from '../common/index';
+import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus, getUpdateUsingRaf, updateSortCollection, isReadOnlyCells, readonlyAlert, getRowIdxFromClientY, getColIdxFromClientX } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
 import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, addNote, editNote, deleteNote } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale, removeHyperlink } from '../common/index';
@@ -41,7 +41,6 @@ export class ContextMenu {
             {
                 cssClass: 'e-spreadsheet-contextmenu',
                 target: '#' + this.parent.element.id,
-                filter: 'e-numericcontainer e-active-cell e-selection e-row e-header-row e-select-all-cell e-sheet-tabs-items',
                 select: this.selectHandler.bind(this),
                 beforeOpen: this.beforeOpenHandler.bind(this),
                 beforeClose: this.beforeCloseHandler.bind(this),
@@ -261,8 +260,41 @@ export class ContextMenu {
      * @returns {void} - Before open event handler.
      */
     private beforeOpenHandler(args: BeforeOpenCloseMenuEventArgs): void {
-        const trgt: Element = args.event.target as Element;
-        let target: string = this.getTarget(trgt); let items: MenuItemModel[];
+        const trgt: Element = args.event.target as Element; let canOpen: boolean;
+        const filter: string[] = ['e-numericcontainer', 'e-active-cell', 'e-selection', 'e-row', 'e-header-row',
+            'e-select-all-cell', 'e-sheet-tabs-items', 'e-spreadsheet-contextmenu'];
+        let target: string; let items: MenuItemModel[];
+        for (let i: number = 0, len: number = filter.length; i < len; i++) {
+            if (closest(trgt, '.' + filter[i as number])) {
+                canOpen = true;
+                break;
+            }
+        }
+        if (canOpen) {
+            target = this.getTarget(trgt);
+        } else {
+            const classesToCheck: string[] = ['e-header-cell', 'e-rowhdr-table', 'e-selectall-table', 'e-main-panel'];
+            canOpen = classesToCheck.some((cls: string) => trgt.classList.contains(cls));
+            if (canOpen && (parseInt(trgt.parentElement.style.zIndex, 10) > 1 ||
+                parseInt(trgt.parentElement.parentElement.style.zIndex, 10) > 1)) {
+                const event: PointerEvent | MouseEvent = args.event as PointerEvent | MouseEvent;
+                const rowObj: { clientY: number; isImage?: boolean; target?: Element; size?: number } = {
+                    clientY: event.clientY, isImage: false, target: trgt
+                };
+                const colObj: { clientX: number; isImage?: boolean; target?: Element; size?: number } = {
+                    clientX: event.clientX, isImage: false, target: trgt
+                };
+                this.parent.notify(getRowIdxFromClientY, rowObj);
+                this.parent.notify(getColIdxFromClientX, colObj);
+                target = rowObj.size <= 0 ? 'ColumnHeader' : colObj.size <= 0 ? 'RowHeader' : 'Content';
+            } else {
+                canOpen = false;
+            }
+        }
+        if (!canOpen){
+            args.cancel = true;
+            return;
+        }
         if (args.element.classList.contains('e-contextmenu')) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             if (args.event.target && (trgt.classList.contains('e-rowresize') || trgt.classList.contains('e-colresize'))) {
@@ -498,8 +530,11 @@ export class ContextMenu {
     private setHyperLink(items: MenuItemModel[], id: string): void {
         if (this.parent.allowHyperlink) {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
-            if (!document.activeElement.getElementsByClassName('e-hyperlink')[0] &&
-                !document.activeElement.classList.contains('e-hyperlink')) {
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            const indexes: number[] = getCellIndexes(sheet.activeCell);
+            const td: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
+            if (!td.getElementsByClassName('e-hyperlink')[0] &&
+                !td.classList.contains('e-hyperlink')) {
                 items.push({
                     text: l10n.getConstant('Hyperlink'), iconCss: 'e-icons e-hyperlink-icon', id: id + '_hyperlink'
                 });

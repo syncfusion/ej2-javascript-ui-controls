@@ -3,7 +3,7 @@ import { _PdfCrossReference } from './pdf-cross-reference';
 import { PdfDocument } from './pdf-document';
 import { PdfDestination, PdfPage } from './pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
-import { _checkRotation, _getPageIndex, _obtainDestination, _parseColor } from './utils';
+import { _checkRotation, _getPageIndex, _isNullOrUndefined, _obtainDestination, _parseColor } from './utils';
 /**
  * Represents a base class for all bookmark objects.
  * ```typescript
@@ -132,7 +132,7 @@ export class PdfBookmarkBase {
         if (index < 0 || index >= this.count) {
             throw Error('Index out of range.');
         }
-        if (this._bookMarkList.length > 0 && index < this._bookMarkList.length) {
+        if (_isNullOrUndefined(this._bookMarkList) && this._bookMarkList.length > 0 && index < this._bookMarkList.length) {
             bookmark = this._bookMarkList[Number.parseInt(index.toString(), 10)];
         }
         return bookmark;
@@ -454,7 +454,7 @@ export class PdfBookmarkBase {
         let bookMark: PdfBookmark;
         if (bookmarkBaseDictionary && bookmarkBaseDictionary.has(isFirst ? 'First' : 'Last')) {
             const reference: _PdfReference = bookmarkBaseDictionary._get(isFirst ? 'First' : 'Last');
-            if (reference) {
+            if (_isNullOrUndefined(reference)) {
                 const bookMarkDictionary: _PdfDictionary = this._crossReference._fetch(reference);
                 if (bookMarkDictionary) {
                     bookMark = new PdfBookmark(bookMarkDictionary, this._crossReference);
@@ -760,7 +760,7 @@ export class PdfBookmark extends PdfBookmarkBase {
         let nextBookmark: PdfBookmark;
         if (this._dictionary && this._dictionary.has('Next')) {
             const reference: _PdfReference = this._dictionary._get('Next');
-            if (reference) {
+            if (_isNullOrUndefined(reference)) {
                 const dictionary: _PdfDictionary = this._crossReference._fetch(reference);
                 if (dictionary) {
                     nextBookmark = new PdfBookmark(dictionary, this._crossReference);
@@ -1044,7 +1044,7 @@ export class _PdfNamedDestinationCollection {
         let elements: any = destination.getRaw('Names'); // eslint-disable-line
         let ref: any[]; // eslint-disable-line
         let dictionary: _PdfDictionary;
-        if (elements instanceof _PdfReference) {
+        if (elements && elements instanceof _PdfReference) {
             ref = this._crossReference._fetch(elements);
         }
         if (ref && Array.isArray(ref) && ref.length > 0) {
@@ -1053,7 +1053,7 @@ export class _PdfNamedDestinationCollection {
         if (elements && Array.isArray(elements) && elements.length > 0) {
             for (let i: number = 1; i < elements.length; i = i + 2) {
                 let reference: any = elements[i];// eslint-disable-line
-                if (reference instanceof _PdfReference) {
+                if (reference && reference instanceof _PdfReference) {
                     const destinationArray: any[] = this._crossReference._fetch(reference); // eslint-disable-line
                     if (destinationArray && Array.isArray(destinationArray) && destinationArray.length > 0) {
                         dictionary = new _PdfDictionary();
@@ -1076,7 +1076,7 @@ export class _PdfNamedDestinationCollection {
                             destinationArray = dictionary.get('D');
                             destinationObject = new PdfDestination();
                             const reference: _PdfReference = destinationArray[0];
-                            if (destinationArray && destinationArray[0] instanceof _PdfReference) {
+                            if (reference && destinationArray && destinationArray[0] instanceof _PdfReference) {
                                 const pageDictionary: _PdfDictionary = this._crossReference._fetch(reference);
                                 const loadedDocument: PdfDocument = this._crossReference._document;
                                 let index: number;

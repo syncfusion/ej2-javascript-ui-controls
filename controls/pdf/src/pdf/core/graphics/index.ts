@@ -9,3 +9,5 @@ export * from './rightToLeft/text-renderer';
 export * from './images/image-decoder';
 export * from './images/pdf-bitmap';
 export * from './images/pdf-image';
+export * from './images/png-decoder';
+export * from './images/jpeg-decoder';

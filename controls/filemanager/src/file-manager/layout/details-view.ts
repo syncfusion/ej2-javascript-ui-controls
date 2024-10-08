@@ -49,6 +49,7 @@ export class DetailsView {
     private isRendered: boolean = true;
     private isLoaded: boolean = false;
     private isNameWidth: boolean = false;
+    private isMultiSelect: boolean = false;
 
     /* public variable */
     public gridObj: Grid;
@@ -1155,6 +1156,17 @@ export class DetailsView {
         };
         this.parent.trigger('fileSelection', eventArgs);
         args.cancel = eventArgs.cancel;
+        if (!this.isMultiSelect) {
+            this.isMultiSelect = true;
+            if (((args as RowSelectingEventArgs).isShiftPressed || (args as RowSelectingEventArgs).isCtrlPressed) && !this.parent.allowMultiSelection && (args.target && args.target.parentElement && !args.target.parentElement.classList.contains('e-checkbox-wrapper'))) {
+                args.cancel = true;
+                const rowIndex: number = ((args as RowSelectingEventArgs) && args.rowIndexes)
+                    ? args.rowIndexes[args.rowIndexes.length - 1]
+                    : args.rowIndex;
+                this.gridObj.selectRow(rowIndex);
+            }
+            this.isMultiSelect = false;
+        }
     }
 
     /* istanbul ignore next */

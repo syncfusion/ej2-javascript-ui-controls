@@ -444,20 +444,25 @@ describe('DropDown Tree control List datasource', () => {
             expect(li[1].classList.contains('e-node-focus')).toBe(false);
         });
 
-        it('TreeView items with selectable field false', () => {
+        it('TreeView items with selectable field false', (done: Function) => {
             let treeData: { [key: string]: Object }[] = [
                 { id: 1, name: 'Parent1', selectable:false },
                 { id: 2, name: 'Parent2', selectable:false },
             ];
             ddtreeObj = new DropDownTree({ fields: { dataSource: treeData, value: "id", text: "name" }, destroyPopupOnHide: false }, '#ddtree');
             keyboardEventArgs.action = 'tab';
+            ddtreeObj.keyActionHandler(keyboardEventArgs);
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
             expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('true');
             let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
-            expect(li[0].classList.contains('e-prevent')).toBe(true);
-            expect(li[1].classList.contains('e-prevent')).toBe(true);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                expect(li[0].classList.contains('e-prevent')).toBe(true);
+                expect(li[1].classList.contains('e-prevent')).toBe(true);
+                done();
+            }, 450);
         });
 
         it('TreeView items focus testing with allowFiltering property', () => {

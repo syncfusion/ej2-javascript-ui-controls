@@ -253,7 +253,9 @@ export class InsertHtml {
                     fragment.appendChild(node.firstChild);
                 }
                 if (isSingleNode) {
-                    preNode.parentNode.replaceChild(fragment, preNode);
+                    range.deleteContents();
+                    this.removeEmptyElements(editNode as HTMLElement, true);
+                    range.insertNode(fragment);
                 } else {
                     const startContainerParent: Node = editNode === range.startContainer ?
                         range.startContainer : range.startContainer.parentNode;
@@ -264,6 +266,7 @@ export class InsertHtml {
                     range.setEnd(startContainerParent, startIndex);
                     if (!isNOU(lasNode) && lasNode !== editNode) {
                         detach(lasNode);
+                        this.removeEmptyElements(editNode as HTMLElement, true);
                     }
                     // eslint-disable-next-line
                     !isNOU(sibNode) ? (sibNode.parentNode === editNode ? sibNode.appendChild(fragment) : sibNode.parentNode.appendChild(fragment)) : range.insertNode(fragment);
@@ -434,10 +437,10 @@ export class InsertHtml {
                 blockNode = range.endContainer;
                 range.setEnd(blockNode, range.endContainer.textContent.length);
             }
-            if (blockNode.nodeName === 'BODY' && range.startContainer === range.endContainer && range.startContainer.nodeType === 1) {
+            if (blockNode && blockNode.nodeName === 'BODY' && range.startContainer === range.endContainer && range.startContainer.nodeType === 1) {
                 blockNode = range.startContainer;
             }
-            if ((blockNode as HTMLElement).closest('LI') && editNode.contains((blockNode as HTMLElement).closest('LI')) && blockNode.nodeName !== 'TD' && blockNode.nodeName !== 'TH' && blockNode.nodeName !== 'TR' && node && (node as HTMLElement).firstElementChild &&
+            if (blockNode && (blockNode as HTMLElement).closest('LI') && editNode.contains((blockNode as HTMLElement).closest('LI')) && blockNode.nodeName !== 'TD' && blockNode.nodeName !== 'TH' && blockNode.nodeName !== 'TR' && node && (node as HTMLElement).firstElementChild &&
             (((node as HTMLElement)).firstElementChild.tagName === 'OL' || (node as HTMLElement).firstElementChild.tagName === 'UL')) {
                 let liNode: HTMLElement;
                 while ((node as HTMLElement).firstElementChild.lastElementChild && (node as HTMLElement).firstElementChild.lastElementChild.tagName === 'LI') {
@@ -448,7 +451,7 @@ export class InsertHtml {
                     (node as HTMLElement).firstElementChild.insertAdjacentElement('afterend', liNode);
                 }
             }
-            if (blockNode.nodeName === 'TD' || blockNode.nodeName === 'TH' || blockNode.nodeName === 'TR') {
+            if (blockNode && blockNode.nodeName === 'TD' || blockNode.nodeName === 'TH' || blockNode.nodeName === 'TR') {
                 const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
                 range.insertNode(tempSpan);
                 tempSpan.parentNode.replaceChild(node, tempSpan);
@@ -535,23 +538,25 @@ export class InsertHtml {
         elm.innerHTML = innerElement;
     }
 
-    private static findDetachEmptyElem(element: Element): HTMLElement {
+    private static findDetachEmptyElem(element: Element, ignoreBlockNodes: boolean = false): HTMLElement {
         let removableElement: HTMLElement;
         if (!isNOU(element.parentElement)) {
             const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g)
                 && element.parentElement.textContent.match(/\u00a0/g).length > 0;
             if (!hasNbsp && element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true' &&
                 isNOU(element.parentElement.querySelector('img')) && element.parentElement.nodeName !== 'TD' && element.parentElement.nodeName !== 'TH') {
-                removableElement = this.findDetachEmptyElem(element.parentElement);
+                removableElement = ignoreBlockNodes && CONSTANT.BLOCK_TAGS.indexOf(element.parentElement.tagName.toLowerCase()) !== -1 ?
+                    element as HTMLElement : this.findDetachEmptyElem(element.parentElement, ignoreBlockNodes);
             } else {
-                removableElement = element as HTMLElement;
+                removableElement = ignoreBlockNodes && CONSTANT.BLOCK_TAGS.indexOf(element.tagName.toLowerCase()) !== -1 ? null :
+                    element as HTMLElement;
             }
         } else {
             removableElement = null;
         }
         return removableElement;
     }
-    private static removeEmptyElements(element: HTMLElement): void {
+    private static removeEmptyElements(element: HTMLElement, ignoreBlockNodes: boolean = false): void {
         const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
         const nonSvgEmptyElements: Element[] = Array.from(emptyElements).filter((element: Element) => {
             // Check if the element is an SVG element or an ancestor of an SVG element
@@ -564,7 +569,7 @@ export class InsertHtml {
                 (nonSvgEmptyElements[i as number] as HTMLElement).style.borderBottom === '' ? true : false;
             }
             if (CONSTANT.SELF_CLOSING_TAGS.indexOf(nonSvgEmptyElements[i as number].tagName.toLowerCase()) < 0 && lineWithDiv) {
-                const detachableElement: HTMLElement = this.findDetachEmptyElem(nonSvgEmptyElements[i as number]);
+                const detachableElement: HTMLElement = this.findDetachEmptyElem(nonSvgEmptyElements[i as number], ignoreBlockNodes);
                 if (!isNOU(detachableElement)) {
                     detach(detachableElement);
                 }

@@ -398,6 +398,7 @@ export class CollaborativeEditingHandler {
                                     this.documentEditor.selectionModule.selectBookmark(markerData.bookmarkName);
                                     bookmark.properties = this.documentEditor.selectionModule.getBookmarkProperties(bookmark);
                                     (element as BookmarkElementBox).properties = this.documentEditor.selectionModule.getBookmarkProperties(element as BookmarkElementBox);
+                                    this.documentEditor.editorModule.fireContentChange();
                                 }
                             }
                         }

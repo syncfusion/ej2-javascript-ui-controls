@@ -763,7 +763,9 @@ export class BatchEdit {
         const gObj: IGrid = this.parent;
         const col: Column = gObj.getColumnByField(field);
         const index: number = gObj.getColumnIndexByField(field);
-        if (col && !col.isPrimaryKey && col.allowEditing) {
+        const isInsertedBatchRow: boolean = gObj.getRowByIndex(rowIndex).classList.contains('e-insertedrow') &&
+            gObj.getRowByIndex(rowIndex).classList.contains('e-batchrow');
+        if (col && (!col.isPrimaryKey || isInsertedBatchRow) && col.allowEditing) {
             const td: Element = this.parent.isSpan ? getCellFromRow(gObj, rowIndex, index) :
                 getCellByColAndRowIndex(this.parent, col, rowIndex, index);
             if (this.parent.isSpan && !td) {

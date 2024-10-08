@@ -298,8 +298,8 @@ export class CheckBoxFormFieldDialog {
         this.closeCheckBoxField();
         let checkBoxField: CheckBoxFormField = new CheckBoxFormField();
         checkBoxField.defaultValue = this.checkedButton.checked;
-        checkBoxField.name = SanitizeHtmlHelper.sanitize((this.bookmarkInputText as HTMLInputElement).value);
-        checkBoxField.helpText = SanitizeHtmlHelper.sanitize((this.tooltipInputText as HTMLInputElement).value);
+        checkBoxField.name =(this.bookmarkInputText as HTMLInputElement).value;
+        checkBoxField.helpText = (this.tooltipInputText as HTMLInputElement).value;
         checkBoxField.checked = checkBoxField.defaultValue;
         checkBoxField.enabled = this.checBoxEnableElement.checked;
         if (this.exactButton.checked) {

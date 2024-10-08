@@ -1910,8 +1910,7 @@ export class Draw {
             let coll: any = actObj.rotateFlipColl[i as number];
             tempColl.push(coll);
             if (typeof(coll) === 'number') {
-                if (actObj.shapeDegree === 0) {tempDegree = coll; }
-                else {tempDegree = coll - actObj.shapeDegree; }
+                tempDegree = coll;
                 if (tempDegree === -450) {tempDegree = -90; }
                 if (tempDegree < 0) {tempDegree = 360 + tempDegree; }
                 imgPoint.width = tempDegree % 90 === 0 && tempDegree % 180 !== 0 ? actObj.activePoint.height : actObj.activePoint.width;
@@ -1987,8 +1986,7 @@ export class Draw {
             let coll: any = actObj.rotateFlipColl[i as number];
             tempColl.push(coll);
             if (typeof(coll) === 'number') {
-                if (actObj.shapeDegree === 0) {tempDegree = coll; }
-                else {tempDegree = coll - actObj.shapeDegree; }
+                tempDegree = coll;
                 if (tempDegree === -450) {tempDegree = -90; }
                 if (tempDegree < 0) {tempDegree = 360 + tempDegree; }
                 imgPoint.width = tempDegree % 90 === 0 && tempDegree % 180 !== 0 ? actPoint.height : actPoint.width;

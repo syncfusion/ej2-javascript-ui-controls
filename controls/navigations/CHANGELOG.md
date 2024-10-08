@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I909790` - The issue with "When adding `submenu` item dynamically the parent menu item was returned wrongly in select event" has been resolved.
+
+## 27.1.51 (2024-09-30)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I636879` - Resolved the console error that occurred when dragging tree items in the TreeView component while using the Firefox browser.
+
 ## 27.1.50 (2024-09-24)
 
 ### TreeView

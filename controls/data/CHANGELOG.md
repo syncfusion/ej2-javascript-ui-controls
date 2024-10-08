@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### DataManager
+
+#### Bug fixes
+
+- `#633945` - The issue where added records were not displayed while using `CustomDataAdaptor` with batch editing mode has been resolved.
+
+## 27.1.51 (2024-09-30)
+
+### DataManager
+
+#### Bug fixes
+
+- `#I629864` - The `CSP` issue when using `CustomDataAdaptor` has been resolved.
+
 ## 27.1.48 (2024-09-18)
 
 ### DataManager

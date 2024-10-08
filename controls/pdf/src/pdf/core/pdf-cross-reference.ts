@@ -54,7 +54,12 @@ export class _PdfCrossReference {
             trailerDictionary = this._indexObjects();
         }
         trailerDictionary.assignXref(this);
-        this._nextReferenceNumber = trailerDictionary.get('Size');
+        const entrySize: number = trailerDictionary.get('Size');
+        if (this._entries.length < entrySize || this._entries.length === entrySize) {
+            this._nextReferenceNumber = entrySize;
+        } else if (this._entries.length > entrySize) {
+            this._nextReferenceNumber = this._entries.length > 0 ? this._entries.length : 1;
+        }
         this._trailer = trailerDictionary;
         const encrypt: _PdfDictionary = trailerDictionary.get('Encrypt');
         if (encrypt) {

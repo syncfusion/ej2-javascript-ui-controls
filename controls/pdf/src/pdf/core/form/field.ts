@@ -2,7 +2,7 @@ import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfForm } from './form';
 import { PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation, PdfListFieldItem, _PaintParameter, PdfInteractiveBorder } from './../annotations/annotation';
-import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails } from './../utils';
+import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined } from './../utils';
 import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode } from './../enumerator';
 import { PdfPage } from './../pdf-page';
 import { PdfDocument } from './../pdf-document';
@@ -159,7 +159,7 @@ export abstract class PdfField {
      * ```
      */
     get actualName(): string {
-        if (typeof this._actualName === 'undefined' && this._dictionary.has('T')) {
+        if (typeof this._actualName === 'undefined' && this._dictionary && this._dictionary.has('T')) {
             const name: string = this._dictionary.get('T');
             if (name && typeof name === 'string') {
                 this._actualName = name;
@@ -234,7 +234,7 @@ export abstract class PdfField {
      * ```
      */
     get toolTip(): string {
-        if (typeof this._alternateName === 'undefined' && this._dictionary.has('TU')) {
+        if (typeof this._alternateName === 'undefined' && this._dictionary && this._dictionary.has('TU')) {
             const name: string = this._dictionary.get('TU');
             if (name && typeof name === 'string') {
                 this._alternateName = name;
@@ -399,7 +399,7 @@ export abstract class PdfField {
         }
         if (widget && widget.bounds) {
             value = widget.bounds;
-        } else if (this._dictionary.has('Rect')) {
+        } else if (this._dictionary && this._dictionary.has('Rect')) {
             value = _calculateBounds(this._dictionary, this.page);
         }
         if (typeof value === 'undefined' || value === null) {
@@ -551,7 +551,7 @@ export abstract class PdfField {
      */
     set color(value: number[]) {
         const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
-        if (widget && widget.color) {
+        if (widget && widget.color && _isNullOrUndefined(value)) {
             widget.color = value;
         } else {
             let isNew: boolean = false;
@@ -819,7 +819,7 @@ export abstract class PdfField {
                 value._width = 0;
             }
             value._dictionary = this._dictionary;
-            if (this._dictionary.has('BS')) {
+            if (this._dictionary !== null && typeof this._dictionary !== 'undefined' && this._dictionary.has('BS')) {
                 const border: _PdfDictionary = this._dictionary.get('BS');
                 if (border) {
                     if (border.has('W')) {
@@ -986,7 +986,7 @@ export abstract class PdfField {
                         }
                     }
                 }
-            } else if (this._dictionary.has('Subtype') && this._dictionary.get('Subtype').name === 'Widget') {
+            } else if (this._dictionary && this._dictionary.has('Subtype') && this._dictionary.get('Subtype').name === 'Widget') {
                 if (this._ref) {
                     if (annots) {
                         const index1: number = annots.indexOf(this._ref);
@@ -1066,7 +1066,7 @@ export abstract class PdfField {
                 document = this._crossReference._document;
             }
             let page: PdfPage;
-            if (dictionary.has('P')) {
+            if (dictionary && dictionary.has('P')) {
                 const ref: _PdfReference = dictionary.getRaw('P');
                 if (ref && document) {
                     for (let i: number = 0; i < document.pageCount; i++) {
@@ -1218,7 +1218,7 @@ export abstract class PdfField {
                 value = widget.borderColor;
             } else if (this._mkDictionary) {
                 const mkDict: _PdfDictionary = this._mkDictionary;
-                if (mkDict && mkDict.has('BC')) {
+                if (mkDict.has('BC')) {
                     const bgArray: number[] = mkDict.getArray('BC');
                     if (bgArray) {
                         value = _parseColor(bgArray);
@@ -1232,9 +1232,9 @@ export abstract class PdfField {
         return value;
     }
     _updateBackColor(value: number[], hasTransparency: boolean = false): void {
-        if (hasTransparency && value.length === 4 && value[3] !== 255) {
+        if (hasTransparency && _isNullOrUndefined(value) && value.length === 4 && value[3] !== 255) {
             this._isTransparentBackColor = true;
-            if (this._dictionary.has('BG')) {
+            if (this._dictionary && this._dictionary.has('BG')) {
                 delete this._dictionary._map.BG;
             }
             const mkDictionary: _PdfDictionary = this._mkDictionary;
@@ -1391,9 +1391,9 @@ export abstract class PdfField {
      */
     getValue(name: string): string {
         let value: string;
-        if (this._dictionary.has(name)) {
+        if (this._dictionary && this._dictionary.has(name)) {
             const element: any = this._dictionary.get(name);// eslint-disable-line
-            if (element instanceof _PdfName) {
+            if (element !== null && typeof element !== 'undefined' && element instanceof _PdfName) {
                 value = element.name;
             } else if (typeof element === 'string') {
                 value = element;
@@ -1450,7 +1450,7 @@ export abstract class PdfField {
      * ```
      */
     removeItemAt(index: number): void {
-        if (this._dictionary.has('Kids') && this.itemsCount > 0) {
+        if (this._dictionary !== null && typeof this._dictionary !== 'undefined' && this._dictionary.has('Kids') && this.itemsCount > 0) {
             const item: PdfWidgetAnnotation = this.itemAt(index);
             if (item && item._ref) {
                 const page: PdfPage = item._getPage();
@@ -1528,7 +1528,7 @@ export abstract class PdfField {
     }
     get _mkDictionary(): _PdfDictionary {
         let value: _PdfDictionary;
-        if (this._dictionary.has('MK')) {
+        if (this._dictionary && this._dictionary.has('MK')) {
             value = this._dictionary.get('MK');
         }
         return value;
@@ -1536,7 +1536,7 @@ export abstract class PdfField {
     _updateBorder(dictionary: _PdfDictionary, value: PdfInteractiveBorder): void {
         let bs: _PdfDictionary;
         let isNew: boolean = false;
-        if (dictionary.has('BS')) {
+        if (dictionary && dictionary.has('BS')) {
             bs = dictionary.get('BS');
         } else {
             bs = new _PdfDictionary(this._crossReference);
@@ -1578,7 +1578,7 @@ export abstract class PdfField {
         }
         let fontDict: _PdfDictionary;
         let isReference: boolean = false;
-        if (resource.has('Font')) {
+        if (resource && resource.has('Font')) {
             const obj: any = resource.getRaw('Font'); // eslint-disable-line
             if (obj && obj instanceof _PdfReference) {
                 isReference = true;
@@ -1937,7 +1937,7 @@ export abstract class PdfField {
         }
     }
     _addToKid(item: PdfWidgetAnnotation): void {
-        if (this._dictionary.has('Kids')) {
+        if (this._dictionary && this._dictionary.has('Kids')) {
             this._kids = this._dictionary.get('Kids');
         } else {
             this._kids = [];
@@ -1983,7 +1983,7 @@ export abstract class PdfField {
     }
     _addAppearance(dictionary: _PdfDictionary, template: PdfTemplate, key: string): void {
         let appearance: _PdfDictionary = new _PdfDictionary();
-        if (dictionary.has('AP')) {
+        if (dictionary && dictionary.has('AP')) {
             appearance = dictionary.get('AP');
             _removeDuplicateReference(dictionary.get('AP'), this._crossReference, key);
         } else {
@@ -2012,7 +2012,7 @@ export abstract class PdfField {
     }
     _getAppearanceStateValue(): string {
         let value: string;
-        if (this._dictionary.has('Kids')) {
+        if (this._dictionary && this._dictionary.has('Kids')) {
             for (let i: number = 0; i < this._kidsCount; i++) {
                 const item: PdfWidgetAnnotation = this.itemAt(i);
                 if (item && item._dictionary && item._dictionary.has('AS')) {
@@ -2023,7 +2023,7 @@ export abstract class PdfField {
                     }
                 }
             }
-        } else if (this._dictionary.has('AS')) {
+        } else if (this._dictionary && this._dictionary.has('AS')) {
             const state: _PdfName = this._dictionary.get('AS');
             if (state && state.name !== 'Off') {
                 value = state.name;
@@ -2572,7 +2572,7 @@ export class PdfTextBoxField extends PdfField {
         let mode: PdfHighlightMode;
         if (widget && typeof widget.highlightMode !== 'undefined') {
             mode = widget.highlightMode;
-        } else if (this._dictionary.has('H')) {
+        } else if (this._dictionary && this._dictionary.has('H')) {
             const name: _PdfName = this._dictionary.get('H');
             mode = _mapHighlightMode(name.name);
         }
@@ -3378,7 +3378,7 @@ export class PdfButtonField extends PdfField {
         let mode: PdfHighlightMode;
         if (widget && typeof widget.highlightMode !== 'undefined') {
             mode = widget.highlightMode;
-        } else if (this._dictionary.has('H')) {
+        } else if (this._dictionary && this._dictionary.has('H')) {
             const highlight: _PdfName = this._dictionary.get('H');
             mode = _mapHighlightMode(highlight.name);
         }
@@ -3506,7 +3506,7 @@ export class PdfButtonField extends PdfField {
     }
     _assignText(fieldDictionary: _PdfDictionary, value: string): void {
         let dictionary: _PdfDictionary;
-        if (fieldDictionary.has('MK')) {
+        if (fieldDictionary && fieldDictionary.has('MK')) {
             dictionary = fieldDictionary.get('MK');
         } else {
             dictionary = new _PdfDictionary(this._crossReference);
@@ -5268,7 +5268,7 @@ export abstract class PdfListField extends PdfField {
      */
     get selectedValue(): string | string[] {
         const values: string[] = [];
-        if (this._dictionary.has('V')) {
+        if (this._dictionary && this._dictionary.has('V')) {
             const value: any = this._dictionary.getArray('V'); // eslint-disable-line
             if (typeof value !== 'undefined') {
                 if (Array.isArray(value)) {
@@ -5280,7 +5280,7 @@ export abstract class PdfListField extends PdfField {
                 }
             }
         }
-        if (values.length === 0 && this._dictionary.has('I')) {
+        if (values.length === 0 && this._dictionary && this._dictionary.has('I')) {
             const value: number[] = this._dictionary.get('I');
             if (value && value.length > 0) {
                 value.forEach((index: number) => {
@@ -5663,7 +5663,7 @@ export abstract class PdfListField extends PdfField {
     }
     get _options(): Array<string[]> {
         if (!this._optionArray) {
-            if (this._dictionary.has('Opt')) {
+            if (this._dictionary && this._dictionary.has('Opt')) {
                 this._optionArray = this._dictionary.getArray('Opt');
             } else {
                 this._optionArray = [];
@@ -5837,7 +5837,7 @@ export abstract class PdfListField extends PdfField {
                 });
                 this._parsedItems = parsedItems;
             }
-            if (this._dictionary.has('Opt')) {
+            if (this._dictionary && this._dictionary.has('Opt')) {
                 const options: Array<string[]> = this._options;
                 if (options && options.length > 0) {
                     options.splice(index, 1);
@@ -6687,7 +6687,7 @@ export class PdfListBoxField extends PdfListField {
                 for (let i: number = 0; i < count; i++) {
                     const item: PdfListFieldItem = this.itemAt(i);
                     if (item) {
-                        if (typeof index !== 'undefined' && index !== null) {
+                        if (_isNullOrUndefined(index) && this._listValues !== null && typeof this._listValues !== 'undefined') {
                             const value: any = options[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
                             if (Array.isArray(value)) {
                                 this._listValues[Number.parseInt(i.toString(), 10)] = value[1];
@@ -6908,7 +6908,7 @@ export class PdfListBoxField extends PdfListField {
         const itemFont : PdfStandardFont = new PdfStandardFont(fontFamily, 12, PdfFontStyle.regular);
         const format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.left, PdfVerticalAlignment.middle);
         let s: number = 0;
-        if (this._listValues.length > 0) {
+        if (_isNullOrUndefined(this._listValues) && this._listValues.length > 0) {
             let max: number = itemFont.measureString(this._listValues[0], [0, 0], format, 0, 0)[0];
             for (let i: number = 1; i < this._listValues.length; ++i) {
                 const value: number = itemFont.measureString(this._listValues[Number.parseInt(i.toString(), 10)], [0, 0], format, 0, 0)[0];
@@ -7239,7 +7239,7 @@ export class PdfSignatureField extends PdfField {
     }
     _getItemTemplate(dictionary: _PdfDictionary): PdfTemplate {
         let template: PdfTemplate;
-        if (dictionary.has('AP')) {
+        if (dictionary && dictionary.has('AP')) {
             const appearanceDictionary: _PdfDictionary = dictionary.get('AP');
             if (appearanceDictionary && appearanceDictionary.has('N')) {
                 const appearanceStream: _PdfBaseStream = appearanceDictionary.get('N');

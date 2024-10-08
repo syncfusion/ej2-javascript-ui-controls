@@ -730,7 +730,6 @@ export class LargeIconsView {
         if (toBind) {
             this.clickObj = new Touch(this.element, {
                 tap: (eve: TapEventArgs) => {
-                    eve.originalEvent.preventDefault();
                     if (this.parent.isDevice) {
                         this.tapCount = eve.tapCount;
                         this.tapEvent = eve;

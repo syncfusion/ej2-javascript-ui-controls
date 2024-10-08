@@ -1881,7 +1881,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 done();
             });
         });
-        describe('EJ2-844735, EJ2-846521 ->', () => {
+        describe('EJ2-844735, EJ2-846521, EJ2-910847 ->', () => {
             beforeEach((done: Function) => {
                 model = {
                     sheets: [{
@@ -1923,6 +1923,49 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(helper.invoke('getCell', [2, 1]).textContent).toBe('100.01');
                 expect(helper.invoke('getCell', [3, 1]).textContent).toBe('100.01');
                 expect(helper.invoke('getCell', [4, 1]).textContent).toBe('100%');
+                done();
+            });
+            it('Script error occurs when parsing a custom long date format for a cell that contains a string value', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.edit('C1','01/31/2024');
+                helper.edit('C2','01/14/2024');
+                helper.edit('C3','01/15/2024');
+                helper.edit('C4','01/16/2024');
+                expect(spreadsheet.sheets[0].rows[0].cells[2].format).toBe('m/d/yyyy');
+                expect(spreadsheet.sheets[0].rows[1].cells[2].format).toBe('m/d/yyyy');
+                expect(spreadsheet.sheets[0].rows[2].cells[2].format).toBe('m/d/yyyy');
+                expect(spreadsheet.sheets[0].rows[3].cells[2].format).toBe('m/d/yyyy');
+                expect(spreadsheet.sheets[0].rows[0].cells[2].formattedText).toBe('1/31/2024'); 
+                expect(spreadsheet.sheets[0].rows[1].cells[2].formattedText).toBe('1/14/2024'); 
+                expect(spreadsheet.sheets[0].rows[2].cells[2].formattedText).toBe('1/15/2024'); 
+                expect(spreadsheet.sheets[0].rows[3].cells[2].formattedText).toBe('1/16/2024');
+                spreadsheet.numberFormat('dddd/dd/MM/yy','C1:C4');
+                expect(spreadsheet.sheets[0].rows[0].cells[2].format).toBe('dddd/dd/MM/yy');
+                expect(spreadsheet.sheets[0].rows[1].cells[2].format).toBe('dddd/dd/MM/yy');
+                expect(spreadsheet.sheets[0].rows[2].cells[2].format).toBe('dddd/dd/MM/yy');
+                expect(spreadsheet.sheets[0].rows[3].cells[2].format).toBe('dddd/dd/MM/yy');
+                expect(spreadsheet.sheets[0].rows[0].cells[2].formattedText).toBe('Wednesday/31/01/24'); 
+                expect(spreadsheet.sheets[0].rows[1].cells[2].formattedText).toBe('Sunday/14/01/24'); 
+                expect(spreadsheet.sheets[0].rows[2].cells[2].formattedText).toBe('Monday/15/01/24'); 
+                expect(spreadsheet.sheets[0].rows[3].cells[2].formattedText).toBe('Tuesday/16/01/24');
+                spreadsheet.numberFormat('dddd, MM/dd/yyyy','C1:C4');
+                expect(spreadsheet.sheets[0].rows[0].cells[2].format).toBe('dddd, MM/dd/yyyy');
+                expect(spreadsheet.sheets[0].rows[1].cells[2].format).toBe('dddd, MM/dd/yyyy');
+                expect(spreadsheet.sheets[0].rows[2].cells[2].format).toBe('dddd, MM/dd/yyyy');
+                expect(spreadsheet.sheets[0].rows[3].cells[2].format).toBe('dddd, MM/dd/yyyy');
+                expect(spreadsheet.sheets[0].rows[0].cells[2].formattedText).toBe('Wednesday, 01/31/2024'); 
+                expect(spreadsheet.sheets[0].rows[1].cells[2].formattedText).toBe('Sunday, 01/14/2024'); 
+                expect(spreadsheet.sheets[0].rows[2].cells[2].formattedText).toBe('Monday, 01/15/2024'); 
+                expect(spreadsheet.sheets[0].rows[3].cells[2].formattedText).toBe('Tuesday, 01/16/2024');
+                spreadsheet.numberFormat('ddd/dd/MM/yyyy','C1:C4');
+                expect(spreadsheet.sheets[0].rows[0].cells[2].format).toBe('ddd/dd/MM/yyyy');
+                expect(spreadsheet.sheets[0].rows[1].cells[2].format).toBe('ddd/dd/MM/yyyy');
+                expect(spreadsheet.sheets[0].rows[2].cells[2].format).toBe('ddd/dd/MM/yyyy');
+                expect(spreadsheet.sheets[0].rows[3].cells[2].format).toBe('ddd/dd/MM/yyyy');
+                expect(spreadsheet.sheets[0].rows[0].cells[2].formattedText).toBe('Wed/31/01/2024'); 
+                expect(spreadsheet.sheets[0].rows[1].cells[2].formattedText).toBe('Sun/14/01/2024'); 
+                expect(spreadsheet.sheets[0].rows[2].cells[2].formattedText).toBe('Mon/15/01/2024'); 
+                expect(spreadsheet.sheets[0].rows[3].cells[2].formattedText).toBe('Tue/16/01/2024');
                 done();
             });
         });

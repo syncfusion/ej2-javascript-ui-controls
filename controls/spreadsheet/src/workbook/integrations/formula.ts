@@ -1133,6 +1133,7 @@ export class WorkbookFormula {
             }
             return range;
         };
+        const isSingleRangeRef: boolean = !cell.formula.includes(this.parent.listSeparator);
         const formulaArr: string[] = this.parseFormulaArgument({ formula: this.parseSheetRef(cell.formula, true), rangeRef: true });
         const sheetInfo: { visibleName: string, sheet: string }[] = this.getSheetInfo();
         let sheetName: string; let refChanged: boolean; let isAbsoluteRef: boolean;
@@ -1161,7 +1162,7 @@ export class WorkbookFormula {
                     isFullColumn = isNullOrUndefined(ref.match(/[0-9]/)) ? true : false;
                 }
                 index = getRangeIndexes(ref);
-                updated = this.parent.updateRangeOnInsertDelete(args, index, isRangeFormula);
+                updated = this.parent.updateRangeOnInsertDelete(args, index, isRangeFormula, row, col, isAbsoluteRef, isSingleRangeRef);
                 range = getSwapRange(index);
                 if (updated) {
                     formulaArr[i as number] = range[2] < range[0] || range[3] < range[1] ?

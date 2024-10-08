@@ -246,3 +246,43 @@ describe('Assign the character formatting', () => {
         expect(sourceFormat.fontFamilyNonFarEast).toBe('Arial');
     });
 });
+
+describe('Apply bidi for the RTL text', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Apply bold for the RTL text', function () {
+        console.log('Apply bold for the RTL text');
+        container.selectionModule.paragraphFormat.textAlignment = 'Right';
+        container.editorModule.insertText('اثممخ صخقمي');
+        container.selectionModule.select('0;0;6', '0;0;11');
+        container.selectionModule.characterFormat.bold = true;
+        expect(container.selectionModule.characterFormat.bold).toBe(true);
+        expect(container.selectionModule.characterFormat.boldBidi).toBe(true);
+    });
+    it('Apply italic for the RTL text', function () {
+        console.log('Apply italic for the RTL text');
+        container.selectionModule.characterFormat.italic = true;
+        expect(container.selectionModule.characterFormat.italic).toBe(true);
+        expect(container.selectionModule.characterFormat.italicBidi).toBe(true);
+    });
+});

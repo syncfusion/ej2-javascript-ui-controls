@@ -539,7 +539,7 @@ export class DataManager {
             (<Promise<Response>>fetch.send()).catch((e: Error) => true); // to handle the failure requests.
             return deff.promise;
         } else {
-            return this.dofetchRequest(req, (<{ options?: RemoteOptions }>this.adaptor).options.batchUpdate);
+            return this.dofetchRequest(req, (<{ options?: RemoteOptions }>this.adaptor).options.batchUpdate, changes);
         }
     }
 
@@ -647,7 +647,7 @@ export class DataManager {
             (<{ getModuleName?: Function }>this.adaptor).getModuleName() === 'GraphQLAdaptor';
     }
 
-    private successFunc(record: string | Object, request: Fetch): void {
+    private successFunc(record: string | Object, request: Fetch, changes?: Object): void {
         if (this.isGraphQLAdaptor(this.adaptor)) {
             const data: Object = typeof record === 'object' ? record : JSON.parse(record as string);
             // tslint:disable-next-line:no-string-literal
@@ -664,7 +664,7 @@ export class DataManager {
         } catch (e) {
             record = [];
         }
-        record = this.adaptor.processResponse(DataUtil.parse.parseJson(record), this, null, request.fetchRequest, request);
+        record = this.adaptor.processResponse(DataUtil.parse.parseJson(record), this, null, request.fetchRequest, request, changes);
         this.fetchDeffered.resolve(record);
     }
 
@@ -672,7 +672,7 @@ export class DataManager {
         this.fetchDeffered.reject([{ error: e }]);
     }
 
-    private dofetchRequest(res: Object, fetchFunc?: Function): Promise<Response> {
+    private dofetchRequest(res: Object, fetchFunc?: Function, changes?: Object): Promise<Response> {
 
         res = extend(
             {}, {
@@ -696,7 +696,8 @@ export class DataManager {
             this.fetchReqOption = res as Fetch;
             fetchFunc.call(this, {
                 data: (res as FetchOption).data, onSuccess: this.successFunc.bind(this),
-                onFailure: this.failureFunc.bind(this)
+                onFailure: this.failureFunc.bind(this),
+                changes: changes
             });
         }
         return this.fetchDeffered.promise as Promise<Response>;

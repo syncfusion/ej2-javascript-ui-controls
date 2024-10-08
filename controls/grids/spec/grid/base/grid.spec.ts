@@ -2530,6 +2530,7 @@ describe('Focusing  code coverage =>', () => {
                     allowPaging: true,
                     editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
                     filterSettings: { type: 'Menu' },
+                    showColumnChooser: true,
                     columns: [
                         { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
                         { field: 'CustomerID', headerText: 'Customer Name', width: 150 },

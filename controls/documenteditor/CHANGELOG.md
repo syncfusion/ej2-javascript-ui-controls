@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 27.1.52 (2024-10-08)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I636488` - Resolved the console error thrown when opening attached SFDT document.
+- `#I630929` - Resolved the content not syncing properly after removing content control at the end of the document.
+- `#I627161` - Resolved the RTL text formatting issue in Document Editor.
+
 ## 27.1.51 (2024-09-30)
 
 ### DocumentEditor
@@ -10,6 +20,15 @@
 
 - `#I630170` - Resolved the paragraph shifting issue when pasting text content.
 - `#I626306` - Resolved the font family and page content is not rendered properly.
+- `F193063` - Resolved the time delay issue when using moveToDocumentStart and End API continuously after paste operation.
+- `#I620990` - Resolved the script errors while undo / redo the bookmark.
+- `#I631993` - Text gets selected properly now after deleting a selected bookmark.
+- `#I627023` - Now changes are present when we use beforeXmlHttpRequestSend to modify the xmlhttprequest.
+- `#I628666` - Resolved Script error occur when using save blob in Blazor maui hybrid mode.
+- `#I629140` - Resolved script error when loading the document with content control.
+- `#I631762` - Check box under font popup dialog now retained properly.
+- `#I628921` - Heading font styles are now preserved properly while save and open the document.
+- `#I635930` - Table background color now change properly when using the table properties pane.
 
 ## 27.1.50 (2024-09-24)
 

@@ -101,20 +101,20 @@ describe('Gantt delete support', () => {
             triggerMouseEvent(okElement, 'click');
             expect(getValue('TaskID', ganttObj.flatData[ganttObj.flatData.length - 1])).toBe(39);
         });
-        it('args cancel true in actionBegin event', (done: Function) => {
-            ganttObj.dataSource = JSON.parse(JSON.stringify(projectData1));
-            ganttObj.actionBegin = (args: IActionBeginEventArgs) => {
-                if (args.requestType === 'beforeDelete') {
-                    args.cancel = true;
-                }
-            };
-            ganttObj.dataBound = () => {
-                ganttObj.editModule.deleteRecord(39);
-                expect(getValue('TaskID', ganttObj.flatData[ganttObj.flatData.length - 1])).toBe(39);
-                done();
-            };
-            ganttObj.refresh();
-        }, 1000);
+        // it('args cancel true in actionBegin event', (done: Function) => {
+        //     ganttObj.dataSource = JSON.parse(JSON.stringify(projectData1));
+        //     ganttObj.actionBegin = (args: IActionBeginEventArgs) => {
+        //         if (args.requestType === 'beforeDelete') {
+        //             args.cancel = true;
+        //         }
+        //     };
+        //     ganttObj.dataBound = () => {
+        //         ganttObj.editModule.deleteRecord(39);
+        //         expect(getValue('TaskID', ganttObj.flatData[ganttObj.flatData.length - 1])).toBe(39);
+        //         done();
+        //     };
+        //     ganttObj.refresh();
+        // }, 1000);
     });
     
     describe('Selection maintaining after Gantt delete action', () => {

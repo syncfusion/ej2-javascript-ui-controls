@@ -1230,14 +1230,14 @@ export class DocumentHelper {
         }
         if (addToCollection) {
             if (image.isMetaFile) {
-                base64ImageString.push(image.metaFileImageString);
+                base64ImageString.push(!isNullOrUndefined(image.metaFileImageString) ? image.metaFileImageString : image.imageString);
                 base64ImageString.push(image.imageString === "" ? image.metaFileImageString : image.imageString);
             } else {
                 base64ImageString.push(image.imageString);
             }
             this.images.add(key, base64ImageString);
         }
-        if (image.isMetaFile) {
+        if (image.isMetaFile && !isNullOrUndefined(image.metaFileImageString)) {
             image.metaFileImageString = key.toString();
         }
         image.imageString = key.toString();
@@ -6348,7 +6348,7 @@ export class PageLayoutViewer extends LayoutViewer {
     public scrollToPage(pageIndex: number): void {
         let top: number = 0;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-            top = this.documentHelper.pages[i].boundingRectangle.y - (this.pageGap / 2);
+            top = (this.documentHelper.pages[i].boundingRectangle.y * this.documentHelper.zoomFactor) - (this.pageGap / 2);
             if (i === pageIndex) {
                 break;
             }

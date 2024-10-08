@@ -3900,7 +3900,8 @@ export class FormDesigner {
         if (this.pdfViewer.formFieldCollections.length > 0) {
             const lastFormField: any = this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.length - 1];
             // eslint-disable-next-line
-            const lastFormFieldIndex: any = lastFormField && lastFormField.name ? parseInt(lastFormField.name.match(/\d+/)) : null;
+            const lastFormFieldIndex: any = lastFormField && lastFormField.name ? (!isNaN(parseInt(lastFormField.name.match(/\d+/), 10)) ?
+                parseInt(lastFormField.name.match(/\d+/), 10) : this.pdfViewer.formFieldCollections.length) : null;
             if (this.isAddFormFieldUi) {
                 this.formFieldIndex = this.formFieldIndex > this.pdfViewer.formFieldCollections.length ?
                     lastFormFieldIndex + 1 : this.pdfViewer.formFieldCollections.length + 1;

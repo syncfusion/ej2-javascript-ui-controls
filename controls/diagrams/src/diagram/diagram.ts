@@ -11896,7 +11896,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private getPoints(actualObject: Connector, points?: PointModel[]): PointModel[] {
         //let pts: PointModel[];
-        const lineDistributionModule: boolean = this.lineDistributionModule ? true : false;
+        //871158: Connector splitting point change with line distribution module injection
+        const lineDistributionModule: boolean = (this.lineDistributionModule && this.layout.connectionPointOrigin === 'DifferentPoint') ? true : false;
         const pts: PointModel[] = actualObject.getConnectorPoints(
             actualObject.type, points,
             this.layout.type === 'ComplexHierarchicalTree' || this.layout.type === 'HierarchicalTree' ?

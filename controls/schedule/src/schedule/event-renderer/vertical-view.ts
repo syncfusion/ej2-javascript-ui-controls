@@ -22,8 +22,8 @@ export class VerticalEvent extends EventBase {
     private slotCount: number = this.parent.activeViewOptions.timeScale.slotCount;
     private interval: number = this.parent.activeViewOptions.timeScale.interval;
     public allDayLevel: number = 0;
-    private startHour: Date = this.parent.activeView.getStartHour();
-    private endHour: Date = this.parent.activeView.getEndHour();
+    private startHour: Date = this.getStartEndHours(this.parent.activeViewOptions.startHour);
+    private endHour: Date = this.getStartEndHours(this.parent.activeViewOptions.endHour);
     private element: HTMLElement;
     public allDayElement: HTMLElement[];
     private animation: Animation;
@@ -165,7 +165,7 @@ export class VerticalEvent extends EventBase {
             const renderDates: Date[] = this.dateRender[parseInt(resource.toString(), 10)];
             for (let day: number = 0, length: number = renderDates.length; day < length; day++) {
                 const startDate: Date = new Date(renderDates[parseInt(day.toString(), 10)].getTime());
-                const endDate: Date = util.addDays(renderDates[parseInt(day.toString(), 10)], 1);
+                const endDate: Date = util.resetTime(util.addDays(renderDates[parseInt(day.toString(), 10)], 1));
                 const filterEvents: Record<string, any>[] =
                     this.filterEvents(startDate, endDate, this.parent.blockProcessed, this.resources[parseInt(resource.toString(), 10)]);
                 for (const event of filterEvents) {
@@ -197,7 +197,7 @@ export class VerticalEvent extends EventBase {
                 blockTop = formatUnit(0);
             } else {
                 blockHeight = formatUnit(this.getHeight(eStart, eEnd));
-                blockTop = formatUnit(this.getTopValue(eStart, dayIndex, resource));
+                blockTop = formatUnit(this.getTopValue(eStart));
             }
             const appointmentElement: HTMLElement = this.createBlockAppointmentElement(eventObj, resource, this.isResourceEventTemplate);
             setStyleAttribute(appointmentElement, { 'width': '100%', 'height': blockHeight, 'top': blockTop });
@@ -232,7 +232,7 @@ export class VerticalEvent extends EventBase {
                 renderDates[parseInt(day.toString(), 10)] <= renderedDate[renderedDate.length - 1]; day++) {
                 this.renderedEvents = [];
                 const startDate: Date = new Date(renderDates[parseInt(day.toString(), 10)].getTime());
-                const endDate: Date = util.addDays(renderDates[parseInt(day.toString(), 10)], 1);
+                const endDate: Date = util.resetTime(util.addDays(renderDates[parseInt(day.toString(), 10)], 1));
                 const filterEvents: Record<string, any>[] =
                     this.filterEvents(startDate, endDate, eventCollection, this.resources[parseInt(resource.toString(), 10)]);
                 if (isRender) {
@@ -573,7 +573,7 @@ export class VerticalEvent extends EventBase {
         if (eStart <= eEnd && isValidEvent && this.isWorkDayAvailable(resource, eStart)) {
             const appHeight: number = record.isSpanned.isSameDuration ? this.cellHeight : this.getHeight(eStart, eEnd);
             if (eStart.getTime() >= schedule.startHour.getTime()) {
-                topValue = this.getTopValue(eStart, dayIndex, resource);
+                topValue = this.getTopValue(eStart);
             }
             const appIndex: number = this.getOverlapIndex(record, dayIndex, false, resource);
             record.Index = appIndex;
@@ -635,13 +635,21 @@ export class VerticalEvent extends EventBase {
         return (tempLeft > 99 ? 99 : tempLeft) + '%';
     }
 
-    public getTopValue(date: Date, day: number, resource: number): number {
-        const viewDate: Date = util.resetTime(this.dateRender[parseInt(resource.toString(), 10)][parseInt(day.toString(), 10)]);
-        const startEndHours: { [key: string]: Date } = util.getStartEndHours(viewDate, this.startHour, this.endHour);
-        const startHour: Date = startEndHours.startHour;
-        const adjustedStartHour: number = util.isDaylightSavingTime(viewDate) && (startHour.getHours() !== this.startHour.getHours()) ?
-            this.startHour.getHours() : startHour.getHours();
-        const diffInMinutes: number = ((date.getHours() - adjustedStartHour) * 60) + (date.getMinutes() - startHour.getMinutes());
+    private getStartEndHours(startEndTime: string): Date {
+        if (!isNullOrUndefined(startEndTime) && startEndTime !== '') {
+            const startEndDate: Date = new Date(2000, 0, 0, 0);
+            const timeString: string[] = startEndTime.split(':');
+            if (timeString.length === 2) {
+                startEndDate.setHours(parseInt(timeString[0], 10), parseInt(timeString[1], 10), 0);
+            }
+            return startEndDate;
+        }
+        return null;
+    }
+
+    public getTopValue(date: Date): number {
+        const startHour: Date = this.getStartEndHours(this.parent.activeViewOptions.startHour);
+        const diffInMinutes: number = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
         return (this.parent.activeViewOptions.timeScale.enable) ? ((diffInMinutes * this.cellHeight * this.slotCount) / this.interval) : 0;
     }
 

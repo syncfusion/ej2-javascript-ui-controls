@@ -397,7 +397,8 @@ export class Ribbon {
             created: this.ribbonCreated.bind(this),
             selecting: this.tabSelecting.bind(this),
             expandCollapse: this.expandCollapseHandler.bind(this),
-            beforeFileMenuItemRender: this.beforeRenderHandler.bind(this)
+            beforeFileMenuItemRender: this.beforeRenderHandler.bind(this),
+            spreadInstance: (this.parent && this.parent.isReact) ? this.parent : null
         });
         this.ribbon.createElement = this.parent.createElement;
         if (refEle) {
@@ -2691,6 +2692,11 @@ export class Ribbon {
     private addToolbarItems(args: { tab: string, items: ItemModel[], index: number }): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         this.ribbon.addToolbarItems(l10n.getConstant(args.tab), args.items, args.index);
+        if (this.parent && this.parent.isReact && this.parent.portals &&
+            this.ribbon.toolbarObj && this.ribbon.toolbarObj.portals) {
+            this.parent.portals = this.parent.portals.concat(this.ribbon.toolbarObj.portals);
+            this.parent['renderReactTemplates']();
+        }
     }
 
     private enableToolbarItems(args: { tab?: string, items?: number[] | string[], enable?: boolean }[]): void {

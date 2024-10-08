@@ -4352,6 +4352,7 @@ describe('Masked DatePicker', () => {
             key: 'ArrowLeft'
         };
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        let inputEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
             let ele: HTMLElement = createElement('input', { id: 'date' });
             document.body.appendChild(ele);
@@ -4528,25 +4529,25 @@ describe('Masked DatePicker', () => {
             datepicker.element.selectionEnd = 3;
             datepicker.element.value = '3/month/year';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('03/month/year');
             datepicker.element.selectionStart = 0;
             datepicker.element.selectionEnd = 2;
             datepicker.element.value = '1/month/year';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('31/month/year');
             datepicker.element.selectionStart = 3;
             datepicker.element.selectionEnd = 8;
             datepicker.element.value = '31/2/year';
             datepicker.element.selectionStart = 4;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             let date: Date = new Date();
             expect(datepicker.element.value).toBe(new Date(date.getFullYear(), 1 + 1, 0).getDate().toString() +'/02/year');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = 'a/2/year';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe(new Date(date.getFullYear(), 1 + 1, 0).getDate().toString() +'/02/year');
             expect(datepicker.value).toBe(null);
         });
@@ -4563,35 +4564,35 @@ describe('Masked DatePicker', () => {
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '1/month/year';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/month/year');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/1/year';
             datepicker.element.selectionStart = 4;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/year');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/2';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/0002');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/0';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/0020');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/1';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/0201');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/2';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/2012');
             expect(datepicker.value).toBe(null);
-            datepicker.inputBlurHandler();
+            datepicker.inputBlurHandler(inputEventArgs);
             expect(+datepicker.value).toBe(+new Date('01/01/2012'));
         });
 
@@ -4608,35 +4609,35 @@ describe('Masked DatePicker', () => {
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '1/month/year';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/month/year');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/1/year';
             datepicker.element.selectionStart = 4;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/year');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/2';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/0002');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/0';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/0020');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/1';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/0201');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/2';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/2012');
             expect(datepicker.value).toBe(null);
-            datepicker.inputBlurHandler();
+            datepicker.inputBlurHandler(inputEventArgs);
             expect(+datepicker.value).toBe(+new Date('01/01/2012'));
             datepicker.focusIn();
             datepicker.mouseUpHandler(mouseEventArgs);
@@ -4645,23 +4646,23 @@ describe('Masked DatePicker', () => {
             expect(datepicker.element.selectionEnd).toBe(10);
             datepicker.element.value = '01/01/';
             datepicker.element.selectionStart = 6;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/year');
             expect(datepicker.element.selectionStart).toBe(3);
             expect(datepicker.element.selectionEnd).toBe(5);
             datepicker.element.value = '01//year';
             datepicker.element.selectionStart = 3;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/month/year');
             expect(datepicker.element.selectionStart).toBe(0);
             expect(datepicker.element.selectionEnd).toBe(2);
             datepicker.element.value = '/month/year';
             datepicker.element.selectionStart = 0;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('day/month/year');
             expect(datepicker.element.selectionStart).toBe(0);
             expect(datepicker.element.selectionEnd).toBe(3);
-            datepicker.inputBlurHandler();
+            datepicker.inputBlurHandler(inputEventArgs);
             expect(datepicker.value).toBe(null);
         });
 
@@ -4674,11 +4675,11 @@ describe('Masked DatePicker', () => {
             expect(datepicker.value).toBe(null);
             datepicker.element.value = 'j';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('Jan');
             datepicker.element.value = 'u';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             //expect(datepicker.element.value).toBe('Jun');
         });
 
@@ -4691,15 +4692,15 @@ describe('Masked DatePicker', () => {
             expect(datepicker.value).toBe(null);
             datepicker.element.value = 'j';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('January');
             datepicker.element.value = 'u';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             //expect(datepicker.element.value).toBe('June');
             datepicker.element.value = 'f';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             //expect(datepicker.element.value).toBe('February');
         });
         
@@ -4719,12 +4720,12 @@ describe('Masked DatePicker', () => {
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '1/month/year';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/month/year');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/1/year';
             datepicker.element.selectionStart = 4;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/year');
             datepicker.inputBlurHandler();
             expect(datepicker.element.value).toBe('day/month/year');
@@ -4737,31 +4738,31 @@ describe('Masked DatePicker', () => {
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '1/month/year';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/month/year');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/1/year';
             datepicker.element.selectionStart = 4;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/year');
             datepicker.element.value = '01/01/2';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/0002');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/1';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/0021');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/0';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/0210');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/0';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/2100');
             expect(datepicker.value).toBe(null);
             datepicker.inputBlurHandler();
@@ -4781,31 +4782,31 @@ describe('Masked DatePicker', () => {
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '1/month/year';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/month/year');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/2/year';
             datepicker.element.selectionStart = 4;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/02/year');
             datepicker.element.value = '01/02/2';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/02/0002');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/02/0';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/02/0020');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/02/2';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/02/0202');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/02/1';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/02/2021');
             expect(datepicker.value).toBe(null);
             datepicker.inputBlurHandler();
@@ -4825,32 +4826,32 @@ describe('Masked DatePicker', () => {
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '1/month/year';
             datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/month/year');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/1/year';
             datepicker.element.selectionStart = 4;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/year');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/2';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/0002');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/0';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/0020');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/1';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/0201');
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '01/01/2';
             datepicker.element.selectionStart = 7;
-            datepicker.inputHandler();
+            datepicker.inputHandler(inputEventArgs);
             expect(datepicker.element.value).toBe('01/01/2012');
             expect(datepicker.value).toBe(null);
             datepicker.inputBlurHandler();
@@ -5034,6 +5035,7 @@ describe('Masked DatePicker', () => {
 });
 describe('EJ2CORE-735 - Date reset to first month after clearing the selected date by using backspace key',function(){
     let datePicker:any;
+    let inputEventArgs: any = { preventDefault: function () { }, target: null };
     beforeEach(function(){
         let element: HTMLElement = createElement('input',{id:'date'});
         document.body.appendChild(element);
@@ -5058,20 +5060,20 @@ describe('EJ2CORE-735 - Date reset to first month after clearing the selected da
         datePicker.element.selectionStart = 6;
         datePicker.element.selectionEnd = 10;
         datePicker.element.value = '05/05/';
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         datePicker.element.selectionStart = 6;
         expect(datePicker.inputElement.value === "05/05/year").toBe(true)
         datePicker.element.selectionStart = 3;
         datePicker.element.selectionEnd = 5;
         datePicker.element.value = '05//year';
         datePicker.element.selectionStart = 3;
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         expect(datePicker.inputElement.value === "05/day/year").toBe(true)
         datePicker.element.selectionStart = 0;
         datePicker.element.selectionEnd = 2;
         datePicker.element.value = '/day/year';
         datePicker.element.selectionStart = 0;
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         expect(datePicker.inputElement.value === "month/day/year").toBe(true)
         datePicker.inputBlurHandler();
         expect(datePicker.inputElement.value === "month/day/year").toBe(true)
@@ -5079,6 +5081,7 @@ describe('EJ2CORE-735 - Date reset to first month after clearing the selected da
 });
 describe('EJ2CORE-779 - Month reset to first month after clearing the selected month by using backspace key',function(){
     let datePicker:any;
+    let inputEventArgs: any = { preventDefault: function () { }, target: null };
     beforeEach(function(){
         let element: HTMLElement = createElement('input',{id:'date'});
         document.body.appendChild(element);
@@ -5104,7 +5107,7 @@ describe('EJ2CORE-779 - Month reset to first month after clearing the selected m
         datePicker.element.selectionEnd = 2;
         datePicker.element.value = '/05/2020';
         datePicker.element.selectionStart = 0;
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         expect(datePicker.inputElement.value === "month/05/2020").toBe(true)
         datePicker.inputBlurHandler();
         expect(datePicker.inputElement.value === "05/05/2020").toBe(true)
@@ -5112,14 +5115,14 @@ describe('EJ2CORE-779 - Month reset to first month after clearing the selected m
         datePicker.element.selectionEnd = 5;
         datePicker.element.value = '05//2020';
         datePicker.element.selectionStart = 3;
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         expect(datePicker.inputElement.value === "05/day/2020").toBe(true)
         datePicker.inputBlurHandler();
         expect(datePicker.inputElement.value === "05/05/2020").toBe(true)
         datePicker.element.selectionStart = 6;
         datePicker.element.selectionEnd = 10;
         datePicker.element.value = '05/05/';
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         datePicker.element.selectionStart = 6;
         expect(datePicker.inputElement.value === "05/05/year").toBe(true)
         datePicker.inputBlurHandler();
@@ -5132,7 +5135,7 @@ describe('EJ2CORE-779 - Month reset to first month after clearing the selected m
         datePicker.element.selectionEnd = 2;
         datePicker.element.value = '/08/2020';
         datePicker.element.selectionStart = 0;
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         datePicker.inputBlurHandler();
         expect(datePicker.inputElement.value === "05/08/2020").toBe(true)
     });
@@ -5151,7 +5154,7 @@ describe('EJ2CORE-779 - Month reset to first month after clearing the selected m
         datePicker.element.selectionEnd = 1;
         datePicker.element.value = '/5/2020';
         datePicker.element.selectionStart = 0;
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         expect(datePicker.inputElement.value === "month/5/2020").toBe(true)
         datePicker.inputBlurHandler();
         expect(datePicker.inputElement.value === "5/5/2020").toBe(true)
@@ -5159,14 +5162,14 @@ describe('EJ2CORE-779 - Month reset to first month after clearing the selected m
         datePicker.element.selectionEnd = 3;
         datePicker.element.value = '5//2020';
         datePicker.element.selectionStart = 2;
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         expect(datePicker.inputElement.value === "5/day/2020").toBe(true)
         datePicker.inputBlurHandler();
         expect(datePicker.inputElement.value === "5/5/2020").toBe(true)
         datePicker.element.selectionStart = 5;
         datePicker.element.selectionEnd = 8;
         datePicker.element.value = '5/5/';
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         datePicker.element.selectionStart = 5;
         expect(datePicker.inputElement.value === "5/5/year").toBe(true)
         datePicker.inputBlurHandler();
@@ -5177,7 +5180,7 @@ describe('EJ2CORE-779 - Month reset to first month after clearing the selected m
         datePicker.element.selectionEnd = 3;
         datePicker.element.value = ' 2020';
         datePicker.element.selectionStart = 0;
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         expect(datePicker.inputElement.value === "month 2020").toBe(true)
         datePicker.inputBlurHandler();
         expect(datePicker.inputElement.value === "May 2020").toBe(true)
@@ -5187,7 +5190,7 @@ describe('EJ2CORE-779 - Month reset to first month after clearing the selected m
         datePicker.element.selectionEnd = 5;
         datePicker.element.value = '05..2020';
         datePicker.element.selectionStart = 3;
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         expect(datePicker.inputElement.value === "05.month.2020").toBe(true)
         datePicker.inputBlurHandler();
         expect(datePicker.inputElement.value === "05.05.2020").toBe(true)
@@ -5197,7 +5200,7 @@ describe('EJ2CORE-779 - Month reset to first month after clearing the selected m
         datePicker.element.selectionEnd = 5;
         datePicker.element.value = '05--2020';
         datePicker.element.selectionStart = 3;
-        datePicker.inputHandler();
+        datePicker.inputHandler(inputEventArgs);
         expect(datePicker.inputElement.value === "05-month-2020").toBe(true)
         datePicker.inputBlurHandler();
         expect(datePicker.inputElement.value === "05-05-2020").toBe(true)

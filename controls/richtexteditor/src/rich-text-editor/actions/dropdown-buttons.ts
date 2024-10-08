@@ -158,9 +158,6 @@ export class DropDownButtons {
                         cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_NAME_TB_BTN,
                         itemName: 'FontName', items: fontItem, element: targetElement
                     } as IDropDownModel);
-                    if (!isNullOrUndefined(this.parent.fontFamily.default)) {
-                        this.getEditNode().style.fontFamily = this.parent.fontFamily.default;
-                    }
                     break; }
                 case 'fontsize': {
                     targetElement = select('#' + this.parent.getID() + '_' + type + '_FontSize', tbElement);
@@ -186,9 +183,6 @@ export class DropDownButtons {
                         cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_SIZE_TB_BTN,
                         itemName: 'FontSize', items: fontsize, element: targetElement
                     } as IDropDownModel);
-                    if (!isNullOrUndefined(this.parent.fontSize.default)) {
-                        this.getEditNode().style.fontSize = this.parent.fontSize.default;
-                    }
                     break; }
                 case 'alignments':
                     targetElement = select('#' + this.parent.getID() + '_' + type + '_Alignments', tbElement);

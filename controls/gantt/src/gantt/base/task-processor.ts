@@ -21,6 +21,7 @@ export class TaskProcessor extends DateProcessor {
     private hierarchyData: Object[];
     public isResourceString: boolean;
     private customSegmentProperties: Object[] = [];
+    private systemTimeZone: string;
 
     constructor(parent: Gantt) {
         super(parent);
@@ -1709,11 +1710,10 @@ export class TaskProcessor extends DateProcessor {
             ? new Date((this.parent.timelineModule['dateByLeftValue'](leftValueForStartDate)).toString()) : new Date(this.parent.timelineModule.timelineStartDate);
         if (timelineStartDate) {
             let leftValue: number;
-            const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const hasDST: boolean = this.hasDSTTransition(startDate.getFullYear());
             let transitions: Object;
             if (hasDST) {
-                transitions = this.getDSTTransitions(startDate.getFullYear(), timeZone);
+                transitions = this.getDSTTransitions(startDate.getFullYear(), this.systemTimeZone);
             }
             if (this.parent.isInDst(startDate) && !this.parent.isInDst(timelineStartDate)) {
                 let newTimelineStartDate: Date;
@@ -2730,7 +2730,7 @@ export class TaskProcessor extends DateProcessor {
     public updateGanttData(): void {
         const flatData: IGanttData[] = this.parent.flatData;
         const length: number = flatData.length;
-
+        this.systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         for (let i: number = 0; i < length; i++) {
             const data: IGanttData = flatData[i as number];
             this.updateTaskLeftWidth(data);

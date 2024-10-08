@@ -3781,7 +3781,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         const nextNode: Element = isTowards ? this.getNextNode(li) : this.getPrevNode(li);
         this.setFocus(li, nextNode);
         this.navigateToFocus(!isTowards);
-        if (nextNode.classList.contains('e-disable') || nextNode.classList.contains('e-prevent')) {
+        if (nextNode.classList.contains('e-disable')) {
             const lastChild: HTMLElement = nextNode.lastChild as HTMLElement;
             if (nextNode.previousSibling == null && nextNode.classList.contains('e-level-1')) {
                 this.focusNextNode(nextNode, true);
@@ -3848,7 +3848,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private setFocus(preNode: Element, nextNode: Element): void {
         removeClass([preNode], FOCUS);
         preNode.setAttribute('tabindex', '-1');
-        if (!nextNode.classList.contains('e-disable') && !nextNode.classList.contains(PREVENTSELECT)) {
+        if (!nextNode.classList.contains('e-disable')) {
             addClass([nextNode], FOCUS);
             nextNode.setAttribute('tabindex', '0');
             (<HTMLElement>nextNode).focus();
@@ -3869,7 +3869,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private focusIn(): void {
         if (!this.mouseDownStatus) {
             const focusedElement: Element = this.getFocusedNode();
-            if (focusedElement.classList.contains('e-disable') || focusedElement.classList.contains('e-prevent')) {
+            if (focusedElement.classList.contains('e-disable')) {
                 focusedElement.setAttribute('tabindex', '-1');
                 this.navigateNode(true);
             } else {
@@ -4340,16 +4340,19 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private getOffsetX(event: MouseEvent | TouchEvent, target: HTMLElement): number {
-        if (event instanceof TouchEvent && event.changedTouches.length > 0) {
-            return event.changedTouches[0].clientX - target.getBoundingClientRect().left;
-        } else {
+        const touchList: TouchList = (event as TouchEvent).changedTouches;
+        if (touchList && touchList.length > 0) {
+            return touchList[0].clientX - target.getBoundingClientRect().left;
+        }
+        else {
             return (event as MouseEvent).offsetX;
         }
     }
 
     private getOffsetY(event: MouseEvent | TouchEvent, target: HTMLElement): number {
-        if (event instanceof TouchEvent && event.changedTouches.length > 0) {
-            return event.changedTouches[0].clientY - target.getBoundingClientRect().top;
+        const touchList: TouchList = (event as TouchEvent).changedTouches;
+        if (touchList && touchList.length > 0) {
+            return touchList[0].clientY - target.getBoundingClientRect().top;
         } else {
             return (event as MouseEvent).offsetY;
         }

@@ -213,7 +213,7 @@ export class Reorder implements IAction {
                         cols[parseInt(i.toString(), 10)].freeze = undefined;
                     }
                 }
-            } else {
+            } else if (!(parent && parent.columns)) {
                 if (this.parent.getFrozenLeftCount() > destIndex) {
                     column.freeze = 'Left';
                 } else if ((cols.length - this.parent.getFrozenRightColumnsCount()) <= destIndex) {

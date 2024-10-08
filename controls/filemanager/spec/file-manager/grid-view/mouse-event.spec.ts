@@ -474,6 +474,13 @@ describe('FileManager control Grid view', () => {
                 (rows[4].querySelector('.e-frame') as HTMLElement).click();
                 expect(obj.element.querySelectorAll('.e-check').length).toBe(3);
                 feObj.allowMultiSelection = false; feObj.showItemCheckBoxes = false; feObj.dataBind();
+                feObj.detailsviewModule.gridObj.selectRows([3]);
+                let nli: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(nli[3].getAttribute('aria-selected')).toEqual('true');
+                expect(nli[3].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+                expect(nli[0].querySelector('.e-frame').classList.contains('e-check')).not.toBe(true);
+                expect(nli[2].querySelector('.e-frame').classList.contains('e-check')).not.toBe(true);
+                expect(nli[4].querySelector('.e-frame').classList.contains('e-check')).not.toBe(true);
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,

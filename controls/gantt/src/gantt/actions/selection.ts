@@ -88,8 +88,8 @@ export class Selection {
             args.cancel = true;
             return;
         }
-        args.isCtrlPressed = this.isMultiCtrlRequest;
-        args.isShiftPressed = this.isMultiShiftRequest;
+        args.isCtrlPressed = this.isMultiCtrlRequest || args.isCtrlPressed;
+        args.isShiftPressed = this.isMultiShiftRequest || args.isShiftPressed;
         args.target = this.actualTarget as Element;
         if (!isNullOrUndefined(args.foreignKeyData) && Object.keys(args.foreignKeyData).length === 0) {
             delete args.foreignKeyData;
@@ -98,6 +98,9 @@ export class Selection {
             this.parent.treeGrid.grid.selectionModule['checkSelectAllClicked'] = true;
         }
         this.parent.trigger('rowSelecting', args);
+        if (this.isMultiShiftRequest || this.isMultiCtrlRequest) {
+            this.isMultiShiftRequest = this.isMultiCtrlRequest = false;
+        }
     }
     private rowSelected(args: RowSelectEventArgs): void {
         const rowIndexes: string = 'rowIndexes';
@@ -232,7 +235,7 @@ export class Selection {
         const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
         if (this.parent.enableVirtualization && (this.parent.treeGridModule.addedRecord ||
             (this.parent.editModule && this.parent.editModule.isAdded))) {
-            index = this.parent.getExpandedRecords(this.parent.flatData).indexOf(this.parent.currentViewData[index as number]);
+            index = this.parent.getExpandedRecords(this.parent.flatData).indexOf(this.parent.flatData[index as number]);
             this.parent.treeGridModule.addedRecord = false;
             if (this.parent.editModule) {
                 this.parent.editModule.isAdded = false;

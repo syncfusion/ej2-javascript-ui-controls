@@ -1,6 +1,6 @@
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { _PdfDictionary, _PdfReference, _PdfName } from './pdf-primitives';
-import { _getInheritableProperty } from './utils';
+import { _getInheritableProperty, _isNullOrUndefined } from './utils';
 import { PdfAnnotationCollection } from './annotations/annotation-collection';
 import { PdfGraphics, PdfGraphicsState } from './graphics/pdf-graphics';
 import { _PdfBaseStream, _PdfContentStream } from './base-stream';
@@ -82,9 +82,9 @@ export class PdfPage {
      */
     get annotations(): PdfAnnotationCollection {
         if (typeof this._annotations === 'undefined') {
-            if (this._pageDictionary.has('Annots')) {
+            if (this._pageDictionary && this._pageDictionary.has('Annots')) {
                 const annots: Array<_PdfReference> = this._getProperty('Annots');
-                if (annots && Array.isArray(annots)) {
+                if (_isNullOrUndefined(annots) && Array.isArray(annots)) {
                     let widgets: Array<_PdfReference>;
                     if (this._crossReference._document._catalog._catalogDictionary.has('AcroForm')) {
                         widgets = this._crossReference._document.form._parseWidgetReferences();
@@ -388,7 +388,7 @@ export class PdfPage {
         if (this._pageDictionary.has('Annots')) {
             const annotsRef: any = this._pageDictionary.getRaw('Annots'); // eslint-disable-line
             annots = this._getProperty('Annots');
-            if (annotsRef instanceof _PdfReference) {
+            if (annotsRef && annotsRef instanceof _PdfReference) {
                 delete this._pageDictionary._map.Annots;
                 this._pageDictionary.update('Annots', annots);
             }
@@ -555,7 +555,7 @@ export class PdfPage {
                 if (obj !== null && typeof obj !== 'undefined' && obj instanceof _PdfReference) {
                     this._hasResourceReference = true;
                     this._resourceObject = this._crossReference._fetch(obj);
-                } else if (obj instanceof _PdfDictionary) {
+                } else if (obj && obj instanceof _PdfDictionary) {
                     this._resourceObject = obj;
                 }
             } else {
@@ -567,10 +567,12 @@ export class PdfPage {
     }
     _getCropOrMediaBox(): number[] {
         let box: number[];
-        if (this._pageDictionary.has('CropBox')) {
-            box = this._pageDictionary.getArray('CropBox');
-        } else if (this._pageDictionary.has('MediaBox')) {
-            box = this._pageDictionary.getArray('MediaBox');
+        if (this._pageDictionary) {
+            if (this._pageDictionary.has('CropBox')) {
+                box = this._pageDictionary.getArray('CropBox');
+            } else if (this._pageDictionary.has('MediaBox')) {
+                box = this._pageDictionary.getArray('MediaBox');
+            }
         }
         return box;
     }
@@ -592,7 +594,7 @@ export class PdfPage {
         this._contents = undefined;
     }
     _obtainTabOrder(): PdfFormFieldsTabOrder {
-        if  (this._pageDictionary.has('Tabs')) {
+        if  (this._pageDictionary && this._pageDictionary.has('Tabs')) {
             const tabOrder: _PdfName = this._pageDictionary.get('Tabs');
             if (tabOrder === _PdfName.get('R')) {
                 this._tabOrder = PdfFormFieldsTabOrder.row;
@@ -610,9 +612,9 @@ export class PdfPage {
         return this._tabOrder;
     }
     _removeAnnotation(reference: _PdfReference): void {
-        if (this._pageDictionary.has('Annots')) {
+        if (this._pageDictionary && this._pageDictionary.has('Annots')) {
             const annots: Array<_PdfReference> = this._getProperty('Annots');
-            if (annots && Array.isArray(annots)) {
+            if (_isNullOrUndefined(annots) && Array.isArray(annots)) {
                 const index: number = annots.indexOf(reference);
                 if (index >= 0) {
                     annots.splice(index, 1);
@@ -632,7 +634,7 @@ export class PdfPage {
         for (let i: number = 0; i < count; i++) {
             const reference: _PdfReference = this._contents[Number.parseInt(i.toString(), 10)];
             const base: any = this._crossReference._fetch(reference); // eslint-disable-line
-            if (typeof base !== 'undefined') {
+            if (base) {
                 if (base instanceof _PdfContentStream) {
                     array = new Uint8Array(base._bytes);
                 } else if (base instanceof _PdfBaseStream) {

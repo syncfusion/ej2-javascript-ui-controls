@@ -2058,6 +2058,9 @@ describe('render dependency SS', () => {
         height: '450px',
             }, done);
     });
+    beforeEach((done: Function) => {
+        setTimeout(done, 100);
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
@@ -2098,6 +2101,9 @@ describe('manual mode dependency SS', () => {
             ]
         },
     ];
+    beforeEach((done: Function) => {
+        setTimeout(done, 100);
+    });
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
@@ -2314,6 +2320,9 @@ describe('manual mode dependency SS', () => {
         projectStartDate: new Date('02/20/2017'),
         projectEndDate: new Date('03/30/2017'),
             }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 100);
     });
     afterAll(() => {
         if (ganttObj) {
