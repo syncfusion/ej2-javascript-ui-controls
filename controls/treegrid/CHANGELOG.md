@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 27.1.52 (2024-10-08)
+## 27.1.53 (2024-10-15)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F61461` - Fixed an issue where the scroll position was not maintained correctly when using `enablePersistence`.
+- `#I635845` - The alignment issue with aggregates and treegrid columns has been fixed when `allowResizing` and `frozenColumns` are enabled.
+
+## 27.1.51 (2024-09-30)
 
 ### Tree Grid
 

@@ -188,6 +188,33 @@ describe('GridLayout', () => {
             }
         }
     ];
+    let newPanels: any = [
+        {
+            id: "one",
+            cssClass: "e-one",
+            sizeX: 2,
+            sizeY: 1,
+            row: 0,
+            col: 0,
+
+        },
+        {
+            id: "two",
+            cssClass: "e-two",
+            sizeX: 2,
+            sizeY: 1,
+            row: 0,
+            col: 0,
+        },
+        {
+            id: "three",
+            cssClass: "e-three",
+            sizeX: 2,
+            sizeY: 2,
+            row: 0,
+            col: 0,
+        },
+    ];
 
     describe('layout testing', () => {
         beforeEach(() => {
@@ -4534,6 +4561,34 @@ describe('GridLayout', () => {
             expect((<HTMLElement>gridLayOut.element.querySelector('#two'))).toBe(null);
             expect((<HTMLElement>gridLayOut.element.querySelector('#one'))).toBe(null);
             expect((<HTMLElement>gridLayOut.element.querySelector('#five'))).toBe(null);
+        });
+        it('adding panels with different height and width using addPanel method test case', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 3,
+                panels: newPanels
+            });
+            gridLayOut.appendTo('#gridlayout');
+            (<any>gridLayOut.collisionCheck) = [];
+            let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+            setCss(CellElements);
+            expect(gridLayOut.element.classList.contains('e-dashboardlayout')).toBe(true);
+            expect(gridLayOut.element.childElementCount == 3).toBe(true);
+            gridLayOut.addPanel(newPanels[0]);
+            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).getAttribute('data-row')).toBe('0');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).getAttribute('data-col')).toBe('0');
+            gridLayOut.addPanel(newPanels[1]);
+            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).getAttribute('data-row')).toBe('1');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).getAttribute('data-col')).toBe('0');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#two')).getAttribute('data-row')).toBe('0');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#two')).getAttribute('data-col')).toBe('0');
+            gridLayOut.addPanel(newPanels[2]);
+            expect((<HTMLElement>gridLayOut.element.querySelector('#three')).getAttribute('data-row')).toBe('0');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#three')).getAttribute('data-col')).toBe('0');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#two')).getAttribute('data-row')).toBe('2');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#two')).getAttribute('data-col')).toBe('0');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).getAttribute('data-row')).toBe('3');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#one')).getAttribute('data-col')).toBe('0');
         });
         it('Responsive layout test case', () => {
             let gridLayOut: any = new DashboardLayout({

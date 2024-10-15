@@ -117,7 +117,7 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
         options.push(new PathOption(
             series.chart.element.id + '_Series_border_' + series.index + id,
             'transparent', series.border.width, series.border.color ? series.border.color : series.interior, 1,
-            series.dashArray, emptyPointDirection
+            series.border.dashArray, emptyPointDirection
         ));
 
     }

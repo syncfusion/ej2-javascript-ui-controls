@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.1.53 (2024-10-15)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I637759` - The issue with the collapseAll API not collapsing TreeView nodes correctly based on the specified node level in the TreeView component has been resolved.
+- `#I912588` - The issue with filtered selected item in the DropdownTree component has been fixed.
+
 ## 27.1.52 (2024-10-08)
 
 ### ContextMenu

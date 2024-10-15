@@ -363,6 +363,57 @@ describe('Month Event Render Module', () => {
         });
     });
 
+    describe('EJ2-910599 - Month view event rendered arguments checking for Spanned events', () => {
+        let schObj: Schedule;
+        const sampleData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Normal event',
+            StartTime: new Date(2024, 1, 10, 10, 0),
+            EndTime: new Date(2024, 1, 21, 12, 30),
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                views: ['Month'],
+                height: 'auto', width: '100%',
+                selectedDate: new Date(2024, 1, 10),
+            };
+            schObj = util.createSchedule(model, sampleData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking event rendered event week 1 args', (done: DoneFn) => {
+            schObj.eventRendered = (args: EventRenderedArgs) => {
+                if ((args.data.StartTime).getTime() == new Date(2024, 1, 10, 10, 0).getTime()) {
+                    expect((args.data.StartTime).getTime()).toEqual(new Date(2024, 1, 10, 10, 0).getTime());
+                    expect((args.data.EndTime).getTime()).toEqual(new Date(2024, 1, 10, 0, 0).getTime());
+                    done();
+                }
+            };
+            schObj.refreshEvents();
+        });
+        it('checking event rendered event week 2 args', (done: DoneFn) => {
+            schObj.eventRendered = (args: EventRenderedArgs) => {
+                if ((args.data.EndTime).getTime() == new Date(2024, 1, 21, 12, 30).getTime()) {
+                    expect((args.data.StartTime).getTime()).toEqual(new Date(2024, 1, 18, 0, 0).getTime());
+                    expect((args.data.EndTime).getTime()).toEqual(new Date(2024, 1, 21, 12, 30).getTime());
+                    done();
+                }
+            };
+            schObj.refreshEvents();
+        });
+        it('checking event rendered event week 3 args', (done: DoneFn) => {
+            schObj.eventRendered = (args: EventRenderedArgs) => {
+                if ((args.data.StartTime).getTime() == new Date(2024, 1, 11, 0, 0).getTime()) {
+                    expect((args.data.StartTime).getTime()).toEqual(new Date(2024, 1, 11, 0, 0).getTime());
+                    expect((args.data.EndTime).getTime()).toEqual(new Date(2024, 1, 17, 0, 0).getTime());
+                    done();
+                }
+            };
+            schObj.refreshEvents();
+        });
+    });
+
     describe('EJ2-57751 - Month view more indicator count is wrong', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {

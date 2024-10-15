@@ -982,6 +982,13 @@
       }
     }
 
+    &.e-verticallines,
+    &.e-bothlines {
+      .e-firstchildrow .e-rowdragdropcell {
+        border-top-width: 1px;
+      }
+    }
+
     &.e-default.e-horizontallines .e-grouptopleftcell {
       border-top: 1px solid;
     }
@@ -1488,6 +1495,9 @@
       .e-detailheadercell {
         border-width: $grid-headercell-both-border-width;
       }
+      .e-headercell.e-grid-group-first-cell {
+        border-left-width: 0;
+      }
     }
 
     &:not(.sf-grid, .e-rtl).e-default.e-bothlines {
@@ -1518,25 +1528,26 @@
       }
     }
 
-    &:not(.sf-grid).e-default table {
-      th[rowspan]  {
+    &:not(.sf-grid).e-default {
+      &:not(.e-verticallines):not(.e-bothlines) table th[rowspan] {
         border-width: $grid-headercell-both-border-width;
       }
-  
-      th[rowspan].e-leftfreeze.e-freezeleftborder {
-        border-right-width: 2px;
-      }
+      table {
+        th[rowspan].e-leftfreeze.e-freezeleftborder {
+          border-right-width: 2px;
+        }
     
-      th[rowspan].e-rightfreeze.e-freezerightborder {
-        border-left-width: 2px;
-      }
+        th[rowspan].e-rightfreeze.e-freezerightborder {
+          border-left-width: 2px;
+        }
     
-      th[rowspan].e-fixedfreeze.e-freezeleftborder {
-        border-left-width: 1px;
-      }
-        
-      th[rowspan].e-fixedfreeze.e-freezerightborder {
-        border-right-width: 1px;
+        th[rowspan].e-fixedfreeze.e-freezeleftborder {
+          border-left-width: 1px;
+        }
+    
+        th[rowspan].e-fixedfreeze.e-freezerightborder {
+          border-right-width: 1px;
+        }
       }
     }
 
@@ -1558,7 +1569,14 @@
       }
     }
 
-    
+    &:not(.e-rtl).e-verticallines,
+    &:not(.e-rtl).e-bothlines {
+      .e-grouptopleftcell.e-lastgrouptopleftcell {
+        border-right-width: 1px;
+        border-right-style: solid;
+      }
+    }
+
     .e-filterbarcell .e-filtertext::-webkit-search-cancel-button,
     .e-search input::-webkit-search-cancel-button {
       display: none;
@@ -1858,6 +1876,14 @@
       }
     }
 
+    &.e-verticallines,
+    &.e-bothlines {
+      .e-rowcell.e-grid-group-first-cell,
+      .e-headercell.e-grid-group-first-cell {
+        border-left-width: 0;
+      }
+    }
+
     &.e-hidelines {
       .e-rowcell,
       .e-headercell,
@@ -2154,6 +2180,10 @@
       th.e-laststackcell {
         @include grid-border-width-styles;
       }
+    }
+
+    &.e-default.e-verticallines .e-gridheader th.e-firstcell.e-grid-group-first-cell {
+      border-left-width: 0;
     }
 
     &:not(.sf-grid).e-bothlines .e-gridheader th.e-stackedheadercell {
@@ -2869,20 +2899,20 @@
         padding-left: $grid-header-first-last-cell-padding;
       }
 
-      &.e-wrap .e-gridheader {
+      &.e-wrap .e-columnheader {
         .e-rightalign .e-sortnumber {
           margin: $grid-rtl-textwrap-srotnumber-rightalign-margin;
         }
-  
+
         .e-sortnumber {
           margin: $grid-rtl-textwrap-srotnumber-margin;
         }
-  
-        .e-sortfilterdiv {
+
+        .e-fltr-icon .e-sortfilterdiv {
           margin: $grid-rtl-textwrap-sorticon-margin;
         }
-  
-        .e-rightalign .e-sortfilterdiv {
+
+        .e-fltr-icon.e-rightalign .e-sortfilterdiv {
           margin: $grid-rtl-textwrap-sorticon-rightalign-margin;
         }
       }
@@ -3268,7 +3298,7 @@
     }
 
     &:not(.sf-grid).e-rtl{
-      &.e-default table th[rowspan]  {
+      &.e-default:not(.e-verticallines):not(.e-bothlines) table th[rowspan] {
         border-width: $grid-rtl-headercell-both-border-width;
       }
 
@@ -3323,6 +3353,7 @@
       .e-filtermenudiv,
       .e-sortfilterdiv .e-filtermenudiv  {
         line-height: $grid-wrap-line-height;
+        margin: $grid-header-wrap-filtermenu-div-margin;
       }
 
       .e-sortfilterdiv {
@@ -3343,6 +3374,13 @@
 
       .e-icon-group::before {
         display: inline-block;
+      }
+    }
+
+    &.e-wrap.e-rtl .e-columnheader {
+      .e-filtermenudiv,
+      .e-sortfilterdiv .e-filtermenudiv  {
+        margin: $grid-rtl-wrap-fltrdiv-margin;
       }
     }
 
@@ -3449,9 +3487,12 @@
     }
 
     & .e-mask {
-      display: inline-block;
-      height: 10px;
-      width: 80%;
+
+      &.e-skeleton {
+        display: inline-block;
+        height: 10px;
+        width: 80%;
+      }
 
       &.e-mask-group-intent {
         margin-left: 7px;

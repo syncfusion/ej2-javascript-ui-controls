@@ -1,4 +1,4 @@
-import { Component, EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, select, compile, remove, attributes } from '@syncfusion/ej2-base';
+import { Component, EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, select, compile, remove, attributes, L10n } from '@syncfusion/ej2-base';
 import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, formatUnit, append, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';
 import { AIAssistViewModel, PromptModel, ResponseToolbarSettingsModel, PromptToolbarSettingsModel, ToolbarItemModel, AssistViewModel, ToolbarSettingsModel } from './ai-assist-view-model';
 import { InputEventArgs, TextArea } from '@syncfusion/ej2-inputs';
@@ -708,6 +708,8 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
     public promptChanged: EmitType<PromptChangedEventArgs>;
 
     /* Private variables */
+    private l10n: L10n;
+    private stopRespondingContent: HTMLElement;
     private viewWrapper: HTMLElement;
     private sendIcon: HTMLElement;
     private textareaObj: TextArea;
@@ -1002,8 +1004,15 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
         this.contentWrapper.appendChild(contentContainer);
         this.stopResponding = this.createElement('div', { attrs: { class: 'e-stop-response', tabIndex: '0', 'aria-label': 'Stop Responding', role: 'button' } });
         const stopRespondingIcon: HTMLElement = this.createElement('span', { attrs: { class: 'e-icons e-assist-stop' } });
-        const stopRespondingContent: HTMLElement = this.createElement('span', { innerHTML: 'Stop Responding' });
-        this.appendChildren(this.stopResponding, stopRespondingIcon, stopRespondingContent);
+        this.stopRespondingContent = this.createElement('span', { attrs: { class: 'e-stop-response-text' } });
+        this.l10n = new L10n('aiassistview', { stopResponseText: 'Stop Responding' }, this.locale);
+        this.updateStopRespondingTitle();
+        this.appendChildren(this.stopResponding, stopRespondingIcon, this.stopRespondingContent);
+    }
+
+    private updateStopRespondingTitle(): void {
+        this.l10n.setLocale(this.locale);
+        this.stopRespondingContent.textContent = this.l10n.getConstant('stopResponseText');
     }
 
     private renderFooterContent(): void {
@@ -1756,23 +1765,31 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
             } else {
                 element.innerHTML = '';
             }
-            element = null;
         }
     }
 
     private destroyAssistView(): void {
-        this.removeAndNullify(this.toolbarHeader);
-        this.removeAndNullify(this.sendIcon);
-        this.removeAndNullify(this.suggestions);
-        this.removeAndNullify(this.skeletonContainer);
-        this.removeAndNullify(this.outputElement);
-        this.removeAndNullify(this.outputSuggestionEle);
-        this.removeAndNullify(this.contentFooterEle);
-        this.removeAndNullify(this.footer);
-        this.removeAndNullify(this.assistCustomSection);
-        this.removeAndNullify(this.content);
-        this.removeAndNullify(this.stopResponding);
-        this.removeAndNullify(this.contentWrapper);
+        const properties: string [] = [
+            'toolbarHeader',
+            'sendIcon',
+            'suggestions',
+            'skeletonContainer',
+            'outputElement',
+            'outputSuggestionEle',
+            'contentFooterEle',
+            'footer',
+            'assistCustomSection',
+            'content',
+            'stopRespondingContent',
+            'stopResponding',
+            'contentWrapper'
+        ];
+
+        for (const prop of properties) {
+            const element: keyof AIAssistView = prop as keyof AIAssistView;
+            this.removeAndNullify(this[element as keyof AIAssistView]);
+            (this[element as keyof AIAssistView] as HTMLElement) = null;
+        }
     }
 
     /**
@@ -1904,6 +1921,9 @@ export class AIAssistView extends Component<HTMLElement> implements INotifyPrope
                 if (!this.footerTemplate) {
                     this.textareaObj.value = this.prompt;
                 }
+                break;
+            case 'locale':
+                this.updateStopRespondingTitle();
                 break;
             }
         }

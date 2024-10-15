@@ -937,6 +937,14 @@ export class HelperMethods {
             }
             blocks.push(block);
         });
+        // adding a inline.
+        if (blocks.length == 0) {
+            let block: any = {};
+            block[inlinesProperty[keywordIndex]] = [];
+            const inlines: any = {};
+            block[inlinesProperty[keywordIndex]].push(inlines);
+            blocks.push(block);
+        }
         return blocks;
     }
     public static parseCommentAsText(comment: CommentElementBox): string {
@@ -2057,4 +2065,19 @@ export class WrapPosition {
         this.x = x;
         this.width = width;
     }
+}
+
+/**
+ * Specifies the External font information.
+ * @private
+ */
+export interface ExternalFontInfo {
+    /** 
+     *  Specifies the font url.
+     */
+    fontFamily: string
+    /** 
+     *  Specifies the font name.
+     */
+    src: string
 }

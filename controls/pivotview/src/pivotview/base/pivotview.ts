@@ -1,5 +1,5 @@
 import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute, Fetch } from '@syncfusion/ej2-base';
-import { EmitType, EventHandler, Complex, extend, ChildProperty, Collection, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
+import { EmitType, EventHandler, Complex, ChildProperty, Collection, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { Internationalization, L10n, NotifyPropertyChanges, INotifyPropertyChanged, compile, formatUnit } from '@syncfusion/ej2-base';
 import { removeClass, addClass, Event, KeyboardEventArgs, setValue, closest, select, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { MouseEventArgs, initializeCSPTemplate  } from '@syncfusion/ej2-base';
@@ -2830,7 +2830,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.setProperties({ gridSettings: { allowSelection: true, selectionSettings: { cellSelectionMode: 'Box', mode: 'Cell', type: 'Multiple' } } }, true);
         }
         if (this.displayOption.view !== 'Table') {
-            this.pivotChartModule = new PivotChart();
+            this.pivotChartModule = new PivotChart(this);
         }
         this.currentView = this.currentView ? this.currentView : (this.displayOption.view === 'Both' ?
             this.displayOption.primary : this.displayOption.view);
@@ -3672,7 +3672,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     switch (newProp.displayOption.view) {
                     case 'Both':
                         if (!this.pivotChartModule) {
-                            this.pivotChartModule = new PivotChart();
+                            this.pivotChartModule = new PivotChart(this);
                         }
                         if (!this.grid) {
                             this.renderEmptyGrid();
@@ -3684,7 +3684,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             this.grid = undefined;
                         }
                         if (!this.pivotChartModule) {
-                            this.pivotChartModule = new PivotChart();
+                            this.pivotChartModule = new PivotChart(this);
                         }
                         break;
                     case 'Table':
@@ -3705,7 +3705,20 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         this.displayOption.primary : newProp.displayOption.view);
                 }
                 if (this.showToolbar && !isNullOrUndefined(newProp.displayOption) && newProp.displayOption.view) {
-                    this.toolbarModule.refreshToolbar();
+                    if (newProp.displayOption.view === 'Chart') {
+                        this.toolbarModule.createChartMenu();
+                        this.toggleButtonState(cls.TOOLBAR_GRID, 'add');
+                        this.toggleButtonState(cls.TOOLBAR_CHART, 'remove');
+                    } else if (newProp.displayOption.view === 'Table') {
+                        const gridElement: HTMLElement = select('#' + this.element.id + '_grid', this.element);
+                        gridElement.style.display = 'block';
+                        this.toggleButtonState(cls.TOOLBAR_CHART, 'add');
+                        this.toggleButtonState(cls.TOOLBAR_GRID, 'remove');
+                    } else {
+                        this.toolbarModule.createChartMenu();
+                        this.toggleButtonState(cls.TOOLBAR_GRID, 'remove');
+                        this.toggleButtonState(cls.TOOLBAR_CHART, 'remove');
+                    }
                 }
                 const engine: PivotEngine | OlapEngine = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
                 if (!isNullOrUndefined(engine.fieldList) || !isNullOrUndefined(engine.pivotValues)) {
@@ -3730,9 +3743,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     (Object.keys(newProp.chartSettings).indexOf('enableMultipleAxis') !== -1 ||
                         (newProp.chartSettings.chartSeries && Object.keys(newProp.chartSettings.chartSeries).indexOf('type') !== -1))) {
                     this.groupingBarModule.renderLayout();
+                    if (this.pivotChartModule) {
+                        this.groupingBarModule.appendToElement();
+                    }
                 }
                 if (isNullOrUndefined(this.pivotChartModule) && this.displayOption.view !== 'Table') {
-                    this.pivotChartModule = new PivotChart();
+                    this.pivotChartModule = new PivotChart(this);
                 }
                 const engineModule: PivotEngine | OlapEngine = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
                 if (!isNullOrUndefined(this.pivotChartModule) && !isNullOrUndefined(engineModule.pivotValues)) {
@@ -3867,6 +3883,20 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
+    private toggleButtonState(buttonClass: string, action: string): void {
+        const button: HTMLElement = this.element.querySelector('.' + buttonClass);
+        if (button) {
+            const closestDisabledElement: Element = button.closest('.e-toolbar-item');
+            if (closestDisabledElement) {
+                if (action === 'add') {
+                    closestDisabledElement.classList.add(cls.MENU_DISABLE);
+                } else if (action === 'remove') {
+                    closestDisabledElement.classList.remove(cls.MENU_DISABLE);
+                }
+            }
+        }
+    }
+
     /**
      * Method to parse the template string.
      *
@@ -3921,6 +3951,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.isEmptyGrid = false;
         this.notEmpty = true;
         this.clearTemplate();
+        if (this.showGroupingBar) {
+            if (this.pivotChartModule) {
+                this.appendChartElement();
+            }
+            this.groupingBarModule.appendToElement();
+        }
         if (this.pivotChartModule) {
             this.pivotChartModule.engineModule = this.engineModule;
             this.pivotChartModule.loadChart(this, this.chartSettings);
@@ -3954,7 +3990,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         } else if (this.grid) {
             remove(this.grid.element);
         }
-        if (this.showFieldList || this.showGroupingBar || this.allowNumberFormatting || this.allowCalculatedField ||
+        if (this.showFieldList || this.allowNumberFormatting || this.allowCalculatedField ||
             this.toolbar || this.allowGrouping || this.gridSettings.contextMenuItems) {
             this.notify(events.uiUpdate, this);
             if (this.pivotFieldListModule && this.allowDeferLayoutUpdate) {
@@ -4015,6 +4051,58 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.toolbarModule.action = '';
         }
     }
+
+    /**
+     * Appends the chart element to the DOM, based on the component's display options and settings.
+     *
+     * @returns {void}
+     * @hidden
+     */
+
+    public appendChartElement(): void {
+        if (!select('#' + this.element.id + '_chart', this.element)) {
+            if (this.displayOption.view === 'Both') {
+                if (this.displayOption.primary === 'Chart') {
+                    (this.element.insertBefore(
+                        (createElement('div', {
+                            className: cls.PIVOTCHART, id: this.element.id + '_chart'
+                        })), this.element.querySelector('.' + cls.GRID_CLASS)));
+                } else {
+                    (this.element.appendChild(createElement('div', {
+                        className: cls.PIVOTCHART, id: this.element.id + '_chart'
+                    })));
+                }
+            }
+            else {
+                this.element.appendChild(createElement('div', {
+                    className: cls.PIVOTCHART, id: this.element.id + '_chart'
+                }));
+            }
+            let width: string = this.width.toString();
+            if (this.showToolbar && this.grid) {
+                width = this.getGridWidthAsNumber().toString();
+            }
+            const height: string | number = this.pivotChartModule.getChartHeight();
+            let tmpChart: Chart | AccumulationChart;
+            if (this.chartSettings && this.chartSettings.chartSeries &&
+                this.pivotChartModule['accumulationType'].indexOf(this.chartSettings.chartSeries.type) > -1) {
+                tmpChart = new AccumulationChart({ width: width, height: height });
+            }
+            else {
+                tmpChart = new Chart({ width: width, height: height });
+            }
+            tmpChart.appendTo(select('#' + this.element.id + '_chart', this.element) as HTMLElement);
+            if (this.showToolbar) {
+                if (this.displayOption.view === 'Both' && this.currentView === 'Chart') {
+                    this.grid.element.style.display = 'none';
+                }
+                if (this.currentView !== 'Chart') {
+                    (select('#' + this.element.id + '_chart', this.element) as HTMLElement).style.display = 'none';
+                }
+            }
+        }
+    }
+
 
     /**
      * @hidden

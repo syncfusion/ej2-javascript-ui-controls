@@ -851,8 +851,8 @@ export class Editor {
 
         } else {
             markerData = {
-                author: this.owner.currentUser ? this.owner.currentUser : 'Guest user',
-                initial: this.constructCommentInitial(this.owner.currentUser ? this.owner.currentUser : 'Guest user'),
+                author: this.owner.currentUser ? SanitizeHtmlHelper.sanitize(this.owner.currentUser) : 'Guest user',
+                initial: this.constructCommentInitial(this.owner.currentUser ? SanitizeHtmlHelper.sanitize(this.owner.currentUser) : 'Guest user'),
                 text: SanitizeHtmlHelper.sanitize(text),
                 commentId: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
                 done: false,
@@ -1212,7 +1212,7 @@ export class Editor {
                 replyComment.isReply = true;
             } else {
                 replyComment = new CommentElementBox(HelperMethods.getUtcDate());
-                replyComment.author = this.owner.currentUser ? this.owner.currentUser : 'Guest user';
+                replyComment.author = this.owner.currentUser ? SanitizeHtmlHelper.sanitize(this.owner.currentUser) : 'Guest user';
                 replyComment.text = text ? text : '';
                 replyComment.mentions = mentions ? mentions : [];
                 replyComment.commentId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -1546,8 +1546,13 @@ export class Editor {
                     unProtectDocumentHandler.contentType = 'application/json;charset=UTF-8';
                     unProtectDocumentHandler.customHeaders = this.owner.headers;
                     unProtectDocumentHandler.onSuccess = (result: any) => {
-                        this.onUnProtectionSuccess(result);
-                        resolve();
+                        let protectionSuccess: boolean = this.onUnProtectionSuccess(result);
+                        if (protectionSuccess) {
+                            resolve();
+                        }
+                        else {
+                            reject();
+                        }
                     }
                     unProtectDocumentHandler.onFailure = (result: any) => {
                         this.protectionFailureHandler(result);
@@ -1573,15 +1578,16 @@ export class Editor {
             }
         );
     }
-    private onUnProtectionSuccess(result: any): void {
+    private onUnProtectionSuccess(result: any): boolean {
         const encodeString: string[] = JSON.parse(result.data);
-        this.validateHashValue(encodeString[1]);
+        let validateValue: boolean = this.validateHashValue(encodeString[1]);
         this.owner.showHideRulers();
+        return validateValue;
     }
     /**
      * @private
      */
-    public validateHashValue(currentHashValue: string): void {
+    public validateHashValue(currentHashValue: string): boolean {
         this.currentHashValue = currentHashValue;
         const localeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         localeValue.setLocale(this.documentHelper.owner.locale);
@@ -1601,8 +1607,10 @@ export class Editor {
         }
         if (stopProtection) {
             this.unProtectDocument();
+            return true;
         } else {
             DialogUtility.alert(localeValue.getConstant('The password is incorrect'));
+            return false;
         }
     }
     /**
@@ -2527,6 +2535,7 @@ export class Editor {
         }
         let type: ContentControlType;
         let info: ContentControlInfo;
+        this.selection.isSelectionisInCC = false;
         if (!(typeof typeOrInfo === 'string')) {
             type = typeOrInfo.type;
             value = typeOrInfo.value;
@@ -4778,19 +4787,21 @@ export class Editor {
             for (let i: number = 0; i < widget.childWidgets.length; i++) {
                 let elemets: ElementBox[] = (widget.childWidgets[i] as LineWidget).children;
                 if (elemets.length === 0) {
-                    let paraIndex: number = widget.containerWidget.childWidgets.indexOf(widget);
-                    let prevWidget: ParagraphWidget = undefined;
-                    if (paraIndex > 0) {
-                        prevWidget = widget.containerWidget.childWidgets[paraIndex - 1] as ParagraphWidget;
-                    }
-                    if (!isNullOrUndefined(prevWidget) && prevWidget instanceof ParagraphWidget && prevWidget.characterFormat.revisions.length > 0) {
-                        if (this.isRevisionMatched(prevWidget.characterFormat, revisionType)) {
+                    if (!isNullOrUndefined(widget.containerWidget)) {
+                        let paraIndex: number = widget.containerWidget.childWidgets.indexOf(widget);
+                        let prevWidget: ParagraphWidget = undefined;
+                        if (paraIndex > 0) {
+                            prevWidget = widget.containerWidget.childWidgets[paraIndex - 1] as ParagraphWidget;
+                        }
+                        if (!isNullOrUndefined(prevWidget) && prevWidget instanceof ParagraphWidget && prevWidget.characterFormat.revisions.length > 0) {
+                            if (this.isRevisionMatched(prevWidget.characterFormat, revisionType)) {
 
-                            let mappedRevisions: Revision[] = this.getMatchedRevisionsToCombine(prevWidget.characterFormat.revisions, revisionType);
-                            if (mappedRevisions.length > 0) {
-                                this.mapMatchedRevisions(mappedRevisions, prevWidget.characterFormat, widget.characterFormat, false);
-                                skipParaMark = true;
-                                revision = undefined;
+                                let mappedRevisions: Revision[] = this.getMatchedRevisionsToCombine(prevWidget.characterFormat.revisions, revisionType);
+                                if (mappedRevisions.length > 0) {
+                                    this.mapMatchedRevisions(mappedRevisions, prevWidget.characterFormat, widget.characterFormat, false);
+                                    skipParaMark = true;
+                                    revision = undefined;
+                                }
                             }
                         }
                     }
@@ -5668,7 +5679,7 @@ export class Editor {
             }
         } else {
             let atIndex: number = text.indexOf('@');
-            let dotIndex: number = text.indexOf('.');
+            let dotIndex: number = text.lastIndexOf('.');
             if (atIndex > 0 && atIndex < dotIndex && dotIndex < text.length - 1) {
                 containsURL = true;
                 text = 'mailto:' + text;
@@ -7787,13 +7798,19 @@ export class Editor {
             }
             layoutWholeDocument = true;
         }
+        this.documentHelper.layout.isPastingContent = true;
         for (let k: number = 0; k < bodyWidget.length; k++) {
             if (k !== 0) {
                 this.insertSectionBreak(bodyWidget[k].sectionFormat.breakCode as SectionBreakType, bodyWidget[k].sectionFormat);
             }
             let widgets: BlockWidget[] = bodyWidget[k].childWidgets as BlockWidget[];
             let isConsiderLastBlock: boolean = false;
+            const isLasteSection: boolean = (k === bodyWidget.length - 1);
             for (let j: number = 0; j < widgets.length; j++) {
+                const isLastBlock: boolean = (j === widgets.length - 1);
+                if(isLastBlock && isLasteSection) {
+                    this.documentHelper.layout.isPastingContent = false;
+                }
                 let widget: BlockWidget = widgets[j];
                 if (widget instanceof TableWidget) {
                     isConsiderLastBlock = true;
@@ -7835,6 +7852,10 @@ export class Editor {
                             this.editorHistory.currentBaseHistoryInfo.insertedNodes.push(newParagraph.clone());
                         }
                         hasFootNoteElement = this.insertElement((newParagraph.childWidgets[0] as LineWidget).children, newParagraph.paragraphFormat);
+                    } else if(isLastBlock && isLasteSection) {
+                        //Handle to update list  numbering for all paragraph below this paragraph
+                        let lastParagraph: ParagraphWidget = this.selection.start.paragraph;
+                        this.documentHelper.layout.reLayoutParagraph(lastParagraph, 0, 0, lastParagraph.paragraphFormat.bidi);
                     }
                 } else if (widget instanceof BlockWidget) {
                     let block: BlockWidget = widget;
@@ -7857,6 +7878,7 @@ export class Editor {
                 }
             }
         }
+        this.documentHelper.layout.isPastingContent = false;
         if (hasFootNoteElement) {
             layoutWholeDocument = true;
             if (this.pasteFootNoteType === 'Footnote') {
@@ -7864,6 +7886,9 @@ export class Editor {
             } else if (this.pasteFootNoteType === 'Endnote') {
                 this.arrangeEndnoteCollection();
             }
+        }
+        if (!layoutWholeDocument && isNullOrUndefined(this.documentHelper.blockToShift)) {
+            this.shiftFootnoteContent();
         }
         return layoutWholeDocument;
     }
@@ -10215,6 +10240,7 @@ export class Editor {
             if (this.editorHistory.currentHistoryInfo && (this.editorHistory.currentHistoryInfo.action === 'ColumnBreak'
                 || this.editorHistory.currentHistoryInfo.action === 'PageBreak')) {
             } else {
+                this.shiftFootnoteContent();
                 return;
             }
         }
@@ -10282,18 +10308,7 @@ export class Editor {
                 this.owner.viewer.updateScrollBars();
             }
             if (!this.documentHelper.isRowOrCellResizing) {
-                if (!isNullOrUndefined(selection.start.paragraph)) {
-                    if (!isNullOrUndefined(selection.start.paragraph.bodyWidget.containerWidget) && selection.start.paragraph.bodyWidget.containerWidget instanceof FootNoteWidget) {
-                        if (selection.start.paragraph.bodyWidget.containerWidget.footNoteType === 'Footnote') {
-                            this.documentHelper.layout.isRelayoutFootnote = true;
-                            this.shiftFootnotePageContent(selection.start.paragraph.bodyWidget.containerWidget);
-                            //this.documentHelper.layout.layoutfootNote(selection.start.paragraph.bodyWidget.containerWidget);
-                        } else {
-                            this.documentHelper.layout.isRelayoutFootnote = false;
-                            this.shiftFootnotePageContent();
-                        }
-                    }
-                }
+                this.shiftFootnoteContent();
                 this.getOffsetValue(selection);
                 selection.upDownSelectionLength = selection.end.location.x;
                 selection.fireSelectionChanged(true);
@@ -10340,6 +10355,21 @@ export class Editor {
         this.owner.documentHelper.layout.isRelayout = false;
         this.isFootnoteElementRemoved = false;
         this.isEndnoteElementRemoved = false;
+    }
+
+    private shiftFootnoteContent(): void {
+        if (!isNullOrUndefined(this.selection.start.paragraph)) {
+            if (!isNullOrUndefined(this.selection.start.paragraph.bodyWidget) && !isNullOrUndefined(this.selection.start.paragraph.bodyWidget.containerWidget) && this.selection.start.paragraph.bodyWidget.containerWidget instanceof FootNoteWidget) {
+                if (this.selection.start.paragraph.bodyWidget.containerWidget.footNoteType === 'Footnote') {
+                    this.documentHelper.layout.isRelayoutFootnote = true;
+                    this.shiftFootnotePageContent(this.selection.start.paragraph.bodyWidget.containerWidget);
+                    //this.documentHelper.layout.layoutfootNote(selection.start.paragraph.bodyWidget.containerWidget);
+                } else {
+                    this.documentHelper.layout.isRelayoutFootnote = false;
+                    this.shiftFootnotePageContent();
+                }
+            }
+        }
     }
     /**
      * @private
@@ -10462,7 +10492,7 @@ export class Editor {
             section = this.documentHelper.pages[index].bodyWidgets[0];
         }
         if (!isNullOrUndefined(section.page.footnoteWidget)) {
-            this.checkAndShiftFromBottom(section.page, section.page.footnoteWidget);
+            this.checkAndShiftFromBottom(section.page, section.page.footnoteWidget, !isNullOrUndefined(foot) ? true : false);
         }
         if (!isNullOrUndefined(section.page.endnoteWidget)) {
             //this.checkAndShiftFromBottom(section.page, section.page.endnoteWidget);
@@ -10556,7 +10586,7 @@ export class Editor {
 
     }
 
-    private checkAndShiftFromBottom(page: Page, footerWidget: HeaderFooterWidget | FootNoteWidget): void {
+    private checkAndShiftFromBottom(page: Page, footerWidget: HeaderFooterWidget | FootNoteWidget, isFootNote?: boolean): void {
         let bodyWidget: BodyWidget = page.bodyWidgets[0];
         let blockToShift: BlockWidget;
         if (bodyWidget.childWidgets.length > 1) {
@@ -10572,6 +10602,9 @@ export class Editor {
                         break;
                     }
                 }
+            }
+            if (isNullOrUndefined(blockToShift) && isFootNote) {
+                blockToShift = bodyWidget.lastChild as BlockWidget;
             }
             if (!isNullOrUndefined(blockToShift)) {
                 this.owner.viewer.updateClientArea(bodyWidget, page, true);
@@ -18995,6 +19028,9 @@ export class Editor {
                     lineWidget.children.splice(i, 1);
                     if (!isNullOrUndefined(lineWidget.layoutedElements) && lineWidget.layoutedElements.length > 0) {
                         lineWidget.layoutedElements.splice(i, 1);
+                        if (lineWidget.layoutedElements.length === 0) {
+                            lineWidget.layoutedElements = undefined;
+                        }
                     }
                 }
                 this.documentHelper.layout.reLayoutParagraph(lineWidget.paragraph, lineIndex, i, undefined, isRearrange);

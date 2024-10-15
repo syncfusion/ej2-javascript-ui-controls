@@ -481,7 +481,7 @@ describe('Resize ->', () => {
                 }, 50);
             });
         });
-        describe('EJ2-876040->', () => {
+        describe('EJ2-876040, EJ2-911629->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [
@@ -504,6 +504,17 @@ describe('Resize ->', () => {
                 helper.invoke('autoFit', ['A']);
                 setTimeout((): void => {
                     expect(helper.getInstance().sheets[0].columns[0].width).toBe(158);
+                    done();
+                });
+            });
+            it('Autofit function shrinks the columns when it does not contains any value in the cells.', (done: Function) => {
+                helper.invoke('setColWidth', [200, 0]);
+                helper.invoke('selectRange', ['B1:B4']);
+                helper.getElement('#' + helper.id + '_wrap').click();
+                helper.invoke('cellFormat', [{ fontSize: '14pt', fontWeight: 'bold' }, 'A1:A4']);
+                helper.invoke('autoFit', ['B']);
+                setTimeout((): void => {
+                    expect(helper.getInstance().sheets[0].columns[0].width).toBe(200);
                     done();
                 });
             });

@@ -122,6 +122,18 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.parent[`${action}`]('refresh-virtual-block', this.refreshContentRows, this);
             this.fn = () => {
                 this.observers.observes((scrollArgs: ScrollArg) => this.scrollListeners(scrollArgs), this.onEnteredAction(), this.parent);
+                const gObj: IGrid = this.parent;
+                if (gObj.root.enablePersistence && gObj.root.scrollPosition) {
+                    this.content.scrollTop = gObj.root.scrollPosition.top;
+                    if (gObj.root.enableColumnVirtualization) {
+                        this.content.scrollLeft = gObj.root.scrollPosition.left;
+                    }
+                    const scrollValues: any = {
+                        direction: 'down', sentinel: this.observer.sentinelInfo.down,
+                        offset: gObj.root.scrollPosition, focusElement: gObj.element
+                    };
+                    this.scrollListeners(scrollValues);
+                }
                 this.parent.off('content-ready', this.fn);
             };
             this.parent.addEventListener('dataBound', this.dataBoundEvent.bind(this));
@@ -396,6 +408,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
 
     public scrollListeners(scrollArgs: ScrollArg) : void {
         this['scrollAfterEdit']();
+        if (this.parent.root.enablePersistence) {
+            this.parent.root.scrollPosition = scrollArgs.offset;
+        }
         const info: SentinelType = scrollArgs.sentinel;
         const rowHeight: number = this.parent.getRowHeight();
         const outBuffer: number = this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 2);

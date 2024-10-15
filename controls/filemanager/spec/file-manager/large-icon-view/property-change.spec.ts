@@ -77,6 +77,48 @@ describe('FileManager control LargeIcons view', () => {
             feObj.destroy();
             expect(feObj.element.classList.contains('custom')).toEqual(false);
         });
+        it('for showItemCheckBoxes', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                const ele: HTMLElement = feObj.largeiconsviewModule.element;
+                expect(ele.querySelector('li').querySelector('.e-checkbox-wrapper')).not.toEqual(null);
+                feObj.showItemCheckBoxes = false;
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                setTimeout(function () {
+                    const ele: HTMLElement = feObj.largeiconsviewModule.element;
+                    expect(ele.querySelector('li').querySelector('.e-checkbox-wrapper')).toBe(null);
+                    feObj.showItemCheckBoxes = true;
+                    feObj.dataBind();
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(data1)
+                    });
+                    setTimeout(function () {
+                        const ele: HTMLElement = feObj.largeiconsviewModule.element;
+                        expect(ele.querySelector('li').querySelector('.e-checkbox-wrapper')).not.toEqual(null);
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
         it('for toolbarSettings view height testing', () => {
             feObj = new FileManager({
                 view: 'LargeIcons',

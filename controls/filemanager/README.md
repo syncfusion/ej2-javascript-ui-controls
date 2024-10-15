@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-filemanager/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-filemanager)
+
 # JavaScript File Manager Control
 
 The [JavaScript File Manager](https://www.syncfusion.com/javascript-ui-controls/js-file-manager?utm_source=npm&utm_medium=listing&utm_campaign=javascript-filemanager-npm) control is a graphical user interface that allows users to manage their file system in an intuitive and efficient manner. With this component, you can easily access, edit, upload, download, and organize files and folders. It also offers a convenient way to browse and select items from the file system.

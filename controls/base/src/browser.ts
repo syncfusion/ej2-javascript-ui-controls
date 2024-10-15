@@ -25,6 +25,7 @@ interface MyWindow extends Window {
     PhoneGap: Object;
     phonegap: Object;
     forge: Object;
+    Capacitor?: { getPlatform: () => string };
 }
 declare let window: MyWindow;
 
@@ -162,6 +163,9 @@ export class Browser {
             browserDetails['isDevice'] = true;
             browserDetails['isTouch'] = true;
             browserDetails['isPointer'] = true;
+        }
+        if (window && window.Capacitor && window.Capacitor.getPlatform() === 'ios') {
+            browserDetails['isPointer'] = false;
         }
         if ('undefined' === typeof (<{ [key: string]: Object }>browserDetails)[`${key}`]) {
             return (<{ [key: string]: Object }>browserDetails)[`${key}`] = regX.test(Browser.userAgent);

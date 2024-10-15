@@ -507,7 +507,7 @@ export class TaskbarEdit extends DateProcessor {
                 const progressElement: Element = (record && record.ganttProperties.segments && record.ganttProperties.segments.length > 0) ?
                     this.parent.getRowByIndex(this.parent.enableVirtualization ? this.parent.currentViewData.indexOf(record) :
                         this.parent.flatData.indexOf(record)) : secondElement;
-                if (progressElement.querySelector('.' + cls.childProgressResizer)) {
+                if (progressElement && progressElement.querySelector('.' + cls.childProgressResizer)) {
                     removeClass([progressElement.querySelector('.' + cls.childProgressResizer)], [cls.progressResizeGripper]);
                 }
             }

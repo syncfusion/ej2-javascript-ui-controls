@@ -149,7 +149,10 @@ export class Annotation {
     private isPopupMenuMoved: boolean;
     private selectedLineStyle: string;
     private selectedLineDashArray: string;
-    private isUndoRedoAction: boolean = false;
+    /**
+     * @private
+     */
+    public isUndoRedoAction: boolean = false;
     private isUndoAction: boolean = false;
     private annotationSelected: boolean = true;
     private isAnnotDeletionApiCall: boolean = false;
@@ -318,6 +321,9 @@ export class Annotation {
             this.selectAnnotation(annotationId);
             this.deleteAnnotation();
             this.isAnnotDeletionApiCall = false;
+            if (this.pdfViewer.textSelectionModule) {
+                this.pdfViewer.textSelectionModule.clearTextSelection();
+            }
         }
     }
     private clearAnnotationMode(): void {
@@ -2615,9 +2621,13 @@ export class Annotation {
      */
     public handleFontSizeUpdate(fontSize: number): void {
         // const fontSize: number = parseFloat(size);
-        const isInteracted: boolean = true;
         if (this.pdfViewer.selectedItems.annotations.length === 1 && fontSize) {
-            this.modifyFontSize(fontSize, isInteracted);
+            if (this.isUndoRedoAction) {
+                this.modifyFontSize(fontSize, false);
+            }
+            else {
+                this.modifyFontSize(fontSize, true);
+            }
         }
         else if (this.freeTextAnnotationModule) {
             this.pdfViewer.freeTextSettings.fontSize = fontSize;
@@ -2632,13 +2642,9 @@ export class Annotation {
      */
     public modifyTextAlignment(currentValue: string): void {
         const currentAnnotation: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0];
-        const clonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
-        const redoClonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
-        redoClonedObject.textAlign = currentValue;
         this.pdfViewer.nodePropertyChange(currentAnnotation, { textAlign: currentValue });
         this.modifyInCollections(currentAnnotation, 'textAlign');
         this.triggerAnnotationPropChange(currentAnnotation, false, false, false, true);
-        this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'textAlign', '', clonedObject, redoClonedObject);
         this.pdfViewer.renderDrawing();
     }
 

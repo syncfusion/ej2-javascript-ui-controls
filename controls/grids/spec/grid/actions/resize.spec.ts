@@ -1726,4 +1726,116 @@ describe('Resize module', () => {
         });
     });
 
+    describe('EJ2-912604 - Misalignment occurs when using aggregate, resizing with frozen column feature in the Grid', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [{
+                        'FreightID': 'CX2389NK',
+                        'FreightName': 'Maersk Edibles Co.',
+                        'TotalUnits': 598,
+                        'TotalCosts': 27838,
+                        'UnitWeight': 241,
+                    },
+                    {
+                        'FreightID': 'DW8954IO',
+                        'FreightName': 'Aeon fitness inc.',
+                        'TotalUnits': 1720,
+                        'TotalCosts': 24367,
+                        'UnitWeight': 296,
+                    },
+                    {
+                        'FreightID': 'EJ9456KN',
+                        'FreightName': 'Sun technologies inc',
+                        'TotalUnits': 331,
+                        'TotalCosts': 22933,
+                        'UnitWeight': 192,
+                    }
+                    ],
+                    allowResizing: true,
+                    frozenColumns: 2,
+                    height: 400,
+                    columns: [
+                        { field: 'FreightID', headerText: 'Freight ID', width: 130 },
+                        { field: 'FreightName', width: 200, headerText: 'Freight Name' },
+                        {
+                            field: 'UnitWeight',
+                            headerText: 'Weight Per Unit',
+                            type: 'number',
+                            width: 140,
+                            textAlign: 'Right',
+                        },
+                        {
+                            field: 'TotalUnits',
+                            headerText: 'Total Units',
+                            type: 'number',
+                            width: 140,
+                            textAlign: 'Right',
+                        },
+                    ],
+                    aggregates: [
+                        {
+                            columns: [
+                                {
+                                    type: 'Max',
+                                    field: 'UnitWeight',
+                                    columnName: 'UnitWeight',
+                                    footerTemplate: 'Maximum: ${Max}',
+                                },
+                            ],
+                        },
+                        {
+                            columns: [
+                                {
+                                    type: 'Min',
+                                    field: 'UnitWeight',
+                                    columnName: 'UnitWeight',
+                                    footerTemplate: 'Minimum: ${Min}',
+                                },
+                            ],
+                        },
+                    ],
+                }, done);
+        });
+
+        it('Check content table width', () => {
+            expect((gridObj.getContentTable() as HTMLElement).style.width).toBe('100%');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('EJ2-913780 - Auto-Generated columns with allowResizing break grid with script error', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [
+                        { OrderID: 1, CustomerName: 'GG' }
+                    ],
+                    height: "500",
+                    allowResizing: true,
+                    allowSorting: true,
+                    allowFiltering: true,
+                    filterSettings: { type: 'Excel' },
+                }, done);
+        });
+
+        it('Click first row', () => {
+            expect(gridObj).not.toBeUndefined();
+            gridObj.getContentTable().querySelector('td').click();
+        });
+
+        it('Check selected records length', () => {
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(1);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
 });

@@ -2750,6 +2750,7 @@ export class Node extends NodeBase implements IElement {
         }
         if (!(this.wrapper.elementActions & ElementAction.ElementIsGroup) && this.flip === 'Horizontal' || this.flip === 'Vertical') {
             content.flip = this.flip;
+            content.flipMode = this.flipMode;
         }
         return content;
     }
@@ -2803,6 +2804,7 @@ export class Node extends NodeBase implements IElement {
         canvas.pivot = this.pivot;
         canvas.margin = this.margin as Margin;
         canvas.flip = this.flip;
+        canvas.flipMode = this.flipMode;
         this.wrapper = canvas;
         return canvas;
     }

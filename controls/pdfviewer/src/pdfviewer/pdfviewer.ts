@@ -1,6 +1,6 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel, PageOrganizerSettingsModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, PageDataModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel, PageOrganizerSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, ShapeLabelSettingsModel, KeyGestureModel, KeyboardCommandModel, CommandManagerModel } from './pdfviewer-model';
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, CustomToolbarItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel } from './pdfviewer-model';
 import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation } from './index';
@@ -35,7 +35,7 @@ import { PointModel, IElement, Rect, Point, Size } from '@syncfusion/ej2-drawing
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 
-import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs, KeyboardCustomCommandsEventArgs } from './base';
+import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs, KeyboardCustomCommandsEventArgs, ISize } from './base';
 
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs, SignatureUnselectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
@@ -3792,6 +3792,53 @@ export class TextSearchColorSettings extends ChildProperty<TextSearchColorSettin
      */
     @Property('#8b4c12')
     public searchColor: string;
+}
+
+/**
+ * Represents the details of a specific page within the viewer.
+ * This class provides essential information such as the page index, dimensions, rotation, and zoom factor.
+ *
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  viewer.appendTo("#pdfViewer");
+ *  let pageDetail = viewer.getPageDetails(pageIndex);
+ *  console.log(pageDetail);
+ * ```
+ *
+ */
+export class PageData extends ChildProperty<PageData> {
+    /**
+     * The 0-based index of the page.
+     */
+    @Property(0)
+    public pageIndex: number;
+
+    /**
+     * The width of the page in points.
+     */
+    @Property(0)
+    public width: number;
+
+    /**
+     * The height of the page in points.
+     */
+    @Property(0)
+    public height: number;
+
+    /**
+     * The rotation angle of the page in degrees.
+     */
+    @Property(0)
+    public rotation: number;
+
+    /**
+     * The current zoom factor.
+     */
+    @Property(0)
+    public zoomFactor: number;
 }
 
 /**
@@ -8295,6 +8342,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         this.toolbarModule.annotationToolbarModule.resetToolbar();
                     }
                 }
+                else {
+                    if (this.toolbarModule) {
+                        this.toolbar.showAnnotationToolbar(newProp.isAnnotationToolbarVisible);
+                    }
+                }
                 break;
             case 'serviceUrl':
                 if (isNullOrUndefined(newProp.serviceUrl) || newProp.serviceUrl === '') {
@@ -8795,6 +8847,25 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public updateViewerContainer(): void {
         this.viewerBase.updateViewerContainer();
+    }
+
+    /**
+     * Retrieves the details of a specified page in the viewer.
+     * @param {number} pageIndex - The page index to get the details. The first page is 0.
+     * @returns {PageDataModel} - An instance of the PageData model containing the page details.
+     */
+    public getPageDetails(pageIndex: number): PageDataModel {
+        const pageDetails : PageDataModel = {};
+        if (!isNullOrUndefined(pageIndex) && typeof pageIndex == 'number' && !isNullOrUndefined(this.viewerBase.pageSize)
+            && this.viewerBase.pageSize.length !== 0 && pageIndex >= 0 && pageIndex < this.viewerBase.pageSize.length) {
+            const pageSizeDetails: ISize = this.viewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
+            pageDetails.pageIndex = pageIndex;
+            pageDetails.height = this.viewerBase.ConvertPixelToPoint(pageSizeDetails.height);
+            pageDetails.width = this.viewerBase.ConvertPixelToPoint(pageSizeDetails.width);
+            pageDetails.rotation = this.viewerBase.getAngle(pageSizeDetails.rotation);
+            pageDetails.zoomFactor = this.viewerBase.getZoomFactor();
+        }
+        return pageDetails;
     }
 
     /**

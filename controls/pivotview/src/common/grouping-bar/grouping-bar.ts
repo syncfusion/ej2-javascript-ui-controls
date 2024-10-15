@@ -141,7 +141,14 @@ export class GroupingBar implements IAction {
         }
     }
 
-    private appendToElement(): void {
+    /**
+     * Appends the grouping table or chart table element to the DOM based on the display option and layout settings.
+     *
+     * @returns {void}
+     * @hidden
+     */
+
+    public appendToElement(): void {
         const element: HTMLElement = this.groupingTable ? this.groupingTable : this.groupingChartTable;
         if (isNullOrUndefined(element)) {
             return;

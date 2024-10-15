@@ -4,7 +4,7 @@
 import { PdfDocument } from './../document/pdf-document';
 import { PdfDocumentBase } from './../document/pdf-document-base';
 import { ObjectStatus } from './../input-output/enum';
-import { PdfWriter } from './pdf-writer';
+import { PdfWriter, PdfWriterHelper } from './pdf-writer';
 import { PdfDictionary } from './../primitives/pdf-dictionary';
 import { DictionaryProperties } from './pdf-dictionary-properties';
 import { Operators } from './pdf-operators';
@@ -152,8 +152,19 @@ export class PdfCrossTable {
      */
     public save(writer : PdfWriter, filename : string) : void
     public save(writer : PdfWriter, filename ?: string) : void | Blob {
+        this._saveProcess(writer);
+        if (typeof filename === 'undefined') {
+            return (writer.stream as StreamWriter).buffer;
+        } else {
+            (writer.stream as StreamWriter).save(filename);
+        }
+    }
+    /**
+     * Saves the cross-reference table into the stream.
+     * @private
+     */
+    _saveProcess(writer: PdfWriter): void {
         this.saveHead(writer);
-        let state : boolean = false;
         this.mappedReferences = null;
         this.objects.clear();
         this.markTrailerReferences();
@@ -172,11 +183,14 @@ export class PdfCrossTable {
             let oi : ObjectInfo = this.objectCollection.items(i);
             oi.object.isSaving = false;
         }
-        if (typeof filename === 'undefined') {
-            return writer.stream.buffer;
-        } else {
-            writer.stream.save(filename);
-        }
+    }
+    /**
+     * Saves the cross-reference table into the stream.
+     * @private
+     */
+    _save(writer : PdfWriter): Uint8Array {
+        this._saveProcess(writer);
+        return new Uint8Array((writer.stream as PdfWriterHelper).buffer.buffer);
     }
     /**
      * `Saves the endess` of the file.
@@ -411,7 +425,6 @@ export class PdfCrossTable {
      * @private
      */
     private doSaveObject(obj : IPdfPrimitive, reference : PdfReference, writer : PdfWriter) : void {
-        let correctPosition : number = writer.length;
         writer.write(reference.objNumber.toString());
         writer.write(Operators.whiteSpace);
         writer.write(reference.genNumber.toString());
@@ -419,7 +432,6 @@ export class PdfCrossTable {
         writer.write(Operators.obj);
         writer.write(Operators.newLine);
         obj.save(writer);
-        let stream : StreamWriter = writer.stream;
         writer.write(Operators.endObj);
         writer.write(Operators.newLine);
     }

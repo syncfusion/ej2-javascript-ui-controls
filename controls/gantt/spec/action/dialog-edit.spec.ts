@@ -12601,3 +12601,115 @@ describe('Add duration for unscheduled tasks', () => {
         }
     });
 });
+describe('CR:912082-Duration field not updating in dialog box when setting the endDate as same as startDate', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+        dataSource: [
+            {
+                TaskID: 1,
+                TaskName: '（这是中文）括号',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 2,
+                        TaskName: '（这是中文）括号',
+                        StartDate: new Date('04/02/2019 10:00:00'),
+                        EndDate: new Date('08/02/2019 10:00:00'),
+                        Duration: 4,
+                        Progress: 90,
+                    },
+                    {
+                        TaskID: 3,
+                        TaskName: '（这是中文）括号',
+                        StartDate: new Date('04/02/2019 10:00:00'),
+                        EndDate: new Date('08/02/2019 10:00:00'),
+                        Duration: 4,
+                        Progress: 40,
+                    },
+                    {
+                        TaskID: 4,
+                        Predecessor: '3FS',
+                        TaskName: '（这是中文）括号',
+                        StartDate: new Date('04/02/2019 10:00:00'),
+                        EndDate: new Date('08/02/2019 10:00:00'),
+                        Duration: 4,
+                        Progress: 10,
+                    }
+                ],
+            }
+        ],
+        dateFormat: 'dd/MM/yyyy HH:mm',
+        dayWorkingTime: [
+            {
+                from: 0,
+                to: 24,
+            }
+        ],
+        allowSorting: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            child: 'subtasks',
+        },
+        editSettings: {
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+        allowSelection: true,
+        enableContextMenu: true,
+        gridLines: "Both",
+        showColumnMenu: false,
+        highlightWeekends: true,
+        timelineSettings: {
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: 'Progress'
+        },
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    afterAll(() => {
+       if (ganttObj) {
+           destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done) => {
+       setTimeout(done, 500);
+    });
+    it('Validate duration', () => {
+        ganttObj.openEditDialog(2);
+        let durationField: any = document.querySelector('#' + ganttObj.element.id + 'EndDate') as HTMLInputElement;
+        if (durationField) {
+            let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+            textObj.value = new Date('04/02/2019 10:00');
+            textObj.dataBind();
+            let duration: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            expect(duration.value).toBe('0 days');
+            let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button')[0] as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+            expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
+        }
+    });
+});

@@ -21,11 +21,6 @@ export abstract class PdfBrush implements ICloneable {
         //
     }
     /**
-     * Stores the instance of `PdfColor` class.
-     * @private
-     */
-    public color : PdfColor;
-    /**
      * `MonitorChanges` abstract method overload.
      * @hidden
      * @private

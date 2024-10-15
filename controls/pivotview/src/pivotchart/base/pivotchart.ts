@@ -59,6 +59,15 @@ export class PivotChart {
     public parent: PivotView;
 
     /**
+     * Constructor for pivot chart module.
+     *
+     *  @param {PivotView} parent - Instance of pivot table.
+     */
+    constructor(parent?: PivotView) {
+        this.parent = parent;
+    }
+
+    /**
      * Get component name.
      *
      * @returns {string} - string
@@ -128,47 +137,7 @@ export class PivotChart {
             this.parent.chart.refresh();
             return;
         } else {
-            if (!select('#' + this.parent.element.id + '_chart', this.parent.element)) {
-                if (this.parent.displayOption.view === 'Both') {
-                    if (this.parent.displayOption.primary === 'Chart') {
-                        (this.parent.element.insertBefore(
-                            (createElement('div', {
-                                className: cls.PIVOTCHART, id: this.parent.element.id + '_chart'
-                            })), this.parent.element.querySelector('.' + cls.GRID_CLASS)));
-                    } else {
-                        (this.parent.element.appendChild(createElement('div', {
-                            className: cls.PIVOTCHART, id: this.parent.element.id + '_chart'
-                        })));
-                    }
-                }
-                else {
-                    this.parent.element.appendChild(createElement('div', {
-                        className: cls.PIVOTCHART, id: this.parent.element.id + '_chart'
-                    }));
-                }
-                let width: string = this.parent.width.toString();
-                if (this.parent.showToolbar && this.parent.grid) {
-                    width = this.parent.getGridWidthAsNumber().toString();
-                }
-                const height: string | number = this.getChartHeight();
-                let tmpChart: Chart | AccumulationChart;
-                if (this.chartSettings && this.chartSettings.chartSeries &&
-                    this.accumulationType.indexOf(this.chartSettings.chartSeries.type) > -1) {
-                    tmpChart = new AccumulationChart({ width: width, height: height });
-                }
-                else {
-                    tmpChart = new Chart({ width: width, height: height });
-                }
-                tmpChart.appendTo(select('#' + this.parent.element.id + '_chart', this.parent.element) as HTMLElement);
-                if (this.parent.showToolbar) {
-                    if (this.parent.displayOption.view === 'Both' && this.parent.currentView === 'Chart') {
-                        this.parent.grid.element.style.display = 'none';
-                    }
-                    if (this.parent.currentView !== 'Chart') {
-                        (select('#' + this.parent.element.id + '_chart', this.parent.element) as HTMLElement).style.display = 'none';
-                    }
-                }
-            }
+            this.parent.appendChartElement();
             if (this.parent.enableVirtualization && this.isChartInitial) {
                 this.isChartInitial = false;
                 this.parent.onContentReady();
@@ -1043,8 +1012,8 @@ export class PivotChart {
                     if (!isNullOrUndefined(cell)) {
                         if (cell.axis !== 'column') {
                             return colIndexColl;
-                        } else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
-                            && cell.rowSpan !== -1) {
+                        } else if ((cell.type === 'sum' || (this.dataSourceSettings && this.dataSourceSettings.columns &&
+                            this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum')) && cell.rowSpan !== -1) {
                             colIndexColl[cell.colIndex] = cell.colIndex;
                         }
                     }
@@ -1352,6 +1321,8 @@ export class PivotChart {
                     '#' + this.parent.element.id + multilabelAxisName).setAttribute('cursor', 'pointer');
             }
         }
+        const height: string = this.getChartHeight();
+        this.parent.chart.height = height;
         if (this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis) {
             if (['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) >= 0) {
                 (this.parent.element.querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.overflow = 'visible';
@@ -1361,6 +1332,7 @@ export class PivotChart {
                 (this.parent.element.querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.overflowX = 'hidden';
             }
             (this.parent.element.querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.width = width + 'px';
+            (this.parent.element.querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.height = height + 'px';
         }
         this.updateView();
         if (this.parent.displayOption.primary === 'Chart' || this.parent.displayOption.view === 'Chart') {
@@ -1567,6 +1539,7 @@ export class PivotChart {
     }
 
     /**
+     *
      * @returns {string} - string.
      * @hidden
      */

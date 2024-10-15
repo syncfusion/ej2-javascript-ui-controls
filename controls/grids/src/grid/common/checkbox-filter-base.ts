@@ -1465,7 +1465,8 @@ export class CheckBoxFilterBase {
         if (e.key === 'Tab' || ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey)) {
             this.setFocus(parentsUntil(e.target as Element, 'e-ftrchk'));
         }
-        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey && (<{type: string}>this.parent.filterSettings).type === 'CheckBox') {
+        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey && this.parent.filterSettings
+            && (<{type: string}>this.parent.filterSettings).type === 'CheckBox') {
             e.preventDefault();
             const focusableElements: HTMLElement[] = Array.from(this.dlg.querySelectorAll(
                 'input, button, [tabindex]:not([tabindex="-1"])'
@@ -1678,7 +1679,7 @@ export class CheckBoxFilterBase {
                     }
                 }
                 if ((this.infiniteRenderMod && (!isNullOrUndefined(this.sBox.children[2])
-                && (this.sBox.children[2] as HTMLElement).innerText !== 'Add current selection to filter')) || !this.infiniteRenderMod) {
+                && (this.sBox.children[2] as HTMLElement).innerText !== this.getLocalizedLabel('AddCurrentSelection'))) || !this.infiniteRenderMod) {
                     const predicateElement: Element = createCboxWithWrap(getUid('cbox'), predicateCheckBox, 'e-ftrchk');
                     predicateElement.querySelector('.e-frame').classList.add('e-add-current');
                     if (this.infiniteRenderMod) {
@@ -1696,7 +1697,7 @@ export class CheckBoxFilterBase {
                     this.sBox.querySelector('.e-ftrchk .e-add-current').parentElement.classList.remove('e-checkbox-disabled');
                 }
             } else if (this.infiniteRenderMod && !isNullOrUndefined(this.sBox.children[2])
-                && (this.sBox.children[2] as HTMLElement).innerText === 'Add current selection to filter') {
+                && (this.sBox.children[2] as HTMLElement).innerText === this.getLocalizedLabel('AddCurrentSelection')) {
                 const checkBoxListElem: HTMLElement = this.spinner.querySelector('.e-checkboxlist');
                 const increaseHeight: number = Math.ceil(this.sBox.children[2].getBoundingClientRect().height);
                 checkBoxListElem.style.height = (parseInt(getComputedStyle(checkBoxListElem).height.split('px')[0], 10) + increaseHeight)

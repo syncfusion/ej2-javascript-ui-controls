@@ -28,6 +28,7 @@ import { PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs, BeforeDownloadE
 import { refresh, getPathObject, getLocaleText, setNextPath, createDeniedDialog, getCssClass } from '../common/utility';
 import { hasContentAccess, hasUploadAccess, updateLayout, createNewFolder, uploadItem, closePopup } from '../common/utility';
 import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';
+import { ColumnModel } from '@syncfusion/ej2-grids';
 import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';
 import { ContextMenuSettings } from '../models/contextMenu-settings';
 import { BreadCrumbBar } from '../actions/breadcrumb-bar';
@@ -1475,6 +1476,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /* istanbul ignore next */
     public onPropertyChanged(newProp: FileManagerModel, oldProp: FileManagerModel): void {
         let height: string | number;
+        let requiresRefresh: boolean = false;
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'ajaxSettings':
@@ -1483,6 +1485,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             case 'allowDragAndDrop':
                 this.allowDragAndDrop = newProp.allowDragAndDrop;
                 this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                break;
+            case 'showItemCheckBoxes':
+                this.showItemCheckBoxes = newProp.showItemCheckBoxes;
+                this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                break;
+            case 'enableVirtualization':
+                this.enableVirtualization = newProp.enableVirtualization;
+                requiresRefresh = true;
                 break;
             case 'allowMultiSelection':
                 if (this.allowMultiSelection) {
@@ -1510,11 +1520,11 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 break;
             case 'enableRtl':
                 this.enableRtl = newProp.enableRtl;
-                this.refresh();
+                requiresRefresh = true;
                 break;
             case 'rootAliasName':
                 this.rootAliasName = newProp.rootAliasName;
-                this.refresh();
+                requiresRefresh = true;
                 break;
             case 'height':
                 height = !isNOU(newProp.height) ? formatUnit(newProp.height) : newProp.height;
@@ -1587,10 +1597,20 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 this.notify(events.sortByChange, {});
                 break;
             case 'sortBy':
-                refresh(this);
-                this.notify(events.sortByChange, {});
                 if (this.view === 'Details') {
+                    const columns: ColumnModel[] = this.detailsViewSettings.columns;
+                    const isValidSortField: boolean = !isNullOrUndefined(columns) &&
+                        columns.findIndex((col: ColumnModel) => col.field === this.sortBy) !== -1;
+                    if (!isValidSortField) {
+                        return;
+                    }
+                    refresh(this);
+                    this.notify(events.sortByChange, {});
                     this.notify(events.sortColumn, {});
+                }
+                else {
+                    refresh(this);
+                    this.notify(events.sortByChange, {});
                 }
                 break;
             case 'popupTarget':
@@ -1609,9 +1629,12 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 break;
             case 'fileSystemData':
                 this.fileSystemData = newProp.fileSystemData;
-                this.refresh();
+                requiresRefresh = true;
                 break;
             }
+        }
+        if (requiresRefresh) {
+            this.refresh();
         }
     }
     /* istanbul ignore next */

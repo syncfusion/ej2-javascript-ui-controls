@@ -617,11 +617,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             const checkBox: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlflmtcase')).ej2_instances[0];
             checkBoxValue = checkBox.checked;
         }
-        const andRadio: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-frstpredicate')).ej2_instances[0];
-        let predicate: string = (andRadio.checked ? 'and' : 'or');
-        if (sValue.value === null) {
-            predicate = 'or';
-        }
+        const predicateSelector: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-frstpredicate')).ej2_instances[0];
+        const predicate: string = (predicateSelector.checked ? 'and' : 'or');
         this.filterByColumn(
             this.options.field, fOperator.value as string, fValue.value, predicate,
             checkBoxValue, this.options.ignoreAccent, sOperator.value as string, sValue.value);

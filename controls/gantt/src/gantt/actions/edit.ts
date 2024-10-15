@@ -34,6 +34,7 @@ export class Edit {
     public isFirstCall: boolean;
     public isAdded: boolean;
     public deletedRecord: IGanttData[] = [];
+    private canReset: boolean = false;
     /**
      * @private
      */
@@ -1141,6 +1142,9 @@ export class Edit {
     public updateTaskScheduleModes(data: IGanttData): void {
         const currentValue: Date = data[this.parent.taskFields.startDate];
         const ganttProp: ITaskData = data.ganttProperties;
+        if (this.parent.taskFields.manual) {
+            this.parent.setRecordValue(this.parent.taskFields.manual, !data.ganttProperties.isAutoSchedule, data);
+        }
         if (data.hasChildRecords && ganttProp.isAutoSchedule) {
             this.parent.setRecordValue('startDate', ganttProp.autoStartDate, ganttProp, true);
             this.parent.setRecordValue('endDate', ganttProp.autoEndDate, ganttProp, true);
@@ -4199,6 +4203,7 @@ export class Edit {
             this.updateParentRecords = [];
             this.parent.isOnEdit = false;
         }
+        this.canReset = true;
         this.refreshRecord(args);
     }
     /**
@@ -4260,7 +4265,10 @@ export class Edit {
                 updateDates(args.modifiedRecords[i as number], this.parent);
             }
         }
-        this.parent.previousRecords = {};
+        if (this.canReset) {
+            this.parent.previousRecords = {};
+        }
+        this.canReset = false;
         this.parent.trigger('actionComplete', args);
         if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
             this.parent.hideMaskRow();

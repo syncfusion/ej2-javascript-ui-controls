@@ -50,9 +50,11 @@ export class ColumnWidthService {
             const maxWidthColumns: Column[] = columns.filter((a: Column) => {
                 return !isNullOrUndefined(a.maxWidth);
             });
-            if (this.parent.allowResizing && this.parent.element.getBoundingClientRect().width > totalColumnsWidth &&
-                maxWidthColumns.length === columns.length) {
-                addClass([this.parent.getHeaderTable(), this.parent.getContentTable()], ['e-tableborder']);
+            const header: Element = this.parent.getHeaderTable();
+            const content: Element = this.parent.getContentTable();
+            if (this.parent.allowResizing && this.parent.element.getBoundingClientRect().width > (totalColumnsWidth as number) &&
+                maxWidthColumns.length === columns.length && header && content) {
+                addClass([header, content], ['e-tableborder']);
             }
         }
     }
@@ -115,8 +117,9 @@ export class ColumnWidthService {
             if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1 && tgridWidth !== 'auto') {
                 this.setMinwidthBycalculation(tgridWidth as number);
             }
-            if ((this.parent.allowResizing && module === 'resize') || (this.parent.getFrozenColumns() && this.parent.allowResizing)) {
-                this.setWidthToTable();
+            if (this.parent.allowResizing && (module === 'resize' || this.parent.getFrozenColumns())) {
+                const contentTable: HTMLElement = this.parent.getContentTable() as HTMLElement;
+                this.setWidthToTable(this.parent.getFrozenColumns() && contentTable.style.width.indexOf('px') === -1);
             }
             this.parent.notify(columnWidthChanged, { index: columnIndex, width: cWidth, column: column, module: module });
         }

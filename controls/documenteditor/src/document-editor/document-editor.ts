@@ -30,7 +30,7 @@ import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
 import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel, AutoResizeSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper, listsProperty, abstractListsProperty } from './index';
 import { PasteOptions } from './index';
-import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo } from './implementation/index';
+import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
 import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties } from './base';
@@ -1135,6 +1135,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
+    public externalFonts: ExternalFontInfo[];
+    /**
+     * @private
+     */
     public characterFormat: CharacterFormatProperties;
     /**
      * @private
@@ -1502,6 +1506,46 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.viewer = new WebLayoutViewer(this);
         }
         this.parser = new SfdtReader(this.documentHelper);
+    }
+    private updateExternalStyle(): void {
+        if (this.externalFonts && this.externalFonts.length > 0) {
+            this.clearExistingStyles();
+            const style: HTMLStyleElement = document.createElement('style');
+            style.type = 'text/css';
+            style.id = 'e-de-custom-font-styles';
+            let fontFaceDeclarations: string = '';
+            this.externalFonts.forEach((externalFont: ExternalFontInfo) => {
+                if (externalFont.src && externalFont.fontFamily && !this.parser.isFontInstalled(externalFont.fontFamily)) {
+                    fontFaceDeclarations += `@font-face {font-family: '${externalFont.fontFamily}'; src: ${externalFont.src}}`;
+                }
+            });
+
+            if (fontFaceDeclarations) {
+                style.appendChild(document.createTextNode(fontFaceDeclarations));
+                document.head.appendChild(style);
+
+                style.onload = function (): void {
+                    this.externalFonts.forEach((externalFont: ExternalFontInfo) => {
+                        if (externalFont.src && externalFont.fontFamily && !this.parser.isFontInstalled(externalFont.fontFamily)) {
+                            // Render text in a div for each font
+                            const testDiv: HTMLElement = document.createElement('div');
+                            testDiv.setAttribute('style', 'position:absolute;top:-1000px;left:-1000px;opacity:0;font-size:0px;line-height:normal;');
+                            testDiv.textContent = 'test font';
+                            testDiv.style.fontFamily = `"${externalFont.fontFamily}"`;
+                            document.body.appendChild(testDiv);
+                        }
+                    });
+                }.bind(this);
+            }
+        }
+    }
+    private clearExistingStyles(): void {
+        const head: HTMLHeadElement = document.head;
+        const styles: NodeListOf<HTMLStyleElement> = head.querySelectorAll('style#e-de-custom-font-styles');
+
+        styles.forEach((style: HTMLStyleElement) => {
+            head.removeChild(style);
+        });
     }
     protected render(): void {
         if (!isNullOrUndefined(this.element)) {
@@ -4429,6 +4473,50 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         this.fireContentChange();
+    }
+    /**
+     * Sets custom fonts in the document editor.
+     *
+     * @param {string | object[]}fonts - A stringified JSON array or an array of objects, where each object defines:
+     * - `fontFamily`: The name of the font family.
+     * - `src`: A URL or relative path pointing to the font file.
+     *
+     * Example usage:
+     *
+     * // Using a stringified JSON array
+     * documentEditor.setCustomFonts('[{fontFamily: "Algerian", src: "url('/fonts/myfont.ttf') format('ttf')"}, {fontFamily: "Arial", src: "url('https://example.com/font2.ttf') format('ttf')"}, {fontFamily: "Arial", src: "url('data:font/ttf;base64,d09GRgABAAAAAA...') format('ttf')"}]');
+     *
+     * // Using an array of objects
+     * documentEditor.setCustomFonts([
+     * {fontFamily: "Algerian", src: "url('/fonts/myfont.ttf') format('ttf')"},
+     * {fontFamily: "Arial", src: "url('https://example.com/font2.ttf') format('ttf')"},
+     * {fontFamily: "Arial", src: "url('data:font/ttf;base64,d09GRgABAAAAAA...') format('ttf')"}
+     * ]);
+     * @returns {void}
+     */
+    public setCustomFonts(fonts: string | object[]): void {
+        let externalFonts: ExternalFontInfo[];
+        this.externalFonts = [];
+        if (typeof fonts === 'string') {
+            try {
+                externalFonts = JSON.parse(fonts) as ExternalFontInfo[];
+            } catch (error) {
+                console.error('Failed to parse JSON string:', error);
+                return;
+            }
+        } else if (Array.isArray(fonts)) {
+            externalFonts = fonts as ExternalFontInfo[];
+        } else {
+            console.error('Invalid input type');
+            return;
+        }
+        externalFonts.forEach((externalFonts: ExternalFontInfo) => {
+            this.externalFonts.push({
+                fontFamily: externalFonts.fontFamily,
+                src: externalFonts.src
+            });
+        });
+        this.updateExternalStyle();
     }
     /**
      *

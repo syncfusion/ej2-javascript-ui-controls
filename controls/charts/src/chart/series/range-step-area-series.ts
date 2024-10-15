@@ -124,7 +124,7 @@ export class RangeStepAreaSeries extends LineBase {
             this[pointAnimate ? 'addPath' : 'appendLinePath'](
                 new PathOption(
                     series.chart.element.id + '_Series_border_' + series.index, 'transparent',
-                    borderWidth, borderColor, 1, series.dashArray,
+                    borderWidth, borderColor, 1, series.border.dashArray,
                     this.borderDirection
                 ),
                 series, ''

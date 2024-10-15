@@ -1260,8 +1260,12 @@ export class Draw {
         const baseRadius: number = isTempCanvas ? radius * 10 * ((ratio.width + ratio.height) / 2) : radius * 10;
         const adjustedRadius: number = baseRadius + (baseRadius * zoomFactor);
         if (radius !== null) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (canvasDraw as any).roundRect(startX, startY, width, height, adjustedRadius);
+            if (parent.isSafari) {
+                this.drawRoundedRect(canvasDraw, startX, startY, width, height, adjustedRadius);
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (canvasDraw as any).roundRect(startX, startY, width, height, adjustedRadius);
+            }
         } else {
             canvasDraw.rect(startX, startY, width, height);
         }
@@ -1269,14 +1273,30 @@ export class Draw {
             canvasDraw.fillStyle = fillColor; canvasDraw.fill();
         }
         if (radius !== null) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (canvasDraw as any).roundRect(startX + strokeWidth, startY + strokeWidth, width - (2 * strokeWidth),
-                                          height - (2 * strokeWidth), adjustedRadius);
+            if (parent.isSafari) {
+                this.drawRoundedRect(canvasDraw, startX + strokeWidth, startY + strokeWidth, width - (2 * strokeWidth),
+                                     height - (2 * strokeWidth), adjustedRadius);
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (canvasDraw as any).roundRect(startX + strokeWidth, startY + strokeWidth, width - (2 * strokeWidth),
+                                              height - (2 * strokeWidth), adjustedRadius);
+            }
         } else {
             canvasDraw.rect(startX + strokeWidth, startY + strokeWidth, width - (2 * strokeWidth), height - (2 * strokeWidth));
         }
         canvasDraw.fillStyle = strokeColor;
         canvasDraw.fill('evenodd'); canvasDraw.closePath();
+    }
+
+    private drawRoundedRect(canvasDraw: CanvasRenderingContext2D, startX: number, startY: number, width: number,
+                            height: number, radius: number) : void {
+        const rectRadius: number = Math.max(0, Math.min(radius, width / 2, height / 2));
+        canvasDraw.moveTo(startX + rectRadius, startY);
+        canvasDraw.arcTo(startX + width, startY, startX + width, startY + height, rectRadius);
+        canvasDraw.arcTo(startX + width, startY + height, startY, startY + height, rectRadius);
+        canvasDraw.arcTo(startX, startY + height, startX, startY, rectRadius);
+        canvasDraw.arcTo(startX, startY, startX + width, startY, rectRadius);
+        canvasDraw.closePath();
     }
 
     private drawSelection(horLineWidth: number, verLineHeight: number): void {
@@ -4639,10 +4659,23 @@ export class Draw {
                     y: sinAngle * (p2.x - center.x) + cosAngle * (p2.y - center.y) + center.y };
                 const newP3: Point = { x: cosAngle * (p3.x - center.x) - sinAngle * (p3.y - center.y) + center.x,
                     y: sinAngle * (p3.x - center.x) + cosAngle * (p3.y - center.y) + center.y };
+                const tempWidth: number = isSaveCtx ? canvasDraw.canvas.width : img.destWidth;
+                const tempHeight: number = isSaveCtx ? canvasDraw.canvas.height : img.destHeight;
+                const rotatedWidth: number = Math.abs(tempWidth * Math.cos(radians)) + Math.abs(tempHeight * Math.sin(radians));
+                const rotatedHeight: number = Math.abs(tempWidth * Math.sin(radians)) + Math.abs(tempHeight * Math.cos(radians));
+                straightenCanvas.width = rotatedWidth;
+                straightenCanvas.height = rotatedHeight;
+                straightenCtx.save();
+                straightenCtx.translate(rotatedWidth / 2, rotatedHeight / 2);
+                straightenCtx.rotate(radians);
+                straightenCtx.drawImage(tempCanvas, -tempCanvas.width / 2, -tempCanvas.height / 2);
+                straightenCtx.restore();
                 if (this.parent.activeObj.redactType === 'blur') {
                     offscreenCanvas.width = width;
                     offscreenCanvas.height = height;
-                    offscreenCtx.drawImage(straightenCanvas, newP1.x, newP1.y, newP2.x - newP1.x, newP3.y - newP2.y, 0, 0, width, height);
+                    offscreenCtx.drawImage(straightenCanvas, newP1.x + ((rotatedWidth - tempCanvas.width) / 2),
+                                           newP1.y + ((rotatedHeight - tempCanvas.height) / 2), newP2.x - newP1.x, newP3.y - newP2.y,
+                                           0, 0, width, height);
                 } else {
                     let pixelSize: number = (obj.redactPixelate / 100) * 20;
                     if (isSaveCtx) {
@@ -4650,7 +4683,8 @@ export class Draw {
                     }
                     offscreenCanvas.width = Math.ceil(width / pixelSize);
                     offscreenCanvas.height = Math.ceil(height / pixelSize);
-                    offscreenCtx.drawImage(straightenCanvas, newP1.x, newP1.y, newP2.x - newP1.x, newP3.y - newP2.y,
+                    offscreenCtx.drawImage(straightenCanvas, newP1.x + ((rotatedWidth - tempCanvas.width) / 2),
+                                           newP1.y + ((rotatedHeight - tempCanvas.height) / 2), newP2.x - newP1.x, newP3.y - newP2.y,
                                            0, 0, offscreenCanvas.width, offscreenCanvas.height);
                 }
             }

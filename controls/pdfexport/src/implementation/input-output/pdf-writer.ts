@@ -34,12 +34,18 @@ export class PdfWriter implements IPdfWriter {
      * Specifies the `stream`.
      * @private
      */
-    private streamWriter : StreamWriter;
+    private streamWriter : StreamWriter | PdfWriterHelper;
     /**
      * Initialize an instance of `PdfWriter` class.
      * @private
      */
-    constructor(stream : StreamWriter) {
+    constructor(stream : StreamWriter)
+    /**
+     * Initialize an instance of `PdfWriter` class.
+     * @private
+     */
+    constructor(stream : PdfWriterHelper)
+    constructor(stream : StreamWriter | PdfWriterHelper) {
         this.streamWriter = stream;
     }
     //properties
@@ -71,9 +77,8 @@ export class PdfWriter implements IPdfWriter {
      * Gets the `stream`.
      * @private
      */
-    public get stream() : StreamWriter {
-        let result : StreamWriter = this.streamWriter;
-        return result;
+    public get stream() : StreamWriter | PdfWriterHelper {
+        return this.streamWriter;
     }
     //public Methods
     /**
@@ -84,5 +89,76 @@ export class PdfWriter implements IPdfWriter {
         let data : number[] = [];
         let tempOverload : string = <string>overload;
         this.streamWriter.write(tempOverload);
+    }
+}
+/**
+ * Helper class for PDF writer.
+ * @private
+ */
+export class PdfWriterHelper {
+    buffer: PdfArrayBuffer;
+    /**
+     * Initialize an instance of `PdfWriterHelper` class.
+     * @private
+     */
+    constructor() {
+        this.buffer = new PdfArrayBuffer();
+    }
+    /**
+     * Writes the specified data.
+     * @private
+     */
+    write(data: string): void {
+        this.buffer.write(data);
+    }
+    /**
+     * Destroy the array buffer.
+     * @private
+     */
+    destroy(): void {
+        if (this.buffer) {
+            this.buffer.destroy();
+            this.buffer = undefined;
+        }
+    }
+}
+/**
+ * Helper class for PDF writer.
+ * @private
+ */
+export class PdfArrayBuffer {
+    buffer: number[];
+    /**
+     * Initialize an instance of `PdfArrayBuffer` class.
+     * @private
+     */
+    constructor() {
+        this.buffer = [];
+    }
+    /**
+     * Gets the `size`.
+     * @private
+     */
+    get size(): number {
+        return this.buffer.length;
+    }
+    /**
+     * Writes the specified data.
+     * @private
+     */
+    write(value: string): void {
+        for (let i: number = 0; i < value.length; i++) {
+            this.buffer.push(value.charCodeAt(i) & 0xff);
+        }
+    }
+    /**
+     * Destroy the array buffer.
+     * @private
+     */
+    destroy(): void {
+        if (this.buffer) {
+            this.buffer = [];
+            this.buffer = undefined;
+        }
     }
 }

@@ -858,38 +858,37 @@ export class WordExport {
     private serializeCommentInternal(writer: XmlWriter, comments: any[]): void {
         for (let i: number = 0; i < comments.length; i++) {
             const comment: any = comments[parseInt(i.toString(), 10)];
-            writer.writeStartElement('w', 'comment', this.wNamespace);
-            writer.writeAttributeString('w', 'id', this.wNamespace, this.commentId[comment.commentId].toString());
-            if (comment.author && comment.author !== ' ') {
-                writer.writeAttributeString('w', 'author', this.wNamespace, comment.author);
-            }
-            if (comment.date) {
-                writer.writeAttributeString('w', 'date', this.wNamespace, comment.date);
-            }
-            if (comment.initial && comment.initial !== '') {
-                writer.writeAttributeString('w', 'initials', this.wNamespace, comment.initial);
-            }
-            const blocks: any[] = HelperMethods.commentInlines(comment.text, comment.mentions, this.keywordIndex);
-            for (let k: number = 0; k < blocks.length; k++) {
-                this.isInsideComment = true;
-                this.commentParaID++;
-                this.serializeBodyItem(writer, blocks[parseInt(k.toString(), 10)], true);
+            if (comment.isPosted) {
+                writer.writeStartElement('w', 'comment', this.wNamespace);
+                writer.writeAttributeString('w', 'id', this.wNamespace, this.commentId[comment.commentId].toString());
+                if (comment.author && comment.author !== ' ') {
+                    writer.writeAttributeString('w', 'author', this.wNamespace, comment.author);
+                }
+                if (comment.date) {
+                    writer.writeAttributeString('w', 'date', this.wNamespace, comment.date);
+                }
+                if (comment.initial && comment.initial !== '') {
+                    writer.writeAttributeString('w', 'initials', this.wNamespace, comment.initial);
+                }
+                const blocks: any[] = HelperMethods.commentInlines(comment.text, comment.mentions, this.keywordIndex);
+                for (let k: number = 0; k < blocks.length; k++) {
+                    this.isInsideComment = true;
+                    this.commentParaID++;
+                    this.serializeBodyItem(writer, blocks[parseInt(k.toString(), 10)], true);
+                    this.isInsideComment = false;
+                }
+                if (blocks.length === 0) {
+                    this.isInsideComment = true;
+                    this.commentParaID++;
+                }
+                this.commentParaIDInfo[comment.commentId] = this.commentParaID;
                 this.isInsideComment = false;
-            }
-            if (blocks.length === 0) {
-                this.isInsideComment = true;
-                this.commentParaID++;
-            }
-            this.commentParaIDInfo[comment.commentId] = this.commentParaID;
-            //}
-            this.isInsideComment = false;
-            //}
-            writer.writeEndElement();
-            if (comment.replyComments.length > 0) {
-                this.serializeCommentInternal(writer, comment.replyComments);
+                writer.writeEndElement();
+                if (comment.replyComments.length > 0) {
+                    this.serializeCommentInternal(writer, comment.replyComments);
+                }
             }
         }
-
     }
     // Serialize the comments (commentsExtended.xml)
     private serializeCommentsExtended(): void {
@@ -907,20 +906,22 @@ export class WordExport {
     private serializeCommentsExInternal(writer: XmlWriter, comments: any[], isReply: boolean): void {
         for (let i: number = 0; i < comments.length; i++) {
             const comment: any = comments[parseInt(i.toString(), 10)];
-            writer.writeStartElement('w15', 'commentEx', this.wNamespace);
-            //if (comment.blocks.length > 0) {
-            const syncParaID: number = this.commentParaIDInfo[comment.commentId];
-            if (isReply) {
-                const paraID: number = this.commentParaIDInfo[comment.ownerComment.commentId];
-                writer.writeAttributeString('w15', 'paraIdParent', this.wNamespace, paraID.toString());
-            }
-            writer.writeAttributeString('w15', 'paraId', this.wNamespace, syncParaID.toString());
-            //}
-            const val: number = comment.done ? 1 : 0;
-            writer.writeAttributeString('w15', 'done', this.wNamespace, val.toString());
-            writer.writeEndElement();
-            if (comment.replyComments.length > 0) {
-                this.serializeCommentsExInternal(writer, comment.replyComments, true);
+            if (comment.isPosted) {
+                writer.writeStartElement('w15', 'commentEx', this.wNamespace);
+                //if (comment.blocks.length > 0) {
+                const syncParaID: number = this.commentParaIDInfo[comment.commentId];
+                if (isReply) {
+                    const paraID: number = this.commentParaIDInfo[comment.ownerComment.commentId];
+                    writer.writeAttributeString('w15', 'paraIdParent', this.wNamespace, paraID.toString());
+                }
+                writer.writeAttributeString('w15', 'paraId', this.wNamespace, syncParaID.toString());
+                //}
+                const val: number = comment.done ? 1 : 0;
+                writer.writeAttributeString('w15', 'done', this.wNamespace, val.toString());
+                writer.writeEndElement();
+                if (comment.replyComments.length > 0) {
+                    this.serializeCommentsExInternal(writer, comment.replyComments, true);
+                }
             }
         }
     }
@@ -3393,7 +3394,7 @@ export class WordExport {
         writer.writeStartElement('a', 'rPr', this.aNamespace);
         writer.writeAttributeString(undefined, 'lang', undefined, 'en-US');
         writer.writeAttributeString(undefined, 'b', undefined, '0');
-        writer.writeAttributeString(undefined, 'sz', undefined, fontSize.toString());
+        writer.writeAttributeString(undefined, 'sz', undefined, this.roundToTwoDecimal(fontSize).toString());
         writer.writeAttributeString(undefined, 'baseline', undefined, '0');
         this.serializeChartSolidFill(writer, fill, false);
         this.serializeFont(writer, title[fontNameProperty[this.keywordIndex]]);
@@ -3428,7 +3429,7 @@ export class WordExport {
         writer.writeStartElement('a', 'defRPr', this.aNamespace);
         writer.writeAttributeString(undefined, 'lang', undefined, 'en-US');
         writer.writeAttributeString(undefined, 'b', undefined, '0');
-        writer.writeAttributeString(undefined, 'sz', undefined, fontSizeCalc.toString());
+        writer.writeAttributeString(undefined, 'sz', undefined, this.roundToTwoDecimal(fontSizeCalc).toString());
         writer.writeAttributeString(undefined, 'baseline', undefined, '0');
         this.serializeChartSolidFill(writer, fill, false);
         this.serializeFont(writer, fontName);

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 27.1.52 (2024-10-08)
+## 27.1.51 (2024-09-30)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Resolved the issue of text overlapping with the right border of the grid cell when applying right alignment.
+
+## 27.1.48 (2024-09-18)
 
 ### Pdf Export
 

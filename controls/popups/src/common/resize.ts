@@ -423,7 +423,9 @@ function resizeNorth(e: MouseEvent | TouchEvent): void {
             let top: number = (originalY - containerTop) + (pageY - originalMouseY);
             top = top > 0 ? top : 1;
             targetElement.style.height = currentHeight  + 'px';
-            targetElement.style.top = top + 'px';
+            if (!(targetElement.classList.contains('e-dlg-modal') && (targetElement.style.top === '0px'))) {
+                targetElement.style.top = top + 'px';
+            }
         }
     }
 }
@@ -479,7 +481,9 @@ function resizeWest(e: MouseEvent | TouchEvent): void {
                 targetElement.style.width = calculatedWidth + 'px';
             }
             if (setLeft) {
-                targetElement.style.left = left + 'px';
+                if (!(targetElement.classList.contains('e-dlg-modal') && (targetElement.style.left === '0px'))) {
+                    targetElement.style.left = left + 'px';
+                }
                 if (left === 1) {
                     setWidth = false;
                 } else {

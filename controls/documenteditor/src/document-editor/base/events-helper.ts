@@ -1,7 +1,7 @@
 import { CommentAction, HyperlinkType, ServerActionType, RevisionType, RevisionActionType, ContentControlType } from './types';
 import { DocumentEditor } from '../document-editor';
 import { DocumentEditorContainer } from '../../document-editor-container';
-import { Operation } from '../implementation';
+import { Operation, Revision } from '../implementation';
 import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 
 /**
@@ -355,6 +355,10 @@ export interface RevisionActionEventArgs  {
      * Specifies the current action type.
      */
     actionType: RevisionActionType
+    /**
+     * Provide the instance of the current revision being accepted or rejected.
+     */
+    source: Revision
 }
 /**
  * This event args provides the necessary information about comment actions.

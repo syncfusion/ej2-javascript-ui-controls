@@ -26,6 +26,7 @@
  * * columnstate :- represents the column state.
  * * infiniteScroll :- Defines current action as infinite scroll.
  * * stringfilterreques :- Defines current action as string filter request.
+ * * booleanfilterrequest :- Defines current action as boolean filter request.
  * ```
  */
 export type Action =
@@ -53,7 +54,8 @@ export type Action =
     'filterSearchBegin' |
     'columnstate' |
     'infiniteScroll' |
-    'stringfilterrequest';
+    'stringfilterrequest' |
+    'booleanfilterrequest';
 
 
 

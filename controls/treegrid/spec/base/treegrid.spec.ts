@@ -3953,3 +3953,29 @@ describe('HasChildRecords property value is not updated properly ', () => {
         destroy(gridObj);
     });
 });
+
+describe('Bug 911555: script error throws while passing the collpaseRow method without parameter', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+            },
+            done
+        );
+    });
+    it('check rows attribute', () => {
+        gridObj.collapseRow(null);
+        rows = gridObj.getRows();
+        expect(rows[0].hasAttribute('aria-expanded') === true).toBe(true);
+        gridObj.expandRow(null);
+        expect(rows[0].hasAttribute('aria-expanded') === true).toBe(true);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

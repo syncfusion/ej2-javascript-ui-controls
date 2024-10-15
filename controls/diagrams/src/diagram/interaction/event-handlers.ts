@@ -2217,6 +2217,13 @@ export class DiagramEventHandler {
     }
 
     /** @private */
+    public updateTool(): void {
+        if (this.action === 'Pan' || this.action === 'Draw') {
+            this.action = 'Select';
+        }
+    }
+
+    /** @private */
     public getTool(action: Actions): ToolBase {
         switch (action) {
         case 'Select':
@@ -3013,6 +3020,11 @@ class ObjectFinder {
                                 break;
                             }
                             actualTarget = obj;
+                            // 912178-Tooltip for node is not shown when grouped at runtime
+                            if (obj.tooltip.content !== '')
+                            {
+                                break;
+                            }
                             obj = diagram.nameTable[obj.parentId];
                         }
                     }
@@ -3085,7 +3097,8 @@ class ObjectFinder {
                         getNode = diagram.getObject(container.id);
                     }
                     const port: PointPortModel = findPort(getNode, element.id);
-                    if (port && (port.visibility !== (PortVisibility.Hidden))) {
+                    // 913000: Connector not connected to port when visibility hidden
+                    if (port) {
                         return element;
                     }
                 }

@@ -84,6 +84,10 @@ export class Selection {
     /**
      * @private
      */
+    public isSelectionisInCC: boolean = false;
+    /**
+     * @private
+     */
     public skipFormatRetrieval: boolean = false;
     /**
      * @private
@@ -3567,9 +3571,12 @@ export class Selection {
         return undefined;
     }
 
-    private getParagraphInternal(container: Widget, position: IndexInfo): ParagraphWidget {
+    private getParagraphInternal(container: Widget, position: IndexInfo, cellIndex?: string): ParagraphWidget {
         if (isNullOrUndefined(position.index)) {
             return undefined;
+        }
+        if (container instanceof TableRowWidget && isNullOrUndefined(cellIndex)) {
+            cellIndex = position.index;
         }
         // let ins: Widget = container;
         let index: number = position.index.indexOf(';');
@@ -3587,6 +3594,15 @@ export class Selection {
             index = container.childWidgets.length - 1;
         }
         let childWidget: Widget = this.getBlockByIndex(container, index);
+        if (!isNullOrUndefined(cellIndex) && isNullOrUndefined(childWidget) && container instanceof TableCellWidget && container.containerWidget && isNullOrUndefined(container.getSplitWidgets().pop().nextRenderedWidget)) {
+            index = cellIndex.indexOf(';');
+            index = parseInt(cellIndex.substring(0, index), 10) - 1;
+            position.index = cellIndex.substring(cellIndex.indexOf(';')).replace(';', '');
+            if (index >= 0) {
+                childWidget = this.getBlockByIndex(container.containerWidget, index);
+            }
+            cellIndex = undefined;
+        }
         if (childWidget) {
             value = position.index.substring(0, 1);
             if (value === 'S') {
@@ -3607,7 +3623,7 @@ export class Selection {
             }
             if (child instanceof Widget) {
                 if (position.index.indexOf(';') > 0) {
-                    return this.getParagraphInternal((child as Widget), position);
+                    return this.getParagraphInternal((child as Widget), position, cellIndex);
                 } else {
                     //If table is shifted to previous text position then return the first paragraph within table.
                     if (child instanceof TableWidget) {
@@ -11707,7 +11723,7 @@ export class Selection {
         if (endElement) {
             let line: LineWidget = endElement.line as LineWidget;
             if (!isNullOrUndefined(endElement.line) && !isNullOrUndefined(line.children)) {
-                offset = endElement.line.getOffset(endElement, isNavigateToNextEditRegion ? 0 : 1);
+                offset = endElement.line.getOffset(endElement, isNavigateToNextEditRegion || (endElement instanceof ContentControl && this.isSelectionisInCC) ? 0 : 1);
                 endPosition = new TextPosition(this.owner);
                 endPosition.setPositionParagraph(endElement.line, offset);
             } else {
@@ -11721,6 +11737,7 @@ export class Selection {
      */
     public checkContentControlLocked(checkFormat?: boolean): boolean {
         this.owner.editorModule.isXmlMapped = false;
+        this.isSelectionisInCC = true;
         for (let i: number = 0; i < this.documentHelper.contentControlCollection.length; i++) {
             let contentControlStart: ContentControl = this.documentHelper.contentControlCollection[i];
             if (isNullOrUndefined(contentControlStart.reference) || contentControlStart.reference.indexInOwner === -1) {

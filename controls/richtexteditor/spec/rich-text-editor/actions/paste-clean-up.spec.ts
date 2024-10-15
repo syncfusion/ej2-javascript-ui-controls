@@ -3825,6 +3825,92 @@ describe('873087: Table loses its format when pasting into RichTextEditor.', () 
     });
 });
 
+describe('Bug 912791: Table Pasting Outside Editable Area Results in Empty Setter Value', () => {
+    let editor: RichTextEditor;
+    var rteEle: HTMLElement;
+    beforeAll((done: DoneFn) => {
+        editor = renderRTE({
+            quickToolbarSettings: {
+                table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                    'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+            },
+            value: `<h1>Welcome to the Syncfusion Rich Text Editor</h1><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><h2>Do you know the key features of the editor?</h2><ul> <li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li> <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more.</li> <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li> <li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li> <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li> <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li></ul><blockquote><p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p></blockquote><h2>Unlock the Power of Tables</h2><p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p><table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 16.5563%"> <tr style="height: 16.5563%"> <th style="width: 12.1813%" class=""><span>S No</span><br></th> <th style="width: 23.2295%"><span>Name</span><br></th> <th style="width: 9.91501%"><span>Age</span><br></th>    </tr> </thead> <tbody> <tr style="height: 16.5563%"> <td style="width: 12.1813%">1</td> <td style="width: 23.2295%">Selma Rose</td> <td style="width: 9.91501%">30</td>    </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">2</td> <td style="width: 23.2295%"><span>Robert</span><br></td> <td style="width: 9.91501%">28</td>    </tr>   </tbody></table><h2>Elevating Your Content with Images</h2><p>Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API" aria-label="Open in new window">insertImageSettings</a> to upload, save, or remove them. </p><p>The Editor can integrate with the Syncfusion Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/image-editor-integration.html" title="Image Editor Demo" aria-label="Open in new window">here</a>.</p><p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 50%" class="e-rte-image e-imginline"></p><span data-col="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="height: 151px; width: 4px; top: 510px; left: 14px;"></span><span data-col="1" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="height: 151px; width: 4px; top: 510px; left: 334px;"></span><span data-col="2" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="height: 151px; width: 4px; top: 510px; left: 945px;"></span><span data-col="3" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="height: 151px; width: 4px; top: 510px; left: 1206px;"></span><span data-row="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="width: 1192px; height: 4px; top: 534px; left: 16px;"></span><span data-row="1" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="width: 1192px; height: 4px; top: 596px; left: 16px;"></span><span data-row="2" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="width: 1192px; height: 4px; top: 658px; left: 16px;"></span><span class="e-table-box" data-col="3" unselectable="on" contenteditable="false" style="top: 657px; left: 1204px;"></span>`
+        });
+        rteEle = editor.element;
+        done();
+    });
+    afterAll((done: DoneFn) => {
+        destroy(editor);
+        done();
+    });
+    it(' To verify that table pasting functions correctly after deleting a table and pasting a same table in the same location.', (done: DoneFn) => {
+        var node = (rteEle as any).querySelector("td");
+        setCursorPoint(node, 0);
+        node.focus();
+        var clickEvent = document.createEvent("MouseEvents");
+        clickEvent.initEvent('mousedown', false, true);
+        editor.inputElement.dispatchEvent(clickEvent);
+        var eventsArg: any = { pageX: 50, pageY: 200, target: node };
+        (<any>editor).tableModule.editAreaClickHandler({ args: eventsArg });
+        setTimeout(function () {
+            var tablePop = document.querySelectorAll('.e-rte-quick-popup')[0];
+            (tablePop.querySelectorAll(".e-rte-quick-toolbar.e-rte-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn")[5] as HTMLElement).click();
+            const clipBoardData: string = '\n\n\x3C!--StartFragment--><table class="e-rte-table pasteContent_RTE e-rte-paste-html-table" style=" margin-bottom: 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); width: 1192px; min-width: 0px; height: 151px;"><thead style="height: 25.6667px;"><tr style="height: 25.6667px;"><th class="" style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; background: rgb(224, 224, 224); width: 320.167px;"><span>S No</span><br></th><th style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; background: rgb(224, 224, 224); width: 610.562px;"><span>Name</span><br></th><th style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; background: rgb(224, 224, 224); width: 260.604px;"><span>Age</span><br></th></tr></thead><tbody><tr style="height: 62.3333px;"><td style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 320.167px;">1</td><td style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 610.562px;">Selma Rose</td><td style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 260.604px;">30</td></tr><tr style="height: 62.3333px;"><td style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 320.167px;">2</td><td style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 610.562px;"><span>Robert</span><br></td><td style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 260.604px;">28</td></tr></tbody></table>\x3C!--EndFragment-->\n\n';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect((editor.inputElement.querySelector('table') as HTMLElement).classList.contains('e-rte-table')).toBe(true);
+                done();
+            }, 100);
+        }, 100);
+    });
+});
+
+describe('Bug 912791: Table Pasting Outside Editable Area Results in Empty Setter Value', () => {
+    let editor: RichTextEditor;
+    var rteEle: HTMLElement;
+    beforeAll((done: DoneFn) => {
+        editor = renderRTE({
+            quickToolbarSettings: {
+                table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                    'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+            },
+            value: `<table class="e-rte-table e-rte-paste-html-table e-cell-select" style="margin-bottom: 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-transform: none; white-space: normal; width: 1192px; min-width: 0px; height: 151px;"><thead style="height: 25.6667px;"><tr style="height: 25.6667px;"><th class="" style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; background-color: rgb(224, 224, 224); width: 320.167px;"><span>S No</span><br></th><th class="" style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; background-color: rgb(224, 224, 224); width: 610.562px;"><span>Name</span><br></th><th class="" style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; background-color: rgb(224, 224, 224); width: 260.604px;"><span>Age</span><br></th></tr></thead><tbody><tr style="height: 62.3333px;"><td class="" style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 320.167px;">1</td><td class="" style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 610.562px;">Selma Rose</td><td class="" style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 260.604px;">30</td></tr><tr style="height: 62.3333px;"><td class="" style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 320.167px;">2</td><td class="" style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 610.562px;"><span>Robert</span><br></td><td class="" style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 260.604px;">28</td></tr></tbody></table>Testing<div class="e-table-fake-selection" contenteditable="false"></div><span data-col="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="height: 151px; width: 4px; top: 16px; left: 14px;"></span><span data-col="1" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="height: 151px; width: 4px; top: 16px; left: 334px;"></span><span data-col="2" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="height: 151px; width: 4px; top: 16px; left: 945px;"></span><span data-col="3" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="height: 151px; width: 4px; top: 16px; left: 1206px;"></span><span data-row="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="width: 1192px; height: 4px; top: 40px; left: 16px;"></span><span data-row="1" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="width: 1192px; height: 4px; top: 102px; left: 16px;"></span><span data-row="2" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="width: 1192px; height: 4px; top: 164px; left: 16px;"></span><span class="e-table-box" data-col="3" unselectable="on" contenteditable="false" style="top: 163px; left: 1204px;"></span>`
+        });
+        rteEle = editor.element;
+        done();
+    });
+    afterAll((done: DoneFn) => {
+        destroy(editor);
+        done();
+    });
+    it(' To verify that table pasting functions correctly after deleting a table and pasting a same table in the same location when enter action is configured as BR.', (done: DoneFn) => {
+        var node = (rteEle as any).querySelector("td");
+        setCursorPoint(node, 0);
+        node.focus();
+        var clickEvent = document.createEvent("MouseEvents");
+        clickEvent.initEvent('mousedown', false, true);
+        editor.inputElement.dispatchEvent(clickEvent);
+        var eventsArg: any = { pageX: 50, pageY: 200, target: node };
+        (<any>editor).tableModule.editAreaClickHandler({ args: eventsArg });
+        setTimeout(function () {
+            var tablePop = document.querySelectorAll('.e-rte-quick-popup')[0];
+            (tablePop.querySelectorAll(".e-rte-quick-toolbar.e-rte-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn")[5] as HTMLElement).click();
+            const clipBoardData: string = '\n\n\x3C!--StartFragment--><table class="e-rte-table pasteContent_RTE e-rte-paste-html-table" style=" margin-bottom: 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); width: 1192px; min-width: 0px; height: 151px;"><thead style="height: 25.6667px;"><tr style="height: 25.6667px;"><th class="" style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; background: rgb(224, 224, 224); width: 320.167px;"><span>S No</span><br></th><th style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; background: rgb(224, 224, 224); width: 610.562px;"><span>Name</span><br></th><th style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; background: rgb(224, 224, 224); width: 260.604px;"><span>Age</span><br></th></tr></thead><tbody><tr style="height: 62.3333px;"><td style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 320.167px;">1</td><td style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 610.562px;">Selma Rose</td><td style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 260.604px;">30</td></tr><tr style="height: 62.3333px;"><td style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 320.167px;">2</td><td style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 610.562px;"><span>Robert</span><br></td><td style="border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; padding: 2px 5px; width: 260.604px;">28</td></tr></tbody></table>\x3C!--EndFragment-->\n\n';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect((editor.inputElement.querySelector('table') as HTMLElement).classList.contains('e-rte-table')).toBe(true);
+                done();
+            }, 100);
+        }, 100);
+    });
+});
+
 describe('883422: To validate and fix the Table content pasted copied from New Outlook has a border issue.', () => {
     let editor: RichTextEditor;
     beforeEach((done: DoneFn) => {

@@ -1327,7 +1327,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: contentObj }});
             const supportObj: Object = { key: 'SupportText' };
             this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: supportObj }});
-            content = '<span>' + contentObj['value'] + ' ' + supportObj['value'] + '<b> JPG, PNG, and SVG</b></span>';
+            const andObj: Object = { key: 'And' };
+            this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: andObj }});
+            content = '<span>' + contentObj['value'] + ' ' + supportObj['value'] + '<b> JPG, PNG, ' + andObj['value'] + ' SVG</b></span>';
         }
         const dialog: Dialog = new Dialog({
             header: headerObj['value'],

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 27.1.53 (2024-10-15)
+
+### Common
+
+#### New Features
+
+- Provided support for handling license key validation in CI services.
+
+#### Bug Fixes
+
+- `#I617320` - Resolved an issue with touch swipe functionality in iOS `Capacitor` applications.
+
 ## 27.1.52 (2024-10-08)
 
 ### Common

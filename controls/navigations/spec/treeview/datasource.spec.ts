@@ -1286,3 +1286,16 @@ export let dynamicChangeCheckbox: any = [
         { id: 25, pid: 7, name: 'Hot Singles' },
         { id: 27, pid: 7, name: 'Test' },
 ];
+
+export let localData12: { [key: string]: Object }[] = [
+        { id: 1, name: 'Item 1', hasChild: true },
+        { id: 2, pid: 1, name: 'Item 2', hasChild: true },
+        { id: 12, pid: 2, name: 'Item 3', hasChild: true },
+        { id: 13, pid: 12, name: 'Item 4', hasChild: true },
+        { id: 14, pid: 13, name: 'Item 5' },
+        { id: 3, pid: 1, name: 'Item 6' },
+        { id: 4, name: 'Item 7', hasChild: true },
+        { id: 5, pid: 4, name: 'Item 8' },
+        { id: 6, name: 'Item 9', hasChild: true },
+        { id: 7, pid: 6, name: 'Item 10' },
+    ];

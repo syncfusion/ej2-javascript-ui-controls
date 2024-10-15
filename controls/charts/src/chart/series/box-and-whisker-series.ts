@@ -220,7 +220,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
             new PathOption(
                 symbolId + '_BoxPath',
                 argsData.fill, argsData.border.width,
-                argsData.border.color, series.opacity, series.dashArray, direction
+                argsData.border.color, series.opacity, series.border.dashArray, direction
             ), new Int32Array([series.clipRect.x, series.clipRect.y])
         ) as HTMLElement;
         element.setAttribute('role', 'img');

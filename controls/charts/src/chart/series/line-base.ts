@@ -56,8 +56,8 @@ export class LineBase {
         let yVal: number = 0;
         for (const currentPoint of seriesPoints) {
             currentPoint.symbolLocations = [];
-            xVal = currentPoint.xValue ? currentPoint.xValue : xVisibleRange.min;
-            yVal = currentPoint.yValue ? currentPoint.yValue : yVisibleRange.min;
+            xVal = !isNullOrUndefined(currentPoint.xValue) ? currentPoint.xValue : xVisibleRange.min;
+            yVal = !isNullOrUndefined(currentPoint.yValue) ? currentPoint.yValue : yVisibleRange.min;
             if (Math.abs(prevXValue - xVal) >= xTolerance || Math.abs(prevYValue - yVal) >= yTolerance) {
                 tempPoints.push(currentPoint);
                 prevXValue = xVal;
@@ -431,7 +431,7 @@ export class LineBase {
         let value: number;
         clipRect.style.visibility = 'hidden';
         this.animateRect(series, animation, clipRect, duration, effect, elementHeight, elementWidth, xCenter, yCenter, value);
-        if (series.marker && series.marker.visible) {
+        if (series.marker && series.marker.visible && series.symbolElement) {
             const markerClipRect: HTMLElement = <HTMLElement>series.symbolElement.childNodes[0].childNodes[0];
             markerClipRect.style.visibility = 'hidden';
             this.animateRect(series, animation, markerClipRect, duration, effect, elementHeight, elementWidth, xCenter, yCenter, value);

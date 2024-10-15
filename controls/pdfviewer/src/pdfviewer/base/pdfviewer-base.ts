@@ -847,6 +847,9 @@ export class PdfViewerBase {
                 this.viewerContainer.appendChild(this.mobilePageNoContainer);
                 this.viewerMainContainer.appendChild(this.mobileScrollerContainer);
                 this.mobileScrollerContainer.appendChild(this.mobileSpanContainer);
+                if (this.pdfViewer.isAnnotationToolbarVisible && this.pdfViewer.toolbarModule) {
+                    this.pdfViewer.toolbar.showAnnotationToolbar(true);
+                }
             }
             this.pageContainer = createElement('div', { id: this.pdfViewer.element.id + '_pageViewContainer', className: 'e-pv-page-container', attrs: { 'role': 'document' } });
             if (this.pdfViewer.enableRtl) {
@@ -1176,13 +1179,24 @@ export class PdfViewerBase {
             this.updateViewerContainerSize();
         }
         const toolbarModule: any = this.pdfViewer.toolbarModule;
-        if (!isNullOrUndefined(this.viewerContainer) && !isNullOrUndefined(toolbarModule.toolbarElement)) {
+        if (!isNullOrUndefined(this.viewerContainer) && !isNullOrUndefined(toolbarModule) &&
+        !isNullOrUndefined(toolbarModule.toolbarElement)) {
             // eslint-disable-next-line
             if (toolbarModule.toolbarElement.style.display == 'none') {
                 this.viewerContainer.style.height = this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 0);
+            }// eslint-disable-next-line
+            else if (toolbarModule.toolbarElement.style.display == 'block') {
+                const toolbarContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_toolbarContainer');
+                if (toolbarContainer) {
+                    const toolbarHeight: number = toolbarContainer.getBoundingClientRect().height;
+                    this.viewerContainer.style.height =
+                    this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, toolbarHeight);
+                }
             }
-            this.navigationPane.sideBarToolbar.style.height =
-            this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 0);
+            if (this.navigationPane.sideBarToolbar) {
+                this.navigationPane.sideBarToolbar.style.height =
+                this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 0);
+            }
         }
         if (toolbarModule) {
             if (isBlazor()) {
@@ -1356,6 +1370,12 @@ export class PdfViewerBase {
     }
 
     private createAjaxRequest(jsonObject: any, documentData: string | Uint8Array, password: string): void {
+        if (this.corruptPopup) {
+            this.closeCorruptPopup();
+        }
+        if (this.notifyDialog) {
+            this.closeNotification();
+        }
         let proxy: PdfViewerBase = null;
         // eslint-disable-next-line
         proxy = this;
@@ -1995,7 +2015,7 @@ export class PdfViewerBase {
         } else {
             base64String = documentData.split('base64,')[1];
         }
-        if (base64String === undefined) {
+        if (base64String === undefined || !this.isValidBase64(base64String)) {
             this.isFileName = true;
             this.jsonDocumentId = documentData;
             if (this.pdfViewer.fileName === null) {
@@ -2650,6 +2670,9 @@ export class PdfViewerBase {
         proxy.focusField = [];
         proxy.updateDocumentEditedProperty(false);
         pdfViewer.clipboardData.clipObject = {};
+        if (pdfViewer.pdfRendererModule && proxy.clientSideRendering) {
+            proxy.pdfViewer.pdfRendererModule.pageRotationCollection = [];
+        }
         if (pdfViewer.toolbar) {
             pdfViewer.toolbar.uploadedFile = null;
         }
@@ -2843,6 +2866,7 @@ export class PdfViewerBase {
         window.sessionStorage.removeItem(this.documentId + '_documentLiveCount');
         if (proxy.pdfViewer.textSearchModule && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
             this.pdfViewer.textSearchModule.showSearchBox(false);
+            this.pdfViewer.textSearchModule.isDocumentTextCollectionReady = false;
         }
         if (this.documentId) {
             window.sessionStorage.removeItem(this.documentId + '_formfields');
@@ -10603,6 +10627,32 @@ export class PdfViewerBase {
     }
 
     /**
+     * @param {number} rotation - It describes about the number
+     * @private
+     * @returns {number} - number
+     */
+    public getAngle(rotation: number): number {
+        let angle: number = 0;
+        if (rotation) {
+            switch (rotation) {
+            case 0:
+                angle = 0;
+                break;
+            case 1:
+                angle = 90;
+                break;
+            case 2:
+                angle = 180;
+                break;
+            case 3:
+                angle = 270;
+                break;
+            }
+        }
+        return angle;
+    }
+
+    /**
      * @param {any} formFieldsData - It describes about the form fields data
      * @param {string} type - It describes about the type
      * @private
@@ -12578,7 +12628,30 @@ export class PdfViewerBase {
                 }
                 proxy.pdfViewer.annotation.undoCommentsElement.push(undoElement);
                 proxy.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'Delete', '', undoElement, currentAnnotation);
-                proxy.pdfViewer.annotation.textMarkupAnnotationModule.manageAnnotations(currentAnnotation, currentAnnotation.pageNumber);
+                if (currentAnnotation.shapeAnnotationType === 'Square' || currentAnnotation.shapeAnnotationType === 'Line' ||
+                    currentAnnotation.shapeAnnotationType === 'Circle' || currentAnnotation.shapeAnnotationType === 'Polygon' ||
+                    currentAnnotation.shapeAnnotationType === 'Polyline') {
+                    if (currentAnnotation.calibrate) {
+                        proxy.pdfViewer.annotation.measureAnnotationModule.
+                            manageAnnotations(currentAnnotation, currentAnnotation.pageNumber);
+                    }
+                    else {
+                        proxy.pdfViewer.annotation.shapeAnnotationModule.
+                            manageAnnotations(currentAnnotation, currentAnnotation.pageNumber);
+                    }
+                }
+                else if (currentAnnotation.stampAnnotationType === 'image') {
+                    proxy.pdfViewer.annotation.stampAnnotationModule.
+                        manageAnnotations(currentAnnotation, currentAnnotation.pageNumber);
+                }
+                else if (currentAnnotation.shapeAnnotationType === 'FreeText') {
+                    proxy.pdfViewer.annotation.freeTextAnnotationModule.
+                        manageAnnotations(currentAnnotation, currentAnnotation.pageNumber);
+                }
+                else if (currentAnnotation.shapeAnnotationType === 'Ink') {
+                    proxy.pdfViewer.annotation.inkAnnotationModule.
+                        manageInkAnnotations(currentAnnotation, currentAnnotation.pageNumber);
+                }
             }
         }
     }
@@ -12850,8 +12923,12 @@ export class PdfViewerBase {
         return null;
     }
 
-
-    private ConvertPixelToPoint(number: any): number {
+    /**
+     * @private
+     * @param {any} number - It describes about the number
+     * @returns {number} - number
+     */
+    public ConvertPixelToPoint(number: any): number {
         return (number * (72 / 96));
     }
 

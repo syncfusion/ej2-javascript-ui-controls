@@ -321,6 +321,14 @@
       padding: $grid-bigger-headercell-top-padding $grid-bigger-headercell-padding $grid-bigger-headercell-bootom-padding;
     }
 
+    .e-grid .e-gridheader .e-resizetable tr th:first-child {
+      padding-left: $grid-bigger-headercell-padding;
+    }
+
+    .e-grid .e-gridheader .e-resizetable tr th:last-child {
+      padding-right: $grid-bigger-headercell-padding;
+    }
+
     &.e-grid-autofit .e-headercell {
       padding: $grid-bigger-headercell-autofit-padding;
     }
@@ -445,6 +453,38 @@
       }
     }
 
+    &.e-wrap .e-columnheader {
+      .e-sortfilterdiv {
+        margin: $grid-bigger-wrap-sortdiv-margin;
+      }
+      
+      .e-fltr-icon .e-sortfilterdiv {
+        margin: $grid-bigger-wrap-fltricon-sortdiv-margin;
+      }
+
+      .e-fltr-icon.e-rightalign .e-sortfilterdiv {
+        margin: $grid-bigger-wrap-rightalign-sortdiv-margin;
+      }
+
+      & .e-fltr-icon .e-sortnumber {
+        margin: $grid-bigger-textwrap-sortnumber-margin;
+      }
+    }
+
+    &.e-wrap.e-rtl .e-headercell.e-fltr-icon .e-headercelldiv .e-sortnumber {
+      margin: $grid-rtl-bigger-textwrap-sortnumber-margin;
+    }
+
+    &.e-wrap.e-rtl .e-columnheader {
+      .e-fltr-icon .e-sortfilterdiv {
+        margin: $grid-bigger-rtl-wrap-fltricon-sortdiv-margin;
+      }
+
+      .e-fltr-icon.e-rightalign .e-sortfilterdiv {
+        margin: $grid-bigger-rtl-wrap-rightalign-sortdiv-margin;
+      }
+    }
+
     .e-headercelldiv {
       font-size: $grid-bigger-headercell-font-size;
     }
@@ -515,6 +555,18 @@
       margin: $grid-bigger-fltrdiv-margin;
     }
 
+    &.e-wrap .e-filtermenudiv {
+      @if $grid-skin == 'material' {
+        margin: -25px -2px -12px 8px;
+      }
+      @if $grid-skin == 'fabric' {
+        margin: -26px -7px -24px;
+      }
+      @if $grid-skin == 'bootstrap5' or $grid-skin == 'bootstrap5.3' {
+        margin: -14px -2px -14px 4px;
+      }
+    }
+
     .e-sortfilterdiv {
       margin: $grid-bigger-sortdiv-margin;
     }
@@ -577,6 +629,16 @@
   
       .e-rightalign .e-filtermenudiv {
         margin: $grid-rtl-bigger-rightalign-fltrdiv-margin;
+      }
+
+      &.e-wrap {
+        .e-filtermenudiv {
+          margin: $grid-rtl-bigger-wrap-fltrdiv-margin;
+        }
+    
+        .e-rightalign .e-filtermenudiv {
+          margin: $grid-rtl-bigger-wrap-rightalign-fltrdiv-margin;
+        }
       }
   
       .e-headercell .e-headercelldiv .e-sortnumber,
@@ -2179,9 +2241,11 @@
             }
   
             & .e-mask {
-              display: inline-block;
-              height: 10px;
-              width: 80%;
+              &.e-skeleton {
+                display: inline-block;
+                height: 10px;
+                width: 80%;
+              }
 
               &.e-mask-checkbox-filter-intent {
                 width: 13px;

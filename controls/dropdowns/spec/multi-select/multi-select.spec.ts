@@ -3172,7 +3172,6 @@ describe('MultiSelect', () => {
                 let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
                 (listObj as any).focusInHandler();
                 expect(floatElement.classList.contains('e-label-top')).toBe(true);
-                listObj.destroy();
             });
             it('floating-Always: check floating to top by clearing the value', () => {
                 listObj.value = <string[]>[];

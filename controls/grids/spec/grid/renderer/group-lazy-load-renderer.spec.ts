@@ -1015,4 +1015,42 @@ describe('LazyLoadGroup module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-845947: Grouping with Virtual Scrolling  Ctrl + Up arrow and Down arrow is not working properly => ', () => {
+        let gridObj: Grid;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: lazyLoadData,
+                    enableVirtualization: true,
+                    allowGrouping: true,
+                    allowFiltering: true,
+                    allowSorting: true,
+                    toolbar: ['Search'],
+                    groupSettings: { enableLazyLoading: true, columns: ['ProductName'] },
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, isPrimaryKey: true, validationRules: {required: true}, },
+                        { field: 'ProductName', headerText: 'Product Name', width: 160 },
+                        { field: 'ProductID', headerText: 'Product ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 160 },
+                    ],
+                }, done);
+        });
+
+        it('Key press handler in  group', () => {
+            (gridObj.groupModule as any).keyPressHandler({action: 'ctrlDownArrow', preventDefault: preventDefault});
+        });
+
+        it('Check collapse icon class', () => {
+            expect(gridObj.getContentTable().querySelector('td').classList.contains('e-recordpluscollapse')).toBeTruthy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

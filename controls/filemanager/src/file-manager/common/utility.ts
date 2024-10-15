@@ -593,9 +593,8 @@ export function getSortedData(parent: IFileManager, items: Object[]): Object[] {
  */
 export function getObject(parent: IFileManager, key: string, value: string): Object {
     const currFiles: Object[] = getValue(parent.pathId[parent.pathId.length - 1], parent.feFiles);
-    const query: Query = new Query().where(key, 'equal', value);
-    const lists: Object[] = new DataManager(currFiles).executeLocal(query);
-    return lists[0];
+    const result: object[] = currFiles.filter((data: { [key: string]: string | number }) => data[key as string].toString() === value);
+    return result.length > 0 ? result[0] : null;
 }
 
 /**
@@ -1289,16 +1288,15 @@ export function removeItemClass(parent: IFileManager, value: string): void {
  * @param {Element} scrollParent - specifies the scrolling target.
  * @param {IFileManager} parent - specifies the parent.
  * @param {string} nodeClass - specifies the node class.
- * @param {number} screenY - specifies the vertical (Y) coordinate of the mouse cursor position relative to the entire screen.
  * @param {number} clientY - specifies the vertical (Y) coordinate of the mouse cursor position relative to the target element.
  * @returns {void}
  * @private
  */
-export function scrollHandler(scrollParent: Element, parent: IFileManager, nodeClass: string, screenY: number, clientY: number): void {
+export function scrollHandler(scrollParent: Element, parent: IFileManager, nodeClass: string, clientY: number): void {
     let position: number;
     const elementData: DOMRect | ClientRect = scrollParent.getBoundingClientRect();
     const node: HTMLElement = select('.' + nodeClass, scrollParent);
-    if ((screenY >= (elementData.top + scrollParent.clientHeight - 30)) && !isNullOrUndefined(node)) {
+    if ((clientY >= (elementData.top + scrollParent.clientHeight - 30)) && !isNullOrUndefined(node)) {
         position = (parent.targetModule === 'navigationpane' || parent.targetModule === 'detailsview') ? node.offsetHeight / 2.5 : node.offsetHeight / 4.5;
         scrollParent.scrollBy(0, position);
     }
@@ -1336,7 +1334,7 @@ export function draggingHandler(parent: IFileManager, args: DragEventArgs): void
         /* istanbul ignore next */
         parent.treeExpandTimer = window.setTimeout(() => { parent.notify(events.dragging, args); }, 800);
         scrollParent = parent.navigationpaneModule.treeObj.element.parentElement;
-        scrollHandler(scrollParent, parent, 'e-level-2', args.event.screenY, args.event.y);
+        scrollHandler(scrollParent, parent, 'e-level-2', args.event.y);
     } else if (parent.targetModule === 'detailsview') {
         node = closest(args.target, 'tr');
         if (node && node.querySelector('.' + CLS.FOLDER) && !node.classList.contains(CLS.BLUR)) {
@@ -1346,7 +1344,7 @@ export function draggingHandler(parent: IFileManager, args: DragEventArgs): void
         }
         canDrop = true;
         scrollParent = parent.detailsviewModule.gridObj.element.querySelector('.e-content');
-        scrollHandler(scrollParent, parent, 'e-row', args.event.screenY, args.event.y);
+        scrollHandler(scrollParent, parent, 'e-row', args.event.y);
     } else if (parent.targetModule === 'largeiconsview') {
         node = closest(args.target, 'li');
         if (node && node.querySelector('.' + CLS.FOLDER) && !node.classList.contains(CLS.BLUR)) {
@@ -1354,7 +1352,7 @@ export function draggingHandler(parent: IFileManager, args: DragEventArgs): void
         }
         canDrop = true;
         scrollParent = parent.largeiconsviewModule.element.firstElementChild;
-        scrollHandler(scrollParent, parent, 'e-large-icon', args.event.screenY, args.event.y);
+        scrollHandler(scrollParent, parent, 'e-large-icon', args.event.y);
         /* istanbul ignore next */
     } else if (parent.targetModule === 'breadcrumbbar') {
         canDrop = true;

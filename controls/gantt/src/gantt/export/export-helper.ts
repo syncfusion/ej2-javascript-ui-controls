@@ -851,11 +851,12 @@ export class ExportHelper {
         }
         if (this.exportProps.enableFooter || isNullOrUndefined(this.exportProps.enableFooter)) {
             //code for draw the footer content
-            const bounds: RectangleF = new RectangleF(0, 0, pdfDoc.pageSettings.width, 35);
+            const pageSize: SizeF = this.parent.pdfExportModule.getPageSize(this.exportProps.pageSize);
+            const bounds: RectangleF = new RectangleF(0, 0, pageSize.width, 35);
             const pen: PdfPen = new PdfPen(this.ganttStyle.chartGridLineColor);
             const footer: PdfPageTemplateElement = new PdfPageTemplateElement(bounds);
             const footerBrush: PdfBrush = new PdfSolidBrush(this.ganttStyle.footer.backgroundColor);
-            footer.graphics.drawRectangle(pen, footerBrush, 0, 0, pdfDoc.pageSettings.width, 35);
+            footer.graphics.drawRectangle(pen, footerBrush, 0, 0, pageSize.width, 35);
             /* eslint-disable-next-line */
             let font: PdfTrueTypeFont | PdfStandardFont = new PdfStandardFont(this.ganttStyle.fontFamily, this.ganttStyle.footer.fontSize, this.ganttStyle.footer.fontStyle);
             if (this.ganttStyle.font) {

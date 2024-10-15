@@ -288,7 +288,9 @@ export class LargeIconsView {
             const textEle: Element = args.item.querySelector('.' + CLS.LIST_TEXT);
             const txt: string = getValue('name', args.curData);
             const type: string = getValue('type', args.curData);
-            textEle.innerHTML = txt.substr(0, txt.length - type.length);
+            if (txt.indexOf(type) !== -1) {
+                textEle.innerHTML = txt.substr(0, txt.length - type.length);
+            }
         }
         this.renderCheckbox(args);
         const eventArgs: FileLoadEventArgs = {
@@ -669,6 +671,7 @@ export class LargeIconsView {
                 read(this.parent, events.pathChanged, this.parent.path);
                 break;
             case 'allowMultiSelection':
+            case 'showItemCheckBoxes':
                 if (this.parent.view !== 'LargeIcons') { break; }
                 refresh(this.parent);
                 break;

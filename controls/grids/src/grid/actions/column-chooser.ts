@@ -477,7 +477,20 @@ export class ColumnChooser implements IAction {
     private confirmDlgBtnClick(args: Object): void {
         this.stateChangeColumns = [];
         this.changedStateColumns = [];
-        this.changedColumns = (this.changedColumns.length > 0) ? this.changedColumns : this.unchangedColumns;
+        if (this.filterColumns.length && this.ulElement.querySelector('.e-selectall.e-check')) {
+            this.changedColumns = this.filterColumns.map((column: Column) => { return column.uid; });
+            this.showColumn = [];
+            this.hideColumn = [];
+            this.parent.getColumns().map((column: Column) => {
+                if (this.changedColumns.indexOf(column.uid) !== -1) {
+                    this.showColumn.push(column.uid);
+                } else {
+                    this.hideColumn.push(column.uid);
+                }
+            });
+        } else {
+            this.changedColumns = (this.changedColumns.length > 0) ? this.changedColumns : this.unchangedColumns;
+        }
         this.changedColumnState(this.changedColumns);
         const uncheckedLength: number = this.ulElement.querySelector('.e-uncheck') &&
             this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;

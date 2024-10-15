@@ -397,6 +397,7 @@ export class SfdtReader {
         commentElement.isResolved = HelperMethods.parseBoolValue(commentData[doneProperty[this.keywordIndex]]);
         commentElement.text = this.parseCommentText(commentData[blocksProperty[this.keywordIndex]]);
         commentElement.mentions = this.parseCommentMentions(commentData[blocksProperty[this.keywordIndex]]);
+        commentElement.isPosted = true;
         return commentElement;
     }
     private parseCommentText(blocks: any): string {
@@ -2368,8 +2369,11 @@ export class SfdtReader {
     // Bug 864876: Here, we have checking whether the font is installed or not. If not installed, then we have changed the font name from the font substitution table.
     // The below code is implemented by refering the following link. (https://www.samclarke.com/javascript-is-font-available/#:~:text=Then%20to%20check%20a%20font,otherwise%20another%20fallback%20is%20tried.)
     
-    private isFontInstalled(fontFamily: string): boolean {
-        if (this.fontInfoCollection.containsKey(fontFamily)) {
+    /**
+     * @private
+     */
+    public isFontInstalled(fontFamily: string): boolean {
+        if (this.fontInfoCollection && this.fontInfoCollection.containsKey(fontFamily)) {
             return this.fontInfoCollection.get(fontFamily);
         }
         const monoWidth: number = this.getWidth('monospace');
@@ -2378,7 +2382,9 @@ export class SfdtReader {
         let isFontInstalled: boolean = monoWidth !== this.getWidth(fontFamily + ', monospace', monoWidth) ||
             sansWidth !== this.getWidth(fontFamily + ', sans-serif', sansWidth) ||
             serifWidth !== this.getWidth(fontFamily + ', serif', serifWidth);
-        this.fontInfoCollection.add(fontFamily, isFontInstalled);
+        if (this.fontInfoCollection) {
+            this.fontInfoCollection.add(fontFamily, isFontInstalled);
+        }
         return isFontInstalled;
     }
     private getWidth(fontFamily: string, defaultWidth?: number): number {

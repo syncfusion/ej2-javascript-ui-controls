@@ -4328,9 +4328,6 @@ export class Gantt extends Component<HTMLElement>
      */
     public pdfExport(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean,
                      pdfDoc?: Object, isBlob?: boolean): Promise<Object> {
-        if (pdfExportProperties && pdfExportProperties.fitToWidthSettings && pdfExportProperties.fitToWidthSettings.isFitToWidth) {
-            pdfExportProperties.pageOrientation = 'Landscape';
-        }
         return this.pdfExportModule ? this.pdfExportModule.export(pdfExportProperties, isMultipleExport, pdfDoc, isBlob)
             : null;
     }
@@ -4363,7 +4360,19 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public renderWorkingDayCell(args: RenderDayCellEventArgs): void {
-        const includeWeekend: boolean = this.taskMode !== 'Auto' ? true : (this.includeWeekend || !this.autoCalculateDateScheduling) ? true : false;
+        let includeWeekend: boolean = false;
+        let isCustomManual: boolean = false;
+        includeWeekend = (this.taskMode !== 'Auto' && this.taskMode !== 'Custom') ? true : (this.includeWeekend || !this.autoCalculateDateScheduling) ? true : false;
+        if (this.taskMode === 'Custom' && this.taskFields.manual) {
+            const editModule: Edit = this.editModule;
+            if (editModule && editModule.cellEditModule && editModule.cellEditModule.isCellEdit) {
+                isCustomManual = editModule.cellEditModule.currentEditedRowData[this.taskFields.manual];
+            }
+            else if (editModule && editModule.dialogModule && editModule.dialogModule['isEdit']) {
+                isCustomManual = editModule.dialogModule['editedRecord'][this.taskFields.manual];
+            }
+            includeWeekend = isCustomManual || this.includeWeekend || !this.autoCalculateDateScheduling;
+        }
         const nonWorkingDays: number[] = !includeWeekend ? this.nonWorkingDayIndex : [];
         const holidays: number[] = this.totalHolidayDates;
         if (nonWorkingDays.length > 0 && nonWorkingDays.indexOf(args.date.getDay()) !== -1) {

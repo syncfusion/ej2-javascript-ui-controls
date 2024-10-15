@@ -148,7 +148,7 @@ console.log('custom header validation');
         editor.serviceUrl= undefined;
        editor.headers=[{"syncfusion":"true"}];
        let httpRequest:XMLHttpRequest=new XMLHttpRequest();
-        expect(() => { (editor.spellChecker as any).setCustomHeaders(httpRequest) }).toThrowError();
+        expect(() => { (editor.spellChecker as any).setCustomHeaders(httpRequest, editor.headers) }).toThrowError();
     });
 //     it('Public API Spell checker dialog validation', () => {
 // console.log('Public API Spell checker dialog validation');

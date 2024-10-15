@@ -1002,6 +1002,11 @@ export class NavigationPane {
         let proxy: NavigationPane = null;
         // eslint-disable-next-line
         proxy = this;
+        if (proxy.isDown) {
+            setTimeout(() => {
+                proxy.pdfViewerBase.onWindowResize();
+            }, 200);
+        }
         proxy.isDown = false;
         if (proxy.isNavigationPaneResized && proxy.sideBarContentContainer) {
             proxy.pdfViewerBase.viewerContainer.style.cursor = 'default';

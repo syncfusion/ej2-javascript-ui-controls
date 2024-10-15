@@ -1,4 +1,4 @@
-import { createElement, remove, extend, getInstance, addClass, removeClass, select } from '@syncfusion/ej2-base';
+import { createElement, remove, extend, getInstance, addClass, removeClass, select, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import * as cls from '../base/css-constant';
 import { DateGroup } from '../../base/types';
@@ -824,7 +824,7 @@ export class Grouping implements IAction {
     }
 
     private removeDialog(): void {
-        if (this.parent.grid && this.parent.grid.isDestroyed) { return; }
+        if ((this.parent.grid && this.parent.grid.isDestroyed) || isNullOrUndefined(this.parent.grid)) { return; }
         this.parent.grid.clearSelection();
         const element: HTMLElement = select('#' + this.parent.element.id + '_GroupDialog', document);
         const groupDialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;

@@ -1,12 +1,11 @@
 import { createElement, isNullOrUndefined, addClass, removeClass, closest, select, remove, MouseEventArgs } from '@syncfusion/ej2-base';
-import { EventHandler, setStyleAttribute, extend } from '@syncfusion/ej2-base';
+import { EventHandler, setStyleAttribute} from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
 import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { Tab, SelectEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';
 import * as events from '../../common/base/constant';
-import { IDataOptions } from '../../base/engine';
 import { IOlapField } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
 

@@ -373,6 +373,60 @@ describe('Grid base module', () => {
         });
     });
 
+    describe('EJ2-907415 - Indent cell border line appears thick at group and caption aggregate', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 1),
+                    allowGrouping: true,
+                    gridLines: 'Vertical',
+                    groupSettings: { columns: ['ShipCountry'] },
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                    },
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        {
+                            headerText: 'Customer Details', columns: [
+                                { headerText: 'EmployeeID', field: 'EmployeeID' },
+                                { headerText: 'ShipCountry', field: 'ShipCountry' },
+                            ]
+                        },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                    ],
+                }, done);
+        });
+
+        it('first cell class testing', () => {
+            expect(gridObj.element.querySelector('.e-grid-group-first-cell')).not.toBeUndefined();
+        });
+
+        it('Grid line horizontal testing', (done: Function) => {
+            actionComplete = (args: any): void => {
+                if (args.requestType === 'add') {
+                    gridObj.actionComplete = null;
+                    expect(gridObj.element.querySelector('.e-gridform .e-grid-group-first-cell')).not.toBeUndefined();
+                    done();
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            gridObj.addRecord();
+        });
+
+        it('close edit', () => {
+            gridObj.closeEdit();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
+
 
     describe('Grid lines testing', () => {
         let gridObj: Grid;
@@ -2470,6 +2524,7 @@ describe('Focusing  code coverage =>', () => {
 // used for code coverage
 describe('Focusing  code coverage =>', () => {
     let gridObj: Grid;
+    let preventDefault: Function = new Function();
     beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -2509,6 +2564,16 @@ describe('Focusing  code coverage =>', () => {
         (gridObj.focusModule as any).header.getNextCurrent(null, null, null, 'shiftRight');
         (gridObj.focusModule as any).header.getNextCurrent([1, 0], null, null, 'tab');
         (gridObj.focusModule as any).content.getNextCurrent([1, 0], null, null, 'tab');
+    });
+
+    it('for coverage - keycode', () => {
+        gridObj.pagerModule.pagerObj.element.tabIndex = 0;
+        let e: object = { target: gridObj.element.querySelector('.e-rowcell'), keyCode: 9, shiftKey : true, preventDefault };
+        (gridObj.focusModule as any).onKeyPress(e);
+    });
+
+    it('for coverage - jump', function () {
+        gridObj.focusModule.content.jump('tab', [-1]);
     });
 
     afterAll(() => {
@@ -5006,6 +5071,33 @@ describe('EJ2-899559 - Column jumping issue on column resizing with minWidth and
     it('Ensure 1st Column Width ', () => {
         const cols: HTMLCollection = gridObj.getHeaderTable().querySelector('colgroup').children;
         expect((cols[0] as HTMLElement).style.width).toBe('auto');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-899784 - Need to add headervalueaccessor property in aspcore and mvc platform', () => {
+    let gridObj: Grid;
+    (window as any).headerValueAccessorFn = (field: any, column: any) => {
+        return 'HeaderValueAccessor';
+    }
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowResizing: true,
+                columns: [
+                    { field: 'OrderID', minWidth: 50, width: 'auto' },
+                    { field: 'CustomerID', minWidth: 60, headerValueAccessor: "headerValueAccessorFn" },
+                    { field: 'Freight', minWidth: 60 },
+                    { field: 'ShipCountry', minWidth: 60 },
+                ]
+            }, done);
+    });
+    it('Check header text', () => {
+        expect(gridObj.getHeaderTable().querySelectorAll('th')[1].innerText).toBe('HeaderValueAccessor');
     });
     afterAll(() => {
         destroy(gridObj);

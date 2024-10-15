@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { TableOfContentsSettings, ParagraphWidget, SfdtExport } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
+import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition, DocumentEditorContainer, Toolbar } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { Selection, PageLayoutViewer } from '../../src/index';
 
@@ -245,4 +245,43 @@ console.log('redo after on backspace before splitted paragraph');
     });
 });
 
+describe('Resolve script error issue while delete content after search text', () => {
+    let container: DocumentEditorContainer = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        let defaultDocument = {
+            sfdt: "UEsDBAoAAAAIAPtxEFlxY5+TGAQAAD47AAAEAAAAc2ZkdO1ba2/bNhT9KwLXDytgBLZlSbG+dSmMASu6Ah2wD0UQUDJpEaMeJZk5buD/Xr78kh9VUkdWUBoBDiWK4uG9R/dSFPMIykqQnHxDn/FUgFiwe9QDHKUg/vIIJFYMxI+gmoM4HAx7oMpAHI1lgeayIJFZFBYTi9kUxH7YA9jiFFcg7ksskSkkxIDsCXxE809whkAPoAKDWDbHCmU1IytEGgkuQDyQiAxWs4LLG7xjMCGpbF+kJeW6Bn2da6SJSHVTU/Pldik71aOrsBpaMmVcoZC0HmUdFQbZzGBijzMD/ytQl5HCEjMooBkO1wAN8ESexZByZVO4KVuKlAtzmSiUEUqWQ+r9/i9K3gLVAbZdpYbnujVZlzD/Jm8k74TlJeAGUpIwIttiZdTf+vo3mcgTSbJpRLbKGKuD7ZYY1o4LjGpnaidSrhy61LykVV8LW0FlAbz548PfN3/dgWXvPMw3bVocBIcUsgUjHJ1tHO2RvyP87hXSXqBXrplXaPM3YHmrWLvAff7A7QzrMuKLZMT2mDMoM6BYVC4LtpgFIaOLXzWVuEjnUohLIfsP15+I0tKbl4xOr7x/MsI9+Qe99ygvPYEehOfmcU4rViu4ZFITXJBi5lX3rCrVS6wLzS40u8fNze7d7N7N7t1CkUslLpW4Tyfu04n7dOI+nbiM6AL3z2rBcy/YHZwVbRtj3wxtd3MrG5qa2+c44t7612jDSCQz23BkE2V706jmBZhueeiJDpHUzxrc8CmB14Rc0vWWJkv/P9Xrqjwv1uV5utpjtbE85paRwNQUpmJudk3ZrUvI7obKJFkgh84t4tz0XxmYZiI3TDA2BNMyr6wrFiKxLJUdgH5SJvoHtCwWOpLtiMPe/OesWtdX8bDpQqm50AvGcKoWAAfn6vSHrlR72bZ9edWPxoMwDIN+FA3741G069zBflwy0g93pe99ILNMrCPRcBKMxmE9vGwu2tX01vkDp822ta0nd9tu3k0GGfiBcVcXCSONS47iPcLwngrvE2RwxmCVeZOyEGvKR6p3qC/r4xu2Jp6naWd4TDt+J7QzbKKd4XHt+B3Tzoqy31E5+MfkMDxpyMHEj0L/5eXgN5GDf1wOrY+ioRxGHZXDaF8OZDVF6EB0GDWRw+iQHC40ioZyCDoqh+BAdLi8CoImKggOBoUuOj/sqPPDJzm/rYwQNnF++ETnXy4RRB11fvS8RNCWCqImKoiemwguJ4frjsrh+tg0sX8VnDSlr38vL4jrJoK4Pj5RvMA4Gkpi3FFJjE9FiE5pY9xEG+PTwaLDIkHsPAo5vJi4v2S2Y2dtUstiRWpSluLypCyLFanauv4ZqKlHJjAMA/uRwf6/KoT7y6o7b6UHCe8wVAvdVC9+yx6owTQ3yOzhg0GSz7ju5DtQSwECFAAKAAAACAD7cRBZcWOfkxgEAAA+OwAABAAAAAAAAAAAAAAAAAAAAAAAc2ZkdFBLBQYAAAAAAQABADIAAAA6BAAAAAA=",
+        };
+        container = new DocumentEditorContainer({
+            height: "590px", documentEditorSettings: { showRuler: true },
+        });
+        DocumentEditorContainer.Inject(Toolbar);
+        container.appendTo('#container');
+        container.documentEditor.open(JSON.stringify(defaultDocument));
+    });
+    afterAll((done) => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Delete the selected content after search text', () => {
+        console.log('Delete the selected content after search text');
+        var name = 'raiseType';
+        var value = 'yearly';
+        const placeholderPattern = `$BLOCK_${name}_is_${value}$`;
+        container.documentEditor.search.findAll(placeholderPattern);
+        const searchResults = container.documentEditor.search.searchResults;
+        const offsets = searchResults.getTextSearchResultsOffset();
+        const firstOccurrence = offsets[0];
+        const secondOccurrence = offsets[1];
+        container.documentEditor.selection.select(firstOccurrence.startOffset, secondOccurrence.endOffset);
+        expect(() => { container.documentEditor.editor.delete(); }).not.toThrowError();
+    });
 
+});

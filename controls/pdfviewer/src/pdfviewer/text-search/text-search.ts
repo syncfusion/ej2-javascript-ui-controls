@@ -66,7 +66,10 @@ export class TextSearch {
     private matchAnyWordCheckBox: CheckBox;
     private searchedOccurrences: number[] = [];
     private isSelectedFromPopup: boolean = false;
-    private isDocumentTextCollectionReady: boolean = false;
+    /**
+     * @private
+     */
+    public isDocumentTextCollectionReady: boolean = false;
     private intervalId: any = null;
     /**
      * @private
@@ -160,6 +163,10 @@ export class TextSearch {
                 this.isExactMatch = false;
                 this.isMultiSearch = this.matchAnyWordCheckBox.checked;
                 this.initiateTextSearch(event.text);
+                if (event.text === '') {
+                    clearInterval(this.intervalId);
+                    this.showLoadingIndicator(false);
+                }
                 this.searchString = '';
                 const updateInterval: any = setInterval(() => {
                     if (this.documentTextCollection.length === this.pdfViewerBase.pageCount) {
@@ -203,6 +210,7 @@ export class TextSearch {
                 });
                 this.searchAutocompleteObj.element.parentElement.querySelector('.e-clear-icon').addEventListener('mousedown', (args: any) => {
                     this.showLoadingIndicator(false);
+                    clearInterval(this.intervalId);
                     (this.searchInput as HTMLInputElement).value = '';
                     this.resetTextSearch();
                     if (this.searchCountEle) {
@@ -381,6 +389,10 @@ export class TextSearch {
      * @returns {void}
      */
     public searchAfterSelection(): void {
+        if (this.currentOccurrence === 0) {
+            this.searchPageIndex = this.pdfViewerBase.currentPageNumber - 1;
+            this.startSearchPageIndex = this.searchPageIndex;
+        }
         if (this.isTextSearch) {
             this.initSearch(this.searchPageIndex, true);
             this.highlightOthers();
@@ -441,7 +453,7 @@ export class TextSearch {
             const pageIndex: number = i;
             let multiSearch: string = (pageTextData.replace((/(\s\r\n)/gm), ' ')).replace((/(\r\n)/gm), ' ');
             let Multiline: string = (pageTextData.replace((/(\s\r\n)/gm), '  ')).replace((/(\r\n)/gm), ' ');
-            let specialCharcterSearch: string = multiSearch.replace(/[^a-zA-z0-9" "]/g, '');
+            let specialCharcterSearch: string = multiSearch.replace(/[^a-zA-Z0-9]+/g, ' ');
             let arrayReturns: any;
             const queryLength: number = inputString.length;
             const matches: any[] = [];
@@ -594,12 +606,6 @@ export class TextSearch {
         }));
         if (this.isSingleSearch) {
             if (this.searchCountEle) {
-                if (this.pdfViewer.enableRtl) {
-                    this.searchCountEle.innerHTML = `${this.searchCount} ${this.pdfViewer.localeObj.getConstant('of')} ${this.currentOccurrence + 1}`;
-                }
-                else {
-                    this.searchCountEle.innerHTML = `${this.currentOccurrence + 1} ${this.pdfViewer.localeObj.getConstant('of')} ${this.searchCount}`;
-                }
                 if (this.searchedOccurrences.indexOf(this.currentOccurrence + 1) === -1) {
                     this.searchedOccurrences.push(this.currentOccurrence + 1);
                 }
@@ -667,11 +673,14 @@ export class TextSearch {
             this.calculateSearchCount(inputString);
             this.isInitialSearch = true;
             this.isLastOccurrenceCompleted = false;
-            this.startSearchPageIndex = this.searchPageIndex;
+            if (this.currentOccurrence === 0) {
+                this.startSearchPageIndex = this.searchPageIndex;
+            }
         }
-        if (inputString !== this.searchString || this.searchPageIndex === null) {
+        if (inputString !== this.searchString || this.searchPageIndex === null || this.startSearchPageIndex === null) {
             this.isTextSearch = false;
             this.searchPageIndex = this.pdfViewerBase.currentPageNumber - 1;
+            this.startSearchPageIndex = this.searchPageIndex;
         }
         this.clearAllOccurrences();
         if (inputString !== '' && !this.isMultiSearch && this.isSingleSearch && this.searchCount > 0) {
@@ -839,7 +848,7 @@ export class TextSearch {
             let nextPageIndex: number = (currentPageIndex + i) % this.pdfViewerBase.pageCount;
             if (this.searchMatches[parseInt(nextPageIndex.toString(), 10)] &&
                 this.searchMatches[parseInt(nextPageIndex.toString(), 10)].length > 0) {
-                if (this.searchedOccurrences.length === this.searchCount) {
+                if (this.searchedOccurrences.length === this.searchCount && !isInitialSearch) {
                     nextPageIndex = this.startSearchPageIndex;
                     return nextPageIndex;
                 }
@@ -944,6 +953,7 @@ export class TextSearch {
                 characterBounds = this.pdfViewerBase.textLayer.characterBound[parseInt(pageIndex.toString(), 10)];
                 this.textContents[parseInt(pageIndex.toString(), 10)] = textContents;
                 this.getPossibleMatches(pageIndex, this.searchString, pageText, textContents, isSinglePageSearch, characterBounds);
+                this.getSearchCountText();
             } else {
                 if (!isSinglePageSearch && !isNullOrUndefined(pageIndex)) {
                     this.createRequestForSearch(pageIndex);
@@ -959,7 +969,7 @@ export class TextSearch {
         let searchText: string = searchString;
         let multiSearch: string = (pageText.replace((/(\s\r\n)/gm), ' ')).replace((/(\r\n)/gm), ' ');
         let Multiline: string = (pageString.replace((/(\s\r\n)/gm), '  ')).replace((/(\r\n)/gm), ' ');
-        let specialCharcterSearch: string = multiSearch.replace(/[^a-zA-z0-9" "]/g, '');
+        let specialCharcterSearch: string = multiSearch.replace(/[^a-zA-Z0-9]+/g, ' ');
         const queryLength: number = searchString.length;
         if (!this.isMatchCase) {
             searchText = searchString.toLowerCase();
@@ -1149,6 +1159,7 @@ export class TextSearch {
                 }
                 if (this.searchedPages.indexOf(this.searchPageIndex) === -1 && this.searchedPages.length !== this.pdfViewerBase.pageCount) {
                     this.showLoadingIndicator(true);
+                    this.searchPageIndex = this.findNextPageWithText(this.searchPageIndex, true);
                     this.initSearch(this.searchPageIndex, false);
                 } else {
                     const searchPageIndex: number = this.getSearchPage(pageIndex);
@@ -1677,7 +1688,10 @@ export class TextSearch {
         const lowerPageValue: number = parseFloat(indexes.lowerPageValue.toString());
         const higherPageValue: number = parseFloat(indexes.higherPageValue.toString());
         for (let i: number = lowerPageValue; i <= higherPageValue; i++) {
-            this.highlightOtherOccurrences(i);
+            if (this.searchMatches[parseInt(i.toString(), 10)] &&
+                this.searchMatches[parseInt(i.toString(), 10)].length > 0) {
+                this.highlightOtherOccurrences(i);
+            }
         }
         if (isSearched) {
             this.showLoadingIndicator(false);
@@ -2004,6 +2018,7 @@ export class TextSearch {
     private searchRequestOnSuccess(data: any, proxy: TextSearch, viewPortWidth: number, pageWidth: number, isTileRendering: boolean,
                                    pageIndex: number, x: number, y: number, noTileX: number, noTileY: number): void {
         if (!isNullOrUndefined(data.pageText) && data.uniqueId === proxy.pdfViewerBase.documentId) {
+            this.getSearchCountText();
             proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderPages, data);
             const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
             if (viewPortWidth >= pageWidth) {
@@ -2293,34 +2308,41 @@ export class TextSearch {
         this.pdfViewer.fireTextSearchComplete(this.searchString, this.isMatchCase);
         this.showLoadingIndicator(false);
         this.isMessagePopupOpened = true;
-        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-            if (isBlazor()) {
-                const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_Nomatches');
-                promise.then((value: string) => {
-                    this.pdfViewerBase.createNotificationPopup(value);
-                });
-            } else {
-                if (this.searchMatches.length > 0) {
-                    this.pdfViewerBase.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No More Matches'));
+        if (this.pdfViewer.showNotificationDialog) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+                if (isBlazor()) {
+                    const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_Nomatches');
+                    promise.then((value: string) => {
+                        this.pdfViewerBase.createNotificationPopup(value);
+                    });
+                } else {
+                    if (this.searchMatches.length > 0) {
+                        this.pdfViewerBase.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No More Matches'));
+                    }
+                    else {
+                        this.pdfViewerBase.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No Matches'));
+                    }
                 }
-                else {
-                    this.pdfViewerBase.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No Matches'));
+            } else {
+                if (isBlazor()) {
+                    const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_NoTextFound');
+                    promise.then((value: string) => {
+                        this.pdfViewerBase.navigationPane.createTooltipMobile(value);
+                    });
+                } else {
+                    if (this.searchMatches.length > 0) {
+                        this.pdfViewerBase.navigationPane.createTooltipMobile(this.pdfViewer.localeObj.getConstant('No More Search Matches'));
+                    }
+                    else {
+                        this.pdfViewerBase.navigationPane.createTooltipMobile(this.pdfViewer.localeObj.getConstant('No Search Matches'));
+                    }
                 }
             }
-        } else {
-            if (isBlazor()) {
-                const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_NoTextFound');
-                promise.then((value: string) => {
-                    this.pdfViewerBase.navigationPane.createTooltipMobile(value);
-                });
-            } else {
-                if (this.searchMatches.length > 0) {
-                    this.pdfViewerBase.navigationPane.createTooltipMobile(this.pdfViewer.localeObj.getConstant('No More Search Matches'));
-                }
-                else {
-                    this.pdfViewerBase.navigationPane.createTooltipMobile(this.pdfViewer.localeObj.getConstant('No Search Matches'));
-                }
-            }
+        }
+        else {
+            setTimeout(() => {
+                this.isMessagePopupOpened = false;
+            }, 100);
         }
         this.currentOccurrence = this.searchCount;
         this.isLastOccurrenceCompleted = true;

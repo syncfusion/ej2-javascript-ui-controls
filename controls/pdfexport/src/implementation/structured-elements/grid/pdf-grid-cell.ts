@@ -383,18 +383,29 @@ export class PdfGridCell {
         if (!(this.objectValue instanceof PdfGrid))
         {
             if (typeof this.style.cellPadding === 'undefined' || this.style.cellPadding == null) {                        
-                returnBounds.x += this.gridRow.grid.style.cellPadding.left + this.cellStyle.borders.left.width;
-                returnBounds.y += this.gridRow.grid.style.cellPadding.top + this.cellStyle.borders.top.width;
+                returnBounds.x += this.gridRow.grid.style.cellPadding.left;
+                returnBounds.y += this.gridRow.grid.style.cellPadding.top;
                 returnBounds.width -= (this.gridRow.grid.style.cellPadding.right + this.gridRow.grid.style.cellPadding.left);
                 returnBounds.height -= (this.gridRow.grid.style.cellPadding.bottom + this.gridRow.grid.style.cellPadding.top);
-                returnBounds.height -= (this.cellStyle.borders.top.width + this.cellStyle.borders.bottom.width);
             } else {
-                returnBounds.x += this.style.cellPadding.left + this.cellStyle.borders.left.width;
-                returnBounds.y += this.style.cellPadding.top + this.cellStyle.borders.top.width;
+                returnBounds.x += this.style.cellPadding.left;
+                returnBounds.y += this.style.cellPadding.top;
                 returnBounds.width -= (this.style.cellPadding.right + this.style.cellPadding.left);
-                returnBounds.width -= (this.cellStyle.borders.left.width + this.cellStyle.borders.right.width);
                 returnBounds.height -= (this.style.cellPadding.bottom + this.style.cellPadding.top);
-                returnBounds.height -= (this.cellStyle.borders.top.width + this.cellStyle.borders.bottom.width);
+                if (this.rowSpan === 1) {
+                    returnBounds.width -= (this.style.borders.left.width);
+                }
+            }
+            if (typeof this.style.borders === 'undefined' || this.style.borders == null) {                        
+                returnBounds.x += this.gridRow.style.border.left.width;
+                returnBounds.y += this.gridRow.style.border.top.width;
+                returnBounds.width -= (this.gridRow.style.border.left.width + this.gridRow.style.border.right.width);
+                returnBounds.height -= (this.gridRow.style.border.top.width + this.gridRow.style.border.bottom.width);
+            } else {
+                returnBounds.x += this.style.borders.left.width;
+                returnBounds.y += this.style.borders.top.width;
+                returnBounds.width -= (this.style.borders.left.width + this.style.borders.right.width);
+                returnBounds.height -= (this.style.borders.top.width + this.style.borders.bottom.width);
                 if (this.rowSpan === 1) {
                     returnBounds.width -= (this.style.borders.left.width);
                 }

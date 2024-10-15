@@ -1361,6 +1361,7 @@ export class CommentView {
     }
 
     public postComment(): void {
+        this.comment.isPosted = true;
         if (this.itemData) {
             this.comment.mentions = this.itemData;
             this.itemData = [];

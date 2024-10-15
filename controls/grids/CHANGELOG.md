@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 27.1.53 (2024-10-15)
+
+### Grid
+
+#### Bug fixes
+
+- `#I637799` - The issue with Excel custom filtering not working correctly with the `Null` or `Empty` operators has been resolved.
+- `#FB61575` - The issue where the browser automatically scrolls to the grid when it is rendered with initially grouped columns has been resolved.
+- `#I630298` - The issue where the `dataStateChange` event was not triggered when opening the filter menu for a Boolean column in custom data binding has been resolved.
+- `I640964` - Resolved a script error that occurred when editing was disabled in `Batch` mode.
+- `I638333` - Fixed an issue where clicking the `Clear` button in the sort responsive dialog incorrectly displayed all sort buttons text as `None` instead of their localized values.
+- `I639750` - Resolved a script error that occurred during the initial rendering of `auto-generated` columns when resizing was enabled.
+- `I638418` - Fixed a script error that occurred when opening the `filter` pop-up and navigating using the down arrow key.
+- `I635845` - Resolved misalignment issues that occurred when resizing aggregate columns along with frozen columns.
+
 ## 27.1.52 (2024-10-08)
 
 ### Grid

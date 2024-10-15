@@ -1,4 +1,4 @@
-import { Property, Event, Component, EmitType, Internationalization, extend, Fetch, select } from '@syncfusion/ej2-base';
+import { Property, Event, Component, EmitType, Internationalization, Fetch, select } from '@syncfusion/ej2-base';
 import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';

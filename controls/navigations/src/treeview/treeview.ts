@@ -1980,6 +1980,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.element.classList.contains('e-filtering')) {
                 const oldCheckedNodes: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.OldCheckedData).executeLocal(new Query().where('parentID', 'equal', dataUid, true));
                 checkedCount = oldCheckedNodes.length;
+                const parentNode: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.OldCheckedData).executeLocal(new Query().where('hasChildren', 'equal', true, true));
+                if ((parentNode.length > 0) && (this.OldCheckedData.some((oldNode: { id: string }) => oldNode.id === dataUid))) {
+                    checkedCount = parentNode.length;
+                }
                 let childItems: { [key: string]: Object }[] = [];
                 if (this.dataType === 1) {
                     childItems = <{ [key: string]: Object }[]>new DataManager(this.DDTTreeData).executeLocal(new Query().where(this.fields.parentID, 'equal', dataUid, true));
@@ -1989,7 +1993,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 count = childItems.length;
             }
-            if (count === checkedCount) {
+            if (count === 0 && checkedCount === 0) {
+                return;
+            }
+            else if (count === checkedCount) {
                 this.changeState(checkBoxEle, 'check', null, true, true);
             } else if (checkedCount > 0 || indeterminateNodes.length > 0) {
                 this.changeState(checkBoxEle, 'indeterminate', null, true, true);
@@ -4894,16 +4901,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    private collapseByLevel(element: Element, level: number, excludeHiddenNodes: boolean): void {
+    private collapseByLevel(element: Element, level: number, excludeHiddenNodes: boolean, currentLevel?: number): void {
+        currentLevel = isNOU(currentLevel) ? 1 : currentLevel;
         if (level > 0 && !isNOU(element)) {
             const cNodes: Element[] = this.getVisibleNodes(excludeHiddenNodes, <NodeListOf<Element> & Element[]>element.childNodes);
             for (let i: number = 0, len: number = cNodes.length; i < len; i++) {
                 const liEle: Element = cNodes[parseInt(i.toString(), 10)];
                 const icon: Element = select('.' + COLLAPSIBLE, select('.' + TEXTWRAP, liEle));
-                if (!isNOU(icon)) {
+                if (currentLevel >= level && !isNOU(icon)) {
                     this.collapseNode(liEle, icon, null);
                 }
-                this.collapseByLevel(select('.' + PARENTITEM, liEle), level - 1, excludeHiddenNodes);
+                this.collapseByLevel(select('.' + PARENTITEM, liEle), level, excludeHiddenNodes, currentLevel + 1);
             }
         }
     }

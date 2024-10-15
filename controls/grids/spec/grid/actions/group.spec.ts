@@ -3027,4 +3027,32 @@ describe('Code Coverage => ', () => {
         });
     });
 
+    describe('EJ2-911894: Browser automatically scrolls to grid when rendered with groupSettings. => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowGrouping: true,
+                    groupSettings: { columns: ['CustomerID'] },
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, minWidth: '100', headerText: "Customer ID" },
+                        { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                    ],
+                }, done);
+        });
+
+        it('Active element testing', () => {
+            const activeElementClass = document.activeElement.className;
+            expect(activeElementClass.includes('e-icon-gdownarrow')).toBe(false);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

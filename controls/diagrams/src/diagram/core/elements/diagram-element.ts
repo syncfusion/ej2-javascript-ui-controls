@@ -1,4 +1,4 @@
-import { HorizontalAlignment, VerticalAlignment, UnitMode, Transform, RelativeMode, FlipDirection, ElementAction, PortConnectionDirection } from '../../enum/enum';
+import { HorizontalAlignment, VerticalAlignment, UnitMode, Transform, RelativeMode, FlipDirection, ElementAction, PortConnectionDirection, FlipMode } from '../../enum/enum';
 import { MarginModel, ShapeStyleModel, ShadowModel } from '../appearance-model';
 import { Size } from '../../primitives/size';
 import { PointModel } from '../../primitives/point-model';
@@ -156,6 +156,11 @@ export class DiagramElement {
      */
 
     public flip: FlipDirection = 'None';
+
+    /**
+     * Sets/Gets the element that is to be flipped in assigned flip direction along with the node
+     */
+    public flipMode: FlipMode = 'All';
 
     /**
      * Sets whether the element has to be aligned with respect to a point/with respect to its immediate parent

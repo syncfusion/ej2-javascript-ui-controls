@@ -151,7 +151,7 @@ export class ScatterSeries {
         const shapeOption: PathOption = new PathOption(
             chart.element.id + '_Series_' + series.index + '_Point_' + point.index, argsData.fill,
             argsData.border.width, (series.chart.enableCanvas && !argsData.border.color) ? argsData.fill :
-                argsData.border.color, series.opacity, null
+                argsData.border.color, series.opacity, series.border.dashArray
         );
         if (chart.redraw && getElement(shapeOption.id)) {
             circlePath = argsData.shape === 'Circle' ? 'c' : '';

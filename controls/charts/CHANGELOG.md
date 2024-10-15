@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 27.1.53 (2024-10-15)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I637436` - Now, multilevel axis labels are working properly when RTL is enabled.
+- `#I640682` - The border dash array now works properly for all series.
+- `#I640585` - Now, the range area series works properly when the middle point's x value is set to 0.
+
+### 3DChart
+
+#### Bug Fixes
+
+- `#I637725` - The first label on the y-axis is now positioned correctly.
+
 ## 27.1.52 (2024-10-08)
 
 ### Chart

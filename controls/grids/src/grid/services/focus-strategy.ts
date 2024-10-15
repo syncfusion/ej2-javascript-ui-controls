@@ -1189,7 +1189,10 @@ export class Matrix {
 
     public get(rowIndex: number, columnIndex: number, navigator: number[], action?: string, validator?: Function): number[] {
         const tmp: number = columnIndex; if (rowIndex + navigator[0] < 0) { return [rowIndex, columnIndex]; }
-        rowIndex = Math.max(0, Math.min(rowIndex + navigator[0], this.rows));
+        if (!document.getElementsByClassName('e-popup-open').length || (document.querySelectorAll('.e-popup-open .e-editedrow').length &&
+            !document.querySelectorAll('.e-popup-open:not(.e-dialog)').length)) {
+            rowIndex = Math.max(0, Math.min(rowIndex + navigator[0], this.rows));
+        }
         let emptyTable: boolean = true;
         if (isNullOrUndefined(this.matrix[parseInt(rowIndex.toString(), 10)])) { return null; }
         columnIndex = Math.max(0, Math.min(columnIndex + navigator[1], this.matrix[parseInt(rowIndex.toString(), 10)].length - 1));

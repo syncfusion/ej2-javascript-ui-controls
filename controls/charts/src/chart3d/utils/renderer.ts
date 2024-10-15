@@ -360,7 +360,7 @@ export class AxisRenderer {
                 const maxWidth: number = axis.rect.width / axis.visibleLabels.length - 5;
                 const label: Chart3DLabelRect = labels[i as number];
 
-                if (((label.x - label.size.width / 2 < axis.rect.x && i === 0) ||
+                if (((label.x > axis.rect.x && i === 0) ||
                     (label.x + label.size.width / 2 > axis.rect.x + axis.rect.width && i === axis.visibleLabels.length - 1)) &&
                     axis.labelIntersectAction !== 'Trim' && axis.labelIntersectAction.indexOf('wrap') < 0) {
                     if (axis.edgeLabelPlacement === 'Hide') {

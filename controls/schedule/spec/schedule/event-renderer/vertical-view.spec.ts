@@ -2471,6 +2471,130 @@ describe('Vertical View Event Render Module', () => {
         });
     });
 
+    describe('Vertical view appointment overlapping', () => {
+        let schObj: Schedule;
+        const appointments: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'App1',
+            StartTime: new Date(2017, 10, 2, 8, 0),
+            EndTime: new Date(2017, 10, 2, 9, 30),
+            IsAllDay: false
+        }, {
+            Id: 2,
+            Subject: 'App2',
+            StartTime: new Date(2017, 10, 2, 9, 0),
+            EndTime: new Date(2017, 10, 2, 10, 30),
+            IsAllDay: false
+        }, {
+            Id: 3,
+            Subject: 'App3',
+            StartTime: new Date(2017, 10, 2, 10, 0),
+            EndTime: new Date(2017, 10, 2, 11, 30),
+            IsAllDay: false
+        }, {
+            Id: 4,
+            Subject: 'App4',
+            StartTime: new Date(2017, 10, 2, 11, 0),
+            EndTime: new Date(2017, 10, 2, 12, 30),
+            IsAllDay: false
+        }, {
+            Id: 5,
+            Subject: 'App5',
+            StartTime: new Date(2017, 10, 2, 11, 0),
+            EndTime: new Date(2017, 10, 2, 11, 30),
+            IsAllDay: false,
+        }, {
+            Id: 6,
+            Subject: 'Rec1',
+            StartTime: new Date(2017, 9, 30, 8, 0),
+            EndTime: new Date(2017, 9, 30, 9, 30),
+            IsAllDay: false,
+            RecurrenceRule: "FREQ=DAILY;INTERVAL=1;COUNT=3",
+        }, {
+            Id: 7,
+            Subject: 'Rec2',
+            StartTime: new Date(2017, 9, 30, 9, 0),
+            EndTime: new Date(2017, 9, 30, 10, 30),
+            IsAllDay: false,
+            RecurrenceRule: "FREQ=DAILY;INTERVAL=1;COUNT=3",
+        }, {
+            Id: 8,
+            Subject: 'Rec3',
+            StartTime: new Date(2017, 9, 30, 10, 0),
+            EndTime: new Date(2017, 9, 30, 11, 30),
+            IsAllDay: false,
+            RecurrenceRule: "FREQ=DAILY;INTERVAL=1;COUNT=3",
+        }, {
+            Id: 9,
+            Subject: 'Rec4',
+            StartTime: new Date(2017, 9, 30, 11, 0),
+            EndTime: new Date(2017, 9, 30, 12, 30),
+            IsAllDay: false,
+            RecurrenceRule: "FREQ=DAILY;INTERVAL=1;COUNT=3",
+        }, {
+            Id: 10,
+            Subject: 'Rec5',
+            StartTime: new Date(2017, 9, 30, 11, 0),
+            EndTime: new Date(2017, 9, 30, 11, 30),
+            IsAllDay: false,
+            RecurrenceRule: "FREQ=DAILY;INTERVAL=1;COUNT=3",
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { height: '500px', selectedDate: new Date(2017, 10, 2), currentView: 'Week' };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking normal appointment overlapping', () => {
+            const eventList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const normalEventList: Element[] = [];
+
+            eventList.forEach((event: Element) => {
+                const ariaLabel = event.getAttribute('aria-label');
+                if (ariaLabel && !ariaLabel.includes('Recurring Event')) {
+                    normalEventList.push(event);
+                }
+            });
+            expect(normalEventList.length).toEqual(5);
+            expect((<HTMLElement>normalEventList[0]).style.width).not.toEqual("47.5%");
+            expect((<HTMLElement>normalEventList[0]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>normalEventList[1]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>normalEventList[2]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>normalEventList[3]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>normalEventList[4]).style.width).toEqual("30.3333%");
+        });
+
+        it('Checking reccuring appointment overlapping', () => {
+            const eventList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const recEventList: Element[] = [];
+            eventList.forEach((event: Element) => {
+                const ariaLabel = event.getAttribute('aria-label');
+                if (ariaLabel && ariaLabel.includes('Recurring Event')) {
+                    recEventList.push(event);
+                }
+            });
+            expect(recEventList.length).toEqual(15);
+            expect((<HTMLElement>recEventList[0]).style.width).not.toEqual("47.5%");
+            expect((<HTMLElement>recEventList[0]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[1]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[2]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[3]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[4]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[5]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[6]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[7]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[8]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[9]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[10]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[11]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[12]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[13]).style.width).toEqual("30.3333%");
+            expect((<HTMLElement>recEventList[14]).style.width).toEqual("30.3333%");
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

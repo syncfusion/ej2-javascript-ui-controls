@@ -896,6 +896,7 @@ export class AnnotationToolbar {
             if (mobileAnnotationToolbar) {
                 mobileAnnotationToolbar.style.display = 'none';
             }
+            this.pdfViewer.isAnnotationToolbarVisible = !hideToolbar;
             return [];
         } else {
             this.isToolbarCreated = true;
@@ -972,6 +973,7 @@ export class AnnotationToolbar {
                     this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
                 }
             }
+            this.pdfViewer.isAnnotationToolbarVisible = !hideToolbar;
             return items;
         }
     }
@@ -3695,7 +3697,7 @@ export class AnnotationToolbar {
      * @private
      * @returns {void}
      */
-    public showAnnotationToolbar(element?: HTMLElement, isInitialLoading?: boolean): void {
+    public showAnnotationToolbar(element?: HTMLElement, isInitialLoading?: boolean, isShow?: boolean): void {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (!this.isToolbarHidden) {
                 const annotationModule: any = this.pdfViewer.annotationModule;
@@ -3748,6 +3750,14 @@ export class AnnotationToolbar {
             }
             this.enableAnnotationAddTools(true);
             this.isToolbarHidden = !this.isToolbarHidden;
+        }
+        else {
+            const editIconId: string = this.pdfViewer.element.id + '_annotationIcon';
+            const editIcon: HTMLElement = document.getElementById(editIconId);
+            if (editIcon.parentElement.classList.contains('e-pv-select') && !isShow || (!editIcon.parentElement.classList.contains('e-pv-select') && isShow)) {
+                this.createAnnotationToolbarForMobile(editIconId);
+                this.pdfViewer.isAnnotationToolbarVisible = isShow;
+            }
         }
     }
 

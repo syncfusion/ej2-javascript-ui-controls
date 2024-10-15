@@ -1373,7 +1373,7 @@ export class FormFields {
                         currentTarget.value = event.target.value;
                     } else {
                         currentField.Text = event.target.value;
-                        this.pdfViewerBase.setItemInSessionStorage(this.formFieldsData, '_formfields');
+                        this.updateDataInSession(currentField, null, null, null, null, true);
                     }
                 }
             }
@@ -1454,11 +1454,12 @@ export class FormFields {
      * @param {any} signatureBounds - It describes about the signature bounds
      * @param {string} signatureFontFamily - It describes about the signature font family
      * @param {number} signatureFontSize   - It describes about the signature font size
+     * @param {boolean} isUpdateSameField - It describes about the isUpdateSameField
      * @private
      * @returns {void}
      */
     public updateDataInSession(target: any, signaturePath?: any, signatureBounds?: any, signatureFontFamily?: string,
-                               signatureFontSize?: number): void {
+                               signatureFontSize?: number, isUpdateSameField: boolean = false): void {
         this.pdfViewerBase.updateDocumentEditedProperty(true);
         let filterFields: any[] = [];
         let fieldsByName: string = ' ';
@@ -1582,8 +1583,12 @@ export class FormFields {
                     filterArrayLength--;
                     if (filterArrayLength === 0)
                     {break; }
-                } else if (target && target.getAttribute('list') != null && target.type === 'text' && currentData.uniqueID === target.list.id) {
-                    currentData.SelectedValue = target.value;
+                } else if (!isUpdateSameField) {
+                    if (target && target.getAttribute('list') != null && target.type === 'text' && currentData.uniqueID === target.list.id) {
+                        currentData.SelectedValue = target.value;
+                    }
+                } else if (isUpdateSameField) {
+                    currentData.SelectedValue = target.Text;
                 }
                 this.updateFormFieldsCollection(currentData);
             }

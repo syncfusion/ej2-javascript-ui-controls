@@ -2083,7 +2083,8 @@ export class ChartRows extends DateProcessor {
                     trElement = this.parent.getRowByID(id);
                     trElement = trElement ? trElement : (taskbarElement.querySelector('.e-gantt-child-taskbar'));
                     if (trElement) {
-                        if (trElement.querySelectorAll('.e-segmented-taskbar')) {
+                        const segmentElements: NodeListOf<Element> = trElement.querySelectorAll('.e-segmented-taskbar');
+                        if (segmentElements && segmentElements.length > 0) {
                             /* eslint-disable-next-line */
                             let taskContainer: Element =
                                 trElement.querySelector(`.e-taskbar-main-container[rowuniqueid="${currentData.ganttProperties.rowUniqueID}"]`) ||

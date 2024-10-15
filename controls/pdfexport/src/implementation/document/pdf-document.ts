@@ -1,5 +1,5 @@
 import { StreamWriter } from '@syncfusion/ej2-file-utils';
-import { PdfWriter } from './../input-output/pdf-writer';
+import { PdfWriter, PdfWriterHelper } from './../input-output/pdf-writer';
 import { PdfMainObjectCollection } from './../input-output/pdf-main-object-collection';
 import { PdfDocumentBase } from './pdf-document-base';
 import { PdfCrossTable } from './../input-output/pdf-cross-table';
@@ -65,7 +65,7 @@ export class PdfDocument extends PdfDocumentBase {
      * @default null
      * @private
      */
-    public streamWriter : StreamWriter = null;
+    public streamWriter : StreamWriter | PdfWriterHelper = null;
     /**
      * Defines the `color space` of the document
      * @private
@@ -297,6 +297,21 @@ export class PdfDocument extends PdfDocumentBase {
         }
     }
     /**
+     * Saves the document to the specified output stream and return the stream as byte array.
+     * @private
+     */
+    _docSave(): Uint8Array {
+        let stream: PdfWriterHelper = new PdfWriterHelper();
+        this.checkPagesPresence();
+        if (stream === null) {
+            throw new Error('ArgumentNullException : stream');
+        }
+        this.streamWriter = stream;
+        let writer : PdfWriter = new PdfWriter(stream);
+        writer.document = this;
+        return this.crossTable._save(writer);
+    }
+    /**
      * Checks the pages `presence`.
      * @private
      */
@@ -337,6 +352,9 @@ export class PdfDocument extends PdfDocumentBase {
         PdfDocument.cache.destroy();
         this.crossTable.pdfObjects.destroy();
         PdfDocument.cache = undefined;
-        this.streamWriter.destroy();
+        if(this.streamWriter)
+        {
+            this.streamWriter.destroy();
+        }        
     }
 }

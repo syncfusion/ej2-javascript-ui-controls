@@ -2397,7 +2397,8 @@ export class TableWidget extends BlockWidget {
         let containerWidth: number = 0;
         let tableWidth: number = 0;
         let rowSpannedCells: TableCellWidget[] = [];
-        let isAutoWidth: boolean = this.tableFormat.preferredWidthType === 'Auto';
+        /* eslint-disable-next-line max-len */
+        let isAutoWidth: boolean = (this.tableFormat.preferredWidthType === 'Auto' || (this.tableFormat.preferredWidthType === "Point" && this.tableFormat.preferredWidth === 0));
         let isAutoFit: boolean = this.tableFormat.allowAutoFit;
         // For continuous layout, window width should be considered. 
         // If preferred width exceeds this limit, it can take upto maximum of 2112 pixels (1584 points will be assigned by Microsoft Word).
@@ -4812,6 +4813,10 @@ export abstract class ElementBox {
      * @private
      */
     public ischangeDetected: boolean = false;
+    /**
+     * @private
+     */
+    public isWrongWord: boolean = false;
     /**
      * @private
      */
@@ -9145,6 +9150,8 @@ export class CommentElementBox extends CommentCharacterElementBox {
 
     private done: boolean = false;
 
+    private posted: boolean = false;
+
     private textIn: string = '';
 
     public replyComments: CommentElementBox[];
@@ -9206,6 +9213,14 @@ export class CommentElementBox extends CommentCharacterElementBox {
         this.mentionsIn = value;
     }
 
+    get isPosted(): boolean {
+        return this.posted;
+    }
+
+    set isPosted(value: boolean) {
+        this.posted = value;
+    }
+    
     constructor(date: string) {
         super(0);
         this.createdDate = date;

@@ -181,6 +181,7 @@
       margin: $ddl-zero-value;
       outline: none;
       width: 100%;
+      overflow: hidden;
     }
 
     input[readonly].e-input,

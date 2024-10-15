@@ -79,7 +79,7 @@ export class BubbleSeries {
                 bubblePoint.color = argsData.fill;
                 const shapeOption: PathOption = new PathOption(
                     series.chart.element.id + '_Series_' + series.index + '_Point_' + bubblePoint.index,
-                    argsData.fill, argsData.border.width, argsData.border.color, series.opacity, null
+                    argsData.fill, argsData.border.width, argsData.border.color, series.opacity, series.border.dashArray
                 );
                 if (pointUpdate && getElement(shapeOption.id)) {
                     const markerElement: Element = getElement(shapeOption.id);

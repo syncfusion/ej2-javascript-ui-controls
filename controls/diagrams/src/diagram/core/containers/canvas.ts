@@ -106,7 +106,8 @@ export class Canvas extends Container {
                 if ((child.transform & Transform.Parent) !== 0) {
                     child.parentTransform = this.parentTransform + this.rotateAngle;
                     if (this.flip !== 'None' || this.elementActions & ElementAction.ElementIsGroup) {
-                        child.parentTransform = (this.flip === 'Horizontal' || this.flip === 'Vertical') ?
+                        // EJ2-911095 - Restrict negative rotate angle for the non flipped text
+                        child.parentTransform = ((this.flip === 'Horizontal' || this.flip === 'Vertical') && (!(child instanceof TextElement && (this.flipMode === 'Port' || this.flipMode === 'Label' || this.flipMode === 'PortAndLabel' || this.flipMode === 'None')))) ?
                             -child.parentTransform : child.parentTransform;
                     }
                     const childSize: Size = child.desiredSize.clone();

@@ -642,7 +642,7 @@ export class MonthEvent extends EventBase {
     public renderEventElement(event: Record<string, any>, appointmentElement: HTMLElement, cellTd: Element): void {
         const eventType: string = appointmentElement.classList.contains(cls.BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
         const isAppointment: boolean = appointmentElement.classList.contains(cls.APPOINTMENT_CLASS);
-        const eventObj: Record<string, any> = this.getEventData(event);
+        const eventObj: Record<string, any> = this.parent.currentView === 'Month' ? this.getSpannedTime(event) : this.getEventData(event);
         const args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
         this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
             if (eventArgs.cancel) {
@@ -651,6 +651,17 @@ export class MonthEvent extends EventBase {
                 this.renderElement(cellTd, appointmentElement, isAppointment);
             }
         });
+    }
+
+    private getSpannedTime(event: Record<string, any>): Record<string, any> {
+        const eventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
+        if ((eventObj[this.fields.startTime]).getDate() === (eventObj.data[this.fields.startTime]).getDate()) {
+            eventObj[this.fields.startTime] = eventObj.data[this.fields.startTime];
+        }
+        if ((eventObj[this.fields.endTime]).getDate() === (eventObj.data[this.fields.endTime]).getDate()) {
+            eventObj[this.fields.endTime] = eventObj.data[this.fields.endTime];
+        }
+        return eventObj;
     }
 
     public getEventData(event: Record<string, any>): Record<string, any> {

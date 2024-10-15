@@ -3247,7 +3247,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 const value: string | number | boolean  = this.allowObjectBinding ?
                     getValue(((this.fields.value) ? this.fields.value : ''), this.value[this.value.length - 1]) :
                     this.value[this.value.length - 1];
-                const temp: string = this.getTextByValue(value);
+                const temp: string = text;
                 const textValues: string = this.text != null && this.text !== '' ? this.text + ',' + temp : temp;
                 currentText.push(textValues);
                 this.setProperties({ text: currentText.toString() }, true);
@@ -3290,11 +3290,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         eve: MouseEvent | KeyboardEventArgs,
         element: HTMLElement,
         isNotTrigger: boolean,
-        length?: number): void {
+        length?: number, dataValue?: { [key: string]: Object } | string | number | boolean, text?: string): void {
         const list: string[] | number[] | boolean[] | { [key: string]: Object }[] = this.listData;
         if (this.initStatus && !isNotTrigger) {
             value = this.allowObjectBinding ? getValue(((this.fields.value) ? this.fields.value : ''), value) : value;
-            const val: FieldSettingsModel = this.getDataByValue(value) as FieldSettingsModel;
+            const val: FieldSettingsModel = dataValue ? dataValue : this.getDataByValue(value) as any;
             const eventArgs: SelectEventArgs = {
                 e: eve,
                 item: <HTMLLIElement>element,
@@ -3327,15 +3327,24 @@ export class MultiSelect extends DropDownBase implements IInput {
                         if (isNullOrUndefined(this.selectedListData)) {
                             this.selectedListData = [(this.getDataByValue(value)) as any];
                         } else {
-                            if (Array.isArray(this.selectedListData)) {
-                                this.selectedListData.push((this.getDataByValue(value)) as never);
-                            } else {
-                                this.selectedListData = [this.selectedListData, (this.getDataByValue(value)) as any];
+                            if (dataValue) {
+                                if (Array.isArray(this.selectedListData)) {
+                                    this.selectedListData.push(dataValue as never);
+                                } else {
+                                    this.selectedListData = [this.selectedListData, dataValue as any];
+                                }
+                            }
+                            else {
+                                if (Array.isArray(this.selectedListData)) {
+                                    this.selectedListData.push((this.getDataByValue(value)) as never);
+                                } else {
+                                    this.selectedListData = [this.selectedListData, (this.getDataByValue(value)) as any];
+                                }
                             }
                         }
                     }
                     if ((this.enableVirtualization && value) || !this.enableVirtualization){
-                        this.updateListSelectEventCallback(value, element, eve);
+                        this.updateListSelectEventCallback(value, element, eve, text);
                     }
                     if (this.hideSelectedItem && this.fixedHeaderElement && this.fields.groupBy && this.mode !== 'CheckBox') {
                         super.scrollStop();
@@ -4470,9 +4479,13 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.removeValue(value, e, length);
         }
     }
-    private updateListSelectEventCallback(value: string | number | boolean |object, li: Element, e: MouseEvent | KeyboardEventArgs): void {
+    private updateListSelectEventCallback(
+        value: string | number | boolean |object,
+        li: Element,
+        e: MouseEvent | KeyboardEventArgs,
+        currentText?: string): void {
         value = this.allowObjectBinding ? getValue(((this.fields.value) ? this.fields.value : ''), value) : value;
-        const text: string = this.getTextByValue(value as string | number | boolean);
+        const text: string = currentText ? currentText : this.getTextByValue(value as string | number | boolean);
         if ((this.allowCustomValue || this.allowFiltering) &&
              !this.findListElement(this.mainList, 'li', 'data-value', value as string | number | boolean) &&
            (!this.enableVirtualization || (this.enableVirtualization && this.virtualCustomData))) {
@@ -5328,7 +5341,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                                     if (this.value && obj[this.fields.value] != null && Array.isArray(this.value) &&
                                         ((!this.allowObjectBinding && this.value.indexOf(obj[this.fields.value] as never) < 0) ||
                                             (this.allowObjectBinding && !this.isObjectInArray(obj[this.fields.value], this.value)))) {
-                                        this.dispatchSelect(obj[this.fields.value], event , null, false, length);
+                                        const value: string | number | boolean | object = obj[this.fields.value];
+                                        const text: string = (obj[this.fields.text]).toString();
+                                        this.dispatchSelect(value, event, null, false, length, obj, text);
                                     }
                                 });
                             }
@@ -5338,7 +5353,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 this.updateValueState(event, this.value, this.tempValues);
                                 this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
                             }
-                            this.updateHiddenElement();
+                            this.updateHiddenElement(true);
                             if (this.popupWrapper && li[index - 1] && li[index - 1].classList.contains('e-item-focus')) {
                                 const selectAllParent: Element = document.getElementsByClassName('e-selectall-parent')[0];
                                 if (selectAllParent && selectAllParent.classList.contains('e-item-focus')) {
@@ -5510,7 +5525,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
 
-    private updateHiddenElement(): void {
+    private updateHiddenElement(isVirtualSelectAll?: boolean): void {
         let hiddenValue: string = '';
         let wrapperText: string = '';
         let data: string = '';
@@ -5518,19 +5533,23 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.mode === 'CheckBox') {
             (this.value as string[]).map((value: string, index: number): void => {
                 hiddenValue += '<option selected value ="' + value + '">' + index + '</option>';
-                if (this.listData) {
-                    data = this.getTextByValue(value);
-                } else {
-                    data = value;
+                if (!isVirtualSelectAll) {
+                    if (this.listData) {
+                        data = this.getTextByValue(value);
+                    } else {
+                        data = value;
+                    }
+                    wrapperText += data + this.delimiterChar + ' ';
+                    text.push(data);
                 }
-                wrapperText += data + this.delimiterChar + ' ';
-                text.push(data);
             });
             this.hiddenElement.innerHTML = hiddenValue;
-            this.updateWrapperText(this.delimiterWrapper, wrapperText);
+            if (!isVirtualSelectAll) {
+                this.updateWrapperText(this.delimiterWrapper, wrapperText);
+                this.setProperties({ text: text.toString() }, true);
+            }
             this.delimiterWrapper.setAttribute('id', getUniqueID('delim_val'));
             this.inputElement.setAttribute('aria-describedby', this.delimiterWrapper.id);
-            this.setProperties({ text: text.toString() }, true);
             this.refreshInputHight();
             this.refreshPlaceHolder();
         }
@@ -6571,20 +6590,13 @@ export class MultiSelect extends DropDownBase implements IInput {
     public destroy(): void {
         // eslint-disable-next-line
         if ((this as any).isReact) { this.clearTemplate(); }
-        if (this.popupObj) {
+        if (!isNullOrUndefined(this.popupObj)) {
             this.popupObj.hide();
+            this.popupObj.destroy();
         }
         this.notify(destroy, {});
         this.unwireListEvents();
         this.unWireEvent();
-        this.list = null;
-        this.popupObj = null;
-        this.mainList = null;
-        this.mainData = null;
-        this.filterParent = null;
-        this.ulElement = null;
-        this.mainListCollection = null;
-        super.destroy();
         const temp: string[] = ['readonly', 'aria-disabled', 'placeholder', 'aria-label', 'aria-expanded'];
         let length: number = temp.length;
         if (!isNullOrUndefined(this.inputElement)) {
@@ -6605,6 +6617,57 @@ export class MultiSelect extends DropDownBase implements IInput {
                 remove(this.overAllWrapper);
             }
         }
+        if (this.popupWrapper && this.popupWrapper.parentElement) {
+            this.popupWrapper.parentElement.remove();
+        }
+        while (this.searchWrapper && this.searchWrapper.firstChild) {
+            this.searchWrapper.removeChild(this.searchWrapper.firstChild);
+        }
+        if (this.searchWrapper && this.searchWrapper.parentElement) {
+            this.searchWrapper.parentElement.remove();
+        }
+        if (this.viewWrapper && this.viewWrapper.parentElement) {
+            this.viewWrapper.parentElement.remove();
+        }
+        if (this.overAllClear && this.overAllClear.parentElement) {
+            this.overAllClear.parentElement.remove();
+        }
+        if (this.delimiterWrapper && this.delimiterWrapper.parentElement) {
+            this.delimiterWrapper.parentElement.remove();
+        }
+
+        // Remove the select element if it exists
+        const selectElement: any = this.overAllWrapper.querySelector('select.e-multi-hidden');
+        if (selectElement && selectElement.parentElement) {
+            selectElement.parentElement.remove();
+        }
+        while (this.componentWrapper && this.componentWrapper.firstChild) {
+            this.componentWrapper.removeChild(this.componentWrapper.firstChild);
+        }
+        if (this.componentWrapper && this.componentWrapper.parentElement) {
+            this.componentWrapper.removeAttribute('class');
+            this.componentWrapper.parentElement.remove();
+        }
+        while (this.popupWrapper && this.popupWrapper.firstChild) {
+            this.popupWrapper.removeChild(this.popupWrapper.firstChild);
+        }
+        if (this.inputElement) {
+            const attrArray: string[] = ['readonly', 'aria-disabled', 'placeholder', 'aria-labelledby',
+                'aria-expanded', 'autocomplete', 'aria-readonly', 'autocapitalize',
+                'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-label', 'aria-hidden', 'tabindex', 'aria-controls',
+                'aria-describedby', 'size', 'role', 'type', 'class'];
+            for (let i: number = 0; i < attrArray.length; i++) {
+                this.inputElement.removeAttribute(attrArray[i as number]);
+            }
+        }
+        if (this.inputElement) {
+            this.inputElement.remove();
+        }
+        this.list = null;
+        this.popupObj = null;
+        this.mainData = null;
+        this.filterParent = null;
+        this.ulElement = null;
         this.componentWrapper = null;
         this.overAllClear = null;
         this.overAllWrapper = null;
@@ -6616,15 +6679,13 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.popupWrapper = null;
         this.inputElement = null;
         this.delimiterWrapper = null;
-        this.popupObj = null;
-        this.popupWrapper = null;
         this.liCollections = null;
         this.header = null;
         this.mainList = null;
         this.mainListCollection = null;
         this.footer = null;
         this.selectAllEventEle = null;
-
+        super.destroy();
     }
 }
 export interface CustomValueEventArgs {

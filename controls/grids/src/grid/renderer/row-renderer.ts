@@ -107,6 +107,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         const chekBoxEnable: Column = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox' && col.field)[0];
         let value: boolean = false;
         const isFrozen: boolean = this.parent.isFrozenGrid();
+        let isFirstVisibleCell: boolean = true;
         if (chekBoxEnable) {
             value = getObject(chekBoxEnable.field, rowArgs.data);
         }
@@ -137,10 +138,16 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             if (row.isExpand && row.cells[parseInt(i.toString(), 10)].cellType === CellType.DetailExpand) {
                 attrs['class'] = this.parent.isPrinting ? 'e-detailrowcollapse' : 'e-detailrowexpand';
             }
+            const isGroupFirstCell: boolean = !this.parent.enableRtl && this.parent.groupSettings && isFirstVisibleCell &&
+                this.parent.groupSettings.columns.length && (this.parent.gridLines === 'Vertical' || this.parent.gridLines === 'Both');
             let td: Element = cellRenderer.render(row.cells[parseInt(i.toString(), 10)], row.data, attrs, row.isExpand, isEdit);
             if (row.cells[parseInt(i.toString(), 10)].cellType !== CellType.Filter) {
                 if (row.cells[parseInt(i.toString(), 10)].cellType === CellType.Data
                     || row.cells[parseInt(i.toString(), 10)].cellType === CellType.CommandColumn) {
+                    if (cell.visible && isGroupFirstCell) {
+                        td.classList.add('e-grid-group-first-cell');
+                        isFirstVisibleCell = false;
+                    }
                     const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                         this.parent.parentDetails.parentInstObj.isReact;
                     if (((this.parent.isReact && this.parent.requireTemplateRef) || (isReactChild &&
@@ -223,6 +230,18 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                         if (isFrozen) {
                             resetColandRowSpanStickyPosition(this.parent, cellArgs.column, td, cellArgs.colSpan);
                         }
+                    }
+                }
+                if ((cell.cellType === CellType.Header || cell.cellType === CellType.StackedHeader) &&
+                    isGroupFirstCell && (cell.visible || cell.cellType === CellType.StackedHeader)) {
+                    const visibleColumns: Column[] = this.parent.getVisibleColumns();
+                    const field: string = 'field';
+                    const type: string = 'type';
+                    if ((cell.column[`${type}`] && cell.column[`${type}`] === 'checkbox') ||
+                        (cell.cellType === CellType.Header && cell.column[`${field}`] && visibleColumns.length &&
+                            visibleColumns[0].field === cell.column[`${field}`]) || cell.cellType === CellType.StackedHeader) {
+                        td.classList.add('e-grid-group-first-cell');
+                        isFirstVisibleCell = false;
                     }
                 }
                 if (this.isSpan) {

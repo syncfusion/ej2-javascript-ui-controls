@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## 27.1.53 (2024-10-15)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I628955` - Resolved the Pie chart color issue in Blazor word processor.
+- `#I627890` - Resolved the error in opening the document.
+- `#I631391` - Resolved the Word Preview Freezes Browser issue.
+- `#I632707` - Resolved the issue of tables with complex structures that have cells wrapping to the next page are not rendered.
+- `#FB61513` - Resolved the error when saving track changes.
+- `#I631081` - Resolved the table looping issue while opening attached sfdt.
+- `#I638813` - Resolved the XSS vulnerability issue.
+- `#I635143` - Resolved the mailto issue in the Document editor.
+- `#I632855` - Resolved script error when try to download the document with unposted comments.
+- `#I627023` - Now SpellCheck API pass the custom header when using beforeXmlHttpRequestSend.
+- `#I631727` - Resolved the issue bullet points loses it style.
+- `#I636298` - Now stopProtectionAsync reject properly when entered wrong password.
+- `#I626464` - Resolved the Characters get hidden when typing multi languages with Track changes OFF.
+- `#I632911` - Resolved console warning for missing modules in document editor.
+- `#I630998` - Now able to add text after a content control when no other element is next to it.
+- `#I622732` - Resolved script error while delete content after search text.
+
+#### Features
+
+- `#I629004` - Added support for selecting revision in beforeAcceptRejectChanges event in document editor.
+- `#I568983` - Provided support to refer external font in Document Editor.
+
 ## 27.1.52 (2024-10-08)
 
 ### DocumentEditor

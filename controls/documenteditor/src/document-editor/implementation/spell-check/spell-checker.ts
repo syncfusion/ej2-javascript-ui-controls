@@ -722,9 +722,11 @@ export class SpellChecker {
             const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.line.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
             this.documentHelper.render.renderWavyLine(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
             elementBox.isSpellChecked = true;
+            elementBox.isWrongWord = true;
         } else {
             this.addCorrectWordCollection(elementBox.text);
             elementBox.isSpellChecked = true;
+            elementBox.isWrongWord = false;
         }
     }
 
@@ -970,12 +972,14 @@ export class SpellChecker {
                 service = (isByPage) ? service + this.documentHelper.owner.serverActionSettings.spellCheckByPage : service + this.documentHelper.owner.serverActionSettings.spellCheck;
                 httpRequest.open('POST', service, true);
                 httpRequest.setRequestHeader('Content-Type', 'application/json');
-                this.setCustomHeaders(httpRequest);
+                this.setCustomHeaders(httpRequest, this.documentHelper.owner.headers);
 
                 /* eslint-disable @typescript-eslint/no-explicit-any */
                 const spellCheckData: any = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord };
                 const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'SpellCheck', headers: this.documentHelper.owner.headers, timeout: 0, cancel: false, withCredentials: false };
                 this.documentHelper.owner.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
+                this.setCustomHeaders(httpRequest, httprequestEventArgs.headers);
+                httpRequest.withCredentials = httprequestEventArgs.withCredentials;
                 if (!httprequestEventArgs.cancel) {
                     httpRequest.send(JSON.stringify(spellCheckData));
                 }
@@ -1002,11 +1006,13 @@ export class SpellChecker {
         );
     }
 
-    private setCustomHeaders(httpRequest: XMLHttpRequest): void {
-        for (let i: number = 0; i < this.documentHelper.owner.headers.length; i++) {
-            const header: Object = this.documentHelper.owner.headers[i];
-            for (const key of Object.keys(header)) {
-                httpRequest.setRequestHeader(key, header[key]);
+    private setCustomHeaders(httpRequest: XMLHttpRequest, headers:object[]): void {
+        if(!isNullOrUndefined(headers)) {
+            for (let i: number = 0; i < headers.length; i++) {
+                const header: Object = headers[i];
+                for (const key of Object.keys(header)) {
+                    httpRequest.setRequestHeader(key, header[key]);
+                }
             }
         }
     }

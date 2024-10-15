@@ -104,6 +104,7 @@ export class InlineEditRender {
         let m: number = 0;
         i = 0;
         let inputValue: string;
+        let isFirstVisibleCell: boolean = true;
         const cols: Column[] = args.isCustomFormValidation ? (<{ columnModel?: Column[] }>this.parent).columnModel : gObj.getColumns();
         while ((isEdit && m < tdElement.length && i < cols.length) || i < cols.length) {
             const span: string = isEdit && tdElement[parseInt(m.toString(), 10)] ?
@@ -128,6 +129,11 @@ export class InlineEditRender {
                     td.classList.add('e-boolcell');
                 } else if (col.commands || col.commandsTemplate) {
                     addClass([td], 'e-unboundcell');
+                }
+                if (!this.parent.enableRtl && (gObj.gridLines === 'Vertical' || gObj.gridLines === 'Both') &&
+                    gLen && isFirstVisibleCell) {
+                    td.classList.add('e-grid-group-first-cell');
+                    isFirstVisibleCell = false;
                 }
             } else {
                 td.classList.add('e-hide');

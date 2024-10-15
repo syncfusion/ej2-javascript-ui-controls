@@ -5,7 +5,7 @@ import {
     RectangleF, SizeF, PdfFont, PdfStandardFont, PdfFontStyle, PdfFontFamily, PdfStringFormat, PdfVerticalAlignment,
     PdfTextAlignment, PdfWordWrapType, PdfDashStyle, PdfPath, PdfBitmap, PdfBrushes, PdfLinearGradientBrush
 } from '@syncfusion/ej2-pdf-export';
-import { TimelineDetails, TaskLabel, IIndicator, Image, ILabel, ITemplateDetails, ITaskData } from './../base/interface';
+import { TimelineDetails, TaskLabel, IIndicator, Image, ILabel, ITemplateDetails, ITaskData, IGanttStyle } from './../base/interface';
 import { Gantt } from '../base/gantt';
 import { pixelToPoint, pointToPixel } from '../base/utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -1305,6 +1305,28 @@ export class PdfGanttTaskbarCollection {
     }
     /* eslint-enable */
     /**
+     * @param {IGanttStyle} ganttStyle .
+     * @returns {PdfFont}
+     * Customizes the font based on the Gantt style.
+     */
+    private getPdfFont(ganttStyle: IGanttStyle): PdfFont {
+        let font: PdfFont;
+        if (ganttStyle && ganttStyle.label && (ganttStyle.label.fontSize || ganttStyle.label.fontStyle ||
+            ganttStyle.label.fontFamily)) {
+            const fontSize: number = ganttStyle.label.fontSize ? ganttStyle.label.fontSize : 9;
+            const fontFamilyValue: any = ganttStyle.label.fontFamily;
+            const fontFamily: PdfFontFamily = ganttStyle.label.fontFamily ?
+                this.parent.pdfExportModule.helper['getFontFamily'](fontFamilyValue) : this.fontFamily;
+            const fontStyleValue: any = ganttStyle.label.fontStyle;
+            const fontStyle: PdfFontStyle = ganttStyle.label.fontStyle ?
+                this.parent.pdfExportModule.helper['getFontStyle'](fontStyleValue) : PdfFontStyle.Regular;
+            font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
+        }
+        return font;
+    }
+
+    /* eslint-enable */
+    /**
      * @param {PdfPage} page .
      * @param {PointF} startPoint .
      * @param {TimelineDetails} detail .
@@ -1337,13 +1359,29 @@ export class PdfGanttTaskbarCollection {
                 !isNullOrUndefined(this.rightTaskLabel.value) && !this.rightTaskLabel.isCompleted) {
                 const result: PdfStringLayoutResult = this.getWidth(this.rightTaskLabel.value, detail.endPoint - left, 15);
                 let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
+                let customizedFont : PdfFont;
+                const ganttStyle : IGanttStyle = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle;
+                if (!isNullOrUndefined(ganttStyle) && !isNullOrUndefined(ganttStyle.label) && (!isNullOrUndefined(ganttStyle.label.fontSize)
+                    || !isNullOrUndefined(ganttStyle.label.fontStyle) ||
+                    !isNullOrUndefined(ganttStyle.label.fontFamily))) {
+                    customizedFont = this.getPdfFont(ganttStyle);
+                }
+                if (!isNullOrUndefined(customizedFont)) {
+                    font = customizedFont;
+                }
+                let padding: any = { left: 0, right: 0, top: 0, bottom: 0 };
+                if (!isNullOrUndefined(ganttStyle) && !isNullOrUndefined(ganttStyle.label) &&
+                    !isNullOrUndefined(ganttStyle.label.padding)) {
+                    padding = ganttStyle.label.padding;
+                }
                 if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) &&
                     this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
                     font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
                 }
                 const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
-                const point: PointF = new PointF(actualLeft, startPoint.y + adjustHeight);
-                const size: SizeF = new SizeF(result.actualSize.width, result.actualSize.height);
+                const point: PointF = new PointF(actualLeft + padding.left, startPoint.y + adjustHeight + padding.top);
+                const size: SizeF = new SizeF(result.actualSize.width - (padding.left + padding.right),
+                                              result.actualSize.height - (padding.top + padding.bottom));
                 const labelBounds: RectangleF = new RectangleF(point, size);
                 const labelFormat: PdfStringFormat = new PdfStringFormat();
                 labelFormat.alignment = PdfTextAlignment.Right;
@@ -1608,13 +1646,29 @@ export class PdfGanttTaskbarCollection {
                 && !this.leftTaskLabel.isCompleted) {
                 const result: PdfStringLayoutResult = this.getWidth(this.leftTaskLabel.value, detail.endPoint - left, 15);
                 let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
+                let customizedFont : PdfFont;
+                const ganttStyle : IGanttStyle = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle;
+                if (!isNullOrUndefined(ganttStyle) && !isNullOrUndefined(ganttStyle.label) && (!isNullOrUndefined(ganttStyle.label.fontSize)
+                    || !isNullOrUndefined(ganttStyle.label.fontStyle) ||
+                    !isNullOrUndefined(ganttStyle.label.fontFamily))) {
+                    customizedFont = this.getPdfFont(ganttStyle);
+                }
+                if (!isNullOrUndefined(customizedFont)) {
+                    font = customizedFont;
+                }
                 if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) &&
                     this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
                     font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
                 }
+                let padding: any = { left: 0, right: 0, top: 0, bottom: 0 };
+                if (!isNullOrUndefined(ganttStyle) && !isNullOrUndefined(ganttStyle.label) &&
+                    !isNullOrUndefined(ganttStyle.label.padding)) {
+                    padding = ganttStyle.label.padding;
+                }
                 const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
-                const rightLabelpoint: PointF = new PointF(actualLeft, startPoint.y + adjustHeight);
-                const rightLabelSize: SizeF = new SizeF(result.actualSize.width, result.actualSize.height);
+                const rightLabelpoint: PointF = new PointF(actualLeft + padding.left, startPoint.y + adjustHeight + padding.top);
+                const rightLabelSize: SizeF = new SizeF(result.actualSize.width - (padding.left + padding.right),
+                                                        result.actualSize.height - (padding.top + padding.bottom));
                 const rightLabelBounds: RectangleF = new RectangleF(rightLabelpoint, rightLabelSize);
                 const rightLabelFormat: PdfStringFormat = new PdfStringFormat();
                 rightLabelFormat.alignment = PdfTextAlignment.Right;
@@ -1836,10 +1890,16 @@ export class PdfGanttTaskbarCollection {
         }
     }
     private getWidth(value: string, width: number, height: number): PdfStringLayoutResult {
-        let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
-        if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) &&
-            this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
-            font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
+        let font: PdfFont;
+        font = new PdfStandardFont(this.fontFamily, 9);
+        const ganttStyle : IGanttStyle = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle;
+        if (ganttStyle && ganttStyle.label && ganttStyle.label.fontSize) {
+            font = new PdfStandardFont(this.fontFamily, ganttStyle.label.fontSize);
+            height = font.height;
+        }
+        if (!isNullOrUndefined(ganttStyle) && ganttStyle.font) {
+            font = ganttStyle.font;
+            height = font.height;
         }
         const layouter: PdfStringLayouter = new PdfStringLayouter();
         const progressFormat: PdfStringFormat = new PdfStringFormat();

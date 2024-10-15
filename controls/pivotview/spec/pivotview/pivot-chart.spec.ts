@@ -10,6 +10,7 @@ import { PivotChart } from '../../src/pivotchart/index';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { ILoadedEventArgs } from '@syncfusion/ej2-charts';
+import { Toolbar } from '../../src/common/popups/toolbar';
 
 describe('Chart - ', () => {
     beforeAll(() => {
@@ -556,6 +557,136 @@ describe('Chart - ', () => {
         });
     });
 
+    describe('Switch to Chart - ', () => {
+        let originalTimeout: number;
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotView', styles: 'height:500px; width:100%' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+            setTimeout(() => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(GroupingBar, FieldList, PivotChart, Toolbar);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: pivot_smalldata as IDataSet[],
+                        expandAll: false,
+                        enableSorting: true,
+                        columns: [{ name: 'Date' }, { name: 'Product' }],
+                        rows: [{ name: 'Country' }, { name: 'State' }],
+                        formatSettings: [{ name: 'Amount', format: 'C' }],
+                        values: [{ name: 'Amount' }, { name: 'Quantity' }], filters: [],
+                        allowValueFilter: false,
+                        allowLabelFilter: true
+                    },
+                    dataBound: dataBound,
+                    height: 500,
+                    showGroupingBar: true,
+                    showFieldList: true,
+                    showToolbar: true,
+                    toolbar: ['Grid', 'Chart'],
+                    displayOption: { view: 'Both' },
+                    chartSettings: {
+                        value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: true, enableScrollOnMultiAxis: true
+                    },
+                });
+                pivotGridObj.appendTo('#PivotView');
+            }, 1000);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('Check initial render 1', (done: Function) => {
+            setTimeout(() => {
+                expect(pivotGridObj.pivotValues.length).toBe(9);
+                done();
+            }, 1000);
+        });
+        it('Switch from grid to chart', (done: Function) => {
+            setTimeout(() => {
+                let li: HTMLElement = document.getElementById('PivotViewchart_menu').children[0] as HTMLElement;
+                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                    util.triggerEvent(li, 'mouseover');
+                    done();
+            }, 100);
+        });
+        it('Click chart menu', (done: Function) => {
+            setTimeout(() => {
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('Click chart menu', (done: Function) => {
+            setTimeout(() => {
+                expect(pivotGridObj.pivotValues.length).toBe(9);
+                done();
+            }, 100);
+        });
+    });
+    describe('Palettes - ', () => {
+        let originalTimeout: number;
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotView', styles: 'height:500px; width:100%' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+            setTimeout(() => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(GroupingBar, FieldList, PivotChart, Toolbar);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: pivot_smalldata as IDataSet[],
+                        expandAll: false,
+                        enableSorting: true,
+                        columns: [{ name: 'Date' }, { name: 'Product' }],
+                        rows: [{ name: 'Country' }, { name: 'State' }],
+                        formatSettings: [{ name: 'Amount', format: 'C' }],
+                        values: [{ name: 'Amount' }, { name: 'Quantity' }], filters: [],
+                        allowValueFilter: false,
+                        allowLabelFilter: true
+                    },
+                    dataBound: dataBound,
+                    height: 500,
+                    showGroupingBar: true,
+                    showFieldList: true,
+                    showToolbar: true,
+                    toolbar: ['Grid', 'Chart'],
+                    displayOption: { view: 'Chart' },
+                    chartSettings: {
+                        value: 'Amount', enableExport: true, chartSeries: { type: 'Column' }, enableMultipleAxis: true, palettes: ["#E94649", "#F6B53F", "#6FAAB0", "#C4C24A"]
+                    },
+                });
+                pivotGridObj.appendTo('#PivotView');
+            }, 1000);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('Check initial render 1', (done: Function) => {
+            setTimeout(() => {
+                expect(pivotGridObj.pivotValues.length).toBe(9);
+                done();
+            }, 1000);
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

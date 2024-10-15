@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 27.1.53 (2024-10-15)
+
+### ListBox
+
+#### Bug Fixes
+
+- Issue with "Toolbar button state not updated properly while drag and drop with filtering and disabled listbox items" has been resolved.
+
+### DropDownList
+
+#### Bug fixes
+
+- `#I633865` - The issue with the selected item being incorrectly added to the popup in the dropdown list has been resolved.
+- `#I912588` - The issue with filtered selected item in the Dropdown Tree component has been resolved.
+
 ## 27.1.52 (2024-10-08)
 
 ### ListBox

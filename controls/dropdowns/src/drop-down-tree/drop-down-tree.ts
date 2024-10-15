@@ -2916,7 +2916,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             const id: string = getValue('id', args.data[0]).toString();
             this.removeSelectedData(id , true);
         }
-        if (!this.isChipDelete && args.isInteracted) {
+        if (!this.isChipDelete && args.isInteracted || (!this.isFilteredData && args.action === 'check' && this.isFromFilterChange)) {
             this.setMultiSelect();
             this.ensurePlaceHolder();
         }

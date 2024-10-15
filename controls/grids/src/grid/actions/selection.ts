@@ -725,19 +725,6 @@ export class Selection implements IAction {
         this.updatePersistCollection(selectedRow, true);
         this.updateCheckBoxes(selectedRow, true);
         this.addRemoveClassesForRow(selectedRow, true, null, 'e-selectionbackground', 'e-active');
-        if (!this.parent.element.querySelectorAll('.e-focused').length && !this.checkSelectAllClicked) {
-            const cells: HTMLElement[] = [].slice.call(selectedRow.getElementsByClassName(literals.rowCell));
-            if (!(cells[0] as HTMLElement).classList.contains('e-gridchkbox')) {
-                addClass([cells[0]], ['e-focused']);
-            } else {
-                addClass([cells[1]], ['e-focused']);
-            }
-            this.parent.focusModule.prevIndexes = {
-                rowIndex: (selectedRow as HTMLTableRowElement).rowIndex,
-                cellIndex: !(cells[0] as HTMLElement).classList.contains('e-gridchkbox') ? (cells[0] as HTMLTableCellElement).cellIndex
-                    : (cells[1] as HTMLTableCellElement).cellIndex
-            };
-        }
         if (!this.preventFocus) {
             let target: Element = this.focus.getPrevIndexes().cellIndex ?
                 (<HTMLTableRowElement>selectedRow).cells[this.focus.getPrevIndexes().cellIndex] :

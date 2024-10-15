@@ -10,7 +10,7 @@ import { Size } from '../primitives/size';
 import { Rect } from '../primitives/rect';
 import { PointModel } from '../primitives/point-model';
 import { ConnectorModel } from '../objects/connector-model';
-import { wordBreakToString, whiteSpaceToString, textAlignToString, randomId } from '../utility/base-util';
+import { wordBreakToString, whiteSpaceToString, textAlignToString, randomId, rotatePoint } from '../utility/base-util';
 import { getUserHandlePosition, canShowCorner, getInterval, getSpaceValue, canShowControlPoints } from '../utility/diagram-util';
 import { getDiagramElement, getAdornerLayer, getGridLayer, getHTMLLayer, updatePath } from '../utility/dom-util';
 import { measurePath, getBackgroundLayerSvg, getBackgroundImageLayer, setAttributeSvg } from '../utility/dom-util';
@@ -19,7 +19,7 @@ import { Gridlines } from '../../diagram/diagram/grid-lines';
 import { BackgroundModel } from '../../diagram/diagram/page-settings-model';
 import { PathAttributes, TextAttributes, LineAttributes, CircleAttributes } from './canvas-interface';
 import { RectAttributes, ImageAttributes, BaseAttributes } from './canvas-interface';
-import { WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction, FlipDirection, ControlPointsVisibility, ConnectorConstraints, SegmentThumbShapes } from '../enum/enum';
+import { WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction, FlipDirection, ControlPointsVisibility, ConnectorConstraints, SegmentThumbShapes, FlipMode } from '../enum/enum';
 import { ThumbsConstraints, SelectorConstraints, ElementAction } from '../enum/enum';
 import { TransformFactor as Transforms } from '../interaction/scroller';
 import { NodeModel, SelectorModel } from '../objects/node-model';
@@ -1980,24 +1980,25 @@ export class DiagramRenderer {
                         innerNodeContent = document.getElementById(selectedNode.id + '_content_groupElement');
                     }
                     //Below code to check and flip the node.
-                    if (!(group.children[0] instanceof DiagramNativeElement) && selectedNode.shape.type !== 'Text' && selectedNode.flipMode !== 'None' && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' || (group.children[0] instanceof DiagramNativeElement && selectedNode.flipMode === 'Port')) {
+                    if (!(group.children[0] instanceof DiagramNativeElement) && selectedNode.shape.type !== 'Text' && selectedNode.flipMode !== 'None' && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' && selectedNode.flipMode !== 'PortAndLabel' && selectedNode.flipMode !== 'LabelText' && selectedNode.flipMode !== 'PortAndLabelText' && selectedNode.flipMode !== 'LabelAndLabelText' || (group.children[0] instanceof DiagramNativeElement && selectedNode.flipMode === 'Port')) {
                         this.renderFlipElement(group, innerNodeContent, selectedNode.flip);
                         return;
                     }
                     //Below code to check and flip the node except for flip mode Port.
-                    else if (group.children[0] instanceof DiagramNativeElement && (selectedNode.flipMode === 'All' || selectedNode.flipMode === 'Label') || (selectedNode.flipMode === 'Label') || (selectedNode.shape.type === 'Image' && (selectedNode as any).flipMode === 'Label')) {
+                    else if (group.children[0] instanceof DiagramNativeElement && (selectedNode.flipMode === 'All' || selectedNode.flipMode === 'Label') || (selectedNode.flipMode === 'Label' || selectedNode.flipMode === 'PortAndLabel' || selectedNode.flipMode === 'LabelText' || selectedNode.flipMode === 'PortAndLabelText' || selectedNode.flipMode === 'LabelAndLabelText') || (selectedNode.shape.type === 'Image' && (selectedNode as any).flipMode === 'Label')) {
                         this.renderFlipElement(group, innerNodeContent, group.flip);
                     }
                     if (group.flip !== 'None' && selectedNode.flipMode === 'None') {
                         this.renderFlipElement(group, innerNodeContent, group.flip);
                     }
                     //Below code to check and flip the text element in the node.
-                    else if (group.flip !== 'None' && selectedNode.flipMode === 'Label' || (group.children[0] instanceof DiagramNativeElement && group.flip !== 'None' && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
+                    else if (group.flip !== 'None' && (selectedNode.flipMode === 'Label' || selectedNode.flipMode === 'PortAndLabel' || selectedNode.flipMode === 'LabelText' || selectedNode.flipMode === 'PortAndLabelText' || selectedNode.flipMode === 'LabelAndLabelText') || (group.children[0] instanceof DiagramNativeElement && group.flip !== 'None' && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
                         for (let i: number = 0; i < selectedNode.wrapper.children.length; i++) {
                             if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
                                 innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
-                                this.renderFlipElement(group, innerLabelContent, group.flip,
-                                                       selectedNode.wrapper.children[parseInt(i.toString(), 10)]);
+                                this.renderFlipTextElement(group, innerLabelContent,
+                                                           selectedNode.wrapper.children[parseInt(i.toString(), 10)],
+                                                           group.flip, selectedNode.flipMode);
                                 return;
                             }
                         }
@@ -2007,8 +2008,9 @@ export class DiagramRenderer {
                         for (let i: number = 0; i < selectedNode.wrapper.children.length; i++) {
                             if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
                                 innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
-                                this.renderFlipElement(group, innerLabelContent, group.flip,
-                                                       selectedNode.wrapper.children[parseInt(i.toString(), 10)]);
+                                this.renderFlipTextElement(group, innerLabelContent,
+                                                           selectedNode.wrapper.children[parseInt(i.toString(), 10)],
+                                                           group.flip, selectedNode.flipMode);
                             }
                         }
                         this.renderFlipElement(group, innerNodeContent, group.flip);
@@ -2028,24 +2030,25 @@ export class DiagramRenderer {
                         innerNodeContent = document.getElementById(selectedNode.id + '_content_groupElement');
                     }
                     //Below code to check and flip the node.
-                    if (!(group.children[0] instanceof DiagramNativeElement) && selectedNode.shape.type !== 'Text' && selectedNode.flipMode !== 'None' && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' || (group.children[0] instanceof DiagramNativeElement && selectedNode.flipMode === 'Port')) {
+                    if (!(group.children[0] instanceof DiagramNativeElement) && selectedNode.shape.type !== 'Text' && selectedNode.flipMode !== 'None' && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' && selectedNode.flipMode !== 'PortAndLabel' && selectedNode.flipMode !== 'LabelText' && selectedNode.flipMode !== 'PortAndLabelText' && selectedNode.flipMode !== 'LabelAndLabelText' || (group.children[0] instanceof DiagramNativeElement && selectedNode.flipMode === 'Port')) {
                         this.renderFlipElement(group, innerNodeContent, selectedNode.flip);
                         return;
                     }
                     //Below code to check and flip the node except for flip mode Port.
-                    else if (group.children[0] instanceof DiagramNativeElement && (selectedNode.flipMode === 'All' || selectedNode.flipMode === 'Label') || (selectedNode.flipMode === 'Label') || (selectedNode.shape.type === 'Image' && (selectedNode as any).flipMode === 'Label')) {
+                    else if (group.children[0] instanceof DiagramNativeElement && (selectedNode.flipMode === 'All' || selectedNode.flipMode === 'Label') || (selectedNode.flipMode === 'Label' || selectedNode.flipMode === 'PortAndLabel' || selectedNode.flipMode === 'LabelText' || selectedNode.flipMode === 'PortAndLabelText' || selectedNode.flipMode === 'LabelAndLabelText') || (selectedNode.shape.type === 'Image' && (selectedNode as any).flipMode === 'Label')) {
                         this.renderFlipElement(group, innerNodeContent, group.flip);
                     }
                     if (group.flip !== 'None' && selectedNode.flipMode === 'None') {
                         this.renderFlipElement(group, innerNodeContent, group.flip);
                     }
                     //Below code to check and flip the text element in the node.
-                    else if (group.flip !== 'None' && selectedNode.flipMode === 'Label' || (group.children[0] instanceof DiagramNativeElement && group.flip !== 'None' && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
+                    else if (group.flip !== 'None' && (selectedNode.flipMode === 'Label' || selectedNode.flipMode === 'PortAndLabel' || selectedNode.flipMode === 'LabelText' || selectedNode.flipMode === 'PortAndLabelText' || selectedNode.flipMode === 'LabelAndLabelText') || (group.children[0] instanceof DiagramNativeElement && group.flip !== 'None' && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
                         for (let i: number = 0; i < selectedNode.wrapper.children.length; i++) {
                             if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
                                 innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
-                                this.renderFlipElement(group, innerLabelContent, group.flip,
-                                                       selectedNode.wrapper.children[parseInt(i.toString(), 10)]);
+                                this.renderFlipTextElement(group, innerLabelContent,
+                                                           selectedNode.wrapper.children[parseInt(i.toString(), 10)],
+                                                           group.flip, selectedNode.flipMode);
                                 return;
                             }
                         }
@@ -2055,8 +2058,9 @@ export class DiagramRenderer {
                         for (let i: number = 0; i < selectedNode.wrapper.children.length; i++) {
                             if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
                                 innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
-                                this.renderFlipElement(group, innerLabelContent, group.flip,
-                                                       selectedNode.wrapper.children[parseInt(i.toString(), 10)]);
+                                this.renderFlipTextElement(group, innerLabelContent,
+                                                           selectedNode.wrapper.children[parseInt(i.toString(), 10)],
+                                                           group.flip, selectedNode.flipMode);
                             }
                         }
                         this.renderFlipElement(group, innerNodeContent, group.flip);
@@ -2069,9 +2073,84 @@ export class DiagramRenderer {
             }
         }
     }
+    /**
+     * Method used to flip the text element   \
+     *
+     * @returns {void} Method used to flip the text element.\
+     *
+     * @param {DiagramElement} element - Provide the node element.
+     * @param { HTMLCanvasElement | SVGElement} canvas - Provide the text canvas element.
+     * @param { DiagramElement } textElement - Provide the text element.
+     * @param { FlipDirection } flip - Provide the node flip direction.
+     * @param { FlipMode } flipMode - Provide the node flipMode.
+     */
+    public renderFlipTextElement(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement, textElement: DiagramElement,
+                                 flip: FlipDirection, flipMode: FlipMode): void {
+        let attr: object = {};
+        let scaleX: number = 1;
+        let scaleY: number = 1;
+        let posX: number = 0; let posY: number = 0;
+        let offsetX: number = 0; let offsetY: number = 0;
+        if (flip !== 'None') {
+            // Fetch annotation offset
+            const textPos: PointModel = textElement.getAbsolutePosition(textElement.desiredSize);
+            // Inverting and translating Annotation
+            if (flipMode === 'All' || flipMode === 'LabelAndLabelText') {
+                if (flip === 'Horizontal' || flip === 'Both') {
+                    posX = element.bounds.center.x;
+                    offsetX = -element.bounds.center.x;
+                    scaleX = -1;
+                }
+                if (flip === 'Vertical' || flip === 'Both') {
+                    posY = element.bounds.center.y;
+                    offsetY = -element.bounds.center.y;
+                    scaleY = -1;
 
-    public renderFlipElement(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement, flip: FlipDirection,
-                             textElement: DiagramElement = undefined): void {
+                }
+                if (flip === 'Horizontal' || flip === 'Vertical') {
+                    const angle: number = Math.sin(element.rotateAngle * Math.PI / 180);
+                    offsetX += - element.desiredSize.height * angle * (-2 * textPos.y / textElement.desiredSize.height + 1);
+                    offsetY += element.desiredSize.width * angle * (-2 * textPos.x / textElement.desiredSize.width + 1);
+                }
+                attr = {
+                    'transform': 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','
+                        + scaleY + ') translate(' + offsetX + ',' + offsetY + ')'
+                };
+            }
+            // Inverting Annotation without flipping position
+            else if (flipMode === 'LabelText' || flipMode === 'PortAndLabelText') {
+                if (flip === 'Horizontal' || flip === 'Both') {
+                    posX = textElement.offsetX;
+                    offsetX = -textElement.offsetX;
+                    scaleX = -1;
+                }
+                if (flip === 'Vertical' || flip === 'Both') {
+                    posY = textElement.offsetY;
+                    offsetY = -textElement.offsetY;
+                    scaleY = -1;
+                }
+                attr = {
+                    'transform': 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','
+                        + scaleY + ') translate(' + offsetX + ',' + offsetY + ')'
+                };
+            }
+            // Translating Annotation
+            else if (flipMode === 'Label' || flipMode === 'PortAndLabel') {
+                let labelPosX: number = 0; let labelPosY: number = 0;
+                const labelPos: PointModel = this.flipLabel(element, textElement, textPos, flip);
+                labelPosX = labelPos.x - textElement.offsetX;
+                labelPosY = labelPos.y - textElement.offsetY;
+                attr = { 'transform': 'translate(' + labelPosX + ',' + labelPosY + ')' };
+            }
+
+        } else {
+            attr = {
+                'transform': 'translate(' + 0 + ',' + 0 + ')'
+            };
+        }
+        this.setFlipAttributes(element, canvas, attr, scaleX, scaleY);
+    }
+    public renderFlipElement(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement, flip: FlipDirection): void {
         let attr: object = {};
         let scaleX: number = 1;
         let scaleY: number = 1;
@@ -2088,13 +2167,6 @@ export class DiagramRenderer {
                 offsetY = -element.bounds.center.y;
                 scaleY = -1;
             }
-            // EJ2-910202-Annotation Rotates Opposite to Node Rotation Direction After Node Flip
-            if (textElement instanceof TextElement && (flip === 'Horizontal' || flip === 'Vertical')) {
-                const textPos: PointModel = textElement.getAbsolutePosition(textElement.desiredSize);
-                const angle: number =  Math.sin(element.rotateAngle * Math.PI / 180);
-                offsetX += - element.desiredSize.height * angle * (-2 * textPos.y / textElement.desiredSize.height + 1);
-                offsetY += element.desiredSize.width * angle * (-2 * textPos.x / textElement.desiredSize.width + 1);
-            }
             attr = {
                 'transform': 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','
                     + scaleY + ') translate(' + offsetX + ',' + offsetY + ')'
@@ -2105,7 +2177,11 @@ export class DiagramRenderer {
 
             };
         }
+        this.setFlipAttributes(element, canvas, attr, scaleX, scaleY);
+    }
 
+    private setFlipAttributes(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement,
+                              attr: object, scaleX: number, scaleY: number): void {
         if (attr) {
             if (element && (element as Container).children &&
                 (element as Container).children.length && ((element as Container).children[0] instanceof DiagramHtmlElement)) {
@@ -2121,6 +2197,41 @@ export class DiagramRenderer {
                 setAttributeSvg(canvas as SVGElement, attr);
             }
         }
+    }
+    /**
+     * Calculates Flipped Position of textElement considering annotation offset
+     *
+     * @returns {PointModel} - flipped point of textElement current point
+     *
+     * @param {NodeModel} element - Provide node wrapper element containing the text element.
+     * @param {TextElement} textElement - Provide the textElememt to flip.
+     * @param {PointModel} labelPos - Provide the annotation offset.
+     * @param {FlipDirection} flip - Provide the node flip direction.
+     */
+    private flipLabel(element: DiagramElement, textElement: DiagramElement, labelPos: PointModel, flip: FlipDirection): PointModel {
+        let flippedOffset: PointModel;
+        if (flip !== 'None') {
+            let flippedOffsetX: number;
+            let flippedOffsetY: number;
+            // Node's topLeft Position
+            const topLeft: PointModel = {
+                x: element.offsetX - element.desiredSize.width / 2,
+                y: element.offsetY - element.desiredSize.height / 2
+            };
+            flippedOffsetX = topLeft.x + (element.desiredSize.width * ((labelPos.x / textElement.desiredSize.width)));
+            flippedOffsetY = topLeft.y + (element.desiredSize.height * ((labelPos.y / textElement.desiredSize.height)));
+            if (flip === 'Horizontal' || flip === 'Both') {
+                flippedOffsetX = topLeft.x + (element.desiredSize.width * (1 - (labelPos.x / textElement.desiredSize.width)));
+            }
+            if (flip === 'Vertical' || flip === 'Both') {
+                flippedOffsetY = topLeft.y + (element.desiredSize.height * (1 - (labelPos.y / textElement.desiredSize.height)));
+            }
+            // Flipped Position
+            flippedOffset = { x: flippedOffsetX, y: flippedOffsetY };
+            // FlippedPoint after rotating with node offset as its pivot
+            flippedOffset = rotatePoint(element.rotateAngle + element.parentTransform, element.offsetX, element.offsetY, flippedOffset);
+        }
+        return flippedOffset;
     }
 
     /**

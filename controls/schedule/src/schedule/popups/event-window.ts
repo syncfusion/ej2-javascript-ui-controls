@@ -1079,6 +1079,8 @@ export class EventWindow {
                 fieldSelector = 'e-datepicker';
             } else if (element.classList.contains('e-checkbox')) {
                 fieldSelector = 'e-checkbox';
+            } else if (element.classList.contains('e-numerictextbox')) {
+                fieldSelector = 'e-numerictextbox';
             }
             const classSelector: string = isDropDowns ? `.${fieldSelector}:not(.e-control)` : `.${fieldSelector}`;
             const control: Element = closest(element, classSelector) || element.querySelector(`.${fieldSelector}`);
@@ -1810,6 +1812,8 @@ export class EventWindow {
             value = ((element as EJ2Instance).ej2_instances[0] as MultiSelect).value as string[] | number[];
         } else if (element.classList.contains('e-checkbox')) {
             value = ((element as EJ2Instance).ej2_instances[0] as CheckBox).checked as boolean;
+        } else if (element.classList.contains('e-numerictextbox')) {
+            value = ((element as EJ2Instance).ej2_instances[0] as NumericTextBox).value as number;
         } else {
             if ((element as HTMLInputElement).type === 'checkbox') {
                 value = (element as HTMLInputElement).checked as boolean;
@@ -1848,6 +1852,10 @@ export class EventWindow {
             const instance: CheckBox = (element as EJ2Instance).ej2_instances[0] as CheckBox;
             instance.checked = <boolean>value;
             instance.dataBind();
+        } else if (element.classList.contains('e-numerictextbox')) {
+            const instance: NumericTextBox = (element as EJ2Instance).ej2_instances[0] as NumericTextBox;
+            instance.value = <number>value;
+            instance.dataBind();
         } else {
             if ((element as HTMLInputElement).type !== 'checkbox') {
                 (element as HTMLInputElement).value = <string>value || '';
@@ -1879,6 +1887,10 @@ export class EventWindow {
         } else if (element.classList.contains('e-checkbox')) {
             const instance: CheckBox = (element as EJ2Instance).ej2_instances[0] as CheckBox;
             instance.checked = false;
+            instance.dataBind();
+        } else if (element.classList.contains('e-numerictextbox')) {
+            const instance: NumericTextBox = (element as EJ2Instance).ej2_instances[0] as NumericTextBox;
+            instance.value = null;
             instance.dataBind();
         } else {
             if ((element as HTMLInputElement).type === 'checkbox') {

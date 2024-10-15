@@ -217,7 +217,7 @@ export class PdfExport {
         }
     }
 
-    private getPageSize(pageSize: PdfPageSize): SizeF {
+    public getPageSize(pageSize: PdfPageSize): SizeF {
         switch (pageSize) {
         case 'Letter':
             return new SizeF(612, 792);

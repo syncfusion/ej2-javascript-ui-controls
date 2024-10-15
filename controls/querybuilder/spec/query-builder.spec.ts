@@ -4190,6 +4190,47 @@ describe('QueryBuilder', () => {
 
     });
 
+    describe('CR Issue', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+            let buttonElement = document.createElement('button');
+            buttonElement.setAttribute('id', 'button');
+            document.body.appendChild(buttonElement);
+            buttonElement.addEventListener('click', () => {
+                queryBuilder.locale = 'de';
+                queryBuilder.dataBind();
+            });
+        });
+        it('EJ2 - 96184 - When dynamically changing the locale property the custom operator was not set in QueryBuilder', () => {
+            let columnData: ColumnsModel[] = [
+                {
+                    field: 'EmployeeID', label: 'EmployeeID', type: 'number', operators: [{ key: 'En-contains', value: 'contains' },
+                    { key: 'Greater than', value: 'greaterthan' }],
+                }
+            ]
+            let importRules = {
+                'condition': 'and',
+                'rules': [{
+                        'label': 'EmployeeID',
+                        'field': 'EmployeeID',
+                        'type': 'number',
+                        'operator': 'contains',
+                        'value': 1001
+                    },]
+            };
+            queryBuilder = new QueryBuilder({
+                columns: columnData,
+                locale: 'en',
+                rule: importRules
+            });
+            queryBuilder.appendTo('#querybuilder');
+            const button = document.querySelector('#button') as HTMLButtonElement;
+            button.click();
+            const filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator input.e-control');
+            expect(filterElem.value).toEqual("En-contains");
+        });
+    });
+
     describe('Coverge Improvement', () => {
         beforeEach((): void => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));

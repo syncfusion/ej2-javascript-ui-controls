@@ -1653,8 +1653,8 @@ export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrou
 'justifyCenter' | 'justifyFull' | 'justifyLeft' | 'justifyRight' | 'undo' | 'createLink' |
 'formatBlock' | 'heading' | 'indent' | 'insertHTML' | 'insertOrderedList' | 'insertUnorderedList' |
 'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' | 'insertAudio' | 'insertVideo' |
-'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable' | 'editImage' | 'editLink' | 'applyFormatPainter'
-| 'copyFormatPainter' | 'escapeFormatPainter' | 'emojiPicker' | 'InlineCode';
+'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable' | 'editImage' | 'editLink' | 'applyFormatPainter'|
+'copyFormatPainter' | 'escapeFormatPainter' | 'emojiPicker' | 'InlineCode' | 'importWord';
 
 /**
  * @hidden

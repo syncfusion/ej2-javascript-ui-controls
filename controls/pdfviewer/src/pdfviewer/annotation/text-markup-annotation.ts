@@ -1157,7 +1157,7 @@ export class TextMarkupAnnotation {
         let allowedInteractions: any[];
         const pageDetails: ISize = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)];
         let annotationRotate: number = 0;
-        const pageRotation: number = this.getAngle(pageDetails.rotation);
+        const pageRotation: number = this.pdfViewerBase.getAngle(pageDetails.rotation);
         if (context) {
             context.setLineDash([]);
             switch (type) {
@@ -1256,27 +1256,6 @@ export class TextMarkupAnnotation {
         }
     }
 
-    private getAngle(rotation: number): number {
-        let angle: number = 0;
-        if (rotation) {
-            switch (rotation) {
-            case 0:
-                angle = 0;
-                break;
-            case 1:
-                angle = 90;
-                break;
-            case 2:
-                angle = 180;
-                break;
-            case 3:
-                angle = 270;
-                break;
-            }
-        }
-        return angle;
-    }
-
     private retreiveTextIndex(annotation: any): any {
         if (annotation.textMarkupContent === '') {
             this.retreieveSelection(annotation, null);
@@ -1348,7 +1327,7 @@ export class TextMarkupAnnotation {
             const factorRatio : number = this.pdfViewerBase.getZoomRatio(factor);
             let rotation: number = pageDetails.rotation;
             if (annotationRotation || (this.pdfViewerBase.clientSideRendering && bounds[parseInt(i.toString(), 10)].rotation)) {
-                const pageRotation: number = this.getAngle(rotation);
+                const pageRotation: number = this.pdfViewerBase.getAngle(rotation);
                 rotation = this.pdfViewerBase.clientSideRendering ? Math.abs(bounds[parseInt(i.toString(), 10)].rotation) / 90 :
                     Math.abs(annotationRotation - pageRotation) / 90;
             }
@@ -1453,7 +1432,7 @@ export class TextMarkupAnnotation {
         const pageDetails: ISize = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)];
         let rotation: number = pageDetails.rotation;
         if (annotationRotation || (this.pdfViewerBase.clientSideRendering && annotationRotation >= 0)) {
-            const pageRotation: number = this.getAngle(rotation);
+            const pageRotation: number = this.pdfViewerBase.getAngle(rotation);
             rotation = this.pdfViewerBase.clientSideRendering ? Math.abs(annotationRotation) / 90 :
                 Math.abs(annotationRotation - pageRotation) / 90;
         }
@@ -2014,7 +1993,7 @@ export class TextMarkupAnnotation {
                     let annotationRotate: number = 0;
                     if (this.pdfViewerBase.clientSideRendering) {
                         const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageId.toString(), 10)];
-                        const pageRotation: number = this.getAngle(pageDetails.rotation);
+                        const pageRotation: number = this.pdfViewerBase.getAngle(pageDetails.rotation);
                         let textElement: any;
                         if (range.startContainer.parentElement) {
                             textElement = range.startContainer.parentElement;
@@ -2107,7 +2086,7 @@ export class TextMarkupAnnotation {
                         let annotationRotate: number = 0;
                         if (this.pdfViewerBase.clientSideRendering) {
                             const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(i.toString(), 10)];
-                            const pageRotation: number = this.getAngle(pageDetails.rotation);
+                            const pageRotation: number = this.pdfViewerBase.getAngle(pageDetails.rotation);
                             if (textElement && textElement.style.transform !== '') {
                                 if (textElement.style.transform.startsWith('rotate(90deg)')) {
                                     annotationRotate = 90;

@@ -105,7 +105,7 @@ export class SplineAreaSeries extends SplineBase {
                 new PathOption(
                     series.chart.element.id + '_Series_border_' + series.index,
                     'transparent', series.border.width, series.border.color ? series.border.color : series.interior,
-                    1, series.dashArray, emptyPointDirection
+                    1, series.border.dashArray, emptyPointDirection
                 ),
                 series, ''
             );

@@ -954,7 +954,7 @@ export class ConnectorLineEdit {
         const parenttaskData: IGanttData = getValue('parentTask', args);
         const violationType: string = getValue('violationType', args);
         const recordName: string = taskData.ganttProperties.taskName;
-        const recordNewStartDate: string = this.parent.getFormatedDate(taskData.ganttProperties.startDate, 'MM/dd/yyyy');
+        const recordNewStartDate: string = this.parent.getFormatedDate(taskData.ganttProperties.startDate, this.parent.dateFormat);
         const parentName: string = parenttaskData.ganttProperties.taskName;
         const recordArgs: string[] = [recordName, parentName];
         let topContentText: string;

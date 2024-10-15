@@ -2234,7 +2234,10 @@ export class Signature {
         let annot: PdfAnnotationBaseModel;
         let signatureData: string = '';
         const currentAnnotation: any = this.pdfViewerBase.currentSignatureAnnot;
-        const annotationName: string = this.pdfViewer.annotation.createGUID();
+        let annotationName: string = currentAnnotation.signatureName;
+        if (annotationName === '' || isNullOrUndefined(annotationName)) {
+            annotationName = this.pdfViewer.annotation.createGUID();
+        }
         if (currentAnnotation) {
             if (this.pdfViewerBase.currentSignatureAnnot.shapeAnnotationType === 'HandWrittenSignature') {
                 annot = {
@@ -2272,7 +2275,7 @@ export class Signature {
             {
                 signatureData =  currentAnnotation.data;
             }
-            this.pdfViewer.fireSignatureAdd(currentAnnotation.pageIndex, currentAnnotation.signatureName,
+            this.pdfViewer.fireSignatureAdd(currentAnnotation.pageIndex, annotationName,
                                             currentAnnotation.shapeAnnotationType, currentAnnotation.bounds, currentAnnotation.opacity,
                                             currentAnnotation.strokeColor, currentAnnotation.thickness, signatureData);
             if (this.pdfViewer.annotation) {

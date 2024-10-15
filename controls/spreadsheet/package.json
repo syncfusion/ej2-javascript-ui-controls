@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-spreadsheet",
-	"version": "27.1.50",
+	"version": "27.1.52",
 	"description": "Feature-rich JavaScript Spreadsheet (Excel) control with built-in support for selection, editing, formatting, importing and exporting to Excel",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -12,8 +12,7 @@
 		"@syncfusion/ej2-charts": "*",
 		"@syncfusion/ej2-dropdowns": "*",
 		"@syncfusion/ej2-grids": "*",
-		"@syncfusion/ej2-navigations": "*",
-		"markdown-spellcheck": "^1.3.1"
+		"@syncfusion/ej2-navigations": "*"
 	},
 	"devDependencies": {
 		"@syncfusion/ej2-staging": "^1.0.1",
@@ -30,7 +29,7 @@
 		"canteen": "^1.0.5",
 		"jasmine-ajax": "^3.3.1",
 		"jasmine-core": "^2.6.1",
-		 "karma": "6.4.2",
+		"karma": "6.4.2",
 		"karma-chrome-launcher": "^2.2.0",
 		"karma-generic-preprocessor": "^1.1.0",
 		"karma-htmlfile-reporter": "^0.3.5",

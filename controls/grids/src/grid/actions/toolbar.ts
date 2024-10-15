@@ -94,13 +94,13 @@ export class Toolbar {
             if (this.parent.allowFiltering && this.parent.filterSettings.type !== 'FilterBar') {
                 (this.predefinedItems as { responsiveFilter: ItemModel }).responsiveFilter = {
                     id: this.gridID + '_' + 'responsivefilter', cssClass: 'e-gridresponsiveicons e-icons',
-                    suffixIcon: 'e-' + 'resfilter-icon', tooltipText: this.l10n.getConstant('FilterButton')
+                    suffixIcon: 'e-' + 'resfilter-icon', tooltipText: this.l10n.getConstant('FilterIcon')
                 };
             }
             if (this.parent.allowSorting) {
                 (this.predefinedItems as { responsiveSort: ItemModel }).responsiveSort = {
                     id: this.gridID + '_' + 'responsivesort', cssClass: 'e-gridresponsiveicons e-icons',
-                    suffixIcon: 'e-' + 'ressort-icon', tooltipText: this.l10n.getConstant('Sort')
+                    suffixIcon: 'e-' + 'ressort-icon', tooltipText: this.l10n.getConstant('SortIcon')
                 };
             }
         }
@@ -368,7 +368,7 @@ export class Toolbar {
         let disableItems: string[] = [];
         const edit: EditSettingsModel = gObj.editSettings;
         const hasData: number = (gObj.currentViewData && gObj.currentViewData.length) ||
-            (gObj.editSettings.mode === 'Batch' && gObj.editModule.getBatchChanges()[literals.addedRecords].length);
+            (gObj.editSettings.mode === 'Batch' && !isNullOrUndefined(gObj.editModule) && gObj.editModule.getBatchChanges()[literals.addedRecords].length);
         const addRow: boolean = edit.showAddNewRow && !gObj.element.querySelector('.e-editedrow');
         if (edit.allowAdding) {
             enableItems.push(this.gridID + '_add');

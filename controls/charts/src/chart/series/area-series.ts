@@ -100,7 +100,7 @@ export class AreaSeries extends MultiColoredSeries {
             this[pointAnimate ? 'addAreaPath' : 'appendLinePath'](
                 new PathOption(
                     series.chart.element.id + '_Series_border_' + series.index, 'transparent',
-                    borderWidth, borderColor, 1, series.dashArray,
+                    borderWidth, borderColor, 1, series.border.dashArray,
                     emptyPointDirection
                 ),
                 series, ''

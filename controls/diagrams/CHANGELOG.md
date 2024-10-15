@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 27.1.53 (2024-10-15)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I631866` - Now, The connectors can connect to ports even when their visibility is set to hidden.
+- `#F194445` - The mouse cursor now updates correctly when entering the diagram canvas after changing tools at runtime.
+- `#I635135` - The tooltip for a node is now displayed correctly when the node is grouped at runtime.
+- `#I630934` - Now, The flipped annotations are readable when the corresponding node is flipped.
+
 ## 27.1.52 (2024-10-08)
 
 ### Diagram

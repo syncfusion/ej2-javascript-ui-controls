@@ -140,7 +140,7 @@ export class StackingAreaSeries extends LineBase {
             emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(lineDirection));
             const options: PathOption = new PathOption(
                 series.chart.element.id + '_Series_border_' + series.index, 'transparent', series.visible ? series.border.width : 0, series.border.color ? series.border.color : series.interior,
-                1, series.dashArray, emptyPointDirection);
+                1, series.border.dashArray, emptyPointDirection);
             this[pointAnimate ? 'addAreaPath' : 'appendLinePath'](options, series, '');
         }
         if (!pointUpdate && series.visible) { this.renderMarker(series); }

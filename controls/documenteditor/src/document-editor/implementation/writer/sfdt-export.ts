@@ -2060,10 +2060,9 @@ export class SfdtExport {
     }
     public writeComments(documentHelper: DocumentHelper): void {
         this.document[commentsProperty[this.keywordIndex]] = [];
-
         for (let i: number = 0; i < documentHelper.comments.length; i++) {
-            if (this.isExport ||
-                (!this.isExport && this.selectedCommentsId.indexOf(this.documentHelper.comments[i].commentId) !== -1)) {
+            if (this.documentHelper.comments[i].isPosted && (this.isExport ||
+                (!this.isExport && this.selectedCommentsId.indexOf(this.documentHelper.comments[i].commentId) !== -1))) {
                 this.document[commentsProperty[this.keywordIndex]].push(this.writeComment(this.documentHelper.comments[i]));
             }
         }

@@ -1,4 +1,4 @@
-import { createElement } from "@syncfusion/ej2-base";
+import { createElement, L10n } from "@syncfusion/ej2-base";
 import { AIAssistView, PromptRequestEventArgs, ToolbarItemClickedEventArgs } from "../../src/ai-assist-view/index";
 
 describe('AIAssistView -', () => {
@@ -843,6 +843,23 @@ describe('AIAssistView -', () => {
             aiAssistView.enableRtl = false;
             aiAssistView.dataBind();
             expect(aiAssistViewElem.classList.contains('e-rtl')).toEqual(false);
+        });
+
+        it('Locale checking', () => {
+            L10n.load({
+                'fr-BE': {
+                   'aiassistview': {
+                        'stopResponseText': "Arrêtez de répondre"
+                    }
+                }
+            });
+            aiAssistView = new AIAssistView({
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            expect(aiAssistViewElem.querySelector('.e-stop-response-text').textContent).toEqual('Stop Responding');
+            aiAssistView.locale = 'fr-BE';
+            aiAssistView.dataBind();
+            expect(aiAssistViewElem.querySelector('.e-stop-response-text').textContent).toEqual('Arrêtez de répondre');
         });
 
     });

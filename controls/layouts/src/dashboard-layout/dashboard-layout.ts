@@ -2720,9 +2720,12 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 this.checkCollision = [];
             }
             this.setPanelPosition(cell, panelProp.row, panelProp.col);
+            this.addPanelCalled = false;
             this.updatePanelLayout(cell, panelProp);
         }
-        this.addPanelCalled = false;
+        if (this.addPanelCalled) {
+            this.addPanelCalled = false;
+        }
         if (this.allowDragging &&
             this.mediaQuery ? !(this.checkMediaQuery()) : false) {
             this.enableDraggingContent([document.getElementById(panelProp.id)]);

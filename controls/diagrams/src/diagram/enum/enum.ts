@@ -127,21 +127,29 @@ export type FlipDirection =
     'None';
 
 /**
- * Allows you to flip only the node or along with port and label
- * * All - Flips port and label along the node
- * * Label - Flips label along with the node
+ * Allows you to flip only the node or along with port, label, labelText
+ * * All - Flips port, label and label text along with the node
+ * * Label - Flips the label along with the node and keeps the text readable
+ * * LabelText – Flips the node and inverts the label without flipping its position
  * * Port - Flips port along with the node
  * * None - Flips only the node
+ * * PortAndLabel – Flips the port and label along with the node
+ * * PortAndLabelText – Flips the port and label text along with the node
+ * * LabelAndLabelText – Flips the label and label text along with the node
  */
 export type FlipMode =
     /**
-     * All - Flips port and label along the node
+     * All - Flips port, label and label text along with the node
      */
     'All' |
     /**
-     * Label - Flips label along with the node
+     * Label - Flips the label along with the node and keeps the text readable.
      */
     'Label' |
+    /**
+     * LabelText – Flips the node and inverts the label without flipping its position
+     */
+    'LabelText' |
     /**
      * Port - Flips port along with the node
      */
@@ -149,7 +157,19 @@ export type FlipMode =
     /**
      * None - Flips only the node
      */
-    'None';
+    'None' |
+    /**
+     * PortAndLabel – Flips the port and label along with the node
+     */
+    'PortAndLabel' |
+    /**
+     * PortAndLabelText – Flips the port and label text along with the node
+     */
+    'PortAndLabelText' |
+    /**
+     * LabelAndLabelText – Flips the label and label text along with the node
+     */
+    'LabelAndLabelText';
 
 
 /**

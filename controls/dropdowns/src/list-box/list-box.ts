@@ -1001,6 +1001,12 @@ export class ListBox extends DropDownBase {
                 liCollElem[i as number].classList.remove('e-grabbed');
             }
         }
+        if (this.toolbarSettings.items.length > 0 ) {
+            this.updateToolBarState();
+        }
+        else if (this.tBListBox && this.tBListBox.toolbarSettings.items.length > 0 ) {
+            this.tBListBox.updateToolBarState();
+        }
     }
 
     private updateListItems(sourceElem: HTMLElement, destElem: HTMLElement): void {
@@ -1091,9 +1097,9 @@ export class ListBox extends DropDownBase {
                 li.setAttribute('aria-disabled', 'true');
             }
         });
-        if (this.allowFiltering && this.filterInput.value !== '' && this.toolbarSettings.items.length > 0) {
+        if (this.allowFiltering && this.filterInput && this.filterInput.value !== '' && this.toolbarSettings.items.length > 0) {
             let canDisable: boolean = false;
-            this.liCollections.forEach((li: HTMLLIElement) => { if (!li.classList.contains('e-disabled')) { canDisable = true; }});
+            this.ulElement.childNodes.forEach((li: HTMLLIElement) => { if (!li.classList.contains('e-disabled')) { canDisable = true; }});
             if (!canDisable) {
                 const wrap: Element = this.list.parentElement.getElementsByClassName('e-listbox-tool')[0];
                 const btn: HTMLButtonElement = wrap.querySelector('[data-value="moveAllTo"]');

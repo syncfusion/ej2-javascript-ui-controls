@@ -307,10 +307,10 @@ export class Toolbar {
     public showAnnotationToolbar(enableAnnotationToolbar: boolean): void {
         if (enableAnnotationToolbar) {
             this.annotationToolbarModule.isToolbarHidden = true;
-            this.annotationToolbarModule.showAnnotationToolbar();
+            this.annotationToolbarModule.showAnnotationToolbar(null, false, true);
         } else {
             this.annotationToolbarModule.isToolbarHidden = false;
-            this.annotationToolbarModule.showAnnotationToolbar();
+            this.annotationToolbarModule.showAnnotationToolbar(null, false, false);
         }
     }
 
@@ -1454,6 +1454,14 @@ export class Toolbar {
                     if (!this.pdfViewer.bookmarkViewModule || !this.pdfViewer.bookmarkViewModule.bookmarks) {
                         args.element.classList.add('e-disabled');
                     } else {
+                        args.element.classList.remove('e-disabled');
+                    }
+                }
+                else if (args.item.id === this.pdfViewer.element.id + '_menu_download') {
+                    if (!this.pdfViewer.enableDownload) {
+                        args.element.classList.add('e-disabled');
+                    }
+                    else {
                         args.element.classList.remove('e-disabled');
                     }
                 }

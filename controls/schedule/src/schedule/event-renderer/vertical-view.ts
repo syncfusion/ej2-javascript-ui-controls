@@ -681,9 +681,27 @@ export class VerticalEvent extends EventBase {
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 this.overlapList = this.filterEventsByResource(this.resources[parseInt(resource.toString(), 10)], this.overlapList);
             }
+            const queue: Record<string, any>[] = [];
             this.overlapList.forEach((obj: Record<string, any>) => {
-                let filterList: Record<string, any>[] = appointmentList.filter((data: Record<string, any>) =>
-                    data[fieldMapping.endTime] > obj[fieldMapping.startTime] && data[fieldMapping.startTime] <= obj[fieldMapping.endTime]);
+                queue.push(obj);
+                let filterList: Record<string, any>[] = [];
+                const processedIds: Set<any> = new Set();
+                while (queue.length > 0) {
+                    const currentObj: Record<string, any> = queue.shift() as Record<string, any>;
+                    const overlaps: Record<string, any>[] = appointmentList.filter((data: Record<string, any>) => {
+                        return data[fieldMapping.endTime] > currentObj[fieldMapping.startTime] &&
+                            data[fieldMapping.startTime] <= currentObj[fieldMapping.endTime] &&
+                            !processedIds.has(data[fieldMapping.id]);
+                    });
+                    overlaps.forEach((overlap: Record<string, any>) => {
+                        filterList.push(overlap);
+                        processedIds.add(overlap[fieldMapping.id]);
+                        queue.push(overlap);
+                    });
+                    if (processedIds.size < appointmentList.length - 1) {
+                        break;
+                    }
+                }
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     filterList = this.filterEventsByResource(this.resources[parseInt(resource.toString(), 10)], filterList);
                 }
@@ -696,7 +714,7 @@ export class VerticalEvent extends EventBase {
             for (let i: number = 0; i < appointment.length - 1; i++) {
                 for (let j: number = i + 1; j < appointment.length; j++) {
                     if (appointment[parseInt(i.toString(), 10)][fieldMapping.id] ===
-                      appointment[parseInt(j.toString(), 10)][fieldMapping.id]) {
+                        appointment[parseInt(j.toString(), 10)][fieldMapping.id]) {
                         appointment.splice(j, 1); j--;
                     }
                 }

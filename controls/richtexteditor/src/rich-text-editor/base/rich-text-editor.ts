@@ -1598,6 +1598,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         commandName: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
         IImageCommandsArgs | ITableCommandsArgs | FormatPainterSettingsModel | IAudioCommandsArgs | IVideoCommandsArgs,
         option?: ExecuteCommandOption): void {
+        if (commandName === 'importWord') {
+            const importContainer: HTMLElement = this.createElement('div');
+            importContainer.innerHTML = value as string;
+            const tableElement: NodeListOf<HTMLElement> = importContainer.querySelectorAll('table:not(.e-rte-table):not(.e-rte-paste-table)');
+            for (let i: number = 0; i < tableElement.length; i++) {
+                tableElement[i as number].classList.add('e-rte-paste-table');
+            }
+            value = importContainer.innerHTML;
+            importContainer.remove();
+            commandName = 'insertHTML';
+        }
         value = this.htmlPurifier(commandName, value);
         let internalValue: string | HTMLElement | ILinkCommandsArgs |
         IImageCommandsArgs | ITableCommandsArgs | FormatPainterSettingsModel | IFormatPainterArgs;

@@ -1507,7 +1507,7 @@ export class DialogEdit {
                     endDate = ganttProp.endDate;
                 }
                 endDate = this.parent.dateValidationModule.checkEndDate(endDate, ganttProp);
-                if (isNullOrUndefined(ganttProp.startDate) || endDate.getTime() > (ganttProp.startDate).getTime()) {
+                if (isNullOrUndefined(ganttProp.startDate) || endDate.getTime() >= (ganttProp.startDate).getTime()) {
                     this.parent.setRecordValue('endDate', endDate, ganttProp, true);
                 }
                 this.validateEndDate(currentData);

@@ -437,7 +437,7 @@ export class InsertHtml {
                 blockNode = range.endContainer;
                 range.setEnd(blockNode, range.endContainer.textContent.length);
             }
-            if (blockNode && blockNode.nodeName === 'BODY' && range.startContainer === range.endContainer && range.startContainer.nodeType === 1) {
+            if (blockNode && blockNode.nodeName === 'BODY' || blockNode.nodeName === 'DIV' && range.startContainer === range.endContainer && range.startContainer.nodeType === 1) {
                 blockNode = range.startContainer;
             }
             if (blockNode && (blockNode as HTMLElement).closest('LI') && editNode.contains((blockNode as HTMLElement).closest('LI')) && blockNode.nodeName !== 'TD' && blockNode.nodeName !== 'TH' && blockNode.nodeName !== 'TR' && node && (node as HTMLElement).firstElementChild &&
@@ -526,9 +526,9 @@ export class InsertHtml {
 
     // eslint-disable-next-line
     private static getImmediateBlockNode(node: Node, editNode: Node): Node {
-        do {
+        while (node && CONSTANT.BLOCK_TAGS.indexOf(node.nodeName.toLocaleLowerCase()) < 0) {
             node = node.parentNode;
-        } while (node && CONSTANT.BLOCK_TAGS.indexOf(node.nodeName.toLocaleLowerCase()) < 0);
+        }
         return node;
     }
 

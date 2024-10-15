@@ -212,6 +212,11 @@
       &.e-wrap .e-rowcell .e-treecolumn-container .e-treecell {
         @include grid-wrap;
       }
+      &.e-wrap .e-cloneproperties .e-rowcell .e-treecolumn-container .e-treecell {
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: break-word;
+      }
 
       &.e-wrap .e-rowcell .e-treecheckbox-container .e-treecheckbox {
         @include grid-wrap;

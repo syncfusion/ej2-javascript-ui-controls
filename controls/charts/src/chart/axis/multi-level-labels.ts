@@ -90,7 +90,7 @@ export class MultiLevelLabel {
                                             axis) * axisValue);
                     const len: number = axis.multiLevelLabels[index as number].categories.length;
                     gap = ((i === 0 || i === len - 1) && axis.labelPlacement === 'OnTicks' && axis.edgeLabelPlacement === 'Shift') ? gap / 2 : gap;
-                    if ((labelSize.width > gap - padding) && gap > 0 && (multiLevel.overflow === 'Wrap') && !isVertical) {
+                    if ((labelSize.width > gap - padding) && (this.chart.enableRtl ? gap < 0 : gap > 0) && (multiLevel.overflow === 'Wrap') && !isVertical) {
                         height = (height * (textWrap(categoryLabel.text, gap - padding, multiLevel.textStyle, this.chart.enableRtl,
                                                      null, null, this.chart.themeStyle.axisLabelFont).length));
                     }

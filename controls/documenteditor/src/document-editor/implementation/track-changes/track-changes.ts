@@ -174,7 +174,7 @@ export class Revision {
      * @returns {void}
      */
     public accept(): void {
-        const eventArgs: RevisionActionEventArgs = { author: this.author, cancel: false, revisionType: this.revisionType, actionType: 'Accept' };
+        const eventArgs: RevisionActionEventArgs = { author: this.author, cancel: false, revisionType: this.revisionType, actionType: 'Accept', source:this };
         this.owner.trigger(revisionActionEvent, eventArgs);
         if (eventArgs.cancel) {
             return;
@@ -192,7 +192,7 @@ export class Revision {
      * Method which rejects the selected revision, revision marks will be removed leaving the original content.
      */
     public reject(): void {
-        const eventArgs: RevisionActionEventArgs = { author: this.author, cancel: false, revisionType: this.revisionType, actionType: 'Reject' };
+        const eventArgs: RevisionActionEventArgs = { author: this.author, cancel: false, revisionType: this.revisionType, actionType: 'Reject', source:this };
         this.owner.trigger(revisionActionEvent, eventArgs);
         if (eventArgs.cancel) {
             return;
@@ -205,6 +205,12 @@ export class Revision {
                 this.handleAcceptReject(false, true);
             }
         }
+    }
+    /**
+     * Select the current revision.
+     */
+    public select(): void {
+        this.owner.selectionModule.selectRevision(this);
     }
     /**
      * Unlinks revision and its assosiated range 

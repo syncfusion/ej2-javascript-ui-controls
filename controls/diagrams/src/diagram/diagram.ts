@@ -1912,6 +1912,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             this.serializationSettings.preventDefaults = newProp.serializationSettings.preventDefaults;
                         }
                         break;
+                    case 'tool':
+                        // 912436: Mouse cursor flickers when entering the diagram canvas after the tool is changed at runtime
+                        this.eventHandler.updateTool();
+                        break;
                     }
                 }
                 if (refreshLayout && !refereshColelction) {
@@ -11225,7 +11229,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updatePorts(actualObject, actualObject.flip);
                 }
             } else {
-                if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All')) {
+                // flips the port according to node flip direction
+                if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All' ||
+                    actualObject.flipMode === 'PortAndLabel' || actualObject.flipMode === 'PortAndLabelText')) {
                     this.updatePorts(actualObject, node.flip);
                 }
                 //EJ2-826617 - Flip 'None' is not working properly
@@ -11236,13 +11242,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         // EJ2-71981 - Flip mode "Port" is not working properly while dragging multiselected node
         if (node.flipMode !== undefined) {
+            actualObject.wrapper.flipMode = node.flipMode;
             update = true;
             updateConnector = true;
-            if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All')) {
+            // flips the port according to node flip direction
+            if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All' ||
+                actualObject.flipMode === 'PortAndLabel' || actualObject.flipMode === 'PortAndLabelText')) {
                 this.updatePorts(actualObject, actualObject.flip);
             }
             //EJ2-826617 - Flip mode 'Label' does not triggers the port
-            else if (actualObject.flipMode === 'Label') {
+            else if (actualObject.flipMode === 'Label' || actualObject.flipMode === 'LabelText' ||
+                     actualObject.flipMode === 'LabelAndLabelText') {
                 this.updatePorts(actualObject, 'None');
             }
             //EJ2-826617 - Flip mode 'None' is not working properly

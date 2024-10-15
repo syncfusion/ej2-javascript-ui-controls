@@ -638,6 +638,11 @@
         border-left: 1px solid $grid-header-border-color;
         border-right-width: 0;
       }
+
+      .e-focused .e-rhandler,
+      .e-focused .e-rsuppress {
+        border: 0 none;
+      }
     }
 
     .e-cloneproperties.e-draganddrop {

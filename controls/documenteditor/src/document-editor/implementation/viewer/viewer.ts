@@ -1685,6 +1685,7 @@ export class DocumentHelper {
                 char = event.key;
             }
             if (char !== ' ' && char !== '\r' && char !== '\b' && char !== String.fromCharCode(27) && !ctrl) {
+                this.triggerSpellCheck = false;
                 this.owner.editorModule.handleTextInput(char);
             } else if (char === ' ') {
                 this.triggerSpellCheck = true;

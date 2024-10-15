@@ -398,7 +398,8 @@ export class Shape {
 
     private setDimension(width: number, height: number): void {
         const parent: ImageEditor = this.parent;
-        if (width && height) {
+        const shape: string = parent.activeObj.shape;
+        if ((width && height) || ((shape === 'line' || shape === 'arrow') && (width || height))) {
             parent.activeObj.activePoint.width = width; parent.activeObj.activePoint.height = height;
             if (parent.currObjType.shape.toLowerCase() === 'ellipse') {
                 parent.activeObj.activePoint.width = 2 * width;
@@ -445,7 +446,7 @@ export class Shape {
                     strokeSettings.strokeWidth = 0;
                 }
                 strokeSettings.strokeColor = strokeColor ? strokeColor : strokeSettings.strokeColor;
-                strokeSettings.fillColor = fillColor ? fillColor : strokeSettings.fillColor;
+                strokeSettings.fillColor = fillColor || fillColor === '' ? fillColor : strokeSettings.fillColor;
                 strokeSettings.radius = radius ? radius : strokeSettings.radius;
                 const tempWidth: number = parent.img.destWidth > 100 ? 100 : parent.img.destWidth / 2;
                 const tempHeight: number = parent.img.destHeight > 100 ? 100 : parent.img.destHeight / 2;

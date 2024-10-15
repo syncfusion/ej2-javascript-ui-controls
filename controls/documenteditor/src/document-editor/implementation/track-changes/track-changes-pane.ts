@@ -1,4 +1,4 @@
-import { createElement, L10n, isNullOrUndefined, select, Browser } from '@syncfusion/ej2-base';
+import { createElement, L10n, isNullOrUndefined, select, Browser, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { Revision } from './track-changes';
@@ -401,6 +401,7 @@ export class TrackChangesPane {
         if (!isNullOrUndefined(currentChangeView) && revision.range.length > 0) {
             let changesDiv = currentChangeView.singleInnerDiv.querySelector("#textDiv") as HTMLDivElement;
             while (changesDiv.firstChild) {
+                currentChangeView.removeInnerChilds(changesDiv.firstChild as HTMLElement);
                 changesDiv.removeChild(changesDiv.firstChild);
             }
             currentChangeView.layoutElementText(revision.range, changesDiv);
@@ -424,6 +425,8 @@ export class TrackChangesPane {
                         let changesSingleView: ChangesSingleView = this.changes.get(revision);
                         if (removeChild && !isNullOrUndefined(this.changesInfoDiv)) {
                             let changesSingleView: ChangesSingleView = this.changes.get(revision);
+                            changesSingleView.removeEvents();
+                            changesSingleView.removeInnerChilds(changesSingleView.outerSingleDiv);
                             this.changesInfoDiv.removeChild(changesSingleView.outerSingleDiv);
                         }
                     }
@@ -823,6 +826,10 @@ export class ChangesSingleView {
     private acceptButton: Button;
     private rejectButton: Button;
     public changesCount: HTMLElement;
+
+    private selectRevisionHandler: EventListenerOrEventListenerObject = this.selectRevision.bind(this);
+    private acceptButtonClickHandler: EventListenerOrEventListenerObject = this.acceptButtonClick.bind(this);
+    private rejectButtonClickHandler: EventListenerOrEventListenerObject = this.rejectButtonClick.bind(this);
     /***
      * @private
      */
@@ -845,10 +852,11 @@ export class ChangesSingleView {
         this.user = revision.author;
         this.outerSingleDiv = createElement('div', { className: 'e-de-tc-outer' });
         this.singleInnerDiv = createElement('div', { className: 'e-de-trckchanges-inner' });
-        this.singleInnerDiv.addEventListener('click', this.selectRevision.bind(this));
+        this.singleInnerDiv.addEventListener('click', this.selectRevisionHandler);
         this.outerSingleDiv.appendChild(this.singleInnerDiv);
         let userNameTotalDiv: HTMLElement = createElement('div', { className: 'e-de-track-usernme-div' });
-        let userNameLabel: HTMLElement = createElement('div', { innerHTML: revision.author, className: 'e-de-track-user-nme' });
+        let userNameLabel: HTMLElement = createElement('div', { className: 'e-de-track-user-nme' });
+        userNameLabel.textContent = SanitizeHtmlHelper.sanitize(revision.author);
         if (!isNullOrUndefined(revision.author)) {
             userNameTotalDiv.style.display = 'flex';
             this.owner.documentHelper.getAvatar(userNameTotalDiv, userNameLabel, undefined, revision);
@@ -905,7 +913,7 @@ export class ChangesSingleView {
         if (this.owner.documentHelper.isTrackedOnlyMode) {
             this.acceptButtonElement.classList.add('e-de-overlay'); 
         }
-        this.acceptButtonElement.addEventListener('click', this.acceptButtonClick.bind(this));
+        this.acceptButtonElement.addEventListener('click', this.acceptButtonClickHandler);
 
         buttonDiv = createElement('div', {
             styles: 'float:left;'
@@ -919,7 +927,7 @@ export class ChangesSingleView {
         if (this.owner.documentHelper.isTrackedOnlyMode) {
             this.rejectButtonElement.classList.add('e-de-overlay');    
         }
-        this.rejectButtonElement.addEventListener('click', this.rejectButtonClick.bind(this));
+        this.rejectButtonElement.addEventListener('click', this.rejectButtonClickHandler);
 
         this.changesCount = createElement('div', { className: 'e-de-track-chngs-count', styles: 'float:right;' });
         let currentCount: number = this.owner.revisions.changes.indexOf(revision) + 1;
@@ -1076,12 +1084,45 @@ export class ChangesSingleView {
         }
         this.trackChangesPane.updateUsers();
     }
+
+    /**
+     * @private
+     */
+    public removeInnerChilds(element: HTMLElement): void {
+        if (element) {
+            while (element.firstChild) {
+                if (element.firstChild.childNodes.length > 0) {
+                    this.removeInnerChilds(element.firstChild as HTMLElement);
+                }
+                element.removeChild(element.firstChild);
+            }
+        }
+    }
+
+    /**
+     * @private
+     */
+    public removeEvents(): void {
+        if (this.outerSingleDiv) {
+            this.outerSingleDiv.removeEventListener('click', this.selectRevisionHandler);
+        }
+        if (this.acceptButtonElement) {
+            this.acceptButtonElement.removeEventListener('click', this.acceptButtonClickHandler);
+        }
+        if (this.rejectButtonElement) {
+            this.rejectButtonElement.removeEventListener('click', this.rejectButtonClickHandler);
+        }
+    }
+    
+    
     /**
      *
      * @private
      */
     public clear(): void {
         this.removeFromParentCollec();
+        this.removeEvents();
+        this.removeInnerChilds(this.outerSingleDiv);
         if (this.acceptButton) {
             this.acceptButton.destroy();
             this.acceptButton = undefined;
@@ -1131,6 +1172,8 @@ export class ChangesSingleView {
      * @private
      */
     public destroy(): void {
+        this.removeEvents();
+        this.removeInnerChilds(this.outerSingleDiv);
         if (this.acceptButton) {
             this.acceptButton.destroy();
             this.acceptButton = undefined;

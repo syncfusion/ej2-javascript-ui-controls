@@ -1850,7 +1850,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 done();
             });
         });
-        describe('EJ2-839539 ->', () => {
+        describe('EJ2-839539, EJ2-91154 ->', () => {
             beforeAll((done: Function) => {
                 model = {
                     sheets: [{
@@ -1878,6 +1878,45 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(helper.invoke('getCell', [0, 0]).textContent).not.toBe('#VALUE!');
                 expect(helper.invoke('getCell', [0, 0]).textContent).toBe('22314666');
                 expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toBe('22314666');
+                done();
+            });
+            it('Custom date format changes to Short Date when copying from Excel to spreadsheet when date starts with 31', (done: Function) => {
+                helper.edit('C1', '31-Jan-24');
+                helper.edit('C2', '31-Feb-24');
+                helper.edit('C3', '31-Mar-24');
+                helper.edit('C4', '31-Apr-24');
+                helper.edit('C5', '31-May-24');
+                helper.edit('C6', '31-Jun-24');
+                helper.edit('C7', '31-Jul-24');
+                helper.edit('C8', '31-Aug-24');
+                helper.edit('C9', '31-Sep-24');
+                helper.edit('C10', '31-Oct-24');
+                helper.edit('C11', '31-Nov-24');
+                helper.edit('C12', '31-Dec-24');
+                expect(helper.getInstance().sheets[0].rows[0].cells[2].format).toBe('d-mmm-yy');
+                expect(helper.getInstance().sheets[0].rows[1].cells[2].format).toBe('d-mmm-yy');
+                expect(helper.getInstance().sheets[0].rows[2].cells[2].format).toBe('d-mmm-yy');
+                expect(helper.getInstance().sheets[0].rows[3].cells[2].format).toBe('d-mmm-yy');
+                expect(helper.getInstance().sheets[0].rows[4].cells[2].format).toBe('d-mmm-yy');
+                expect(helper.getInstance().sheets[0].rows[5].cells[2].format).toBe('d-mmm-yy');
+                expect(helper.getInstance().sheets[0].rows[6].cells[2].format).toBe('d-mmm-yy');
+                expect(helper.getInstance().sheets[0].rows[7].cells[2].format).toBe('d-mmm-yy');
+                expect(helper.getInstance().sheets[0].rows[8].cells[2].format).toBe('d-mmm-yy');
+                expect(helper.getInstance().sheets[0].rows[9].cells[2].format).toBe('d-mmm-yy');
+                expect(helper.getInstance().sheets[0].rows[10].cells[2].format).toBe('d-mmm-yy');
+                expect(helper.getInstance().sheets[0].rows[11].cells[2].format).toBe('d-mmm-yy');
+                expect(helper.getInstance().sheets[0].rows[0].cells[2].formattedText).toBe('31-Jan-24');
+                expect(helper.getInstance().sheets[0].rows[1].cells[2].formattedText).toBe('2-Mar-24');
+                expect(helper.getInstance().sheets[0].rows[2].cells[2].formattedText).toBe('31-Mar-24');
+                expect(helper.getInstance().sheets[0].rows[3].cells[2].formattedText).toBe('1-May-24');
+                expect(helper.getInstance().sheets[0].rows[4].cells[2].formattedText).toBe('31-May-24');
+                expect(helper.getInstance().sheets[0].rows[5].cells[2].formattedText).toBe('1-Jul-24');
+                expect(helper.getInstance().sheets[0].rows[6].cells[2].formattedText).toBe('31-Jul-24');
+                expect(helper.getInstance().sheets[0].rows[7].cells[2].formattedText).toBe('31-Aug-24');
+                expect(helper.getInstance().sheets[0].rows[8].cells[2].formattedText).toBe('1-Oct-24');
+                expect(helper.getInstance().sheets[0].rows[9].cells[2].formattedText).toBe('31-Oct-24');
+                expect(helper.getInstance().sheets[0].rows[10].cells[2].formattedText).toBe('1-Dec-24');
+                expect(helper.getInstance().sheets[0].rows[11].cells[2].formattedText).toBe('31-Dec-24');
                 done();
             });
         });

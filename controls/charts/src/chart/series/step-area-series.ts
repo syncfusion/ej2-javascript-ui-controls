@@ -101,7 +101,8 @@ export class StepAreaSeries extends LineBase {
         if (series.border.width !== 0) {
             const options: PathOption = new PathOption(
                 series.chart.element.id + '_Series_border_' + series.index, 'transparent',
-                series.border.width, series.border.color ? series.border.color : series.interior, 1, series.dashArray, borderDirection
+                series.border.width, series.border.color ? series.border.color : series.interior, 1, series.border.dashArray,
+                borderDirection
             );
             this[pointAnimate ? 'addAreaPath' : 'appendLinePath'](options, series, '');
         }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.53 (2024-10-15)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I633873` - Resolved the inconsistent resizing behaviour observed with the modal dialog.
+
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

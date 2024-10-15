@@ -2679,33 +2679,42 @@ export class Drawing {
             updateConnector = true;
         }
         if (node.textAlign !== undefined) {
-            actualObject.textAlign = node.textAlign;
-            if (actualObject.shapeAnnotationType === 'FreeText' && actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
-                const children: any[] = actualObject.wrapper.children;
-                children[1].style.textAlign = node.textAlign;
-                if (children[1].childNodes.length === 1) {
-                    if (actualObject.textAlign === 'Justify') {
-                        children[1].horizontalAlignment = 'Left';
-                        children[1].setOffsetWithRespectToBounds(0.01, 0, null);
-                    } else if (actualObject.textAlign === 'Right') {
-                        children[1].horizontalAlignment = 'Right';
-                        children[1].setOffsetWithRespectToBounds(1, 0, null);
-                    } else if (actualObject.textAlign === 'Left') {
-                        children[1].horizontalAlignment = 'Left';
-                        children[1].setOffsetWithRespectToBounds(0.01, 0, null);
-                    } else if (actualObject.textAlign === 'Center') {
+            const currentAnnotation: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0];
+            const clonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
+            const redoClonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
+            if (actualObject.textAlign !== node.textAlign) {
+                actualObject.textAlign = node.textAlign;
+                redoClonedObject.textAlign = node.textAlign;
+                if (actualObject.shapeAnnotationType === 'FreeText' && actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
+                    const children: any[] = actualObject.wrapper.children;
+                    children[1].style.textAlign = node.textAlign;
+                    if (children[1].childNodes.length === 1) {
+                        if (actualObject.textAlign === 'Justify') {
+                            children[1].horizontalAlignment = 'Left';
+                            children[1].setOffsetWithRespectToBounds(0.01, 0, null);
+                        } else if (actualObject.textAlign === 'Right') {
+                            children[1].horizontalAlignment = 'Right';
+                            children[1].setOffsetWithRespectToBounds(1, 0, null);
+                        } else if (actualObject.textAlign === 'Left') {
+                            children[1].horizontalAlignment = 'Left';
+                            children[1].setOffsetWithRespectToBounds(0.01, 0, null);
+                        } else if (actualObject.textAlign === 'Center') {
+                            children[1].horizontalAlignment = 'Center';
+                            children[1].setOffsetWithRespectToBounds(0.51, 0, null);
+                        }
+                    } else if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
                         children[1].horizontalAlignment = 'Center';
-                        children[1].setOffsetWithRespectToBounds(0.51, 0, null);
                     }
-                } else if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
-                    children[1].horizontalAlignment = 'Center';
+                    else {
+                        children[1].horizontalAlignment = 'Auto';
+                    }
+                    if (!this.pdfViewer.annotation.isUndoRedoAction) {
+                        this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(false), null, currentAnnotation, 'textAlign', '', clonedObject, redoClonedObject);
+                    }
                 }
-                else {
-                    children[1].horizontalAlignment = 'Auto';
-                }
+                update = true;
+                updateConnector = true;
             }
-            update = true;
-            updateConnector = true;
         }
         if (node.thickness !== undefined) {
             actualObject.thickness = node.thickness;

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 27.1.52 (2024-10-08)
+## 27.1.53 (2024-10-15)
+
+### Pivot Table
+
+#### Bug fixes
+
+- The pivot table will now work properly while dynamically disabling grouping with the pivot chart enabled.
+
+## 27.1.51 (2024-09-30)
 
 ### Pivot Table
 

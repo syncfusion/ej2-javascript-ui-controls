@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 27.1.52 (2024-10-08)
+## 27.1.53 (2024-10-15)
+
+### DashboardLayout
+
+- `#I636600` - Panels overlapping when adding a panel dynamically using `addPanel` method in the `Vue` DashboardLayout component has been resolved.
+
+## 27.1.51 (2024-09-30)
 
 ### Timeline
 

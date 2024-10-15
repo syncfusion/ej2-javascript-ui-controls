@@ -1849,6 +1849,7 @@ describe('Grouping VirtualScroll code coverage', () => {
                     {field: 'ShipCity', headerText:'ShipCity', width:130}    
                 ], 
             }, done);
+        gObj.isInitialLoad = true;
     });
 
     it('coverage for grouping with hide/show column in virtualscroll', () => {

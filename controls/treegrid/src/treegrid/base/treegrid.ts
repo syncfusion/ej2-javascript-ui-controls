@@ -3339,12 +3339,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getPersistData(): string {
         const keyEntity: string[] = ['pageSettings', 'sortSettings',
-            'filterSettings', 'columns', 'searchSettings', 'selectedRowIndex', 'treeColumnIndex'];
+            'filterSettings', 'columns', 'searchSettings', 'selectedRowIndex', 'treeColumnIndex', 'scrollPosition'];
         const ignoreOnPersist: { [x: string]: string[] } = {
             pageSettings: ['template', 'pageSizes', 'pageSizeMode', 'enableQueryString', 'totalRecordsCount', 'pageCount'],
             filterSettings: ['type', 'mode', 'showFilterBarStatus', 'immediateModeDelay', 'ignoreAccent', 'hierarchyMode'],
             searchSettings: ['fields', 'operator', 'ignoreCase'],
-            sortSettings: [], columns: [], selectedRowIndex: []
+            sortSettings: [], columns: [], selectedRowIndex: [], scrollPosition: []
         };
         const ignoreOnColumn: string[] = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
             'commandTemplate', 'commands', 'dataSource'];
@@ -4236,6 +4236,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             });
         }
         record = this.getCollapseExpandRecords(row, record);
+        if (isNullOrUndefined(row) && isNullOrUndefined(record)) {
+            return;
+        }
         if (!isNullOrUndefined(row) && row.cells[0].classList.contains('e-lastrowcell')) {
             this.lastRowBorder(row, false);
         }
@@ -4319,7 +4322,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             record = this.flatData.filter((e: ITreeData) => {
                 return e.hasChildRecords;
             });
-        } else if (isNullOrUndefined(record)) {
+        } else if (isNullOrUndefined(record) && !isNullOrUndefined(row)) {
             if (this.detailTemplate) {
                 record = <ITreeData>this.grid.getCurrentViewRecords()[row.getAttribute('data-rowindex')];
             } else {
@@ -4358,6 +4361,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             });
         }
         record = this.getCollapseExpandRecords(row, record);
+        if (isNullOrUndefined(row) && isNullOrUndefined(record)) {
+            return;
+        }
         if (this.isCollapseAll && !isRemoteData(this)) {
             const args: RowCollapsingEventArgs = { data: parentRec, row: row, cancel: false };
             if (!this.isCollapsingEventTriggered) {
@@ -4379,7 +4385,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         else if (!this.isCollapseAll || (this.isCollapseAll && isRemoteData(this))) {
             const args: RowCollapsingEventArgs = { data: record, row: row, cancel: false };
             this.trigger(events.collapsing, args, (collapsingArgs: RowCollapsingEventArgs) => {
-                if (!collapsingArgs.cancel && !isNullOrUndefined(record)) {
+                if (!collapsingArgs.cancel) {
                     this.collapseRows(row, record, parentRec);
                 }
             });

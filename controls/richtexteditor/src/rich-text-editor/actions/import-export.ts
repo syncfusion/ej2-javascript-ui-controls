@@ -26,7 +26,7 @@ export class ImportExport {
                 saveUrl: this.parent.importWord.serviceUrl
             },
             success: (args: SuccessEventArgs) => {
-                (this.parent as RichTextEditor).executeCommand('insertHTML', ((args.e as MouseEvent).currentTarget as XMLHttpRequest).response, { undo: true });
+                (this.parent as RichTextEditor).executeCommand('importWord', ((args.e as MouseEvent).currentTarget as XMLHttpRequest).response, { undo: true });
             }
         });
         this.parent.setProperties({ enableXhtml: true }, true);

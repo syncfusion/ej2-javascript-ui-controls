@@ -264,7 +264,7 @@ export class ResponsiveDialogRenderer implements IAction {
         const buttons: HTMLElement[] = [].slice.call(this.customColumnDiv.getElementsByClassName('e-ressortbutton'));
         for (let i: number = 0; i < buttons.length; i++) {
             if (buttons[parseInt(i.toString(), 10)] !== target) {
-                buttons[parseInt(i.toString(), 10)].innerHTML = 'None';
+                buttons[parseInt(i.toString(), 10)].innerHTML = this.parent.localeObj.getConstant('NoneText');
             }
         }
     }
@@ -561,7 +561,7 @@ export class ResponsiveDialogRenderer implements IAction {
         } else if (this.action === ResponsiveDialogAction.isAdd) {
             title = gObj.localeObj.getConstant('AddFormTitle');
         } else if (this.action === ResponsiveDialogAction.isFilter) {
-            title = col ? col.headerText || col.field : gObj.localeObj.getConstant('FilterButton');
+            title = col ? col.headerText || col.field : gObj.localeObj.getConstant('FilterTitle');
         } else if (this.action === ResponsiveDialogAction.isSort) {
             title = gObj.localeObj.getConstant('Sort');
         } else if (this.action === ResponsiveDialogAction.isColMenu) {

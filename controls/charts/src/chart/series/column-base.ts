@@ -509,7 +509,7 @@ export class ColumnBase {
         const previousElement: Element = redrawElement(chart.redraw, name);
         const previousDirection: string = previousElement ? previousElement.getAttribute('d') : '';
         this.options = new PathOption(
-            name, argsData.fill, argsData.border.width, argsData.border.color, series.opacity, series.dashArray, (series.columnFacet === 'Cylinder') ? '' : direction);
+            name, argsData.fill, argsData.border.width, argsData.border.color, series.opacity, series.border.dashArray, (series.columnFacet === 'Cylinder') ? '' : direction);
         this.element = chart.renderer.drawPath(
             this.options, new Int32Array([series.clipRect.x, series.clipRect.y])
         ) as HTMLElement;

@@ -373,7 +373,7 @@ export class Resize {
             }
             for (let rowIdx: number = 0, len: number = sheet.rows.length; rowIdx < len; rowIdx++) {
                 cell = getCell(rowIdx, idx, sheet);
-                if (cell) {
+                if (cell && cell.value) {
                     if (cell.wrap) {
                         wrapCell = true;
                         appendRow(this.getWrapText(this.parent.getDisplayText(cell), getExcludedColumnWidth(

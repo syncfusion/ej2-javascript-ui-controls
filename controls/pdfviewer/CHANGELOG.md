@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 27.1.53 (2024-10-15)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I638294` - Now, the notification dialog is not shown for search text with no matches when `showNotificationDialog` API is set to false.
+- `#I636244` - Now, the annotation toolbar is programmatically opened on a mobile device using the `showAnnotationToolbar` method.
+- `#I637351` - Now, the signature collection ID and ID from the `addSignature` event are the same on mobile devices.
+- `#F194443` - Now, the tooltip is properly removed when programmatically removing a form field tooltip using the `updateFormField` API.
+- `#I637350` - Now, the PDF Viewer does not stop responding when searching the text.
+- `#I637275` - Now, the download option is disabled in mobile mode when `enableDownload` API is set to false.
+- `#I633438` , `#I633453` - Now, the invalid file corrupted dialog closes automatically after a valid PDF document is loaded.
+- `#I619099` - Now, the delay in searching for text after completing text extraction has been reduced.
+- `#I635120` - Now, the undo and redo functions for free text annotations, as well as the ability to change alignment and font size using the `editAnnotation` method, are now functioning correctly.
+- `#I608686` - Now, a script error does not occur when trying to update and delete annotations simultaneously after importing them.
+- `#I635119` - Now, after programmatically highlighting and deleting text, the text will not be highlighted again unless a new selection is made, as the selection is cleared when the delete method is called programmatically.
+- Now, the close button is clickable across all size scenarios when the thumbnail container is resized.
+- `#I908781` - Now, the Form field data will be accurately preserved after scrolling, even when form fields with the same name are updated, and the form designer module is not included.
+
+#### New Features
+
+- `#I627469` - Added support for retrieving page details, such as the current page size, page rotation and zoom factor, through the `getPageDetails`.
+
 ## 27.1.52 (2024-10-08)
 
 ### PDF Viewer

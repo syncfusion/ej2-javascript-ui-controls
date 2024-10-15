@@ -177,4 +177,11 @@ export class PdfDocumentBase {
     public clone() : PdfDocument {
         return this.document;
     }
+    /**
+     * Save PDF document.
+     * @private
+     */
+    _save(): Uint8Array {
+        return this.document._docSave();
+    }
 }

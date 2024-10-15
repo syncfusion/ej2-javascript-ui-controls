@@ -1,0 +1,170 @@
+// layout styles
+.e-bigger .e-kanban,
+.e-bigger.e-kanban {
+  .e-swimlane-header-toolbar {
+    margin-bottom: 5px;
+    min-height: 56px;
+
+    .e-toolbar-swimlane-name {
+      font-size: 18px;
+    }
+
+    .e-icon-menu {
+      font-size: $kanban-mb-swl-menu-icon-bgr-font-size;
+    }
+  }
+
+  .e-kanban-table.e-content-table {
+    border-spacing: $kanban-table-bigger-border-spacing;
+  }
+
+  .e-swimlane {
+    .e-kanban-table.e-content-table {
+      border-spacing: $kanban-table-bigger-swimlane-border-spacing;
+    }
+  }
+
+  .e-frozen-swimlane-row .e-frozen-row {
+    padding: $kanban-frozen-swimlane-row-bgr-padding;
+
+    .e-swimlane-header {
+      .e-swimlane-text {
+        font-size: $kanban-frozen-swimlane-row-header-bgr-font-size;
+      }
+
+      .e-item-count {
+        line-height: $kanban-frozen-swl-row-head-item-count-bgr-line-height;
+        padding: $kanban-frozen-swl-row-head-item-count-bgr-padding;
+      }
+    }
+  }
+
+  .e-kanban-table {
+    col.e-collapsed {
+      width: $kanban-table-col-collapse-bgr-width;
+    }
+  }
+
+  .e-kanban-table .e-header-cells {
+    height: $kanban-header-cell-bgr-height;
+
+    @if $skin-name =='tailwind' {
+      padding: $kanban-header-cell-bgr-padding;
+    }
+
+    .e-header-text {
+      font-size: $kanban-header-text-bgr-font-size;
+      font-weight: $kanban-header-text-bgr-font-weight;
+      line-height: $kanban-header-text-bgr-line-height;
+      text-transform: $kanban-header-text-bgr-transform;
+    }
+
+    .e-item-count {
+      font-size: $kanban-header-item-count-bgr-font-size;
+      font-weight: $kanban-header-item-count-bgr-font-weight;
+      line-height: $kanban-header-item-count-bgr-line-height;
+      margin-top: $kanban-header-item-count-bgr-margin-top;
+      text-transform: $kanban-header-item-count-bgr-text-transform;
+    }
+
+    .e-column-collapse,
+    .e-column-expand {
+      font-size: $kanban-toggle-header-icon-bgr-font-size;
+    }
+  }
+
+  .e-kanban-content {
+
+    .e-content-row .e-content-cells .e-card-wrapper,
+    .e-content-row .e-content-cells .e-card-container {
+      padding: $kanban-card-container-bgr-padding;
+
+      .e-target-dragged-clone,
+      .e-target-dropped-clone {
+        margin-bottom: $kanban-target-drag-drop-clone-bgr-margin-bottom;
+      }
+    }
+
+    .e-swimlane-row .e-content-cells .e-swimlane-header {
+      padding: $kanban-swl-row-header-bgr-padding;
+
+      .e-swimlane-text {
+        font-size: $kanban-swl-header-text-bgr-font-size;
+        line-height: $kanban-swl-header-text-bgr-line-height;
+      }
+
+      .e-item-count {
+        font-size: $kanban-swl-header-item-count-bgr-font-size;
+        line-height: $kanban-swl-header-item-count-bgr-line-height;
+        padding: $kanban-swl-header-item-count-bgr-padding;
+      }
+
+      .e-swimlane-row-expand,
+      .e-swimlane-row-collapse {
+        font-size: $kanban-swl-header-icon-bgr-font-size;
+
+        @if $skin-name =='bootstrap5' {
+          padding-top: 4px;
+        }
+
+        &:hover,
+        &:focus {
+          @if $skin-name == 'bootstrap5' {
+            padding-top: 4px;
+          }
+        }
+      }
+    }
+
+    .e-content-row .e-content-cells .e-card-wrapper .e-card.e-card-color,
+    .e-content-row .e-content-cells .e-card-container .e-card.e-card-color {
+      .e-card-header {
+        padding: $kanban-color-card-header-bgr-padding;
+      }
+
+      .e-card-content {
+        padding: $kanban-color-card-content-bgr-padding;
+      }
+
+      .e-card-tags,
+      .e-card-footer {
+        padding: $kanban-color-card-footer-bgr-padding;
+      }
+    }
+
+    .e-content-row .e-content-cells .e-card-wrapper .e-card,
+    .e-content-row .e-content-cells .e-card-container .e-card {
+      .e-card-header {
+        padding: $kanban-card-header-bgr-padding;
+      }
+
+      .e-card-content {
+        padding: $kanban-card-content-bgr-padding;
+      }
+
+      .e-card-tags,
+      .e-card-footer {
+        padding: $kanban-card-footer-bgr-padding;
+      }
+    }
+
+    .e-content-row .e-content-cells .e-card-wrapper .e-card.e-card-color,
+    .e-content-row .e-content-cells .e-card-container .e-card.e-card-color,
+    .e-content-row .e-content-cells .e-card-wrapper .e-card,
+    .e-content-row .e-content-cells .e-card-container .e-card {
+      margin-bottom: $kanban-card-bgr-margin-bottom;
+
+      .e-card-header {
+        .e-card-header-title {
+          font-size: $kanban-card-header-title-bgr-font-size;
+          line-height: $kanban-card-header-title-bgr-line-height;
+        }
+      }
+
+      .e-card-content {
+        font-size: $kanban-card-content-bgr-font-size;
+        line-height: $kanban-card-content-bgr-line-height;
+      }
+    }
+  }
+}

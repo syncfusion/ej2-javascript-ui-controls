@@ -154,7 +154,7 @@ export class StackingStepAreaSeries extends LineBase {
                 options = new PathOption(
                     stackSeries.chart.element.id + '_Series_border_' + stackSeries.index, 'transparent',
                     stackSeries.border.width, stackSeries.border.color ? stackSeries.border.color : stackSeries.interior, 1,
-                    stackSeries.dashArray, borderDirection
+                    stackSeries.border.dashArray, borderDirection
                 );
                 this[pointAnimate ? 'addPath' : 'appendLinePath'](options, stackSeries, '');
             }

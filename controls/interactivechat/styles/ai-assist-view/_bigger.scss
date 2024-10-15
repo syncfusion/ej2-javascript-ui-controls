@@ -3,63 +3,89 @@
   .e-bigger .e-aiassistview {
     .e-view-header {
       height: $aiassist-bigger-header-height;
-    }
-    .e-view-content {
-      height: calc(100% - $aiassist-bigger-header-height);
-    }
-    .e-views {
-      .e-prompt-icon {
-        min-height: $aiassist-bigger-icon-height;
-      }
-      .e-output-icon {
-        height: $aiassist-bigger-icon-height;
-      }
-      .e-prompt-icon,
-      .e-output-icon {
-        min-width: $aiassist-bigger-icon-width;
-      }
-      .e-loading-body,
-      .e-content-body,
-      .e-loading-footer {
-        padding: 2px 0 0 10px;
-      }
-      .e-content-container {
-        font-size: 16px;
-        .e-prompt-text {
-          padding: $prompt-text-bigger-padding;
-          line-height: 22px;
-        }
-      }
-      .e-suggestions {
-        &.e-suggestion-item-template ul li {
-          padding: 0;
-        }
-        .e-suggestion-header {
-          font-size: 16px;
-          font-weight: $suggesstions-header-bigger-font-weight;
-          margin-bottom: 15px;
-        }
-        ul {
-          li {
-            line-height: 22px;
-            font-weight: $suggesstions-bigger-font-weight;
-            padding: $suggesstions-bigger-list-padding;
-            margin: $suggesstions-bigger-list-margin;
+      .e-toolbar {
+        .e-toolbar-items {
+          .e-toolbar-left {
+            height: calc($aiassist-bigger-header-height - 1px);
+          }
+          .e-toolbar-item {
+            &.e-assist-view-header,
+            &.e-custom-view-header {
+              @if ($skin-name == 'highcontrast') {
+                // To apply box-shadow styling during keyboard navigation
+                padding: 1.5px;
+              }
+              @else {
+                padding: 0;
+              }
+              .e-tbar-btn {
+                padding: 0;
+                .e-btn-icon {
+                  padding: 4px 4px 4px 2px;
+                }
+              }
+            }
           }
         }
       }
     }
-    .e-footer {
-      .e-assist-send {
-        font-size: $send-icon-size-bigger;
-        bottom: 9px;
+    .e-view-content {
+      height: calc(100% - $aiassist-bigger-header-height);
+    }
+    .e-prompt-icon {
+      min-height: $aiassist-bigger-icon-height;
+    }
+    .e-output-icon {
+      height: $aiassist-bigger-icon-height;
+    }
+    .e-prompt-icon,
+    .e-output-icon {
+      min-width: $aiassist-bigger-icon-width;
+    }
+    .e-loading-body,
+    .e-content-body,
+    .e-loading-footer {
+      padding: 6px 0 0 6px;
+    }
+    .e-prompt-text {
+      padding: $prompt-text-bigger-padding;
+      line-height: 22px;
+    }
+    .e-content-container {
+      font-size: 16px;
+    }
+    .e-suggestion-header {
+      font-size: 16px;
+      font-weight: $suggesstions-header-bigger-font-weight;
+      margin-bottom: 15px;
+    }
+    .e-suggestions {
+      &.e-suggestion-item-template ul li {
+        padding: 0;
       }
+      li {
+        line-height: 22px;
+        font-weight: $suggesstions-bigger-font-weight;
+        padding: $suggesstions-bigger-list-padding;
+        margin: $suggesstions-bigger-list-margin;
+      }
+    }
+    .e-assist-send {
+      font-size: $send-icon-size-bigger;
+      bottom: $send-icon-bigger-bottom;
+    }
+    .e-footer {
       .e-input-group.e-control-wrapper.e-multi-line-input {
         .e-textarea {
           min-height: 38px;
           @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
             padding: 6px 12px 6px 16px;
             min-height: 28px;
+          }
+        }
+        &.e-rtl .e-textarea {
+          @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
+            padding: 6px 16px 6px 12px;
           }
         }
       }
@@ -73,12 +99,23 @@
       font-size: $response-stopper-bigger-font-size;
     }
     &.e-rtl {
-      .e-views {
-        .e-suggestions {
-          li {
-            margin: $suggesstions-bigger-list-margin-rtl;
+      .e-view-header .e-toolbar-item {
+        &.e-assist-view-header,
+        &.e-custom-view-header {
+          .e-tbar-btn .e-btn-icon {
+            padding: 4px 2px 4px 4px;
           }
         }
+      }
+      .e-suggestions {
+        li {
+          margin: $suggesstions-bigger-list-margin-rtl;
+        }
+      }
+      .e-loading-body,
+      .e-content-body,
+      .e-loading-footer {
+        padding: 6px 6px 0 0;
       }
     }
   }

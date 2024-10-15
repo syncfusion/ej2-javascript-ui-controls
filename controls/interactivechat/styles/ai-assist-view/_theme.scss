@@ -28,26 +28,55 @@
         }
         .e-tbar-btn {
           background: transparent;
+          &:focus {
+            box-shadow: none;
+          }
+          &:focus-visible {
+            box-shadow: $tbar-header-btn-focus-box-shadow;
+            @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+              background: $tbar-header-hover-bg-color;
+            }
+          }
         }
       }
     }
-    .e-views {
-      .e-prompt-icon,
-      .e-output-icon {
-        border: 1px solid $icon-border-color;
-        color: $user-logo-color;
-        background-color: $user-logo-bg-color;
-      }
-      .e-prompt-text {
-        background: $suggested-content-bg-color;
+    .e-suggestion-header {
+      color: $suggesstions-header-color;
+    }
+    .e-suggestions {
+      li {
         color: $suggested-content-text-color;
+        box-shadow: $suggestion-li-box-shadow;
         @if ($skin-name == 'bootstrap5.3') {
           border: none;
         }
         @else {
-          border: 1px solid $prompt-text-border-color;
+          border: 1px solid $suggestion-li-border-color;
         }
       }
+    }
+    .e-prompt-icon,
+    .e-output-icon {
+      border: 1px solid $icon-border-color;
+      color: $user-logo-color;
+      @if ($skin-name == 'Material3' or $skin-name == 'Material3-dark') {
+        background: $user-logo-bg-color;
+      }
+      @else {
+        background-color: $user-logo-bg-color;
+      }
+    }
+    .e-prompt-text {
+      background: $suggested-content-bg-color;
+      color: $suggested-content-text-color;
+      @if ($skin-name == 'bootstrap5.3') {
+        border: none;
+      }
+      @else {
+        border: 1px solid $prompt-text-border-color;
+      }
+    }
+    .e-views {
       .e-content-body {
         color: $response-text-color;
         a {
@@ -87,21 +116,6 @@
           color: rgba(255, 212, 212, 1);
         }
       }
-      .e-suggestions {
-        .e-suggestion-header {
-          color: $suggesstions-header-color;
-        }
-        li {
-          color: $suggested-content-text-color;
-          box-shadow: $suggestion-li-box-shadow;
-          @if ($skin-name == 'bootstrap5.3') {
-            border: none;
-          }
-          @else {
-            border: 1px solid $suggestion-li-border-color;
-          }
-        }
-      }
     }
     .e-stop-response {
       border-color: $response-stopper-border-color;
@@ -111,20 +125,20 @@
     }
     .e-views,
     .e-custom-view,
-    .e-aiassist-view-content-section {
+    .e-assistview-content-section {
       &::-webkit-scrollbar-thumb {
         background: $scrollbar-color;
+      }
+    }
+    .e-assist-send {
+      color: $send-icon-color;
+      &.disabled {
+        color: $send-icon-disabled-color;
       }
     }
     .e-footer {
       textarea::-webkit-scrollbar-thumb {
         background: $scrollbar-color;
-      }
-      .e-assist-send {
-        color: $send-icon-color;
-        &.disabled {
-          color: $send-icon-disabled-color;
-        }
       }
       // To override the default border style of the textarea component for the Material and Material3 themes.
       .e-input-group.e-multi-line-input {

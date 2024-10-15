@@ -267,6 +267,29 @@ describe('Iframe Content renderer module', () => {
         });
     });
 
+    describe('913668 - Handle Class-Based Styles for the table in Iframe Mode.', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true,
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p>`
+            });
+        });
+        it('Should get the height from .', () => {
+            const currentWindow: Window = editor.inputElement.ownerDocument.defaultView;
+            const table: HTMLTableElement = editor.inputElement.querySelector('table') as HTMLTableElement;
+            let tableBorder: string = currentWindow.getComputedStyle(table.rows[0].cells[1]).border;
+            expect(tableBorder).toBe('1px solid rgb(189, 189, 189)');
+            table.classList.remove('e-rte-table');
+            expect(currentWindow.getComputedStyle(table.rows[0].cells[1]).border).toBe('0px none rgb(0, 0, 0)');
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+    });
+
     describe('913830 - Page scrolls when the iframe mode is enabled. CASE 1', () => {
         let editor: RichTextEditor;
         beforeAll(() => {

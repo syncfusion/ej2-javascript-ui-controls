@@ -864,12 +864,17 @@ function readSuccess(parent: IFileManager, result: ReadArgs, event: string): voi
  * @private
  */
 function filterSuccess(parent: IFileManager, result: ReadArgs, event: string, action: string): void {
-    if (!isNOU(result.files)) {
-        parent.notify(event, result);
-        const args: SuccessEventArgs = { action: action, result: result };
-        parent.trigger('success', args);
-    } else {
-        onFailure(parent, result, action);
+    try {
+        if (!isNOU(result.files)) {
+            parent.notify(event, result);
+            const args: SuccessEventArgs = { action: action, result: result };
+            parent.trigger('success', args);
+        } else {
+            onFailure(parent, result, action);
+        }
+    }
+    catch (error) {
+        handleCatchError(parent, error, action);
     }
 }
 
@@ -884,43 +889,49 @@ function filterSuccess(parent: IFileManager, result: ReadArgs, event: string, ac
  * @private
  */
 function createSuccess(parent: IFileManager, result: ReadArgs, itemName: string): void {
-    if (!isNOU(result.files)) {
-        if (parent.dialogObj && parent.dialogObj.visible) { parent.dialogObj.hide(); }
-        parent.createdItem = isFileSystemData(parent) ? result.files[result.files.length - 1] : result.files[0];
-        parent.breadcrumbbarModule.searchObj.value = '';
-        const createEventArgs: FolderCreateEventArgs = {
-            folderName: itemName,
-            path: parent.path,
-            parentFolder: parent.itemData as { [key: string]: Object }[]
-        };
-        parent.trigger('folderCreate', createEventArgs);
-        const args: SuccessEventArgs = { action: 'create', result: result };
-        parent.trigger('success', args);
-        parent.itemData = [getPathObject(parent)];
-        read(parent, events.createEnd, parent.path);
-    } else {
-        if (result.error.code === '400') {
-            if (parent.dialogObj && parent.dialogObj.visible) {
-                const ele: HTMLInputElement = select('#newname', parent.dialogObj.element) as HTMLInputElement;
-                const error: string = getLocaleText(parent, 'Validation-NewFolder-Exists').replace('{0}', '"' + ele.value + '"');
-                ele.parentElement.nextElementSibling.innerHTML = error;
-            } else {
-                const result: ReadArgs = {
-                    files: null,
-                    error: {
-                        code: '400',
-                        message: getLocaleText(parent, 'Validation-NewFolder-Exists').replace('{0}', '"' + itemName + '"'),
-                        fileExists: null
-                    }
-                };
-                createDialog(parent, 'Error', result);
-            }
-            const args: FailureEventArgs = { action: 'create', error: result.error };
-            parent.trigger('failure', args);
-        } else {
+    try {
+        if (!isNOU(result.files)) {
             if (parent.dialogObj && parent.dialogObj.visible) { parent.dialogObj.hide(); }
-            onFailure(parent, result, 'create');
+            parent.createdItem = isFileSystemData(parent) ? result.files[result.files.length - 1] : result.files[0];
+            parent.breadcrumbbarModule.searchObj.value = '';
+            const createEventArgs: FolderCreateEventArgs = {
+                folderName: itemName,
+                path: parent.path,
+                parentFolder: parent.itemData as { [key: string]: Object }[]
+            };
+            parent.trigger('folderCreate', createEventArgs);
+            const args: SuccessEventArgs = { action: 'create', result: result };
+            parent.trigger('success', args);
+            parent.itemData = [getPathObject(parent)];
+            read(parent, events.createEnd, parent.path);
+        } else {
+            if (result.error.code === '400') {
+                if (parent.dialogObj && parent.dialogObj.visible) {
+                    const ele: HTMLInputElement = select('#newname', parent.dialogObj.element) as HTMLInputElement;
+                    const error: string = getLocaleText(parent, 'Validation-NewFolder-Exists').replace('{0}', '"' + ele.value + '"');
+                    ele.parentElement.nextElementSibling.innerHTML = error;
+                } else {
+                    const result: ReadArgs = {
+                        files: null,
+                        error: {
+                            code: '400',
+                            message: getLocaleText(parent, 'Validation-NewFolder-Exists').replace('{0}', '"' + itemName + '"'),
+                            fileExists: null
+                        }
+                    };
+                    createDialog(parent, 'Error', result);
+                }
+                const args: FailureEventArgs = { action: 'create', error: result.error };
+                parent.trigger('failure', args);
+            } else {
+                if (parent.dialogObj && parent.dialogObj.visible) { parent.dialogObj.hide(); }
+                onFailure(parent, result, 'create');
+            }
         }
+    }
+    catch (error) {
+        if (parent.dialogObj && parent.dialogObj.visible) { parent.dialogObj.hide(); }
+        handleCatchError(parent, error, 'create');
     }
 }
 

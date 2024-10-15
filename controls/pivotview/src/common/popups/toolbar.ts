@@ -1635,9 +1635,11 @@ export class Toolbar {
                 this.parent.setProperties({ displayOption: { primary: 'Chart' } }, true);
                 if (this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis) {
                     (this.parent.element.querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber());
+                    (this.parent.element.querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.height = formatUnit(this.parent.pivotChartModule.getChartHeight());
                 }
                 this.parent.chart.setProperties({
-                    width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
+                    width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber()),
+                    height: formatUnit(this.parent.pivotChartModule.getChartHeight())
                 }, true);
                 if (this.parent.chartSettings.chartSeries.type === type && !isMultiAxis) {
                     this.parent.chart.refresh();

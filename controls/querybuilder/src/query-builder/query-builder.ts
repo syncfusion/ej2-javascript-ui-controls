@@ -789,7 +789,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         categories.push(columns[i as number].category);
                     }
                     if (!columns[i as number].operators ||
-                        (this.isLocale && this.isCustomOprCols.indexOf(columns[i as number].field) !== 0)) {
+                        (this.isLocale && this.isCustomOprCols.indexOf(columns[i as number].field) === -1)) {
                         columns[i as number].operators = this.customOperators[columns[i as number].type + 'Operator'];
                     }
                 }
@@ -825,8 +825,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 } else {
                     columns[i as number].category = this.l10n.getConstant('OtherFields');
                 }
-                this.updateCustomOperator(columns[i as number]);
-                if (!columns[i as number].operators || this.isLocale) {
+                this.updateCustomOperator(columns[i as number], 'initial');
+                if (!columns[i as number].operators ||
+                    (this.isLocale && this.isCustomOprCols.indexOf(columns[i as number].field) === -1)) {
                     columns[i as number].operators = this.customOperators[columns[i as number].type + 'Operator'];
                 }
             }

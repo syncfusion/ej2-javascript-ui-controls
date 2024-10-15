@@ -10,7 +10,7 @@ import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
 import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, dynamicChangeCheckbox, localDataHtmlAttributes, selectableFieldData } from '../../spec/treeview/datasource.spec';
 import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6} from '../../spec/treeview/datasource.spec';
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
-import { localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
+import { localData7, localData8, localData9, localData12, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
 import { updatedremoteNode_3, updatedremoteNode_4, updatedremoteNode_5, updatedAddNodes, updatedremoteNode_6, updatedremoteNode_7} from '../../spec/treeview/datasource.spec';
 import {  deletedRemoteData, updatedAddNodes1, autoCheckData, autoCheckHierarcialData, hierarchicalData7} from '../../spec/treeview/datasource.spec';
 import { remoteData4, remoteData4_1, remoteData4_2, remoteData4_3 } from '../../spec/treeview/datasource.spec';
@@ -4273,7 +4273,7 @@ describe('TreeView control', () => {
                     setTimeout(function() {
                         expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                         expect(li[11].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
-                        expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+                        expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                         treeObj.collapseAll(null, 3);
                         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                         setTimeout(function() {
@@ -4295,11 +4295,11 @@ describe('TreeView control', () => {
                         let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                         expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                         expect(li[11].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
-                        expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+                        expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                         treeObj.collapseAll(null, 2, true);
                         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                         setTimeout(function() {
-                            expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+                            expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                             treeObj.collapseAll(null, 0, true);
                             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                             setTimeout(function() {
@@ -4307,7 +4307,7 @@ describe('TreeView control', () => {
                                 treeObj.touchClickObj.tap(tapEvent);
                                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                                 setTimeout(function() {
-                                    expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+                                    expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                                     treeObj.collapseAll(null, null, true);
                                     let nli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                                     expect(nli[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
@@ -8871,7 +8871,7 @@ describe('TreeView control', () => {
                     setTimeout(function() {
                         expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                         expect(li[11].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
-                        expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+                        expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                         treeObj.collapseAll(null, 3);
                         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                         setTimeout(function() {
@@ -8893,11 +8893,11 @@ describe('TreeView control', () => {
                         let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                         expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                         expect(li[11].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
-                        expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+                        expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                         treeObj.collapseAll(null, 2, true);
                         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                         setTimeout(function() {
-                            expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+                            expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                             treeObj.collapseAll(null, 0, true);
                             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                             setTimeout(function() {
@@ -8905,7 +8905,7 @@ describe('TreeView control', () => {
                                 treeObj.touchClickObj.tap(tapEvent);
                                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                                 setTimeout(function() {
-                                    expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+                                    expect(li[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
                                     treeObj.collapseAll(null, null, true);
                                     let nli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                                     expect(nli[12].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
@@ -16968,4 +16968,132 @@ describe('TreeView Update operation', () => {
             done();
         }, 450);
     });
+});
+
+describe('collapseAll method with Hierarchical data binding', () => {
+    let treeObj: any;
+    beforeEach(() => {
+
+        let ele: HTMLElement = createElement('div', { id: 'tree1' });
+        document.body.appendChild(ele);
+        treeObj = new TreeView({ fields: { dataSource: hierarchicalData3, id: "nodeId", text: "nodeText", child:"nodeChild" } });
+        treeObj.appendTo(ele);
+    });
+    afterEach(() => {
+        if (treeObj)
+            treeObj.destroy();
+        document.body.innerHTML = '';
+    });
+
+    it('level1 testing', (done: Function) => {
+        treeObj.expandAll();
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+            expect(treeObj.expandedNodes.length).toBe(7);
+            treeObj.collapseAll(null, 1);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function() {
+                expect(treeObj.expandedNodes.length).toBe(0);
+		done();
+            }, 450);
+        }, 450);
+    });
+
+    it('level2 testing', (done: Function) => {
+        treeObj.expandAll();
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+            expect(treeObj.expandedNodes.length).toBe(7);
+            treeObj.collapseAll(null, 2);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function() {
+                expect(treeObj.expandedNodes.length).toBe(5);
+		done();
+            }, 450);
+        }, 450);
+    });
+
+    it('level3 testing', (done: Function) => {
+        treeObj.expandAll();
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+            expect(treeObj.expandedNodes.length).toBe(7);
+            treeObj.collapseAll(null, 3);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function() {
+                expect(treeObj.expandedNodes.length).toBe(6);
+		done();
+            }, 450);
+        }, 450);
+    });
+});
+
+describe('collapseAll method Local data binding', () => {
+    let treeObj: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('div', { id: 'tree1' });
+        document.body.appendChild(ele);
+        treeObj = new TreeView({ fields: { dataSource: localData12, id: 'id', text: 'name', parentID: 'pid', hasChildren: 'hasChild'} });
+        treeObj.appendTo(ele);
+    });
+    afterEach(() => {
+        if (treeObj)
+            treeObj.destroy();
+        document.body.innerHTML = '';
+    });
+
+    it('level1 testing', (done: Function) => {
+        treeObj.expandAll();
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+            expect(treeObj.expandedNodes.length).toBe(6);
+            treeObj.collapseAll(null, 1);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function() {
+                expect(treeObj.expandedNodes.length).toBe(0);
+		done();
+            }, 450);
+        }, 450);
+    });
+
+    it('level2 testing', (done: Function) => {
+        treeObj.expandAll();
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+            expect(treeObj.expandedNodes.length).toBe(6);
+            treeObj.collapseAll(null, 2);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function() {
+                expect(treeObj.expandedNodes.length).toBe(3);
+		done();
+            }, 450);
+        }, 450);
+    });
+
+    it('level3 testing', (done: Function) => {
+        treeObj.expandAll();
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+            expect(treeObj.expandedNodes.length).toBe(6);
+            treeObj.collapseAll(null, 3);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function() {
+                expect(treeObj.expandedNodes.length).toBe(4);
+		done();
+            }, 450);
+        }, 450);
+    });
+
 });

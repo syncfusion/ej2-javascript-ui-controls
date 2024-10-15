@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.1.53 (2024-10-15)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "Localization issue in ImageEditor" has been resolved.
+- The issue with "redact with straightening not working properly" has been resolved.
+
 ## 27.1.52 (2024-10-08)
 
 ### Image Editor

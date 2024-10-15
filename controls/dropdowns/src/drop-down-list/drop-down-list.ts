@@ -2742,7 +2742,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.itemData) && !isNullOrUndefined(newElement)) {
             const value: string | number = this.getItemData().value;
             const isExist: boolean = listData.some((data: { [key: string]: Object }) => {
-                return (((typeof data === 'string' || typeof data === 'number') && data === value) ||
+                return (((typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean') && data === value) ||
                     (getValue(this.fields.value, data) === value));
             });
             if (!isExist) {
@@ -3040,7 +3040,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.isNotSearchList = false;
                 this.isDocumentClick = false;
                 this.destroyPopup();
-                if (this.isFiltering() && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
+                if (this.isFiltering() && this.actionCompleteData.list && this.actionCompleteData.list.length > 0) {
                     this.isActive = true;
                     if (this.enableVirtualization){
                         this.onActionComplete(this.ulElement, this.listData as any[], null, true);

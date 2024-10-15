@@ -1373,6 +1373,8 @@ export class FormDesigner {
                                     FormField.radiobuttonItem[parseInt(j.toString(), 10)]) {
                                 this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].
                                     FormField.radiobuttonItem[parseInt(j.toString(), 10)] = radioButtonItemUpdate;
+                                this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].
+                                    FormField.tooltip = radioButtonItemUpdate.tooltip;
                             }
                             break;
                         }
@@ -3113,7 +3115,7 @@ export class FormDesigner {
                                                       false, false, isPrintChanged, false, false, oldValue, newValue);
             }
         }
-        if (options.tooltip) {
+        if (!isNullOrUndefined(options.tooltip)) {
             if (formFieldObject.tooltip !== options.tooltip) {
                 isToolTipChanged = true;
                 oldValue = formFieldObject.tooltip;

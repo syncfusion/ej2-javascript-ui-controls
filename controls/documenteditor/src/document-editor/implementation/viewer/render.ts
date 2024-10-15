@@ -1503,6 +1503,7 @@ private calculatePathBounds(data: string): Rect {
     private renderSearchHighlight(page: Page, lineWidget: LineWidget, top: number): void {
         if (this.documentHelper.owner.searchModule && !isNullOrUndefined(page.documentHelper.owner.searchModule.searchHighlighters)) {
             let renderHighlight: boolean = page.documentHelper.owner.searchModule.searchHighlighters.containsKey(lineWidget);
+            this.validateRemoveSearchHighlighters(page);
             if (!renderHighlight && lineWidget.paragraph.isInHeaderFooter) {
                 let keys: LineWidget[] = page.documentHelper.owner.searchModule.searchHighlighters.keys;
                 lineWidget = this.checkHeaderFooterLineWidget(lineWidget, keys) as LineWidget;
@@ -1517,6 +1518,18 @@ private calculatePathBounds(data: string): Rect {
 
                     this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(lineWidget.height));
                 }
+            }
+        }
+    }
+    private validateRemoveSearchHighlighters(page: Page): void {
+        let keys: LineWidget[] = page.documentHelper.owner.searchModule.searchHighlighters.keys;
+        for (let j: number = 0; j < keys.length; j++) {
+            let selectedWidget: IWidget = keys[j];
+            if (selectedWidget instanceof LineWidget && !isNullOrUndefined(selectedWidget.paragraph) &&
+            !isNullOrUndefined(selectedWidget.paragraph.containerWidget) ) {
+                continue;
+            } else {
+                page.documentHelper.owner.searchModule.searchHighlighters.keys.splice(j, 1);
             }
         }
     }
@@ -2337,7 +2350,7 @@ private calculatePathBounds(data: string): Rect {
                             }
                         }
                     }
-                } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
+                } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading || !elementBox.isWrongWord) {
                     elementBox.ischangeDetected = false;
                     this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
                 }
@@ -2490,7 +2503,7 @@ private calculatePathBounds(data: string): Rect {
                                 let hasSpellingError: boolean = this.spellChecker.isErrorWord(retrievedText) ? true : false;
                                 let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
                                 this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, true);
-                            } else if (!this.documentHelper.owner.editorModule.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) {
+                            } else if ((!this.documentHelper.owner.editorModule.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) && (this.documentHelper.triggerSpellCheck || elementBox.isWrongWord)) {
                                 /* eslint-disable @typescript-eslint/no-explicit-any */
                                 this.spellChecker.callSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                                     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -3088,30 +3101,37 @@ private calculatePathBounds(data: string): Rect {
     }
     private renderCellBackground(height: number, cellWidget: TableCellWidget, leftMargin: number, rightMargin: number, lineWidth: number): void {
         let cellFormat: WCellFormat = cellWidget.cellFormat;
-        let bgColor: string = cellFormat.shading.backgroundColor === '#ffffff' ?
-            cellWidget.ownerTable.tableFormat.shading.backgroundColor : cellFormat.shading.backgroundColor;
+
         let left: number = cellWidget.x - leftMargin - lineWidth;
         let topMargin: number = (cellWidget.margin.top - (cellWidget.containerWidget as TableRowWidget).topBorderWidth);
         let top: number = cellWidget.y - topMargin;
         let width: number = cellWidget.width + leftMargin + rightMargin + lineWidth / 2;
+        let tableBackgroundColor: string = cellWidget.ownerTable.tableFormat.shading.backgroundColor;
+        let bgColor: string = cellFormat.shading.backgroundColor;
+
         if (cellWidget.ownerRow.rowFormat.revisions.length > 0) {
             let revision: Revision = cellWidget.ownerRow.rowFormat.revisions[cellWidget.ownerRow.rowFormat.revisions.length - 1];
             bgColor = (revision.revisionType === 'Insertion') ? '#e1f2fa' : '#fce6f4';
         }
+        if (cellWidget.ownerTable.tableFormat.cellSpacing > 0) {
+            this.renderBackgroundColor(tableBackgroundColor, left, top, width, height);
+        }
+        this.renderBackgroundColor(bgColor, left, top, width, height);
+        //Render foreground color
+        if (cellFormat.shading.hasValue('foregroundColor') && cellFormat.shading.textureStyle !== 'TextureNone') {
+            this.pageContext.beginPath();
+            this.pageContext.fillStyle = this.drawTextureStyle(cellFormat.shading.textureStyle, HelperMethods.getColor(cellFormat.shading.foregroundColor), HelperMethods.getColor(cellFormat.shading.backgroundColor), cellFormat.shading.foregroundColor === 'empty', cellFormat.shading.backgroundColor === 'empty');
+            this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
+            this.pageContext.closePath();
+        }
+    }
+    private renderBackgroundColor(bgColor: string, left: number, top: number, width: number, height: number): void {
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
             this.pageContext.fillStyle = HelperMethods.getColor(bgColor);
             this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
             this.pageContext.closePath();
         }
-        //Render foreground color
-        if (cellFormat.shading.hasValue('foregroundColor') && cellFormat.shading.textureStyle !== 'TextureNone') {
-            this.pageContext.beginPath();
-                this.pageContext.fillStyle = this.drawTextureStyle(cellFormat.shading.textureStyle, HelperMethods.getColor(cellFormat.shading.foregroundColor), HelperMethods.getColor(cellFormat.shading.backgroundColor), cellFormat.shading.foregroundColor === 'empty', cellFormat.shading.backgroundColor === 'empty');
-                this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
-                this.pageContext.closePath();
-        }    
-        
     }
     private drawTextureStyle(textureStyle: TextureStyle, foreColor: string, backColor: string, isForeColorEmpty: boolean, isBackColorEmpty: boolean): string {
         if (isBackColorEmpty) {

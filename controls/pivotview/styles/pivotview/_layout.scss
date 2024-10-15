@@ -622,12 +622,16 @@
         background: $pivotgrid-grp-bg-color;
       }
 
-      .e-toolbar-item .e-tbar-btn.e-btn {
-
-        .e-icons.e-btn-icon {
-          @if ($skin-name !='bootstrap5') and ($skin-name !='tailwind') and ($skin-name !='FluentUI') and ($skin-name !='Material3') {
-            font-size: 16px;
+      .e-toolbar-item {
+        .e-tbar-btn.e-btn {
+          .e-icons.e-btn-icon {
+            @if ($skin-name !='bootstrap5') and ($skin-name !='tailwind') and ($skin-name !='FluentUI') and ($skin-name !='Material3') {
+              font-size: 16px;
+            }
           }
+        }
+        &.e-disabled {
+          pointer-events: none;
         }
       }
 

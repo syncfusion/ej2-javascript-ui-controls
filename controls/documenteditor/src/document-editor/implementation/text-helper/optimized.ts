@@ -1,5 +1,5 @@
 import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
-import { WCharacterFormat } from '..';
+import { ExternalFontInfo, WCharacterFormat } from '..';
 import { DocumentHelper, FontHeightInfo, FontSizeInfo, TextSizeInfo } from '../viewer';
 /**
  *  Class which performs optimized text measuring logic to find font height.
@@ -49,12 +49,20 @@ export class Optimized {
     private getFontInfo(characterFormat: WCharacterFormat): FontSizeInfo {
         const iframe: HTMLIFrameElement = createElement('iframe') as HTMLIFrameElement;
         document.body.appendChild(iframe);
-        const innerHtml: string = '<!DOCTYPE html>'
+        let innerHtml: string = '<!DOCTYPE html>'
             + '<html><head></head>'
             + '<body>'
             + '</body>'
             + '</html>';
 
+        const externalFonts: ExternalFontInfo[] = this.documentHelper.owner.externalFonts;
+        if (externalFonts && externalFonts.length > 0) {
+            externalFonts.forEach((externalFont: ExternalFontInfo) => {
+                if (externalFont.src) {
+                    innerHtml += '<style>@font-face {font-family: \'' + externalFont.fontFamily + '\'; src: ' + externalFont.src + '; }</style>';
+                }
+            });
+        }
         if (!isNullOrUndefined(iframe.contentDocument)) {
             iframe.contentDocument.open();
             iframe.contentDocument.write(innerHtml);
@@ -67,7 +75,7 @@ export class Optimized {
         const factor: number = 1.0 / window.devicePixelRatio;
         container.style.transform = 'scale(' + factor.toString() + ',' + factor.toString() + ')';
         /* eslint-disable-next-line max-len */
-        container.innerHTML = '<span class="e-de-font-info" style="font-size:0; font-family: ' + characterFormat.fontFamily + '; display: inline-block;">m</span><span class="e-de-font-info" style="font-size:' + maxFontHeight + 'pt; font-family: ' + characterFormat.fontFamily + ';' + ((characterFormat.bold) ? 'font-weight:bold;' : '') + ((characterFormat.italic) ? 'font-style:italic;' : '') + ' display: inline-block;">m</span>';
+        container.innerHTML = '<span class="e-de-font-info" style="font-size:0; font-family: ' + `'${characterFormat.fontFamily}'` + '; display: inline-block;">m</span><span class="e-de-font-info" style="font-size:' + maxFontHeight + 'pt; font-family: ' + `'${characterFormat.fontFamily}'` + ';' + ((characterFormat.bold) ? 'font-weight:bold;' : '') + ((characterFormat.italic) ? 'font-style:italic;' : '') + ' display: inline-block;">m</span>';
         iframe.contentDocument.body.appendChild(container);
         /* eslint-disable-next-line max-len */
         const baseLineFactor: number = (container.firstChild as HTMLSpanElement).offsetTop / (container.lastChild as HTMLSpanElement).offsetHeight;

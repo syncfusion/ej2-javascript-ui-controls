@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 27.1.53 (2024-10-15)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I634857` - Parent dependency validation is not working properly issue has been fixed.
+- `#I632390` - While collapsing parent custom color applied for child disappeared issue has been fixed.
+- `#I635881` - `taskMode` is set to custom non-working days are not disabled when editing the Start Date and End Date columns issue has been fixed.
+- `#I636598` - Duration field not updating in dialog box when setting the end Date as same as start Date issue has been fixed.
+- `#I635782` - When the `PdfTrueTypeFont` property is used, the label value is not exported issue has been fixed.
+- `#I637078` - Setting `fontSize` for labels does not working when exporting to pdf issue has been fixed.
+- `#I635774` - Portrait mode not working in pdf export while using `A0` page size issue has been fixed.
+- `#I632226` - Performance delay occur during load time issue has been fixed.
+
 ## 27.1.52 (2024-10-08)
 
 ### GanttChart
@@ -9,10 +24,10 @@
 #### Bug fixes
 
 - `#I634826` - Manual parent taskbar pdf export is not working properly issue has been fixed.
-Here is the corrected sentence with typos resolved:
 - `#I634832` - The issue about `isShiftPressed` property in the row selecting event was not maintained properly has been fixed.
 - `#I633271` - Changing the events hitting order and add `rowPosition` property in `actionBegin` event issue has been fixed
 - `#I634857` - Parent dependency validation is not working properly issue has been fixed.
+- `#I634137` - The Date Format is not working properly in the predecessor dialog validation issue has been fixed.
 
 ## 27.1.51 (2024-09-30)
 

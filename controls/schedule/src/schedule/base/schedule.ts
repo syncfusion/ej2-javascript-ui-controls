@@ -3029,8 +3029,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         const msMajorInterval: number = this.activeViewOptions.timeScale.interval * util.MS_PER_MINUTE;
         const msInterval: number = msMajorInterval / this.activeViewOptions.timeScale.slotCount;
         const offsetDiff: number = ((viewStartHour.getTimezoneOffset() - startHour.getTimezoneOffset()) * util.MS_PER_MINUTE);
+        const endOffsetDiff: number = Math.abs((viewStartHour.getTimezoneOffset() - endHour.getTimezoneOffset()) * util.MS_PER_MINUTE);
         let startIndex: number = Math.round((startHour.getTime() - viewStartHour.getTime() + offsetDiff) / msInterval);
-        let endIndex: number = Math.ceil((endHour.getTime() - viewStartHour.getTime() + offsetDiff) / msInterval);
+        let endIndex: number = Math.ceil((endHour.getTime() - viewStartHour.getTime() - endOffsetDiff) / msInterval);
         const tempStartIndex: number = startIndex;
         const tempEndIndex: number = endIndex;
         const cells: HTMLTableCellElement[] = [];

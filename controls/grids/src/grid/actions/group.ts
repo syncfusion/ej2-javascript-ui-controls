@@ -333,8 +333,10 @@ export class Group implements IAction {
                 e.action = 'ctrlUpArrow';
             }
         }
-        if (e.action !== 'ctrlSpace' && (!this.groupSettings.columns.length ||
-            ['altDownArrow', 'altUpArrow', 'ctrlDownArrow', 'ctrlUpArrow', 'enter'].indexOf(e.action) === -1)) {
+        if ((e.action !== 'ctrlSpace' && (!this.groupSettings.columns.length ||
+            ['altDownArrow', 'altUpArrow', 'ctrlDownArrow', 'ctrlUpArrow', 'enter'].indexOf(e.action) === -1))
+            || (this.parent.groupSettings.enableLazyLoading && this.groupSettings.columns.length
+                && (e.action === 'ctrlUpArrow' || e.action === 'ctrlDownArrow'))) {
             return;
         }
         switch (e.action) {
@@ -1060,7 +1062,7 @@ export class Group implements IAction {
         focusModule.active.matrix.current = firstContentCellIndex;
         if (this.parent.editSettings.showAddNewRow) {
             this.parent.notify(events.showAddNewRowFocus, {});
-        } else {
+        } else if (this.parent.isInitialLoad) {
             focusModule.focus();
         }
         //Todo:  rtl

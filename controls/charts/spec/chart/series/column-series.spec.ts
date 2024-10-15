@@ -205,7 +205,7 @@ describe('Column Series', () => {
                 done();
             };
             chartObj.loaded = loaded;
-            chartObj.series[0].dashArray = '4,3';
+            chartObj.series[0].border.dashArray = '4,3';
             chartObj.refresh();
         });
 

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 27.1.53 (2024-10-15)
+
+### AI AssistView
+
+#### Bug Fixes
+
+`#I639994` - Now the issue with CSS syntax exception raised by the use of justifyContent property style in the AI AssistView has been resolved.
+
+#### Feature
+
+`#640732` - Now we have provided localization support for the stop responding text in the AI AssistView.
+
 ## 27.1.48 (2024-09-18)
 
 ### AI AssistView

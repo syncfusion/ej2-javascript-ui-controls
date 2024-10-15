@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-calendars",
-	"version": "27.1.51",
+	"version": "27.1.52",
 	"description": "A complete package of date or time components with built-in features such as date formatting, inline editing, multiple (range) selection, range restriction, month and year selection, strict mode, and globalization.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -31,7 +31,7 @@
 		"canteen": "^1.0.5",
 		"jasmine-ajax": "^3.3.1",
 		"jasmine-core": "^2.6.1",
-		 "karma": "6.4.2",
+		"karma": "6.4.2",
 		"karma-chrome-launcher": "^2.2.0",
 		"karma-generic-preprocessor": "^1.1.0",
 		"karma-htmlfile-reporter": "^0.3.5",

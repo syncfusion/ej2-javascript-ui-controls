@@ -116,7 +116,9 @@ export class DetailsView {
             this.checkNameWidth();
             const columns: ColumnModel[] = this.getColumns();
             let sortSettings: SortDescriptorModel[];
-            if (this.parent.isMobile) {
+            const isValidSortField: boolean = !isNullOrUndefined(columns) &&
+                columns.findIndex((col: ColumnModel) => col.field === this.parent.sortBy) !== -1;
+            if (this.parent.isMobile || !isValidSortField) {
                 sortSettings = [];
             } else {
                 if (this.parent.sortOrder !== 'None') {
@@ -323,7 +325,9 @@ export class DetailsView {
             if (textEle) {
                 const name: string = getValue('name', args.data);
                 const type: string = getValue('type', args.data);
-                textEle.innerHTML = name.substr(0, name.length - type.length);
+                if (name.indexOf(type) !== -1) {
+                    textEle.innerHTML = name.substr(0, name.length - type.length);
+                }
             }
         }
         if (getValue('size', args.data) !== undefined && args.row.querySelector('.e-fe-size')) {
@@ -586,6 +590,7 @@ export class DetailsView {
             case 'showHiddenItems':
                 read(this.parent, events.pathChanged, this.parent.path);
                 break;
+            case 'showItemCheckBoxes':
             case 'allowMultiSelection':
                 if (!isNullOrUndefined(this.gridObj)) {
                     this.currentSelectedItem = this.parent.selectedItems;

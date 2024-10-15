@@ -1674,6 +1674,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel, isCheckBoxUpdate?: boolean): HTMLElement {
         let ulElement: HTMLElement;
         if (this.itemTemplate && listData) {
+            if (this.getModuleName() === 'multiselect' && this.virtualSelectAll){
+                this.virtualSelectAllData = listData;
+                listData = listData.slice(this.virtualItemStartIndex, this.virtualItemEndIndex);
+            }
             let dataSource: { [key: string]: Object }[] = listData;
             if (dataSource && fields.groupBy) {
                 if (this.sortOrder !== 'None') {

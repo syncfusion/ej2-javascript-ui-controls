@@ -18,6 +18,7 @@ export class CellEdit {
     public isCellEdit: boolean = false;
     public isResourceCellEdited: boolean = false;
     public editedColumn: ColumnModel;
+    public currentEditedRowData: IGanttData ;
     constructor(ganttObj: Gantt) {
         this.parent = ganttObj;
         this.bindTreeGridProperties();
@@ -65,6 +66,7 @@ export class CellEdit {
         } else {
             const callBackPromise: Deferred = new Deferred();
             const parentReference: Gantt = this.parent;
+            this.currentEditedRowData = args.rowData;
             this.parent.trigger('cellEdit', args, (arg: CellEditArgs) => {
                 if (arg.columnName === parentReference.taskFields.progress && arg.rowData.hasChildRecords) {
                     arg.cancel = true;
@@ -365,7 +367,7 @@ export class CellEdit {
             if (!isNullOrUndefined(ganttProb.segments)) {
                 ganttProb.segments = this.validateEndDateWithSegments(ganttProb);
             }
-            if (this.compareDatesFromRecord(ganttProb) === -1) {
+            if (this.compareDatesFromRecord(ganttProb) <= 0) {
                 this.parent.dateValidationModule.calculateDuration(args.data);
             } else {
                 this.parent.editModule.revertCellEdit(args);

@@ -1747,7 +1747,7 @@ export class WorkbookNumberFormat {
                             if (dateArr[2].length === 2 && isNumber(dateArr[2]) && Number(dateArr[2]) > -1) {
                                 dateArr[2] = (Number(dateArr[2]) < 30 ? new Date().getFullYear().toString().slice(0, 2) : '19') + dateArr[2];
                             }
-                            if (Number(dateArr[0]) < 31 && Number(dateArr[2]) >= 1900 && Number(dateArr[2]) <= 9999) {
+                            if (Number(dateArr[0]) <= 31 && Number(dateArr[2]) >= 1900 && Number(dateArr[2]) <= 9999) {
                                 val = dateArr[0] + separator + firstVal;
                                 val += (separator + dateArr[2]);
                                 formatArr[0] = 'd';
