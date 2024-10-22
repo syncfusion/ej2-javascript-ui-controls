@@ -4236,6 +4236,7 @@ export class Layout {
             const splittedElement: TextElementBox = new TextElementBox();
             splittedElement.text = text;
             splittedElement.errorCollection = textElement.errorCollection;
+            splittedElement.scriptType = textElement.scriptType;
             textElement.text = textElement.text.substr(0, index);
             splittedElement.characterFormat.copyFormat(textElement.characterFormat);
             splittedElement.width = this.documentHelper.textHelper.getWidth(splittedElement.text, characterFormat, splittedElement.scriptType);
@@ -4400,10 +4401,14 @@ export class Layout {
         } else {
             index = 1;
         }
+        let isSplitWordByWord: boolean = true;
+        if (this.documentHelper.textHelper.isUnicodeText(text, element.scriptType) && element.scriptType === 3 && text.length - 1 === text.indexOf(' ')) {
+            isSplitWordByWord = false;
+        }
         if (width <= this.viewer.clientActiveArea.width) {
             //Fits the text in current line.
             this.addElementToLine(paragraph, element);
-        } else if (isSplitByWord && (index > 0 || text.indexOf(' ') !== -1 || text.indexOf('-') !== -1) ) {
+        } else if (isSplitByWord && (index > 0 || (text.indexOf(' ') !== -1 && isSplitWordByWord) || text.indexOf('-') !== -1) ) {
             this.splitByWord(lineWidget, paragraph, element, text, width, characterFormat);
         } else {
             this.splitByCharacter(lineWidget, element, text, width, characterFormat);
@@ -8516,8 +8521,8 @@ export class Layout {
                 }
                 if (i === 0) {
                     if (lineWidget.paragraph.containerWidget instanceof TableCellWidget && !moveEntireBlock && !isMultiColumnSplit) {
-                        //checks first line of the page is exceed the page height
-                        if (lineWidget.paragraph.containerWidget.y === paragraphWidget.y) {
+                        // checks first line of the page is exceed the page height
+                        if (lineWidget.paragraph.containerWidget.y === paragraphWidget.y || ((lineWidget.paragraph.containerWidget as TableCellWidget).containerWidget.y === this.viewer.clientArea.y && lineHeight > this.viewer.clientArea.height)) {
                             lineBottom += lineWidget.height;
                             continue;
                         }

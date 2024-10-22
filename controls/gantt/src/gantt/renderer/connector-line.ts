@@ -165,7 +165,7 @@ export class ConnectorLine {
             connectorObj.childIndex = childIndex;
             connectorObj.rowHeight = !isNullOrUndefined(this.parent.ganttChartModule.getChartRows()) &&
                 this.parent.ganttChartModule.getChartRows()[0] &&
-                    this.parent.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
+                (this.parent.ganttChartModule.getChartRows()[0] as HTMLElement).offsetHeight;
             connectorObj.type = predecessor.type;
             const parentId: string = this.parent.viewType === 'ResourceView' ? parentGanttRecord.taskId : parentGanttRecord.rowUniqueID;
             const childId: string = this.parent.viewType === 'ResourceView' ? childGanttRecord.taskId : childGanttRecord.rowUniqueID;

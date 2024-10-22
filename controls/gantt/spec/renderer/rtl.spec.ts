@@ -547,12 +547,13 @@ describe('Gantt - Render with Enable RTL', () => {
 
             }, done);
         });
-        beforeEach((done) => {
-            setTimeout(done, 100);
-            ganttObj.openAddDialog();
-        });
+        // beforeEach((done) => {
+        //     setTimeout(done, 100);
+        //     ganttObj.openAddDialog();
+        // });
 
         it('Adding task under unassigned task', () => {
+            ganttObj.openAddDialog();
             let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
             expect(ganttObj.currentViewData[9].ganttProperties.resourceNames).toBe('');
@@ -928,9 +929,9 @@ describe('Gantt - Render with Enable RTL', () => {
                     projectEndDate: new Date('05/30/2019'),
                 }, done);
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 100);
-        });
+        // beforeEach((done: Function) => {
+        //     setTimeout(done, 100);
+        // });
         it('predecessor validation as object', () => {
             expect(ganttObj.currentViewData[6].ganttProperties.predecessorsName).toBe("11FS,10FS");
             expect(ganttObj.connectorLineBackground).toBe('blue');

@@ -42,14 +42,14 @@ export class DrawingRenderer {
     /**   @private  */
     public renderElement(
         element: DrawingElement, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement, transform?: Transforms,
-        parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number):
+        parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number, annotationCallback?:(annotationID: string) => boolean):
         void {
         let isElement: boolean = true;
         if (element instanceof Container) {
             isElement = false;
-            this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue);
+            this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue, annotationCallback);
         } else if (element instanceof ImageElement) {
-            this.renderImageElement(element, canvas, transform, parentSvg, fromPalette);
+            this.renderImageElement(element, canvas, transform, parentSvg, fromPalette, annotationCallback);
         } else if (element instanceof PathElement) {
             this.renderPathElement(element, canvas, transform, parentSvg, fromPalette);
         } else if (element instanceof TextElement) {
@@ -61,7 +61,7 @@ export class DrawingRenderer {
     /**   @private  */
     public renderImageElement(
         element: ImageElement, canvas: HTMLCanvasElement | SVGElement,
-        transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean):
+        transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean, annotationCallback?:(annotationID: string) => boolean):
         void {
         let options: BaseAttributes = this.getBaseAttributes(element, transform);
         (options as RectAttributes).cornerRadius = 0;
@@ -116,7 +116,7 @@ export class DrawingRenderer {
         (options as ImageAttributes).alignment = element.imageAlign;
         (options as ImageAttributes).scale = element.imageScale;
         (options as ImageAttributes).printID = element.printID;
-        this.renderer.drawImage(canvas as HTMLCanvasElement, options as ImageAttributes, parentSvg, fromPalette);
+        this.renderer.drawImage(canvas as HTMLCanvasElement, options as ImageAttributes, parentSvg, fromPalette, annotationCallback);
     }
 
     /**   @private  */
@@ -167,7 +167,7 @@ export class DrawingRenderer {
     /**   @private  */
     public renderContainer(
         group: Container, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement,
-        transform?: Transforms, parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number):
+        transform?: Transforms, parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number, annotationCallback?:(annotationID: string) => boolean):
         void {
         transform = { tx: 0, ty: 0, scale: 1 };
         let svgParent: SvgParent = { svg: parentSvg, g: canvas };
@@ -179,7 +179,7 @@ export class DrawingRenderer {
             let parentG: HTMLCanvasElement | SVGElement;
             let svgParent: SvgParent;
             for (let child of group.children) {
-                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue);
+                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue, annotationCallback);
 
             }
 

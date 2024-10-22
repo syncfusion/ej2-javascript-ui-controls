@@ -393,7 +393,7 @@ export class PdfRenderer {
             annotationRenderer.removeSignatureTypeAnnot(jsonObject, this.loadedDocument);
             this.orderAnnotations(jsonObject);
             if (Object.prototype.hasOwnProperty.call(jsonObject, 'isFormFieldAnnotationsExist') && jsonObject.isFormFieldAnnotationsExist) {
-                if (Object.prototype.hasOwnProperty.call(jsonObject, 'formDesigner')) {
+                if (Object.prototype.hasOwnProperty.call(jsonObject, 'formDesigner') && !isNullOrUndefined(jsonObject['formDesigner'])) {
                     formfields.saveFormFieldsDesignerData(jsonObject);
                 }
                 else if (Object.prototype.hasOwnProperty.call(jsonObject, 'fieldsData')) {

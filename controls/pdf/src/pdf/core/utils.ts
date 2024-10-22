@@ -274,7 +274,13 @@ export function _stringToBytes(value: string, isDirect: boolean = false,
     } else {
         for (let i: number = 0; i < value.length; i++) {
             let charCode: number = value.charCodeAt(i);
-            if (charCode < 0x80) {
+            if (charCode === 0xF3) {
+                bytes.push(0xC3, 0xB3);
+            } else if (charCode === 0xEC) {
+                bytes.push(0xC3, 0xAE);
+            } else if (charCode < 0x80) {
+                bytes.push(charCode);
+            } else if (charCode < 0x100) {
                 bytes.push(charCode);
             } else if (charCode < 0x800) {
                 bytes.push((charCode >> 6) | 0xC0);

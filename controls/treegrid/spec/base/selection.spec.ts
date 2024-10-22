@@ -1272,3 +1272,37 @@ describe('Code coverage improvement', () => {
         destroy(gridObj);
     });
 });
+
+describe('Bug 913512: Selection not clearing on selecting checkbox and expanding row', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 2,
+                allowPaging: true,
+                allowSelection: true,
+                columns: [
+                    { type: 'checkbox', width: 80 },
+                    { field: 'taskID', headerText: 'Order ID', isPrimaryKey: true, width: 120 },
+                    { field: 'taskName', headerText: 'Customer ID', width: 150 },
+                    { field: 'duration', headerText: 'Freight', type: 'number', width: 150 },
+                    { field: 'progress', headerText: 'Ship Name', width: 150 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Selection not clearing on selecting checkbox and expanding row', () => {
+       gridObj.selectRow(0);
+       (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[0].querySelector('.e-treegridexpand')).click();
+       gridObj.clearSelection();
+       expect(gridObj.getRows()[0].getAttribute('aria-selected') === 'true').toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

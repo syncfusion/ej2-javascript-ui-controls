@@ -622,13 +622,18 @@ export class Image {
     }
 
     private openImgLink(e: NotifyArgs): void {
+        const sanitizedHTML: string = this.parent.htmlEditorModule.sanitizeHelper(
+            (e.selectParent[0].parentNode as HTMLAnchorElement).outerHTML);
+        const tempEle: HTMLElement = document.createElement('div');
+        tempEle.innerHTML = sanitizedHTML;
         const target: string = (e.selectParent[0].parentNode as HTMLAnchorElement).target === '' ? '_self' : '_blank';
         this.parent.formatter.process(
             this.parent, e.args, e.args,
             {
-                url: (e.selectParent[0].parentNode as HTMLAnchorElement).href, target: target, selectNode: e.selectNode,
+                url: (tempEle.firstChild as HTMLAnchorElement).href, target: target, selectNode: e.selectNode,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
             });
+        tempEle.remove();
     }
 
     private editImgLink(e: NotifyArgs): void {
@@ -717,7 +722,7 @@ export class Image {
             }
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
-            if (selectNodeEle && selectNodeEle[0].nodeName === 'IMG' && selectNodeEle.length < 1) {
+            if (selectNodeEle && selectNodeEle[0] && selectNodeEle[0].nodeName === 'IMG' && selectNodeEle.length < 1) {
                 if (!isNOU(this.parent.formatter.editorManager.nodeSelection))
                 {save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
                 originalEvent.preventDefault();

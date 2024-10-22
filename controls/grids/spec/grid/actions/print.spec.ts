@@ -15,8 +15,9 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { IGrid } from '../../../src/grid/base/interface'; 
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { select } from '@syncfusion/ej2-base';
+import { LazyLoadGroup } from '../../../src/grid/actions/lazy-load-group';
 
-Grid.Inject(Sort, Page, Filter, Print, Group, Toolbar, DetailRow);
+Grid.Inject(Sort, Page, Filter, Print, Group, Toolbar, DetailRow, LazyLoadGroup);
 
 describe('Print module', () => {
     describe('Print without paging', () => {
@@ -612,6 +613,42 @@ describe('EJ2-900635 - Script error thrown when clicking Print button => ', () =
         (<any>gridObj.printModule).printGridElement(gridObj);
         done();
         
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-914787 - Miss alignment on print tray while printing a lazyload with multiple columns grouped grid => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: employeeData,
+                toolbar: ['Print'],
+                allowGrouping: true,
+                groupSettings: {
+                    enableLazyLoading: true,
+                    columns: ['FirstName', 'EmployeeID']
+                },
+                columns: [
+                    {
+                    field: 'EmployeeID',
+                    headerText: 'Employee ID',
+                    textAlign: 'Right',
+                    width: 125,
+                    },
+                    { field: 'FirstName', headerText: 'Name', width: 125 },
+                    { field: 'Title', headerText: 'Title', width: 180 },
+                    { field: 'City', headerText: 'City', width: 110 },
+                ],
+            }, done);
+    });
+
+    it('removeColGroup code coverage for lazyload', () => {
+        (<any>gridObj.printModule).removeColGroup(gridObj);
     });
 
     afterAll(() => {

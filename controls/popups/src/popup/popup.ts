@@ -6,7 +6,7 @@ import { Animation, AnimationModel, Property, Event, EmitType, Component } from 
 import { NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';
 import { PopupModel, PositionDataModel } from './popup-model';
 import { EventHandler } from '@syncfusion/ej2-base';
-import { flip, fit, isCollide , CollisionCoordinates, destroy as collisionDestroy, getTransformElement } from '../common/collision';
+import { flip, fit, isCollide , CollisionCoordinates, destroy as collisionDestroy, getTransformElement, getZoomValue } from '../common/collision';
 
 /**
  * Specifies the offset position values.
@@ -634,6 +634,11 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
                     if (transformStyle !== 'none') {
                         const matrix: DOMMatrix = new DOMMatrix(transformStyle);
                         scaleX = matrix.a;
+                    }
+                    const zoomStyle: string = getComputedStyle(tranformElement).zoom;
+                    if (zoomStyle !== 'none') {
+                        const bodyZoom: number = getZoomValue(document.body);
+                        scaleX = bodyZoom * scaleX;
                     }
                 }
                 anchorPos.left += ((anchorRect.width - eleRect.width) / scaleX);

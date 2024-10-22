@@ -493,6 +493,10 @@ export class ExportHelper {
             taskbar.baselineEndDate = ganttProp.baselineEndDate;
             taskbar.baselineLeft = ganttProp.baselineLeft;
             taskbar.baselineWidth = ganttProp.baselineWidth;
+            if (taskbar.baselineLeft < 0) {
+                taskbar.baselineWidth = taskbar.baselineWidth + taskbar.baselineLeft;
+                taskbar.baselineLeft = 0;
+            }
             taskbar.milestoneColor = new PdfColor(this.ganttStyle.taskbar.milestoneColor);
             taskbar.isParentTask = data.hasChildRecords;
             if (ganttProp.isMilestone) {

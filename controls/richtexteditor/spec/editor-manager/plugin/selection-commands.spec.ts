@@ -1809,7 +1809,7 @@ describe("876837: Bold format not applied to the list number when already bold c
         let text1: Text = node1.childNodes[0] as Text;
         let text2: Text = node1.childNodes[1] as Text;
         domSelection.setSelectionText(document, text1, text2, 0, 1);
-        SelectionCommands.applyFormat(document, 'bold', text1, 'P');
+        SelectionCommands.applyFormat(document, 'bold', rteObj.element.querySelector('.e-content'), 'P');
         let LiContent=document.querySelector('li');
         let style=LiContent.getAttribute('style');
         expect(style).toEqual('font-weight: bold;');
@@ -1819,7 +1819,7 @@ describe("876837: Bold format not applied to the list number when already bold c
         let text1: Text = node1.childNodes[0] as Text;
         let text2: Text = node1.childNodes[1] as Text;
         domSelection.setSelectionText(document, text1, text2, 0, 1);
-        SelectionCommands.applyFormat(document, 'italic', text1, 'P');
+        SelectionCommands.applyFormat(document, 'italic', rteObj.element.querySelector('.e-content'), 'P');
         let LiContent=document.querySelector('li');
         let style1=LiContent.getAttribute('style');
         expect(style1).toEqual('font-style: italic;');
@@ -1829,7 +1829,7 @@ describe("876837: Bold format not applied to the list number when already bold c
         let text1: Text = node1.childNodes[0] as Text;
         let text2: Text = node1.childNodes[1] as Text;
         domSelection.setSelectionText(document, text1, text2, 0, 1);
-        SelectionCommands.applyFormat(document, 'fontname', text1, 'P',  null,'Tahoma,Geneva,sans-serif');
+        SelectionCommands.applyFormat(document, 'fontname', rteObj.element.querySelector('.e-content'), 'P',  null,'Tahoma,Geneva,sans-serif');
         let LiContent=document.querySelector('li');
         let style1=LiContent.getAttribute('style');
         expect(style1).toEqual('font-family: Tahoma, Geneva, sans-serif;');
@@ -1839,7 +1839,7 @@ describe("876837: Bold format not applied to the list number when already bold c
         let text1: Text = node1.childNodes[0] as Text;
         let text2: Text = node1.childNodes[1] as Text;
         domSelection.setSelectionText(document, text1, text2, 0, 1);
-        SelectionCommands.applyFormat(document, 'fontcolor', text1, 'P', null, 'rgb(255, 0, 0)');
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', null, 'rgb(255, 0, 0)');
         let LiContent=document.querySelector('li');
         let style1=LiContent.getAttribute('style');
         expect(style1).toEqual('color: rgb(255, 0, 0); text-decoration: inherit;');
@@ -1849,7 +1849,7 @@ describe("876837: Bold format not applied to the list number when already bold c
         let text1: Text = node1.childNodes[0] as Text;
         let text2: Text = node1.childNodes[1] as Text;
         domSelection.setSelectionText(document, text1, text2, 0, 1);
-        SelectionCommands.applyFormat(document, 'fontsize', text1, 'P', null, '14px');
+        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', null, '14px');
         let LiContent=document.querySelector('li');
         let style1=LiContent.getAttribute('style');
         expect(style1).toEqual('font-size: 14px;');

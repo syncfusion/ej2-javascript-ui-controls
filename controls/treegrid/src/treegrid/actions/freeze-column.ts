@@ -69,11 +69,11 @@ export class Freeze {
             if (!isNullOrUndefined(movableRows) && row.parentElement.firstElementChild.clientHeight > 0) {
                 row.style.height = row.parentElement.firstElementChild.clientHeight + 'px';
             }
-            row.style.display = args.action;
+            this.parent['toggleRowVisibility'](row, args.action);
             if (freeze && frozenRightRows.length) {
-                frozenRightRows[parseInt(i.toString(), 10)].style.display = args.action;
+                this.parent['toggleRowVisibility'](frozenRightRows[parseInt(i.toString(), 10)], args.action);
             }
-            const queryselector: string = args.action === 'none' ? '.e-treecolumn-container .e-treegridcollapse'
+            const queryselector: string = args.action === 'e-childrow-hidden' ? '.e-treecolumn-container .e-treegridcollapse'
                 : '.e-treecolumn-container .e-treegridexpand';
             if (frozenrows[row.rowIndex].querySelector(queryselector)) {
                 const cRow: HTMLTableRowElement[] = [];

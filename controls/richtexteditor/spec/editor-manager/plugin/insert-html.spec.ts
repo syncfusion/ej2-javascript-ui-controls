@@ -6,6 +6,30 @@ import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
 import { NodeCutter } from '../../../src/editor-manager/plugin/nodecutter';
 import { NodeSelection } from '../../../src/selection/index';
 
+describe('Testing the insert method for html content paste', function () {
+    let innervalue: string = '<p>Values</p><p>Testing 1</p><p>Testing 2</p>';
+    let range: Range;
+    let divElement: HTMLElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeAll(function () {
+        document.body.appendChild(divElement);
+    });
+    afterAll(function () {
+        detach(divElement);
+    });
+    it('Pasting html string content', function () {
+        range = document.createRange();
+        range.setStart(divElement.childNodes[0].firstChild, 0);
+        range.setEnd(divElement.childNodes[2].firstChild, 0);
+        domSelection.setSelectionText(document, divElement.childNodes[0].firstChild, divElement.childNodes[2], 0, 0);
+        (InsertHtml as any).Insert(document, innervalue, divElement ,true);
+        expect((divElement as any).childElementCount).toBe(4);
+    });
+});
+
 describe('Insert HTML', () => {
     //HTML value
     let innervalue: string = '<div id="parentDiv"><p id="paragraph1"><b>Description:</b><span id="span1">Span1 Element</span>'+
@@ -231,6 +255,108 @@ describe('904084 - Copy and Paste of Mention Item Updates Inside Existing Span T
     });
 });
 
+describe('878730 - Bullet format list not removed properly when we replace the content in RichTextEditor', () => {
+    let innervalue: string = '<ul id="parentDiv" level="1" style="margin-bottom:0in;list-style-type: disc;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fhdfhdh<span id="start">dhdhdhgdghdgh</span></p><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfgfsfsfshsfhfshsfhfs</p></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfsfhsfsfhsfhsfhfs</p><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfgsfhfsshsfhsfsfh</p><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Dffdhdfhdhdfhdfh</p><ul level="4" style="margin-bottom:0in;list-style-type: disc;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fdhfdhfdhdfhdfhdfh</p></li></ul></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Dfhfdhdhdhdh</p><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 8pt; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>DFH<span id="middle">FDHDHD</span><span id="end">HDHDFH</span></p></li></ul></li></ul></li></ul>';
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Bullet format list not removed properly when we replace the content in RichTextEditor - select all and replace single line.', () => {
+        let editNode: Element = document.getElementById('divElement');
+        let selectNode: Element = document.getElementById('parentDiv');
+        let pasteElement: HTMLElement = document.createElement('div');
+        pasteElement.classList.add('pasteContent');
+        let paragraph: Element = document.createElement('P');
+        paragraph.innerHTML= 'testTable1';
+        pasteElement.appendChild(paragraph);
+        domSelection.setSelectionNode(document, selectNode);
+        InsertHtml.Insert(document, pasteElement, editNode);
+        expect(document.getElementById('parentDiv').innerHTML === '<li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>testTable1</p></li>').toBe(true);
+    });
+    it('Bullet format list not removed properly when we replace the content in RichTextEditor - select all and replace multiple line.', () => {
+        let editNode: Element = document.getElementById('divElement');
+        editNode.innerHTML = '<ul id="parentDiv" level="1" style="margin-bottom:0in;list-style-type: disc;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fhdfhdh<span id="start">dhdhdhgdghdgh</span></p><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfgfsfsfshsfhfshsfhfs</p></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfsfhsfsfhsfhsfhfs</p><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfgsfhfsshsfhsfsfh</p><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Dffdhdfhdhdfhdfh</p><ul level="4" style="margin-bottom:0in;list-style-type: disc;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fdhfdhfdhdfhdfhdfh</p></li></ul></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Dfhfdhdhdhdh</p><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 8pt; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>DFH<span id="middle">FDHDHD</span><span id="end">HDHDFH</span></p></li></ul></li></ul></li></ul>';
+        let selectNode: Element = document.getElementById('parentDiv');
+        let pasteElement: HTMLElement = document.createElement('div');
+        pasteElement.classList.add('pasteContent');
+        let paragraph: Element = document.createElement('P');
+        paragraph.innerHTML= 'testTable1';
+        let paragraph1: Element = document.createElement('P');
+        paragraph1.innerHTML= 'testTable1';
+        pasteElement.appendChild(paragraph);
+        pasteElement.appendChild(paragraph1);
+        domSelection.setSelectionNode(document, selectNode);
+        InsertHtml.Insert(document, pasteElement, editNode);
+        expect(document.getElementById('parentDiv').innerHTML === '<li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>testTable1</p><p>testTable1</p></li>').toBe(true);
+    });
+    it('Bullet format list not removed properly when we replace the content in RichTextEditor - partial selection and replace single line.', () => {
+        let editNode: Element = document.getElementById('divElement');
+        editNode.innerHTML = '<ul id="parentDiv" level="1" style="margin-bottom:0in;list-style-type: disc;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fhdfhdh<span id="start">dhdhdhgdghdgh</span></p><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfgfsfsfshsfhfshsfhfs</p></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfsfhsfsfhsfhsfhfs</p><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfgsfhfsshsfhsfsfh</p><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Dffdhdfhdhdfhdfh</p><ul level="4" style="margin-bottom:0in;list-style-type: disc;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fdhfdhfdhdfhdfhdfh</p></li></ul></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Dfhfdhdhdhdh</p><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 8pt; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>DFH<span id="middle">FDHDHD</span><span id="end">HDHDFH</span></p></li></ul></li></ul></li></ul>';
+        let startNode: Element = document.getElementById('start');
+        let endNode: Element = document.getElementById('end');
+        let pasteElement: HTMLElement = document.createElement('div');
+        pasteElement.classList.add('pasteContent');
+        let paragraph: Element = document.createElement('P');
+        paragraph.innerHTML= 'testTable1';
+        pasteElement.appendChild(paragraph);
+        domSelection.setSelectionText(document, startNode.firstChild, endNode.firstChild, 0, 6);
+        InsertHtml.Insert(document, pasteElement, editNode);
+        expect(document.getElementById('parentDiv').innerHTML === '<li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fhdfhdh</p><p>testTable1</p></li>').toBe(true);
+    });
+    it('Bullet format list not removed properly when we replace the content in RichTextEditor - partial selection and replace single span line.', () => {
+        let editNode: Element = document.getElementById('divElement');
+        editNode.innerHTML = '<ul id="parentDiv" level="1" style="margin-bottom:0in;list-style-type: disc;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fhdfhdh<span id="start">dhdhdhgdghdgh</span></p><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfgfsfsfshsfhfshsfhfs</p></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfsfhsfsfhsfhsfhfs</p><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfgsfhfsshsfhsfsfh</p><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Dffdhdfhdhdfhdfh</p><ul level="4" style="margin-bottom:0in;list-style-type: disc;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fdhfdhfdhdfhdfhdfh</p></li></ul></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Dfhfdhdhdhdh</p><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 8pt; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>DFH<span id="middle">FDHDHD</span><span id="end">HDHDFH</span></p></li></ul></li></ul></li></ul>';
+        let startNode: Element = document.getElementById('start');
+        let endNode: Element = document.getElementById('end');
+        let pasteElement: HTMLElement = document.createElement('div');
+        pasteElement.classList.add('pasteContent');
+        let span: Element = document.createElement('span');
+        span.innerHTML= 'testTable1';
+        pasteElement.appendChild(span);
+        domSelection.setSelectionText(document, startNode.firstChild, endNode.firstChild, 0, 6);
+        InsertHtml.Insert(document, pasteElement, editNode);
+        expect(document.getElementById('parentDiv').innerHTML === '<li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fhdfhdh<span>testTable1</span></p></li>').toBe(true);
+    });
+    it('Bullet format list not removed properly when we replace the content in RichTextEditor - partial selection and replace multiple line.', () => {
+        let editNode: Element = document.getElementById('divElement');
+        editNode.innerHTML = '<ul id="parentDiv" level="1" style="margin-bottom:0in;list-style-type: disc;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fhdfhdh<span id="start">dhdhdhgdghdgh</span></p><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfgfsfsfshsfhfshsfhfs</p></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfsfhsfsfhsfhsfhfs</p><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfgsfhfsshsfhsfsfh</p><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Dffdhdfhdhdfhdfh</p><ul level="4" style="margin-bottom:0in;list-style-type: disc;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fdhfdhfdhdfhdfhdfh</p></li></ul></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Dfhfdhdhdhdh</p><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 8pt; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>DFH<span id="middle">FDHDHD</span><span id="end">HDHDFH</span></p></li></ul></li></ul></li></ul>';
+        let startNode: Element = document.getElementById('start');
+        let endNode: Element = document.getElementById('end');
+        let pasteElement: HTMLElement = document.createElement('div');
+        pasteElement.classList.add('pasteContent');
+        let paragraph: Element = document.createElement('P');
+        paragraph.innerHTML= 'testTable1';
+        let paragraph1: Element = document.createElement('P');
+        paragraph1.innerHTML= 'testTable1';
+        pasteElement.appendChild(paragraph);
+        pasteElement.appendChild(paragraph1);
+        domSelection.setSelectionText(document, startNode.firstChild, endNode.firstChild, 0, 6);
+        InsertHtml.Insert(document, pasteElement, editNode);
+        expect(document.getElementById('parentDiv').innerHTML === '<li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fhdfhdh</p><p>testTable1</p><p>testTable1</p></li>').toBe(true);
+    });
+    it('Bullet format list not removed properly when we replace the content in RichTextEditor - middle selection and replace single line.', () => {
+        let editNode: Element = document.getElementById('divElement');
+        editNode.innerHTML = '<ul id="parentDiv" level="1" style="margin-bottom:0in;list-style-type: disc;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fhdfhdh<span id="start">dhdhdhgdghdgh</span></p><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfgfsfsfshsfhfshsfhfs</p></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfsfhsfsfhsfhsfhfs</p><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Sfgsfhfsshsfhsfsfh</p><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Dffdhdfhdhdfhdfh</p><ul level="4" style="margin-bottom:0in;list-style-type: disc;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fdhfdhfdhdfhdfhdfh</p></li></ul></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Dfhfdhdhdhdh</p><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 8pt; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>DFH<span id="middle">FDHDHD</span><span id="end">HDHDFH</span></p></li></ul></li></ul></li></ul>';
+        let startNode: Element = document.getElementById('start');
+        let endNode: Element = document.getElementById('middle');
+        let pasteElement: HTMLElement = document.createElement('div');
+        pasteElement.classList.add('pasteContent');
+        let paragraph: Element = document.createElement('P');
+        paragraph.innerHTML= 'testTable1';
+        pasteElement.appendChild(paragraph);
+        domSelection.setSelectionText(document, startNode.firstChild, endNode.firstChild, 0, 6);
+        InsertHtml.Insert(document, pasteElement, editNode);
+        expect(document.getElementById('parentDiv').innerHTML === '<li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p>Fhdfhdh</p><p>testTable1</p></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif; list-style-type: none;"><ul level="2" style="margin-bottom:0in;list-style-type: circle;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif; list-style-type: none;"><ul level="3" style="margin-bottom:0in;list-style-type: square;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 8pt; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p><span id="end">HDHDFH</span></p></li></ul></li></ul></li>').toBe(true);
+    });
+});
+
 describe('EJ2-49169-InsertHtml for the pasted elements not inserted properly', function () {
     let innervalue: string = '<p><span>Please click this link to download a calendar reminder for this date and time</span></p><p><a classname="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank">https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics </a></p><p><br></p><p>This will affect both the US and DK production site.</p><p><br></p>';
     let nonDOMvalue: string = '<br>';
@@ -335,30 +461,6 @@ describe('BLAZ-13456 - Pasting on the content by selecting "ctrl+a" throws conso
         rangeNodes.push(nonElement);
         (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
         expect((divElement as any).childNodes[1].childNodes.length).toBe(2);
-    });
-});
-
-describe('Testing the insert method for html content paste', function () {
-    let innervalue: string = '<p>Values</p><p>Testing 1</p><p>Testing 2</p>';
-    let range: Range;
-    let divElement: HTMLElement = document.createElement('div');
-    divElement.id = 'divElement';
-    divElement.contentEditable = 'true';
-    divElement.innerHTML = innervalue;
-    let domSelection: NodeSelection = new NodeSelection();
-    beforeAll(function () {
-        document.body.appendChild(divElement);
-    });
-    afterAll(function () {
-        detach(divElement);
-    });
-    it('Pasting html string content', function () {
-        range = document.createRange();
-        range.setStart(divElement.childNodes[0].firstChild, 0);
-        range.setEnd(divElement.childNodes[2].firstChild, 0);
-        domSelection.setSelectionText(document, divElement.childNodes[0].firstChild, divElement.childNodes[2], 0, 0);
-        (InsertHtml as any).Insert(document, innervalue, divElement ,true);
-        expect((divElement as any).childElementCount).toBe(4);
     });
 });
 

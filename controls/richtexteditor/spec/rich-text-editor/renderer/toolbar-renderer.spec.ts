@@ -4,6 +4,8 @@
 import { Browser, isNullOrUndefined } from "@syncfusion/ej2-base";
 import { renderRTE,dispatchEvent, destroy } from './../render.spec';
 import { NodeSelection } from './../../../src/selection/index';
+import { RichTextEditor } from "../../../src";
+import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
 
 describe('Toolbar - Renderer', () => {
 
@@ -151,32 +153,38 @@ describe('Toolbar - Renderer', () => {
         });
     });
     describe('863259: dropdown active state not working when drop down is opened', function () {
-        let rteObj : any;
-        let rteEle : any;
-        beforeAll(function () {
+        let rteObj: RichTextEditor;
+        let rteEle: any;
+        beforeAll(function (done: DoneFn) {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
                 }
             });
             rteEle = rteObj.element;
+            done();
         });
-        it('Check the fontColor dropdown active element', function () {
+        it('Check the fontColor dropdown active element', function (done: DoneFn) {
+            rteObj.focusIn();
             let trgEle : HTMLElement = rteEle.querySelectorAll(".e-toolbar-item")[0];
             (trgEle.firstElementChild as HTMLElement).click();
-            dispatchEvent(trgEle.firstElementChild, 'mousedown');
-            let activeEle = (document.querySelector('.e-dropdown-popup .e-default.e-active') as HTMLElement);
-            expect(!isNullOrUndefined(activeEle)).toBe(true);
+            setTimeout(() => {
+                expect((document.activeElement.childNodes[0] as HTMLElement).classList.contains('e-active')).toBe(true);
+                done();
+            }, 100);
         });
-        it('Check the fontSize dropdown active element', function () {
+        it('Check the fontSize dropdown active element', function (done: DoneFn) {
+            rteObj.focusIn();
             let trgEle : HTMLElement = rteEle.querySelectorAll(".e-toolbar-item")[1];
             (trgEle.firstElementChild as HTMLElement).click();
-            dispatchEvent(trgEle.firstElementChild, 'mousedown');
-            let activeEle = (document.querySelector('.e-font-size-tbar-btn .e-item.e-active') as HTMLElement);
-            expect(!isNullOrUndefined(activeEle)).toBe(true);
+            setTimeout(() => {
+                expect((document.activeElement.childNodes[0] as HTMLElement).classList.contains('e-active')).toBe(true);
+                done();
+            }, 100);
         });
-        afterAll(function () {
+        afterAll(function (done: DoneFn) {
             destroy(rteObj);
+            done();
         });
     });
 

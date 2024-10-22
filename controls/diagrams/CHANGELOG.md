@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I635721` - The undo and redo actions work during swimlane deletion, even when the swimlane's delete constraint is disabled.
+
 ## 27.1.53 (2024-10-15)
 
 ### Diagram

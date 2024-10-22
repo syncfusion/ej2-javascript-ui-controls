@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the issue with retrieving annotation comments from a PDF document.
+
 ## 27.1.53 (2024-10-15)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the preservation issue in line measurement annotation when dashed border style applied.
+- Resolved an undefined exception encountered while adding a line annotation to a PDF document.
+
+## 27.1.52 (2024-10-08)
 
 ### PDF Parser
 

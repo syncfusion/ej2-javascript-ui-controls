@@ -53,7 +53,8 @@
       }
       .e-previous:not(.e-step-disabled),
       .e-next:not(.e-step-disabled),
-      .e-step-selected:not(.e-step-disabled) {
+      .e-step-selected:not(.e-step-disabled),
+      .e-previous:not(.e-step-disabled) + li {
         pointer-events: auto;
       }
     }

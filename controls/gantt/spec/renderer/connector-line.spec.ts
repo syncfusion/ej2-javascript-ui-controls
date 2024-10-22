@@ -3,13 +3,13 @@
  */
 
 import { baselineData, connectorLineFFDatasource, connectorLineFSDatasource, connectorLineSFDatasource, connectorLineSSDatasource, data5, data6, data7, editingData1, predecessorData, projectNewData1, predcessor1, connectorLineData, CR909421 } from '../base/data-source.spec';
-import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ITaskbarEditedEventArgs } from '../../src/index';
+import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ITaskbarEditedEventArgs, CriticalPath } from '../../src/index';
 
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
-Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
+Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, CriticalPath);
 describe('Gantt connector line support', () => {
     let changeDuration: Function = (data: Object[]) => {
         for (let i: number = 0; i < data.length; i++) {
@@ -776,9 +776,9 @@ describe('predecessor collection as object', () => {
                 projectEndDate: new Date('05/30/2019'),
             }, done);
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 100);
-    });
+    // beforeEach((done: Function) => {
+    //     setTimeout(done, 100);
+    // });
     it('predecessor validation as object', () => {
         expect(ganttObj.currentViewData[6].ganttProperties.predecessorsName).toBe("11FS,10FS");
         expect(ganttObj.connectorLineBackground).toBe('blue');
@@ -892,9 +892,9 @@ describe('predecessor collection with virtualization', () => {
                 projectEndDate: new Date('05/30/2019'),
             }, done);
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 100);
-    });
+    // beforeEach((done: Function) => {
+    //     setTimeout(done, 100);
+    // });
     it('predecessor validation as object', () => {
         expect(ganttObj.connectorLineBackground).toBe('blue');
     });
@@ -1010,14 +1010,10 @@ describe('Gantt predecessor for GUID', () => {
                 projectEndDate: new Date('05/30/2019'),
             }, done);
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 500);
-    });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
+    // beforeEach((done: Function) => {
+    //     setTimeout(done, 500);
+    // });
+    
     it('Editing dependency column', () => {
         let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(7)') as HTMLElement;
         triggerMouseEvent(dependency, 'dblclick');
@@ -1044,6 +1040,11 @@ describe('Gantt predecessor for GUID', () => {
             let update: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(6)') as HTMLElement;
             triggerMouseEvent(update, 'click');
             expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe('123e4567-e89c-12d3-a456-314414174000 FS-2 days');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });
 describe('Gantt predecessor for GUID', () => {
@@ -1152,11 +1153,7 @@ describe('Gantt predecessor for GUID', () => {
         projectEndDate: new Date('05/30/2019'),
             }, done);
     });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
+    
     it('Editing dependency column', () => {
         let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(7)') as HTMLElement;
         triggerMouseEvent(dependency, 'dblclick');
@@ -1171,6 +1168,11 @@ describe('Gantt predecessor for GUID', () => {
         ganttObj.connectorLineEditModule['highlightConnectorLineElements'](element);
         ganttObj.connectorLineEditModule['highlightConnectorLineElements'](null);
         expect(element.classList[0]).toBe('e-connector-line-container');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });
 describe('critical path for GUID', () => {
@@ -1280,11 +1282,7 @@ describe('critical path for GUID', () => {
         projectEndDate: new Date('05/30/2019'),
             }, done);
     });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
+   
     it('Editing dependency column', () => {
         let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(7)') as HTMLElement;
         triggerMouseEvent(dependency, 'dblclick');
@@ -1299,6 +1297,11 @@ describe('critical path for GUID', () => {
         ganttObj.connectorLineEditModule['highlightConnectorLineElements'](element);
         ganttObj.connectorLineEditModule['highlightConnectorLineElements'](null);
         expect(element.classList[0]).toBe('e-connector-line-container');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });
 describe('parent dependency as false', () => {
@@ -1409,11 +1412,7 @@ describe('parent dependency as false', () => {
         projectEndDate: new Date('05/30/2019'),
             }, done);
     });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
+    
     it('edit dependency', () => {
         let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(7)') as HTMLElement;
         triggerMouseEvent(dependency, 'dblclick');
@@ -1422,6 +1421,11 @@ describe('parent dependency as false', () => {
             let update: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(6)') as HTMLElement;
             triggerMouseEvent(update, 'click');
             expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe('2 FS');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });
 describe('render dependency from parent to child', () => {
@@ -1534,19 +1538,20 @@ describe('render dependency from parent to child', () => {
         projectEndDate: new Date('05/30/2019'),
             }, done);
     });
+    
+    it('dependency', () => {
+        expect(ganttObj.currentViewData[0].ganttProperties.predecessorsName).toBe('5FS');
+        expect(ganttObj.connectorLineEditModule['compareArrays'](ganttObj.currentViewData[0].ganttProperties.predecessor, ganttObj.currentViewData[5].ganttProperties.predecessor)).toBe(true);
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
     });
-    it('dependency', () => {
-        expect(ganttObj.currentViewData[0].ganttProperties.predecessorsName).toBe('5FS');
-        expect(ganttObj.connectorLineEditModule['compareArrays'](ganttObj.currentViewData[0].ganttProperties.predecessor, ganttObj.currentViewData[5].ganttProperties.predecessor)).toBe(true);
-    });
 });
 describe('render dependency FF', () => {
     let ganttObj: Gantt;
-    var projectNewData = [
+    let projectNewData = [
         {
             TaskID: 1,
             TaskName: 'Product Concept',
@@ -1645,21 +1650,22 @@ describe('render dependency FF', () => {
         projectEndDate: new Date('05/30/2019'),
             }, done);
     });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
+
     it('dependency', () => {
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 100), dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mouseup');
     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
 });
 describe('render dependency FF', () => {
     let ganttObj: Gantt;
-    var projectNewData = [
+    let projectNewData = [
         {
             TaskID: 1,
             TaskName: 'Product Concept',
@@ -1758,21 +1764,22 @@ describe('render dependency FF', () => {
         projectEndDate: new Date('05/30/2019'),
             }, done);
     });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
+   
     it('dependency', () => {
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 100), dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mouseup');
     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
 });
 describe('render dependency SS', () => {
     let ganttObj: Gantt;
-    var projectNewData = [
+    let projectNewData = [
         {
             TaskID: 1,
             TaskName: 'Product Concept',
@@ -1871,24 +1878,25 @@ describe('render dependency SS', () => {
         projectEndDate: new Date('05/30/2019'),
             }, done);
     });
-    beforeEach((done) => {
-        setTimeout(done, 500);
-    });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
+    // beforeEach((done) => {
+    //     setTimeout(done, 500);
+    // });
+    
    it('dependency', () => {
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 200), dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mouseup');
     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
 });
 describe('render dependency SS', () => {
     let ganttObj: Gantt;
-    var projectNewData = [
+    let projectNewData = [
         {
             TaskID: 1,
             TaskName: 'Product Concept',
@@ -1987,22 +1995,23 @@ describe('render dependency SS', () => {
         projectEndDate: new Date('05/30/2019'),
             }, done);
     });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
+    
     it('dependency', () => {
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft - 100), dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mouseup');
     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
 });
 
 describe('render dependency SS', () => {
     let ganttObj: Gantt;
-    var coulmntemplate = [
+    let coulmntemplate = [
         {
             TaskID: 1,
             TaskName: 'Product concept',
@@ -2058,22 +2067,23 @@ describe('render dependency SS', () => {
         height: '450px',
             }, done);
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 100);
+    // beforeEach((done: Function) => {
+    //     setTimeout(done, 100);
+    // });
+   
+    it('dependency', () => {
+       expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe('4SS+2 days');
     });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
     });
-    it('dependency', () => {
-       expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe('4SS+2 days');
-    });
 });
 
 describe('manual mode dependency SS', () => {
     let ganttObj: Gantt;
-    var taskModeData = [
+    let taskModeData = [
         {
             'TaskID': 1,
             'TaskName': 'Parent Task 1',
@@ -2101,9 +2111,9 @@ describe('manual mode dependency SS', () => {
             ]
         },
     ];
-    beforeEach((done: Function) => {
-        setTimeout(done, 100);
-    });
+    // beforeEach((done: Function) => {
+    //     setTimeout(done, 100);
+    // });
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
@@ -2193,19 +2203,20 @@ describe('manual mode dependency SS', () => {
         projectEndDate: new Date('03/30/2017'),
             }, done);
     });
+    
+    it('dependency', () => {
+       expect(ganttObj.currentViewData[1].ganttProperties.predecessor.length).toBe(1);
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
     });
-    it('dependency', () => {
-       expect(ganttObj.currentViewData[1].ganttProperties.predecessor.length).toBe(1);
-    });
 });
 
 describe('manual mode dependency SS', () => {
     let ganttObj: Gantt;
-    var taskModeData = [
+    let taskModeData = [
         {
             'TaskID': 1,
             'TaskName': 'Parent Task 1',
@@ -2321,9 +2332,9 @@ describe('manual mode dependency SS', () => {
         projectEndDate: new Date('03/30/2017'),
             }, done);
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 100);
-    });
+    // beforeEach((done: Function) => {
+    //     setTimeout(done, 100);
+    // });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
@@ -2335,7 +2346,7 @@ describe('manual mode dependency SS', () => {
 });
 describe('Checking connector line position', () => {
     let ganttObj: Gantt;
-    var projectNewData = [
+    let projectNewData = [
         { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
         { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "4" },
     ];
@@ -2413,9 +2424,9 @@ describe('Checking connector line position', () => {
                 projectEndDate: new Date('05/30/2019'),
             }, done);
     });
-    beforeEach(function (done) {
-        setTimeout(done, 500);
-    });
+    // beforeEach(function (done) {
+    //     setTimeout(done, 500);
+    // });
     it('dependency', () => {
         expect(ganttObj.chartPane.querySelector('.e-connector-line').getAttribute('d')).toBe('M 363 31  L 373 31 L 373 60 L 326 60 L 326 92 L 334 92');
     });
@@ -2480,7 +2491,7 @@ describe('CR:909421-Change the event argument action property value while deleti
     beforeEach((done: Function) => {
         let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
-        setTimeout(done, 500);
+        setTimeout(done, 200);
     });
     it('Checking actionBegin event requestType while contextMenu Delete Depedency', (done: Function) => {
         ganttObj.actionBegin = (args?: any): void => {

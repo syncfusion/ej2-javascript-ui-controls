@@ -539,6 +539,8 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             if (this.element.classList.contains(HORIZSTEP)) { this.stepperItemContainer.style.setProperty('--max-width', 100 / this.steps.length + '%'); }
             const stepSpan: HTMLElement = this.createElement('span', { className: 'e-step' });
             const item: StepModel = this.steps[parseInt(index.toString(), 10)];
+            let isItemLabel: boolean = item.label ? true : false;
+            let isItemText: boolean = item.text ? true : false;
             if (this.renderDefault(index) && (isNullOrUndefined(this.template) || this.template === '')) {
                 const isIndicator: boolean = (!this.element.classList.contains('e-step-type-default') && this.stepType.toLowerCase() === 'indicator') ? true : false;
                 if (isIndicator) { stepSpan.classList.add('e-icons', INDICATORICON); }
@@ -550,7 +552,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             }
             else if (isNullOrUndefined(this.template) || this.template === '') {
                 let isRender: boolean = true;
-                if ((item.iconCss || (!item.iconCss && item.text && item.label)) && (((!item.text && !item.label) ||
+                if ((item.iconCss || (!item.iconCss && isItemText && isItemLabel)) && (((!isItemText && !isItemLabel) ||
                 !this.element.classList.contains(LABELINDICATOR)))) {
                     if (item.iconCss) {
                         const itemIcon: string[] = item.iconCss.trim().split(' ');
@@ -559,14 +561,14 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                             stepSpan.classList.add(itemIcon[parseInt(i.toString(), 10)]);
                         }
                         this.stepperItemContainer.classList.add(STEPICON);
-                    } else if (!item.iconCss && item.text && item.label) {
+                    } else if (!item.iconCss && isItemText && isItemLabel) {
                         stepSpan.classList.add(ICONCSS);
                         stepSpan.innerHTML = item.text;
                         this.stepperItemContainer.classList.add(STEPICON);
                     }
                     this.stepperItemContainer.appendChild(stepSpan);
-                    if ((this.element.classList.contains(HORIZSTEP) && (this.labelPosition.toLowerCase() === 'start' || this.labelPosition.toLowerCase() === 'end') && item.label) ||
-                        (this.element.classList.contains(VERTICALSTEP) && (this.labelPosition.toLowerCase() === 'top' || this.labelPosition.toLowerCase() === 'bottom') && item.label)) {
+                    if ((this.element.classList.contains(HORIZSTEP) && (this.labelPosition.toLowerCase() === 'start' || this.labelPosition.toLowerCase() === 'end') && isItemLabel) ||
+                        (this.element.classList.contains(VERTICALSTEP) && (this.labelPosition.toLowerCase() === 'top' || this.labelPosition.toLowerCase() === 'bottom') && isItemLabel)) {
                         this.element.classList.add('e-label-' + this.labelPosition.toLowerCase());
                         const textSpan: HTMLElement = this.createElement('span', { className: TEXTCSS + ' ' + TEXT });
                         textSpan.innerText = item.label;
@@ -575,47 +577,41 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                         isRender = false;
                     }
                 }
-                if (item.text && (!item.iconCss || !this.element.classList.contains(STEPINDICATOR)) && isRender &&
-                !(item.iconCss && item.label)) {
+                if (isItemText && (!item.iconCss || !this.element.classList.contains(STEPINDICATOR)) && isRender &&
+                !(item.iconCss && isItemLabel)) {
                     if ((!item.iconCss && this.element.classList.contains(STEPINDICATOR)) ||
-                    ((!item.iconCss || this.element.classList.contains(LABELINDICATOR)) && !item.label)) {
-                        if (!item.iconCss && !item.label) { this.element.classList.add('e-step-type-indicator'); }
+                    ((!item.iconCss || this.element.classList.contains(LABELINDICATOR)) && !isItemLabel)) {
+                        if (!item.iconCss && !isItemLabel) { this.element.classList.add('e-step-type-indicator'); }
                         this.checkValidState(item, stepSpan);
-                        const prevOnChange: boolean = this.isProtectedOnChange;
-                        this.isProtectedOnChange = true;
-                        item.label = null;
-                        this.isProtectedOnChange = prevOnChange;
+                        isItemLabel = null;
                     }
                     else {
                         const textSpan: HTMLElement = this.createElement('span', { className: TEXT });
-                        if (!item.label) {
+                        if (!isItemLabel) {
                             textSpan.innerText = item.text;
                             textSpan.classList.add(TEXTCSS);
                             this.stepperItemContainer.appendChild(textSpan);
                             this.stepperItemContainer.classList.add(STEPTEXT);
                         }
-                        if (item.label && this.element.classList.contains(LABELINDICATOR)) {
+                        if (isItemLabel && this.element.classList.contains(LABELINDICATOR)) {
                             textSpan.innerText = item.label;
                         }
-                        const prevOnChange: boolean = this.isProtectedOnChange;
-                        this.isProtectedOnChange = true;
-                        item.text = item.label ? null : item.text;
-                        this.isProtectedOnChange = prevOnChange;
+                        isItemText = item.label ? false : true;
                     }
                 }
-                if (item.label && (!item.iconCss || !this.element.classList.contains(STEPINDICATOR)) && isRender) {
-                    if (!item.iconCss && !item.text && this.element.classList.contains(STEPINDICATOR)) {
+                if (isItemLabel && (!item.iconCss || !this.element.classList.contains(STEPINDICATOR)) && isRender) {
+                    if (!item.iconCss && !isItemText && this.element.classList.contains(STEPINDICATOR)) {
                         this.checkValidState(item, stepSpan, true);
                     }
-                    else if ((!((this.element.classList.contains(LABELINDICATOR)) && item.text)) ||
-                    (this.element.classList.contains(LABELINDICATOR) && item.label)) {
+                    else if ((!((this.element.classList.contains(LABELINDICATOR)) && isItemText)) ||
+                    (this.element.classList.contains(LABELINDICATOR) && isItemLabel)) {
                         this.labelContainer = this.createElement('span', { className: STEPLABEL });
                         const labelSpan: HTMLElement = this.createElement('span', { className: LABEL });
                         labelSpan.innerText = item.label;
                         this.labelContainer.appendChild(labelSpan);
                         this.stepperItemContainer.classList.add(STEPSLABEL);
                         this.updateLabelPosition();
-                        if ((!item.iconCss && !item.text && !this.stepperItemContainer.classList.contains(STEPICON)) ||
+                        if ((!item.iconCss && !isItemText && !this.stepperItemContainer.classList.contains(STEPICON)) ||
                         this.element.classList.contains(LABELINDICATOR)) {
                             this.stepperItemContainer.classList.add('e-step-label-only');
                             if (item.isValid !== null) {
@@ -631,7 +627,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                 this.l10n.setLocale(this.locale);
                 const optionalContent: string = this.l10n.getConstant('optional');
                 optionalSpan.innerText = optionalContent;
-                if (item.label && (this.labelContainer && ((this.element.classList.contains(LABELAFTER) && !this.stepperItemContainer.classList.contains('e-step-label-only'))
+                if (isItemLabel && (this.labelContainer && ((this.element.classList.contains(LABELAFTER) && !this.stepperItemContainer.classList.contains('e-step-label-only'))
                 || (this.element.classList.contains(HORIZSTEP) && this.element.classList.contains(LABELBEFORE) && !this.stepperItemContainer.classList.contains('e-step-label-only'))))
                 || (this.element.classList.contains(VERTICALSTEP) && this.element.classList.contains(LABELBEFORE))) {
                     this.labelContainer.appendChild(optionalSpan);
@@ -1269,6 +1265,11 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                                 }
                             }
                             else { this.removeItemElements(); this.renderItems(); this.updateStepperStatus(); }
+                            if (property === 'label' && (this.steps[index as number].iconCss || this.steps[index as number].text) &&
+                                this.stepType.toLowerCase() === 'default') {
+                                this.refreshProgressbar();
+                            }
+                            this.updateStepInteractions();
                             this.checkValidStep();
                         }
                     }

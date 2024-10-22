@@ -186,7 +186,6 @@ export class Print {
             }
             if (printImage && printImage.uniqueId === this.pdfViewerBase.documentId) {
                 this.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.print, printImage);
-                let annotationSource: string = '';
                 if (!this.pdfViewer.annotationSettings.skipPrint) {
                     const annotationCollections: any = this.pdfViewerBase.documentAnnotationCollections;
                     if (annotationCollections && annotationCollections[printImage.pageNumber] &&
@@ -199,95 +198,105 @@ export class Print {
                             const stampAnnotation: number[] = printCollection.stampAnnotations;
                             const freeTextAnnotation: number[] = printCollection.freeTextAnnotation;
                             const stickyNoteAnnotation: any = printCollection.stickyNotesAnnotation;
-                            annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
-                                printTextMarkupAnnotations(textMarkupAnnotation, printImage.pageNumber, stampAnnotation,
-                                                           shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation,
-                                                           freeTextAnnotation);
+                            this.pdfViewer.annotationModule.textMarkupAnnotationModule.
+                                printTextMarkupAnnotations(textMarkupAnnotation, printImage.pageNumber,
+                                                           stampAnnotation, shapeAnnotation, measureShapeAnnotation,
+                                                           stickyNoteAnnotation, freeTextAnnotation).then((annotationSource: string) => {
+                                    this.printImages(printImage, pageIndex, pageWidth, pageHeight, annotationSource);
+                                });
                         } else {
-                            annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
+                            this.pdfViewer.annotationModule.textMarkupAnnotationModule.
                                 printTextMarkupAnnotations(printCollection.textMarkupAnnotation, printImage.pageNumber,
                                                            printCollection.stampAnnotations, printCollection.shapeAnnotation,
                                                            printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation,
-                                                           printCollection.freeTextAnnotation);
+                                                           printCollection.freeTextAnnotation).then((annotationSource: string) => {
+                                    this.printImages(printImage, pageIndex, pageWidth, pageHeight, annotationSource);
+                                });
                         }
                     }
                     if (this.pdfViewerBase.isAnnotationCollectionRemoved) {
-                        annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
-                            printTextMarkupAnnotations(null, printImage.pageNumber, null, null, null, null, null);
+                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.
+                            printTextMarkupAnnotations(null, printImage.pageNumber, null, null, null, null, null).
+                            then((annotationSource: string) => {
+                                this.printImages(printImage, pageIndex, pageWidth, pageHeight, annotationSource);
+                            });
                     }
                 }
-                const currentPageNumber: number = printImage.pageNumber;
-                this.printCanvas = createElement('canvas', { id: this.pdfViewer.element.id + '_printCanvas_' + pageIndex, className: 'e-pv-print-canvas' }) as HTMLCanvasElement;
-                this.printCanvas.style.width = pageWidth + 'px';
-                this.printCanvas.style.height = pageHeight + 'px';
-                const printScaleValue: number = 2;
-                if (this.pdfViewerBase.clientSideRendering) {
-                    //An A0 piece of paper measures 33.1 × 46.8 inches, with 46.8 inches being the greater dimension. The pixel value of 46.8 inches is 4493px. If the document size is too large, we may not be able to display the image. Therefore, we should consider the maximum size of A0 paper if the page size is greater than 4493 pixels.
-                    const maxPageSize: number = 4493;
-                    const whichIsBigger:  'Width' | 'Height' = (pageWidth > pageHeight) ? 'Width' : 'Height';
-                    let maxWidth: number = pageWidth;
-                    let maxHeight: number = pageHeight;
-                    if (whichIsBigger === 'Width') {
-                        maxWidth = (pageWidth > maxPageSize) ? maxPageSize : pageWidth;
-                        if (maxWidth === maxPageSize) {
-                            maxHeight = pageHeight / (pageWidth / maxPageSize);
-                        }
-                    } else {
-                        maxHeight = (pageHeight > maxPageSize) ? maxPageSize : pageHeight;
-                        if (maxHeight === maxPageSize) {
-                            maxWidth = pageWidth / (pageHeight / maxPageSize);
-                        }
-                    }
-                    if ((pageHeight < pageWidth) && this.pdfViewer.enablePrintRotation) {
-                        this.printCanvas.height = pageWidth * printScaleValue * window.devicePixelRatio;
-                        this.printCanvas.width = pageHeight * printScaleValue * window.devicePixelRatio;
-                    } else {
-                        this.printCanvas.height = maxHeight * printScaleValue * window.devicePixelRatio;
-                        this.printCanvas.width = maxWidth * printScaleValue * window.devicePixelRatio;
-                    }
-                } else {
-                    this.printCanvas.height = this.printHeight * printScaleValue * window.devicePixelRatio;
-                    this.printCanvas.width = this.printWidth * printScaleValue * window.devicePixelRatio;
-                }
-                if (this.pdfViewerBase.isDeviceiOS) {
-                    const size: Size = new Size(this.printCanvas.width, this.printCanvas.height);
-                    const newSize: Size = this.limitSize(size, this.maximumPixels);
-                    this.printCanvas.width = newSize.width;
-                    this.printCanvas.height = newSize.height;
-                }
-                const context: CanvasRenderingContext2D = this.printCanvas.getContext('2d');
-                const pageImage: HTMLImageElement = new Image();
-                const annotationImage: HTMLImageElement = new Image();
-                pageImage.onload = (): void => {
-                    if ((pageHeight > pageWidth) || !this.pdfViewer.enablePrintRotation) {
-                        context.drawImage(pageImage, 0, 0, this.printCanvas.width, this.printCanvas.height);
-                        if (annotationSource) {
-                            context.drawImage(annotationImage, 0, 0, this.printCanvas.width, this.printCanvas.height);
-                        }
-                    } else {
-                        // translate to center canvas
-                        context.translate(this.printCanvas.width * 0.5, this.printCanvas.height * 0.5);
-                        // rotate the canvas to - 90 degree
-                        context.rotate(-0.5 * Math.PI);
-                        // un translate the canvas back to origin
-                        context.translate(-this.printCanvas.height * 0.5, -this.printCanvas.width * 0.5);
-                        // draw the image
-                        context.drawImage(pageImage, 0, 0, this.printCanvas.height, this.printCanvas.width);
-                        if (annotationSource) {
-                            context.drawImage(annotationImage, 0, 0, this.printCanvas.height, this.printCanvas.width);
-                        }
-                    }
-                    if (currentPageNumber === (this.pdfViewerBase.pageCount - 1)) {
-                        this.printWindowOpen();
-                    }
-                    this.pdfViewer.renderDrawing(null, pageIndex);
-                };
-                pageImage.src = printImage.image;
-                annotationImage.src = annotationSource;
-                this.printViewerContainer.appendChild(this.printCanvas);
             }
         }
         this.pdfViewerBase.isPrint = false;
+    }
+
+    private printImages(printImage: any, pageIndex: number, pageWidth: number, pageHeight: number, annotationSource: string): void {
+        const currentPageNumber: number = printImage.pageNumber;
+        this.printCanvas = createElement('canvas', { id: this.pdfViewer.element.id + '_printCanvas_' + pageIndex, className: 'e-pv-print-canvas' }) as HTMLCanvasElement;
+        this.printCanvas.style.width = pageWidth + 'px';
+        this.printCanvas.style.height = pageHeight + 'px';
+        const printScaleValue: number = 2;
+        if (this.pdfViewerBase.clientSideRendering) {
+            //An A0 piece of paper measures 33.1 × 46.8 inches, with 46.8 inches being the greater dimension. The pixel value of 46.8 inches is 4493px. If the document size is too large, we may not be able to display the image. Therefore, we should consider the maximum size of A0 paper if the page size is greater than 4493 pixels.
+            const maxPageSize: number = 4493;
+            const whichIsBigger:  'Width' | 'Height' = (pageWidth > pageHeight) ? 'Width' : 'Height';
+            let maxWidth: number = pageWidth;
+            let maxHeight: number = pageHeight;
+            if (whichIsBigger === 'Width') {
+                maxWidth = (pageWidth > maxPageSize) ? maxPageSize : pageWidth;
+                if (maxWidth === maxPageSize) {
+                    maxHeight = pageHeight / (pageWidth / maxPageSize);
+                }
+            } else {
+                maxHeight = (pageHeight > maxPageSize) ? maxPageSize : pageHeight;
+                if (maxHeight === maxPageSize) {
+                    maxWidth = pageWidth / (pageHeight / maxPageSize);
+                }
+            }
+            if ((pageHeight < pageWidth) && this.pdfViewer.enablePrintRotation) {
+                this.printCanvas.height = pageWidth * printScaleValue * window.devicePixelRatio;
+                this.printCanvas.width = pageHeight * printScaleValue * window.devicePixelRatio;
+            } else {
+                this.printCanvas.height = maxHeight * printScaleValue * window.devicePixelRatio;
+                this.printCanvas.width = maxWidth * printScaleValue * window.devicePixelRatio;
+            }
+        } else {
+            this.printCanvas.height = this.printHeight * printScaleValue * window.devicePixelRatio;
+            this.printCanvas.width = this.printWidth * printScaleValue * window.devicePixelRatio;
+        }
+        if (this.pdfViewerBase.isDeviceiOS) {
+            const size: Size = new Size(this.printCanvas.width, this.printCanvas.height);
+            const newSize: Size = this.limitSize(size, this.maximumPixels);
+            this.printCanvas.width = newSize.width;
+            this.printCanvas.height = newSize.height;
+        }
+        const context: CanvasRenderingContext2D = this.printCanvas.getContext('2d');
+        const pageImage: HTMLImageElement = new Image();
+        const annotationImage: HTMLImageElement = new Image();
+        pageImage.onload = (): void => {
+            if ((pageHeight > pageWidth) || !this.pdfViewer.enablePrintRotation) {
+                context.drawImage(pageImage, 0, 0, this.printCanvas.width, this.printCanvas.height);
+                if (annotationSource) {
+                    context.drawImage(annotationImage, 0, 0, this.printCanvas.width, this.printCanvas.height);
+                }
+            } else {
+                // translate to center canvas
+                context.translate(this.printCanvas.width * 0.5, this.printCanvas.height * 0.5);
+                // rotate the canvas to - 90 degree
+                context.rotate(-0.5 * Math.PI);
+                // un translate the canvas back to origin
+                context.translate(-this.printCanvas.height * 0.5, -this.printCanvas.width * 0.5);
+                // draw the image
+                context.drawImage(pageImage, 0, 0, this.printCanvas.height, this.printCanvas.width);
+                if (annotationSource) {
+                    context.drawImage(annotationImage, 0, 0, this.printCanvas.height, this.printCanvas.width);
+                }
+            }
+            if (currentPageNumber === (this.pdfViewerBase.pageCount - 1)) {
+                this.printWindowOpen();
+            }
+            this.pdfViewer.renderDrawing(null, pageIndex);
+        };
+        pageImage.src = printImage.image;
+        annotationImage.src = annotationSource;
+        this.printViewerContainer.appendChild(this.printCanvas);
     }
 
     private limitSize(size: Size, maximumPixels: number): Size {

@@ -342,7 +342,7 @@ export class Clipboard {
                         options: {
                             src: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
                             height: this.copiedShapeInfo.height, width: this.copiedShapeInfo.width,
-                            imageId: this.copiedShapeInfo.isCut ? pictureElem.id : ''
+                            id: this.copiedShapeInfo.isCut ? pictureElem.id : ''
                         },
                         range: getRangeAddress([rowIdx, selIdx[1], rowIdx, selIdx[1]]), isPublic: false, isUndoRedo: true
                     });

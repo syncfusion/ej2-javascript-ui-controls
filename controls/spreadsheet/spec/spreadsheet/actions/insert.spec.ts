@@ -2075,10 +2075,10 @@ describe('Insert & Delete ->', () => {
         });
     });
     describe('CR - Issues->', () => {
-        describe('EJ2-50688, EJ2-53476, EJ2-54600, EJ2-50688, EJ2-51865', () => {
+        describe('EJ2-50688, EJ2-53476, EJ2-54600, EJ2-50688, EJ2-51865, EJ2-911330 ', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }]
                 }, done);
             });
             afterAll(() => {
@@ -2164,6 +2164,58 @@ describe('Insert & Delete ->', () => {
                             expect(helper.getInstance().sheets[0].rows[5].cells[6].value).toBe(10);
                             expect(helper.getInstance().sheets[0].rows[7].cells[6].value).toBe(10);
                             done();
+                        });
+                    });
+                });
+            });
+            
+            it('EJ2-911330 - Delete method throws script error while deleting a sheet', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                helper.invoke('goTo', ['Sheet2!A1']);
+                setTimeout(() => {
+                    spreadsheet.delete(0, 0, 'Sheet');
+                    setTimeout(() => {
+                        expect(spreadsheet.activeSheetIndex).toBe(0);
+                        spreadsheet.insertSheet(1, 4);
+                        setTimeout(() => {
+                            expect(spreadsheet.activeSheetIndex).toBe(0);
+                            helper.invoke('goTo', ['Sheet6!A1']);
+                            setTimeout(() => {
+                                expect(spreadsheet.activeSheetIndex).toBe(4);
+                                spreadsheet.delete(1, 3, 'Sheet');
+                                setTimeout(() => {
+                                    expect(spreadsheet.activeSheetIndex).toBe(1);
+                                    done();
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+
+            it('EJ2-911330 - Delete method Changes active sheet when active sheet is not deleted.', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                spreadsheet.insertSheet(2, 6);
+                setTimeout(() => {
+                    expect(spreadsheet.activeSheetIndex).toBe(1);
+                    helper.invoke('goTo', ['Sheet9!A1']);
+                    setTimeout(() => {
+                        let td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                        let coords = td.getBoundingClientRect();
+                        helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                        setTimeout(() => {
+                            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                            helper.click('#' + helper.id + '_contextmenu li:nth-child(5)');
+                            setTimeout(() => {
+                                expect(spreadsheet.activeSheetIndex).toBe(3);
+                                expect(spreadsheet.sheets[4].state).toBe('Hidden');
+                                spreadsheet.delete(1, 3, 'Sheet');
+                                setTimeout(() => {
+                                    expect(spreadsheet.activeSheetIndex).toBe(2);
+                                    expect(spreadsheet.sheets[1].state).toBe('Hidden')
+                                    done();
+                                });
+                            }, 50);
                         });
                     });
                 });

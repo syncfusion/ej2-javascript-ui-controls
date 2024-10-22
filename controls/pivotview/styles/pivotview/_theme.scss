@@ -1113,7 +1113,6 @@
 
             .e-numeric {
               margin: $pivotpager-numeric-box-margin;
-              vertical-align: top;
 
               .e-pivot-pager-row-dropdown,
               .e-pivot-pager-column-dropdown {
@@ -1121,6 +1120,13 @@
                   font-size: $pivotpager-numeric-font-size;
                 }
               }
+            }
+          }
+
+          .e-pivot-both-pager-settings {
+            .e-numeric {
+              margin: $pivotpager-numeric-box-margin;
+              vertical-align: top;
             }
           }
         }

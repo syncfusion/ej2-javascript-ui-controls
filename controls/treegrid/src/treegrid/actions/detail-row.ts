@@ -82,7 +82,7 @@ export class DetailRow {
             return;
         }
         for (let i: number = 0; i < args.detailrows.length; i++) {
-            args.detailrows[parseInt(i.toString(), 10)].style.display = args.action;
+            this.parent['toggleRowVisibility'](args.detailrows[parseInt(i.toString(), 10)], args.action);
         }
     }
     private detaildataBound(args: DetailDataBoundEventArgs): void {

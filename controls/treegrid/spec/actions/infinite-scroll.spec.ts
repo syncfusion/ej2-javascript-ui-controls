@@ -147,12 +147,12 @@ describe('TreeGrid Infinite Scroll', () => {
         it('collapse test', () => {
             const rows: Element[] = treegrid.grid.getRows();
             (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-            expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+            expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
         });
         it('expand test', () => {
             const rows: Element[] = treegrid.grid.getRows();
             (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
-            expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
+            expect(rows[1].classList.contains('e-childrow-visible')).toBe(true);
         });
         it('scroll bottom', (done: Function) => {
             treegrid.getContent().firstElementChild.scrollTop = 5550;

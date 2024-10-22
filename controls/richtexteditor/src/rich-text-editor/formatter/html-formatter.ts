@@ -46,7 +46,7 @@ export class HTMLFormatter extends Formatter {
         if (editElement && doc) {
             this.editorManager = new EditorManager({
                 document: doc,
-                editableElement: editElement,
+                editableElement: editElement as HTMLElement,
                 options: options,
                 formatPainterSettings: formatPainterSettings
             });

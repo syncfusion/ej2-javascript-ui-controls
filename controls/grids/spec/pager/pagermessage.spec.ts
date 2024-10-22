@@ -116,4 +116,30 @@ describe('Pagermessage module', () => {
 
     });
 
+    describe('915791: Pager throws a script error with a custom locale.', () => {
+        let pagerObj: Pager;
+        let elem: HTMLElement = createElement('div', { id: 'Pager' });
+
+        beforeAll((done: Function) => {
+            let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            pagerObj = new Pager({
+                totalRecordsCount: 1000, currentPage: 8, pageCount: 5, pageSize: 5, created: created
+            });
+            pagerObj.locale = 'noNotificationFoundTemplate';
+            pagerObj.appendTo('#Pager');
+        });
+
+        it('Custom locale testing', () => {
+            pagerObj.pagerMessageModule.showMessage();
+            expect((pagerObj.element.querySelector('.e-pagecountmsg') as HTMLElement).innerText).toBe('(1000 items)');
+        });
+
+        afterAll(() => {
+            pagerObj.destroy();
+            elem.remove();
+            pagerObj = elem = null;
+        });
+    });
+
 });

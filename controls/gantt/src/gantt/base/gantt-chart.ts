@@ -950,17 +950,13 @@ export class GanttChart {
      * @returns {void} .
      * @private
      */
-    public collapseGanttRow(args: object, isCancel?: boolean): void {
-        if (isCancel) {
-            this.collapsedGanttRow(args);
-        } else {
-            this.parent.trigger('collapsing', args, (arg: object) => {
-                if (this.isExpandCollapseFromChart && !getValue('cancel', arg)) {
-                    this.collapsedGanttRow(arg);
-                }
-                this.isExpandCollapseFromChart = false;
-            });
-        }
+    public collapseGanttRow(args: object): void {
+        this.parent.trigger('collapsing', args, (arg: object) => {
+            if (this.isExpandCollapseFromChart && !getValue('cancel', arg)) {
+                this.collapsedGanttRow(arg);
+            }
+            this.isExpandCollapseFromChart = false;
+        });
     }
 
     /**
@@ -1012,17 +1008,13 @@ export class GanttChart {
      * @param {boolean} isCancel .
      * @private
      */
-    public expandGanttRow(args: object, isCancel?: boolean): void {
-        if (isCancel) {
-            this.expandedGanttRow(args);
-        } else {
-            this.parent.trigger('expanding', args, (arg: object) => {
-                if (this.isExpandCollapseFromChart && !getValue('cancel', arg)) {
-                    this.expandedGanttRow(arg);
-                }
-                this.isExpandCollapseFromChart = false;
-            });
-        }
+    public expandGanttRow(args: object): void {
+        this.parent.trigger('expanding', args, (arg: object) => {
+            if (this.isExpandCollapseFromChart && !getValue('cancel', arg)) {
+                this.expandedGanttRow(arg);
+            }
+            this.isExpandCollapseFromChart = false;
+        });
     }
 
     /**

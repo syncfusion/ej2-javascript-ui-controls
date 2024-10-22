@@ -333,7 +333,7 @@ describe('Splitter position issue after resizing', () => {
 });
 describe('Splitter position issue after changing view', () => {
     let ganttObj: Gantt;
-    var projectNewData = [
+    let projectNewData : any = [
         {
           TaskID: 1,
           TaskName: 'Project Initiation',

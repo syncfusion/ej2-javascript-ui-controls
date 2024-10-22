@@ -2698,4 +2698,37 @@ describe ('left indent testing', () => {
             done();
         });
     });
+
+    describe('914728 - Cut and pasting list not working properly in rich text editor', () => {
+        let editorObj: RichTextEditor;
+        let endNode: HTMLElement;
+        let startNode: HTMLElement;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'x', stopPropagation: () => { }, shiftKey: false, which: 88};
+        beforeEach((done) => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                value: `<p><b>Key features:</b></p><ul><li><p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p></li><li><p>Capable of handling markdown editing.</p></li><li><p>Contains a modular library to load the necessary functionality on demand.</p></li><li><p>Provides a fully customizable toolbar.</p></li><li><p>Provides HTML view to edit the source directly for developers.</p></li><li><p>Supports third-party library integration.</p></li><li><p>Allows a preview of modified content before saving it.</p></li><li><p>Handles images, hyperlinks, video, hyperlinks, uploads, etc.</p></li><li><p>Contains undo/redo manager.</p></li><li><p>Creates bulleted and numbered lists.</p></li></ul>`
+            });
+            done();
+        });
+        afterEach( (done) => {
+            destroy(editorObj);
+            done();
+        } );
+        it('Cut and paste the first line', (done) => {
+            startNode = editorObj.inputElement.querySelector( 'ul' ).querySelectorAll('li')[0];
+            let textNode = startNode.firstChild;
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText( document, textNode, textNode, 0, 1);
+            keyBoardEvent.keyCode = 88;
+            keyBoardEvent.code = 'cut';
+            (editorObj as any).keyDown(keyBoardEvent);
+            keyBoardEvent.action = "paste";
+            (editorObj as any).onPaste(keyBoardEvent);
+            expect(editorObj.inputElement.innerHTML === '<p><b>Key features:</b></p><ul><li><p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p></li><li><p>Capable of handling markdown editing.</p></li><li><p>Contains a modular library to load the necessary functionality on demand.</p></li><li><p>Provides a fully customizable toolbar.</p></li><li><p>Provides HTML view to edit the source directly for developers.</p></li><li><p>Supports third-party library integration.</p></li><li><p>Allows a preview of modified content before saving it.</p></li><li><p>Handles images, hyperlinks, video, hyperlinks, uploads, etc.</p></li><li><p>Contains undo/redo manager.</p></li><li><p>Creates bulleted and numbered lists.</p></li></ul>').toBe( true);
+            done();
+        });
+        
+    });
 });

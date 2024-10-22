@@ -713,7 +713,7 @@ export class Video {
             this.undoStack({ subCommand: (originalEvent.keyCode === 90 ? 'undo' : 'redo') });
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
-            if (selectNodeEle && (selectNodeEle[0].nodeName === 'VIDEO' || this.isEmbedVidElem(selectNodeEle[0] as HTMLElement)) && selectNodeEle.length < 1) {
+            if (selectNodeEle && selectNodeEle[0] && (selectNodeEle[0].nodeName === 'VIDEO' || this.isEmbedVidElem(selectNodeEle[0] as HTMLElement)) && selectNodeEle.length < 1) {
                 if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection)) {
                     save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
                 }

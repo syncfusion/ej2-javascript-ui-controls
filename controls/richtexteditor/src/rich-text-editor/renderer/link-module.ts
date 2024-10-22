@@ -513,13 +513,17 @@ export class Link {
     private openLink(e: NotifyArgs): void {
         const selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent[0] as HTMLElement);
         if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
+            const sanitizedHTML: string = this.parent.htmlEditorModule.sanitizeHelper(selectParentEle.outerHTML);
+            const tempEle: HTMLElement = document.createElement('div');
+            tempEle.innerHTML = sanitizedHTML;
             this.parent.formatter.process(
                 this.parent, e.args, e.args,
                 {
-                    url: (selectParentEle as HTMLAnchorElement).href, text: selectParentEle.innerText,
+                    url: (tempEle.firstChild as HTMLAnchorElement).href, text: selectParentEle.innerText,
                     target: (selectParentEle as HTMLAnchorElement).target === '' ? '_self' : '_blank', selectNode: e.selectNode,
                     subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
                 });
+            tempEle.remove();
         }
     }
     private getAnchorNode(element: HTMLElement): HTMLElement {

@@ -1749,7 +1749,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private findnextRowElement(summaryRowElement: HTMLElement ): Element {
         let rowElement: Element = <Element>summaryRowElement.nextElementSibling;
         if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
-        (<HTMLTableRowElement>rowElement).style.display === 'none')) {
+            rowElement.classList.contains('e-childrow-hidden'))) {
             rowElement = this.findnextRowElement(<HTMLElement>rowElement);
         }
         return rowElement;
@@ -1757,10 +1757,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
 
     // Get Proper Row Element from the summary
 
-    private findPreviousRowElement(summaryRowElement: HTMLElement ): Element {
+    private findPreviousRowElement(summaryRowElement: HTMLElement): Element {
         let rowElement: Element = <Element>summaryRowElement.previousElementSibling;
         if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
-        (<HTMLTableRowElement>rowElement).style.display === 'none')) {
+            rowElement.classList.contains('e-childrow-hidden'))) {
             rowElement = this.findPreviousRowElement(<HTMLElement>rowElement);
         }
         return rowElement;
@@ -3339,7 +3339,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getPersistData(): string {
         const keyEntity: string[] = ['pageSettings', 'sortSettings',
-            'filterSettings', 'columns', 'searchSettings', 'selectedRowIndex', 'treeColumnIndex', 'scrollPosition'];
+            'filterSettings', 'columns', 'searchSettings', 'selectedRowIndex', 'treeColumnIndex', 'scrollPosition' ];
         const ignoreOnPersist: { [x: string]: string[] } = {
             pageSettings: ['template', 'pageSizes', 'pageSizeMode', 'enableQueryString', 'totalRecordsCount', 'pageCount'],
             filterSettings: ['type', 'mode', 'showFilterBarStatus', 'immediateModeDelay', 'ignoreAccent', 'hierarchyMode'],
@@ -4685,7 +4685,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             let displayAction: string;
             if (action === 'expand') {
-                displayAction = 'table-row';
+                displayAction = 'e-childrow-visible';
                 if (!isChild) {
                     record.expanded = true;
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
@@ -4705,7 +4705,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 removeClass([targetEle], 'e-treegridcollapse');
             } else {
-                displayAction = 'none';
+                displayAction = 'e-childrow-hidden';
                 if (!isChild || isCountRequired(this)) {
                     record.expanded = false;
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
@@ -4912,7 +4912,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             const rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
             gridRows = [].slice.call(rows);
         }
-        const displayAction: string = (action === 'expand') ? 'table-row' : 'none';
+        const displayAction: string = (action === 'expand') ? 'e-childrow-visible' : 'e-childrow-hidden';
         const primaryKeyField: string = this.getPrimaryKeyFieldNames()[0];
         if (this.enableImmutableMode && !this.allowPaging) {
             rows = [];
@@ -4960,11 +4960,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         );
         for (let i: number = 0; i < rows.length; i++) {
             if (!isNullOrUndefined(rows[parseInt(i.toString(), 10)])) {
-                rows[parseInt(i.toString(), 10)].style.display = displayAction;
+                this.toggleRowVisibility(rows[parseInt(i.toString(), 10)], displayAction);
             }
             if (!isNullOrUndefined(rows[parseInt(i.toString(), 10)]) && !this.allowPaging && !(this.enableVirtualization
                 || this.enableInfiniteScrolling || isRemoteData(this) || isCountRequired(this))) {
-                gridRowsObject[rows[parseInt(i.toString(), 10)].rowIndex].visible = displayAction !== 'none' ? true : false;
+                gridRowsObject[rows[parseInt(i.toString(), 10)].rowIndex].visible = displayAction !== 'e-childrow-hidden' ? true : false;
                 const parentRecord: ITreeData[] = currentViewData.filter((e: ITreeData) => {
                     return e.uniqueID === currentRecord[0].parentUniqueID;
                 });
@@ -4973,10 +4973,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
             if (!isNullOrUndefined(movableRows)) {
-                movableRows[parseInt(i.toString(), 10)].style.display = displayAction;
+                this.toggleRowVisibility(movableRows[parseInt(i.toString(), 10)], displayAction);
             }
             if (!isNullOrUndefined(freezeRightRows)) {
-                freezeRightRows[parseInt(i.toString(), 10)].style.display = displayAction;
+                this.toggleRowVisibility(freezeRightRows[parseInt(i.toString(), 10)], displayAction);
             }
             this.notify('childRowExpand', { row: rows[parseInt(i.toString(), 10)] });
             if ((!isNullOrUndefined(childRecords[parseInt(i.toString(), 10)].childRecords) && childRecords[parseInt(i.toString(), 10)].childRecords.length > 0) && (action !== 'expand' ||
@@ -4990,8 +4990,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         for (let i: number = 0; i < detailrows.length; i++) {
             if (!isNullOrUndefined(detailrows[parseInt(i.toString(), 10)]) && !this.allowPaging && !(this.enableVirtualization ||
                 this.enableInfiniteScrolling || isRemoteData(this) || isCountRequired(this))) {
-                gridRowsObject[detailrows[parseInt(i.toString(), 10)].rowIndex].visible = displayAction !== 'none' ? true : false;
-                detailrows[parseInt(i.toString(), 10)].style.display = displayAction;
+                gridRowsObject[detailrows[parseInt(i.toString(), 10)].rowIndex].visible = displayAction !== 'e-childrow-hidden' ? true : false;
+                this.toggleRowVisibility(detailrows[parseInt(i.toString(), 10)], displayAction);
             }
         }
         if (!this.allowPaging && !(this.enableVirtualization || this.enableInfiniteScrolling || isRemoteData(this)
@@ -4999,12 +4999,18 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.grid.notify('refresh-Expand-and-Collapse', {rows: this.grid.getRowsObject()});
         }
     }
+    private toggleRowVisibility(row: HTMLTableRowElement, displayAction: string) : void {
+        if (row) {
+            row.classList.remove('e-childrow-hidden', 'e-childrow-visible');
+            row.classList.add(displayAction);
+        }
+    }
     private updateAltRow(rows: HTMLTableRowElement[]) : void {
         if (this.enableAltRow && !this.rowTemplate) {
             let visibleRowCount: number = 0;
             for (let i: number = 0; rows && i < rows.length; i++) {
                 const gridRow: HTMLTableRowElement = rows[parseInt(i.toString(), 10)];
-                if (gridRow.style.display !== 'none') {
+                if (!gridRow.classList.contains('e-childrow-hidden')) {
                     if (gridRow.classList.contains('e-altrow')) {
                         removeClass([gridRow], 'e-altrow');
                     }
@@ -5056,15 +5062,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             );
         }
         for (let i: number = 0; i < rows.length; i++) {
-            rows[parseInt(i.toString(), 10)].style.display = 'none';
+            this.toggleRowVisibility(rows[parseInt(i.toString(), 10)], 'e-childrow-hidden');
             row = rows[parseInt(i.toString(), 10)];
             const collapsingTd: Element = rows[parseInt(i.toString(), 10)].querySelector('.e-detailrowexpand');
             if (!isNullOrUndefined(collapsingTd)) {
                 this.grid.detailRowModule.collapse(collapsingTd);
             }
             if (freeze) {
-                movablerows[parseInt(i.toString(), 10)].style.display = 'none';
-                rightrows[parseInt(i.toString(), 10)].style.display = 'none';
+                this.toggleRowVisibility(movablerows[parseInt(i.toString(), 10)], 'e-childrow-hidden');
+                this.toggleRowVisibility(rightrows[parseInt(i.toString(), 10)], 'e-childrow-hidden');
                 if (!rows[parseInt(i.toString(), 10)].querySelector('.e-treecolumn-container .e-treegridexpand')) {
                     if (movablerows[parseInt(i.toString(), 10)].querySelector('.e-treecolumn-container .e-treegridexpand')) {
                         row = movablerows[parseInt(i.toString(), 10)];
@@ -5222,6 +5228,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public clearSelection(): void {
+        this.grid.selectionModule['actualTarget'] = null;
         this.grid.clearSelection();
     }
 

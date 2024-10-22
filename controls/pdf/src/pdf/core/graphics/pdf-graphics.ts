@@ -1260,10 +1260,11 @@ export class PdfGraphics {
     _writePen(pen: PdfPen): void {
         const lineWidth: number = pen._width;
         const pattern: number[] = pen._dashPattern;
+        const setPattern: number[] = [];
         for (let i: number = 0; i < pattern.length; ++i) {
-            pattern[i] *= pen._width; // eslint-disable-line
+            setPattern[i] = pattern[i] * pen._width; // eslint-disable-line
         }
-        this._sw._setLineDashPattern(pattern, pen._dashOffset * lineWidth);
+        this._sw._setLineDashPattern(setPattern, pen._dashOffset * lineWidth);
         this._sw._setLineWidth(pen._width);
         this._sw._setLineJoin(pen._lineJoin);
         this._sw._setLineCap(pen._lineCap);

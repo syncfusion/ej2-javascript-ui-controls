@@ -195,7 +195,7 @@ export class Observer {
         if (eventsArr) {
             for (let i: number = 0; i < eventsArr.length; i++) {
                 const curContext: any = eventsArr[parseInt(i.toString(), 10)].context;
-                if (curContext && curContext.detectFunction && curContext.randomId && !curContext.isRendered) {
+                if (curContext && curContext.detectFunction && curContext.randomId && curContext.isReactMock) {
                     this.off('notifyExternalChange', curContext.detectFunction, curContext.randomId);
                     i--;
                 }

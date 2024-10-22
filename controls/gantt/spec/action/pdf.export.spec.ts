@@ -11766,6 +11766,11 @@ describe('Gantt pdf export with pdfQueryCellInfo', () => {
     it("Export cancel Check", () => {
         ganttObj.pdfExport();
     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
 });
 // describe('Gantt PDF Export  getting console error', () => {
 //     let ganttObj: Gantt;
@@ -12340,6 +12345,137 @@ describe('console error Gantt PDF Export with custom fontstyle', () => {
         }
         ganttObj.pdfExport(exportProperties);
     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('console error occurs while exporting pdf with empty data and cirtical path', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [],
+                height: '450px',
+                dayWorkingTime: [{
+                    from: 0,
+                    to: 24
+                }],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                },
+                allowPdfExport: true,
+                toolbar: ['PdfExport'],
+                labelSettings: {
+                    rightLabel: "TaskName",
+                    leftLabel: "TaskID",
+                },
+                enableCriticalPath: true,
+            }, done);
+    });
+    it('console error occurs while exporting pdf with empty data and cirtical path', () => {
+        ganttObj.pdfExport();
+        expect(ganttObj.currentViewData.length).toBe(0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export for baseline task', () => {
+    let ganttObj: Gantt;
+    let datasource: Object[]=  [
+        {
+            TaskId: 1,
+            TaskName: 'Receive vehicle and create job card',
+            BaselineStartDate: new Date('03/05/2024'),
+            BaselineEndDate: new Date('12/05/2025'),
+            StartDate: new Date('03/05/2024'),
+            EndDate: new Date('12/03/2024'),
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: datasource,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    progress: 'Progress',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    child: 'subtasks',
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+                'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+
+                toolbarClick: (args?: ClickEventArgs) => {
+                    if (args.item.id === 'ganttContainer_excelexport') {
+                        ganttObj.excelExport();
+                    } else if (args.item.id === 'ganttContainer_csvexport') {
+                        ganttObj.csvExport();
+                    } else if (args.item.id === 'ganttContainer_pdfexport') {
+                        ganttObj.pdfExport();
+                    }
+                },
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                allowResizing: true,
+                readOnly: false,
+                height: '550px',
+              //  connectorLineBackground: "red",
+              //  connectorLineWidth: 3,
+              projectStartDate: new Date('01/01/2025'),
+              projectEndDate: new Date('10/05/2026'),
+            }, done);
+    });
+    it('Export data with baseline', () => {
+        ganttObj.pdfExport();
+       });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);

@@ -68,7 +68,7 @@ export class CellRenderer implements ICellRenderer<Column> {
     public evaluate(node: Element, cell: Cell<Column>, data: Object, attributes?: Object, fData?: Object, isEdit?: boolean): boolean {
         let result: Element[];
         if (cell.column.template) {
-            const isReactCompiler: boolean = this.parent.isReact && typeof (cell.column.template) !== 'string' && cell.column.template.prototype && !(cell.column.template.prototype).CSPTemplate;
+            const isReactCompiler: boolean = this.parent.isReact && typeof (cell.column.template) !== 'string' && !(cell.column.template.prototype && cell.column.template.prototype.CSPTemplate);
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
             const literals: string[] = ['index'];

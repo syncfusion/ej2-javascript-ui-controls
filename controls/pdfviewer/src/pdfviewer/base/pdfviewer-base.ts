@@ -222,6 +222,8 @@ export class PdfViewerBase {
     public isLoadedFormFieldAdded: boolean = false;
     private scrollHoldTimer: any;
     private isFileName: boolean;
+    private isInkAnnot: boolean = false;
+    private modifiedPageIndex: any[] = [];
     private pointerCount: number = 0;
     private pointersForTouch: PointerEvent[] = [];
     private corruptPopup: Dialog;
@@ -2668,6 +2670,8 @@ export class PdfViewerBase {
         proxy.passwordData = '';
         proxy.isFocusField = false;
         proxy.focusField = [];
+        proxy.modifiedPageIndex = [];
+        proxy.isInkAnnot = false;
         proxy.updateDocumentEditedProperty(false);
         pdfViewer.clipboardData.clipObject = {};
         if (pdfViewer.pdfRendererModule && proxy.clientSideRendering) {
@@ -6458,9 +6462,13 @@ export class PdfViewerBase {
                 }
             }
             if (this.isInkAnnotationModule() && data && data.signatureInkAnnotation) {
-
-                this.pdfViewer.annotationModule.inkAnnotationModule.
-                    renderExistingInkSignature(data.signatureInkAnnotation, pageIndex, isAnnotationRendered);
+                if (!this.pdfViewer.isSignatureEditable) {
+                    data.signatureInkAnnotation = this.canUpdateSignCollection(data.signatureInkAnnotation);
+                }
+                if (data.signatureInkAnnotation) {
+                    this.pdfViewer.annotationModule.inkAnnotationModule.
+                        renderExistingInkSignature(data.signatureInkAnnotation, pageIndex, isAnnotationRendered);
+                }
             }
         }
         if (this.pdfViewer.formDesignerModule && !this.pdfViewer.annotationModule) {
@@ -6484,13 +6492,158 @@ export class PdfViewerBase {
             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.selectCommentsAnnotation(pageIndex);
         }
         if (data && data.signatureAnnotation && this.signatureModule) {
-            this.signatureModule.renderExistingSignature(data.signatureAnnotation, pageIndex, false);
+            if (!this.pdfViewer.isSignatureEditable) {
+                data.signatureAnnotation = this.canUpdateSignCollection(data.signatureAnnotation);
+            }
+            if (data.signatureAnnotation) {
+                this.signatureModule.renderExistingSignature(data.signatureAnnotation, pageIndex, false);
+            }
         }
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.isAnnotationSelected &&
              this.pdfViewer.annotationModule.annotationPageIndex === pageIndex) {
             this.pdfViewer.annotationModule.selectAnnotationFromCodeBehind();
         }
         this.isLoadedFormFieldAdded = false;
+    }
+
+    private removeInkFromAnnotCollection(docAnnotations: any): void {
+        const annotationCollections: any[] = this.pdfViewer.annotationCollection;
+        for (let m: number = 0; m < annotationCollections.length; m++) {
+            const Bounds: any = docAnnotations.Bounds;
+            if (annotationCollections[parseInt(m.toString(), 10)].shapeAnnotationType === 'Ink' ||
+                annotationCollections[parseInt(m.toString(), 10)].shapeAnnotationType === 'ink') {
+                const inkBounds: any = annotationCollections[parseInt(m.toString(), 10)].bounds;
+                if (Math.round(Bounds.X) === Math.round(inkBounds.x) && Math.round(Bounds.Y) === Math.round(inkBounds.y) &&
+                    Math.round(Bounds.Width) === Math.round(inkBounds.width) &&
+                    Math.round(Bounds.Height) === Math.round(inkBounds.height)) {
+                    this.pdfViewer.annotationCollection.splice(m, 1);
+                }
+            }
+        }
+    }
+
+    private canReduse(previousLength: number, currentLength: number, currentValue: number): number {
+        if (previousLength === currentLength) {
+            return currentValue;
+        }
+        else {
+            return currentValue - 1;
+        }
+    }
+
+    private isBoundsAreEqual(inkBounds: any, annotBounds: any): boolean {
+        if (Math.round(annotBounds.X) === Math.round(inkBounds.X) && Math.round(annotBounds.Y) === Math.round(inkBounds.Y) &&
+            Math.round(annotBounds.Width) === Math.round(inkBounds.Width) &&
+            Math.round(annotBounds.Height) === Math.round(inkBounds.Height)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    private removeAnnotFromDoc(annotations: any, updatedCollections?: any): any {
+        const Bounds: any = annotations.Bounds;
+        const DocumentAnnot: any = this.documentAnnotationCollections[parseInt(annotations.PageNumber.toString(), 10)];
+        const signatureInkAnnotation: any = DocumentAnnot.signatureInkAnnotation;
+        const signatureAnnotation: any = DocumentAnnot.signatureAnnotation;
+        let documentCollection: any = signatureInkAnnotation.length !== 0 ? signatureInkAnnotation : signatureAnnotation;
+        if (signatureInkAnnotation.length !== 0 && signatureAnnotation.length) {
+            for (let z: number = 0; z < signatureInkAnnotation.length; z++) {
+                if (!this.isBoundsAreEqual(signatureInkAnnotation[0].Bounds, Bounds)) {
+                    documentCollection = signatureAnnotation;
+                }
+            }
+        }
+        for (let k: number = 0; k < documentCollection.length; k++) {
+            const previousLength: number = documentCollection.length;
+            const inkBounds: any = documentCollection[parseInt(k.toString(), 10)].Bounds;
+            if (this.isBoundsAreEqual(inkBounds, Bounds)) {
+                this.removeInkFromAnnotCollection(documentCollection[parseInt(k.toString(), 10)]);
+                documentCollection.splice(k, 1);
+                k = this.canReduse(previousLength, documentCollection.length, k);
+                updatedCollections = documentCollection;
+            }
+        }
+        return updatedCollections;
+    }
+
+    private isSignatureWithInRect(fieldArray: any, signArray: any): boolean {
+        fieldArray = fieldArray[0];
+        signArray = signArray[0];
+        const fieldx2: number = fieldArray.x + fieldArray.width;
+        const signx2: number = signArray.x + signArray.width;
+        const fieldy2: number = fieldArray.y + fieldArray.height;
+        const signy2: number = signArray.y + signArray.height;
+        if ((fieldArray.x - 10) <= signArray.x && (fieldx2 + 10) >= signx2) {
+            if ((fieldArray.y - 10) <= signArray.y && (fieldy2 + 10) >= signy2) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private canvasRectArray(bounds: any): any {
+        const array: any = [];
+        if (bounds) {
+            const left: number = !isNullOrUndefined(bounds.x) ? bounds.x : !isNullOrUndefined(bounds.X) ? bounds.X :
+                !isNullOrUndefined(bounds.left) ? bounds.left : bounds.Left;
+            const top: number = !isNullOrUndefined(bounds.y) ? bounds.y : !isNullOrUndefined(bounds.Y) ? bounds.Y :
+                !isNullOrUndefined(bounds.top) ? bounds.top : bounds.Top;
+            const width: number = !isNullOrUndefined(bounds.width) ? bounds.width : bounds.Width;
+            const height: number = !isNullOrUndefined(bounds.height) ? bounds.height : bounds.Height;
+            const canvas: Rect = new Rect(left + 10, top + 10, width - 10, height - 10);
+            array.push(canvas);
+        }
+        return array;
+    }
+
+    private isFormFieldSignature(annotation: any, annotationCollection?: any): any {
+        let updatedCollections: any = annotationCollection;
+        if (!this.pdfViewer.isSignatureEditable) {
+            const formFieldsData: any = this.pdfViewer.retrieveFormFields();
+            for (let i: number = 0; i < formFieldsData.length; i++) {
+                if (formFieldsData[parseInt(i.toString(), 10)].type === 'SignatureField' || formFieldsData[parseInt(i.toString(), 10)].type === 'InitialField') {
+                    const fieldBounds: any = formFieldsData[parseInt(i.toString(), 10)].bounds;
+                    if (this.isSignatureWithInRect(this.canvasRectArray(fieldBounds), this.canvasRectArray(annotation.Bounds))) {
+                        if (annotationCollection) {
+                            updatedCollections = this.removeAnnotFromDoc(annotation, annotationCollection);
+                        }
+                        else {
+                            updatedCollections = this.removeAnnotFromDoc(annotation);
+                        }
+                        if (formFieldsData[parseInt(i.toString(), 10)].value === '') {
+                            const currentFieldPageNumber: number = !isNullOrUndefined(annotation.PageNumber) ?
+                                annotation.PageNumber : annotation.pageNumber;
+                            if (this.modifiedPageIndex.indexOf(currentFieldPageNumber) === -1) {
+                                this.modifiedPageIndex.push(currentFieldPageNumber);
+                            }
+                            formFieldsData[parseInt(i.toString(), 10)].value = annotation.PathData;
+                            formFieldsData[parseInt(i.toString(), 10)].signatureType = 'Draw';
+                            const bounds: any = {
+                                x: annotation.Bounds.X, y: annotation.Bounds.Y,
+                                width: annotation.Bounds.Width, height: annotation.Bounds.Height
+                            };
+                            formFieldsData[parseInt(i.toString(), 10)].signatureBounds = bounds;
+                            this.pdfViewer.updateFormFieldsValue(formFieldsData[parseInt(i.toString(), 10)]);
+                        }
+                        this.isInkAnnot = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return updatedCollections;
+    }
+
+    private canUpdateSignCollection(SignatureCollections: any): any {
+        for (let i: number = 0; i < SignatureCollections.length; i++) {
+            const previousLength: number = SignatureCollections.length;
+            SignatureCollections = this.isFormFieldSignature(SignatureCollections[parseInt(i.toString(), 10)],
+                                                             SignatureCollections);
+            i = this.canReduse(previousLength, SignatureCollections.length, i);
+        }
+        return SignatureCollections;
     }
 
     /**
@@ -6549,6 +6702,7 @@ export class PdfViewerBase {
         const collection: any = annotationsCollection.annotationOrder;
         if (!isNullOrUndefined(collection)) {
             for (let l: number = 0; l < collection.length; l++) {
+                this.isInkAnnot = false;
                 const type: any = collection[parseInt(l.toString(), 10)].AnnotType ?
                     collection[parseInt(l.toString(), 10)].AnnotType : collection[parseInt(l.toString(), 10)].AnnotationType;
                 annotData.push(collection[parseInt(l.toString(), 10)]);
@@ -6572,7 +6726,12 @@ export class PdfViewerBase {
                     this.pdfViewer.annotationModule.stampAnnotationModule.renderStampAnnotations(annotData, pageIndex, null, null, true);
                     break;
                 case 'Ink':
-                    this.pdfViewer.annotationModule.inkAnnotationModule.renderExistingInkSignature(annotData, pageIndex, false, true);
+                    if (!this.pdfViewer.isSignatureEditable) {
+                        this.isFormFieldSignature(annotData[0]);
+                    }
+                    if (!this.isInkAnnot) {
+                        this.pdfViewer.annotationModule.inkAnnotationModule.renderExistingInkSignature(annotData, pageIndex, false, true);
+                    }
                     break;
                 case 'Text Box':
                     this.pdfViewer.annotationModule.freeTextAnnotationModule.
@@ -6585,7 +6744,12 @@ export class PdfViewerBase {
             }
         }
         if (data && data.signatureAnnotation) {
-            this.signatureModule.renderExistingSignature(data.signatureAnnotation, pageIndex, false);
+            if (!this.pdfViewer.isSignatureEditable) {
+                data.signatureAnnotation = this.canUpdateSignCollection(data.signatureAnnotation);
+            }
+            if (data.signatureAnnotation) {
+                this.signatureModule.renderExistingSignature(data.signatureAnnotation, pageIndex, false);
+            }
         }
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.isAnnotationSelected) {
             this.pdfViewer.annotationModule.selectAnnotationFromCodeBehind();
@@ -7664,7 +7828,8 @@ export class PdfViewerBase {
         if (this.pdfViewer.formDesignerModule) {
             const fieldsData: string = this.pdfViewer.formDesignerModule.downloadFormDesigner();
             jsonObject['formDesigner'] = fieldsData;
-        } else if (this.pdfViewer.formFieldsModule) {
+        }
+        if (this.pdfViewer.formFieldsModule && isNullOrUndefined(jsonObject['formDesigner'])) {
             const fieldsData: string = this.pdfViewer.formFieldsModule.downloadFormFieldsData();
             jsonObject['fieldsData'] = fieldsData;
         }
@@ -7724,7 +7889,7 @@ export class PdfViewerBase {
     private getAnnotationsPageList(): any {
         const annotCollection: any[] = this.pdfViewer.annotationCollection.map((a: any) => a.pageNumber);
         const annotActionCollection: number[] = this.pdfViewer.annotationModule.actionCollection.filter((value: any) => value.annotation.propName !== 'formFields' && isNullOrUndefined(value.annotation.formFieldAnnotationType)).map((a: any) => a.pageIndex);
-        const fullPageList: any[] = annotCollection.concat(annotActionCollection);
+        const fullPageList: any[] = annotCollection.concat(annotActionCollection, this.modifiedPageIndex);
         return fullPageList.filter((value: any, index: number, self: any[]) => self.indexOf(value) === index && value !== undefined);
     }
 
@@ -12096,9 +12261,17 @@ export class PdfViewerBase {
             }
         }
         if (annotation.signatureInkAnnotation.length !== 0) {
+            if (!this.pdfViewer.isSignatureEditable) {
+                annotation.signatureInkAnnotation = this.canUpdateSignCollection(annotation.signatureInkAnnotation);
+            }
             for (let s: number = 0; s < annotation.signatureInkAnnotation.length; s++) {
                 this.pdfViewer.annotationModule.inkAnnotationModule.
                     saveImportedInkAnnotation(annotation.signatureInkAnnotation[parseInt(s.toString(), 10)], pageIndex);
+            }
+        }
+        if (annotation.signatureAnnotation.length !== 0) {
+            if (!this.pdfViewer.isSignatureEditable) {
+                annotation.signatureAnnotation = this.canUpdateSignCollection(annotation.signatureAnnotation);
             }
         }
     }

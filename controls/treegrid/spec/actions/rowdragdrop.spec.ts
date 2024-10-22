@@ -441,7 +441,7 @@ describe('Treegrid Row Reorder', () => {
    
     it('---expand testing---', (done: Function) => {
       ((TreeGridObj.getRows()[2] as HTMLTableRowElement).getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
-      expect((TreeGridObj.getRows()[3] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect(TreeGridObj.getRows()[3].classList.contains('e-childrow-visible')).toBe(true);
       done();
     });
     afterAll(() => {
@@ -549,12 +549,12 @@ describe('Treegrid Row Drop as Child', () => {
 
   it('Expand Testing', () => {    
     ((gridObj.getRows()[2] as HTMLTableRowElement).getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-    expect((gridObj.getRows()[3] as HTMLTableRowElement).style.display).toBe('none');          
+    expect(gridObj.getRows()[3].classList.contains('e-childrow-hidden')).toBe(true);         
   });
 
   it('Collapse Testing', () => {    
     ((gridObj.getRows()[2] as HTMLTableRowElement).getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
-    expect((gridObj.getRows()[3] as HTMLTableRowElement).style.display).toBe('table-row');          
+    expect(gridObj.getRows()[3].classList.contains('e-childrow-visible')).toBe(true);         
   });
   
 

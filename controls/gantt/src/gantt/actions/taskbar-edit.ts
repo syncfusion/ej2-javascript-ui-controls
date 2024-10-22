@@ -2387,8 +2387,8 @@ export class TaskbarEdit extends DateProcessor {
             } else {
                 this.parent.isOnEdit = false;
                 this.cancelTaskbarEditActionInMouseLeave();
-                if (this.parent.enableCriticalPath && this.parent.criticalPathModule) {
-                    const criticalModule: CriticalPath = this.parent.criticalPathModule;
+                const criticalModule: CriticalPath = this.parent.criticalPathModule;
+                if (this.parent.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
                     criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection,
                                                          true, criticalModule.predecessorCollectionTaskIds);
                 }

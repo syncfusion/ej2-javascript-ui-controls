@@ -646,6 +646,9 @@ export class CartesianAxisLayoutPanel {
             axis.scrollbarSettings.enable)) {
             this.renderScrollbar(this.chart, axis);
         }
+        else {
+            if (axis.zoomingScrollBar) { axis.zoomingScrollBar.destroy(); }
+        }
     }
 
     /**
@@ -697,7 +700,7 @@ export class CartesianAxisLayoutPanel {
         };
 
         this.htmlObject = chart.renderer.drawLine(optionsLine) as HTMLElement;
-        this.element.appendChild(this.htmlObject);
+        appendChildElement(chart.enableCanvas, this.element, this.htmlObject);
     }
 
     /**

@@ -152,7 +152,7 @@ export class UndoRedoManager {
         if (!this.parent.currentDocument) {
             return;
         }
-        let range: Range = new NodeSelection().getRange(this.parent.currentDocument);
+        let range: Range = new NodeSelection(this.parent.editableElement as HTMLElement).getRange(this.parent.currentDocument);
         const currentContainer: Node = this.parent.editableElement === range.startContainer.parentElement ?
             range.startContainer.parentElement : range.startContainer;
         for (let i: number = currentContainer.childNodes.length - 1 ; i >= 0; i--) {
@@ -162,8 +162,8 @@ export class UndoRedoManager {
                 detach(currentContainer.childNodes[i as number]);
             }
         }
-        range = new NodeSelection().getRange(this.parent.currentDocument);
-        const save: NodeSelection = new NodeSelection().save(range, this.parent.currentDocument);
+        range = new NodeSelection(this.parent.editableElement as HTMLElement).getRange(this.parent.currentDocument);
+        const save: NodeSelection = new NodeSelection(this.parent.editableElement as HTMLElement).save(range, this.parent.currentDocument);
         const clonedElement: HTMLElement = this.parent.editableElement.cloneNode(true) as HTMLElement;
         const fragment: DocumentFragment = document.createDocumentFragment();
         while (clonedElement.firstChild) {

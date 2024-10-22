@@ -406,7 +406,7 @@ describe('EJ2-23097: Records are not properly collapsed after filter/search is p
     gridObj.search('Task 1');
     gridObj.expandRow(<HTMLTableRowElement>(gridObj.getRowByIndex(0)));
     (<HTMLElement>(gridObj.getRowByIndex(0).querySelector('.e-treegridexpand'))).click();
-    expect((<HTMLElement>(gridObj.getRowByIndex(3))).style.display === 'none').toBe(true);
+    expect(gridObj.getRowByIndex(3).classList.contains('e-childrow-hidden')).toBe(true);
   });
   afterAll(() => {
     destroy(gridObj);

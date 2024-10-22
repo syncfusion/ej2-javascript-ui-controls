@@ -1768,6 +1768,106 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-img-resize')).toBe(null);
         });
     });
+    describe('Bug 914676: Image height and width set to auto after replacing an image ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        let clickEvent: any;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                value: `<p><img id="image" alt="Logo" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="width: 300px; height: 300px">`,
+                insertImageSettings: { resize: true }
+            });
+            rteEle = rteObj.element;
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Checking after replacing the image', (done) => {
+            let trg = (rteObj.element.querySelector("#image") as HTMLElement);
+            (rteObj.imageModule as any).resizeStart({ target: trg, pageX: 0 });
+            let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-rte-botRight') as HTMLElement;
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            resizeBot.dispatchEvent(clickEvent);
+            (rteObj.imageModule as any).resizeStart(clickEvent);
+            (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
+            (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 200 });
+            (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
+            (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 300 });
+            (rteObj.imageModule as any).resizeEnd({ target: resizeBot });
+            let image: HTMLElement = rteObj.element.querySelector("#image");
+            setCursorPoint(image, 0);
+            dispatchEvent(image, 'mousedown');
+            image.click();
+            dispatchEvent(image, 'mouseup');
+            setTimeout(() => {
+                let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_Replace");
+                imageBtn.parentElement.click();
+                let png = "https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png";
+                let dialog: HTMLElement = document.getElementById(controlId + "_image");
+                let urlInput: HTMLInputElement = dialog.querySelector('.e-img-url');
+                urlInput.value = png;
+                let insertButton: HTMLElement = dialog.querySelector('.e-insertImage.e-primary');
+                urlInput.dispatchEvent(new Event("input"));
+                insertButton.click();
+                setTimeout(() => {
+                    let updateImage: HTMLImageElement = rteObj.element.querySelector("#image");
+                    expect(updateImage.getAttribute('width') as number | string !== "auto").toBe(true);
+                    expect(updateImage.getAttribute('height') as number | string !== "auto").toBe(true);
+                    done();
+                }, 100);
+            }, 500);
+        });
+    });
+    describe('Bug 914676: Image height and width set to auto after replacing an image ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                insertImageSettings: { resize: true }
+            });
+            rteEle = rteObj.element;
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Checking after inserting the image', (done) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            expect((<any>rteObj).imageModule.uploadObj.fileList.length).toEqual(1);
+            (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
+            (document.querySelector('.e-insertImage') as HTMLElement).click();
+            setTimeout(() => {
+                let updateImage: HTMLImageElement = rteObj.element.querySelector("img");
+                expect(updateImage.getAttribute('width') as number | string !== "auto").toBe(true);
+                expect(updateImage.getAttribute('height') as number | string !== "auto").toBe(true);
+                done();
+            }, 100);
+        });
+    });
     describe('initial load image undo redo', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

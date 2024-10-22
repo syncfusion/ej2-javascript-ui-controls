@@ -53,9 +53,9 @@ describe('Ensure freeze direction', () => {
         rows = gridObj.getRows();
         expect((rows[1] as HTMLTableRowElement).style.display).toBe('');
         (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+        expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
         (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(rows[1].classList.contains('e-childrow-visible')).toBe(true);
         done();
     });
 

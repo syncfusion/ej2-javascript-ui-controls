@@ -1297,7 +1297,9 @@ export class PivotChart {
                 (this.dataSourceSettings.columns.length === 0 ? '' :
                     (' <br/>' + this.parent.localeObj.getConstant('column') + ': ' + columnText)) +
                 (this.dataSourceSettings.rows.length === 0 ? '' :
-                    (' <br/>' + this.parent.localeObj.getConstant('row') + ': ' + rowText));
+                    (' <br/>' + this.parent.localeObj.getConstant('row') + ': ' + rowText)) +
+                ((args.data && args.data.seriesName === 'Pareto') ?
+                    ` <br/>${this.parent.localeObj.getConstant('pareto')}: ${args.data.pointY}%` : '');
             this.parent.trigger(events.chartTooltipRender, args);
         }
     }

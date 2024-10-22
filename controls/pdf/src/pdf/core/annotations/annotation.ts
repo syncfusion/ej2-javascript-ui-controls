@@ -2055,8 +2055,8 @@ export abstract class PdfAnnotation {
             break;
         case PdfLineEndingStyle.slash:
             count = 9 * length;
-            first = this._getAxisValue(startPoint, (angle + 60), count);
-            second = this._getAxisValue(startPoint, (angle - 120), count);
+            first = this._getAxisValue(axisPoint, (angle + 60), count);
+            second = this._getAxisValue(axisPoint, (angle - 120), count);
             graphics.drawLine(pen, axisPoint[0], -axisPoint[1], first[0], -first[1]);
             graphics.drawLine(pen, axisPoint[0], -axisPoint[1], second[0], -second[1]);
             break;
@@ -3370,6 +3370,13 @@ export class PdfLineAnnotation extends PdfComment {
         template._writeTransformation = false;
         const graphics: PdfGraphics = template.graphics;
         parameter.borderPen = borderPen;
+        if (this.border.style === PdfBorderStyle.dashed) {
+            parameter.borderPen._dashStyle = PdfDashStyle.dash;
+            parameter.borderPen._dashPattern = [3, 1];
+        } else if (this.border.style === PdfBorderStyle.dot) {
+            parameter.borderPen._dashStyle = PdfDashStyle.dot;
+            parameter.borderPen._dashPattern = [1, 1];
+        }
         parameter.backBrush = backBrush;
         parameter.foreBrush = new PdfBrush(this.color);
         const linePoints: number[] = this._obtainLinePoints();

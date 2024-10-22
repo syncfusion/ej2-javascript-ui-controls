@@ -1475,36 +1475,40 @@ export class TextMarkupAnnotation {
      * @returns {string} - string
      */
     public printTextMarkupAnnotations(textMarkupAnnotations: any, pageIndex: number, stampData: any, shapeData: any,
-                                      measureShapeData: any, stickyData: any, freeTextData: any): string {
-        const canvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex }) as HTMLCanvasElement;
-        canvas.style.width = 816 + 'px';
-        canvas.style.height = 1056 + 'px';
-        const pageWidth: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].width;
-        const pageHeight: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height;
-        const zoom : number = this.pdfViewerBase.getZoomFactor();
-        const zoomRatio : number = this.pdfViewerBase.getZoomRatio(zoom);
-        canvas.height = pageHeight * zoomRatio;
-        canvas.width = pageWidth * zoomRatio;
-        const textMarkupannotations: any = this.getAnnotations(pageIndex, null, '_annotations_textMarkup');
-        const shapeAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_shape');
-        const measureShapeAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_shape_measure');
-        const stampAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_stamp');
-        const stickyNoteAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_sticky');
-        if (stampAnnotation || shapeAnnotation || stickyNoteAnnotation || measureShapeAnnotation) {
-            this.pdfViewer.renderDrawing(canvas, pageIndex);
-        } else {
-            this.pdfViewer.annotation.renderAnnotations(pageIndex, shapeData, measureShapeData, null, canvas, null, null, freeTextData);
-            this.pdfViewer.annotation.stampAnnotationModule.renderStampAnnotations(stampData, pageIndex, canvas);
-            this.pdfViewer.annotation.stickyNotesAnnotationModule.renderStickyNotesAnnotations(stickyData, pageIndex, canvas);
-        }
-        const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
-        if (textMarkupannotations) {
-            this.renderTextMarkupAnnotations(null, pageIndex, canvas, zoomFactor);
-        } else {
-            this.renderTextMarkupAnnotations(textMarkupAnnotations, pageIndex, canvas, zoomFactor);
-        }
-        const imageSource: string = (canvas as HTMLCanvasElement).toDataURL();
-        return imageSource;
+                                      measureShapeData: any, stickyData: any, freeTextData: any): Promise<string> {
+        return new Promise((resolve: Function, reject: Function) => {
+            const canvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex }) as HTMLCanvasElement;
+            canvas.style.width = 816 + 'px';
+            canvas.style.height = 1056 + 'px';
+            const pageWidth: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].width;
+            const pageHeight: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height;
+            const zoom : number = this.pdfViewerBase.getZoomFactor();
+            const zoomRatio : number = this.pdfViewerBase.getZoomRatio(zoom);
+            canvas.height = pageHeight * zoomRatio;
+            canvas.width = pageWidth * zoomRatio;
+            const textMarkupannotations: any = this.getAnnotations(pageIndex, null, '_annotations_textMarkup');
+            const shapeAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_shape');
+            const measureShapeAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_shape_measure');
+            const stampAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_stamp');
+            const stickyNoteAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_sticky');
+            if (stampAnnotation || shapeAnnotation || stickyNoteAnnotation || measureShapeAnnotation) {
+                this.pdfViewer.renderDrawing(canvas, pageIndex);
+            } else {
+                this.pdfViewer.annotation.renderAnnotations(pageIndex, shapeData, measureShapeData, null, canvas, null, null, freeTextData);
+                this.pdfViewer.annotation.stampAnnotationModule.renderStampAnnotations(stampData, pageIndex, canvas);
+                this.pdfViewer.annotation.stickyNotesAnnotationModule.renderStickyNotesAnnotations(stickyData, pageIndex, canvas);
+            }
+            const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+            if (textMarkupannotations) {
+                this.renderTextMarkupAnnotations(null, pageIndex, canvas, zoomFactor);
+            } else {
+                this.renderTextMarkupAnnotations(textMarkupAnnotations, pageIndex, canvas, zoomFactor);
+            }
+            setTimeout(() => {
+                const imageSource: string = (canvas as HTMLCanvasElement).toDataURL();
+                resolve(imageSource);
+            }, 100);
+        });
     }
 
     /**

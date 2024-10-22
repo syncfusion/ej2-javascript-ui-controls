@@ -43,7 +43,7 @@ export class InsertHtml {
                 node = insertNode;
             }
         }
-        const nodeSelection: NodeSelection = new NodeSelection();
+        const nodeSelection: NodeSelection = new NodeSelection(editNode as HTMLElement);
         const nodeCutter: NodeCutter = new NodeCutter();
         let range: Range = nodeSelection.getRange(docElement);
         if (range.startContainer === editNode && range.startContainer === range.endContainer && range.startOffset === 0 &&
@@ -376,6 +376,26 @@ export class InsertHtml {
             this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode, enterAction);
         }
         this.alignCheck(editNode as HTMLElement);
+        const currentRange: Range = nodeSelection.getRange(docElement);
+        this.listCleanUp(currentRange);
+    }
+    private static listCleanUp (range: Range): void {
+        if (range.startContainer.parentElement.closest('ol,ul') !== null && range.endContainer.parentElement.closest('ol,ul') !== null) {
+            const liElems: NodeListOf<HTMLLIElement> = range.startContainer.parentElement.closest('ol,ul').querySelectorAll('li');
+            if (liElems.length > 0) {
+                liElems.forEach((item: HTMLLIElement) => {
+                    if (!isNOU(item.firstChild) && (item.firstChild.nodeName === 'OL' || item.firstChild.nodeName === 'UL')){
+                        item.style.listStyleType = 'none';
+                    }
+                    const nestedLi: HTMLLIElement = Array.from(item.children).find((child: HTMLElement) =>
+                        child.tagName === 'LI' && (child.parentElement && child.parentElement.tagName !== 'OL' && child.parentElement.tagName !== 'UL')
+                    ) as HTMLLIElement;
+                    if (nestedLi) {
+                        item.parentNode.replaceChild(nestedLi, item);
+                    }
+                });
+            }
+        }
     }
     private static placeCursorEnd(
         lastSelectionNode: Node, node: Node, nodeSelection: NodeSelection, docElement: Document, editNode?: Element): void {
@@ -456,13 +476,13 @@ export class InsertHtml {
                 range.insertNode(tempSpan);
                 tempSpan.parentNode.replaceChild(node, tempSpan);
             } else {
-                const nodeSelection: NodeSelection = new NodeSelection();
+                const nodeSelection: NodeSelection = new NodeSelection(editNode as HTMLElement);
                 const currentNode: Node = this.getNodeCollection(range, nodeSelection, node)[this.getNodeCollection(
                     range, nodeSelection, node).length - 1];
                 let splitedElm: Node;
-                if ((currentNode.nodeName === 'BR' || currentNode.nodeName === 'HR' ||
+                if (currentNode && ((currentNode.nodeName === 'BR' || currentNode.nodeName === 'HR' ||
                 (currentNode.nodeName === '#text' && !isNOU(currentNode.parentElement) && currentNode.parentElement.nodeName === 'LI')) &&
-                (!isNOU(currentNode.parentElement) && currentNode.parentElement.textContent.trim().length === 0)) {
+                (!isNOU(currentNode.parentElement) && currentNode.parentElement.textContent.trim().length === 0))) {
                     splitedElm = currentNode;
                     if (currentNode.parentElement.nodeName === 'LI' && !isNOU(currentNode.nextSibling) &&
                         currentNode.nextSibling.nodeName === 'BR') {
@@ -474,16 +494,20 @@ export class InsertHtml {
                         this.contentsDeleted = true;
                         return;
                     }
-                } else if ((currentNode.nodeName === '#text' || currentNode.nodeName === 'BR') && !isNOU(currentNode.parentElement) &&
+                } else if (currentNode && ((currentNode.nodeName === '#text' || currentNode.nodeName === 'BR') && !isNOU(currentNode.parentElement) &&
                 (currentNode.parentElement.nodeName === 'LI' || currentNode.parentElement.closest('LI') || (blockNode === editNode && currentNode.parentElement === blockNode )) &&
-                currentNode.parentElement.textContent.trim().length > 0) {
+                currentNode.parentElement.textContent.trim().length > 0)) {
                     splitedElm = currentNode;
                     if (currentNode.parentElement.nodeName === 'LI' && !isNOU(currentNode.nextSibling) &&
                     currentNode.nextSibling.nodeName === 'BR') {
                         detach(currentNode.nextSibling);
                     }
                     if (!range.collapsed) {
+                        const startContainer: Node = range.startContainer;
+                        const startOffset: number = range.startOffset;
                         this.removeListfromPaste(range);
+                        range.setStart(startContainer, startOffset);
+                        range.setEnd(startContainer, startOffset);
                     }
                     range.insertNode(node);
                     this.contentsDeleted = true;
@@ -640,7 +664,7 @@ export class InsertHtml {
         const value: Node = range.startContainer;
         if (!isNOU(value) && value.nodeName === 'LI' && !isNOU(value.parentElement) && (value.parentElement.nodeName === 'OL' || value.parentElement.nodeName === 'UL') && value.textContent.trim() === '') {
             (value.parentElement as HTMLElement).querySelectorAll('li').forEach((item: HTMLLIElement) => {
-                if (item.textContent.trim() === '') {
+                if (item.textContent.trim() === '' && item !== value) {
                     item.remove();
                 }
             });

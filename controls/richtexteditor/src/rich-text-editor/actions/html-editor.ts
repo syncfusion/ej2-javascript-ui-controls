@@ -104,7 +104,7 @@ export class HtmlEditor {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.nodeSelectionObj = new NodeSelection();
+        this.nodeSelectionObj = new NodeSelection(this.parent.inputElement);
         this.parent.on(events.initialLoad, this.instantiateRenderer, this);
         this.parent.on(events.htmlToolbarClick, this.onToolbarClick, this);
         this.parent.on(events.keyDown, this.onKeyDown, this);
@@ -799,7 +799,7 @@ export class HtmlEditor {
         urlText = urlText.slice(0, urlTextRange);
         // eslint-disable-next-line
         const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
-        if (selectNodeEle[0].nodeName !== 'A' && urlText.match(regex)) {
+        if (selectNodeEle[0] && selectNodeEle[0].nodeName !== 'A' && urlText.match(regex)) {
             const selection: NodeSelection = this.nodeSelectionObj.save(
                 range, this.parent.contentModule.getDocument());
             const url: string = urlText.indexOf('http') > -1 ? urlText : 'http://' + urlText;

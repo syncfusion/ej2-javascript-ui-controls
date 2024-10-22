@@ -741,7 +741,7 @@ function performReadOperation(
             const item: Object = result.files[i as number];
             setValue('_fm_iconClass', fileType(item), item);
         }
-        if (getValue('action', data) === 'read' || isFileSystemData(parent) && getValue('action', data) === 'search') {
+        if (getValue('action', data) === 'read') {
             setNodeId(result, id);
             setValue(id, result.files, parent.feFiles);
         }
@@ -953,7 +953,7 @@ function renameSuccess(parent: IFileManager, result: ReadArgs): void {
             parent.renamedItem = Array.isArray(result.files) ? result.files[0] : result.files;
             const renameEventArgs: RenameEventArgs = {
                 newName: parent.renamedItem.name as string,
-                itemData: parent.renamedItem as any,
+                itemData: [parent.renamedItem as { [key: string]: Object; }],
                 path: parent.path
             };
             parent.trigger('rename', renameEventArgs);

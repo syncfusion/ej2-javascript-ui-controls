@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I625060` - Fixed an issue where the delete action would not function correctly when the expand/collapse icon was clicked repeatedly.
+- `F61804` - Fixed an issue where the selection was not clearing when a checkbox was selected and the row was expanded.
+
 ## 27.1.53 (2024-10-15)
 
 ### Tree Grid

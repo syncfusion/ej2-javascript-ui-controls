@@ -63,6 +63,10 @@
       }
     }
 
+    tr.e-row.e-childrow-hidden{
+      display: none;
+    }
+
     .e-rowcell:not(.e-gridclip) {
       .e-treecolumn-container {
         display: block;
@@ -245,7 +249,8 @@
     .e-gridcontent .e-table .e-detail-intent,
     .e-table .e-detailrow .e-detailindentcell,
     .e-table .e-detailrowexpand,
-    .e-table .e-detailrowcollapse {
+    .e-table .e-detailrowcollapse,
+    tr.e-detailrow.e-childrow-hidden {
       display: none;
     }
 

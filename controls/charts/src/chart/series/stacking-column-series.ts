@@ -52,9 +52,15 @@ export class StackingColumnSeries extends ColumnBase {
             this.rect = this.getRectangle(point.xValue + sideBySideInfo.start, (!series.visible && series.isLegendClicked) ? startvalue :
                 stackedValue.endValues[point.index], point.xValue + sideBySideInfo.end, (!series.visible && series.isLegendClicked) ?
                 startvalue : stackedValue.startValues[point.index], series);
-            this.rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : this.rect.width;
-            this.rect.x = series.columnWidthInPixel ? this.rect.x - (((series.columnWidthInPixel / 2) * series.rectCount) -
-                (series.columnWidthInPixel * series.position)) : this.rect.x;
+            if (series.chart.isTransposed && series.columnWidthInPixel) {
+                this.rect.height = series.columnWidthInPixel ? series.columnWidthInPixel : this.rect.width;
+                this.rect.y -= series.columnWidthInPixel / 2;
+            }
+            else {
+                this.rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : this.rect.width;
+            }
+            this.rect.x = series.columnWidthInPixel ? series.chart.isTransposed ? this.rect.x : this.rect.x -
+                (((series.columnWidthInPixel / 2) * series.rectCount) - (series.columnWidthInPixel * series.position)) : this.rect.x;
             const argsData: IPointRenderEventArgs = this.triggerEvent(series, point, series.interior, { width: series.visible ?
                 series.border.width : 0, color: series.visible ? series.border.color : '' });
             if (!argsData.cancel) {

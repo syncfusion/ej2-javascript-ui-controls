@@ -682,66 +682,68 @@ export class CriticalPath {
             }
             const predecessorLength: IPredecessor[] = flatRecords[index as number].ganttProperties.predecessor;
             const noSlackValue: string = 0 + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
-            for (let i: number = predecessorLength.length - 1; i >= 0; i--) {
-                let toID: number;
-                if (this.parent.viewType === 'ProjectView') {
-                    toID = this.parent.ids.indexOf(predecessorLength[i as number].to);
-                }
-                else {
-                    toID = this.resourceCollectionIds.indexOf(predecessorLength[i as number].to);
-                }
-                let dateDifference: number;
-                const currentData: ITaskData = flatRecords[index as number].ganttProperties;
-                if (toID !== -1) {
-                    if (predecessorLength[i as number].type === 'FS') {
-                        if (predecessorLength[i as number].to !== currentData.taskId.toString() || this.parent.viewType === 'ResourceView') {
-                            /* eslint-disable-next-line */
-                            dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
-                        }
-                        else {
-                            toID = this.parent.ids.indexOf(predecessorLength[i as number].from);
+            if (predecessorLength && predecessorLength.length > 0) {
+                for (let i: number = predecessorLength.length - 1; i >= 0; i--) {
+                    let toID: number;
+                    if (this.parent.viewType === 'ProjectView') {
+                        toID = this.parent.ids.indexOf(predecessorLength[i as number].to);
+                    }
+                    else {
+                        toID = this.resourceCollectionIds.indexOf(predecessorLength[i as number].to);
+                    }
+                    let dateDifference: number;
+                    const currentData: ITaskData = flatRecords[index as number].ganttProperties;
+                    if (toID !== -1) {
+                        if (predecessorLength[i as number].type === 'FS') {
+                            if (predecessorLength[i as number].to !== currentData.taskId.toString() || this.parent.viewType === 'ResourceView') {
+                                /* eslint-disable-next-line */
+                                dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                            }
+                            else {
+                                toID = this.parent.ids.indexOf(predecessorLength[i as number].from);
+                                if (toID !== -1) {
+                                    dateDifference = this.parent.dataOperation.getDuration(
+                                        flatRecords[toID as number].ganttProperties.endDate, currentData.startDate,
+                                        currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                                    if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack === noSlackValue) {
+                                        flatRecords[toID as number].slack = flatRecords[index as number].slack;
+                                        flatRecords[toID as number].ganttProperties.slack = flatRecords[index as number].slack;
+                                    }
+                                }
+                            }
                             if (toID !== -1) {
-                                dateDifference = this.parent.dataOperation.getDuration(
-                                    flatRecords[toID as number].ganttProperties.endDate, currentData.startDate,
-                                    currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
-                                if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack === noSlackValue) {
-                                    flatRecords[toID as number].slack = flatRecords[index as number].slack;
-                                    flatRecords[toID as number].ganttProperties.slack = flatRecords[index as number].slack;
+                                if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack !== noSlackValue) {
+                                    flatRecords[index as number].slack = flatRecords[toID as number].slack;
+                                    flatRecords[index as number].ganttProperties.slack = flatRecords[toID as number].slack;
+                                }
+                                else if (dateDifference !== 0 && index !== toID && flatRecords[toID as number].isCritical) {
+                                    flatRecords[index as number].slack = dateDifference + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
+                                    flatRecords[index as number].ganttProperties.slack = dateDifference + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
                                 }
                             }
                         }
-                        if (toID !== -1) {
-                            if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack !== noSlackValue) {
-                                flatRecords[index as number].slack = flatRecords[toID as number].slack;
-                                flatRecords[index as number].ganttProperties.slack = flatRecords[toID as number].slack;
-                            }
-                            else if (dateDifference !== 0 && index !== toID && flatRecords[toID as number].isCritical) {
-                                flatRecords[index as number].slack = dateDifference + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
-                                flatRecords[index as number].ganttProperties.slack = dateDifference + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
-                            }
+                        else if (predecessorLength[i as number].type === 'SF') {
+                            /* eslint-disable-next-line */
+                            dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
                         }
-                    }
-                    else if (predecessorLength[i as number].type === 'SF') {
-                        /* eslint-disable-next-line */
-                        dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
-                    }
-                    else if (predecessorLength[i as number].type === 'SS') {
-                        /* eslint-disable-next-line */
-                        dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
-                    }
-                    else {
-                        /* eslint-disable-next-line */
-                        dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
-                    }
-                    if (typeof (flatRecords[index as number][this.parent.taskFields.id]) === 'number') {
-                        predecessorFrom = parseInt(predecessorLength[i as number].from, 10);
-                    } else {
-                        predecessorFrom = predecessorLength[i as number].from;
-                    }
-                    if (predecessorFrom === flatRecords[index as number][this.parent.taskFields.id] &&
-                        flatRecords[toID as number].slack === noSlackValue && dateDifference <= 0) {
-                        flatRecords[index as number].slack = noSlackValue;
-                        flatRecords[index as number].ganttProperties.slack = noSlackValue;
+                        else if (predecessorLength[i as number].type === 'SS') {
+                            /* eslint-disable-next-line */
+                            dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                        }
+                        else {
+                            /* eslint-disable-next-line */
+                            dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                        }
+                        if (typeof (flatRecords[index as number][this.parent.taskFields.id]) === 'number') {
+                            predecessorFrom = parseInt(predecessorLength[i as number].from, 10);
+                        } else {
+                            predecessorFrom = predecessorLength[i as number].from;
+                        }
+                        if (predecessorFrom === flatRecords[index as number][this.parent.taskFields.id] &&
+                            flatRecords[toID as number].slack === noSlackValue && dateDifference <= 0) {
+                            flatRecords[index as number].slack = noSlackValue;
+                            flatRecords[index as number].ganttProperties.slack = noSlackValue;
+                        }
                     }
                 }
             }
@@ -757,7 +759,8 @@ export class CriticalPath {
                     }
                 }
             }
-            if (flatRecords[index as number].ganttProperties.predecessor.length > 0) {
+            if (flatRecords[index as number].ganttProperties.predecessor &&
+                flatRecords[index as number].ganttProperties.predecessor.length > 0) {
                 this.updateCriticalTasks(flatRecords[index as number], criticalPathIds);
             }
         }

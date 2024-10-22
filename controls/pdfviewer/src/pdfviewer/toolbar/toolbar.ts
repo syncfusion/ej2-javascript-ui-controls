@@ -1764,6 +1764,7 @@ export class Toolbar {
             break;
         case this.pdfViewer.element.id + '_comment':
         case this.pdfViewer.element.id + '_commentIcon':
+        case this.pdfViewer.element.id + '_commentText':
             this.pdfViewerBase.isAddComment = true;
             this.pdfViewerBase.isCommentIconAdded = true;
             this.annotationToolbarModule.deselectAllItems();
@@ -1815,8 +1816,8 @@ export class Toolbar {
      */
     public addComments(targetElement: any): void {
         if (!isBlazor()) {
-            if (targetElement.id === this.pdfViewer.element.id + '_comment' || targetElement.id === this.pdfViewer.element.id + '_commentIcon') {
-                if (targetElement.id === this.pdfViewer.element.id + '_commentIcon' && targetElement.parentElement) {
+            if (targetElement.id === this.pdfViewer.element.id + '_comment' || targetElement.id === this.pdfViewer.element.id + '_commentIcon' || targetElement.id === this.pdfViewer.element.id + '_commentText') {
+                if ((targetElement.id === this.pdfViewer.element.id + '_commentIcon' || targetElement.id === this.pdfViewer.element.id + '_commentText') && targetElement.parentElement) {
                     targetElement.parentElement.classList.add('e-pv-select');
                 } else {
                     targetElement.classList.add('e-pv-select');

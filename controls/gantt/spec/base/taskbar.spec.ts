@@ -2,7 +2,7 @@
  * Gantt taskbar spec
  */
 import { createElement } from '@syncfusion/ej2-base';
-import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, IQueryTaskbarInfoEventArgs } from '../../src/index';
+import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, IQueryTaskbarInfoEventArgs } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
 import { baselineData, resourceData, projectData, projectNewData18, projectNewData19, projectNewData20, splitData, projectNewData21, taskModeData4, taskModeData5, projectNewData22, CR899690, addDependency, manualParentdata } from './data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
@@ -119,7 +119,7 @@ describe('Gantt taskbar rendering', () => {
                 expect((ganttObj.element.querySelector('.' + cls.traceMilestone) as HTMLElement).style.backgroundColor).toBe("green");
                 expect((ganttObj.element.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor).toBe("green");
                 expect((ganttObj.element.querySelector('.' + cls.baselineMilestoneContainer) as HTMLElement).style.backgroundColor).toBe("yellow");
-            } 
+            }
         });
         it('Testing with taskbarheight and rowheight', () => {
             ganttObj.taskbarHeight = 50;
@@ -137,7 +137,7 @@ describe('Gantt taskbar rendering', () => {
             }
 
         });
-       
+
         it('Parent taskbar with template ID', () => {
             ganttObj.parentTaskbarTemplate = '#demoParentTaskTemplate';
             ganttObj.dataBound = () => {
@@ -196,9 +196,9 @@ describe('Gantt taskbar rendering', () => {
             ganttObj.labelSettings.leftLabel = 'TaskId';
             ganttObj.labelSettings.rightLabel = 'TaskName';
             ganttObj.dataBound = () => {
-                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(1)').getAttribute('aria-label').indexOf('Left task label 1')> -1).toBeTruthy();
-                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(2)').getAttribute('aria-label').indexOf('Name Task 1 Start Date 10/23/2017 End Date 11/6/2017 Duration 11 days')> -1).toBeTruthy();
-                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(3)').getAttribute('aria-label').indexOf('Right task label Task 1')> -1).toBeTruthy();
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(1)').getAttribute('aria-label').indexOf('Left task label 1') > -1).toBeTruthy();
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(2)').getAttribute('aria-label').indexOf('Name Task 1 Start Date 10/23/2017 End Date 11/6/2017 Duration 11 days') > -1).toBeTruthy();
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(3)').getAttribute('aria-label').indexOf('Right task label Task 1') > -1).toBeTruthy();
                 done();
             }
             ganttObj.refresh();
@@ -352,7 +352,7 @@ describe('Manual Task', () => {
         }, done);
     });
     it('manual task convert into milestone', () => {
-       expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
+        expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
     });
     afterAll(() => {
         if (ganttObj) {
@@ -365,8 +365,8 @@ describe('Render taskbar duration in minutes ', () => {
     beforeAll((done: Function) => {
         ganttObj = createGantt({
             dataSource: projectNewData19,
-              dateFormat: 'dd/MM/yyyy hh:mm a',
-              taskFields: {
+            dateFormat: 'dd/MM/yyyy hh:mm a',
+            taskFields: {
                 id: 'taskID',
                 name: 'taskName',
                 startDate: 'startDate',
@@ -375,24 +375,24 @@ describe('Render taskbar duration in minutes ', () => {
                 progress: 'Progress',
                 dependency: 'predecessor',
                 resourceInfo: 'resources',
-              },
-              timelineSettings: {
+            },
+            timelineSettings: {
                 topTier: {
-                  unit: 'Week',
-                  format: 'MMM dd, y',
+                    unit: 'Week',
+                    format: 'MMM dd, y',
                 },
                 bottomTier: {
-                  unit: 'Day',
+                    unit: 'Day',
                 },
-              },
-              editSettings: {
+            },
+            editSettings: {
                 allowAdding: true,
                 allowEditing: true,
                 allowDeleting: true,
                 allowTaskbarEditing: true,
                 showDeleteConfirmDialog: true,
-              },
-              toolbar: [
+            },
+            toolbar: [
                 'Add',
                 'Edit',
                 'Update',
@@ -402,17 +402,17 @@ describe('Render taskbar duration in minutes ', () => {
                 'CollapseAll',
                 'Indent',
                 'Outdent',
-              ],
-              allowSelection: true,
-              gridLines: 'Both',
-              height: '450px',
-              treeColumnIndex: 1,
-              resourceFields: {
+            ],
+            allowSelection: true,
+            gridLines: 'Both',
+            height: '450px',
+            treeColumnIndex: 1,
+            resourceFields: {
                 id: 'resourceId',
                 name: 'resourceName',
-              },
-              highlightWeekends: true,
-              columns: [
+            },
+            highlightWeekends: true,
+            columns: [
                 { field: 'taskID', width: 60 },
                 { field: 'taskName', width: 250 },
                 { field: 'startDate' },
@@ -420,30 +420,30 @@ describe('Render taskbar duration in minutes ', () => {
                 { field: 'duration' },
                 { field: 'predecessor' },
                 { field: 'progress' },
-              ],
-              eventMarkers: [
+            ],
+            eventMarkers: [
                 { day: '4/17/2019', label: 'Project approval and kick-off' },
                 { day: '5/3/2019', label: 'Foundation inspection' },
                 { day: '6/7/2019', label: 'Site manager inspection' },
                 { day: '7/16/2019', label: 'Property handover and sign-off' },
-              ],
-              labelSettings: {
+            ],
+            labelSettings: {
                 leftLabel: 'TaskName',
                 rightLabel: 'resources',
-              },
-              splitterSettings: {
+            },
+            splitterSettings: {
                 columnIndex: 2,
-              },
-              editDialogFields: [
+            },
+            editDialogFields: [
                 { type: 'General', headerText: 'General' },
                 { type: 'Dependency' },
                 { type: 'Resources' },
                 { type: 'Notes' },
-              ]
+            ]
         }, done);
     });
     it('Taskbar renders in minutes', () => {
-       expect(ganttObj.currentViewData[3].ganttProperties.width.toFixed()).toBe('3');
+        expect(ganttObj.currentViewData[3].ganttProperties.width.toFixed()).toBe('3');
     });
     afterAll(() => {
         if (ganttObj) {
@@ -453,7 +453,7 @@ describe('Render taskbar duration in minutes ', () => {
 });
 describe('Progress width not updated properly in split tasks issue', () => {
     let ganttObj: Gantt;
-    const tempData = [
+    const tempData: any = [
         {
             TaskID: 1,
             TaskName: 'Product concept',
@@ -470,14 +470,14 @@ describe('Progress width not updated properly in split tasks issue', () => {
             Progress: 10,
             parentID: 1,
             Segments: [
-            {
-                StartDate: new Date('02/04/2019 08:00'),
-                Duration: 120,
-            },
-            {
-                StartDate: new Date('02/04/2019 11:00'),
-                Duration: 240,
-            },
+                {
+                    StartDate: new Date('02/04/2019 08:00'),
+                    Duration: 120,
+                },
+                {
+                    StartDate: new Date('02/04/2019 11:00'),
+                    Duration: 240,
+                },
             ],
         },
         {
@@ -513,10 +513,10 @@ describe('Progress width not updated properly in split tasks issue', () => {
             DurationUnit: 'minute',
             parentID: 5,
         },
-        ];
-        let virtualData1 :any= [];
-        let projId = 1;
-        for (let i = 0; i < 50; i++) {
+    ];
+    let virtualData1: any = [];
+    let projId = 1;
+    for (let i = 0; i < 50; i++) {
         let x = virtualData1.length + 1;
         let parent = {};
         parent['TaskID'] = x;
@@ -529,12 +529,12 @@ describe('Progress width not updated properly in split tasks issue', () => {
             subtasks['StartDate'] = tempData[j].StartDate;
             subtasks['Duration'] = tempData[j].Duration;
             subtasks['Segments'] = tempData[j].Segments;
-        
+
             subtasks['Progress'] = tempData[j].Progress;
             subtasks['parentID'] = tempData[j].parentID + x;
             virtualData1.push(subtasks);
         }
-        }
+    }
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
@@ -621,57 +621,57 @@ describe('Bug-834012-Incorrect taskbar render when unit is given in hour', () =>
     beforeAll((done: Function) => {
         ganttObj = createGantt({
             dataSource: projectNewData20,
-              dateFormat: 'dd/MM/yyyy hh:mm a',
-              taskFields: {
+            dateFormat: 'dd/MM/yyyy hh:mm a',
+            taskFields: {
                 id: 'TaskID',
                 name: 'TaskName',
                 startDate: 'StartDate',
                 duration: 'Duration',
                 child: 'subtasks',
                 durationUnit: 'DurationUnit'
-              },
-              timelineSettings: {
+            },
+            timelineSettings: {
                 topTier: {
-                  unit: 'Week',
-                  format: 'MMM dd, y',
+                    unit: 'Week',
+                    format: 'MMM dd, y',
                 },
                 bottomTier: {
-                  unit: 'Day',
+                    unit: 'Day',
                 },
-              },
-              editSettings: {
+            },
+            editSettings: {
                 allowAdding: true,
                 allowEditing: true,
                 allowDeleting: true,
                 allowTaskbarEditing: true,
                 showDeleteConfirmDialog: true,
-              },
-              allowSelection: true,
-              gridLines: 'Both',
-              height: '450px',
-              treeColumnIndex: 1,
-              resourceFields: {
+            },
+            allowSelection: true,
+            gridLines: 'Both',
+            height: '450px',
+            treeColumnIndex: 1,
+            resourceFields: {
                 id: 'resourceId',
                 name: 'resourceName',
-              },
-              highlightWeekends: true,
-              columns: [
+            },
+            highlightWeekends: true,
+            columns: [
                 { field: 'TaskID', width: 60 },
                 { field: 'TaskName', width: 250 },
                 { field: 'StartDate' },
                 { field: 'EndDate' },
                 { field: 'Duration' },
-              ],
-                splitterSettings: {
+            ],
+            splitterSettings: {
                 columnIndex: 2,
-              },
+            },
         }, done);
     });
     it('Taskbar renders in hour mode & Minute mode', () => {
         //Checking taskbar width in "Hour" mode:
-       expect(ganttObj.currentViewData[0].ganttProperties.width.toFixed()).toBe('429');
-       //Checking taskbar width in "Minute" mode:
-       expect(ganttObj.currentViewData[1].ganttProperties.width.toFixed()).toBe('186');  
+        expect(ganttObj.currentViewData[0].ganttProperties.width.toFixed()).toBe('429');
+        //Checking taskbar width in "Minute" mode:
+        expect(ganttObj.currentViewData[1].ganttProperties.width.toFixed()).toBe('186');
     });
     afterAll(() => {
         if (ganttObj) {
@@ -718,64 +718,65 @@ describe('CR-834869-Segment taskbar is not rendered correctly ', () => {
 });
 describe('bug-833211-Render incorrect taskbarwidth with duration in minutes mode', () => {
     let ganttObj: Gantt;
+    let datas: any = [
+        {
+            taskID: 1,
+            taskName: 'Estimation approval',
+            startDate: new Date('04/04/2019'),
+            duration: '960 minutes'
+        },
+    ]
     beforeAll((done: Function) => {
         ganttObj = createGantt({
-            dataSource: [
-                {
-                  taskID: 1,
-                  taskName: 'Estimation approval',
-                  startDate: new Date('04/04/2019'),
-                  duration: '960 minutes'
-                },
-              ],
-              dateFormat: 'dd/MM/yyyy hh:mm a',
-              taskFields: {
+            dataSource: datas,
+            dateFormat: 'dd/MM/yyyy hh:mm a',
+            taskFields: {
                 id: 'taskID',
                 name: 'taskName',
                 startDate: 'startDate',
                 endDate: 'endDate',
                 duration: 'duration',
-              },
-              timelineSettings: {
+            },
+            timelineSettings: {
                 topTier: {
-                  unit: 'Week',
-                  format: 'MMM dd, y',
+                    unit: 'Week',
+                    format: 'MMM dd, y',
                 },
                 bottomTier: {
-                  unit: 'Day',
+                    unit: 'Day',
                 },
-              },
-              editSettings: {
+            },
+            editSettings: {
                 allowAdding: true,
                 allowEditing: true,
                 allowDeleting: true,
                 allowTaskbarEditing: true,
                 showDeleteConfirmDialog: true,
-              },
-              allowSelection: true,
-              gridLines: 'Both',
-              height: '450px',
-              treeColumnIndex: 1,
-              highlightWeekends: true,
-              columns: [
+            },
+            allowSelection: true,
+            gridLines: 'Both',
+            height: '450px',
+            treeColumnIndex: 1,
+            highlightWeekends: true,
+            columns: [
                 { field: 'taskID', width: 60 },
                 { field: 'taskName', width: 250 },
                 { field: 'startDate' },
                 { field: 'endDate' },
                 { field: 'duration' },
-              ],
-              labelSettings: {
+            ],
+            labelSettings: {
                 leftLabel: 'TaskName',
                 rightLabel: 'resources',
-              },
-              splitterSettings: {
+            },
+            splitterSettings: {
                 columnIndex: 2,
-              },
+            },
         }, done);
     });
     it('Verifying taskbar width in minutes mode', () => {
         //Checking taskbar width in "Minutes" mode:
-       expect(ganttObj.currentViewData[0].ganttProperties.width.toFixed()).toBe('66');  
+        expect(ganttObj.currentViewData[0].ganttProperties.width.toFixed()).toBe('66');
     });
     afterAll(() => {
         if (ganttObj) {
@@ -901,7 +902,7 @@ describe('Style not applied for the collapsed row when the virtual scroll is ena
     it('Style not applied for the collapsed row when the virtual scroll is enabled', () => {
         ganttObj.ganttChartModule.expandCollapseAll('collapse');
         ganttObj.actionComplete = function (args: any): void {
-            if (args.requestType === 'refresh'){
+            if (args.requestType === 'refresh') {
                 expect((ganttObj.element.querySelector('.' + cls.childTaskBarInnerDiv) as HTMLElement).style.backgroundColor).toBe('rgb(242, 210, 189)');
             }
         }
@@ -922,7 +923,7 @@ describe('Manual parent does not render properly', () => {
                 enableContextMenu: true,
                 height: '450px',
                 allowSelection: true,
-                selectedRowIndex:2,
+                selectedRowIndex: 2,
                 highlightWeekends: true,
                 taskFields: {
                     id: 'TaskID',
@@ -938,7 +939,7 @@ describe('Manual parent does not render properly', () => {
                 taskMode: 'Custom',
                 sortSettings: {
                     columns: [{ field: 'TaskID', direction: 'Ascending' },
-                        { field: 'TaskName', direction: 'Ascending' }]
+                    { field: 'TaskName', direction: 'Ascending' }]
                 },
                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
                     'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
@@ -1002,8 +1003,8 @@ describe('Manual parent does not render properly', () => {
     });
     it('Convert manual milestone to parent task', () => {
         ganttObj.actionComplete = function (args: any): void {
-            if (args.requestType === 'refresh'){
-               expect(ganttObj.currentViewData[0].ganttProperties.width).toBe(33);
+            if (args.requestType === 'refresh') {
+                expect(ganttObj.currentViewData[0].ganttProperties.width).toBe(33);
             }
         }
         ganttObj.indent();
@@ -1024,7 +1025,7 @@ describe('parent drag for custom task mode', () => {
                 enableContextMenu: true,
                 height: '450px',
                 allowSelection: true,
-                selectedRowIndex:2,
+                selectedRowIndex: 2,
                 highlightWeekends: true,
                 taskFields: {
                     id: 'TaskID',
@@ -1099,16 +1100,16 @@ describe('parent drag for custom task mode', () => {
             }, done);
     });
     it('Convert manual milestone to parent task', () => {
-            ganttObj.taskbarEditing = (args: any) => {
-                expect(args.taskBarEditAction).toBe('ParentDrag');
-                args.cancel = true;
-            };
-            ganttObj.dataBind();
-            ganttObj.dataBind();
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
-            triggerMouseEvent(dragElement, 'mouseup');
+        ganttObj.taskbarEditing = (args: any) => {
+            expect(args.taskBarEditAction).toBe('ParentDrag');
+            args.cancel = true;
+        };
+        ganttObj.dataBind();
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
     });
     afterAll(() => {
         if (ganttObj) {
@@ -1121,45 +1122,45 @@ describe('CR-869856: dayWorkingTime and TimeZone issue', () => {
     beforeAll((done: Function) => {
         ganttObj = createGantt({
             dataSource: projectNewData22,
-              taskFields: {
+            taskFields: {
                 id: 'TaskID',
                 name: 'TaskName',
                 startDate: 'StartDate',
                 endDate: 'EndDate'
-              },
-              dayWorkingTime: [
+            },
+            dayWorkingTime: [
                 { from: 8.5, to: 13 },
                 { from: 14, to: 17.5 },
-              ],
-              timezone: "UTC",
-              timelineSettings: {
+            ],
+            timezone: "UTC",
+            timelineSettings: {
                 topTier: {
-                  unit: 'Week',
-                  format: 'MMM dd, y',
+                    unit: 'Week',
+                    format: 'MMM dd, y',
                 },
                 bottomTier: {
-                  unit: 'Day',
+                    unit: 'Day',
                 },
-              },
-              editSettings: {
+            },
+            editSettings: {
                 allowAdding: true,
                 allowEditing: true,
                 allowDeleting: true,
                 allowTaskbarEditing: true,
                 showDeleteConfirmDialog: true,
-              },
-              allowSelection: true,
-              gridLines: 'Both',
-              height: '450px',
-              highlightWeekends: true,
-              splitterSettings: {
+            },
+            allowSelection: true,
+            gridLines: 'Both',
+            height: '450px',
+            highlightWeekends: true,
+            splitterSettings: {
                 columnIndex: 2,
-              },
+            },
         }, done);
     });
     it('Checking Taskbar width timeZone API', () => {
-       expect(ganttObj.currentViewData[2].ganttProperties.width).toBe(28.875);
-       expect(ganttObj.currentViewData[1].ganttProperties.width).toBe(33);
+        expect(ganttObj.currentViewData[2].ganttProperties.width).toBe(28.875);
+        expect(ganttObj.currentViewData[1].ganttProperties.width).toBe(33);
     });
     afterAll(() => {
         if (ganttObj) {
@@ -1169,127 +1170,128 @@ describe('CR-869856: dayWorkingTime and TimeZone issue', () => {
 });
 describe('Merge segment getting console error', () => {
     let ganttObj: Gantt;
+    let datas1: any = [{
+
+        TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+        Duration: 3, Progress: '60',
+        Segments: [
+            { StartDate: new Date('02/04/2019'), Duration: 1 },
+            { StartDate: new Date('02/05/2019'), Duration: 2 },
+
+        ]
+    },]
     beforeAll((done: Function) => {
         ganttObj = createGantt({
-            dataSource:[  {
-                   
-                TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
-                Duration: 3, Progress: '60',
-                Segments: [
-                    { StartDate: new Date('02/04/2019'), Duration: 1 },
-                    { StartDate: new Date('02/05/2019'), Duration: 2 },
-                   
-                ]
-            },] ,
-           
-    allowSorting: true,
-    allowReordering: true,
-    enableContextMenu: true,
-    enableVirtualization: false,
-    taskFields: {
-        id: 'TaskID',
-        name: 'TaskName',
-        startDate: 'StartDate',
-        endDate: 'EndDate',
-        duration: 'Duration',
-        progress: 'Progress',
-        dependency: 'Predecessor',
-        child: 'subtasks',
-        segments: 'Segments'
-    },
-    editSettings: {
-        allowAdding: true,
-        allowEditing: true,
-        allowDeleting: true,
-        allowTaskbarEditing: true,
-        showDeleteConfirmDialog: true
-    },
-    columns: [
-        { field: 'TaskID', width: 60 },
-        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
-        { field: 'StartDate' },
-        { field: 'EndDate' },
-        { field: 'Duration' },
-        { field: 'Progress' },
-        { field: 'Predecessor' }
-    ],
-    sortSettings: {
-        columns: [{ field: 'TaskID', direction: 'Ascending' }, 
-        { field: 'TaskName', direction: 'Ascending' }]
-    },
-    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
-    'PrevTimeSpan', 'NextTimeSpan',],
-    allowExcelExport: true,
-    allowPdfExport: true,
-    allowSelection: true,
-    allowRowDragAndDrop: true,
-    selectedRowIndex: 1,
-    splitterSettings: {
-        position: "50%",
-       // columnIndex: 4
-    },
-    selectionSettings: {
-        mode: 'Row',
-        type: 'Single',
-        enableToggle: false
-    },
-    tooltipSettings: {
-        showTooltip: true
-    },
-    filterSettings: {
-        type: 'Menu'
-    },
-    allowFiltering: true,
-    gridLines: "Both",
-    showColumnMenu: true,
-    highlightWeekends: true,
-    timelineSettings: {
-        showTooltip: true,
-        topTier: {
-            unit: 'Week',
-            format: 'dd/MM/yyyy'
-        },
-        bottomTier: {
-            unit: 'Day',
-            count: 1
-        }
-    },
-    eventMarkers: [
-        {
-            day: '04/10/2019',
-            cssClass: 'e-custom-event-marker',
-            label: 'Project approval and kick-off'
-        }
-    ],
-    holidays: [{
-        from: "04/04/2019",
-        to: "04/05/2019",
-        label: " Public holidays",
-        cssClass: "e-custom-holiday"
-    
-    },
-    {
-        from: "04/12/2019",
-        to: "04/12/2019",
-        label: " Public holiday",
-        cssClass: "e-custom-holiday"
-    
-    }],
-    searchSettings:
-     { fields: ['TaskName', 'Duration'] 
-    },
-    labelSettings: {
-        leftLabel: 'TaskID',
-        rightLabel: 'Task Name: ${taskData.TaskName}',
-        taskLabel: '${Progress}%'
-    },
-    allowResizing: true,
-    readOnly: false,
-    taskbarHeight: 20,
-    rowHeight: 40,
-    height: '550px',
-    projectStartDate: new Date('01/30/2019'),
-    projectEndDate: new Date('03/04/2019'),
+            dataSource: datas1,
+            allowSorting: true,
+            allowReordering: true,
+            enableContextMenu: true,
+            enableVirtualization: false,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                segments: 'Segments'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', width: 60 },
+                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' }
+            ],
+            sortSettings: {
+                columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan',],
+            allowExcelExport: true,
+            allowPdfExport: true,
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            selectedRowIndex: 1,
+            splitterSettings: {
+                position: "50%",
+                // columnIndex: 4
+            },
+            selectionSettings: {
+                mode: 'Row',
+                type: 'Single',
+                enableToggle: false
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            filterSettings: {
+                type: 'Menu'
+            },
+            allowFiltering: true,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            eventMarkers: [
+                {
+                    day: '04/10/2019',
+                    cssClass: 'e-custom-event-marker',
+                    label: 'Project approval and kick-off'
+                }
+            ],
+            holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+
+            }],
+            searchSettings:
+            {
+                fields: ['TaskName', 'Duration']
+            },
+            labelSettings: {
+                leftLabel: 'TaskID',
+                rightLabel: 'Task Name: ${taskData.TaskName}',
+                taskLabel: '${Progress}%'
+            },
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            height: '550px',
+            projectStartDate: new Date('01/30/2019'),
+            projectEndDate: new Date('03/04/2019'),
         }, done);
     });
     it('Marge task', () => {
@@ -1329,20 +1331,20 @@ describe('manual parent right resizing ', () => {
                     child: 'Children',
                     manual: 'isManual',
                 },
-                taskMode : 'Custom',
+                taskMode: 'Custom',
                 sortSettings: {
-                    columns: [{ field: 'TaskID', direction: 'Ascending' }, 
+                    columns: [{ field: 'TaskID', direction: 'Ascending' },
                     { field: 'TaskName', direction: 'Ascending' }]
                 },
-                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
-                'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
-                enableVirtualization:true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                enableVirtualization: true,
                 allowExcelExport: true,
                 allowPdfExport: true,
                 allowRowDragAndDrop: true,
                 splitterSettings: {
                     position: "50%",
-                   // columnIndex: 4
+                    // columnIndex: 4
                 },
                 selectionSettings: {
                     mode: 'Row',
@@ -1354,12 +1356,12 @@ describe('manual parent right resizing ', () => {
                 },
                 allowFiltering: true,
                 columns: [
-                    { field: 'TaskID', visible: true},
-                    {field: 'TaskName'},
-                    { field: 'isManual'},
-                    {field: 'StartDate'},
-                    {field: 'Duration'},
-                    {field: 'Progress'}
+                    { field: 'TaskID', visible: true },
+                    { field: 'TaskName' },
+                    { field: 'isManual' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' }
                 ],
                 validateManualTasksOnLinking: true,
                 treeColumnIndex: 1,
@@ -1397,19 +1399,19 @@ describe('manual parent right resizing ', () => {
             }, done);
     });
     it('Right resizing', () => {
-        ganttObj.actionBegin = (args: object) => { };         
+        ganttObj.actionBegin = (args: object) => { };
         ganttObj.taskbarEditing = (args: any) => {
             expect(args.taskBarEditAction).toBe('ParentResizing');
         };
         ganttObj.taskbarEdited = (args: any) => {
             expect(args.taskBarEditAction).toBe('ParentResizing');
             expect(ganttObj.currentViewData[1].taskData['Duration']).toBe(5);
-        };      
+        };
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-manualparent-main-container >div.e-gantt-manualparenttaskbar-right') as HTMLElement;
         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mousemove', 100, 0);
         triggerMouseEvent(dragElement, 'mouseup');
-    });   
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
@@ -1431,7 +1433,7 @@ describe('CR-899690: Left value miscalculated for taskbar while duration in deci
                 dependency: 'Predecessor',
                 child: 'subtasks'
             },
-            dateFormat:'MMM dd, y',
+            dateFormat: 'MMM dd, y',
             editSettings: {
                 allowAdding: true,
                 allowEditing: true,
@@ -1448,10 +1450,10 @@ describe('CR-899690: Left value miscalculated for taskbar while duration in deci
         }, done);
     });
     it('Checking Taskbar left with decimal duration', () => {
-       expect(ganttObj.currentViewData[1].ganttProperties.left).toBe(33);
-       expect(Math.floor(ganttObj.currentViewData[2].ganttProperties.left)).toBe(59);
-       expect(Math.floor(ganttObj.currentViewData[4].ganttProperties.left)).toBe(59);
-       expect(Math.floor(ganttObj.currentViewData[6].ganttProperties.left)).toBe(59);
+        expect(ganttObj.currentViewData[1].ganttProperties.left).toBe(33);
+        expect(Math.floor(ganttObj.currentViewData[2].ganttProperties.left)).toBe(59);
+        expect(Math.floor(ganttObj.currentViewData[4].ganttProperties.left)).toBe(59);
+        expect(Math.floor(ganttObj.currentViewData[6].ganttProperties.left)).toBe(59);
     });
     afterAll(() => {
         if (ganttObj) {
@@ -1463,35 +1465,40 @@ describe('Add dependency', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt(
-        {
-            dataSource: addDependency,
-            taskFields: {
-                id: 'TaskID',
-                name: 'TaskName',
-                startDate: 'StartDate',
-                endDate: 'EndDate',
-                duration: 'Duration',
-                progress: 'Progress',
-                dependency: 'Predecessor'
-            },
-            editSettings: {
-                allowAdding: true,
-                allowEditing: true,
-                allowDeleting: true,
-                allowTaskbarEditing: true,
-                showDeleteConfirmDialog: true
-            },
-            allowSelection: true,
-            gridLines: "Both",
-            height: '450px',
-            allowUnscheduledTasks: true
-        }, done);
+            {
+                dataSource: addDependency,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                height: '450px',
+                allowUnscheduledTasks: true
+            }, done);
     });
     it('Add a predecessor to Task 2', () => {
         ganttObj.addPredecessor(2, '1FS');
         var updatedTask = ganttObj.getRecordByID('2');
         if (updatedTask && updatedTask.ganttProperties) {
             expect(updatedTask.ganttProperties.predecessorsName).toBe('1FS');
+        }
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
         }
     });
 });

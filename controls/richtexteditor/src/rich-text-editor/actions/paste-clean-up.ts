@@ -67,7 +67,7 @@ export class PasteCleanup {
     }
 
     private addEventListener(): void {
-        this.nodeSelectionObj = new NodeSelection();
+        this.nodeSelectionObj = new NodeSelection(this.parent.inputElement);
         if (this.parent.isDestroyed) {
             return;
         }

@@ -1172,6 +1172,30 @@ describe('Event Base Module', () => {
                 StartTime: new Date(2024, 1, 15, 5, 0),
                 EndTime: new Date(2024, 1, 15, 18, 0),
                 CategoryColor: '#1aaa55'
+            },
+            {
+                Id: 2,
+                Subject: 'event -2',
+                Location: 'Space Centre USA',
+                StartTime: new Date(2024, 1, 15, 11, 15),
+                EndTime: new Date(2024, 1, 15, 13, 0),
+                CategoryColor: '#1aaa55'
+            },
+            {
+                Id: 3,
+                Subject: 'event -3',
+                Location: 'Space Centre USA',
+                StartTime: new Date(2024, 1, 15, 12, 0),
+                EndTime: new Date(2024, 1, 15, 13, 0),
+                CategoryColor: '#1aaa55'
+            },
+            {
+                Id: 4,
+                Subject: 'event -4',
+                Location: 'Space Centre USA',
+                StartTime: new Date(2024, 1, 15, 12, 30),
+                EndTime: new Date(2024, 1, 15, 13, 0),
+                CategoryColor: '#1aaa55'
             }];
             beforeAll((done: DoneFn) => {
                 const options: ScheduleModel = {
@@ -1188,8 +1212,25 @@ describe('Event Base Module', () => {
             });
             it('Check the StartHour and EndHour properties using and verify the full width of the events', () => {
                 const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
-                const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
-                expect(eventElement.offsetWidth).toEqual(cellElement.offsetWidth);
+                const eventElement1: HTMLElement = (schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement);
+                expect(eventElement1.offsetWidth).toEqual(cellElement.offsetWidth);
+                expect(eventElement1.style.left).toEqual('0px');
+                const eventElement2: HTMLElement = (schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement);
+                expect(eventElement2.style.width).toEqual('67.0385px');
+                expect(eventElement2.style.left).toEqual('239.423px');
+                const eventElement3: HTMLElement = (schObj.element.querySelectorAll('.e-appointment')[2] as HTMLElement);
+                expect(eventElement3.style.width).toEqual('38.3077px');
+                expect(eventElement3.style.left).toEqual('268.154px');
+                const eventElement4: HTMLElement = (schObj.element.querySelectorAll('.e-appointment')[3] as HTMLElement);
+                expect(eventElement4.style.width).toEqual('19.1538px');
+                expect(eventElement4.style.left).toEqual('287.308px');
+                const eventElement2Left: number = parseInt(eventElement2.style.left, 10);
+                const eventElement3Left: number = parseInt(eventElement3.style.left, 10);
+                const eventElement4Left: number = parseInt(eventElement4.style.left, 10);
+                expect((eventElement2Left - eventElement3Left) + parseInt(eventElement2.style.width, 10))
+                    .toEqual(parseInt(eventElement3.style.width, 10));
+                expect((eventElement3Left - eventElement4Left) + parseInt(eventElement3.style.width, 10))
+                    .toEqual(parseInt(eventElement4.style.width, 10));
             });
         });
     });

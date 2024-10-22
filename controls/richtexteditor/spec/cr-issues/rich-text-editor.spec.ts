@@ -10,7 +10,7 @@ import { SelectionCommands } from '../../src/editor-manager/plugin/selection-com
 import { NodeSelection } from '../../src/selection/selection';
 import { ActionBeginEventArgs, IRenderer, PasteCleanupArgs, QuickToolbar } from '../../src/index';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { INSRT_IMG_EVENT_INIT, NUMPAD_ENTER_EVENT_INIT } from '../constant.spec';
+import { BASIC_MOUSE_EVENT_INIT, ENTERKEY_EVENT_INIT, INSRT_IMG_EVENT_INIT, NUMPAD_ENTER_EVENT_INIT } from '../constant.spec';
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -1149,11 +1149,14 @@ describe('RTE CR issues ', () => {
             let brTag: Element = document.createElement('br');
             rteObj.contentModule.getEditPanel().insertBefore(brTag, rteObj.contentModule.getEditPanel().querySelector('p'));
             rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.contentModule.getEditPanel(), 1);
+            const enterKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(enterKeyDownEvent);
+            const enterKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(enterKeyUpEvent);
             (rteObj.formatter.editorManager as any).formatObj.onKeyUp({ event: keyboardEventArgs });
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('p').length === 2).toBe(true);
             expect(rteObj.contentModule.getEditPanel().childNodes[1].textContent === '').toBe(true);
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('p')[0].textContent === '').toBe(true);
-            expect(rteObj.contentModule.getEditPanel().childNodes[2].textContent === 'Sample content').toBe(true);
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('p')[1].textContent === 'Sample content').toBe(true);
         });
         afterEach(() => {
@@ -4235,6 +4238,44 @@ describe('RTE CR issues ', () => {
             expect(editor.element.classList.contains('e-rte-full-screen')).not.toBe(true);
         });
     });
+
+    describe('913719: Format Toolbar Becomes Empty When Focused Before the Table', ()=> {
+        let editor: RichTextEditor;
+        beforeAll((done: DoneFn) => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['Formats']
+                },
+                value: `<p>Paragraph 1</p><table class="e-rte-table" style="width: 20.6919%; min-width: 0px; height: 78px;"><tbody><tr style="height: 32.9114%;"><td class="" style="width: 33.3333%;"><br/></td></tr><tr style="height: 32.9114%;"><td style="width: 33.3333%;" class=""><br/></td></tr><tr style="height: 32.9114%;"><td style="width: 33.3333%;"><br/></td></tr></tbody></table><p>Paragraph 2</p>`
+            });
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it ('Should not have empty toolbar when focused before the table', (done: DoneFn) => {
+            editor.focusIn();
+            setCursorPoint(editor.inputElement, 1);
+            const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                expect(editor.element.querySelector('.e-rte-dropdown-btn-text').textContent).not.toBe('');
+                done();
+            }, 100);
+        });
+        it ('Should not have empty toolbar when focused after the table', (done: DoneFn) => {
+            editor.focusIn();
+            setCursorPoint(editor.inputElement, 2);
+            const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                expect(editor.element.querySelector('.e-rte-dropdown-btn-text').textContent).not.toBe('');
+                done();
+            }, 100);
+        });
+    });
+
     describe('875856 - Using indents on Numbered or Bulleted list turns into nested list in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let rteEle: Element;
@@ -5308,6 +5349,43 @@ describe('RTE CR issues ', () => {
             });
             it('check the tooltip for custom toolbar item', () => {
                 expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Insert Video');
+            });
+        });
+
+        describe('914317 - Image duplicated when Shift enter action is performed on a paragraph', () => {
+            let rteObj: RichTextEditor;
+            let keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: true,
+                char: '',
+                key: '',
+                charCode: 13,
+                keyCode: 13,
+                which: 13,
+                code: 'Enter',
+                action: 'enter',
+                type: 'keydown'
+            };
+            beforeAll((done: Function) => {
+                rteObj = renderRTE({
+                    height: '200px',
+                    value:  `<p><img alt=\"Logo\" src=\"https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png\" style=\"width: 300px;\"> </p>`
+                });
+                done();
+            });
+            it('Image get duplicated after the shift + enter is pressed twice', function (): void {
+                const nodetext: any = rteObj.inputElement.childNodes[0];
+                const sel: void = new NodeSelection().setSelectionText(
+                    document, nodetext, nodetext, 0, 0);
+                (<any>rteObj).keyDown(keyboardEventArgs);
+                setCursorPoint(nodetext, 0);
+                (<any>rteObj).keyDown(keyboardEventArgs);
+                expect(rteObj.inputElement.innerHTML).toBe('<p><br><br><img alt="Logo" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"> </p>');
+            });
+            afterAll(() => {
+                destroy(rteObj);
             });
         });
 });

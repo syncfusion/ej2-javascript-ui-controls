@@ -12,13 +12,13 @@
     background-color: $dialog-footer-bg-color;
 
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or  $skin-name == 'Material3' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
-      .e-btn.e-primary.e-flat:not([DISABLED]) {
+      .e-btn.e-primary.e-flat:not([DISABLED]):not(.e-success):not(.e-danger):not(.e-warning):not(.e-info) {
         background: $dialog-footer-btn-bg-color;
         border-color: $dialog-footer-btn-border-color;
         color: $dialog-footer-btn-color;
       }
 
-      .e-btn:hover.e-primary.e-flat:not([DISABLED]) {
+      .e-btn:hover.e-primary.e-flat:not([DISABLED]):not(.e-success):not(.e-danger):not(.e-warning):not(.e-info) {
         @if $skin-name == 'Material3' {
           background: $dialog-footer-flat-hover-btn-bg-color;
           color: rgba($primary);
@@ -33,22 +33,22 @@
     }
 
     @if $skin-name == 'Material3' {
-      .e-btn.e-primary.e-flat:not([DISABLED]):focus-visible,
-      .e-btn.e-primary.e-flat:not([DISABLED]):focus,
-      .e-btn.e-primary.e-flat:not([DISABLED]):focus,
-      .e-btn.e-flat:not([DISABLED]):focus-visible {
+      .e-btn.e-primary.e-flat:not([DISABLED]):not(.e-success):not(.e-danger):not(.e-warning):not(.e-info):focus-visible,
+      .e-btn.e-primary.e-flat:not([DISABLED]):not(.e-success):not(.e-danger):not(.e-warning):not(.e-info):focus,
+      .e-btn.e-primary.e-flat:not([DISABLED]):not(.e-success):not(.e-danger):not(.e-warning):not(.e-info):focus,
+      .e-btn.e-flat:not([DISABLED]):not(.e-success):not(.e-danger):not(.e-warning):not(.e-info):focus-visible {
         background: $dialog-footer-flat-hover-btn-bg-color;
         box-shadow: $shadow-focus-ring1;
       }
     }
 
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2' {
-      .e-btn.e-flat:not([DISABLED]) {
+      .e-btn.e-flat:not([DISABLED]):not(.e-success):not(.e-danger):not(.e-warning):not(.e-info) {
         background: $dialog-footer-flat-btn-bg-color;
         border-color: $dialog-footer-flat-btn-border-color;
         color: $dialog-footer-flat-btn-content-color;
       }
-      .e-btn:hover.e-flat:not([DISABLED]) {
+      .e-btn:hover.e-flat:not([DISABLED]):not(.e-success):not(.e-danger):not(.e-warning):not(.e-info) {
         background: $dialog-footer-flat-hover-btn-bg-color;
         @if $skin-name == 'fluent2' {
           color: $dialog-footer-flat-btn-hover-color;

@@ -11,12 +11,16 @@ export class Resize {
     protected touchStartEvent: string;
     protected touchMoveEvent: string;
     protected touchEndEvent: string;
-    private isDestroyed: boolean
+    private isDestroyed: boolean;
+    private isResizing: boolean;
+    private iframeMouseUpBoundFn: () => void;
 
     private constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
         this.isDestroyed = false;
+        this.isResizing = false;
+        this.iframeMouseUpBoundFn = this.iframeMouseUp.bind(this);
     }
 
     private addEventListener(): void {
@@ -38,6 +42,7 @@ export class Resize {
         this.parent.rootContainer.classList.add('e-resize-enabled');
         if (this.parent.iframeSettings.enable) {
             this.parent.inputElement.classList.add('e-resize-enabled');
+            this.parent.contentModule.getDocument().addEventListener('mouseup', this.iframeMouseUpBoundFn);
         }
         this.touchStartEvent = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
         EventHandler.add(this.resizer, 'mousedown', this.resizeStart, this);
@@ -45,6 +50,7 @@ export class Resize {
     }
 
     private resizeStart(e?: MouseEvent | TouchEvent | PointerEvent): void {
+        this.isResizing = false;
         if (e.cancelable) {
             e.preventDefault();
         }
@@ -59,6 +65,7 @@ export class Resize {
     }
 
     private performResize(e?: MouseEvent | TouchEvent | PointerEvent): void {
+        this.isResizing = true;
         const args: ResizeArgs = { event: e, requestType: 'editor' };
         this.parent.trigger(events.onResize, args, (resizingArgs: ResizeArgs) => {
             if (resizingArgs.cancel) {
@@ -88,6 +95,7 @@ export class Resize {
     }
 
     private stopResize(e?: MouseEvent | TouchEvent | PointerEvent): void {
+        this.isResizing = false;
         this.parent.refreshUI();
         this.unwireResizeEvents();
         const args: ResizeArgs = { event: e, requestType: 'editor' };
@@ -141,6 +149,7 @@ export class Resize {
         }
         if (this.parent.iframeSettings.enable && !isNullOrUndefined(this.parent.inputElement)) {
             this.parent.inputElement.classList.remove('e-resize-enabled');
+            this.parent.contentModule.getDocument().removeEventListener('mouseup', this.iframeMouseUpBoundFn);
         }
         if (this.resizer) {
             EventHandler.remove(this.resizer, 'mousedown', this.resizeStart);
@@ -148,6 +157,13 @@ export class Resize {
             detach(this.resizer);
         }
         this.parent.off(events.destroy, this.destroy);
+        this.iframeMouseUpBoundFn = null;
+    }
+
+    private iframeMouseUp(e: MouseEvent): void {
+        if (this.isResizing) {
+            this.stopResize(e);
+        }
     }
 
     /**

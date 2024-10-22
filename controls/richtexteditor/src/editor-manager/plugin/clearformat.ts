@@ -34,7 +34,7 @@ export class ClearFormat {
     public static clear(docElement: Document, endNode: Node, enterAction: string, selector?: string, command?: string): void {
         this.domNode = new DOMNode((endNode as HTMLElement), docElement);
         this.defaultTag = enterAction === 'P' ? this.defaultTag : 'div';
-        const nodeSelection: NodeSelection = new NodeSelection();
+        const nodeSelection: NodeSelection = new NodeSelection(endNode as HTMLElement);
         const nodeCutter: NodeCutter = new NodeCutter();
         let range: Range = nodeSelection.getRange(docElement);
         const nodes: Node[] = range.collapsed ? nodeSelection.getSelectionNodeCollection(range) :

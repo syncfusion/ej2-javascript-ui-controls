@@ -6349,7 +6349,7 @@ export class PageLayoutViewer extends LayoutViewer {
     public scrollToPage(pageIndex: number): void {
         let top: number = 0;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-            top = (this.documentHelper.pages[i].boundingRectangle.y * this.documentHelper.zoomFactor) - (this.pageGap / 2);
+            top = (this.documentHelper.pages[i].boundingRectangle.y * (this.documentHelper.zoomFactor > 1 ? this.documentHelper.zoomFactor : 1)) - (this.pageGap / 2);
             if (i === pageIndex) {
                 break;
             }

@@ -943,6 +943,9 @@ export class CollaborativeEditingHandler {
      * @returns {void}
     */
     public updateCaretPosition(connectionId?: string, operation?: Operation): void {
+        if (isNullOrUndefined(this.userMap)) {
+            return;
+        }
         let keys: string[] = Object.keys(this.userMap);
         let tranformedOffset: number;
         //For loop to iterate over the keys

@@ -1189,8 +1189,8 @@ export class Matrix {
 
     public get(rowIndex: number, columnIndex: number, navigator: number[], action?: string, validator?: Function): number[] {
         const tmp: number = columnIndex; if (rowIndex + navigator[0] < 0) { return [rowIndex, columnIndex]; }
-        if (!document.getElementsByClassName('e-popup-open').length || (document.querySelectorAll('.e-popup-open .e-editedrow').length &&
-            !document.querySelectorAll('.e-popup-open:not(.e-dialog)').length)) {
+        if (!document.getElementsByClassName('e-popup-open').length || document.querySelectorAll('.e-popup-open.e-tooltip-wrap').length ||
+            (document.querySelectorAll('.e-popup-open .e-editedrow').length && !document.querySelectorAll('.e-popup-open:not(.e-dialog)').length)) {
             rowIndex = Math.max(0, Math.min(rowIndex + navigator[0], this.rows));
         }
         let emptyTable: boolean = true;

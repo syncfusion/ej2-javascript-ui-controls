@@ -9007,8 +9007,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     target.tooltip = fieldValue.tooltip;
                 }
                 target.Required = fieldValue.isRequired ? fieldValue.isRequired : false;
-                if (!isSameValue)
-                {this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName); }
+                if (!isSameValue) {
+                    this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target,
+                                                        fieldValue.fontName, fieldValue.signatureBounds);
+                }
             } else {
                 if (!isformDesignerModuleListBox) {
                     this.formFieldsModule.updateDataInSession(target);
@@ -9087,7 +9089,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         else if (fieldValue.type === 'SignatureField' || fieldValue.type === 'InitialField') {
                             if (fieldValue.value) {
                                 currentData.Value = fieldValue.value;
-                                currentData = this.updateSignatureValue(currentData, fieldValue);
+                                currentData = this.updateSignatureValue(currentData, fieldValue, fieldValue.signatureBounds);
                             }
                         }
                         this.formFieldsModule.updateFormFieldsCollection(currentData);
@@ -9119,9 +9121,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @param {any} currentData - Current form field data.
      * @param {any} fieldValue - Form Field.
+     * @param {any} signBounds - It contains a signatureBounds.
      * @returns {any} - Returns the updated the current Data.
      */
-    private updateSignatureValue(currentData: any, fieldValue: any): any {
+    private updateSignatureValue(currentData: any, fieldValue: any, signBounds?: any): any {
         if (!fieldValue.signatureType) {
             fieldValue.signatureType = this.viewerBase.isSignatureImageData(fieldValue.value) ? 'Image' : (this.viewerBase.isSignaturePathData(fieldValue.value) ? 'Path' : 'Type');
         }
@@ -9167,7 +9170,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     bounds = this.formFieldsModule.getDefaultBoundsforSign(bounds);
                 }
             } else {
-                if (this.signatureFitMode === 'Default') {
+                if (!isNullOrUndefined(signBounds)) {
+                    bounds = signBounds;
+                }
+                else if (this.signatureFitMode === 'Default') {
                     const signBounds: any = this.viewerBase.signatureModule.updateSignatureAspectRatio(currentData.Value, false,
                                                                                                        null, currentData);
                     bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle,

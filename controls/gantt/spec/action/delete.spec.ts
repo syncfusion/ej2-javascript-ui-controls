@@ -1,14 +1,14 @@
 /**
  * Gantt delete spec
  */
-import { Gantt, IActionBeginEventArgs, IGanttData, Edit, Toolbar, Selection } from '../../src/index';
+import { Gantt, IActionBeginEventArgs, IGanttData, Edit, Toolbar, Selection, Sort, Filter, DayMarkers } from '../../src/index';
 import { projectData1, CR900218 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 import { doesImplementInterface } from '@syncfusion/ej2-grids';
 describe('Gantt delete support', () => {
     describe('Gantt delete action', () => {
-        Gantt.Inject(Edit, Toolbar, Selection);
+        Gantt.Inject(Edit, Toolbar, Selection, Sort, Filter, DayMarkers);
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt(
@@ -41,11 +41,7 @@ describe('Gantt delete support', () => {
                     }
                 }, done);
         });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
+
         it('Delete a record that has parent & child links', () => {
             ganttObj.editModule.deleteRecord(6);
             expect(getValue('TaskID', ganttObj.flatData[5])).toBe(51);
@@ -115,10 +111,15 @@ describe('Gantt delete support', () => {
         //     };
         //     ganttObj.refresh();
         // }, 1000);
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
     });
-    
+
     describe('Selection maintaining after Gantt delete action', () => {
-        Gantt.Inject(Edit, Toolbar, Selection);
+        Gantt.Inject(Edit, Toolbar, Selection, Sort, Filter, DayMarkers);
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt(
@@ -148,15 +149,16 @@ describe('Gantt delete support', () => {
                     taskbarHeight: 30,
                 }, done);
         });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
+
         it('Delete a record', () => {
             ganttObj.editModule.deleteRecord(6);
             expect(getValue('TaskID', ganttObj.flatData[5])).toBe(51);
             expect(ganttObj.selectedRowIndex).toBe(5);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
     });
     describe('CR900218-Updating datasource and selected row index', () => {
@@ -168,26 +170,26 @@ describe('Gantt delete support', () => {
                     allowSorting: true,
                     taskFields: {
                         id: 'TaskID',
-                    name: 'TaskName',
-                    startDate: 'StartDate',
-                    duration: 'Duration',
-                    progress: 'Progress',
-                    child: 'subtasks',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
                     },
                     selectionSettings: {
                         mode: 'Row',
                         type: 'Multiple',
                         enableToggle: true,
                     },
-                    selectedRowIndex: 1, 
+                    selectedRowIndex: 1,
                     editSettings: {
                         allowEditing: true,
                         allowDeleting: true,
                         allowTaskbarEditing: true,
                         showDeleteConfirmDialog: true
                     },
-                    toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
-                    'PrevTimeSpan', 'NextTimeSpan'],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                        'PrevTimeSpan', 'NextTimeSpan'],
                     allowSelection: true,
                     gridLines: "Both",
                     showColumnMenu: false,
@@ -219,6 +221,11 @@ describe('Gantt delete support', () => {
             };
             ganttObj.dataSource = CR900218;
             ganttObj.selectedRowIndex = 2;
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
     });
 });

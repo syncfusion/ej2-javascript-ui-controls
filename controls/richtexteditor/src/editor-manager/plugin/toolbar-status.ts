@@ -35,7 +35,7 @@ export class ToolbarStatus {
         fontName?: string[], documentNode?: Node): IToolbarStatus {
         let formatCollection: IToolbarStatus = JSON.parse(JSON.stringify(statusCollection));
         const nodeCollection: IToolbarStatus = JSON.parse(JSON.stringify(statusCollection));
-        const nodeSelection: NodeSelection = new NodeSelection();
+        const nodeSelection: NodeSelection = new NodeSelection(rootNode as HTMLElement);
         const range: Range = nodeSelection.getRange(docElement);
         const nodes: Node[] = documentNode ? [documentNode] : range.collapsed ? nodeSelection.getNodeCollection(range) :
             nodeSelection.getSelectionNodeCollectionBr(range);

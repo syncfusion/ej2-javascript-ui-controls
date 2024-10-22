@@ -1,7 +1,7 @@
 /**
  * Link module spec
  */
-import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser, createElement } from '@syncfusion/ej2-base';
 import { DialogType, RichTextEditor } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
@@ -1010,6 +1010,19 @@ describe('Link Module', () => {
                 expect(isNullOrUndefined(link)).toBe(true);
                 done();
             }, 100);
+        });
+
+        it('EJ2 - The editor does not sanitize encoded tab character in JavaScript alert', (done) => {
+            let anchor = createElement('a') as HTMLAnchorElement;
+            anchor.className = 'e-rte-anchor';
+            anchor.href = "jav\u0009ascript:alert('XSS')";
+            anchor.title = 'http://qwef';
+            anchor.target = '_blank';
+            anchor.setAttribute('aria-label', 'Open in new window');
+            anchor.textContent = 'qwef';
+            const sanitizedHTML = (rteObj as any).htmlEditorModule.sanitizeHelper(anchor.outerHTML);
+            expect(sanitizedHTML === `<a class="e-rte-anchor" title="http://qwef" target="_blank" aria-label="Open in new window">qwef</a>`).toBe(true);
+            done();
         });
     });
 

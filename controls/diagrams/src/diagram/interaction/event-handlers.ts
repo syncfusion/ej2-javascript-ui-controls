@@ -2218,7 +2218,7 @@ export class DiagramEventHandler {
 
     /** @private */
     public updateTool(): void {
-        if (this.action === 'Pan' || this.action === 'Draw') {
+        if (this.eventArgs && !this.eventArgs.position) {
             this.action = 'Select';
         }
     }

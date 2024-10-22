@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I641213` - Data points in a multi-pane chart no longer collapse when zooming in canvas mode.
+- `#I641366` - The border for the multi-pane chart now renders correctly in canvas mode.
+- `#I640624` - The Moving Average trendline now functions as expected when the period is set to one.
+- `#I642177` - The `columnWidthInPixel` property now works correctly in the transposed stacked column chart.
+- `#I638097` - The scrollbar now functions properly during data binding.
+- `#I644765` - Series now renders properly when the axis interval is zero.  
+
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#I642553` - The legend text size now updates correctly when resizing the accumulation chart.
+
 ## 27.1.53 (2024-10-15)
 
 ### Chart

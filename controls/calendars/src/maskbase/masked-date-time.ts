@@ -1,5 +1,5 @@
 import {IMaskedDateTime} from '../maskbase/interface';
-import { L10n, getValue, getDefaultDateObject, cldrData, KeyboardEventArgs} from '@syncfusion/ej2-base';
+import { L10n, getValue, getDefaultDateObject, cldrData, KeyboardEventArgs, Browser} from '@syncfusion/ej2-base';
 
 const ARROWLEFT: string = 'ArrowLeft';
 const ARROWRIGHT: string = 'ArrowRight';
@@ -763,18 +763,41 @@ export class MaskedDateTime {
                 break;
             }
         }
+        let scrollPositionY: number;
+        if (Browser.isDevice && (Browser.isIos || Browser.isIos7)) {
+            const scrollableParent: HTMLElement | null = this.findScrollableParent(this.parent.inputElement);
+            scrollPositionY = scrollableParent ? scrollableParent.getBoundingClientRect().top : window.scrollY;
+        }
         this.parent.inputElement.selectionStart = start;
         this.validCharacterCheck();
         if ((this.isNavigate || this.isDeletion) && !this.isDeleteKey ) {
             const isbackward: boolean = this.isNavigate ? false : true;
             this.isNavigate = this.isDeletion = false;
             this.navigateSelection(isbackward);
+            if (Browser.isDevice && (Browser.isIos || Browser.isIos7)) {
+                setTimeout(() => {
+                    window.scrollTo(0, scrollPositionY);
+                }, 0);
+            }
         }
         if (this.isDeleteKey)
         {
             this.isDeletion = false;
         }
         this.isDeleteKey = false;
+    }
+    private findScrollableParent(element: HTMLElement | null): HTMLElement | null {
+        while (element) {
+            if (this.isScrollable(element)) {
+                return element;
+            }
+            element = element.parentElement;
+        }
+        return null;
+    }
+    private isScrollable(element: HTMLElement): boolean {
+        const overflowY: string = window.getComputedStyle(element).overflowY;
+        return element.scrollHeight > element.clientHeight && (overflowY === 'auto' || overflowY === 'scroll');
     }
     private navigateSelection(isbackward : boolean): void {
         const start: number = this.parent.inputElement.selectionStart;

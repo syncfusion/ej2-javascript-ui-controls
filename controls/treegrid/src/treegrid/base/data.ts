@@ -320,7 +320,7 @@ export class DataManipulation {
                 rowDetails.record.expanded = true;
             }
             for (let i: number = 0; i < rowDetails.rows.length; i++) {
-                rowDetails.rows[parseInt(i.toString(), 10)].style.display = 'table-row';
+                this.parent['toggleRowVisibility'](rowDetails.rows[parseInt(i.toString(), 10)], 'e-childrow-visible');
                 if (!this.parent.loadChildOnDemand) {
                     const targetEle: Element = rowDetails.rows[parseInt(i.toString(), 10)].getElementsByClassName('e-treegridcollapse')[0];
                     childRecord = this.parent.rowTemplate ?

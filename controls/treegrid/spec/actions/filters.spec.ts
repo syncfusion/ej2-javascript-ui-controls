@@ -823,9 +823,9 @@ describe('EJ2-23097: Records are not properly collapsed after filter/search is p
     it('Filtering', () => {
         gridObj.filterByColumn('TaskName', 'startswith', 'grand');
         gridObj.collapseRow(<HTMLTableRowElement>(gridObj.getRowByIndex(0)));
-        expect((<HTMLElement>(gridObj.getRowByIndex(2))).style.display).toBe('none');
-        expect((<HTMLElement>(gridObj.getRowByIndex(3))).style.display).toBe('none');
-        expect((<HTMLElement>(gridObj.getRowByIndex(4))).style.display).toBe('none');
+        expect(gridObj.getRowByIndex(2).classList.contains('e-childrow-hidden')).toBe(true);
+        expect(gridObj.getRowByIndex(3).classList.contains('e-childrow-hidden')).toBe(true);
+        expect(gridObj.getRowByIndex(4).classList.contains('e-childrow-hidden')).toBe(true);
     });
     afterAll(() => {
         destroy(gridObj);

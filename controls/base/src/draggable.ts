@@ -234,6 +234,13 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     @Property(true)
     public isPreventSelect: boolean;
     /**
+     * Defines whether need to prevent scrolling while dragging.
+     *
+     * @private
+     */
+    @Property(false)
+    public isPreventScroll: boolean;
+    /**
      * Specifies the callback function for drag event.
      *
      * @event drag
@@ -828,7 +835,13 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         if (this.dragArea && typeof this.dragArea !== 'string' && this.dragArea.classList.contains('e-kanban-content') && this.dragArea.style.position === 'relative') {
             draEleTop += this.dragArea.scrollTop;
         }
-        const dragValue: DragPosition = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
+        let dragValue: DragPosition = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
+        if (this.isPreventScroll) {
+            dragValue = this.getProcessedPositionValue({
+                top: (this.position.top - this.parentClientRect.top - 2) + 'px',
+                left: (this.position.left - this.parentClientRect.left - 2) + 'px'
+            });
+        }
         setStyleAttribute(helperElement, this.getDragPosition(dragValue));
         if (!this.elementInViewport(helperElement) && this.enableAutoScroll && !this.helperElement.classList.contains('e-treeview')) {
             this.helperElement.scrollIntoView();

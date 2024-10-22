@@ -155,7 +155,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             const headerTempID: string = gridObj.element.id + column.uid + 'headerTemplate';
             const str: string = 'isStringTemplate';
             const col: Column = column;
-            const isReactCompiler: boolean = this.parent.isReact && typeof (column.headerTemplate) !== 'string';
+            const isReactCompiler: boolean = this.parent.isReact && typeof (column.headerTemplate) !== 'string' && !(column.headerTemplate.prototype && column.headerTemplate.prototype.CSPTemplate);
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
             if (isReactCompiler || isReactChild) {

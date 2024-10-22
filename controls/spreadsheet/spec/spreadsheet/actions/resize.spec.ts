@@ -223,7 +223,7 @@ describe('Resize ->', () => {
             expect(spreadsheet.sheets[0].columns[3].width).toBe(214);
             expect(spreadsheet.sheets[0].rows[1].height).toBe(256);
             spreadsheet.autoFit('2');
-            expect(spreadsheet.sheets[0].rows[1].height).toBe(35);
+            expect(spreadsheet.sheets[0].rows[1].height).toBe(52);
             spreadsheet.setColWidth(260, 3, 0);
             spreadsheet.autoFit('D');
             expect(spreadsheet.sheets[0].columns[3].width).toBe(245);
@@ -589,7 +589,7 @@ describe('Resize ->', () => {
             });
         });
     });
-    describe('EJ2-54762, EJ2-51216, EJ2-54009->', () => {
+    describe('EJ2-54762, EJ2-51216, EJ2-54009, EJ2-911162 ->', () => {
         beforeAll((done: Function) => {
             model = {
                 sheets: [{ rows: [{ height: 15 }, { height: 10 }, { height: 8 }, { height: 30 }, ], 
@@ -641,6 +641,15 @@ describe('Resize ->', () => {
                     done();
                 }, 100);
             }, 10);
+        });
+        it('EJ2-911162 - After applying wrap text to merged cells, autofit does not adjust the row height to show the full content.->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.merge('B5:E5', 'Horizontally');
+            helper.invoke('updateCell', [{ value: 'This is row with autoFit issue This is row with autoFit issue This is row with autoFit issue This is row with autoFit issue This is row with autoFit issue' }, 'B5']);
+            helper.invoke('updateCell', [{ wrap: true }, 'B5']);
+            spreadsheet.autoFit('5');
+            expect(spreadsheet.sheets[0].rows[4].height).toBe(52);
+            done();
         });
     });
     describe('EJ2-56260, EJ2-58247->', () => {

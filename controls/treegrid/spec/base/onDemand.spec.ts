@@ -238,7 +238,7 @@ describe('DataSource onDemand', () => {
             gridObj.grid = new Grid();
             
             gridObj.rowDataBound = (args?: RowDataBoundEventArgs) => {
-                expect(args.row.getAttribute('style')).toBe('display: table-row;');
+                expect(args.row.classList.contains('e-childrow-visible')).toBe(true);
                 done();
             }
             gridObj.grid.currentViewData = [{"taskID":1,"taskName":"Planning", expanded: true },{"taskID":2, ParentID: 1, "taskName":"Plan timeline"},{"taskID":3,"taskName":"Plan budget"},{"taskID":4,"taskName":"Allocate resources"}]
@@ -246,7 +246,7 @@ describe('DataSource onDemand', () => {
             let row: Element = createElement('tr', { className: 'e-row'})
             let args: RowDataBoundEventArgs = {data: {"taskID":2, ParentID: 1, "taskName":"Plan timeline"}, row: row};
             gridObj.renderModule.RowModifier(args);
-            expect(args.row.getAttribute('style')).toBe('display: table-row;');
+            expect(args.row.classList.contains('e-childrow-visible')).toBe(true);
         });
 
         afterAll(() => {

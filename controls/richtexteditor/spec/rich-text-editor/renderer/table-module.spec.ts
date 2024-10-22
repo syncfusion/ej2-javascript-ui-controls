@@ -11,6 +11,32 @@ import { ARROW_DOWN_EVENT_INIT, ARROW_LEFT_EVENT_INIT, ARROW_UP_EVENT_INIT, ARRO
 
 
 describe('Table Module', () => {
+    describe('When you click the outside table dialog, the dialog will be hidden', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable'],
+                },
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('When you click the outside table dialog, the dialog will be hidden', (done) => {
+            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            (document.querySelector(".e-rte-table-popup button.e-insert-table-btn")as HTMLElement).click();
+            setTimeout(() => {
+                var clickEvent = document.createEvent ('MouseEvents');
+                clickEvent.initEvent ('mousedown', true, true);
+                rteObj.inputElement.querySelector("p").dispatchEvent (clickEvent);
+                expect(document.querySelector(".e-rte-edit-table") == null).toBe(true);
+                done();
+            }, 100);
+        });
+    });
 
     describe('CSS property change testing, Coverage improvement ', () => {
         let editor: RichTextEditor;
@@ -5435,8 +5461,9 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
         it('The table style is removed through the Quick Toolbar', function (done) {
             rteObj.focusIn()
-            var tbElement = rteObj.contentModule.getEditPanel().querySelector(".tdElement")
-            var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
+            const tbElement = rteObj.contentModule.getEditPanel().querySelector(".tdElement")
+            setCursorPoint(tbElement, 0);
+            const eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
             (rteObj as any).mouseDownHandler(eventsArg);
             (rteObj as any).mouseUp(eventsArg);
             setTimeout(function () {
@@ -5444,7 +5471,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 (document.querySelector(".e-dropdown-popup .e-item.e-dashed-borders") as any).click()
                 expect(!rteObj.inputElement.querySelector("table").classList.contains("e-dashed-borders")).toBe(true);
                 done();
-            },0);
+            },100);
         });
     });
     
@@ -5705,33 +5732,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
             setTimeout(() => {
                 expect(document.querySelector(".e-rte-table-popup.rich_Text_Editor") != null).toBe(true);
-                done();
-            }, 100);
-        });
-    });
-
-    describe('When you click the outside table dialog, the dialog will be hidden', () => {
-        let rteObj: RichTextEditor;
-        beforeAll((done: Function) => {
-            rteObj = renderRTE({
-                toolbarSettings: {
-                    items: ['CreateTable'],
-                },
-            });
-            done();
-        });
-        afterAll((done: Function) => {
-            destroy(rteObj);
-            done();
-        });
-        it('When you click the outside table dialog, the dialog will be hidden', (done) => {
-            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
-            (document.querySelector(".e-rte-table-popup button.e-insert-table-btn")as HTMLElement).click();
-            setTimeout(() => {
-                var clickEvent = document.createEvent ('MouseEvents');
-                clickEvent.initEvent ('mousedown', true, true);
-                rteObj.inputElement.querySelector("p").dispatchEvent (clickEvent);
-                expect(document.querySelector(".e-rte-edit-table") == null).toBe(true);
                 done();
             }, 100);
         });

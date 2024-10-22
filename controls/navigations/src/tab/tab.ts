@@ -2254,6 +2254,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 if (trg.classList.contains(CLS_ACTIVE)) {
                     index = (index > selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_TB_POPUP + ')', this.element).length - 1) ? index - 1 : index;
                     this.enableAnimation = false;
+                    this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
+                    index = this.getSelectingTabIndex(index);
+                    index = !isNaN(index) && index >= 0 && this.tbItem.length > index ? index : 0;
                     this.selectedItem = index;
                     this.select(index);
                 } else if (index !== this.selectedItem) {
@@ -2395,18 +2398,23 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.isInteracted = false;
     }
 
-    private selectingContent(args: number | HTEle, isInteracted?: boolean): void {
-        if (typeof args === 'number') {
-            if (!isNOU(this.tbItem[args]) && (this.tbItem[<number>args].classList.contains(CLS_DISABLE) ||
-                this.tbItem[<number>args].classList.contains(CLS_HIDDEN))) {
-                for (let i: number = <number>args + 1; i < this.items.length; i++) {
-                    if (this.items[i].disabled === false && this.items[i].visible === true) {
-                        args = i; break;
-                    } else {
-                        args = 0;
-                    }
+    private getSelectingTabIndex(args: number): number {
+        if (!isNOU(this.tbItem[args]) && (this.tbItem[<number>args].classList.contains(CLS_DISABLE) ||
+            this.tbItem[<number>args].classList.contains(CLS_HIDDEN))) {
+            for (let i: number = <number>args + 1; i < this.items.length; i++) {
+                if (this.items[i].disabled === false && this.items[i].visible === true) {
+                    args = i; break;
+                } else {
+                    args = 0;
                 }
             }
+        }
+        return args;
+    }
+
+    private selectingContent(args: number | HTEle, isInteracted?: boolean): void {
+        if (typeof args === 'number') {
+            args = this.getSelectingTabIndex(args);
             if (this.tbItem.length > args && args >= 0 && !isNaN(args)) {
                 this.prevIndex = this.selectedItem;
                 this.prevItem = this.tbItem[this.prevIndex];

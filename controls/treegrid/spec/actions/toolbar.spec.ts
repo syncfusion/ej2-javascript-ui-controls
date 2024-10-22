@@ -5,7 +5,7 @@ import { ToolbarItem } from '../../src/treegrid/enum';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
-import { select } from '@syncfusion/ej2-base';
+import { classList, select } from '@syncfusion/ej2-base';
 import { ITreeData } from '../../src';
 import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { PdfExport } from '../../src/treegrid/actions/pdf-export';
@@ -134,9 +134,9 @@ describe('TreeGrid Toolbar module', () => {
     });
     it('click events', () => {
         (<HTMLElement>select('#' + gridObj.grid.element.id + '_collapseall', gridObj.toolbarModule.getToolbar())).click();
-        expect((<HTMLTableRowElement>gridObj.getRows()[1]).style.display).toBe('none');
+        expect(gridObj.getRows()[1].classList.contains('e-childrow-hidden')).toBe(true);
         (<HTMLElement>select('#' + gridObj.grid.element.id + '_expandall', gridObj.toolbarModule.getToolbar())).click();
-        expect((<HTMLTableRowElement>gridObj.getRows()[1]).style.display).toBe('table-row');
+        expect(gridObj.getRows()[1].classList.contains('e-childrow-visible')).toBe(true);
     });
     afterAll(() => {
       destroy(gridObj);

@@ -2509,7 +2509,23 @@ export class Series extends SeriesBase {
                     this.chart.errorBarModule.render(this);
                 }
                 if (this.marker.dataLabel.visible) {
-                    chart.dataLabelModule.render(this, this.chart, this.marker.dataLabel);
+                    if (this.chart.enableCanvas) {
+                        this.chart.canvasRender.ctx.save();
+                        this.chart.canvasRender.ctx.beginPath();
+                        if (chart.requireInvertedAxis) {
+                            this.chart.canvasRender.ctx.rect(this.yAxis.rect.x, this.xAxis.rect.y, this.yAxis.rect.width,
+                                                             this.xAxis.rect.height);
+                        }
+                        else {
+                            this.chart.canvasRender.ctx.rect(this.xAxis.rect.x, this.yAxis.rect.y, this.xAxis.rect.width,
+                                                             this.yAxis.rect.height);
+                        }
+                        this.chart.canvasRender.ctx.clip();
+                        chart.dataLabelModule.render(this, this.chart, this.marker.dataLabel);
+                        this.chart.canvasRender.ctx.restore();
+                    } else {
+                        chart.dataLabelModule.render(this, this.chart, this.marker.dataLabel);
+                    }
                 }
                 this.appendSeriesElement(chart.seriesElements, chart);
             }

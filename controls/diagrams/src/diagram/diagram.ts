@@ -4856,9 +4856,27 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (let i: number = 0; i < selectedItems.length; i++) {
 
                 const node: Node = selectedItems[parseInt(i.toString(), 10)] as Node;
+                const parent: Node = this.nameTable[node.parentId] as Node;
                 if (this.nameTable[selectedItems[parseInt(i.toString(), 10)].id]) {
                     //Removed isBlazor code
-                    this.remove(selectedItems[parseInt(i.toString(), 10)]);
+                    // 912905: Multi-selecting and deleting swimlane objects causes the diagram to break
+                    if (parent && parent.shape instanceof SwimLane && !node.isPhase) {
+                        if (node.isLane) {
+                            const parentHeader: number = (parent.shape as SwimLaneModel).header.id ? parent.shape.header.height : 0;
+                            if ((this.selectedItems.wrapper.bounds.x <= parent.wrapper.bounds.x &&
+                                this.selectedItems.wrapper.bounds.width >= parent.wrapper.bounds.width &&
+                                (parent.shape as SwimLaneModel).orientation === 'Horizontal') ||
+                                (this.selectedItems.wrapper.bounds.y <= parent.wrapper.bounds.y + parentHeader &&
+                                this.selectedItems.wrapper.bounds.height >= parent.wrapper.bounds.height - parentHeader &&
+                                (parent.shape as SwimLaneModel).orientation === 'Vertical')) {
+                                if (canDelete(parent) || (parent.shape as SwimLaneModel).lanes.length > 1) {
+                                    this.remove(selectedItems[parseInt(i.toString(), 10)]);
+                                }
+                            }
+                        }
+                    } else {
+                        this.remove(selectedItems[parseInt(i.toString(), 10)]);
+                    }
                     //Removed isBlazor code
 
                 }

@@ -278,7 +278,7 @@ export class CellRenderer implements ICellRenderer {
                 if (args.cell.image[i as number]) {
                     this.parent.notify(createImageElement, {
                         options: {
-                            src: args.cell.image[i as number].src, imageId: args.cell.image[i as number].id,
+                            src: args.cell.image[i as number].src, id: args.cell.image[i as number].id,
                             height: args.cell.image[i as number].height, width: args.cell.image[i as number].width,
                             top: args.cell.image[i as number].top, left: args.cell.image[i as number].left
                         },

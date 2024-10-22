@@ -584,7 +584,21 @@ export class FormFields {
                     }
                 } else {
                     if (currentData.Name !== 'ink') {
-                        const formFieldCollection: FormFieldModel = { name: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: currentData.IsInitialField ? 'InitialField' : type, value: this.retriveCurrentValue(currentData), fontName: '', isRequired: currentData.IsRequired };
+                        let bounds: any;
+                        if (currentData.LineBounds) {
+                            if (isNullOrUndefined(currentData.Bounds)) {
+                                bounds = this.updateBoundsValue(currentData.LineBounds);
+                            }
+                            else {
+                                bounds = currentData.Bounds;
+                            }
+                        }
+                        const formFieldCollection: FormFieldModel = {
+                            name: this.retriveFieldName(currentData),
+                            id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i,
+                            isReadOnly: false, type: currentData.IsInitialField ? 'InitialField' : type,
+                            value: this.retriveCurrentValue(currentData), fontName: '', isRequired: currentData.IsRequired, bounds: bounds
+                        };
                         this.pdfViewer.formFieldCollections.push(formFieldCollection);
                     }
                 }
@@ -669,6 +683,14 @@ export class FormFields {
         return null;
     }
 
+    private updateBoundsValue(lineBounds: any): any {
+        const bounds: any = {
+            x: this.ConvertPointToPixel(lineBounds.X), y: this.ConvertPointToPixel(lineBounds.Y),
+            width: this.ConvertPointToPixel(lineBounds.Width), height: this.ConvertPointToPixel(lineBounds.Height)
+        };
+        return bounds;
+    }
+
     /**
      * @param {any} formField - It describes about the form field
      * @private
@@ -676,11 +698,20 @@ export class FormFields {
      */
     public updateFormFieldsCollection(formField: any): void {
         const type: FormFieldType = formField['Name'];
+        let bounds: any;
+        if (formField.LineBounds) {
+            if (isNullOrUndefined(formField.Bounds)) {
+                bounds = this.updateBoundsValue(formField.LineBounds);
+            }
+            else {
+                bounds = formField.Bounds;
+            }
+        }
         const formFieldCollection: FormFieldModel = {
             name: this.retriveFieldName(formField), id: formField.uniqueID, isReadOnly: formField.IsReadonly, isRequired: formField.IsRequired, isSelected: type === 'CheckBox' ? false : formField.Selected,
             isChecked: type === 'RadioButton' ? false : formField.Selected, type: type, value: type === 'ListBox' || type === 'DropDown' ? formField.SelectedValue : formField.Value, fontName: formField.FontFamily ? formField.FontFamily : '', pageIndex: formField.PageIndex, pageNumber: formField.PageIndex + 1, isMultiline: formField.isMultiline ? formField.isMultiline : formField.Multiline, insertSpaces: formField.insertSpaces ? formField.insertSpaces : formField.InsertSpaces, isTransparent: formField.isTransparent ? formField.isTransparent : formField.IsTransparent, rotateAngle: formField.rotateAngle ? formField.rotateAngle : formField.RotationAngle,
             selectedIndex: formField.selectedIndex ? formField.selectedIndex : formField.SelectedList,
-            options: formField.options ? formField.options : formField.TextList ? formField.TextList : [],
+            options: formField.options ? formField.options : formField.TextList ? formField.TextList : [], bounds: bounds,
             signatureType: formField.signatureType ? formField.signatureType : '', zIndex: formField.zIndex, tooltip: formField.tooltip ? formField.tooltip : formField.ToolTip ? formField.ToolTip : '', signatureIndicatorSettings: formField.signatureIndicatorSettings ? formField.signatureIndicatorSettings : ''
         };
         this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.
@@ -959,10 +990,11 @@ export class FormFields {
      * @param {string} value - It describes about the value
      * @param {any} target - It describes about the target
      * @param {string} fontname - It describes about the font name
+     * @param {any} signBounds - It contains a signatureBounds
      * @private
      * @returns {void}
      */
-    public drawSignature(signatureType?: string, value?: string, target?: any, fontname?: string): void {
+    public drawSignature(signatureType?: string, value?: string, target?: any, fontname?: string, signBounds?: any): void {
         let annot: PdfAnnotationBaseModel;
         // eslint-disable-next-line
         const proxy: any = this;
@@ -1083,7 +1115,10 @@ export class FormFields {
                             };
                             signString = annot.data;
                         } else {
-                            if (this.pdfViewer.signatureFitMode === 'Default') {
+                            if (!isNullOrUndefined(signBounds)) {
+                                bounds = signBounds;
+                            }
+                            else if (this.pdfViewer.signatureFitMode === 'Default') {
                                 const signatureBounds: any = this.pdfViewerBase.signatureModule.
                                     updateSignatureAspectRatio(currentValue, false, currentField);
                                 bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue,
@@ -2359,7 +2394,7 @@ export class FormFields {
             }
             const canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
             const obj: any = this.pdfViewer.formFieldCollection.filter((field: any) => { return annot.id.split('_')[0] === field.id; });
-            if (obj.length > 0 && obj[0].visibility !== 'hidden') {
+            if (obj.length > 0 && obj[0].visibility !== 'hidden' || !this.pdfViewer.formDesignerModule) {
                 this.pdfViewer.renderDrawing(canvass as any, currentPage);
             }
         }

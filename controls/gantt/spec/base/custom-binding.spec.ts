@@ -33,9 +33,9 @@ describe('Gantt custom binding', () => {
                         'PrevTimeSpan', 'NextTimeSpan'],
                 }, done);
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 100);
-        });
+        // beforeEach((done: Function) => {
+        //     setTimeout(done, 100);
+        // });
         it('Add record', (done: Function) => {
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType === 'add') {

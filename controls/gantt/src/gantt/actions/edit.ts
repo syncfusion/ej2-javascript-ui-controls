@@ -1590,8 +1590,8 @@ export class Edit {
                 this.updateScheduleDatesOnEditing(args);
             }
         }
-        if (this.parent.enableCriticalPath && this.parent.criticalPathModule) {
-            const criticalModule: CriticalPath = this.parent.criticalPathModule;
+        const criticalModule: CriticalPath = this.parent.criticalPathModule;
+        if (this.parent.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
             criticalModule.showCriticalPath(true);
             criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection,
                                                  true, criticalModule.predecessorCollectionTaskIds);
@@ -3973,7 +3973,7 @@ export class Edit {
         const prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
         const selectedRecord: IGanttData = this.parent.selectionModule.getSelectedRecords()[0];
         if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
-            this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index as number].level - prevRecord.level === 1) {
+            this.parent.viewType === 'ResourceView' || !isNullOrUndefined(this.parent.updatedRecords[index as number]) && this.parent.updatedRecords[index as number].level - prevRecord.level === 1) {
             return;
         } else {
             if (prevRecord.level - selectedRecord.level === 0) {

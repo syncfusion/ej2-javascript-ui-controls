@@ -215,9 +215,9 @@ describe('Gantt spec for tooltip', () => {
                 ],
             }, done);
         }); 
-        beforeEach((done: Function) => {
-            setTimeout(done, 100);
-        });
+        // beforeEach((done: Function) => {
+        //     setTimeout(done, 100);
+        // });
         it('Baseline Tooltip', () => {
             let baseline: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-baseline-bar') as HTMLElement;
             triggerMouseEvent(baseline, 'mouseover', 50);
@@ -914,7 +914,7 @@ describe('Gantt toolbar action', () => {
 
 describe('Gantt tooltip module', () => {
     let ganttObj: Gantt;
-    var projectNewData = [
+    let projectNewData = [
         {
             TaskID: 1,
             TaskName: 'Product Concept',
@@ -1058,7 +1058,7 @@ describe('Gantt tooltip module', () => {
 
 describe('Gantt tooltip module', () => {
     let ganttObj: Gantt;
-    var taskModeData = [
+    let taskModeData = [
         {
             'TaskID': 1,
             'TaskName': 'Parent Task 1',
@@ -1189,7 +1189,7 @@ describe('Gantt tooltip module', () => {
 
 describe('Gantt tooltip module', () => {
     let ganttObj: Gantt;
-    var taskModeData: any = [
+    let taskModeData: any = [
         {
             'TaskID': 1,
             'TaskName': 'Parent Task 1',

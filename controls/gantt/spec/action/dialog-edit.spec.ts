@@ -4268,85 +4268,85 @@ describe('Change progress', function () {
        triggerMouseEvent(saveRecord, 'click');
    });
 });
-// describe('End Edit before open dialog', function () {
-//    let ganttObj: Gantt;
-//    let bwData = [
-//        {
-//            TaskID: 1,
-//            TaskName: 'New Task 1',
-//            StartDate: new Date('05/22/2023'),
-//            EndDate: new Date('05/22/2023'),
-//            Progress: 59,
-//            Duration: 1,
-//        }
-//    ];
-//    beforeAll(function (done) {
-//        ganttObj = createGantt({
-//            dataSource: bwData,
-//            allowSorting: true,
-//            allowReordering: true,
-//            enableContextMenu: true,
-//            taskFields: {
-//                id: 'TaskID',
-//                name: 'TaskName',
-//                startDate: 'StartDate',
-//                endDate: 'EndDate',
-//                duration: 'Duration',
-//                progress: 'Progress',
-//                dependency: 'Predecessor',
-//                parentID: 'parentID',
-//                baselineStartDate: 'BaselineStartDate',
-//                baselineEndDate: 'BaselineEndDate'
-//            },
-//            renderBaseline: true,
-//            baselineColor: 'red',
-//            editSettings: {
-//                allowAdding: true,
-//                allowEditing: true,
-//                allowDeleting: true,
-//                allowTaskbarEditing: true,
-//                showDeleteConfirmDialog: true
-//            },
-//            columns: [
-//                { field: 'TaskID', headerText: 'Task ID' },
-//                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
-//                { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
-//                { field: 'Duration', headerText: 'Duration' },
-//                { field: 'Progress', headerText: 'Progress', allowFiltering: false },
-//                { field: 'CustomColumn', headerText: 'CustomColumn' }
-//            ],
-//            sortSettings: {
-//                columns: [{ field: 'TaskID', direction: 'Ascending' },
-//                { field: 'TaskName', direction: 'Ascending' }]
-//            },
-//            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
-//                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+describe('End Edit before open dialog', function () {
+   let ganttObj: Gantt;
+   let bwData = [
+       {
+           TaskID: 1,
+           TaskName: 'New Task 1',
+           StartDate: new Date('05/22/2023'),
+           EndDate: new Date('05/22/2023'),
+           Progress: 59,
+           Duration: 1,
+       }
+   ];
+   beforeAll(function (done) {
+       ganttObj = createGantt({
+           dataSource: bwData,
+           allowSorting: true,
+           allowReordering: true,
+           enableContextMenu: true,
+           taskFields: {
+               id: 'TaskID',
+               name: 'TaskName',
+               startDate: 'StartDate',
+               endDate: 'EndDate',
+               duration: 'Duration',
+               progress: 'Progress',
+               dependency: 'Predecessor',
+               parentID: 'parentID',
+               baselineStartDate: 'BaselineStartDate',
+               baselineEndDate: 'BaselineEndDate'
+           },
+           renderBaseline: true,
+           baselineColor: 'red',
+           editSettings: {
+               allowAdding: true,
+               allowEditing: true,
+               allowDeleting: true,
+               allowTaskbarEditing: true,
+               showDeleteConfirmDialog: true
+           },
+           columns: [
+               { field: 'TaskID', headerText: 'Task ID' },
+               { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+               { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+               { field: 'Duration', headerText: 'Duration' },
+               { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+               { field: 'CustomColumn', headerText: 'CustomColumn' }
+           ],
+           sortSettings: {
+               columns: [{ field: 'TaskID', direction: 'Ascending' },
+               { field: 'TaskName', direction: 'Ascending' }]
+           },
+           toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+               'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
 
-//            labelSettings: {
-//                leftLabel: 'TaskID',
-//                rightLabel: 'Task Name: ${taskData.TaskName}',
-//                taskLabel: '${Progress}%'
-//            },
-//            allowResizing: true,
-//            readOnly: false,
-//            taskbarHeight: 20,
-//            rowHeight: 40,
-//            height: '550px',
-//            allowUnscheduledTasks: true,
-//        }, done);
-//    });
-//    afterAll(function () {
-//        if (ganttObj) {
-//            destroyGantt(ganttObj);
-//        }
-//    });
-//    it('Edit task name and open dialog', () => {
-//        let TaskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
-//        triggerMouseEvent(TaskName, 'dblclick');
-//        triggerMouseEvent(document.querySelector('.e-taskbar-main-container '), 'dblclick');
-//        // expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0).toBe(false)
-//    });
-// });
+           labelSettings: {
+               leftLabel: 'TaskID',
+               rightLabel: 'Task Name: ${taskData.TaskName}',
+               taskLabel: '${Progress}%'
+           },
+           allowResizing: true,
+           readOnly: false,
+           taskbarHeight: 20,
+           rowHeight: 40,
+           height: '550px',
+           allowUnscheduledTasks: true,
+       }, done);
+   });
+   afterAll(function () {
+       if (ganttObj) {
+           destroyGantt(ganttObj);
+       }
+   });
+   it('Edit task name and open dialog', () => {
+       let TaskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+       triggerMouseEvent(TaskName, 'dblclick');
+       triggerMouseEvent(document.querySelector('.e-taskbar-main-container '), 'dblclick');
+       // expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0).toBe(false)
+   });
+});
 describe('Change task start date less than timeline start date using dialog edit', function () {
    let ganttObj: Gantt;
    let bwData = [
@@ -12710,6 +12710,185 @@ describe('CR:912082-Duration field not updating in dialog box when setting the e
             let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button')[0] as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
             expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
+        }
+    });
+});
+describe('Add Dialog ', () => {
+    let ganttObj: Gantt;
+    let GanttData: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project Initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            isParent: true,
+            subtasks: [
+                { TaskID: 2, TaskName: 'Identify Site location', StartDate: new Date('04/02/2019'), Duration: 0, Progress: 50, isParent: false, info: 'Measure the total property area alloted for construction' },
+                {
+                    TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50, resources: [2, 3, 5], isParent: false, info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                        'From an engineer or company specializing in soil testing'
+                },
+                { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: "2FS", Progress: 50, isParent: false },
+            ]
+        }
+    ];
+    let ProjectResources: Object[] = [
+        { resourceId: 1, resourceName: 'Martin Tamer' },
+        { resourceId: 2, resourceName: 'Rose Fuller' },
+        { resourceId: 3, resourceName: 'Margaret Buchanan' }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: GanttData,
+            height: '450px',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                resourceInfo: 'resources',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            toolbar: ['Add', 'Edit', 'Delete', 'Cancel'],
+            editDialogFields: [
+                { type: 'General', headerText: 'General', fields: ['TaskID', 'TaskName', 'isParent'] },
+                { type: 'Dependency' },
+                { type: 'Resources' }
+            ],
+            addDialogFields: [
+                { type: 'General', headerText: 'General', fields: ['TaskID', 'TaskName', 'isParent'] },
+                {
+                    type: 'Resources',
+                    additionalParams: {
+                        contextMenuItems: null,
+                    },
+                },
+                {
+                    type: 'Dependency',
+                    additionalParams: {
+                        contextMenuItems: null,
+                    },
+                },
+            ],
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID', width: '100' },
+                { field: 'TaskName', headerText: 'Task Name', width: '250' },
+                { field: 'isParent', headerText: 'Custom Column', width: '100' },
+                { field: 'resources', headerText: 'Resources', width: '200' },
+                { field: 'StartDate', headerText: 'Start Date', width: '150' },
+                { field: 'Duration', headerText: 'Duration', width: '150' },
+                { field: 'Progress', headerText: 'Progress', width: '150' },
+            ],
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+            },
+            resources: ProjectResources,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                mode: 'Dialog',
+                allowTaskbarEditing: true
+            }
+            }, done);
+    });
+    it('dialog edit with additional params', () => {
+        ganttObj.openAddDialog();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Add Dialog ', () => {
+    let ganttObj: Gantt;
+    let GanttData: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project Initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            isParent: true,
+            subtasks: [
+                { TaskID: 2, TaskName: 'Identify Site location', StartDate: new Date('04/02/2019'), Duration: 0, Progress: 50, isParent: false, info: 'Measure the total property area alloted for construction' },
+                {
+                    TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50, resources: [2, 3, 5], isParent: false, info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                        'From an engineer or company specializing in soil testing'
+                },
+                { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: "2FS", Progress: 50, isParent: false },
+            ]
+        }
+    ];
+    let ProjectResources: Object[] = [
+        { resourceId: 1, resourceName: 'Martin Tamer' },
+        { resourceId: 2, resourceName: 'Rose Fuller' },
+        { resourceId: 3, resourceName: 'Margaret Buchanan' }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: GanttData,
+            height: '450px',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                resourceInfo: 'resources',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            toolbar: ['Add', 'Edit', 'Delete', 'Cancel'],
+            editDialogFields: [
+                { type: 'General', headerText: 'General', fields: ['TaskID', 'TaskName', 'isParent'] },
+                { type: 'Dependency' },
+                { type: 'Resources' }
+            ],
+            addDialogFields: [
+                { type: 'General', headerText: 'General', fields: ['TaskID', 'TaskName', 'isParent'] },
+                {
+                    type: 'Resources', additionalParams: {
+                        detailTemplate: null,
+                    },
+                },
+                {
+                    type: 'Dependency',
+                    additionalParams: {
+                        contextMenuItems: null,
+                    },
+                },
+            ],
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID', width: '100' },
+                { field: 'TaskName', headerText: 'Task Name', width: '250' },
+                { field: 'isParent', headerText: 'Custom Column', width: '100' },
+                { field: 'resources', headerText: 'Resources', width: '200' },
+                { field: 'StartDate', headerText: 'Start Date', width: '150' },
+                { field: 'Duration', headerText: 'Duration', width: '150' },
+                { field: 'Progress', headerText: 'Progress', width: '150' },
+            ],
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+            },
+            resources: ProjectResources,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                mode: 'Dialog',
+                allowTaskbarEditing: true
+            }
+            }, done);
+    });
+    it('dialog edit with additional params', () => {
+        ganttObj.openAddDialog();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
         }
     });
 });

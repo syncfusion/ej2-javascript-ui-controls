@@ -2,7 +2,29 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### Stepper
+
+#### Bug Fixes
+
+- `#I592870` - Now the issue with unable to navigate to the next step when the step's disabled state is dynamically updated in linear mode has been resolved.
+
+- `#I640774` - Now the issue with progress bar misalignment during dynamic updates of the step label has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#I640676` - An issue with the arguments returned in the `selected` event of the Tab when using the `removeTab` method with hidden Tab items has been fixed.
+
 ## 27.1.53 (2024-10-15)
+
+### Stepper
+
+#### Bug Fixes
+
+- `#F194542` - The issue with the text indicators disappearing when the disabled property is updated dynamically in the stepper component has been resolved.
 
 ### TreeView
 

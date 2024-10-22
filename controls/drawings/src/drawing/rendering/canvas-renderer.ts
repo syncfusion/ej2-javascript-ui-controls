@@ -318,7 +318,7 @@ export class CanvasRenderer {
 
     private image(
         ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number,
-        width: number, height: number, alignOptions: ImageAttributes)
+        width: number, height: number, alignOptions: ImageAttributes, annotationCallback?: (annotationID: string) => boolean)
         :
         void {
         ctx.beginPath();
@@ -394,9 +394,16 @@ export class CanvasRenderer {
                 let transform: DOMMatrix = ctx.getTransform();
                 image.onload = null;
                 image.onload = () => {
+                    var annotationID:string = alignOptions.id.split('_')[0];
+                    var annotationObject: boolean = true; 
+                    if (annotationCallback !== undefined && !annotationCallback(annotationID)) {
+                        annotationObject = false; 
+                    }
+                    if (annotationObject) {
                     ctx.setTransform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f);
                     ctx.clearRect(x, y, width, height);
                     ctx.drawImage(image, x, y, width, height);
+                    }
                 };
             }
         }
@@ -405,7 +412,7 @@ export class CanvasRenderer {
 
     // text utility
     private loadImage(
-        ctx: CanvasRenderingContext2D, obj: ImageAttributes, canvas: HTMLCanvasElement, pivotX: number, pivotY: number):
+        ctx: CanvasRenderingContext2D, obj: ImageAttributes, canvas: HTMLCanvasElement, pivotX: number, pivotY: number, annotationCallback?:(annotationID: string) => boolean):
         void {
         this.rotateContext(canvas, obj.angle, pivotX, pivotY);
         let image: HTMLImageElement;
@@ -415,10 +422,10 @@ export class CanvasRenderer {
             image = new Image();
             image.src = obj.source;
         }
-        this.image(ctx, image, obj.x, obj.y, obj.width, obj.height, obj);
+        this.image(ctx, image, obj.x, obj.y, obj.width, obj.height, obj, annotationCallback);
     }
     /**   @private  */
-    public drawImage(canvas: HTMLCanvasElement, obj: ImageAttributes, parentSvg?: SVGSVGElement, fromPalette?: boolean): void {
+    public drawImage(canvas: HTMLCanvasElement, obj: ImageAttributes, parentSvg?: SVGSVGElement, fromPalette?: boolean, annotationCallback?:(annotationID: string) => boolean): void {
 
         if (obj.visible) {
             let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
@@ -440,7 +447,7 @@ export class CanvasRenderer {
              * }
              */
             if (!fromPalette) {
-                this.loadImage(ctx, obj, canvas, pivotX, pivotY);
+                this.loadImage(ctx, obj, canvas, pivotX, pivotY, annotationCallback);
             } else {
                 imageObj.onload = () => {
                     this.loadImage(ctx, obj, canvas, pivotX, pivotY);
@@ -477,8 +484,8 @@ export class CanvasRenderer {
 }
 
 export function refreshDiagramElements(
-    canvas: HTMLCanvasElement, drawingObjects: DrawingElement[], renderer: DrawingRenderer, ): void {
+    canvas: HTMLCanvasElement, drawingObjects: DrawingElement[], renderer: DrawingRenderer,annotationCallback?:(annotationID: string) => boolean ): void {
     for (let i: number = 0; i < drawingObjects.length; i++) {
-        renderer.renderElement(drawingObjects[parseInt(i.toString(), 10)], canvas, undefined);
+        renderer.renderElement(drawingObjects[parseInt(i.toString(), 10)], canvas, undefined, undefined, undefined, undefined, undefined, undefined, annotationCallback);
     }
 }

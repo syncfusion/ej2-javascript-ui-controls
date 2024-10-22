@@ -913,3 +913,72 @@ describe('Adding new record while newRowPosition is Bottom in virtual mode', () 
         }
     });
 });
+describe('console error click fit to project in virtual mode', () => {
+    Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, VirtualScroll, Sort);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: releaseVirtualData,
+            treeColumnIndex: 1,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                parentID: 'parentID'
+            },
+            enableVirtualization: true,
+            enableTimelineVirtualization: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                newRowPosition: 'Bottom'
+            },
+            allowReordering: true,
+            enableContextMenu: true,
+            columns: [
+                { field: 'TaskID' },
+                { field: 'TaskName' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search'],
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            highlightWeekends: true,
+            allowFiltering: true,
+            gridLines: 'Both',
+            height: '550px',
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            allowResizing: true,
+            splitterSettings: {
+                columnIndex: 3
+            },
+        }, done);
+    });
+    it('console error click fit to project', () => {
+        ganttObj.toolbarModule.zoomToFit();
+        ganttObj.toolbarModule.zoomToFit();
+        expect(ganttObj.currentViewData.length).toBe(22);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

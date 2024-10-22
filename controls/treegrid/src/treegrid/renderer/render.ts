@@ -47,7 +47,7 @@ export class Render {
                              parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll)) ||
                             !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
             if (collapsed && !isNullOrUndefined(args.row)) {
-                (<HTMLTableRowElement>args.row).style.display = 'none';
+                this.parent['toggleRowVisibility'](<HTMLTableRowElement>args.row, 'e-childrow-hidden');
                 const rowsObj: Row<gridColumn>[] = this.parent.grid.getRowsObject();
                 if (!this.parent.grid.isFrozenGrid() && !isNullOrUndefined(args.row.getAttribute('data-uid'))) {
                     rowsObj.filter((e : Row<gridColumn>) => e.uid === args.row.getAttribute('data-uid'))[0].visible = false;
@@ -60,8 +60,8 @@ export class Render {
                 return getValue(proxy.idMapping, rec) === getValue(proxy.parentIdMapping, data);
             });
             if (parentrec.length > 0 && !parentrec[0].isSummaryRow && !isNullOrUndefined(args.row)) {
-                const display: string = parentrec[0].expanded ? 'table-row' : 'none';
-                args.row.setAttribute('style', 'display: ' + display  + ';');
+                const display: string = parentrec[0].expanded ? 'e-childrow-visible' : 'e-childrow-hidden';
+                this.parent['toggleRowVisibility'](<HTMLTableRowElement>args.row, display);
             }
         }
         //addClass([args.row], 'e-gridrowindex' + index + 'level' + (<ITreeData>args.data).level);
@@ -77,7 +77,7 @@ export class Render {
             }
             if (this.parent.enableCollapseAll && this.parent.initialRender) {
                 if (!isNullOrUndefined(data.parentItem)) {
-                    (<HTMLTableRowElement>args.row).style.display = 'none';
+                    this.parent['toggleRowVisibility'](<HTMLTableRowElement>args.row, 'e-childrow-hidden');
                 }
             }
         }

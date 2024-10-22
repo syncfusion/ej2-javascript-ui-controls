@@ -40,11 +40,7 @@ describe('Gantt-Timezone', () => {
                 projectEndDate: new Date('03/24/2018'),
             }, done);
         });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
+        
 
         //None
         // it('Check timezone on load', () => {
@@ -85,6 +81,11 @@ describe('Gantt-Timezone', () => {
         //         }
         //     }
         // })
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
     });
     describe('Week working time', () => {
         Gantt.Inject(Toolbar, Edit);
@@ -122,15 +123,16 @@ describe('Gantt-Timezone', () => {
                     rowHeight: 40,
             }, done);
         });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
+       
         it('initial render on week working time', () => {
            expect(ganttObj.weekWorkingTime.length).toBe(3);
            expect(ganttObj.flatData[2].ganttProperties.startDate.getHours()).toBe(10);
            expect(ganttObj.flatData[2].ganttProperties.endDate.getHours()).toBe(17);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
     });
     describe('Week working time', () => {
@@ -779,7 +781,7 @@ describe('Gantt-Timezone', () => {
     describe('unscheduled tasks', () => {
         Gantt.Inject(Toolbar, Edit);
         let ganttObj: Gantt;
-        var unscheduledData = [
+        let unscheduledData = [
             {
                 TaskId: 1, TaskName: 'Task 1', StartDate: new Date('04/02/2019'),
                 EndDate: new Date('04/21/2019'), Duration: '5', TaskType: ''

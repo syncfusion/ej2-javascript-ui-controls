@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I592841` - An issue where resizing was not functioning correctly in timeline views when using the `startHour` and `endHour` properties has been resolved.
+
 ## 27.1.53 (2024-10-15)
 
 ### Schedule

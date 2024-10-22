@@ -37,7 +37,7 @@ export class SelectionCommands {
             if (format === 'backgroundcolor' && value === '') {
                 value = 'transparent';
             }
-            let domSelection: NodeSelection = new NodeSelection();
+            let domSelection: NodeSelection = new NodeSelection(endNode as HTMLElement);
             const domNode: DOMNode = new DOMNode((endNode as HTMLElement), docElement);
             const nodeCutter: NodeCutter = new NodeCutter();
             const isFormatted: IsFormatted = new IsFormatted();
@@ -270,7 +270,7 @@ export class SelectionCommands {
             if (cursorNodes.length === 1 && range.startOffset === 0 && (cursorNodes[0].nodeName === 'BR' || (isNOU(cursorNodes[0].nextSibling) ? false : cursorNodes[0].nextSibling.nodeName === 'BR'))) {
                 detach(cursorNodes[0].nodeName === '#text' ? cursorNodes[0].nextSibling : cursorNodes[0]);
             }
-            if (!isNOU(cursorNodes[0].parentElement) && IsFormatted.inlineTags.
+            if (!isNOU(cursorNodes[0] && cursorNodes[0].parentElement) && IsFormatted.inlineTags.
                 indexOf((cursorNodes[0].parentElement).tagName.toLowerCase()) !== -1 && cursorNodes[0].textContent.includes('\u200B')) {
                 const element: HTMLElement = this.GetFormatNode(format, value);
                 const tempNode: Node = cursorNodes[0];

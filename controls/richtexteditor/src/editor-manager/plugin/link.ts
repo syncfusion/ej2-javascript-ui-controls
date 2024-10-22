@@ -93,7 +93,7 @@ export class LinkCommand {
                                                   startIndex, endIndex);
             }
         } else {
-            const domSelection: NodeSelection = new NodeSelection();
+            const domSelection: NodeSelection = new NodeSelection(this.parent.editableElement as HTMLElement);
             let range: Range = domSelection.getRange(this.parent.currentDocument);
             if (range.endContainer.nodeName === '#text' && range.startContainer.textContent.length === (range.endOffset + 1) &&
             range.endContainer.textContent.charAt(range.endOffset) === ' ' && (!isNOU(range.endContainer.nextSibling) && range.endContainer.nextSibling.nodeName === 'A')) {
@@ -141,7 +141,7 @@ export class LinkCommand {
         }
     }
     private createLinkNode(e: IHtmlItem): void {
-        const domSelection: NodeSelection = new NodeSelection();
+        const domSelection: NodeSelection = new NodeSelection(this.parent.editableElement as HTMLElement);
         const nodeCutter: NodeCutter = new NodeCutter();
         const range: Range = domSelection.getRange(this.parent.currentDocument);
         const nodes: Node[] = this.getSelectionNodes(domSelection.getNodeCollection(range));

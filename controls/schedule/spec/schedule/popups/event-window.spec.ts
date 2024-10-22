@@ -733,6 +733,7 @@ describe('Schedule event window initial load', () => {
             expect(((timezoneElement as EJ2Instance).ej2_instances[0] as CheckBox).checked).toEqual(false);
             expect(timezoneDiv.classList.contains('e-enable')).toEqual(false);
             timezoneElement.click();
+            (timezoneElement as EJ2Instance).ej2_instances[0].dataBind();
             expect(((timezoneElement as EJ2Instance).ej2_instances[0] as CheckBox).checked).toEqual(true);
             expect(timezoneDiv.classList.contains('e-enable')).toEqual(true);
             allDayElement.click();

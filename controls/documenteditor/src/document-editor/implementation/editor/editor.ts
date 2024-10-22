@@ -2605,19 +2605,19 @@ export class Editor {
                 
                 break;
             case 'Picture':
-                this.applyPictureContentControl(type, value as string);
+                this.applyPictureContentControl(type, value as string, info.title, info.tag, info.canDelete, info.canEdit);
                 break;
             case 'ComboBox':
-                this.applyComboBox('ComboBox', items, value as string);
+                this.applyComboBox('ComboBox', items, value as string, info.title, info.tag, info.canDelete, info.canEdit);
                 break;
             case 'DropDownList':
-                this.applyComboBox('DropDownList', items, value as string);
+                this.applyComboBox('DropDownList', items, value as string, info.title, info.tag, info.canDelete, info.canEdit);
                 break;
             case 'Date':
-                this.applyDatePickerContentControl(type, value as string);
+                this.applyDatePickerContentControl(type, value as string, info.title, info.tag, info.canDelete, info.canEdit);
                 break;
             case 'CheckBox':
-                this.applyCheckBoxContentControl(type, String.fromCharCode(9744), value as boolean);
+                this.applyCheckBoxContentControl(type, String.fromCharCode(9744), value as boolean, info.title, info.tag, info.canDelete, info.canEdit);
                 break;
         }
         let contentControl: ContentControl = this.getContentControl();
@@ -2860,7 +2860,7 @@ export class Editor {
             this.documentHelper.viewer.updateScrollBars();
         }
     }
-    private applyComboBox(type:ContentControlType, items?: string[], value?: string):void{
+    private applyComboBox(type:ContentControlType, items?: string[], value?: string, title?: string, tag?: string, lock?: boolean, lockContents?: boolean):void{
         let contentControl: ContentControl = this.getContentControl();
         if(isNullOrUndefined(contentControl) || contentControl.contentControlProperties.type === 'RichText'){
             this.selection.isHighlightContentControlEditRegion = true;
@@ -2869,10 +2869,12 @@ export class Editor {
             let properties:ContentControlProperties=new ContentControlProperties('Inline');
             properties.color="#00000000";
             properties.type=type;
+            properties.tag = !isNullOrUndefined(tag) ? tag : undefined;
+            properties.title = !isNullOrUndefined(title) ? title : undefined;
             this.selection.isEmpty ?  properties.hasPlaceHolderText = true :  properties.hasPlaceHolderText = false ;
             properties.isTemporary=false;
-            properties.lockContentControl=false;
-            properties.lockContents=false;
+            properties.lockContentControl = !isNullOrUndefined(lock) ? !lock : false;
+            properties.lockContents = !isNullOrUndefined(lockContents) ? !lockContents : false;
             properties.multiline = false;
             let list: ContentControlListItems[] = [];
             if (!isNullOrUndefined(items)) {
@@ -2950,8 +2952,8 @@ export class Editor {
             properties.color="#00000000";
             this.selection.isEmpty ?  properties.hasPlaceHolderText = true :  properties.hasPlaceHolderText = false ;
             properties.isTemporary=false;
-            properties.lockContentControl = !isNullOrUndefined(lock) ? lock : false;
-            properties.lockContents=!isNullOrUndefined(lockContents) ? lock : false;
+            properties.lockContentControl = !isNullOrUndefined(lock) ? !lock : false;
+            properties.lockContents = !isNullOrUndefined(lockContents) ? !lockContents : false;
             properties.tag = !isNullOrUndefined(tag) ? tag : undefined;
             properties.title = !isNullOrUndefined(title) ? title : undefined;
             properties.multiline=false;
@@ -3006,7 +3008,7 @@ export class Editor {
         }
         
     }
-    private applyCheckBoxContentControl(type: ContentControlType, value: string, inputValue?: boolean):void{
+    private applyCheckBoxContentControl(type: ContentControlType, value: string, inputValue?: boolean, title?: string, tag?: string, lock?: boolean, lockContents?: boolean):void{
         let contentControl: ContentControl = this.getContentControl();
         if(isNullOrUndefined(contentControl) || contentControl.contentControlProperties.type === 'RichText'){
             this.selection.isHighlightContentControlEditRegion = true;
@@ -3017,10 +3019,12 @@ export class Editor {
             properties.color="#00000000";
             properties.hasPlaceHolderText=false;
             properties.isTemporary=false;
-            properties.lockContentControl=false;
-            properties.lockContents=false;
+            properties.lockContentControl = !isNullOrUndefined(lock) ? !lock : false;
+            properties.lockContents = !isNullOrUndefined(lockContents) ? !lockContents : false;
             properties.multiline=false;
             properties.type=type;
+            properties.tag = !isNullOrUndefined(tag) ? tag : undefined;
+            properties.title = !isNullOrUndefined(title) ? title : undefined;
             if (!isNullOrUndefined(inputValue)) {
                 properties.isChecked = inputValue;
             } else {
@@ -3074,7 +3078,7 @@ export class Editor {
     * Apply the content Control properties to the picture content Control
     * @param {type} refers the type of Content control.
     */
-    private applyPictureContentControl(type: ContentControlType, value?: string): void {
+    private applyPictureContentControl(type: ContentControlType, value?: string, title?: string, tag?: string, lock?: boolean, lockContents?: boolean): void {
         let contentControl: ContentControl = this.getContentControl();
         if(isNullOrUndefined(contentControl) || contentControl.contentControlProperties.type === 'RichText'){
             const blockStartContentControl: ContentControl = new ContentControl('Inline');
@@ -3084,10 +3088,12 @@ export class Editor {
             properties.color = "#00000000";
             properties.hasPlaceHolderText = false;
             properties.isTemporary = false;
-            properties.lockContentControl = false;
-            properties.lockContents = false;
+            properties.lockContentControl = !isNullOrUndefined(lock) ? !lock : false;
+            properties.lockContents = !isNullOrUndefined(lockContents) ? !lockContents : false;
             properties.multiline = false;
             properties.type = type;
+            properties.tag = !isNullOrUndefined(tag) ? tag : undefined;
+            properties.title = !isNullOrUndefined(title) ? title : undefined;
             //properties.appearance='Bounding Box';
             properties.contentControlWidgetType = 'Inline';
             if (this.owner.isXmlMapCC) {
@@ -7926,9 +7932,13 @@ export class Editor {
                 for (let j = 0; j < row.childWidgets.length; j++) {
                     let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
                     for (let k = 0; k < cell.childWidgets.length; k++) {
-                        let para: ParagraphWidget = cell.childWidgets[k] as ParagraphWidget;
-                        if (!isNullOrUndefined(para)) {
-                            this.insertRevisionForBlock(para, 'Insertion');
+                        let block: ParagraphWidget = cell.childWidgets[k] as ParagraphWidget;
+                        if (!isNullOrUndefined(block)) {
+                            if (block instanceof ParagraphWidget) {
+                                this.insertRevisionForBlock(block, 'Insertion');
+                            } else {
+                                this.generateTableRevision(block as TableWidget);
+                            }
                         }
                     }
                 }
@@ -19104,7 +19114,20 @@ export class Editor {
                         }
                         this.updateLastElementRevision(elementBox);
                     } else {
-                        elementBox.line.children.splice(elementBox.indexInOwner, 1);
+                        if (!(elementBox instanceof CommentCharacterElementBox)) {
+                            elementBox.line.children.splice(elementBox.indexInOwner, 1);
+                        }
+                        else {
+                            let isTrue = false;
+                            for (let i = 0; i < this.owner.documentHelper.comments.length; i++) {
+                                if (elementBox.commentId === this.owner.documentHelper.comments[i].commentId) {
+                                    isTrue = true;
+                                }
+                            }
+                            if (!isTrue) {
+                                elementBox.line.children.splice(elementBox.indexInOwner, 1);
+                            }
+                        }
                     }
                 }
                 return undefined;
@@ -21329,7 +21352,7 @@ export class Editor {
                 this.editorHistory.currentBaseHistoryInfo.insertedText = element.text;
             }
         }
-        if (this.owner.enableTrackChanges && !isNullOrUndefined(revision)) {
+        if (!isNullOrUndefined(revision)) {
             markerData = this.getRevisionMarkerData(markerData, revision, skip, isAcceptOrReject);
         }
         return markerData;

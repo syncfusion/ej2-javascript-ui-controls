@@ -4,7 +4,8 @@
 import { Browser } from "@syncfusion/ej2-base";
 import { CLS_RTE_RES_HANDLE } from "../../../src/rich-text-editor/base/classes";
 import { renderRTE, destroy } from "./../render.spec";
-import { ToolbarType } from "../../../src/rich-text-editor/index";
+import { RichTextEditor } from "../../../src/rich-text-editor/index";
+import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
 
 describe("Resize - Actions Module", () => {
 
@@ -228,6 +229,46 @@ describe("Resize - Actions Module", () => {
         it("class availability testing", () => {
             let trg = (rteEle.querySelector('.' + CLS_RTE_RES_HANDLE) as HTMLElement);
             expect(trg.classList.contains('e-south-west')).toBe(true);
+        });
+    });
+
+    describe('915389 - Iframe editor resize event not unbound after mouse up in the editor content.', () => {
+        let editor: RichTextEditor;
+        beforeAll((done: Function) => {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                enableResize: true
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(editor);
+            done();
+        });
+        it('Should stop resize when mouse out over the iframe document', (done) => {
+            const resizeElement: HTMLElement = editor.element.querySelector('.e-resize-handle');
+            const mouseDown: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            resizeElement.dispatchEvent(mouseDown);
+            const iframeDocument: Document = editor.inputElement.ownerDocument;
+            const mousemove: MouseEvent = new MouseEvent('mousemove', { clientX: 0, clientY: 0 });
+            resizeElement.dispatchEvent(mousemove);
+            const moveInsideIframe: MouseEvent = new MouseEvent('mousemove', {
+                clientX: editor.inputElement.getBoundingClientRect().left + 10,
+                clientY: editor.inputElement.getBoundingClientRect().top + 10,
+                view: iframeDocument.defaultView,
+                bubbles: true,
+                cancelable: true,
+                detail: 1
+            });
+            resizeElement.dispatchEvent(moveInsideIframe);
+            const mouseUp: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            iframeDocument.dispatchEvent(mouseUp);
+            setTimeout(() => {
+                expect((editor.resizeModule as any).isResizing).toBe(false);
+                done();
+            }, 100);
         });
     });
 });

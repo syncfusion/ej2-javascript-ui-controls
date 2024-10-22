@@ -232,7 +232,8 @@ export class Print {
             return;
         }
         const groupCaption: HTMLElement[] = selectAll('.e-groupcaption', element);
-        const colSpan: string = (<HTMLElement>groupCaption[depth - 1]).getAttribute('colspan');
+        const colSpan: string = gObj.groupSettings.enableLazyLoading ? (parseInt(groupCaption[0].getAttribute('colspan'), 10) -
+            (gObj.groupSettings.columns.length - 1)).toString() : (<HTMLElement>groupCaption[depth - 1]).getAttribute('colspan');
         for (let i: number = 0; i < groupCaption.length; i++) {
             (<HTMLElement>groupCaption[parseInt(i.toString(), 10)]).setAttribute('colspan', colSpan);
         }

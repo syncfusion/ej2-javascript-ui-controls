@@ -2648,6 +2648,10 @@ export class FormDesigner {
           !isNullOrUndefined(this.pdfViewerBase.activeElements.activePageID)) {
             this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
         }
+        const formFieldElement: HTMLElement = document.getElementById('FormField_helper_html_element');
+        if (this.pdfViewer.isFormDesignerToolbarVisible && formFieldElement) {
+            formFieldElement.remove();
+        }
         this.isAddFormFieldUi = true;
         switch (formFieldType) {
         case 'Textbox':
@@ -5477,12 +5481,14 @@ export class FormDesigner {
                     oldValue = selectedItem.maxLength;
                     newValue = this.maxLengthItem.value;
                 }
-                const maxLength: number = this.maxLengthItem.value === 0 ? 524288 : this.maxLengthItem.value;
-                if (isUndoRedo && selectedItem.maxLength !== 0) {
-                    inputElement.maxLength = selectedItem.maxLength;
-                } else {
-                    inputElement.maxLength = maxLength;
-                    selectedItem.maxLength = this.maxLengthItem.value;
+                if (!isNullOrUndefined(this.maxLengthItem)) {
+                    const maxLength: number = this.maxLengthItem.value === 0 ? 524288 : this.maxLengthItem.value;
+                    if (isUndoRedo && selectedItem.maxLength !== 0) {
+                        inputElement.maxLength = selectedItem.maxLength;
+                    } else {
+                        inputElement.maxLength = maxLength;
+                        selectedItem.maxLength = this.maxLengthItem.value;
+                    }
                 }
                 if (index > -1) {
                     formFieldsData[parseInt(index.toString(), 10)].FormField.maxLength = selectedItem.maxLength;
@@ -6042,7 +6048,7 @@ export class FormDesigner {
             oldValue = selectedItem.tooltip;
             newValue = this.formFieldTooltip.value;
         }
-        if (this.pdfViewer.enableHtmlSanitizer && this.formFieldTooltip.value){
+        if (this.pdfViewer.enableHtmlSanitizer && !isNullOrUndefined(this.formFieldTooltip) && this.formFieldTooltip.value) {
             this.formFieldTooltip.value = SanitizeHtmlHelper.sanitize(this.formFieldTooltip.value);
         }
         if (isUndoRedo) {
@@ -6070,7 +6076,7 @@ export class FormDesigner {
     private updateNamePropertyChange(selectedItem: any, element: any, isUndoRedo: boolean, index: number, formFieldsData: any): void {
         const designerName: HTMLElement = document.getElementById(selectedItem.id + '_designer_name');
         const zoomValue: number = this.pdfViewerBase.getZoomFactor();
-        if (this.pdfViewer.enableHtmlSanitizer && this.formFieldName.value){
+        if (this.pdfViewer.enableHtmlSanitizer && !isNullOrUndefined(this.formFieldName) && this.formFieldName.value) {
             this.formFieldName.value = SanitizeHtmlHelper.sanitize(this.formFieldName.value);
         }
         designerName.style.fontSize = this.defaultFontSize + 'px';

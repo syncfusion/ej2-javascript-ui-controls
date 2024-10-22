@@ -662,7 +662,7 @@ export class BatchEdit {
     private getDefaultData(): Object {
         const gObj: IGrid = this.parent;
         const data: Object = {};
-        const dValues: Object = { 'number': 0, 'string': null, 'boolean': false, 'date': null, 'datetime': null };
+        const dValues: Object = { 'number': 0, 'string': null, 'boolean': false, 'date': null, 'datetime': null, 'dateonly': null };
         for (const col of ((<{ columnModel?: Column[] }>gObj).columnModel)) {
             if (col.field) {
                 setValue(col.field, Object.keys(col).indexOf('defaultValue') >= 0 ? col.defaultValue : dValues[col.type], data);

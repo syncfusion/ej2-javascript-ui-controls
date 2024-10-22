@@ -2227,10 +2227,10 @@ export class Annotation {
             this.pdfViewer.formDesigner.updateTextboxFormDesignerProperties(element, true);
             break;
         case 'Checkbox':
-            this.pdfViewer.formDesigner.updateCheckboxFormDesignerProperties(element, true);
+            this.pdfViewer.formDesigner.updateCheckboxFormDesignerProperties(element, true, true);
             break;
         case 'RadioButton':
-            this.pdfViewer.formDesigner.updateRadioButtonDesignerProperties(element, true);
+            this.pdfViewer.formDesigner.updateRadioButtonDesignerProperties(element, true, true);
             break;
         case 'DropdownList':
             this.pdfViewer.formDesigner.updateDropdownFormDesignerProperties(element, true);
@@ -3379,7 +3379,7 @@ export class Annotation {
                     this.pdfViewer.toolbar.annotationToolbarModule.updateAnnnotationPropertyItems();
                 }
             }
-            if (!this.pdfViewer.textSelectionModule.isTextSelection) {
+            if (this.pdfViewer.textSelectionModule && !this.pdfViewer.textSelectionModule.isTextSelection) {
                 this.pdfViewerBase.disableTextSelectionMode();
             }
         } else {

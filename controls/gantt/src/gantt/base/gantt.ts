@@ -2927,8 +2927,8 @@ export class Gantt extends Component<HTMLElement>
                 let height: number;
                 const chartRow: Element = !isNullOrUndefined(this.ganttChartModule.getChartRows()) ?
                     this.ganttChartModule.getChartRows()[0] : null;
-                if (!isNullOrUndefined(chartRow) && chartRow.getBoundingClientRect().height > 0) {
-                    height = chartRow.getBoundingClientRect().height;
+                if (!isNullOrUndefined(chartRow) && (chartRow as HTMLElement).offsetHeight > 0) {
+                    height = (chartRow as HTMLElement).offsetHeight;
                 } else {
                     height = this.rowHeight;
                 }
@@ -3246,6 +3246,22 @@ export class Gantt extends Component<HTMLElement>
         } else {
             this.splitterElement.style.height = '100%';
         }
+        if (this.filterSettings && this.filterSettings['properties'] && this.filterSettings['properties'].columns) {
+            this.filterSettings['properties'].columns.forEach((column: any) => {  // Arrow function to preserve `this`
+                const searchString: string = column.properties.field;
+                let matchedObject: any = null;
+                for (let i: number = 0; i < this.treeGrid.columns.length; i++) {
+                    const treeColumn: any = this.treeGrid.columns[i as number];
+                    if (treeColumn['field'] === searchString) {
+                        matchedObject = treeColumn;
+                        break;
+                    }
+                }
+                if (matchedObject && column.properties.uid !== matchedObject['uid']) {
+                    column.properties.uid = matchedObject['uid'];
+                }
+            });
+        }
         if (this.isLoad) {
             if (this.enablePersistence) {
                 this.updateTreeColumns();
@@ -3355,6 +3371,7 @@ export class Gantt extends Component<HTMLElement>
             case 'showColumnMenu':
             case 'allowResizing':
             case 'allowReordering':
+            case 'allowSorting':
             case 'enableImmutableMode':
                 this.treeGrid[prop as string] = this[prop as string];
                 this.treeGrid.dataBind();
@@ -3560,7 +3577,7 @@ export class Gantt extends Component<HTMLElement>
             case 'enableContextMenu':
             case 'contextMenuItems':
                 if (this.enableContextMenu || prop === 'contextMenuItems') {
-                    this.notify('reRender-contextMenu', { module: 'contextMenu', enable: this.contextMenuItems });
+                    this.notify('reRender-contextMenu', { module: 'contextMenu', enable: true });
                 } else {
                     this.treeGrid.contextMenuItems = [];
                 }

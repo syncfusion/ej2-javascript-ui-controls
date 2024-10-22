@@ -27,6 +27,10 @@ export class Delete {
                     { activeSheetIndex: this.parent.skipHiddenSheets(args.startIndex < this.parent.sheets.length ? args.startIndex :
                         (args.startIndex ? args.startIndex - 1 : 0)) }, true);
             }
+            if (args.endIndex < args.activeSheetIndex) {
+                this.parent.setProperties(
+                    { activeSheetIndex: args.activeSheetIndex - ((args.endIndex + 1) - args.startIndex) }, true);
+            }
             this.parent.notify(refreshSheetTabs, null);
             if (activeSheetDeleted) {
                 this.parent.renderModule.refreshSheet(false, false, true);

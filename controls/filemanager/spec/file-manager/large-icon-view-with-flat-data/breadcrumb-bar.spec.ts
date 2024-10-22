@@ -27,6 +27,7 @@ describe('FileManager control large icons view', () => {
             dateCreated: "2023-11-15T19:02:02.3419426+05:30",
             dateModified: "2024-01-08T16:55:20.9464164+05:30",
             filterPath: "\\",
+            filterId:"0/",
             hasChild: true,
             id: '1',
             isFile: false,
@@ -38,6 +39,7 @@ describe('FileManager control large icons view', () => {
             dateCreated: "2023-11-15T19:02:02.3419426+05:30",
             dateModified: "2024-01-08T16:55:20.9464164+05:30",
             filterPath: "\\Documents\\",
+            filterId:"0/1/",
             hasChild: false,
             id: '7',
             isFile: false,
@@ -49,6 +51,7 @@ describe('FileManager control large icons view', () => {
             dateCreated: "2023-11-15T19:02:02.3419426+05:30",
             dateModified: "2024-01-08T16:55:20.9464164+05:30",
             filterPath: "\\",
+            filterId:"0/",
             hasChild: false,
             id: '2',
             isFile: false,
@@ -61,6 +64,7 @@ describe('FileManager control large icons view', () => {
             dateCreated: "2023-11-15T19:02:02.3419426+05:30",
             dateModified: "2024-01-08T16:55:20.9464164+05:30",
             filterPath: "\\",
+            filterId:"0/",
             hasChild: false,
             id: '3',
             isFile: false,
@@ -73,6 +77,7 @@ describe('FileManager control large icons view', () => {
             dateCreated: "2023-11-15T19:02:02.3419426+05:30",
             dateModified: "2024-01-08T16:55:20.9464164+05:30",
             filterPath: "\\",
+            filterId:"0/",
             hasChild: false,
             id: '4',
             isFile: true,
@@ -85,6 +90,7 @@ describe('FileManager control large icons view', () => {
             dateCreated: "2023-11-15T19:02:02.3419426+05:30",
             dateModified: "2024-01-08T16:55:20.9464164+05:30",
             filterPath: "\\",
+            filterId:"0/",
             hasChild: false,
             id: '5',
             isFile: true,
@@ -98,6 +104,7 @@ describe('FileManager control large icons view', () => {
             dateCreated: "2023-11-15T19:02:02.3419426+05:30",
             dateModified: "2024-01-08T16:55:20.9464164+05:30",
             filterPath: "\\",
+            filterId:"0/",
             hasChild: false,
             id: '6',
             isFile: true,
@@ -490,6 +497,43 @@ describe('FileManager control large icons view', () => {
                     expect(treeObj.selectedNodes[0]).toEqual("fe_tree_0");
                     expect(treeLi.length).toEqual(5);
                     expect(largeLi.length).toEqual(1);
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('Search folder nested navigation', (done: Function) => {
+            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+            let treeLi: any = treeObj.element.querySelectorAll('li');
+            let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('li');
+            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+            expect(treeLi.length).toEqual(4);
+            expect(largeLi.length).toEqual(6);
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            expect(searchEle.placeholder).toBe("Search Files");
+            searchEle.value = 'new';
+            searchObj.value = 'new';
+            let eventArgs: any = { value: 'new', container: searchEle };
+            searchObj.change(eventArgs);
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(4);
+                expect(largeLi.length).toEqual(2);
+                mouseEventArgs.target = document.getElementById('file_largeicons').querySelectorAll('li')[0];
+                tapEvent.tapCount = 2;
+                (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+                setTimeout(function () {
+                    expect(searchEle.placeholder).toBe("Search New folder");
+                    let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                    let treeLi: any = treeObj.element.querySelectorAll('li');
+                    let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                    expect(treeObj.selectedNodes[0]).toEqual("fe_tree_0_0");
+                    expect(treeLi.length).toEqual(5);
+                    expect(largeLi.length).toEqual(0);
                     done();
                 }, 500);
             }, 500);

@@ -202,9 +202,9 @@ describe('Data-Binding', () => {
                 }, done
             );
         });
-        beforeEach(function (done) {
-            setTimeout(done, 100);
-        });
+        // beforeEach(function (done) {
+        //     setTimeout(done, 100);
+        // });
         it('Rendering with DataManager', (done: Function) => {
             ganttObj_self.dataSource = new DataManager(selfReference);
             ganttObj_self.dataBind();

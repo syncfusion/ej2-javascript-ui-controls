@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#I632734` -  Fixed an issue where the page automatically scrolled to the top when users began typing in the masked datetime picker on iPad.
+
 ## 27.1.51 (2024-09-30)
 
 ### DateTimePicker

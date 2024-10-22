@@ -1781,7 +1781,7 @@ describe('CR: 883874-Critical path of task connected dependent tasks have not ch
 });
 describe('Invalid critical task', () => {
     let ganttObj: Gantt;
-    var projectNewData = [
+    let projectNewData = [
         {
             TaskID: 1,
             TaskName: 'Product concept',

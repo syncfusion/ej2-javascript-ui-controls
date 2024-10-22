@@ -294,6 +294,10 @@ export class Pager {
             id: this.parent.element.id + '_' + axis + '_pagerSettings',
             className: (axis === 'row' ? cls.PIVOT_ROW_PAGER_SETTINGS : cls.PIVOT_COLUMN_PAGER_SETTINGS)
         });
+
+        if (this.parent.pagerSettings.showColumnPager && this.parent.pagerSettings.showRowPager) {
+            pagerIconContainer.classList.add(cls.PIVOT_BOTH_PAGER_SETTINGS);
+        }
         const isFirstDisable: boolean = (axis === 'column' && this.parent.pageSettings.currentColumnPage === 1) || (axis === 'row' && this.parent.pageSettings.currentRowPage === 1);
         const isLastDisable: boolean = (axis === 'column' && this.parent.pageSettings.currentColumnPage === this.parent.engineModule.columnPageCount) || (axis === 'row' && this.parent.pageSettings.currentRowPage === this.parent.engineModule.rowPageCount);
         const navIconContainer: HTMLElement = createElement('div', {

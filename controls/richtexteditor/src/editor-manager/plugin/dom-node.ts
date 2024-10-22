@@ -30,7 +30,7 @@ export class DOMNode {
      */
     public constructor(parent: Element, currentDocument: Document) {
         this.parent = parent;
-        this.nodeSelection = new NodeSelection();
+        this.nodeSelection = new NodeSelection(parent as HTMLElement);
         this.currentDocument = currentDocument;
         this.tableSelection = new TableSelection(parent as HTMLElement, currentDocument);
     }

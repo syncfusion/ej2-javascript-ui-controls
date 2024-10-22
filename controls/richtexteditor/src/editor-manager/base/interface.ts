@@ -10,11 +10,11 @@ import { IFormatPainterActionValue, IFormatPainterContext } from './enum';
  */
 export interface ICommandModel {
     /**
-     * Specifies the current document.
+     * Specifies the editor element's current document.
      */
     document: HTMLDocument
     /**
-     * Specifies the current window.
+     * Specifies the editable element.
      */
     editableElement: Element
     options?: { [key: string]: number }

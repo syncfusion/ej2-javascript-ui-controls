@@ -1297,6 +1297,11 @@ describe('Indent and outdent issue ', () => {
         triggerMouseEvent(element, 'click');
         expect((ganttObj.currentViewData[2] as any).StartDate.toDateString()).toBe("Wed Apr 17 2019");
     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
 });
 
 describe('Gantt toolbar action with adaptive', () => {

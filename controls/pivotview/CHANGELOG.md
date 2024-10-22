@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I640765` - The cumulative percentage values will now be displayed correctly in the tooltip when hovering over the chart series of the Pareto chart.
+
 ## 27.1.53 (2024-10-15)
 
 ### Pivot Table

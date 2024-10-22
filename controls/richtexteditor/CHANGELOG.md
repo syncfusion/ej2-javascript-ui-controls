@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I628053` - Now, the rich text editor properly sanitizes and encodes tab characters in JavaScript alerts.
+
+- `#I553157` - Now, the bullet list format is properly removed when pasting content from MS Word in the Rich Text Editor.
+
+- `#I640949` - Now, image duplication is prevented when `shiftEnterKey` is pressed on a paragraph in the Rich Text Editor.
+
+- `#I639924` - Now, the format toolbar will be updated properly when the cursor is in front of the table.
+
+- `#I640818` - Now, being typed with zero-width-space works without any console error.
+
+- `#I640976` - Now, the width and height attributes of images will reflect their specified values, rather than defaulting to `auto`, after insertion and replacement in the Rich Text Editor.
+
+- `#I639718` - Now, when `enableResize` is set to true, the IFrame editor resize event will be unbound properly.
+
+- `#I637651` - Now, the issue where the editor was lagging after inserting a mention value has been resolved.
+
+- `#I641503` - Now the cutting and pasting list works properly in the rich text editor.
+
 ## 27.1.52 (2024-10-08)
 
 ### RichTextEditor

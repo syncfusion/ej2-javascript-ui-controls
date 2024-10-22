@@ -1046,6 +1046,44 @@ describe('Stepper', () => {
             expect(stepperElement.querySelector('.e-stepper-steps').querySelectorAll('.e-label-before').length).toBe(0);
         });
 
+        it('stepper disabled text with label null value check ', () => {
+            const customData: StepModel[] = [
+                {text: 'A', label: 'Purchase'},
+                {text: 'B', label: 'Location', disabled: true},
+                {text: 'C', label: 'Payment'}
+            ];
+            stepper = new Stepper({ steps: customData });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-stepper')).toEqual(true);
+            expect(stepperElement.classList.contains('.e-horizontal') != null).toEqual(true);
+            expect(stepperElement.querySelector('.e-stepper-steps') != null).toEqual(true);
+            expect(stepper.steps[0].text).toBe('A');
+            expect(stepper.steps[1].text).toBe('B');
+            expect(stepper.steps[2].text).toBe('C');
+            expect(stepper.steps[0].label).toBe('Purchase');
+            expect(stepper.steps[1].label).toBe('Location');
+            expect(stepper.steps[2].label).toBe('Payment');
+            expect(stepperElement.querySelector('.e-step-disabled') != null).toEqual(true);
+            stepper.steps[1].disabled = false;
+            stepper.dataBind();
+            expect(stepper.steps[0].text).toBe('A');
+            expect(stepper.steps[1].text).toBe('B');
+            expect(stepper.steps[2].text).toBe('C');
+            expect(stepper.steps[0].label).toBe('Purchase');
+            expect(stepper.steps[1].label).toBe('Location');
+            expect(stepper.steps[2].label).toBe('Payment');
+            expect(stepperElement.querySelector('.e-step-disabled') != null).toEqual(false);
+            stepper.steps[1].disabled = true;
+            stepper.dataBind();
+            expect(stepper.steps[0].text).toBe('A');
+            expect(stepper.steps[1].text).toBe('B');
+            expect(stepper.steps[2].text).toBe('C');
+            expect(stepper.steps[0].label).toBe('Purchase');
+            expect(stepper.steps[1].label).toBe('Location');
+            expect(stepper.steps[2].label).toBe('Payment');
+            expect(stepperElement.querySelector('.e-step-disabled') != null).toEqual(true);
+        });
+
         it('Vertical stepper rendering', () => {
             stepper = new Stepper({
                 steps: [{}, {}, {}, {}],
@@ -1900,6 +1938,192 @@ describe('Stepper', () => {
             expect((liElementArray[3] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
         });
 
+        it('stepper Linear mode with dynamic step disabled', () => {
+            stepper = new Stepper({
+                steps: [{}, {}, { disabled: true }, {}],
+                linear: true,
+                activeStep: 1
+            });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-linear')).toEqual(true);
+            const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-step-disabled')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            EventHandler.trigger(liElementArray[2], 'click');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-step-disabled')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            stepper.steps[2].disabled = false;
+            stepper.dataBind();
+            const newliElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            EventHandler.trigger(newliElementArray[2], 'click');
+            expect((newliElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(false);
+            expect((newliElementArray[1] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((newliElementArray[2] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((newliElementArray[2] as HTMLElement).classList.contains('e-step-disabled')).toEqual(false);
+            expect((newliElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect(getComputedStyle(newliElementArray[2] as HTMLElement).pointerEvents).toBe('auto');
+        });
+
+        it('stepper Linear mode with dynamic step cssClass prop interaction', () => {
+            stepper = new Stepper({
+                steps: [{}, { cssClass: 'testClass' }, {}, {}],
+                linear: true,
+                activeStep: 1
+            });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-linear')).toEqual(true);
+            const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            expect((liElementArray[1] as HTMLElement).classList.contains('testClass')).toEqual(true);
+            stepper.steps[1].cssClass = 'newClass';
+            stepper.dataBind();
+            const newliElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((newliElementArray[1] as HTMLElement).classList.contains('testClass')).toEqual(false);
+            expect((newliElementArray[1] as HTMLElement).classList.contains('newClass')).toEqual(true);
+            expect(getComputedStyle(newliElementArray[1] as HTMLElement).pointerEvents).toBe('auto');
+        });
+
+        it('stepper Linear mode with dynamic step iconCss prop interaction', () => {
+            stepper = new Stepper({
+                steps: [{iconCss: 'e-icons e-folder'}, { iconCss: 'e-icons e-folder' }, {iconCss: 'e-icons e-folder'}, {iconCss: 'e-icons e-folder'}],
+                linear: true,
+                activeStep: 1
+            });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-linear')).toEqual(true);
+            const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            expect((liElementArray[1] as HTMLElement).querySelector('.e-icons.e-folder') != null).toEqual(true);
+            stepper.steps[1].iconCss = 'e-icons e-people';
+            stepper.dataBind();
+            const newliElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((newliElementArray[1] as HTMLElement).querySelector('.e-icons.e-folder') != null).toEqual(false);
+            expect((newliElementArray[1] as HTMLElement).querySelector('.e-icons.e-people') != null).toEqual(true);
+            expect(getComputedStyle(newliElementArray[1] as HTMLElement).pointerEvents).toBe('auto');
+        });
+
+        it('stepper Linear mode with dynamic step isValid prop interaction', () => {
+            stepper = new Stepper({
+                steps: [{iconCss: 'e-icons e-folder'}, { iconCss: 'e-icons e-folder', isValid: true }, {iconCss: 'e-icons e-folder'}, {iconCss: 'e-icons e-folder'}],
+                linear: true,
+                activeStep: 1
+            });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-linear')).toEqual(true);
+            const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-valid')).toEqual(true);
+            stepper.steps[1].isValid = false;
+            stepper.dataBind();
+            const newliElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((newliElementArray[1] as HTMLElement).classList.contains('e-step-valid')).toEqual(false);
+            expect((newliElementArray[1] as HTMLElement).classList.contains('e-step-error')).toEqual(true);
+            expect(getComputedStyle(newliElementArray[1] as HTMLElement).pointerEvents).toBe('auto');
+        });
+
+        it('stepper Linear mode with dynamic step label prop interaction', () => {
+            const customData: StepModel[] = [
+                {label: 'Step 1'},
+                {label: 'Step 2'},
+                {label: 'Step 3'},
+                {label: 'Step 4'}
+            ];
+            stepper = new Stepper({ steps: customData, activeStep: 1, linear: true });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.querySelectorAll('.e-step-label-container').length).toBe(4);
+            expect(stepperElement.classList.contains('e-linear')).toEqual(true);
+            const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            expect(((liElementArray[1] as HTMLElement).querySelector('.e-label') as HTMLElement).innerText).toEqual('Step 2');
+            stepper.steps[1].label = 'item 2';
+            stepper.dataBind();
+            const newliElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect(((newliElementArray[1] as HTMLElement).querySelector('.e-label') as HTMLElement).innerText).toEqual('item 2');
+            expect(getComputedStyle(newliElementArray[1] as HTMLElement).pointerEvents).toBe('auto');
+        });
+
+        it('stepper Linear mode with dynamic step text prop interaction', () => {
+            const customData: StepModel[] = [
+                {text: 'Step 1'},
+                {text: 'Step 2'},
+                {text: 'Step 3'},
+                {text: 'Step 4'}
+            ];
+            stepper = new Stepper({ steps: customData, activeStep: 1, linear: true });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-linear')).toEqual(true);
+            const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            expect(((liElementArray[1] as HTMLElement).querySelector('.e-step-content') as HTMLElement).innerText).toEqual('Step 2');
+            stepper.steps[1].text = 'item 2';
+            stepper.dataBind();
+            const newliElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect(((newliElementArray[1] as HTMLElement).querySelector('.e-step-content') as HTMLElement).innerText).toEqual('item 2');
+            expect(getComputedStyle(newliElementArray[1] as HTMLElement).pointerEvents).toBe('auto');
+        });
+
+        it('stepper Linear mode with dynamic step optional prop interaction', () => {
+            stepper = new Stepper({
+                steps: [{iconCss: 'e-icons e-folder'}, { iconCss: 'e-icons e-folder', optional: true }, {iconCss: 'e-icons e-folder'}, {iconCss: 'e-icons e-folder'}],
+                linear: true,
+                activeStep: 1
+            });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-linear')).toEqual(true);
+            const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            expect((liElementArray[1] as HTMLElement).querySelector('.e-step-label-optional') != null).toEqual(true);
+            stepper.steps[1].optional = false;
+            stepper.dataBind();
+            const newliElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((newliElementArray[1] as HTMLElement).querySelector('.e-step-label-optional') != null).toEqual(false);
+            expect(getComputedStyle(newliElementArray[1] as HTMLElement).pointerEvents).toBe('auto');
+        });
+
+        it('stepper Linear mode with dynamic step status prop interaction', () => {
+            stepper = new Stepper({
+                steps: [{iconCss: 'e-icons e-folder'}, { iconCss: 'e-icons e-folder' }, {iconCss: 'e-icons e-folder'}, {iconCss: 'e-icons e-folder'}],
+                linear: true,
+                activeStep: 1
+            });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-linear')).toEqual(true);
+            const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            stepper.steps[1].status = 'completed';
+            stepper.dataBind();
+            const newliElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((newliElementArray[1] as HTMLElement).classList.contains('e-step-completed')).toEqual(true);
+            expect(getComputedStyle(newliElementArray[1] as HTMLElement).pointerEvents).toBe('auto');
+        });
+
         it('stepper with Linear mode without active step', () => {
             stepper = new Stepper({
                 steps: [{}, {}, {}, {}],
@@ -1930,6 +2154,50 @@ describe('Stepper', () => {
             expect((liElementArray[1] as HTMLElement).classList.contains('e-previous')).toEqual(false);
             expect((liElementArray[2] as HTMLElement).classList.contains('e-previous')).toEqual(true);
             expect((liElementArray[3] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+        });
+
+        it('stepper icon with label dynamic label prop update', () => {
+            const customData: StepModel[] = [
+                {iconCss: 'e-icons e-folder', label: 'Order'},
+                {iconCss: 'e-icons e-folder', label: 'Location'},
+                {iconCss: 'e-icons e-folder', label: 'Payment'},
+                {iconCss: 'e-icons e-folder', label: 'Preview'},
+                {iconCss: 'e-icons e-folder', label: 'Success'}
+            ];
+            stepper = new Stepper({ steps: customData });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-stepper')).toEqual(true);
+            expect(stepperElement.classList.contains('.e-horizontal') != null).toEqual(true);
+            expect(stepperElement.querySelector('.e-stepper-steps') != null).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-label-container').length).toBe(5);
+            expect(stepperElement.querySelector('.e-stepper-steps').querySelectorAll('.e-label-after').length).toBe(5);
+            stepper.steps[0].label = 'Order Updated';
+            stepper.dataBind();
+            const newliElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect(((newliElementArray[0] as HTMLElement).querySelector('.e-label') as HTMLElement).innerText).toEqual('Order Updated');
+        });
+
+        it('stepper text with label dynamic label prop update', () => {
+            const customData: StepModel[] = [
+                {text: 'A', label: 'Order'},
+                {text: 'B', label: 'Location'},
+                {text: 'C', label: 'Payment'},
+                {text: 'D', label: 'Preview'},
+                {text: 'E', label: 'Success'}
+            ];
+            stepper = new Stepper({ steps: customData });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-stepper')).toEqual(true);
+            expect(stepperElement.classList.contains('.e-horizontal') != null).toEqual(true);
+            expect(stepperElement.querySelector('.e-stepper-steps') != null).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-container').length).toBe(5);
+            expect(stepperElement.querySelectorAll('.e-step-text-container').length).toBe(0);
+            expect(stepperElement.querySelectorAll('.e-step-label-container').length).toBe(5);
+            stepper.steps[0].label = 'Order Updated';
+            stepper.dataBind();
+            const newliElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect(((newliElementArray[0] as HTMLElement).querySelector('.e-label') as HTMLElement).innerText).toEqual('Order Updated');
         });
 
         describe('Methods and Events', () => {

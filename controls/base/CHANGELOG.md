@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### Common
+
+#### New Features
+
+- Provided `isPreventScroll` API for `drag` and `drop`.
+
 ## 27.1.53 (2024-10-15)
+
+### Common
+
+#### Bug Fixes
+
+- `#I642700` - The issue with "the `webpack external` files missing from CDN and NPM packages" has been resolved.
 
 ### Common
 

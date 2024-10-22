@@ -4525,6 +4525,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     if (!newProp.primaryXAxis.crosshairTooltip) {
                         refreshBounds = true;
                     }
+                    if (newProp.primaryXAxis.scrollbarSettings) {
+                        refreshBounds = false;
+                        renderer = true;
+                    }
                     if (!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
                         (this.primaryXAxis as Axis).setIsInversedAndOpposedPosition();
                     }
@@ -4538,6 +4542,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     if (!newProp.primaryYAxis.crosshairTooltip) {
                         refreshBounds = true;
                     }
+                    if (newProp.primaryYAxis.scrollbarSettings) {
+                        refreshBounds = false;
+                        renderer = true;
+                    }
                     if (!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
                         (this.primaryYAxis as Axis).setIsInversedAndOpposedPosition();
                     }
@@ -4548,6 +4556,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         refreshBounds = refreshBounds || this.axisChange(axis);
                         if (!axis.crosshairTooltip) {
                             refreshBounds = true;
+                        }
+                        if (axis.scrollbarSettings) {
+                            refreshBounds = false;
+                            renderer = true;
                         }
                         if (!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
                             (this.axes[index as string] as Axis).setIsInversedAndOpposedPosition();

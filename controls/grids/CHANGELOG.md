@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### Grid
+
+#### Bug fixes
+
+- `#I642129` - The script error that occurred when adding a new row with a `dateonly` column in `Batch` edit mode has been resolved.
+- `#I643285` - The script error caused by the pager when using a custom locale has been resolved.
+- `#I641645` - Resolved the misalignment of print grid cells for lazy loading with multi-column grouping.
+- `#I638401` - In `AdaptiveUI` Grid, the localization issue with the filter dialog header text is still present, but the issue with the filter icon title has been resolved.
+- `#I641453` - Fixed an issue where unsupported characters were present in the `pt` and `pt-BR` localization JSON files.
+- `#F194581` - Fixed an issue where the `Excel` filter in the grid was not functioning correctly when localization was enabled.
+
 ## 27.1.53 (2024-10-15)
 
 ### Grid

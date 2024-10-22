@@ -366,8 +366,8 @@ export function prepareColumns(columns: Column[] | string[] | ColumnModel[], aut
         column.valueAccessor = (typeof column.valueAccessor === 'string' ? getValue(<string>column.valueAccessor, window)
             : column.valueAccessor) || valueAccessor;
 
-        column.headerValueAccessor = (typeof column.headerValueAccessor === 'string' ? getValue(<string>column.headerValueAccessor, window)
-            : column.headerValueAccessor) || headerValueAccessor;
+        column.headerValueAccessor = typeof column.headerValueAccessor === 'string' ? getValue(<string>column.headerValueAccessor, window)
+            : column.headerValueAccessor;
 
         column.width = autoWidth && isNullOrUndefined(column.width) ? 200 : column.width;
 

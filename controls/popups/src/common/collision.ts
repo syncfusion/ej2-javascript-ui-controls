@@ -237,9 +237,20 @@ function setPopup(element: HTMLElement, pos: PositionLocation, elementRect: Clie
             scaleX = matrix.a;
             scaleY = matrix.d;
         }
+        const zoomStyle: string = getComputedStyle(tranformElement).zoom;
+        if (zoomStyle !== 'none') {
+            const bodyZoom: number = getZoomValue(document.body);
+            scaleX = bodyZoom * scaleX;
+            scaleY = bodyZoom * scaleY;
+        }
     }
     element.style.top = ((pos.position.top / scaleY) + pos.offsetY - (top / scaleY)) + 'px';
     element.style.left = ((pos.position.left / scaleX) + pos.offsetX - (left / scaleX)) + 'px';
+}
+
+export function getZoomValue(element: HTMLElement): number {
+    const zoomValue: string = getComputedStyle(element).zoom;
+    return parseFloat(zoomValue) || 1; // Default zoom value is 1 (no zoom)
 }
 /**
  *
@@ -249,7 +260,8 @@ function setPopup(element: HTMLElement, pos: PositionLocation, elementRect: Clie
 export function getTransformElement(element: HTMLElement): HTMLElement {
     while (element) {
         const transform: string = window.getComputedStyle(element).transform;
-        if (transform && transform !== 'none') {
+        const zoom: number = getZoomValue(document.body);
+        if ((transform && transform !== 'none') || (zoom && zoom !== 1)) {
             return element;
         }
         if (element === document.body) {

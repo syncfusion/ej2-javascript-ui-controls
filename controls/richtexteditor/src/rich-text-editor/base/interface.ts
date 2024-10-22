@@ -265,7 +265,19 @@ export interface IRenderer {
     inlineQTBar?: BaseQuickToolbar
     renderPanel?(): void
     setPanel?(panel: Element): void
+    /**
+     * Retrieves the parent element of the content editable div.
+     * If the editor is in iframe mode, it returns the `iframe` element.
+     * Otherwise, it returns the parent element with the class `e-rte-content`.
+     *
+     * @returns {Element} - The parent element of the content editable div or the `iframe` element.
+     */
     getPanel?(): Element
+    /**
+     * Retrieves the content editable `div` element of the RichTextEditor.
+     * If the editor is in iframe mode, it returns the `body` element of the iframe.
+     *
+     */
     getEditPanel?(): Element
     getText?(): string
     getDocument?(): Document

@@ -1,6 +1,6 @@
 import { TimePicker } from "../../src/timepicker/timepicker";
 import { MaskedDateTime } from '../../src/maskbase/masked-date-time';
-import { createElement,L10n, Ajax, loadCldr} from '@syncfusion/ej2-base';
+import { createElement,L10n, Ajax, loadCldr, Browser} from '@syncfusion/ej2-base';
 
 
 function loadCultureFiles(name: string, base?: boolean): void {
@@ -217,6 +217,49 @@ describe('Timepicker', () => {
             expect(timepicker.value).toBe(null);
             timepicker.inputBlurHandler()
             expect((timepicker.value.getHours() % 12).toString()+':'+timepicker.value.getMinutes().toString()+':'+timepicker.value.getSeconds().toString()).toBe('1:2:9');
+        });
+        it('Value property with IOS Devices', () => { 
+            let iPhoneUa: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1';
+            let ua = Browser.userAgent;
+            Browser.userAgent = iPhoneUa;
+            let inputEle: HTMLElement = createElement('input', { id: 'iostimepicker' });
+            let divEle: HTMLElement = createElement('div', { id: 'ioscontainer' });
+            inputEle.style.marginTop = '1400px';
+            divEle.style.maxHeight = '500px';
+            divEle.style.overflow = 'auto';
+            divEle.appendChild(inputEle);
+            document.body.appendChild(divEle);
+            timepicker = new TimePicker({enableMask: true , format: 'hh:mm:ss aa'});
+            timepicker.appendTo('#iostimepicker');
+            timepicker.focusIn();
+            timepicker.mouseUpHandler(mouseEventArgs);
+            expect(timepicker.element.value).toBe('hour:minute:second AM');
+            expect(timepicker.value).toBe(null);
+            timepicker.element.value = '1:minute:second AM';
+            timepicker.element.selectionStart = 1;
+            timepicker.inputEventHandler();
+            expect(timepicker.element.value).toBe('01:minute:second AM');
+            expect(timepicker.value).toBe(null);
+            timepicker.element.value = '01:2:second AM';
+            timepicker.element.selectionStart = 4;
+            timepicker.inputEventHandler();
+            expect(timepicker.element.value).toBe('01:02:second AM');
+            expect(timepicker.value).toBe(null);
+            timepicker.element.value = '01:02:9 AM';
+            timepicker.element.selectionStart = 7;
+            timepicker.inputEventHandler();
+            expect(timepicker.element.value).toBe('01:02:09 AM');
+            expect(timepicker.value).toBe(null);
+            timepicker.element.value = '01:02:09 P';
+            timepicker.element.selectionStart = 10;
+            timepicker.inputEventHandler();
+            expect(timepicker.element.value).toBe('01:02:09 PM');
+            expect(timepicker.value).toBe(null);
+            timepicker.inputBlurHandler()
+            expect((timepicker.value.getHours() % 12).toString()+':'+timepicker.value.getMinutes().toString()+':'+timepicker.value.getSeconds().toString()).toBe('1:2:9');
+            setTimeout(() => {
+                Browser.userAgent = ua;
+            }, 5);
         });
         it('24 hours format test', () => { 
             let inputEle: HTMLElement = createElement('input', { id: 'timepicker' });

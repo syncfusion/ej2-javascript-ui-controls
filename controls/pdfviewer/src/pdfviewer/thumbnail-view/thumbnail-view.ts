@@ -107,8 +107,12 @@ export class ThumbnailView {
         }
         if (proxy.pdfViewer.isThumbnailViewOpen) {
             this.isThubmnailOpen = true;
-            proxy.pdfViewerBase.navigationPane.sideBarTitle.textContent = proxy.pdfViewer.localeObj.getConstant('Page Thumbnails');
-            document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view').style.display = 'flex';
+            if (proxy.pdfViewerBase.navigationPane && proxy.pdfViewerBase.navigationPane.sideBarTitle) {
+                proxy.pdfViewerBase.navigationPane.sideBarTitle.textContent = proxy.pdfViewer.localeObj.getConstant('Page Thumbnails');
+            }
+            if (document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view')) {
+                document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view').style.display = 'flex';
+            }
             const bookmarkContent: any = proxy.pdfViewer.element.querySelector('.e-pv-bookmark-view');
             if (bookmarkContent) {
                 bookmarkContent.style.display = 'none';

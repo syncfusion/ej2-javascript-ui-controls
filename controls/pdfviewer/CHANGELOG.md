@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I638745` - Now, the sticky notes annotation is correctly added when the PDF Viewer window is resized to a smaller size, with the sticky annotation option available in the toolbar dropdown menu.
+- `#I637865` - Now, the form field type updates properly when switching fields without adding in the PDF Viewer.
+- `#I637742` - Now, the annotations are not missing, and no script errors occur when `enableThumbnail` and `isThumbnailViewOpen` are enabled.
+- `#I634412` - Now, the stamp annotation is no longer missing when printing the imported annotations.
+
 ## 27.1.53 (2024-10-15)
 
 ### PDF Viewer
@@ -16,6 +27,7 @@
 - `#I637275` - Now, the download option is disabled in mobile mode when `enableDownload` API is set to false.
 - `#I633438` , `#I633453` - Now, the invalid file corrupted dialog closes automatically after a valid PDF document is loaded.
 - `#I619099` - Now, the delay in searching for text after completing text extraction has been reduced.
+- `#I631265` - Now, the signature is correctly saved in the downloaded document provided by the customer.
 - `#I635120` - Now, the undo and redo functions for free text annotations, as well as the ability to change alignment and font size using the `editAnnotation` method, are now functioning correctly.
 - `#I608686` - Now, a script error does not occur when trying to update and delete annotations simultaneously after importing them.
 - `#I635119` - Now, after programmatically highlighting and deleting text, the text will not be highlighted again unless a new selection is made, as the selection is cleared when the delete method is called programmatically.

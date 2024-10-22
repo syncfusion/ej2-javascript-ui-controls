@@ -228,7 +228,7 @@ describe('Image ->', () => {
                 });
             });
         });
-        describe('EJ2-871603 ->', () => {
+        describe('EJ2-871603, EJ2-914533 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{}, {}] }, done);
             });
@@ -258,6 +258,13 @@ describe('Image ->', () => {
                 })
                 expect(image.top).toBe(40);
                 expect(image.left).toBe(0);
+                done();
+            });
+            it('Image is not inserted based on the given id in insertImage method.', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('insertImage', [[{ src: "https://www.w3schools.com/images/w3schools_green.jpg", id: 'SelectImage'}], 'A1']);
+                const image: ImageModel = spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[0].image[0];
+                expect(image.id).toBe('SelectImage');
                 done();
             });
         });

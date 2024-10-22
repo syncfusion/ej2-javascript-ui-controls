@@ -164,7 +164,7 @@ export class Browser {
             browserDetails['isTouch'] = true;
             browserDetails['isPointer'] = true;
         }
-        if (window && window.Capacitor && window.Capacitor.getPlatform() === 'ios') {
+        if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.getPlatform() === 'ios') {
             browserDetails['isPointer'] = false;
         }
         if ('undefined' === typeof (<{ [key: string]: Object }>browserDetails)[`${key}`]) {

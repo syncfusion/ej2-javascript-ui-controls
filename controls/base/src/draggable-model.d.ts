@@ -60,6 +60,13 @@ export interface DraggableModel {
     isPreventSelect?: boolean;
 
     /**
+     * Defines whether need to prevent scrolling while dragging.
+     *
+     * @private
+     */
+    isPreventScroll?: boolean;
+
+    /**
      * Specifies the callback function for drag event.
      *
      * @event drag

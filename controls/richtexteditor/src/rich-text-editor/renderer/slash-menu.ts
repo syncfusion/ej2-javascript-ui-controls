@@ -19,7 +19,7 @@ export class SlashMenu {
         this.parent = options;
         this.currentDocument = this.parent.element.ownerDocument;
         this.L10n = serviceLocator.getService<L10n>('rteLocale');
-        this.savedSelection = new NodeSelection();
+        this.savedSelection = new NodeSelection(this.parent.inputElement);
         this.defaultItems = defaultSlashMenuDataModel;
         this.injectibleItems = injectibleSlashMenuDataModel;
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);

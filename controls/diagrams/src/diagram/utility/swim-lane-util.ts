@@ -478,7 +478,7 @@ export function swimLaneMeasureAndArrange(obj: NodeModel): void {
 export function ChangeLaneIndex(diagram: Diagram, obj: NodeModel, startRowIndex: number): void {
 
     const container: GridPanel = obj.wrapper.children[0] as GridPanel;
-    let i: number; let j: number; let k: number; let object: Node; let subChild: Node;
+    let i: number; let j: number; let k: number; let l: number; let object: Node; let subChild: Node;
     let row: GridRow; let cell: GridCell; let child: Canvas;
 
     for (i = startRowIndex; i < container.rows.length; i++) {
@@ -490,9 +490,12 @@ export function ChangeLaneIndex(diagram: Diagram, obj: NodeModel, startRowIndex:
                     child = cell.children[parseInt(k.toString(), 10)] as Canvas;
                     object = diagram.nameTable[child.id] as Node;
                     if (object.isLane && child.children.length > 1) {
-                        subChild = diagram.nameTable[child.children[1].id] as Node;
-                        if (subChild && subChild.isLane) {
-                            subChild.rowIndex = i; subChild.columnIndex = j;
+                        // 912905: Multi-selecting and deleting swimlane objects causes the diagram to break
+                        for (l = 1; l < child.children.length; l++) {
+                            subChild = diagram.nameTable[child.children[parseInt(l.toString(), 10)].id] as Node;
+                            if (subChild && subChild.isLane) {
+                                subChild.rowIndex = i; subChild.columnIndex = j;
+                            }
                         }
                     }
                     object.rowIndex = i; object.columnIndex = j;
@@ -1828,11 +1831,13 @@ export function removeSwimLane(diagram: Diagram, obj: NodeModel): void {
  * @private
  */
 function deleteNode(diagram: Diagram, node: NodeModel): void {
-    diagram.nodes.splice(diagram.nodes.indexOf(node), 1);
-    diagram.removeFromAQuad(node as IElement);
-    diagram.removeObjectsFromLayer(node);
-    delete diagram.nameTable[node.id];
-    diagram.removeElements(node);
+    if (node) {
+        diagram.nodes.splice(diagram.nodes.indexOf(node), 1);
+        diagram.removeFromAQuad(node as IElement);
+        diagram.removeObjectsFromLayer(node);
+        delete diagram.nameTable[node.id];
+        diagram.removeElements(node);
+    }
 }
 
 /**

@@ -235,7 +235,7 @@ export class Timeline {
         this.parent.updateProjectDates(
             this.parent.cloneProjectStartDate, this.parent.cloneProjectEndDate, this.parent.isTimelineRoundOff);
         const criticalModule: CriticalPath  = this.parent.criticalPathModule;
-        if (this.parent.enableCriticalPath && criticalModule) {
+        if (this.parent.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
             criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection,
                                                  true, criticalModule.predecessorCollectionTaskIds);
         }
@@ -260,7 +260,9 @@ export class Timeline {
                 this.wholeTimelineWidth = this.totalTimelineWidth;
             }
             this.parent.element.querySelectorAll('.e-chart-scroll-container')[0].querySelector('.e-virtualtrack')['style'].width = this.wholeTimelineWidth + 'px';
-            this.parent.element.querySelectorAll('.e-timeline-header-container')[0].querySelector('.e-virtualtrack')['style'].width = this.wholeTimelineWidth + 'px';
+            if (!isNullOrUndefined(this.parent.element.querySelectorAll('.e-timeline-header-container')[0].querySelector('.e-virtualtrack'))) {
+                this.parent.element.querySelectorAll('.e-timeline-header-container')[0].querySelector('.e-virtualtrack')['style'].width = this.wholeTimelineWidth + 'px';
+            }
             this.parent.ganttChartModule.updateWidthAndHeight();
         }
     }

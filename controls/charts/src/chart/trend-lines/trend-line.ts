@@ -499,9 +499,9 @@ export class Trendlines {
         xValues: number[], yValues: number[], series: Series): Points[] {
         const pts: Points[] = [];
         let period: number = trendline.period >= points.length ? points.length - 1 : trendline.period;
-        period = Math.max(2, period);
+        period = period === 1 ? 1 : Math.max(2, period);
         let index: number = 0; let y: number; let x: number; let count: number; let nullCount: number;
-        while (index < points.length - 1) {
+        while (index < points.length) {
             y = count = nullCount = 0;
             for (let j: number = index; count < period; j++) {
                 count++;

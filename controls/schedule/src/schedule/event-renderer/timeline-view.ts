@@ -456,14 +456,8 @@ export class TimelineEvent extends MonthEvent {
     }
 
     private getSameDayEventsWidth(startDate: Date, endDate: Date): number {
-        let intervalMins: number = this.interval;
-        if (this.slotsPerDay === 1) {
-            const hoursRange: { [key: string]: Date } =
-                util.getStartEndHours(util.resetTime(new Date(startDate.getTime())), this.startHour, this.endHour);
-            intervalMins = (hoursRange.endHour.getTime() - hoursRange.startHour.getTime()) / util.MS_PER_MINUTE;
-        }
         return ((util.getUniversalTime(endDate) - util.getUniversalTime(startDate)) /
-            util.MS_PER_MINUTE * (this.cellWidth * this.slotCount) / intervalMins);
+            util.MS_PER_MINUTE * (this.cellWidth * this.slotCount) / this.getIntervalInMinutes(startDate));
     }
 
     private getSpannedEventsWidth(startDate: Date, endDate: Date, diffInDays: number): number {
@@ -493,12 +487,12 @@ export class TimelineEvent extends MonthEvent {
     private getAppointmentLeft(schedule: { [key: string]: Date }, startTime: Date, day: number): number {
         const slotTd: number = (this.isSameDay(startTime, schedule.startHour as Date)) ?
             ((util.getUniversalTime(startTime) - util.getUniversalTime(schedule.startHour)) /
-                (util.MS_PER_MINUTE * this.interval)) * this.slotCount : 0;
+                (util.MS_PER_MINUTE * this.getIntervalInMinutes(startTime))) * this.slotCount : 0;
         if (day === 0) {
             return slotTd;
         } else {
             const daySlot: number = Math.round((((util.getUniversalTime(schedule.endHour) - util.getUniversalTime(schedule.startHour)) /
-                util.MS_PER_MINUTE) / this.interval) * this.slotCount);
+                util.MS_PER_MINUTE) / this.getIntervalInMinutes(startTime)) * this.slotCount);
             return (daySlot * day) + slotTd;
         }
     }
@@ -528,6 +522,15 @@ export class TimelineEvent extends MonthEvent {
         } else {
             return this.getFilteredEvents(startTime, endTime, gIndex, eventsList);
         }
+    }
+
+    private getIntervalInMinutes(startDate: Date): number {
+        if (this.slotsPerDay !== 1) {
+            return this.interval;
+        }
+        const hoursRange: { [key: string]: Date } =
+            util.getStartEndHours(util.resetTime(new Date(startDate.getTime())), this.startHour, this.endHour);
+        return (hoursRange.endHour.getTime() - hoursRange.startHour.getTime()) / util.MS_PER_MINUTE;
     }
 
     private isAlreadyAvail(appPos: number, cellTd: HTMLElement): boolean {

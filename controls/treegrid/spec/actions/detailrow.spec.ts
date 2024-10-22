@@ -86,11 +86,11 @@ describe('Render detailTemplate', () => {
     });
     it('Render Collapse', () => {
         gridObj.collapseRow(gridObj.getRows()[4], gridObj.getCurrentViewRecords()[2]);
-        expect((gridObj.getRows()[7] as HTMLTableRowElement).style.display).toBe('none');
+        expect(gridObj.getRows()[7].classList.contains('e-childrow-hidden')).toBe(true);
     });
     it('Render expand', () => {
         gridObj.expandRow(gridObj.getRows()[4], gridObj.getCurrentViewRecords()[2]);
-        expect((gridObj.getRows()[7] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(gridObj.getRows()[7].classList.contains('e-childrow-visible')).toBe(true);
     });   
     afterAll(() => {
         destroy(gridObj);
@@ -131,11 +131,11 @@ describe('Render selfRefrential detailTemplate', () => {
     });
     it('Render Collapse', () => {
         gridObj.collapseRow(gridObj.getRows()[4], gridObj.getCurrentViewRecords()[2]);
-        expect((gridObj.getRows()[7] as HTMLTableRowElement).style.display).toBe('none');
+        expect(gridObj.getRows()[7].classList.contains('e-childrow-hidden')).toBe(true);
     });
     it('Render expand', () => {
         gridObj.expandRow(gridObj.getRows()[4], gridObj.getCurrentViewRecords()[2]);
-        expect((gridObj.getRows()[7] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(gridObj.getRows()[7].classList.contains('e-childrow-visible')).toBe(true);
     });   
     afterAll(() => {
         destroy(gridObj);
@@ -274,11 +274,11 @@ describe('Searching detailTemplate', () => {
     });
     it('Searching Collapse', () => {
         gridObj.collapseRow(gridObj.getRows()[2], gridObj.getCurrentViewRecords()[1]);
-        expect((gridObj.getRows()[5] as HTMLTableRowElement).style.display).toBe('none');
+        expect(gridObj.getRows()[5].classList.contains('e-childrow-hidden')).toBe(true);
     });
     it('Searching expand', () => {
         gridObj.expandRow(gridObj.getRows()[2], gridObj.getCurrentViewRecords()[1]);
-        expect((gridObj.getRows()[5] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(gridObj.getRows()[5].classList.contains('e-childrow-visible')).toBe(true);
     }); 
     afterAll(() => {
         destroy(gridObj);
@@ -321,11 +321,11 @@ describe('Searching  selfRefrence detailTemplate', () => {
     });
     it('Searching Collapse', () => {
         gridObj.collapseRow(gridObj.getRows()[2], gridObj.getCurrentViewRecords()[1]);
-        expect((gridObj.getRows()[5] as HTMLTableRowElement).style.display).toBe('none');
+        expect(gridObj.getRows()[5].classList.contains('e-childrow-hidden')).toBe(true);
     });
     it('Searching expand', () => {
         gridObj.expandRow(gridObj.getRows()[2], gridObj.getCurrentViewRecords()[1]);
-        expect((gridObj.getRows()[5] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(gridObj.getRows()[5].classList.contains('e-childrow-visible')).toBe(true);
     }); 
     afterAll(() => {
         destroy(gridObj);
@@ -368,11 +368,11 @@ describe('Sorting for detailTemplate', () => {
     });
     it('Sorting Collapse', () => {
         gridObj.collapseRow(gridObj.getRows()[4], gridObj.getCurrentViewRecords()[2]);
-        expect((gridObj.getRows()[7] as HTMLTableRowElement).style.display).toBe('none');
+        expect(gridObj.getRows()[7].classList.contains('e-childrow-hidden')).toBe(true);
     });
     it('Sorting expand', () => {
         gridObj.expandRow(gridObj.getRows()[4], gridObj.getCurrentViewRecords()[2]);
-        expect((gridObj.getRows()[7] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(gridObj.getRows()[7].classList.contains('e-childrow-visible')).toBe(true);
     });  
     afterAll(() => {
         destroy(gridObj);
@@ -417,11 +417,11 @@ describe('Sorting selfrefrential detailTemplate', () => {
     });
     it('Sorting Collapse', () => {
         gridObj.collapseRow(gridObj.getRows()[4], gridObj.getCurrentViewRecords()[2]);
-        expect((gridObj.getRows()[7] as HTMLTableRowElement).style.display).toBe('none');
+        expect(gridObj.getRows()[7].classList.contains('e-childrow-hidden')).toBe(true);
     });
     it('Sorting expand', () => {
         gridObj.expandRow(gridObj.getRows()[4], gridObj.getCurrentViewRecords()[2]);
-        expect((gridObj.getRows()[7] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(gridObj.getRows()[7].classList.contains('e-childrow-visible')).toBe(true);
     });  
     afterAll(() => {
         destroy(gridObj);

@@ -687,20 +687,52 @@ export interface LocalizedFormatActionArgs {
 }
 
 /**
- * Options for excluding specific features from JSON.
- *
+ * Defines options to exclude specific features from the JSON data during loading or saving.
  */
 export interface SerializationOptions {
+    /**
+     * Specifies whether to include only values when loading or saving JSON data.
+     */
     onlyValues?: boolean;
+    /**
+     * Specifies whether to exclude styles when loading or saving JSON data.
+     */
     ignoreStyle?: boolean;
+    /**
+     * Specifies whether to exclude formulwhen loading or saving JSON data.
+     */
     ignoreFormula?: boolean;
+    /**
+     * Specifies whether to exclude number formats when loading or saving JSON data.
+     */
     ignoreFormat?: boolean;
+    /**
+     * Specifies whether to exclude conditional formatting when loading or saving JSON data.
+     */
     ignoreConditionalFormat?: boolean;
+    /**
+     * Specifies whether to exclude data validation rules when loading or saving JSON data.
+     */
     ignoreValidation?: boolean;
+    /**
+     * Specifies whether to exclude freeze panes when loading or saving JSON data.
+     */
     ignoreFreezePane?: boolean;
+    /**
+     * Specifies whether to exclude text wrap settings when loading or saving JSON data.
+     */
     ignoreWrap?: boolean;
+    /**
+     * Specifies whether to exclude charts when loading or saving JSON data.
+     */
     ignoreChart?: boolean;
+    /**
+     * Specifies whether to exclude images when loading or saving JSON data.
+     */
     ignoreImage?: boolean;
+    /**
+     * Specifies whether to exclude notes when loading or saving JSON data.
+     */
     ignoreNote?: boolean;
 }
 

@@ -2536,7 +2536,7 @@ private calculatePathBounds(data: string): Rect {
                     let hasSpellingError: boolean = this.spellChecker.isErrorWord(currentText) ? true : false;
                     let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
                     this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
-                } else if (!this.documentHelper.owner.editorModule.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) {
+                } else if ((!this.documentHelper.owner.editorModule.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) && (this.documentHelper.triggerSpellCheck || elementBox.isWrongWord)) {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                         /* eslint-disable @typescript-eslint/no-explicit-any */

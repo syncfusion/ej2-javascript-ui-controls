@@ -320,7 +320,7 @@ export class Lists {
         if (e.event.which === 8) {
             this.backspaceList(e);
         }
-        if ((e.event.which === 46 && e.event.action === 'delete') || (e.event.which === 88 && e.event.action === 'cut')) {
+        if ((e.event.which === 46 && e.event.action === 'delete')) {
             const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
             const commonAncestor: Node = range.commonAncestorContainer;
             const startEle: Node = range.startContainer;

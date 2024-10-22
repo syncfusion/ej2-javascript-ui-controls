@@ -1,5 +1,6 @@
 
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { ImageOrTableCursor } from '../common';
 
 /**
  * `Selection` module is used to handle RTE Selections.
@@ -16,6 +17,11 @@ export class NodeSelection {
     public endOffset: number;
     public startNodeName: string[] = [];
     public endNodeName: string[] = [];
+    public editableElement: HTMLElement | HTMLBodyElement;
+
+    constructor(editElement?: HTMLElement | HTMLBodyElement) {
+        this.editableElement = editElement;
+    }
 
     private saveInstance(range: Range, body: HTMLBodyElement): NodeSelection {
         this.range = range.cloneRange();
@@ -102,7 +108,9 @@ export class NodeSelection {
     }
 
     private getNode(startNode: Node, endNode: Node, nodeCollection: Node[]): Node {
-
+        if (this.editableElement && (!this.editableElement.contains(startNode) || this.editableElement === startNode)) {
+            return null;
+        }
         if (endNode === startNode &&
             (startNode.nodeType === 3 || !startNode.firstChild || nodeCollection.indexOf(startNode.firstChild) !== -1
                 || this.isChildNode(nodeCollection, startNode))) {
@@ -139,6 +147,12 @@ export class NodeSelection {
         const endNode: Node = range.endContainer.childNodes[
             (range.endOffset > 0) ? (range.endOffset - 1) : range.endOffset]
             || range.endContainer;
+        const tableCursor: ImageOrTableCursor = this.processedTableImageCursor(range);
+        if (tableCursor.start || tableCursor.end) {
+            if (tableCursor.startName === 'TABLE' || tableCursor.endName === 'TABLE') {
+                return [];
+            }
+        }
         if ((startNode === endNode || (startNode.nodeName === 'BR' && startNode === range.endContainer.childNodes[range.endOffset])) &&
         startNode.childNodes.length === 0) {
             return [startNode];
@@ -480,4 +494,37 @@ export class NodeSelection {
         selection.addRange(range);
     }
 
+    private isTableOrImageStart(range: Range): { start: boolean; startNodeName: string} {
+        const customHandlerElements: string[] = ['TABLE'];
+        const startContainer: Element = range.startContainer as Element;
+        const startOffset: number = range.startOffset;
+        const isCursorAtStart: boolean = range.collapsed && (startContainer.nodeType === 1) &&
+        (startContainer as HTMLElement).isContentEditable && startContainer.childNodes[startOffset as number] &&
+        (customHandlerElements.indexOf((startContainer.childNodes[startOffset as number] as HTMLElement).nodeName) > -1);
+        if (isCursorAtStart) {
+            return { start : isCursorAtStart, startNodeName: (startContainer.childNodes[startOffset as number] as HTMLElement).nodeName };
+        } else {
+            return { start : false, startNodeName: ''};
+        }
+    }
+
+    private isTableOrImageEnd(range: Range): { end: boolean; endNodeName: string} {
+        const customHandlerElements: string[] = ['TABLE'];
+        const startContainer: Element = range.startContainer as Element;
+        const startOffset: number = range.startOffset;
+        const isCursorAtEnd: boolean = range.collapsed && (startContainer.nodeType === 1) &&
+        (startContainer as HTMLElement).isContentEditable && startContainer.childNodes[startOffset - 1] &&
+        (customHandlerElements.indexOf((startContainer.childNodes[startOffset - 1] as HTMLElement).nodeName) > -1);
+        if (isCursorAtEnd) {
+            return { end : isCursorAtEnd, endNodeName: (startContainer.childNodes[startOffset - 1] as HTMLElement).nodeName };
+        } else {
+            return { end : false, endNodeName: ''};
+        }
+    }
+
+    private processedTableImageCursor(range: Range): ImageOrTableCursor  {
+        const { start, startNodeName }: { start: boolean; startNodeName: string } = this.isTableOrImageStart(range);
+        const { end, endNodeName}: { end: boolean; endNodeName: string} = this.isTableOrImageEnd(range);
+        return { start, startName: startNodeName, end, endName: endNodeName };
+    }
 }

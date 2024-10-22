@@ -449,13 +449,17 @@ export class EnterKeyAction {
                             } else if (!isNOU(currentParent) && currentParent !== this.parent.inputElement && currentParent.nodeName !== 'BR') {
                                 if (currentParent.textContent.trim().length === 0 || (currentParent.textContent.trim().length === 1 &&
                                     currentParent.textContent.charCodeAt(0) === 8203)) {
-                                    const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
-                                        this.range, currentParent, true).cloneNode(true);
-                                    this.parent.formatter.editorManager.domNode.insertAfter((newElem as HTMLElement), currentParent);
-                                    const outerBRElem: HTMLElement = this.parent.createElement('br');
-                                    newElem.parentElement.insertBefore(outerBRElem, newElem);
-                                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                                        this.parent.contentModule.getDocument(), newElem as Element, 0);
+                                    if (currentParent.childElementCount > 1 && currentParent.lastElementChild.nodeName === 'IMG') {
+                                        this.insertBRElement();
+                                    } else {
+                                        const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
+                                            this.range, currentParent, true).cloneNode(true);
+                                        this.parent.formatter.editorManager.domNode.insertAfter((newElem as HTMLElement), currentParent);
+                                        const outerBRElem: HTMLElement = this.parent.createElement('br');
+                                        newElem.parentElement.insertBefore(outerBRElem, newElem);
+                                        this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                            this.parent.contentModule.getDocument(), newElem as Element, 0);
+                                    }
                                 } else {
                                     let newElem: Node;
                                     const outerBRElem: HTMLElement = this.parent.createElement('br');

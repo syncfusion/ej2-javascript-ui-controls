@@ -77,12 +77,12 @@ describe('TreeGrid base module', () => {
             rows = gridObj.getRows();
             gridObj.columnMenuModule.getColumnMenu();
             (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-            expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+            expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
         });
         it('collapse testing', () => {
             rows = gridObj.getRows();
             (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
-            expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
+            expect(rows[1].classList.contains('e-childrow-visible')).toBe(true);
         });
         afterAll(() => {
             destroy(gridObj);
@@ -119,12 +119,12 @@ describe('Self Reference Data Basic Rendering', () => {
     it('expand testing', () => {
         rows = gridObj.getRows();
         (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+        expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
     });
     it('collapse testing', () => {
         rows = gridObj.getRows();
         (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(rows[1].classList.contains('e-childrow-visible')).toBe(true);
     });
     it('empty dataSource Update', (done: Function) => {
         gridObj.dataBound = (args: Object) => {
@@ -188,16 +188,16 @@ describe('expandcollapse method', () => {
     it('collapse testing', () => {
         gridObj.collapseRow(null, gridObj.flatData[11]);
         rows = gridObj.getRows();
-        expect((rows[12] as HTMLTableRowElement).style.display).toBe('none');
+        expect(rows[12].classList.contains('e-childrow-hidden')).toBe(true);
         gridObj.collapseRow(rows[0] as HTMLTableRowElement);
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+        expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
     });
     it('expand testing', () => {
         gridObj.expandRow(null, gridObj.flatData[11]);
         rows = gridObj.getRows();
-        expect((rows[12] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(rows[12].classList.contains('e-childrow-visible')).toBe(true);
         gridObj.expandRow(rows[0] as HTMLTableRowElement);
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(rows[1].classList.contains('e-childrow-visible')).toBe(true);
     });
     it('treecolumnIndex set model testing', () => {
         gridObj.treeColumnIndex = 2;
@@ -403,16 +403,16 @@ describe('keyBoard Interaction for collapse particular parent row', () => {
         gridObj.keyboardModule.keyAction({ action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
             target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
         rows = gridObj.getRows();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+        expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
         gridObj.keyboardModule.keyAction({ action: 'ctrlShiftDownArrow', preventDefault: preventDefault,
             target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(rows[1].classList.contains('e-childrow-visible')).toBe(true);
         gridObj.keyboardModule.keyAction({ action: 'ctrlUpArrow', preventDefault: preventDefault,
             target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
-        expect((<HTMLTableRowElement>gridObj.getRows()[1]).style.display).toBe('none');
+        expect(gridObj.getRows()[1].classList.contains('e-childrow-hidden')).toBe(true);
         gridObj.keyboardModule.keyAction({ action: 'ctrlDownArrow', preventDefault: preventDefault,
             target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
-        expect((<HTMLTableRowElement>gridObj.getRows()[1]).style.display).toBe('table-row');
+        expect(gridObj.getRows()[1].classList.contains('e-childrow-visible')).toBe(true);
         gridObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault: preventDefault,
             target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
         expect(gridObj.getRows()[1].querySelectorAll('.e-focused').length).toBe(1);
@@ -646,11 +646,11 @@ describe('EJ2-22983: DataSource is not proper whose parentIDMapping record is no
         let h: number = 0;
         (<any>(gridObj.element.querySelectorAll('.e-treegridcollapse')))
             .forEach((args: any) => {
-                if (args.closest('tr').style['display'] != 'none') {
+                if (args.closest('tr').classList.contains('e-childrow-hidden')) {
                     h++;
                 }
             });
-        expect(h === 2).toBe(true);
+        expect(h === 14).toBe(true);
         gridObj.expandAtLevel(1);
     });
     it('Collapsing testing', () => {
@@ -659,7 +659,7 @@ describe('EJ2-22983: DataSource is not proper whose parentIDMapping record is no
         gridObj.collapseRow(<HTMLTableRowElement>(gridObj.getRowByIndex(2)));
         (<any>(gridObj.element.querySelectorAll('.e-gridrowindex2level3')))
             .forEach((args: any) => {
-                if (args.parentElement.style['display'] === 'none') {
+                if (args.parentElement.classList.contains('e-childrow-hidden')) {
                     h++;
                 }
             });
@@ -689,7 +689,7 @@ describe('Self Reference Data Basic Rendering with ParentIDMapping value as Null
     it('expand testing', () => {
         rows = gridObj.getRows();
         (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+        expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
     });
     afterAll(() => {
         destroy(gridObj);
@@ -743,7 +743,7 @@ describe('keyBoard Interaction for collapse particular parent row by selecting a
         gridObj.keyboardModule.keyAction({ action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
             target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[3] } as any);
         rows = gridObj.getRows();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+        expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
     });
     afterAll(() => {
         destroy(gridObj);
@@ -1120,18 +1120,18 @@ describe('Self Reference Data ExpandState Mapping for multiple levels', () => {
     it('expand testing', () => {
         rows = gridObj.getRows();
         (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
-        expect((rows[2] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(rows[1].classList.contains('e-childrow-visible')).toBe(true);
+        expect(rows[2].classList.contains('e-childrow-visible')).toBe(true);
         expect(rows[2].getElementsByClassName('e-treegridexpand').length).toBe(1);
-        expect((rows[3] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(rows[3].classList.contains('e-childrow-visible')).toBe(true);
     });
 
     it('collapse testing', () => {
         rows = gridObj.getRows();
         (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
-        expect((rows[2] as HTMLTableRowElement).style.display).toBe('none');
-        expect((rows[3] as HTMLTableRowElement).style.display).toBe('none');
+        expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
+        expect(rows[2].classList.contains('e-childrow-hidden')).toBe(true);
+        expect(rows[3].classList.contains('e-childrow-hidden')).toBe(true);
     });
 
     afterAll(() => {
@@ -1168,18 +1168,18 @@ describe('Self Reference Data ExpandState Mapping for multiple levels', () => {
     it('expand testing', () => {
         rows = gridObj.getRows();
         (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
-        expect((rows[2] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(rows[1].classList.contains('e-childrow-visible')).toBe(true);
+        expect(rows[2].classList.contains('e-childrow-visible')).toBe(true);
         expect(rows[2].getElementsByClassName('e-treegridexpand').length).toBe(1);
-        expect((rows[3] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(rows[3].classList.contains('e-childrow-visible')).toBe(true);
     });
 
     it('collapse testing', () => {
         rows = gridObj.getRows();
         (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
-        expect((rows[2] as HTMLTableRowElement).style.display).toBe('none');
-        expect((rows[3] as HTMLTableRowElement).style.display).toBe('none');
+        expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
+        expect(rows[2].classList.contains('e-childrow-hidden')).toBe(true);
+        expect(rows[3].classList.contains('e-childrow-hidden')).toBe(true);
     });
 
     afterAll(() => {
@@ -1430,9 +1430,9 @@ describe('Checking template column Expand/Collapse', () => {
     it('Checking Expand/Collapse action when the template column is marked as treeColumnIndex ', () => {
         rows = gridObj.getRows();
         gridObj.collapseRow(rows[0] as HTMLTableRowElement);
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+        expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
         gridObj.expandRow(rows[0] as HTMLTableRowElement);
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(rows[1].classList.contains('e-childrow-visible')).toBe(true);
     });
     afterAll(() => {
         destroy(gridObj);
@@ -1474,7 +1474,7 @@ describe('EJ2-51954-Expand/Collapse At level method', () => {
         (rows[2].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
         gridObj.selectRow(3);
         gridObj.expandAtLevel(3);
-        expect((rows[6] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(rows[6].classList.contains('e-childrow-visible')).toBe(true);
     });
     afterAll(() => {
         destroy(gridObj);
@@ -2015,9 +2015,9 @@ describe('EJ2-65701- With the frozenRows property, the methods expand & collpase
     it('expand & collapse action checking while enable the frozen row', () => {
         rows = gridObj.getRows();
         gridObj.collapseRow(rows[5]);
-        expect(rows[6].style.display).toBe('none');
+        expect(rows[6].classList.contains('e-childrow-hidden')).toBe(true);
         gridObj.expandRow(rows[5]);
-        expect(rows[6].style.display).toBe('table-row');
+        expect(rows[6].classList.contains('e-childrow-visible')).toBe(true);
     });
     it('expandall & collapseall action checking while enable the frozen row', () => {
         gridObj.collapseAll();

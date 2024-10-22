@@ -894,7 +894,9 @@ export class UndoRedo {
         if (connector.targetID && diagram.nameTable[connector.targetID]) {
             diagram.insertValue(diagram.nameTable[connector.targetID], true);
         }
-        this.connectionChanged(connector, diagram);
+        if (connector instanceof Connector || connector.shape.type === 'None') {
+            this.connectionChanged(connector, diagram);
+        }
     }
 
     private connectionChanged(obj: ConnectorModel, diagram: Diagram, entry?: HistoryEntry): void {

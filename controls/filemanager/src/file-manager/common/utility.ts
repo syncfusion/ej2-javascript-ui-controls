@@ -842,7 +842,8 @@ export function setNextPath(parent: IFileManager, path: string): void {
 export function openSearchFolder(parent: IFileManager, data: Object): void {
     parent.originalPath = getFullPath(parent, data, parent.path);
     const root: Object = getValue(parent.pathId[0], parent.feParent);
-    const isRoot: boolean = getValue('_fm_id', parent.itemData[0]) === 'fe_tree';
+    const navData: object = parent.feParent[getValue('_fm_id', parent.itemData[0])];
+    const isRoot: boolean = isNullOrUndefined(navData) || getValue('_fm_id', navData) === 'fe_tree';
     const key: string = isNOU(getValue('id', root)) ? 'name' : 'id';
     const searchData: object = getObject(parent, key, isFileSystemData(parent) ? getValue('id', data) : getValue('name', data));
     if (isNullOrUndefined(searchData))

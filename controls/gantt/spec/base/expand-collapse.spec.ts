@@ -76,22 +76,26 @@ describe('Gantt expand collapse support', () => {
         it('Collapse All Rows', () => {
             ganttObj.ganttChartModule.expandCollapseAll('collapse');
             let secondElement: HTMLElement = (ganttObj.element.querySelectorAll('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr')[1]) as HTMLElement;
-            expect(secondElement.style.display).toBe('none');
+            let displayValue = window.getComputedStyle(secondElement).display;
+            expect(displayValue).toBe('none');
         });
         it('Expand All Rows', () => {
             ganttObj.ganttChartModule.expandCollapseAll('expand');
             let secondElement: HTMLElement = (ganttObj.element.querySelectorAll('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr')[1]) as HTMLElement;
-            expect(secondElement.style.display).toBe('table-row');
+            let displayValue = window.getComputedStyle(secondElement).display;
+            expect(displayValue).toBe('table-row');
         });
         it('Collapse by collapseall method', () => {
             ganttObj.collapseAll();
             let secondElement: HTMLElement = (ganttObj.element.querySelectorAll('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr')[1]) as HTMLElement;
-            expect(secondElement.style.display).toBe('none');
+            let displayValue = window.getComputedStyle(secondElement).display;
+            expect(displayValue).toBe('none');
         });
         it('Expand by expandall method', () => {
             ganttObj.expandAll();
             let secondElement: HTMLElement = (ganttObj.element.querySelectorAll('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr')[1]) as HTMLElement;
-            expect(secondElement.style.display).toBe('table-row');
+            let displayValue = window.getComputedStyle(secondElement).display;
+            expect(displayValue).toBe('table-row');
         });
         afterAll(() => {
             if (ganttObj) {
@@ -121,12 +125,14 @@ describe('Gantt expand collapse support', () => {
         it('Collapse at level', () => {
             ganttObj.ganttChartModule.collapseAtLevel(1);
             let rowElement: HTMLElement = (ganttObj.element.querySelectorAll('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr')[7]) as HTMLElement;
-            expect(rowElement.style.display).toBe('none');
+            let displayValue = window.getComputedStyle(rowElement).display;
+            expect(displayValue).toBe('none');
         });
         it('Expand at level', () => {
             ganttObj.expandAtLevel(1);
-            let rowElement: HTMLElement = (ganttObj.element.querySelectorAll('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr')[7]) as HTMLElement;
-            expect(rowElement.style.display).toBe('table-row');
+            let rowElement: any = (ganttObj.element.querySelectorAll('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr')[7]) as HTMLElement;
+            let displayValue = window.getComputedStyle(rowElement).display;
+            expect(displayValue).toBe('table-row');
         });
         it('Collapse by index', () => {
             ganttObj.collapseByIndex(1);
@@ -324,7 +330,7 @@ describe('Gantt expand collapse support', () => {
 
     describe('Dialog editing - resoruce selection', () => {
         let ganttObj: Gantt;
-        let resourcesData1 = [
+        let resourcesData1 : any = [
             {
                 TaskID: 1,
                 TaskName: 'Project initiation',
@@ -384,7 +390,7 @@ describe('Gantt expand collapse support', () => {
                 Progress: 30,
             }
         ];
-        let resourceCollection1 = [
+        let resourceCollection1 : any = [
             { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team' },
             { resourceId: 2, resourceName: 'Rose Fuller', resourceGroup: 'Testing Team' },
             { resourceId: 3, resourceName: 'Margaret Buchanan', resourceGroup: 'Approval Team' },
@@ -492,7 +498,7 @@ describe('Gantt expand collapse support', () => {
     });
     describe('collaspe rom chart resoruce view', () => {
         let ganttObj: Gantt;
-        let resourcesData1 = [
+        let resourcesData1 : any = [
             {
                 TaskID: 1,
                 TaskName: 'Project initiation',
@@ -514,7 +520,7 @@ describe('Gantt expand collapse support', () => {
                 ]
             },
         ];
-        let resourceCollection1 = [
+        let resourceCollection1 : any = [
             { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team' },
             { resourceId: 2, resourceName: 'Rose Fuller', resourceGroup: 'Testing Team' },
             { resourceId: 3, resourceName: 'Margaret Buchanan', resourceGroup: 'Approval Team' },
@@ -622,7 +628,7 @@ describe('Gantt expand collapse support', () => {
 
     describe('collaspe rom chart resoruce view', () => {
         let ganttObj: Gantt;
-        let resourcesData1 = [
+        let resourcesData1 : any = [
             {
                 TaskID: 1,
                 TaskName: 'Project initiation',
@@ -644,7 +650,7 @@ describe('Gantt expand collapse support', () => {
                 ]
             },
         ];
-        let resourceCollection1 = [
+        let resourceCollection1 : any = [
             { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team' },
             { resourceId: 2, resourceName: 'Rose Fuller', resourceGroup: 'Testing Team' },
             { resourceId: 3, resourceName: 'Margaret Buchanan', resourceGroup: 'Approval Team' },
@@ -757,73 +763,73 @@ describe('Gantt expand collapse support', () => {
             ganttObj = createGantt(
                 {
                     dataSource: multiTaskbarData,
-        resources: multiResources,
-        viewType: 'ResourceView',
-        enableMultiTaskbar: true,
-        collapseAllParentTasks: true,
-        showOverAllocation: true,
-        taskType: 'FixedWork',
-        taskFields: {
-            id: 'TaskID',
-            name: 'TaskName',
-            startDate: 'StartDate',
-            endDate: 'EndDate',
-            duration: 'Duration',
-            dependency: 'Predecessor',
-            progress: 'Progress',
-            resourceInfo: 'resources',
-            work: 'work',
-            child: 'subtasks'
-        },
-        resourceFields: {
-            id: 'resourceId',
-            name: 'resourceName',
-            unit: 'resourceUnit',
-            group: 'resourceGroup'
-        },
-        editSettings: {
-            allowAdding: true,
-            allowEditing: true,
-            allowDeleting: true,
-            allowTaskbarEditing: true,
-            showDeleteConfirmDialog: true
-        },
-        columns: [
-            { field: 'TaskID', visible: false },
-            { field: 'TaskName', headerText: 'Name', width: 250 },
-            { field: 'work', headerText: 'Work' },
-            { field: 'Progress' },
-            { field: 'resourceGroup', headerText: 'Group' },
-            { field: 'StartDate' },
-            { field: 'Duration' },
-        ],
-        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-        labelSettings: {
-            taskLabel: 'TaskName'
-        },
-        splitterSettings: {
-            columnIndex: 2
-        },
-        allowResizing: true,
-        allowSelection: true,
-        highlightWeekends: true,
-        allowTaskbarOverlap: false,
-        treeColumnIndex: 1,
-        height: '450px',
-        projectStartDate: new Date('03/24/2024'),
-        projectEndDate: new Date('05/18/2024')
+                    resources: multiResources,
+                    viewType: 'ResourceView',
+                    enableMultiTaskbar: true,
+                    collapseAllParentTasks: true,
+                    showOverAllocation: true,
+                    taskType: 'FixedWork',
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        dependency: 'Predecessor',
+                        progress: 'Progress',
+                        resourceInfo: 'resources',
+                        work: 'work',
+                        child: 'subtasks'
+                    },
+                    resourceFields: {
+                        id: 'resourceId',
+                        name: 'resourceName',
+                        unit: 'resourceUnit',
+                        group: 'resourceGroup'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', visible: false },
+                        { field: 'TaskName', headerText: 'Name', width: 250 },
+                        { field: 'work', headerText: 'Work' },
+                        { field: 'Progress' },
+                        { field: 'resourceGroup', headerText: 'Group' },
+                        { field: 'StartDate' },
+                        { field: 'Duration' },
+                    ],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                    labelSettings: {
+                        taskLabel: 'TaskName'
+                    },
+                    splitterSettings: {
+                        columnIndex: 2
+                    },
+                    allowResizing: true,
+                    allowSelection: true,
+                    highlightWeekends: true,
+                    allowTaskbarOverlap: false,
+                    treeColumnIndex: 1,
+                    height: '450px',
+                    projectStartDate: new Date('03/24/2024'),
+                    projectEndDate: new Date('05/18/2024')
                 }, done);
         });
-        it('initial load with collapseallparenttasks', () => {
-            if(ganttObj.getRowByID(4))
-            expect(ganttObj.getRowByID(4).style.height).toBe('108px');
-        });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
-    });
+     it('initial load with collapseallparenttasks', () => {
+         if (ganttObj.getRowByID(4))
+             expect(ganttObj.getRowByID(4).style.height).toBe('108px');
+     });
+     afterAll(() => {
+         if (ganttObj) {
+             destroyGantt(ganttObj);
+         }
+     });
+ });
     // describe('Dialog editing - resoruce selection', () => {
     //     let ganttObj: Gantt;
     //     let dataSource: DataManager = new DataManager({

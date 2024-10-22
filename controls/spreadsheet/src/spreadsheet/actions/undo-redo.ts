@@ -414,7 +414,7 @@ export class UndoRedo {
                     this.parent.notify(createImageElement, {
                         options: {
                             src: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
-                            height: copiedShapeInfo.height, width: copiedShapeInfo.width, imageId: pictureElem.id
+                            height: copiedShapeInfo.height, width: copiedShapeInfo.width, id: pictureElem.id
                         },
                         range: copiedShapeInfo.copiedRange, isPublic: false, isUndoRedo: true
                     });
@@ -432,7 +432,7 @@ export class UndoRedo {
                     this.parent.notify(createImageElement, {
                         options: {
                             src: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
-                            height: copiedShapeInfo.height, width: copiedShapeInfo.width, imageId: pictureElem.id
+                            height: copiedShapeInfo.height, width: copiedShapeInfo.width, id: pictureElem.id
                         },
                         range: copiedShapeInfo.pastedRange, isPublic: false, isUndoRedo: true
                     });
@@ -441,7 +441,7 @@ export class UndoRedo {
                     this.parent.notify(createImageElement, {
                         options: {
                             src: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
-                            height: pictureElem.offsetHeight, width: pictureElem.offsetWidth, imageId: pictureElem.id
+                            height: pictureElem.offsetHeight, width: pictureElem.offsetWidth, id: pictureElem.id
                         },
                         range: copiedShapeInfo.pastedRange, isPublic: false, isUndoRedo: true
                     });

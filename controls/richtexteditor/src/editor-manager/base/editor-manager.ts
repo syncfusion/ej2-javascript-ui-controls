@@ -68,7 +68,7 @@ export class EditorManager {
     public constructor(options: ICommandModel) {
         this.currentDocument = options.document;
         this.editableElement = options.editableElement;
-        this.nodeSelection = new NodeSelection();
+        this.nodeSelection = new NodeSelection(this.editableElement as HTMLElement);
         this.nodeCutter = new NodeCutter();
         this.domNode = new DOMNode(this.editableElement, this.currentDocument);
         this.observer = new Observer(this);

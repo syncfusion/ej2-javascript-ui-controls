@@ -93,7 +93,7 @@ export class SpreadsheetImage {
     }
     /* eslint-enable */
     private createImageElement(args: {
-        options: { src: string, imageId?: string, height?: number, width?: number, top?: number, left?: number }, range?: string,
+        options: { src: string, id?: string, height?: number, width?: number, top?: number, left?: number }, range?: string,
         isPublic?: boolean, isUndoRedo?: boolean
     }): void {
         const range: string = args.range ? (args.range.indexOf('!') > 0) ? args.range.split('!')[1] : args.range.split('!')[0]
@@ -101,7 +101,7 @@ export class SpreadsheetImage {
         const sheetIndex: number = (args.range && args.range.indexOf('!') > 0) ?
             getSheetIndex(this.parent as Workbook, args.range.split('!')[0]) : this.parent.activeSheetIndex;
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
-        const id: string = args.options.imageId ? args.options.imageId : getUniqueID(this.parent.element.id + '_overlay_picture_');
+        const id: string = args.options.id ? args.options.id : getUniqueID(this.parent.element.id + '_overlay_picture_');
         const indexes: number[] = getRangeIndexes(range);
         const sheet: SheetModel = isUndefined(sheetIndex) ? this.parent.getActiveSheet() : this.parent.sheets[sheetIndex as number];
         if (this.parent.element.querySelector(`#${id}`)) {

@@ -122,6 +122,8 @@ export class ImageCommand {
                 (Browser.isIE ? (selectedNode.previousSibling as Element) : (selectedNode as Element).previousElementSibling);
             const onImageLoadEvent: () => void = () => {
                 if (!isNOU(this.parent.currentDocument)) {
+                    imgElm.setAttribute('width', this.calculateStyleValue((imgElm as HTMLElement).offsetWidth));
+                    imgElm.setAttribute('height', this.calculateStyleValue((imgElm as HTMLElement).offsetHeight));
                     e.callBack({
                         requestType: (e.value === 'Replace') ? (e.item.subCommand = 'Replace', 'Replace') : 'Images',
                         editorMode: 'HTML',

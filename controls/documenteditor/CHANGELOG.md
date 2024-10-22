@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 27.1.55 (2024-10-22)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I636914` - Now track changes working as expected when using collaboration.
+- `#I641336` - Resolved the text overlap issue in document uploading.
+- `#I636876` - Now script error does not get thrown when unmounting the DocumentEditor with collaboration.
+- `#I638548` - Resolved the issue of document stays loading.
+- `#I637068` - Now proper font family is updated for splitted Chinese text.
+- `#I618565` - Now text get highlighted properly if user clicks on comment.
+
 ## 27.1.53 (2024-10-15)
 
 ### DocumentEditor
@@ -24,6 +37,9 @@
 - `#I632911` - Resolved console warning for missing modules in document editor.
 - `#I630998` - Now able to add text after a content control when no other element is next to it.
 - `#I622732` - Resolved script error while delete content after search text.
+- `#I624123` - Resolved the footnote overlap with table issue in document editor.
+- `#I635035` - Now Content control has been exported properly in document editor.
+- `#I633148` - Resolved the issue multiple spell check triggered when inserting text.
 
 #### Features
 

@@ -153,7 +153,7 @@ describe('Without paging in frozen Rows', () => {
             const displayAction: any = [].slice.call(gridObj.element.getElementsByClassName('e-headercontent')[0].getElementsByClassName('e-row'));
             let rows: number = 0;
             const count = displayAction.filter((e: any) => {
-                if (e.style.display === 'none' ) {
+                if (e.classList.contains('e-childrow-hidden')) {
                     rows++;
                 }
             });

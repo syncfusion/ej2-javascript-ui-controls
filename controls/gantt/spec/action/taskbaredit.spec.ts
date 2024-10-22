@@ -2708,6 +2708,11 @@ describe('Gantt taskbar edit action', () => {
         it("check offset value while connecting predecessors", () => {
             expect(ganttObj.flatData[0].ganttProperties.predecessor[0].offset).toBe(-5);
         });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
     });
 
 

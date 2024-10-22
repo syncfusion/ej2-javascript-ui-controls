@@ -344,6 +344,7 @@ export class WordExport {
     private compatibilityMode: number;
     private isBookmarkAtEnd: boolean = false;
     private isBookmarkAtRowEnd: boolean = false;
+    private isVerticalMergeCell: boolean = false;
     private keywordIndex: number = undefined;
     private isHeaderFooter: boolean = false;
     private isSerializeFootEndNote: string = undefined;
@@ -1658,7 +1659,7 @@ export class WordExport {
         // EnsureWatermark(paragraph);
         this.prevRevisionIds = [];
         this.serializeParagraphItems(writer, paragraph[inlinesProperty[this.keywordIndex]]);
-        if (!this.isBookmarkAtEnd && !this.isBookmarkAtRowEnd) {
+        if ((!this.isBookmarkAtEnd && !this.isBookmarkAtRowEnd) || this.isVerticalMergeCell) {
             writer.writeEndElement(); //end of paragraph tag.
         }
         this.isBookmarkAtEnd = false;
@@ -4129,6 +4130,8 @@ export class WordExport {
                             for (let k: number = checkIndex; k < columnIndex; k++) {
                                 if (mVerticalMerge.containsKey(k)) {
                                     let format: any = this.getMergeCellFormat(cellFormat, cellFormats.get(k), k < cell[columnIndexProperty[this.keywordIndex]]);
+                                    this.isVerticalMergeCell = true;
+                                    this.isBookmarkAtRowEnd = true;
                                     this.serializeTableCell(writer, cell, format, false);
                                     mVerticalMerge.set(k, mVerticalMerge.get(k) - 1);
                                     if (mVerticalMerge.get(k) === 1) {
@@ -4148,6 +4151,8 @@ export class WordExport {
                                 }
                             }
                         }
+                        this.isVerticalMergeCell = false;
+                        this.isBookmarkAtRowEnd = false;
                         prevColIndex = columnIndex;
                         if (cellFormat[rowSpanProperty[this.keywordIndex]] > 1) {
                             mVerticalMerge.add(columnIndex, cellFormat[rowSpanProperty[this.keywordIndex]]);
@@ -4241,7 +4246,7 @@ export class WordExport {
             xmlWriter.writeEndElement(); //end of pPr
             xmlWriter.writeEndElement(); //end of P
         }
-        if (!this.isBookmarkAtRowEnd) {
+        if ((!this.isBookmarkAtRowEnd) || this.isVerticalMergeCell) {
             xmlWriter.writeEndElement(); //end of table cell 'tc' 
         }
         this.blockOwner = owner;

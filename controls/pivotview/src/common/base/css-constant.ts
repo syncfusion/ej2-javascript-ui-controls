@@ -729,6 +729,8 @@ export const PIVOT_ROW_PAGER_SETTINGS: string = 'e-pivot-row-pager-settings';
 /** @hidden */
 export const PIVOT_COLUMN_PAGER_SETTINGS: string = 'e-pivot-column-pager-settings';
 /** @hidden */
+export const PIVOT_BOTH_PAGER_SETTINGS: string = 'e-pivot-both-pager-settings';
+/** @hidden */
 export const PIVOT_PAGER_CONTAINER: string = 'e-pagercontainer';
 /** @hidden */
 export const PIVOT_V_SEPARATOR: string = 'e-pivotview-vseparator';

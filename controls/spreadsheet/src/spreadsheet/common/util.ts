@@ -1558,7 +1558,7 @@ export function updateAction(
         } else {
             spreadsheet.notify(
                 createImageElement, { options: { src: options.eventArgs.imageData, height: options.eventArgs.imageHeight, width:
-                options.eventArgs.imageWidth, imageId: options.eventArgs.id }, range: options.eventArgs.range, isPublic: false,
+                options.eventArgs.imageWidth, id: options.eventArgs.id }, range: options.eventArgs.range, isPublic: false,
                 isUndoRedo: true });
         }
         break;
@@ -1566,7 +1566,7 @@ export function updateAction(
         if (isRedo === false) {
             spreadsheet.notify(
                 createImageElement, { options: { src: options.eventArgs.imageData, height: options.eventArgs.imageHeight, width:
-                options.eventArgs.imageWidth, imageId: options.eventArgs.id }, range: options.eventArgs.address, isPublic: false,
+                options.eventArgs.imageWidth, id: options.eventArgs.id }, range: options.eventArgs.address, isPublic: false,
                 isUndoRedo: true });
         } else {
             spreadsheet.notify(

@@ -180,7 +180,6 @@ export class FormFieldsBase {
                     const loadedForm: PdfForm = this.formFieldLoadedDocument.form;
                     for (let k: number = initialCount - 1; k >= 0; k--) {
                         const formFieldPage: PdfField = loadedForm.fieldAt(k);
-                        const pageNumber: number = formFieldPage.page._pageIndex;
                         let signField: PdfSignatureField = null;
                         if (formFieldPage instanceof PdfSignatureField) {
                             signField = formFieldPage as PdfSignatureField;
@@ -201,6 +200,20 @@ export class FormFieldsBase {
             if (!isNullOrUndefined(this.formFieldLoadedDocument.form)) {
                 this.formFieldLoadedDocument.form.setDefaultAppearance(false);
             }
+        }
+    }
+
+    private setFont(field: any, currentField: any): void {
+        const pdfFontStyle: PdfFontStyle = this.getFontStyle(field);
+        currentField._dictionary.set('FontStyle', pdfFontStyle);
+        // eslint-disable-next-line
+        const hasUnicode: boolean = /[^\u0000-\u007F]/.test(currentField.text);
+        if (hasUnicode) {
+            currentField.font = this.getTrueFont(field.fontSize, pdfFontStyle);
+
+        } else {
+            currentField.font = new PdfStandardFont(this.getFontFamily(field.FontFamily),
+                                                    this.convertPixelToPoint(field.fontSize), pdfFontStyle);
         }
     }
 
@@ -236,6 +249,7 @@ export class FormFieldsBase {
                                     (currentField as PdfTextBoxField).text = field['fieldValue'];
                                     (currentField as PdfTextBoxField).readOnly = field['isReadOnly'] === 'true' ? true : false;
                                 }
+                                this.setFont(field, currentField);
                             }
                         } else {
                             if ((Object.prototype.hasOwnProperty.call(data, currentFieldName) && !isNullOrUndefined(data[`${currentFieldName}`])) || (Object.prototype.hasOwnProperty.call(data, actualFieldName) && !isNullOrUndefined(data[`${actualFieldName}`]))) {
@@ -247,6 +261,7 @@ export class FormFieldsBase {
                                     (currentField as PdfTextBoxField).text = field['fieldValue'];
                                     (currentField as PdfTextBoxField).readOnly = field['isReadOnly'] === 'true' ? true : false;
                                 }
+                                this.setFont(field, currentField);
                             }
                         }
                     } else if (currentField instanceof PdfComboBoxField) {
@@ -283,6 +298,7 @@ export class FormFieldsBase {
                             if (currentField.editable && !isExists) {
                                 currentField.selectedValue = fieldName;
                             }
+                            this.setFont(field, currentField);
                         }
                     } else if (currentField instanceof PdfCheckBoxField) {
                         if ((Object.prototype.hasOwnProperty.call(data, currentFieldName) && !isNullOrUndefined(data[`${currentFieldName}`])) || (Object.prototype.hasOwnProperty.call(data, actualFieldName) && !isNullOrUndefined(data[`${actualFieldName}`]))) {
@@ -350,6 +366,7 @@ export class FormFieldsBase {
                                 }
                             }
                             currentField.selectedIndex = selectedIndexes;
+                            this.setFont(table, currentField);
                         }
                     } else if (currentField instanceof PdfRadioButtonListField) {
                         if ((Object.prototype.hasOwnProperty.call(data, currentFieldName) && !isNullOrUndefined(data[`${currentFieldName}`])) || (Object.prototype.hasOwnProperty.call(data, actualFieldName) && !isNullOrUndefined(data[`${actualFieldName}`]))) {

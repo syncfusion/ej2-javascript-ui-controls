@@ -341,7 +341,8 @@ export class Double {
                     : axis.visibleRange.interval;
             }
         }
-        if ((axis.visibleRange.max - axis.visibleRange.min) % axis.visibleRange.interval !== 0 && axis.valueType === 'Double' &&
+        const rangeDifference: number = (axis.visibleRange.max - axis.visibleRange.min) % axis.visibleRange.interval;
+        if (rangeDifference !== 0 && !isNaN(rangeDifference) && axis.valueType === 'Double' &&
             axis.orientation === 'Vertical' && axis.rangePadding === 'Auto') {
             let duplicateTempInterval: number;
             let tempInterval: number = axis.visibleRange.min;

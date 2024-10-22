@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
+import { Property, Complex, ChildProperty, extend, getValue} from '@syncfusion/ej2-base';
 import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart, ILegendRegions } from '../../chart';
 import { LegendSettingsModel } from './legend-model';
@@ -1290,7 +1290,9 @@ export class BaseLegend {
             textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
         }
         textOptions.y = legendOption.location.y + this.maxItemHeight / 4;
-        textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false,
+        const legendTextStyle: FontModel = <FontModel>(extend({}, getValue('properties', legend.textStyle), null, true));
+        legendTextStyle.size = (chart.availableSize.width < 110 || chart.availableSize.height < 190 && !this.isBulletChartControl && this.chart.getModuleName() === 'accumulationchart') ? '8px' : legend.textStyle.size;
+        textElement(chart.renderer, textOptions, legendTextStyle, fontcolor, group, false, false, false, false,
                     null, this.currentPageNumber && isCanvas ?
                         new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) :
                         null, null, null, null, null, this.chart.themeStyle.legendLabelFont);
@@ -1423,9 +1425,10 @@ export class BaseLegend {
             textOption.text = !this.isRtlEnable ? this.currentPageNumber  + '/' + this.totalNoOfPages : this.totalNoOfPages + '/' +  this.currentPageNumber;
         }
         if (legend.enablePages || this.isBulletChartControl) {
-            legend.textStyle.size = (chart.availableSize.width < 110 || chart.availableSize.height < 190 && !this.isBulletChartControl) ? '8px' : legend.textStyle.size;
+            const legendTextStyle: FontModel = <FontModel>(extend({}, getValue('properties', legend.textStyle), null, true));
+            legendTextStyle.size = (chart.availableSize.width < 110 || chart.availableSize.height < 190 && !this.isBulletChartControl) ? '8px' : legend.textStyle.size;
             pageTextElement = textElement(
-                chart.renderer, textOption, legend.textStyle, color, paginggroup,
+                chart.renderer, textOption, legendTextStyle, color, paginggroup,
                 false, false, false, false, null,
                 new Rect(translateX, 0, 0, 0), null, null, null, null, this.chart.themeStyle.legendLabelFont
             );

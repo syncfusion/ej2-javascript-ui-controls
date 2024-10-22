@@ -355,6 +355,7 @@ export class Resize {
         const tBody: HTMLElement = this.parent.createElement('tbody');
         const rowEle: HTMLElement = this.parent.createElement('tr', { className: 'e-row' });
         const tdEle: HTMLElement = this.parent.createElement('td', { className: 'e-cell' });
+        let tableWidth: number = 0; let colWidth: number = 0;
         if (isCol) {
             let row: HTMLElement;
             table.style.width = 'auto';
@@ -399,8 +400,10 @@ export class Resize {
                     cellEle.style.fontFamily = (cell.style && cell.style.fontFamily) || this.parent.cellStyle.fontFamily;
                     cellEle.style.fontSize = (cell.style && cell.style.fontSize) || this.parent.cellStyle.fontSize;
                     rowEle.appendChild(cellEle);
-                    colGrp.appendChild(this.parent.createElement(
-                        'col', { styles: `width:${getColumnWidth(sheet, colIdx, false, true)}px` }));
+                    colWidth = (cell.colSpan && cell.colSpan >= 1) ? this.getMergedColumnsWidth(cell.colSpan, colIdx, sheet) :
+                        (cell.colSpan && cell.colSpan < 1) ? 0 : getColumnWidth(sheet, colIdx, false, true);
+                    tableWidth += colWidth;
+                    colGrp.appendChild(this.parent.createElement('col', { styles: `width:${colWidth}px` }));
                 }
             }
             table.appendChild(colGrp);
@@ -408,6 +411,7 @@ export class Resize {
             oldValue = getRowHeight(sheet, idx);
         }
         table.appendChild(tBody);
+        if (tableWidth) { table.style.width = tableWidth + 'px'; }
         const wrapper: HTMLElement = this.parent.createElement(
             'div', { className: this.parent.element.className, styles: 'display: block' });
         wrapper.appendChild(table);
@@ -449,6 +453,15 @@ export class Resize {
             }
         }
         this.parent.selectRange(sheet.selectedRange);
+    }
+
+    private getMergedColumnsWidth(colSpan: number, colIndex: number, sheet: SheetModel): number {
+        let columnWidth: number = 0;
+        for (let i: number = 0; i < colSpan; i++) {
+            columnWidth += getColumnWidth(sheet, colIndex, false, true);
+            colIndex++;
+        }
+        return columnWidth;
     }
 
     private createResizeHandler(trgt: HTMLElement, className: string): void {
