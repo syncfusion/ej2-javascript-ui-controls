@@ -75,6 +75,9 @@
       bottom: $send-icon-bigger-bottom;
     }
     .e-footer {
+      .e-clear-icon:not(.e-clear-icon-hide) {
+        padding-bottom: $clear-icon-bigger-bottom;
+      }
       .e-input-group.e-control-wrapper.e-multi-line-input {
         .e-textarea {
           min-height: 38px;

@@ -193,6 +193,10 @@
         width: 1px;
       }
     }
+
+    &.e-hidden {
+      display: none !important; /* stylelint-disable-line declaration-no-important */
+    }
   }
 
   .e-rtl.e-dropdown-popup .e-item {

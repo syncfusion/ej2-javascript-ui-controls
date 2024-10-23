@@ -299,6 +299,11 @@
     .e-footer {
       position: relative;
       margin: 0 auto 24px;
+      .e-clear-icon:not(.e-clear-icon-hide) {
+        display: flex;
+        justify-content: flex-end;
+        padding-bottom: $clear-icon-bottom;
+      }
       textarea::-webkit-scrollbar-thumb {
         border-radius: 10px;
       }

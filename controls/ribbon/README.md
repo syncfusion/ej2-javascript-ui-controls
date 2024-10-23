@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-ribbon/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-ribbon)
+
 # Javascript Ribbon Control
 
 The [JavaScript Ribbon](https://www.syncfusion.com/javascript-ui-controls/js-ribbon?utm_source=npm&utm_medium=listing&utm_campaign=javascript-ribbon-npm) control provides a structured and easy-to-use user interface for users to access different features and functions through series of tabs, improving the overall user experience and making your application more efficient.

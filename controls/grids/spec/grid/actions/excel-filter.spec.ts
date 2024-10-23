@@ -17,6 +17,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { PredicateModel } from '../../../src/grid/base/grid-model';
 import * as events from '../../../src/grid/base/constant';
+import { ICustomOptr } from '../../../src/grid/base/interface';
 
 Grid.Inject(Filter, Page, Selection, Group, LazyLoadGroup, Sort);
 
@@ -39,7 +40,7 @@ describe('Excel Filter =>', () => {
     let actionBegin: () => void;
     let actionComplete: () => void;
 
-    let numOptr: Object[] = [
+    let numOptr: { [key: string]: Object }[] = [
         { value: 'equal', text: 'Equal' },
         { value: 'greaterThan', text: 'Greater Than' },
         { value: 'greaterThanOrEqual', text: 'Greater Than Or Equal' },
@@ -47,7 +48,7 @@ describe('Excel Filter =>', () => {
         { value: 'lessThanOrEqual', text: 'Less Than Or Equal' },
         { value: 'notEqual', text: 'Not Equal' }
     ];
-    let customOperators: Object = {
+    let customOperators: ICustomOptr = {
         stringOperator: [
             { value: 'startsWith', text: 'Starts With' },
             { value: 'endsWith', text: 'Ends With' },

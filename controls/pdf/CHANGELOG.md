@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.1.56 (2024-10-23)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the preservation issue in existing rubber stamp annotation when updating the rotation flatten.
+- Resolved an exception encountered while drawing a text with true type font without using string format.
+
 ## 27.1.55 (2024-10-22)
 
 ### PDF Parser

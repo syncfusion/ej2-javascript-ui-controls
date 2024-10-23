@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.56 (2024-10-23)
+
+### Breadcrumb
+
+#### Bug Fixes
+
+- `#I916680` - The issue with "Breadcrumb menu popup not destroyed after breadcrumb element destroyed" has been resolved.
+
 ## 27.1.55 (2024-10-22)
 
 ### Stepper

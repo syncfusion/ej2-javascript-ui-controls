@@ -21,6 +21,14 @@
     cursor: default;
   }
 
+  .e-multicolumn-grid.e-rtl .e-gridheader {
+    @if ($skin-name == 'highcontrast') {
+      .e-headercelldiv {
+        margin: 0;
+      }
+    }
+  }
+
   .e-multicolumn-grid .e-gridheader .e-headercelldiv {
     overflow: hidden;
   }

@@ -218,6 +218,35 @@ describe('Split Button', () => {
             button.appendTo('#splitbtn');
             button.secondaryBtnObj.element.click();
         });
+        it('EJ2-914299 - Split buttons popup not closed when we open with mouse click and select with key down action.', () => {
+            const enterEventArgs: any = {
+                preventDefault: (): void => { /** NO Code */ },
+                keyCode: 13, // Enter key
+                action: 'enter',
+                target: null
+            };
+            const downEventArgs: any = {
+                preventDefault: (): void => { /** NO Code */ },
+                keyCode: 40, // ArrowDown key
+                action: 'down',
+                target: null
+            };
+            button = new SplitButton({ items: items, createPopupOnClick: true }, '#splitbtn');
+            expect(button.secondaryBtnObj.dropDown).toEqual(undefined);
+            button.secondaryBtnObj.element.click();
+            expect(button.secondaryBtnObj.dropDown.element.classList.contains('e-popup-open')).toEqual(true);
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>button.dropDown.element.querySelectorAll('li');
+            li[0].classList.add('e-focused');
+            downEventArgs.target = li[0];
+            button.keyBoardHandler(downEventArgs);
+            expect(li[0].classList.contains('e-focused')).toBe(false);
+            expect(li[1].classList.contains('e-focused')).toBe(true);
+            enterEventArgs.target = li[1];
+            button.btnKeyBoardHandler(enterEventArgs);
+            expect(button.dropDown.element).toBe(null);
+            button = new SplitButton({ items: items, createPopupOnClick: true }, '#splitbtn');
+            expect(button.secondaryBtnObj.dropDown).toEqual(undefined);
+        });
     });
 
     it('memory leak', () => {

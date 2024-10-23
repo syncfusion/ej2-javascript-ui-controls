@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.48 (2024-09-18)
+
+### MultiColumn ComboBox
+
+#### Bug Fixes
+
+- `#I629122` - Now the issue with selection state not updated when grouping is enabled in the Multicolumn ComboBox has been resolved.
+
 ## 26.1.35 (2024-06-11)
 
 ### MultiColumn ComboBox `Preview`

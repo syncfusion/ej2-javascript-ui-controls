@@ -979,7 +979,7 @@ export interface ICustomOptr {
     stringOperator?: { [key: string]: Object }[];
     numberOperator?: { [key: string]: Object }[];
     dateOperator?: { [key: string]: Object }[];
-    dateTimeOperator?: { [key: string]: Object }[];
+    datetimeOperator?: { [key: string]: Object }[];
     booleanOperator?: { [key: string]: Object }[];
 }
 /**

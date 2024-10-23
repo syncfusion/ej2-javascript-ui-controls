@@ -8,6 +8,12 @@
 
 #### Bug Fixes
 
+- `#I642195` - Now, the footer is visible in the organize dialog when the viewer size is small.
+
+### PDF Viewer
+
+#### Bug Fixes
+
 - `#I638745` - Now, the sticky notes annotation is correctly added when the PDF Viewer window is resized to a smaller size, with the sticky annotation option available in the toolbar dropdown menu.
 - `#I637865` - Now, the form field type updates properly when switching fields without adding in the PDF Viewer.
 - `#I637742` - Now, the annotations are not missing, and no script errors occur when `enableThumbnail` and `isThumbnailViewOpen` are enabled.

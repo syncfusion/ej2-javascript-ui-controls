@@ -388,6 +388,86 @@ describe('MultiColumnComboBox control', () => {
         });
     });
 
+    describe('Initial selection state', function () {
+        let multiColObj1: any;
+        let element: HTMLInputElement;
+        beforeEach((): void => {
+            element = <HTMLInputElement>createElement('input', { id: 'multicolumn-combobox' });
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            if (multiColObj1) {
+                multiColObj1.destroy();
+                multiColObj1 = undefined;
+            }
+            remove(element);
+        });
+        it('value property - initial select', (done) => {
+            multiColObj1 = new MultiColumnComboBox({
+                dataSource: languageData,
+                value: 'list1',
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj1.appendTo(element);
+            multiColObj1.showPopup();
+            multiColObj1.gridObj.selectedRowIndex = 3;
+            setTimeout(() => {
+                expect(multiColObj1.index).toBe(3);
+                done();
+            }, 1800);
+        });
+        it(' value property - initial select - groupBy ', (done) => {
+            multiColObj1 = new MultiColumnComboBox({
+                dataSource: languageData,
+                value: 'list1',
+                fields: { text: 'text', value: 'id', groupBy: 'subject' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }, { field: 'subject', header: 'Subject' }]                
+            });
+            multiColObj1.appendTo(element);
+            multiColObj1.showPopup();
+            setTimeout(() => {
+                multiColObj1.gridObj.selectedRowIndex = 2;
+                setTimeout(() => {
+                    expect(multiColObj1.popupEle.querySelector('.e-active').innerText).toBe('JAVASCRIPT');
+                    done();
+                }, 1800);
+            }, 1800);
+        });
+        it('value property - initial select', (done) => {
+            multiColObj1 = new MultiColumnComboBox({
+                dataSource: languageData,
+                index: 2,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj1.appendTo(element);
+            multiColObj1.showPopup();
+            multiColObj1.gridObj.selectedRowIndex = 2;
+            setTimeout(() => {
+                expect(multiColObj1.index).toBe(2);
+                done();
+            }, 1800);
+        });
+        it(' index property - initial select - groupBy ', (done) => {
+            multiColObj1 = new MultiColumnComboBox({
+                dataSource: languageData,
+                index: 2,
+                fields: { text: 'text', value: 'id', groupBy: 'subject' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }, { field: 'subject', header: 'Subject' }]                
+            });
+            multiColObj1.appendTo(element);
+            multiColObj1.showPopup();
+            setTimeout(() => {
+                multiColObj1.gridObj.selectedRowIndex = 2;
+                setTimeout(() => {
+                    expect(multiColObj1.popupEle.querySelector('.e-active').innerText).toBe('JAVASCRIPT');
+                    done();
+                }, 1800);
+            }, 1800);
+        });
+    });
+
     describe('Custom value with initial rendering and dynamic change', () => {
         let multiColObj1: any;
         let element: HTMLInputElement;

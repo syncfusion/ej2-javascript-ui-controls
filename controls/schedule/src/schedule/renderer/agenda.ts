@@ -133,7 +133,7 @@ export class Agenda extends AgendaBase implements IRenderer {
             }
         }
         if (tBody.childNodes.length <= 0) {
-            this.renderEmptyContent(tBody, agendaDate);
+            this.renderEmptyContent(tBody, agendaDate, true);
         }
     }
 
@@ -187,11 +187,15 @@ export class Agenda extends AgendaBase implements IRenderer {
                         const elementType: string = (!this.parent.hideEmptyAgendaDays && filterData.length === 0) ? 'noEvents' : 'data';
                         dTd.appendChild(this.createDateHeaderElement(agendaDate));
                         nTr.appendChild(dTd);
+                        this.parent.trigger(event.renderCell, { elementType: event.dateHeader, element: dTd, date: agendaDate });
                         const cTd: Element = this.createAgendaContentElement(elementType, filterData, aTd);
                         nTr.appendChild(cTd);
                         if (cTd.querySelectorAll('li').length > 0) {
                             tBody.appendChild(nTr);
                         }
+                        const renderCellElementType: string = (!this.parent.hideEmptyAgendaDays && filterData.length === 0) ?
+                            event.noEvents : event.agendaCells;
+                        this.parent.trigger(event.renderCell, { elementType: renderCellElementType, element: cTd, date: agendaDate });
                     } else if (this.parent.activeViewOptions.allowVirtualScrolling) {
                         day--;
                     }

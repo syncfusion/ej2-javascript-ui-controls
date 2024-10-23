@@ -424,6 +424,7 @@ describe('CheckBox', () => {
     describe('CheckBox in HTML5 forms', () => {
         let input: HTMLFormElement;
         let input1: HTMLFormElement;
+        let input2: HTMLFormElement;
         let formElement: HTMLFormElement;
         let cbox: CheckBox;
         let cbox1: CheckBox;
@@ -439,11 +440,21 @@ describe('CheckBox', () => {
 
             input1 = createElement('input', { id: 'checkbox2' }) as HTMLFormElement;
             input1.setAttribute('type', 'checkbox');
+            input2 = createElement('input', { id: 'checkbox3' }) as HTMLFormElement;
 
             formElement.appendChild(input);
             formElement.appendChild(input1);
+            formElement.appendChild(input2);
 
             document.body.appendChild(formElement);
+
+            let buttonElement = document.createElement('button');
+            buttonElement.setAttribute('id', 'checkButton');
+            document.body.appendChild(buttonElement);
+            buttonElement.addEventListener('click', () => {
+                checkbox.checked = true; // Set the checkbox to checked
+                checkbox.dataBind();
+            });
         })
 
         afterEach(() => {
@@ -490,6 +501,26 @@ describe('CheckBox', () => {
             expect(cbox.checked).toBeFalsy();
             expect(cbox1.checked).toBeFalsy();
         });
+
+        it('908821-Checkbox component bug using required attribute', () => {
+            checkbox = new CheckBox({
+                checked: false,
+                created: created,
+            }, '#checkbox3');
+            checkbox.isVue = true;
+            function created() {
+                if (checkbox.element) {
+                    checkbox.element.setAttribute('required', ''); // Set the required attribute
+                }
+            }
+            const button = document.querySelector('#checkButton') as HTMLButtonElement;
+            button.click();
+            expect(checkbox.element.checked).toBe(true);
+            checkbox.checked = false;
+            checkbox.dataBind();
+            expect(checkbox.element.checked).toBe(false);
+            checkbox.isVue = false;
+        });
     });
 
     describe('Notify Html Attributes property changes of', () => {
@@ -528,7 +559,6 @@ describe('CheckBox', () => {
             checkbox.dataBind();
             expect(element.parentElement.children[0].getAttribute("readonly").indexOf("true")).toEqual(0);
         });
-
        
     });
 

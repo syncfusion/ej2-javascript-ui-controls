@@ -1313,6 +1313,9 @@ export class PdfGraphics {
                brush?: PdfBrush,
                format?: PdfStringFormat): void {
         const layouter: _PdfStringLayouter = new _PdfStringLayouter();
+        if (!format) {
+            format = new PdfStringFormat();
+        }
         const result: _PdfStringLayoutResult = layouter._layout(value, font, format, [bounds[2], bounds[3]]);
         if (!result._empty) {
             const rect: number[] = this._checkCorrectLayoutRectangle(result._actualSize, bounds[0], bounds[1], format);

@@ -143,6 +143,9 @@ export class PageOrganizer {
             target: this.pdfViewerBase.mainContainer,
             content: contentRegion,
             visible: false,
+            open : () => {
+                this.organizeWindowFocus();
+            },
             close: (args: any) => {
                 if (!this.isSkipRevert) {
                     this.tempOrganizePagesCollection = JSON.parse(JSON.stringify(this.organizePagesCollection));

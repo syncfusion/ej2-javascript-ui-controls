@@ -10339,7 +10339,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
     _doPostProcess(isFlatten: boolean = false): void {
         let isTransformBBox: boolean = false;
         if (this._isLoaded && (this._setAppearance || isFlatten || this._isExport)) {
-            if ((!isFlatten && !this._isExport) || this._setAppearance) {
+            if ((!isFlatten && !this._isExport) || this._setAppearance || this._isRotated) {
                 this._appearanceTemplate = this._createRubberStampAppearance();
             }
             if (!this._appearanceTemplate && (this._isExport || isFlatten) && this._dictionary.has('AP')) {

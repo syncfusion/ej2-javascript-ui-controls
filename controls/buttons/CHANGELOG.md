@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 27.1.55 (2024-10-22)
+## 27.1.53 (2024-10-15)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#F60464`- The issue with "checkbox state input element checked state was not update properly " has been resolved.
+
+## 27.1.51 (2024-09-30)
 
 ### Checkbox
 

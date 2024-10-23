@@ -323,12 +323,24 @@ export class AgendaBase extends ViewBase {
                     ntr.appendChild(ntd);
                 } else if (data.type === 'eventColumn') {
                     const elementType: string = (data.eventData.length === 0) ? 'noEvents' : 'data';
+                    for (let i: number = 0; i < ntr.childNodes.length; i++) {
+                        const currentElement: HTMLElement = ntr.childNodes.item(i) as HTMLElement;
+                        const renderCellElementType: string = currentElement.classList.contains('e-resource-column') ?
+                            event.resourceHeader : event.dateHeader;
+                        this.parent.trigger(event.renderCell, {
+                            elementType: renderCellElementType, element: currentElement, date: data.date, groupIndex: data.groupIndex
+                        });
+                    }
                     ntd = this.createAgendaContentElement(elementType, data.eventData, ntd, data.groupOrder, data.groupIndex);
                     ntd.setAttribute('data-date', data.date.getTime().toString());
                     if (this.parent.activeViewOptions.group.byDate || this.parent.currentView === 'MonthAgenda') {
                         addClass([ntd], [cls.AGENDA_CELLS_CLASS, cls.AGENDA_DAY_PADDING_CLASS]);
                     }
                     ntr.appendChild(ntd);
+                    const renderCellType: string = (data.eventData.length === 0) ? event.noEvents : event.agendaCells;
+                    this.parent.trigger(event.renderCell, {
+                        elementType: renderCellType, element: ntd, date: data.date, groupIndex: data.groupIndex
+                    });
                 } else {
                     ntd.setAttribute('rowspan', data.rowSpan.toString());
                     addClass([ntd], cls.AGENDA_RESOURCE_CLASS);
@@ -369,7 +381,7 @@ export class AgendaBase extends ViewBase {
         return dateHeader;
     }
 
-    public renderEmptyContent(tBody: Element, agendaDate: Date): void {
+    public renderEmptyContent(tBody: Element, agendaDate: Date, hasNoEvents?: boolean): void {
         const eTr: Element = this.createTableRowElement(agendaDate, 'noEvents');
         const eTd: Element = eTr.children[0];
         const noEvents: Element = createElement('div', {
@@ -378,6 +390,9 @@ export class AgendaBase extends ViewBase {
         });
         eTd.appendChild(noEvents);
         tBody.appendChild(eTr);
+        if (hasNoEvents) {
+            this.parent.trigger(event.renderCell, { elementType: event.noEvents, element: eTd, date: agendaDate });
+        }
     }
 
     public createTableRowElement(date: Date, type: string): Element {

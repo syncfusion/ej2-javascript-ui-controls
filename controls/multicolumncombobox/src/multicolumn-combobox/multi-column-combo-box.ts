@@ -1277,8 +1277,32 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     this.gridObj.selectRow(this.index);
                 });
             } else if (!isNOU(this.dataSource) && this.dataSource instanceof Array) {
-                item = (<{ [key: string]: Object }[]>this.dataSource)[this.index];
-                updateValues(this.dataSource);
+                if (!this.fields.groupBy) {
+                    item = (<{ [key: string]: Object }[]>this.dataSource)[this.index];
+                    updateValues(this.dataSource);
+                }
+                else {
+                    setTimeout((): void => {
+                        const rows: Element[] = this.gridObj.getRows();
+                        if (rows && rows.length > 0) {
+                            const rowData: { [key: string]: Object } =
+                            this.gridObj.getRowInfo(rows[this.index]).rowData as { [key: string]: Object };
+                            const value: string = this.fields.value as string;
+                            for (let i: number = 0; i < rows.length; i++) {
+                                if (rowData && rowData[parseInt(value.toString(), 10)] ===
+                                (<{ [key: string]: Object }[]>this.dataSource)[parseInt(i.toString(), 10)][parseInt(value.toString(), 10)])
+                                {
+                                    item = rowData;
+                                    updateValues(this.dataSource);
+                                    this.updateChangeEvent(item, prevItemData, prevItemEle, currentValue, currentText,
+                                                           currentIndex, isRerender, isInitial);
+                                    this.gridObj.selectRow(this.index);
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                }
             }
         }
         if (!(this.dataSource instanceof DataManager)) {
@@ -1592,37 +1616,47 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private filterAction(dataSource: any, inputValue: string, query?: Query, fields?: FieldSettingsModel): void {
-        let dataLists: { [key: string]: Object }[];
         if (isNullOrUndefined(query) && isNullOrUndefined(fields)) {
             this.updateGridDataSource(dataSource);
         }
         else if (query) {
-            new DataManager(dataSource as DataManager).executeQuery(query).then((e: Object) => {
-                dataLists = (e as any).result;
-                this.updateGridDataSource(dataLists);
-            });
-        }
-        else {
-            const filterType: string = this.filterType.toString().toLowerCase();
-            const isQuery: Query = query || new Query();
-            let filteredData: { [key: string]: Object }[];
             if (dataSource instanceof DataManager) {
-                // Handle filtering for DataManager
-                (dataSource as DataManager).executeQuery(isQuery).then((e: Object) => {
+                this.filteringHandler(dataSource, inputValue, query, fields);
+            }
+            else {
+                new DataManager(dataSource as DataManager).executeQuery(query).then((e: Object) => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const dataLists: { [key: string]: Object }[] = (e as any).result;
-                    const dataLength: number = dataLists.length;
-                    filteredData = dataLists.filter(
-                        (item: { [key: string]: Object }) => this.filterData(item, filterType, inputValue, fields));
-                    this.updateGridDataSource(filteredData, dataLength);
+                    this.updateGridDataSource(dataLists);
                 });
+            }
+        }
+        else {
+            const isQuery: Query = query || new Query();
+            if (dataSource instanceof DataManager) {
+                this.filteringHandler(dataSource, inputValue, isQuery, fields);
             } else if (Array.isArray(dataSource)) {
-                // Handle filtering for array data source
-                filteredData = (dataSource as { [key: string]: Object }[]).filter((item: { [key: string]: Object }) =>
+                const filterType: string = this.filterType.toString().toLowerCase();
+                const filteredData: { [key: string]: Object }[] =
+                (dataSource as { [key: string]: Object }[]).filter((item: { [key: string]: Object }) =>
                     this.filterData(item, filterType, inputValue, fields));
                 this.updateGridDataSource(filteredData);
             }
         }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private filteringHandler(dataSource: any, inputValue: string, query?: Query, fields?: FieldSettingsModel): void {
+        const filterType: string = this.filterType.toString().toLowerCase();
+        let filteredData: { [key: string]: Object }[];
+        (dataSource as DataManager).executeQuery(query).then((e: Object) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const dataLists: { [key: string]: Object }[] = (e as any).result;
+            const dataLength: number = dataLists.length;
+            filteredData = dataLists.filter(
+                (item: { [key: string]: Object }) => this.filterData(item, filterType, inputValue, fields));
+            this.updateGridDataSource(filteredData, dataLength);
+        });
     }
 
     private filterData(item: { [key: string]: Object }, filterType: string, inputValue: string, fields: FieldSettingsModel): boolean {
@@ -1948,9 +1982,14 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 if (!isInputOpen) {
                     if ((this.value || this.text || this.index)) {
                         const dataRows: Object[] = this.gridObj.getRowsObject();
+                        let groupIndex: number;
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         dataRows.forEach((data: any, index: number) => {
-                            this.selectDataRow(data, index);
+                            if (this.fields.groupBy && isNOU(data.data.items)) {
+                                if (isNOU(groupIndex)) { groupIndex = 0; }
+                                else { groupIndex += 1; }
+                            }
+                            this.selectDataRow(data.data, !this.fields.groupBy ? index : groupIndex);
                         });
                     }
                     this.focusIn(e);
@@ -1961,7 +2000,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     if (activeRow) { this.inputEle.setAttribute('aria-activedescendant', activeRow.parentElement.getAttribute('data-uid')); }
                     else if (contentEle.querySelector('.e-row')) { this.inputEle.setAttribute('aria-activedescendant', contentEle.querySelector('.e-row').getAttribute('data-uid')); }
                 }
-
                 this.popupObj.show(new Animation(eventArgs.animation), this.popupEle);
             }
         });

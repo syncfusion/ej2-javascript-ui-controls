@@ -1657,7 +1657,7 @@ export class Splitter extends Component<HTMLElement> {
         } else {
             this.resizableModel(this.currentBarIndex, false);
             if (!isNullOrUndefined(otherBar)) {
-                this.resizableModel(otherBarIndex, false);
+                this.resizableModel(otherBarIndex, true);
             }
             if (!this.paneSettings[this.prevPaneIndex].collapsible || !this.paneSettings[this.nextPaneIndex].collapsible) {
                 if (!isNullOrUndefined(otherBar)) {

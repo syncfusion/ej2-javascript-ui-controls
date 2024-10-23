@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.56 (2024-10-23)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I638628` - The issue with the `renderCell` event not being triggered in the Agenda view has been resolved.
+
 ## 27.1.55 (2024-10-22)
 
 ### Schedule

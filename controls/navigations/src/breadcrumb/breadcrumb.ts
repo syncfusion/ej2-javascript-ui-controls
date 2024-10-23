@@ -926,6 +926,11 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
      * @returns {void}
      */
     public destroy(): void {
+        if (this.popupObj && this.popupObj.element.classList.contains('e-popup-open')) {
+            this.popupObj.destroy();
+            this.isPopupCreated = false;
+            detach(this.popupObj.element);
+        }
         const classes: string[] = [];
         const attributes: string[] = ['aria-label'];
         if (this.cssClass) {

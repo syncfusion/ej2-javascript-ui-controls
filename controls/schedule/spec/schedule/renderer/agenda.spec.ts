@@ -3,7 +3,7 @@
  * Schedule agenda view spec
  */
 import { closest } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, EventRenderedArgs } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, EventRenderedArgs, RenderCellEventArgs } from '../../../src/schedule/index';
 import { triggerScrollEvent, createSchedule, destroy, triggerMouseEvent } from '../util.spec';
 import { resourceData, generateObject, defaultData, cloneDataSource } from '../base/datasource.spec';
 import * as util from '../../../src/schedule/base/util';
@@ -1548,6 +1548,377 @@ describe('Agenda View', () => {
             expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
             expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeFalsy();
             expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510963200000"]')).toBeFalsy();
+        });
+    });
+    
+    describe('Checking RenderCell in Agenda View without resources and without EmptyAgendaDays.', () => {
+        let schObj: Schedule;
+        let count: number = 0;
+        let renderCellSpy: jasmine.Spy;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                views: [{ option: 'Month' }, { option: 'Agenda' }],
+                selectedDate: new Date(2018, 1, 11),
+                currentView: 'Agenda',
+                renderCell: function (args: RenderCellEventArgs) {
+                    count++;
+                    expect(args.element).not.toBeNull;
+                    expect(args.elementType).not.toBeNull;
+                    expect(args.date).not.toBeNull;
+                    expect(args.name).not.toBeNull;
+                    expect(args.groupIndex).toBeNull;
+                    expect(args.element.getAttribute('data-date')).not.toBeNull;
+                    expect(args.element.getAttribute('data-column-index')).not.toBeNull;
+                }
+            };
+            const scheduleDatas: Record<string, any>[] = [
+                {
+                    Id: 1,
+                    Subject: 'Story Time for Kids',
+                    StartTime: new Date(2018, 1, 11, 10, 0),
+                    EndTime: new Date(2018, 1, 11, 11, 30),
+                    CategoryColor: '#1aaa55'
+                }, {
+                    Id: 2,
+                    Subject: 'Camping with Turtles',
+                    StartTime: new Date(2018, 1, 12, 12, 0),
+                    EndTime: new Date(2018, 1, 12, 14, 0),
+                    CategoryColor: '#357cd2'
+                },
+                {
+                    Id: 5,
+                    Subject: 'Birds of Prey',
+                    StartTime: new Date(2018, 1, 15, 10, 0),
+                    EndTime: new Date(2018, 1, 15, 11, 30),
+                    CategoryColor: '#00bdae'
+                }
+            ];
+            renderCellSpy = spyOn(schOptions, 'renderCell').and.callThrough();
+            schObj = createSchedule(schOptions, scheduleDatas, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Checking rendercell count in agenda view', () => {
+            expect(renderCellSpy).toHaveBeenCalledTimes(6);
+            expect(count).toEqual(6);
+        });
+    });
+
+    describe('Checking RenderCell in Agenda View without resources and with EmptyAgendaDays.', () => {
+        let schObj: Schedule;
+        let count: number = 0;
+        let renderCellSpy: jasmine.Spy;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                views: [{ option: 'Month' }, { option: 'Agenda' }],
+                selectedDate: new Date(2018, 1, 11),
+                currentView: 'Agenda',
+                hideEmptyAgendaDays: false,
+                renderCell: function (args: RenderCellEventArgs) {
+                    count++;
+                    if (args.element.className === 'e-agenda-cells') {
+                        expect(args.elementType).toEqual('dateHeader');
+                    }
+                    if (args.elementType === 'noEvents') {
+                        expect(args.element).not.toBeNull;
+                        expect(args.date).not.toBeNull;
+                        expect(args.name).not.toBeNull;
+                        expect(args.groupIndex).toBeNull;
+                    }
+                    expect(args.element).not.toBeNull;
+                    expect(args.elementType).not.toBeNull;
+                    expect(args.date).not.toBeNull;
+                    expect(args.name).not.toBeNull;
+                    expect(args.groupIndex).toBeNull;
+                    expect(args.element.getAttribute('data-date')).not.toBeNull;
+                    expect(args.element.getAttribute('data-column-index')).not.toBeNull;
+                }
+            };
+            const scheduleDatas: Record<string, any>[] = [
+                {
+                    Id: 1,
+                    Subject: 'Story Time for Kids',
+                    StartTime: new Date(2018, 1, 11, 10, 0),
+                    EndTime: new Date(2018, 1, 11, 11, 30),
+                    CategoryColor: '#1aaa55'
+                }, {
+                    Id: 2,
+                    Subject: 'Camping with Turtles',
+                    StartTime: new Date(2018, 1, 12, 12, 0),
+                    EndTime: new Date(2018, 1, 12, 14, 0),
+                    CategoryColor: '#357cd2'
+                },
+                {
+                    Id: 5,
+                    Subject: 'Birds of Prey',
+                    StartTime: new Date(2018, 1, 15, 10, 0),
+                    EndTime: new Date(2018, 1, 15, 11, 30),
+                    CategoryColor: '#00bdae'
+                }
+            ];
+            renderCellSpy = spyOn(schOptions, 'renderCell').and.callThrough();
+            schObj = createSchedule(schOptions, scheduleDatas, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Checking rendercell count in agenda view', () => {
+            expect(renderCellSpy).toHaveBeenCalledTimes(14);
+            expect(count).toEqual(14);
+        });
+    });
+
+    describe('Checking RenderCell in Agenda View without resources and with No events.', () => {
+        let schObj: Schedule;
+        let count: number = 0;
+        let renderCellSpy: jasmine.Spy;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                views: [{ option: 'Month' }, { option: 'Agenda' }],
+                selectedDate: new Date(2018, 1, 11),
+                currentView: 'Agenda',
+                renderCell: function (args: RenderCellEventArgs) {
+                    count++;
+                    expect(args.element).not.toBeNull;
+                    expect(args.elementType).not.toBeNull;
+                    expect(args.date).not.toBeNull;
+                    expect(args.name).not.toBeNull;
+                    expect(args.groupIndex).toBeNull;
+                    expect(args.element.firstElementChild.className).toEqual('e-empty-event');
+                }
+            };
+            const scheduleDatas: Record<string, any>[] = [];
+            renderCellSpy = spyOn(schOptions, 'renderCell').and.callThrough();
+            schObj = createSchedule(schOptions, scheduleDatas, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Checking rendercell count in agenda view', () => {
+            expect(renderCellSpy).toHaveBeenCalledTimes(1);
+            expect(count).toEqual(1);
+        });
+    });
+
+    describe('Checking RenderCell Agenda view with single level resource grouping', () => {
+        let schObj: Schedule;
+        let count: number = 0;
+        let renderCellSpy: jasmine.Spy;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%', height: '550px', currentView: 'Agenda',
+                selectedDate: new Date(2018, 3, 1),
+                group: {
+                    resources: ['Owners']
+                },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
+                renderCell: function (args: RenderCellEventArgs) {
+                    count++;
+                    if (args.element.className === 'e-resource-column') {
+                        expect(args.date).not.toBeNull;
+                        expect(args.name).not.toBeNull;
+                        expect(args.element).not.toBeNull;
+                        expect(args.groupIndex).not.toBeNull;
+                        expect(args.elementType).not.toBeNull;
+                        expect(args.elementType).toEqual('resourceHeader');
+                        expect(args.element.getAttribute('data-date')).toBeNull;
+                        expect(args.element.getAttribute('data-column-index')).toBeNull;
+                    }
+                },
+            };
+            renderCellSpy = spyOn(model, 'renderCell').and.callThrough();
+            schObj = createSchedule(model, resourceData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('Checking rendercell count in agenda view', () => {
+            expect(renderCellSpy).toHaveBeenCalledTimes(23);
+            expect(count).toEqual(23);
+        });
+    });
+
+    describe('Checking RenderCell Agenda view with single level resource grouping with EmptyAgendaDays', () => {
+        let schObj: Schedule;
+        let count: number = 0;
+        let renderCellSpy: jasmine.Spy;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%', height: '550px', currentView: 'Agenda',
+                selectedDate: new Date(2018, 3, 1),
+                hideEmptyAgendaDays: false,
+                group: {
+                    resources: ['Owners']
+                },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
+                renderCell: function (args: RenderCellEventArgs) {
+                    count++;
+                    if (args.element.className === 'e-resource-column') {
+                        expect(args.date).not.toBeNull;
+                        expect(args.name).not.toBeNull;
+                        expect(args.element).not.toBeNull;
+                        expect(args.groupIndex).not.toBeNull;
+                        expect(args.elementType).not.toBeNull;
+                        expect(args.elementType).toEqual('resourceHeader');
+                        expect(args.element.getAttribute('data-date')).toBeNull;
+                        expect(args.element.getAttribute('data-column-index')).toBeNull;
+                    }
+                    if (args.elementType === 'noEvents') {
+                        expect(args.element).not.toBeNull;
+                        expect(args.date).not.toBeNull;
+                        expect(args.name).not.toBeNull;
+                        expect(args.groupIndex).toBeNull;
+                    }
+                },
+            };
+            renderCellSpy = spyOn(model, 'renderCell').and.callThrough();
+            schObj = createSchedule(model, resourceData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('Checking rendercell count in agenda view', () => {
+            expect(renderCellSpy).toHaveBeenCalledTimes(45);
+            expect(count).toEqual(45);
+        });
+    });
+
+    describe('Checking RenderCell Agenda view with multiple level resource grouping', () => {
+        let schObj: Schedule;
+        let count: number = 0;
+        let renderCellSpy: jasmine.Spy;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%', height: '550px', currentView: 'Agenda',
+                selectedDate: new Date(2018, 3, 1),
+                group: {
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
+                renderCell: function (args: RenderCellEventArgs) {
+                    count++;
+                    if (args.element.className === 'e-resource-column') {
+                        expect(args.date).not.toBeNull;
+                        expect(args.name).not.toBeNull;
+                        expect(args.element).not.toBeNull;
+                        expect(args.groupIndex).not.toBeNull;
+                        expect(args.elementType).not.toBeNull;
+                        expect(args.elementType).toEqual('resourceHeader');
+                        expect(args.element.getAttribute('data-date')).toBeNull;
+                        expect(args.element.getAttribute('data-column-index')).toBeNull;
+                    }
+                },
+            };
+            renderCellSpy = spyOn(model, 'renderCell').and.callThrough();
+            schObj = createSchedule(model, resourceData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('Checking rendercell count in agenda view', () => {
+            expect(renderCellSpy).toHaveBeenCalledTimes(25);
+            expect(count).toEqual(25);
+        });
+    });
+
+    describe('Checking RenderCell Agenda view with multiple level resource grouping with EmptyAgendaDays', () => {
+        let schObj: Schedule;
+        let count: number = 0;
+        let renderCellSpy: jasmine.Spy;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%', height: '550px', currentView: 'Agenda',
+                selectedDate: new Date(2018, 3, 1),
+                hideEmptyAgendaDays: false,
+                group: {
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
+                renderCell: function (args: RenderCellEventArgs) {
+                    count++;
+                    if (args.element.className === 'e-resource-column') {
+                        expect(args.date).not.toBeNull;
+                        expect(args.name).not.toBeNull;
+                        expect(args.element).not.toBeNull;
+                        expect(args.groupIndex).not.toBeNull;
+                        expect(args.elementType).not.toBeNull;
+                        expect(args.elementType).toEqual('resourceHeader');
+                        expect(args.element.getAttribute('data-date')).toBeNull;
+                        expect(args.element.getAttribute('data-column-index')).toBeNull;
+                    }
+                    if (args.elementType === 'noEvents') {
+                        expect(args.element).not.toBeNull;
+                        expect(args.date).not.toBeNull;
+                        expect(args.name).not.toBeNull;
+                        expect(args.groupIndex).toBeNull;
+                    }
+                },
+            };
+            renderCellSpy = spyOn(model, 'renderCell').and.callThrough();
+            schObj = createSchedule(model, resourceData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('Checking rendercell count in agenda view', () => {
+            expect(renderCellSpy).toHaveBeenCalledTimes(47);
+            expect(count).toEqual(47);
         });
     });
 

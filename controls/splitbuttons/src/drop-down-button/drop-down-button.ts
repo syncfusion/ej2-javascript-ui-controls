@@ -313,6 +313,12 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         });
         if (this.cssClass) { addClass([div], this.cssClass.replace(/\s+/g, ' ').trim().split(' ')); }
         this.isPopupCreated = true;
+        if (this.createPopupOnClick) {
+            const splitButton: SplitButton = getComponent(this.activeElem[0], 'split-btn');
+            if (splitButton) {
+                splitButton.isPopupCreated = true;
+            }
+        }
     }
 
     private getTargetElement(): Element {
@@ -517,6 +523,13 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             }
         }
         this.isPopupCreated = false;
+        const splitButton: SplitButton = getComponent(this.activeElem[0], 'split-btn');
+        if (this.createPopupOnClick && splitButton) {
+            const dropDownButton: DropDownButton = getComponent(this.activeElem[1], 'dropdown-btn');
+            if (dropDownButton) {
+                dropDownButton.isPopupCreated = false;
+            }
+        }
     }
 
     protected getPopUpElement(): HTMLElement {
@@ -662,7 +675,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
 
     private mousedownHandler(e: MouseEvent): void {
         const trgt: HTMLElement = e.target as HTMLElement;
-        if (this.dropDown && !this.canOpen() && !(closest(trgt, '[id="' + this.getPopUpElement().id + '"]')
+        if (this.dropDown && !this.canOpen() && this.getPopUpElement() && !(closest(trgt, '[id="' + this.getPopUpElement().id + '"]')
             || closest(trgt, '[id="' + this.element.id + '"]'))) {
             this.closePopup(e);
         }
@@ -809,7 +822,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                     selectedLi = ul.querySelector('.e-selected');
                 }
                 if (selectedLi) { selectedLi.classList.remove('e-selected'); }
-                this.dropDown.hide();
+                if (this.dropDown) { this.dropDown.hide(); }
                 removeClass(this.activeElem, 'e-active');
                 this.element.setAttribute('aria-expanded', 'false');
                 this.element.removeAttribute('aria-owns');

@@ -432,6 +432,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private IsDragStop: boolean;
     private refElement: HTMLElement;
     private dlgClosedBy: string;
+    private isModelResize: boolean;
     private boundWindowResizeHandler: () => void;
     /**
      * Specifies the value that can be displayed in dialog's content area.
@@ -801,6 +802,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (this.enableResize) {
             this.setResize();
+            if (this.isModal) {
+                this.isModelResize = true;
+            }
             if (this.animationSettings.effect === 'None') {
                 this.getMinHeight();
             }
@@ -912,6 +916,25 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private onResizeStart(args: ResizeMouseEventArgs | ResizeTouchEventArgs, dialogObj: Dialog): boolean {
         dialogObj.trigger('resizeStart', args);
+        if (!args.cancel && this.isModelResize && !isNullOrUndefined(this.dlgContainer) && this.dlgContainer.classList.contains('e-dlg-' + this.position.X + '-' + this.position.Y)) {
+            this.setPopupPosition();
+            this.dlgContainer.classList.remove('e-dlg-' + this.position.X + '-' + this.position.Y);
+            const targetType: HTMLElement = this.getTargetContainer(this.target);
+            if (targetType instanceof Element) {
+                const computedStyle: CSSStyleDeclaration = window.getComputedStyle(targetType);
+                if (computedStyle.getPropertyValue('direction') === 'rtl') {
+                    this.element.style.position = 'absolute';
+                } else {
+                    this.element.style.position = 'relative';
+                }
+            } else {
+                this.element.style.position = 'relative';
+            }
+            if (this.element.classList.contains(DLG_RESTRICT_LEFT_VALUE)) {
+                this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
+            }
+            this.isModelResize = false;
+        }
         return args.cancel;
     }
 
@@ -1294,6 +1317,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         }
                     }
                     this.trigger('dragStop', event);
+                    this.isModelResize = false;
                     this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
                     this.updatePersistData();
                 },
@@ -1501,7 +1525,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.headerContent.appendChild(this.headerEle);
         this.setTemplate(this.header, this.headerEle, 'header');
         attributes(this.element, { 'aria-describedby': this.element.id + '_title' });
-        attributes(this.element, { 'aria-label': 'dialog' });
+        attributes(this.element, { 'aria-labelledby': this.element.id + '_dialog-header' });
         this.element.insertBefore(this.headerContent, this.element.children[0]);
         if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
             this.setAllowDragging();

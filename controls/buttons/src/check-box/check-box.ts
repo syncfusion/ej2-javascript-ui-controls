@@ -22,7 +22,7 @@ const RIPPLECHECK: string = 'e-ripple-check';
 const RIPPLEINDETERMINATE: string = 'e-ripple-stop';
 const RTL: string = 'e-rtl';
 const WRAPPER: string = 'e-checkbox-wrapper';
-const containerAttr: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value', 'id', 'tabindex', 'aria-label'];
+const containerAttr: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value', 'id', 'tabindex', 'aria-label', 'required'];
 
 /**
  * The CheckBox is a graphical user interface element that allows you to select one or more options from the choices.
@@ -165,7 +165,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         super(options, <string | HTMLInputElement>element);
     }
 
-    private changeState(state?: string, isInitialize?: boolean ): void {
+    private changeState(state?: string, isInitialize?: boolean, isInterAction?: boolean): void {
         const wrapper: Element = this.getWrapper() as Element;
         let rippleSpan: Element | null = null;
         let frameSpan: Element | null = null;
@@ -185,7 +185,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 rippleSpan.classList.add(RIPPLECHECK);
             }
             this.element.checked = true;
-            if ((this.element.required || closest(this.element, 'form') && closest(this.element, 'form').classList.contains('e-formvalidator')) && this.validCheck && !isInitialize) {
+            if ((this.element.required || closest(this.element, 'form') && closest(this.element, 'form').classList.contains('e-formvalidator')) && this.validCheck && !isInitialize && isInterAction) {
                 this.element.checked = false;
                 this.validCheck = false;
             } else if (this.element.required || closest(this.element, 'form') && closest(this.element, 'form').classList.contains('e-formvalidator')) {
@@ -199,7 +199,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 removeClass([rippleSpan], [RIPPLECHECK, RIPPLEINDETERMINATE]);
             }
             this.element.checked = false;
-            if ((this.element.required || closest(this.element, 'form') && closest(this.element, 'form').classList.contains('e-formvalidator')) && this.validCheck && !isInitialize) {
+            if ((this.element.required || closest(this.element, 'form') && closest(this.element, 'form').classList.contains('e-formvalidator')) && this.validCheck && !isInitialize && isInterAction) {
                 this.element.checked = true;
                 this.validCheck = false;
             } else if (this.element.required || closest(this.element, 'form') && closest(this.element, 'form').classList.contains('e-formvalidator')) {
@@ -221,9 +221,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     private clickHandler(event: Event): void {
         if ((event.target as HTMLElement).tagName === 'INPUT' && this.clickTriggered) {
-            if (this.isVue) {
-                this.changeState(this.checked ? 'check' : 'uncheck');
-            }
             this.clickTriggered = false;
             return;
         }
@@ -236,14 +233,14 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             this.isMouseClick = false;
         }
         if (this.indeterminate) {
-            this.changeState(this.checked ? 'check' : 'uncheck');
+            this.changeState(this.checked ? 'check' : 'uncheck', false, true);
             this.indeterminate = false;
             this.element.indeterminate = false;
         } else if (this.checked) {
-            this.changeState('uncheck');
+            this.changeState('uncheck', false, true);
             this.checked = false;
         } else {
-            this.changeState('check');
+            this.changeState('check', false, true);
             this.checked = true;
         }
         const changeEventArgs: ChangeEventArgs = { checked: this.updateVueArrayModel(false), event: event };

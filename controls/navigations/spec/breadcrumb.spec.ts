@@ -455,7 +455,8 @@ describe('Breadcrumb', () => {
         });
         it('Menu item click action', () => {
             document.body.appendChild(nav);
-            breadcrumb = new Breadcrumb({items: overflowItems, maxItems: 3, overflowMode: 'Menu', activeItem: 'Overflow'}, '#breadcrumb');
+            breadcrumb = new Breadcrumb({items: overflowItems, maxItems: 3, overflowMode: 'None', activeItem: 'Overflow'}, '#breadcrumb');
+            breadcrumb.overflowMode = 'Menu';
             mouseEventArs.target = document.querySelector('.e-breadcrumb-text');
             breadcrumb.clickHandler(mouseEventArs);
         });
@@ -494,6 +495,18 @@ describe('Breadcrumb', () => {
     describe('CR issues', () => {
         afterEach(() => {
             breadcrumb.destroy();
+        });
+
+        it('EJ2-916680 - Breadcrumb menu popup not destroyed after breadcrumb element destroyed', () => {
+            breadcrumb.destroy();
+            document.body.appendChild(nav);
+            breadcrumb = new Breadcrumb({items: overflowItems, maxItems: 3, overflowMode: 'Menu' }, '#breadcrumb');
+            let element: HTMLElement = breadcrumb.element.querySelector('.e-breadcrumb-menu');
+            expect(element.classList.contains('e-breadcrumb-menu')).toEqual(true);
+            element.click();
+            expect(document.getElementsByClassName('e-breadcrumb-popup')[2].classList.contains('e-popup-open')).toBe(true);
+            breadcrumb.destroy();
+            expect(document.getElementsByClassName('e-breadcrumb-popup')[2]).toBeUndefined();
         });
     });
 

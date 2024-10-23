@@ -55,6 +55,14 @@ export const cellSelect: string = 'cellSelect';
 export const virtualScrollStart: string = 'virtualScrollStart';
 /** @private */
 export const virtualScrollStop: string = 'virtualScrollStop';
+/** @private */
+export const noEvents: string = 'noEvents';
+/** @private */
+export const agendaCells: string = 'agendaCells';
+/** @private */
+export const resourceHeader: string = 'resourceHeader';
+/** @private */
+export const dateHeader: string = 'dateHeader';
 
 /**
  * Specifies schedule internal events
